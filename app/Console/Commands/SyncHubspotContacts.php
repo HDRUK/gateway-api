@@ -37,7 +37,7 @@ class SyncHubspotContacts extends Command
         $hubspotEnabled = Config::get('services.hubspot.enabled');
 
         if (!$hubspotEnabled) {
-            echo 'Sync contacts from HubSpot to mk2 users not enabled - please check HUBSPOT_ENABLED in environment', PHP_EOL; 
+            echo 'Sync contacts from HubSpot to mk2 users not enabled - please check HUBSPOT_ENABLED in environment', PHP_EOL;
         }
 
         $hubspotService = new Hubspot();
@@ -61,7 +61,7 @@ class SyncHubspotContacts extends Command
                 'user_id' => $user->id,
                 'request_status' => 'APPROVED',
             ])->first();
-            
+
             $rolesFullNamesByUserId = $this->getUserRoleNames($user->id);
 
             $hubspot = [
@@ -83,7 +83,7 @@ class SyncHubspotContacts extends Command
             }
 
             // create new contact hubspot and update users table
-            if (!$user->hubspot_id){
+            if (!$user->hubspot_id) {
                 // check by email
                 $hubspotId = $hubspotService->getContactByEmail($email);
 

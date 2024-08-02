@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use Auditor;
 use Config;
 use Exception;
-use MetadataManagementController AS MMC;
+use MetadataManagementController as MMC;
 
 use App\Exceptions\NotFoundException;
 use App\Models\Dataset;
@@ -92,7 +92,7 @@ class PublicationController extends Controller
             $perPage = request('per_page', Config::get('constants.per_page'));
             $withRelated = $request->boolean('with_related', true);
 
-            $sort = $request->query('sort',"created_at:desc");   
+            $sort = $request->query('sort', "created_at:desc");
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
@@ -106,19 +106,22 @@ class PublicationController extends Controller
             ->when($ownerId, function ($query) use ($ownerId) {
                 return $query->where('owner_id', '=', $ownerId);
             })
-            ->when($filterStatus, 
+            ->when(
+                $filterStatus,
                 function ($query) use ($filterStatus) {
                     return $query->where('status', '=', $filterStatus)
-                        ->when($filterStatus === Publication::STATUS_ARCHIVED, 
+                        ->when(
+                            $filterStatus === Publication::STATUS_ARCHIVED,
                             function ($query) {
                                 return $query->withTrashed();
                             }
                         );
                 }
             )
-            ->when($withRelated, fn($query) => $query->with(['tools']))
-            ->when($sort, 
-                    fn($query) => $query->orderBy($sortField, $sortDirection)
+            ->when($withRelated, fn ($query) => $query->with(['tools']))
+            ->when(
+                $sort,
+                fn ($query) => $query->orderBy($sortField, $sortDirection)
             )
             ->paginate($perPage, ['*'], 'page');
 
@@ -203,7 +206,7 @@ class PublicationController extends Controller
                 ->get()
                 ->groupBy($field)
                 ->map->count();
-    
+
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
@@ -274,7 +277,7 @@ class PublicationController extends Controller
      *          )
      *      )
      * )
-     * 
+     *
      */
     public function show(GetPublication $request, int $id): JsonResponse
     {
@@ -291,7 +294,7 @@ class PublicationController extends Controller
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $publication,
             ], Config::get('statuscodes.STATUS_OK.code'));
-    } catch (Exception $e) {
+        } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
@@ -325,7 +328,7 @@ class PublicationController extends Controller
      *             @OA\Property(property="abstract", type="string", example="A long description of the paper"),
      *             @OA\Property(property="url", type="string", example="http://example"),
      *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
-     *             @OA\Property(property="datasets", type="array", 
+     *             @OA\Property(property="datasets", type="array",
      *                @OA\Items(type="object",
      *                   @OA\Property(property="id", type="integer"),
      *                   @OA\Property(property="link_type", type="string"),
@@ -390,7 +393,7 @@ class PublicationController extends Controller
             $this->checkTools($publicationId, $tools, (int)$jwtUser['id']);
 
             $currentPublication = Publication::where('id', $publicationId)->first();
-            if($currentPublication->status === Publication::STATUS_ACTIVE){
+            if($currentPublication->status === Publication::STATUS_ACTIVE) {
                 $this->indexElasticPublication($publicationId);
             } else {
                 MMC::deleteFromElastic($publicationId, 'publication');
@@ -454,7 +457,7 @@ class PublicationController extends Controller
      *             @OA\Property(property="url", type="string", example="http://example"),
      *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *             @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
-     *             @OA\Property(property="datasets", type="array", 
+     *             @OA\Property(property="datasets", type="array",
      *                @OA\Items(type="object",
      *                   @OA\Property(property="id", type="integer"),
      *                   @OA\Property(property="link_type", type="string"),
@@ -538,7 +541,7 @@ class PublicationController extends Controller
             $this->checkTools($id, $tools, (int)$jwtUser['id']);
 
             $currentPublication = Publication::where('id', $id)->first();
-            if($currentPublication->status === Publication::STATUS_ACTIVE){
+            if($currentPublication->status === Publication::STATUS_ACTIVE) {
                 $this->indexElasticPublication((int) $id);
             } else {
                 MMC::deleteFromElastic($id, 'publication');
@@ -567,100 +570,100 @@ class PublicationController extends Controller
         }
     }
 
-   /**
-     * @OA\Patch(
-     *    path="/api/v1/publications/{id}",
-     *    operationId="edit_publications",
-     *    tags={"Publication"},
-     *    summary="PublicationController@edit",
-     *    description="Edit publications",
-     *    security={{"bearerAuth":{}}},
-     *    @OA\Parameter(
-     *       name="unarchive",
-     *       in="query",
-     *       description="Unarchive a publication",
-     *       @OA\Schema(
-     *          type="string",
-     *          description="instruction to unarchive publication",
-     *       ),
-     *    ),
-     *    @OA\Parameter(
-     *       name="id",
-     *       in="path",
-     *       description="publications id",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema(
-     *          type="integer",
-     *          description="publications id",
-     *       ),
-     *    ),
-     *    @OA\RequestBody(
-     *       required=true,
-     *       description="Pass user credentials",
-     *       @OA\MediaType(
-     *          mediaType="application/json",
-     *          @OA\Schema(
-     *             @OA\Property(property="paper_title", type="string", example="A title"),
-     *             @OA\Property(property="authors", type="string", example="Author A., Author B."),
-     *             @OA\Property(property="year_of_publication", type="string", example="2024"),
-     *             @OA\Property(property="paper_doi", type="string", example="10.12345"),
-     *             @OA\Property(property="publication_type", type="string", example="Journal article, Book"),
-     *             @OA\Property(property="journal_name", type="string", example="A Journal"),
-     *             @OA\Property(property="abstract", type="string", example="A long description of the paper"),
-     *             @OA\Property(property="url", type="string", example="http://example"),
-     *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
-     *             @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
-     *             @OA\Property(property="datasets", type="array", 
-     *                @OA\Items(type="object",
-     *                   @OA\Property(property="id", type="integer"),
-     *                   @OA\Property(property="link_type", type="string"),
-     *                )
-     *             ),
-     *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
-     *          ),
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *       response="200",
-     *       description="Success response",
-     *       @OA\JsonContent(
-     *          @OA\Property(
-     *             property="message", type="string", example="success"),
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
-     *          ),
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *        response=400,
-     *        description="Error",
-     *        @OA\JsonContent(
-     *            @OA\Property(property="message", type="string", example="bad request"),
-     *        )
-     *    ),
-     *    @OA\Response(
-     *        response=401,
-     *        description="Unauthorized",
-     *        @OA\JsonContent(
-     *            @OA\Property(property="message", type="string", example="unauthorized")
-     *        )
-     *    ),
-     *    @OA\Response(
-     *        response=500,
-     *        description="Error",
-     *        @OA\JsonContent(
-     *            @OA\Property(property="message", type="string", example="error"),
-     *        )
-     *    )
-     * )
-     */
+    /**
+      * @OA\Patch(
+      *    path="/api/v1/publications/{id}",
+      *    operationId="edit_publications",
+      *    tags={"Publication"},
+      *    summary="PublicationController@edit",
+      *    description="Edit publications",
+      *    security={{"bearerAuth":{}}},
+      *    @OA\Parameter(
+      *       name="unarchive",
+      *       in="query",
+      *       description="Unarchive a publication",
+      *       @OA\Schema(
+      *          type="string",
+      *          description="instruction to unarchive publication",
+      *       ),
+      *    ),
+      *    @OA\Parameter(
+      *       name="id",
+      *       in="path",
+      *       description="publications id",
+      *       required=true,
+      *       example="1",
+      *       @OA\Schema(
+      *          type="integer",
+      *          description="publications id",
+      *       ),
+      *    ),
+      *    @OA\RequestBody(
+      *       required=true,
+      *       description="Pass user credentials",
+      *       @OA\MediaType(
+      *          mediaType="application/json",
+      *          @OA\Schema(
+      *             @OA\Property(property="paper_title", type="string", example="A title"),
+      *             @OA\Property(property="authors", type="string", example="Author A., Author B."),
+      *             @OA\Property(property="year_of_publication", type="string", example="2024"),
+      *             @OA\Property(property="paper_doi", type="string", example="10.12345"),
+      *             @OA\Property(property="publication_type", type="string", example="Journal article, Book"),
+      *             @OA\Property(property="journal_name", type="string", example="A Journal"),
+      *             @OA\Property(property="abstract", type="string", example="A long description of the paper"),
+      *             @OA\Property(property="url", type="string", example="http://example"),
+      *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
+      *             @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
+      *             @OA\Property(property="datasets", type="array",
+      *                @OA\Items(type="object",
+      *                   @OA\Property(property="id", type="integer"),
+      *                   @OA\Property(property="link_type", type="string"),
+      *                )
+      *             ),
+      *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
+      *          ),
+      *       ),
+      *    ),
+      *    @OA\Response(
+      *       response="200",
+      *       description="Success response",
+      *       @OA\JsonContent(
+      *          @OA\Property(
+      *             property="message", type="string", example="success"),
+      *          @OA\Property(
+      *             property="data",
+      *             type="array",
+      *             example="[]",
+      *             @OA\Items(
+      *                type="array",
+      *                @OA\Items()
+      *             )
+      *          ),
+      *       ),
+      *    ),
+      *    @OA\Response(
+      *        response=400,
+      *        description="Error",
+      *        @OA\JsonContent(
+      *            @OA\Property(property="message", type="string", example="bad request"),
+      *        )
+      *    ),
+      *    @OA\Response(
+      *        response=401,
+      *        description="Unauthorized",
+      *        @OA\JsonContent(
+      *            @OA\Property(property="message", type="string", example="unauthorized")
+      *        )
+      *    ),
+      *    @OA\Response(
+      *        response=500,
+      *        description="Error",
+      *        @OA\JsonContent(
+      *            @OA\Property(property="message", type="string", example="error"),
+      *        )
+      *    )
+      * )
+      */
     public function edit(EditPublication $request, int $id): JsonResponse
     {
         try {
@@ -682,7 +685,7 @@ class PublicationController extends Controller
                         PublicationHasTool::withTrashed()->where('publication_id', $id)->restore();
                         DurHasPublication::withTrashed()->where('publication_id', $id)->restore();
                         CollectionHasPublication::withTrashed()->where('publication_id', $id)->restore();
-                        
+
                         Auditor::log([
                             'user_id' => (int) $jwtUser['id'],
                             'action_type' => 'UPDATE',
@@ -725,7 +728,7 @@ class PublicationController extends Controller
                 if (isset($input['status']) && ($input['status'] === Publication::STATUS_ARCHIVED || $input['status'] === Publication::STATUS_DRAFT)) {
                     PublicationHasDatasetVersion::where('publication_id', $id)->delete();
                     PublicationHasTool::where(['publication_id' => $id])->delete();
-                } 
+                }
 
                 // Update the publication including soft-deleted ones
                 Publication::withTrashed()->where('id', $id)->update($array);
@@ -747,7 +750,7 @@ class PublicationController extends Controller
                 } else {
                     MMC::deleteFromElastic($id, 'publication');
                 }
-                
+
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'UPDATE',
@@ -847,7 +850,7 @@ class PublicationController extends Controller
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Publication ' . $id . ' soft deleted',
                 ]);
-    
+
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                 ], Config::get('statuscodes.STATUS_OK.code'));
@@ -868,9 +871,9 @@ class PublicationController extends Controller
 
     /**
      * Calls a re-indexing of Elastic search when a publication is created or updated
-     * 
+     *
      * @param string $id The publication id from the DB
-     * 
+     *
      * @return void
      */
     public function indexElasticPublication(string $id): void
@@ -878,7 +881,7 @@ class PublicationController extends Controller
         try {
             $pubMatch = Publication::where(['id' => $id])->first();
             $datasets = $pubMatch->allDatasets;
-            
+
             $datasetTitles = [];
             $datasetLinkTypes = [];
             foreach ($datasets as $dataset) {
@@ -893,7 +896,7 @@ class PublicationController extends Controller
             }
 
             // Split string to array of strings
-            $publicationTypes = explode(",", $pubMatch['publication_type']); 
+            $publicationTypes = explode(",", $pubMatch['publication_type']);
 
             $toIndex = [
                 'title' => $pubMatch['paper_title'],
@@ -911,7 +914,7 @@ class PublicationController extends Controller
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
-            
+
             $client = MMC::getElasticClient();
             $client->index($params);
 
@@ -927,7 +930,7 @@ class PublicationController extends Controller
     }
     private function getPublicationById(int $publicationId)
     {
- 
+
         $publication = Publication::with(['tools'])
         ->withTrashed()
         ->where(['id' => $publicationId])
@@ -939,9 +942,9 @@ class PublicationController extends Controller
     }
 
     // datasets
-    private function checkDatasets(int $publicationId, array $inDatasets) 
+    private function checkDatasets(int $publicationId, array $inDatasets)
     {
-        
+
         $pubs = PublicationHasDatasetVersion::where(['publication_id' => $publicationId])->get();
         foreach ($pubs as $pub) {
             $dataset_id = DatasetVersion::where("id", $pub->dataset_version_id)->first()->dataset_id;
@@ -953,7 +956,7 @@ class PublicationController extends Controller
         foreach ($inDatasets as $dataset) {
             $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
             $checking = $this->checkInPublicationHasDatasetVersions($publicationId, $datasetVersionId);
-        
+
             if (!$checking) {
                 $this->addPublicationHasDatasetVersion($publicationId, $dataset, $datasetVersionId);
                 MMC::reindexElastic($dataset['id']);
@@ -987,7 +990,7 @@ class PublicationController extends Controller
         try {
             return PublicationHasDatasetVersion::where([
                 'publication_id' => $publicationId,
-                'dataset_version_id' => $datasetVersionId, 
+                'dataset_version_id' => $datasetVersionId,
             ])->first();
         } catch (Exception $e) {
             throw new Exception("checkInPublicationHasDatasetVersions :: " . $e->getMessage());
@@ -1009,7 +1012,7 @@ class PublicationController extends Controller
 
 
     // tools
-    private function checkTools(int $publicationId, array $inTools, int $userId = null) 
+    private function checkTools(int $publicationId, array $inTools, int $userId = null)
     {
         $pubs = PublicationHasTool::where(['publication_id' => $publicationId])->get();
         foreach ($pubs as $pub) {
@@ -1094,7 +1097,7 @@ class PublicationController extends Controller
         }
     }
 
-    private function extractInputIdToArray(array $input): Array
+    private function extractInputIdToArray(array $input): array
     {
         $response = [];
         foreach ($input as $value) {

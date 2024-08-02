@@ -5,18 +5,17 @@ namespace App\Http\Controllers\Api\V1;
 use Auditor;
 use CloudLogger;
 use Illuminate\Http\Request;
-use App\Services\PubSubService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 
 class TestController extends Controller
 {
-    public function __construct() 
+    public function __construct()
     {
     }
 
     /**
-     * 
+     *
      * Test with Jwt credentials
      *
      * @param Request $request

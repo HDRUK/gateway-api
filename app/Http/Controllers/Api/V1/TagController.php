@@ -18,7 +18,7 @@ use App\Http\Traits\RequestTransformation;
 class TagController extends Controller
 {
     use RequestTransformation;
-    
+
     /**
      * constructor method
      */
@@ -504,7 +504,7 @@ class TagController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        try {          
+        try {
             Tag::where('id', $id)->delete();
 
             Auditor::log([

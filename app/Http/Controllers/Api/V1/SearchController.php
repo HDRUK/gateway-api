@@ -17,7 +17,6 @@ use App\Models\Collection;
 use App\Models\DurHasTool;
 use App\Models\Publication;
 use App\Models\PublicationHasDatasetVersion;
-use App\Models\DataProvider;
 use App\Models\TypeCategory;
 
 use Illuminate\Http\Request;
@@ -25,24 +24,20 @@ use App\Exports\DataUseExport;
 use App\Models\DatasetVersionHasTool;
 use App\Models\DatasetVersion;
 use App\Exports\ToolListExport;
-use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
 use App\Exports\DatasetListExport;
 use App\Exports\PublicationExport;
 use App\Models\ProgrammingPackage;
-use App\Models\PublicationHasTool;
 use App\Exports\DataProviderCollExport;
 use App\Exports\DataProviderExport;
 use App\Exports\DatasetTableExport;
-use App\Models\DataProviderHasTeam;
 use App\Models\ProgrammingLanguage;
 use App\Models\ToolHasTypeCategory;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exceptions\NotFoundException;
 use App\Http\Traits\PaginateFromArray;
 use App\Models\DataProviderCollHasTeam;
 use MetadataManagementController as MMC;
@@ -149,7 +144,7 @@ class SearchController extends Controller
             $downloadType = array_key_exists('download_type', $input) ? $input['download_type'] : 'list';
             $sort = $request->query('sort', 'score:desc');
             $viewType = $request->query('view_type', 'full');
-        
+
             $tmp = explode(':', $sort);
             $sortInput = $tmp[0];
             $sortField = ($sortInput === 'title') ? 'shortTitle' : $sortInput;
@@ -433,8 +428,8 @@ class SearchController extends Controller
 
             $download = array_key_exists('download', $input) ? $input['download'] : false;
 
-            $sort = $request->query('sort', 'score:desc');   
-        
+            $sort = $request->query('sort', 'score:desc');
+
             $tmp = explode(':', $sort);
             $sortField = $tmp[0];
 
@@ -458,7 +453,7 @@ class SearchController extends Controller
 
             foreach ($toolsArray as $i => $tool) {
                 $foundFlag = false;
-                foreach ($toolModels as $model){
+                foreach ($toolModels as $model) {
                     if ((int)$tool['_id'] === $model['id']) {
 
                         $toolsArray[$i]['name'] = $model['name'];
@@ -669,7 +664,7 @@ class SearchController extends Controller
 
             foreach ($collectionArray as $i => $collection) {
                 $foundFlag = false;
-                foreach ($collectionModels as $model){
+                foreach ($collectionModels as $model) {
                     if ((int)$collection['_id'] === $model['id']) {
                         $collectionArray[$i]['_source']['created_at'] = $model['created_at'];
                         $collectionArray[$i]['name'] = $model['name'];
@@ -799,7 +794,7 @@ class SearchController extends Controller
             $input = $request->all();
             $download = array_key_exists('download', $input) ? $input['download'] : false;
             $sort = $request->query('sort', 'score:desc');
-        
+
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
 
@@ -826,7 +821,7 @@ class SearchController extends Controller
 
             foreach ($durArray as $i => $dur) {
                 $foundFlag = false;
-                foreach ($durModels as $model){
+                foreach ($durModels as $model) {
                     if ((int)$dur['_id'] === $model['id']) {
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
                         $durArray[$i]['projectTitle'] = $model['project_title'];
@@ -999,7 +994,7 @@ class SearchController extends Controller
 
             $download = array_key_exists('download', $input) ? $input['download'] : false;
             $sort = $request->query('sort', 'score:desc');
-        
+
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
 
@@ -1025,7 +1020,7 @@ class SearchController extends Controller
 
                 foreach ($pubArray as $i => $p) {
                     $foundFlag = false;
-                    foreach ($pubModels as $model){
+                    foreach ($pubModels as $model) {
                         if ((int)$p['_id'] === $model['id']) {
                             $pubArray[$i]['_source']['created_at'] = $model['created_at'];
                             $pubArray[$i]['paper_title'] = $model['paper_title'];
@@ -1290,7 +1285,7 @@ class SearchController extends Controller
             $input = $request->all();
             $download = array_key_exists('download', $input) ? $input['download'] : false;
             $sort = $request->query('sort', 'score:desc');
-        
+
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
 
@@ -1313,7 +1308,7 @@ class SearchController extends Controller
 
             foreach ($dataProviderCollArray as $i => $dp) {
                 $foundFlag = false;
-                foreach ($dataProviderCollModels as $model){
+                foreach ($dataProviderCollModels as $model) {
                     if ((int)$dp['_id'] === $model['id']) {
                         $dataProviderCollArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $dataProviderCollArray[$i]['name'] = $model['name'];
@@ -1447,7 +1442,7 @@ class SearchController extends Controller
             $input = $request->all();
             $download = array_key_exists('download', $input) ? $input['download'] : false;
             $sort = $request->query('sort', 'score:desc');
-        
+
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
 
@@ -1470,7 +1465,7 @@ class SearchController extends Controller
 
             foreach ($dataProviderArray as $i => $dp) {
                 $foundFlag = false;
-                foreach ($dataProviderModels as $model){
+                foreach ($dataProviderModels as $model) {
                     if ((int)$dp['_id'] === $model['id']) {
                         $dataProviderArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $dataProviderArray[$i]['name'] = $model['name'];
@@ -1526,9 +1521,9 @@ class SearchController extends Controller
     /**
      * Find dataset titles associated with a given Dur model instance.
      * Returns an array of titles.
-     * 
+     *
      * @param Dur $durMatch The Dur model the find dataset titles for
-     * 
+     *
      * @return array
      */
     private function durDatasetTitles(Dur $durMatch): array
@@ -1547,11 +1542,11 @@ class SearchController extends Controller
 
     /**
      * Sorts results returned by the search service according to sort field and direction
-     * 
+     *
      * @param array $resultArray The results from the keyword search
      * @param string $sortField The field to sort result by (e.g. name, created_at etc.)
      * @param string $sortDirection The direction to sort the result (i.e. asc, desc)
-     * 
+     *
      * @return array
      */
     private function sortSearchResult(array $resultArray, string $sortField, string $sortDirection): array
@@ -1676,7 +1671,9 @@ class SearchController extends Controller
         $toolNames = [];
 
         $toolIds = DurHasTool::where('dur_id', $durId)->pluck('tool_id')->all();
-        if (!count($toolIds)) return [];
+        if (!count($toolIds)) {
+            return [];
+        }
 
         $toolNames = Tool::whereIn('id', $toolIds)->pluck('name')->all();
 
@@ -1688,7 +1685,9 @@ class SearchController extends Controller
         $durNames = [];
 
         $durIds = DurHasTool::where('tool_id', $toolId)->pluck('dur_id')->all();
-        if (!count($durIds)) return [];
+        if (!count($durIds)) {
+            return [];
+        }
 
         $durNames = Dur::whereIn('id', $durIds)->where('status', 'ACTIVE')->pluck('project_title')->all();
 

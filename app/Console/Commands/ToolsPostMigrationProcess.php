@@ -9,20 +9,18 @@ use App\Models\Tool;
 use App\Models\Dataset;
 use App\Models\License;
 use App\Models\ToolHasTag;
-use App\Models\DataProvider;
 use App\Models\TypeCategory;
 use App\Models\DatasetVersionHasTool;
 use App\Models\DatasetVersion;
 use Illuminate\Console\Command;
 use App\Models\DataProviderColl;
 use App\Models\ProgrammingPackage;
-use App\Models\DataProviderHasTeam;
 use App\Models\ProgrammingLanguage;
 use App\Models\ToolHasTypeCategory;
 
 use App\Models\DataProviderCollHasTeam;
 
-use MetadataManagementController AS MMC;
+use MetadataManagementController as MMC;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
 
@@ -34,10 +32,10 @@ class ToolsPostMigrationProcess extends Command
      * @var string
      */
     protected $signature = 'app:tools-post-migration-process';
-    
+
     /**
      * The file of migration mappings translated to CSV array
-     * 
+     *
      * @var array
      */
     private $csvData = [];
@@ -112,7 +110,7 @@ class ToolsPostMigrationProcess extends Command
                     }
 
                     $categories = TypeCategory::whereIn('name', $categoriesFromCsv)->get();
-                    
+
                     foreach ($categories as $category) {
                         echo 'creating ToolHasTypeCategory link for tool ' . $tool->id . ' and category type ' . $category->id . "\n";
                         $type = ToolHasTypeCategory::create([
@@ -124,7 +122,7 @@ class ToolsPostMigrationProcess extends Command
                     /**
                      * Final Step. Set license type for migrated tool and save record
                      */
-                    $licenceId = NULL;
+                    $licenceId = null;
                     if ($csv['license'] !== '') {
                         $licences = License::where(['code' => trim($csv['license'])])->first();
                         if (!is_null($licences)) {
@@ -151,7 +149,7 @@ class ToolsPostMigrationProcess extends Command
         $file = fopen($migrationFile, 'r');
         $headers = fgetcsv($file);
 
-        while (($row = fgetcsv($file)) !== FALSE) {
+        while (($row = fgetcsv($file)) !== false) {
             $item = [];
             foreach ($row as $key => $value) {
                 $item[$headers[$key]] = $value ?: '';
@@ -160,7 +158,7 @@ class ToolsPostMigrationProcess extends Command
             $this->csvData[] = $item;
         }
 
-        fclose($file);        
+        fclose($file);
     }
 
     /**
@@ -179,7 +177,7 @@ class ToolsPostMigrationProcess extends Command
      * @param integer $id
      * @return void
      */
-    public function indexElasticTool(int $id): void 
+    public function indexElasticTool(int $id): void
     {
         $tool = Tool::where('id', $id)
             ->with([
@@ -236,7 +234,7 @@ class ToolsPostMigrationProcess extends Command
 
         $datasets = Dataset::whereIn('id', $datasetIDs)
             ->with('versions')
-            ->get(); 
+            ->get();
 
         $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $tool['team_id'])
             ->pluck('data_provider_coll_id')

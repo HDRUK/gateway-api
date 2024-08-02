@@ -53,7 +53,7 @@ class EnquiryThreadController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $perPage = request('perPage', Config::get('constants.per_page'));
-            
+
             $enquiryThreads = EnquiryThread::paginate($perPage);
 
             Auditor::log([
@@ -250,7 +250,7 @@ class EnquiryThreadController extends Controller
                     'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'POST',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' . 
+                    'description' => 'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' .
                         $enquiryThreadId,
                 ]);
 

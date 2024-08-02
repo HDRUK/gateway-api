@@ -21,7 +21,7 @@ use App\Http\Requests\ActivityLogUserType\UpdateActivityLogUserType;
 class ActivityLogUserTypeController extends Controller
 {
     use RequestTransformation;
-    
+
     /**
      * @OA\Get(
      *      path="/api/v1/activity_log_user_types",
@@ -132,7 +132,7 @@ class ActivityLogUserTypeController extends Controller
                     'data' => $activityLogUserType,
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
-    
+
             throw new NotFoundException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -192,7 +192,7 @@ class ActivityLogUserTypeController extends Controller
                     'data' => $activityLogUserType->id,
                 ], Config::get('statuscodes.STATUS_CREATED.code'));
             }
-    
+
             throw new InternalServerErrorException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -264,7 +264,7 @@ class ActivityLogUserTypeController extends Controller
             $activityLogUserType = ActivityLogUserType::findOrFail($id);
             $body = $request->post();
             $activityLogUserType->name = $body['name'];
-    
+
             if ($activityLogUserType->save()) {
                 Auditor::log([
                     'user_id' => (int) $jwtUser['id'],
@@ -280,7 +280,7 @@ class ActivityLogUserTypeController extends Controller
             } else {
                 throw new InternalServerErrorException();
             }
-    
+
             throw new NotFoundException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -434,12 +434,12 @@ class ActivityLogUserTypeController extends Controller
                         'description' => "Activity Log User Type " . $id . " deleted",
                     ]);
 
-                    
+
                     return response()->json([
                         'message' => Config::get('statuscodes.STATUS_OK.message'),
                     ], Config::get('statuscodes.STATUS_OK.code'));
                 }
-    
+
                 throw new InternalServerErrorException();
             }
         } catch (Exception $e) {

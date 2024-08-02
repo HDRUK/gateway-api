@@ -6,7 +6,7 @@ use Config;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use Illuminate\Console\Command;
-use MetadataManagementController AS MMC;
+use MetadataManagementController as MMC;
 
 class DatasetsPostMigration extends Command
 {
@@ -49,7 +49,7 @@ class DatasetsPostMigration extends Command
                 $progressbar->advance();
             }
             $progressbar->finish();
-        }  
+        }
 
     }
 
@@ -61,7 +61,7 @@ class DatasetsPostMigration extends Command
 
         $csvData = $this->readMigrationFile(storage_path() . '/migration_files/mapped_mk1_access_service_category.csv');
 
-        
+
         $progressbar = $this->output->createProgressBar(count($csvData));
         $progressbar->start();
 
@@ -87,18 +87,18 @@ class DatasetsPostMigration extends Command
                     DatasetVersion::where('id', $dataset->id)->update([
                         'metadata' => json_encode(json_encode($metadata)),
                     ]);
-                }              
+                }
             }
             $progressbar->advance();
-           
+
         }
 
         $progressbar->finish();
     }
- 
+
     private function curateDatasets()
     {
-        if(version_compare(Config::get('metadata.GWDM.version'),"2.0","<")){
+        if(version_compare(Config::get('metadata.GWDM.version'), "2.0", "<")) {
             $this->error("You cannot run this script for GWDM versions older than 2.0");
             return;
         }
@@ -108,13 +108,13 @@ class DatasetsPostMigration extends Command
         $doiPattern = '/^10.\d{4,9}\/[-._;()\/:a-zA-Z0-9]+$/';
 
         $csvData = $this->readMigrationFile(storage_path() . '/migration_files/datasets_curation_july2024.csv');
-               
+
         $progressbar = $this->output->createProgressBar(count($csvData));
         $progressbar->start();
 
         foreach ($csvData as $csv) {
             $datasetid = $csv['id'];
-        
+
             $dataset = Dataset::where([
                 'datasetid' => $datasetid,
             ])->first();
@@ -139,26 +139,25 @@ class DatasetsPostMigration extends Command
 
             $associatedMedia = $csv['Annotation note link'];
             $toolLink = $csv['Github tool link'];
-            
+
             //note: to be implemented in the future
-            //- this was an AC dropped from GAT-4404 
+            //- this was an AC dropped from GAT-4404
             //$syntheticDataWebLink = $csv['Synthetic dataset link'];
-            
+
             // Check if the variable matches the pattern
-            if($doiName) {   
+            if($doiName) {
                 if (preg_match($doiPattern, $doiName)) {
                     $metadata['metadata']['summary']['doiName'] = $doiName;
-                }
-                else{
+                } else {
                     $this->warn($doiName . ' is not a valid doi');
                 }
             }
 
-            if($datasetType){
+            if($datasetType) {
                 $metadata['metadata']['summary']['datasetType'] = $datasetType;
             }
 
-            if($datasetSubType){
+            if($datasetSubType) {
                 $metadata['metadata']['summary']['datasetSubType'] = $datasetSubType;
             }
 
@@ -180,7 +179,7 @@ class DatasetsPostMigration extends Command
         $file = fopen($migrationFile, 'r');
         $headers = fgetcsv($file);
 
-        while (($row = fgetcsv($file)) !== FALSE) {
+        while (($row = fgetcsv($file)) !== false) {
             $item = [];
             foreach ($row as $key => $value) {
                 $item[$headers[$key]] = $value ?: '';
@@ -190,7 +189,7 @@ class DatasetsPostMigration extends Command
         }
 
         fclose($file);
-        
+
         return $response;
     }
 }

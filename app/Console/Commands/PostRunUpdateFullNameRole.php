@@ -47,7 +47,7 @@ class PostRunUpdateFullNameRole extends Command
         }
         if ($askInitFullName === 'yes') {
             Role::query()->update([
-                'full_name' => NULL,
+                'full_name' => null,
             ]);
         }
 
@@ -59,7 +59,7 @@ class PostRunUpdateFullNameRole extends Command
         } else {
             $askUpdateFullName = 'yes';
         }
-    
+
         if ($askUpdateFullName === 'yes') {
             foreach ($array as $key => $value) {
                 Role::where([

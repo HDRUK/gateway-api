@@ -11,7 +11,6 @@ use App\Models\AuthorisationCode;
 use App\Http\Requests\UserRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\HubspotContacts;
-use App\Http\Requests\RegisterRequest;
 use App\Http\Controllers\JwtController;
 
 class RegisterController extends Controller
@@ -86,7 +85,7 @@ class RegisterController extends Controller
      *       description="Missing Property",
      *    ),
      * )
-     * 
+     *
      * @param UserRequest $request
      */
     public function create(UserRequest $request)

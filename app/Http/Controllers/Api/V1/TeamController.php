@@ -69,9 +69,9 @@ class TeamController extends Controller
      *                    @OA\Property(property="member_of", type="string", example="someOrg"),
      *                    @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *                    @OA\Property(property="application_form_updated_by", type="integer", example="555"),
-     *                    @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"), 
-     *                    @OA\Property(property="users", type="array", example="[]", @OA\Items()), 
-     *                    @OA\Property(property="notifications", type="array", example="[]", @OA\Items()), 
+     *                    @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
+     *                    @OA\Property(property="users", type="array", example="[]", @OA\Items()),
+     *                    @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
      *                    @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *                    @OA\Property(property="is_provider", type="boolean", example="1"),
      *                    @OA\Property(property="url", type="string", example="https://example/image.jpg"),
@@ -365,7 +365,7 @@ class TeamController extends Controller
      *          description="Team details",
      *          @OA\JsonContent(
      *              required={
-     *                  "name", 
+     *                  "name",
      *                  "enabled",
      *                  "allows_messaging",
      *                  "workflow_enabled",
@@ -435,7 +435,7 @@ class TeamController extends Controller
                 }
 
                 //make sure the super admin is added to this team on creation
-                foreach($superAdminIds as $adminId){
+                foreach($superAdminIds as $adminId) {
                     TeamHasUser::create(
                         ['team_id' => $team->id, 'user_id' => $adminId],
                     );
@@ -479,7 +479,7 @@ class TeamController extends Controller
 
             throw new Exception($e->getMessage());
         }
-        
+
     }
 
     /**
@@ -505,7 +505,7 @@ class TeamController extends Controller
      *          description="Team definition",
      *          @OA\JsonContent(
      *              required={
-     *                  "name", 
+     *                  "name",
      *                  "enabled",
      *                  "allows_messaging",
      *                  "workflow_enabled",
@@ -921,7 +921,7 @@ class TeamController extends Controller
         $version = $dataset->latestVersion();
         $withLinks = DatasetVersion::where('id', $version['id'])
             ->with(['linkedDatasetVersions'])
-            ->first(); 
+            ->first();
 
         if (!$withLinks) {
             return;

@@ -67,11 +67,11 @@ class FormHydrationController extends Controller
 
         $response = Http::get($url);
         if ($response->successful()) {
-            $payload = $response->json(); 
-            return response()->json(["data"=>$payload]);
+            $payload = $response->json();
+            return response()->json(["data" => $payload]);
         } else {
-             return response()->json([
-                'message' => 'Failed to retrieve form hydration from ' . $url,
+            return response()->json([
+               'message' => 'Failed to retrieve form hydration from ' . $url,
             ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
         }
 
@@ -127,7 +127,7 @@ class FormHydrationController extends Controller
      *          description="Internal server error. Failed to retrieve form schema data."
      *      )
      * )
-     */    
+     */
     public function onboardingFormHydration(Request $request): JsonResponse
     {
         $model = $request->input('model', Config::get('form_hydration.schema.model'));
@@ -146,9 +146,9 @@ class FormHydrationController extends Controller
             'message' => 'success',
             'data' => $hydrationJson,
         ]);
-    }    
+    }
 
-    private function getDefaultValues(int $id): array 
+    private function getDefaultValues(int $id): array
     {
         $team = Team::findOrFail($id);
         $datasets = Dataset::where('team_id', $id)->get();
@@ -209,12 +209,12 @@ class FormHydrationController extends Controller
         ];
     }
 
-    private function mostCommonValue(string $path, array $datasets): string 
+    private function mostCommonValue(string $path, array $datasets): string
     {
         $values = array();
         foreach ($datasets as $dataset) {
             $v = $this->getValueFromPath($dataset, $path);
-            $values[] = is_null($v)? "" : $this->getValueFromPath($dataset, $path);
+            $values[] = is_null($v) ? "" : $this->getValueFromPath($dataset, $path);
         }
         $countMap = array_count_values($values);
         arsort($countMap);
@@ -222,7 +222,7 @@ class FormHydrationController extends Controller
         return $mostCommon;
     }
 
-    public function getValueFromPath(array $item, string $path) 
+    public function getValueFromPath(array $item, string $path)
     {
         $keys = explode('.', $path);
 
@@ -234,7 +234,7 @@ class FormHydrationController extends Controller
                 return null;
             }
         }
-        
+
         return $return;
     }
 }

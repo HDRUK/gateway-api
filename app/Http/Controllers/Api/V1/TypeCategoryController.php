@@ -136,7 +136,7 @@ class TypeCategoryController extends Controller
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $typeCategory,
             ], Config::get('statuscodes.STATUS_OK.code'));
-    
+
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -214,7 +214,7 @@ class TypeCategoryController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-    
+
             throw new Exception($e->getMessage());
         }
     }
@@ -457,7 +457,7 @@ class TypeCategoryController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-    
+
             $typeCategory = TypeCategory::findOrFail($id);
             $typeCategory->enabled = false;
             if ($typeCategory->save()) {
@@ -476,7 +476,7 @@ class TypeCategoryController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
             ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));

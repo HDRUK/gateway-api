@@ -20,8 +20,9 @@ use App\Http\Traits\PaginateFromArray;
 
 class FilterController extends Controller
 {
-    use RequestTransformation, PaginateFromArray;
-    
+    use RequestTransformation;
+    use PaginateFromArray;
+
     /**
      * @OA\Get(
      *      path="/api/v1/filters",
@@ -72,13 +73,14 @@ class FilterController extends Controller
             $filters = Filter::where('enabled', 1)->orderBy('type')->get()->toArray();
 
             $urlString = env('SEARCH_SERVICE_URL') . '/filters';
-    
+
             $response = Http::withBody(
-                json_encode(['filters' => $filters]), 'application/json'
+                json_encode(['filters' => $filters]),
+                'application/json'
             )->post($urlString);
-    
+
             $filterBuckets = isset($response->json()['filters']) ? $response->json()['filters'] : [];
-    
+
             foreach ($filters as $i => $f) {
                 $type = $f['type'];
                 $keys = $f['keys'];
@@ -88,10 +90,10 @@ class FilterController extends Controller
                     $filters[$i]['buckets'] = [];
                 }
             }
-    
+
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $filters, $perPage);
-                            
+
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
@@ -165,11 +167,12 @@ class FilterController extends Controller
             $filter = Filter::findOrFail($id);
             if ($filter) {
                 $urlString = env('SEARCH_SERVICE_URL') . '/filters';
-    
+
                 $response = Http::withBody(
-                    json_encode(['filters' => [$filter->toArray()]]), 'application/json'
+                    json_encode(['filters' => [$filter->toArray()]]),
+                    'application/json'
                 )->post($urlString);
-    
+
                 $filterBuckets = isset($response->json()['filters'][0]) ?
                     $response->json()['filters'][0] : [];
                 if (isset($filterBuckets[$filter['type']][$filter['keys']])) {
@@ -177,7 +180,7 @@ class FilterController extends Controller
                 } else {
                     $filter['buckets'] = [];
                 }
-                
+
                 Auditor::log([
                     'action_type' => 'GET',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
@@ -189,7 +192,7 @@ class FilterController extends Controller
                     'data' => $filter,
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
@@ -363,7 +366,7 @@ class FilterController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-    
+
             throw new Exception($e->getMessage());
         }
     }

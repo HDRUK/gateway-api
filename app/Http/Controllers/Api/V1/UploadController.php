@@ -12,7 +12,6 @@ use App\Models\Upload;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 class UploadController extends Controller
@@ -67,13 +66,15 @@ class UploadController extends Controller
             $elasticIndexing = $request->boolean('elastic_indexing', true);
             $datasetId = $request->query('dataset_id', null);
             $collectionId = $request->query('collection_id', null);
-            
+
             // store unscanned
             $storedFilename = time() . '_' . $file->getClientOriginalName();
             $filePath = $file->storeAs(
-                '', $storedFilename, $fileSystem . '.unscanned'
+                '',
+                $storedFilename,
+                $fileSystem . '.unscanned'
             );
-            
+
             // write to uploads
             $upload = Upload::create([
                 'filename' => $file->getClientOriginalName(),
@@ -84,10 +85,10 @@ class UploadController extends Controller
 
             // spawn scan job
             ScanFileUpload::dispatch(
-                (int)$upload->id, 
-                $fileSystem, 
-                $entityFlag, 
-                (int)$jwtUser['id'], 
+                (int)$upload->id,
+                $fileSystem,
+                $entityFlag,
+                (int)$jwtUser['id'],
                 (int)$teamId,
                 $inputSchema,
                 $inputVersion,
@@ -173,7 +174,7 @@ class UploadController extends Controller
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
-            ]); 
+            ]);
 
             throw new Exception($e->getMessage());
         }
@@ -224,7 +225,7 @@ class UploadController extends Controller
                 return response()->json([
                     'message' => 'File scan is pending'
                 ]);
-            } else if ($upload->status === 'FAILED') {
+            } elseif ($upload->status === 'FAILED') {
                 Auditor::log([
                     'action_type' => 'GET',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
@@ -236,7 +237,7 @@ class UploadController extends Controller
             } else {
                 $contents = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
                     ->get($upload->file_location);
-                    
+
                 Auditor::log([
                     'action_type' => 'GET',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,

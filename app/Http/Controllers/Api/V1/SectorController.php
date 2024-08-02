@@ -139,7 +139,7 @@ class SectorController extends Controller
                     'data' => $sector,
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
@@ -457,7 +457,7 @@ class SectorController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-    
+
             $sector = Sector::findOrFail($id);
             if ($sector) {
                 $sector->enabled = false;
@@ -473,12 +473,12 @@ class SectorController extends Controller
                         'message' => Config::get('statuscodes.STATUS_OK.message'),
                     ], Config::get('statuscodes.STATUS_OK.code'));
                 }
-    
+
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
                 ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
             }
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));

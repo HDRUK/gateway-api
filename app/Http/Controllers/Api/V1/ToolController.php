@@ -28,7 +28,6 @@ use App\Models\CollectionHasTool;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tool\GetTool;
@@ -37,10 +36,9 @@ use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
 
-use MetadataManagementController AS MMC;
+use MetadataManagementController as MMC;
 
 use App\Http\Traits\RequestTransformation;
-
 
 class ToolController extends Controller
 {
@@ -154,7 +152,7 @@ class ToolController extends Controller
 
             // Get all field names from the Tool model
             $allFields = collect(Tool::first())->keys()->toArray();
-            
+
             // Validate sort field and direction
             if (!in_array($sortField, $allFields)) {
                 return response()->json([
@@ -165,7 +163,7 @@ class ToolController extends Controller
             $validDirections = ['desc', 'asc'];
             if (!in_array($sortDirection, $validDirections)) {
                 return response()->json([
-                    "message" => 'Sort direction must be either: ' . implode(' OR ', $validDirections) . 
+                    "message" => 'Sort direction must be either: ' . implode(' OR ', $validDirections) .
                         '. Not "' . $sortDirection . '"'
                 ], 400);
             }
@@ -189,15 +187,18 @@ class ToolController extends Controller
             ->when($userId, function ($query) use ($userId) {
                 return $query->where('user_id', '=', $userId);
             })
-            ->when($filterStatus, 
+            ->when(
+                $filterStatus,
                 function ($query) use ($filterStatus) {
                     return $query->where('status', '=', $filterStatus)
-                        ->when($filterStatus === Tool::STATUS_ARCHIVED, 
-                                    function ($query) {
-                                        return $query->withTrashed();
-                                    }
-                                );
-                })
+                        ->when(
+                            $filterStatus === Tool::STATUS_ARCHIVED,
+                            function ($query) {
+                                return $query->withTrashed();
+                            }
+                        );
+                }
+            )
             ->when($filterTitle, function ($query) use ($filterTitle) {
                 return $query->where('name', 'like', '%' . $filterTitle . '%');
             })
@@ -276,7 +277,7 @@ class ToolController extends Controller
     public function count(Request $request, string $field): JsonResponse
     {
         try {
-            $teamId = $request->query('team_id',null);
+            $teamId = $request->query('team_id', null);
             $counts = Tool::when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
             })->withTrashed()
@@ -445,16 +446,16 @@ class ToolController extends Controller
 
         try {
             $arrayKeys = [
-                'mongo_object_id', 
-                'name', 
-                'url', 
-                'description', 
-                'license', 
-                'tech_stack', 
-                'category_id', 
+                'mongo_object_id',
+                'name',
+                'url',
+                'description',
+                'license',
+                'tech_stack',
+                'category_id',
                 'user_id',
                 'enabled',
-                'team_id', 
+                'team_id',
                 'mongo_id',
                 'associated_authors',
                 'contact_address',
@@ -491,10 +492,10 @@ class ToolController extends Controller
             $this->checkCollections($toolId, $collections, (int)$jwtUser['id']);
 
             $currentTool = Tool::where('id', $toolId)->first();
-            if($currentTool->status === Tool::STATUS_ACTIVE){
+            if($currentTool->status === Tool::STATUS_ACTIVE) {
                 $this->indexElasticTools((int) $toolId);
             }
-            
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
@@ -612,18 +613,18 @@ class ToolController extends Controller
             }
 
             $arrayKeys = [
-                'mongo_object_id', 
-                'name', 
-                'url', 
-                'description', 
-                'license', 
-                'tech_stack', 
-                'category_id', 
+                'mongo_object_id',
+                'name',
+                'url',
+                'description',
+                'license',
+                'tech_stack',
+                'category_id',
                 'user_id',
                 'enabled',
-                'team_id', 
+                'team_id',
                 'mongo_id',
-                'associated_authors', 
+                'associated_authors',
                 'contact_address',
                 'any_dataset',
                 'status',
@@ -833,7 +834,7 @@ class ToolController extends Controller
                 'enabled',
                 'team_id',
                 'mongo_id',
-                'associated_authors', 
+                'associated_authors',
                 'contact_address',
                 'any_dataset',
                 'status',
@@ -885,9 +886,9 @@ class ToolController extends Controller
                 $collections = $input['collections'];
                 $this->checkCollections($id, $collections, (int)$jwtUser['id']);
             }
-            
+
             $currentTool = Tool::where('id', $id)->first();
-            if($currentTool->status === Tool::STATUS_ACTIVE){
+            if($currentTool->status === Tool::STATUS_ACTIVE) {
                 $this->indexElasticTools($id);
             }
 
@@ -982,7 +983,7 @@ class ToolController extends Controller
                 PublicationHasTool::where('tool_id', $id)->delete();
                 DurHasTool::where('tool_id', $id)->delete();
                 CollectionHasTool::where('tool_id', $id)->delete();
-                
+
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'DELETE',
@@ -1011,7 +1012,7 @@ class ToolController extends Controller
     private function getToolById(int $toolId)
     {
         $tool = Tool::with([
-            'user', 
+            'user',
             'tag',
             'team',
             'license',
@@ -1075,7 +1076,7 @@ class ToolController extends Controller
             foreach ($datasetIds as $value) {
                 if (is_array($value)) {
                     $datasetVersionIDs = DatasetVersion::where('dataset_id', $value['id'])->pluck('id')->all();
-    
+
                     foreach ($datasetVersionIDs as $datasetVersionID) {
                         DatasetVersionHasTool::withTrashed()->updateOrCreate([
                             'tool_id' => $toolId,
@@ -1086,7 +1087,7 @@ class ToolController extends Controller
                     }
                 } else {
                     $datasetVersionIDs = DatasetVersion::where('dataset_id', $value)->pluck('id')->all();
-    
+
                     foreach ($datasetVersionIDs as $datasetVersionID) {
                         DatasetVersionHasTool::withTrashed()->updateOrCreate([
                             'tool_id' => $toolId,
@@ -1225,7 +1226,7 @@ class ToolController extends Controller
     }
 
     // publications
-    private function checkPublications(int $toolId, array $inPublications, int $userId = null) 
+    private function checkPublications(int $toolId, array $inPublications, int $userId = null)
     {
         $pubs = PublicationHasTool::where(['tool_id' => $toolId])->get();
         foreach ($pubs as $pub) {
@@ -1321,7 +1322,7 @@ class ToolController extends Controller
     }
 
     // collections
-    private function checkCollections(int $toolId, array $inCollections, int $userId = null) 
+    private function checkCollections(int $toolId, array $inCollections, int $userId = null)
     {
         $colls = CollectionHasTool::where(['tool_id' => $toolId])->get();
         foreach ($colls as $coll) {
@@ -1416,7 +1417,7 @@ class ToolController extends Controller
         }
     }
 
-    private function extractInputIdToArray(array $input): Array
+    private function extractInputIdToArray(array $input): array
     {
         $response = [];
         foreach ($input as $value) {
@@ -1425,14 +1426,14 @@ class ToolController extends Controller
 
         return $response;
     }
-    
+
     /**
      * Insert tool document into elastic index
      *
      * @param integer $toolId
      * @return void
      */
-    public function indexElasticTools(int $toolId): void 
+    public function indexElasticTools(int $toolId): void
     {
         try {
             $tool = Tool::where('id', $toolId)

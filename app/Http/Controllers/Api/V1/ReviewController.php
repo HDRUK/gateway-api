@@ -40,9 +40,9 @@ class ReviewController extends Controller
      *        @OA\JsonContent(
      *           @OA\Property(property="message", type="string", example="success"),
      *           @OA\Property(
-     *               property="data", 
+     *               property="data",
      *               type="array",
-     *               @OA\Items(type="object", 
+     *               @OA\Items(type="object",
      *                  @OA\Property(property="id", type="integer", example="1"),
      *                  @OA\Property(property="tool_id", type="integer", example="1"),
      *                  @OA\Property(property="user_id", type="integer", example="1"),
@@ -52,7 +52,7 @@ class ReviewController extends Controller
      *                  @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
      *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                  @OA\Property(property="tool", type="object", 
+     *                  @OA\Property(property="tool", type="object",
      *                     @OA\Property(property="id", type="integer", example="1"),
      *                     @OA\Property(property="mongo_object_id", type="string", example="ce37b00y7eiux03cca09pr0u"),
      *                     @OA\Property(property="name", type="string", example="Vel id iure aut qui quia rerum."),
@@ -66,7 +66,7 @@ class ReviewController extends Controller
      *                     @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
      *                     @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
      *                  ),
-     *                  @OA\Property(property="user", type="object", 
+     *                  @OA\Property(property="user", type="object",
      *                     @OA\Property(property="id", type="integer", example="1"),
      *                     @OA\Property(property="name", type="string", example="Rocio Mayer"),
      *                     @OA\Property(property="firstname", type="string", example="something or null"),
@@ -136,9 +136,9 @@ class ReviewController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
-     *             property="data", 
+     *             property="data",
      *             type="array",
-     *             @OA\Items(type="object", 
+     *             @OA\Items(type="object",
      *                @OA\Property(property="id", type="integer", example="1"),
      *                @OA\Property(property="tool_id", type="integer", example="1"),
      *                @OA\Property(property="user_id", type="integer", example="1"),
@@ -148,7 +148,7 @@ class ReviewController extends Controller
      *                @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
      *                @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                @OA\Property(property="tool", type="object", 
+     *                @OA\Property(property="tool", type="object",
      *                   @OA\Property(property="id", type="integer", example="1"),
      *                   @OA\Property(property="mongo_object_id", type="string", example="ce37b00y7eiux03cca09pr0u"),
      *                   @OA\Property(property="name", type="string", example="Vel id iure aut qui quia rerum."),
@@ -162,7 +162,7 @@ class ReviewController extends Controller
      *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
      *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
      *                ),
-     *                @OA\Property(property="user", type="object", 
+     *                @OA\Property(property="user", type="object",
      *                   @OA\Property(property="id", type="integer", example="1"),
      *                   @OA\Property(property="name", type="string", example="Rocio Mayer"),
      *                   @OA\Property(property="firstname", type="string", example="something or null"),
@@ -277,7 +277,7 @@ class ReviewController extends Controller
      *       )
      *    )
      * )
-     * 
+     *
      * Create a new review
      *
      * @param CreateReview $request
@@ -600,7 +600,7 @@ class ReviewController extends Controller
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Review ' . $id . ' deleted',
                 ]);
-    
+
                 return response()->json([
                     'message' => 'success',
                 ], 200);

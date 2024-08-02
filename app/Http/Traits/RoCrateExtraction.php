@@ -4,7 +4,8 @@ namespace App\Http\Traits;
 
 trait RoCrateExtraction
 {
-    public function extractDurDetails(array $ro_crate) {
+    public function extractDurDetails(array $ro_crate)
+    {
 
         // Convert $ro_crate @graph entry to associative array with keys from @id fields.
         $graphArray = [];
@@ -30,20 +31,17 @@ trait RoCrateExtraction
             // (not guaranteed by 5 Safes RO-Crate spec at this time)
             if (isset($graphArray[$sourceOrganization]['description'])) {
                 $lay_summary = $graphArray[$sourceOrganization]['description'];
-            }
-            else {
+            } else {
                 $lay_summary = 'Not provided';
             }
 
-            // public_benefit_statement = Dataset.sourceOrganization -> Project.publishingPrinciples -> CreativeWork.text 
+            // public_benefit_statement = Dataset.sourceOrganization -> Project.publishingPrinciples -> CreativeWork.text
             // (not guaranteed by 5 Safes RO-Crate spec at this time)
-            if (isset($graphArray[$sourceOrganization]['publishingPrinciples']) && 
+            if (isset($graphArray[$sourceOrganization]['publishingPrinciples']) &&
                 isset($graphArray[$graphArray[$sourceOrganization]['publishingPrinciples']['@id']]) &&
                 isset($graphArray[$graphArray[$graphArray[$sourceOrganization]['publishingPrinciples']['@id']]]['text'])) {
-                    $public_benefit_statement = $graphArray[$graphArray[$graphArray[$sourceOrganization]['publishingPrinciples']['@id']]]['text'];
-            }
-            else
-            {
+                $public_benefit_statement = $graphArray[$graphArray[$graphArray[$sourceOrganization]['publishingPrinciples']['@id']]]['text'];
+            } else {
                 $public_benefit_statement = 'Not provided';
             }
 
@@ -63,10 +61,10 @@ trait RoCrateExtraction
         if (isset($graphArray[$mentions]) && $graphArray[$mentions]['@type'] === 'CreateAction') {
             $createAction_agent_id = $graphArray[$mentions]['agent']['@id'];
             $agent = $graphArray[$createAction_agent_id];
-            
+
             $affiliation_id = $graphArray[$createAction_agent_id]['affiliation']['@id'];
             $affiliation = $graphArray[$affiliation_id];
-            
+
             $organization_name = $affiliation['name'];
         }
 

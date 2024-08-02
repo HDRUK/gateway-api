@@ -663,7 +663,7 @@ class DataProviderCollController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
-            
+
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -682,11 +682,11 @@ class DataProviderCollController extends Controller
      * @param integer $id
      * @return void
      */
-    private function indexElasticDataProviderColl(int $id): void 
+    private function indexElasticDataProviderColl(int $id): void
     {
         $provider = DataProviderColl::where('id', $id)->with('teams')->first();
 
-        
+
         $datasetTitles = array();
         $locations = array();
         foreach ($provider['teams'] as $team) {
@@ -722,7 +722,7 @@ class DataProviderCollController extends Controller
             $client->index($params);
 
         } catch (Exception $e) {
-            Auditor::log([  
+            Auditor::log([
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),

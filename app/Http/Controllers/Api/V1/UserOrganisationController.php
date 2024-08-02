@@ -9,11 +9,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Http;
 
 class UserOrganisationController extends Controller
 {
-
     /**
      * @OA\Get(
      *      path="/api/v1/users/organisations",
@@ -49,7 +47,7 @@ class UserOrganisationController extends Controller
                 $userIsCohortAdmin = in_array('hdruk.cohort.admin', $roleNames);
 
                 if ($userIsAdmin || $userIsCohortAdmin) {
-            
+
                     $organisations = User::select('organisation')
                         ->distinct()
                         ->pluck('organisation')

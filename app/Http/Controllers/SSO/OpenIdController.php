@@ -16,9 +16,9 @@ class OpenIdController extends Controller
         'ga4gh_passport_v1'
     ];
     protected $response_types_supported = [
-        'code id_token', 
-        'code ', 
-        'id_token', 
+        'code id_token',
+        'code ',
+        'id_token',
         'none'
     ];
     protected $grant_types_supported = [

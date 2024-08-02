@@ -23,7 +23,7 @@ use App\Exceptions\NotFoundException;
 use App\Http\Traits\IntegrationOverride;
 use App\Models\CollectionHasPublication;
 
-use MetadataManagementController AS MMC;
+use MetadataManagementController as MMC;
 
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\Collection\GetCollection;
@@ -36,7 +36,9 @@ use App\Http\Requests\Collection\UpdateCollection;
 
 class IntegrationCollectionController extends Controller
 {
-    use RequestTransformation, IntegrationOverride, IntegrationOverride;
+    use RequestTransformation;
+    use IntegrationOverride;
+    use IntegrationOverride;
 
     /**
      * @OA\Get(
@@ -148,11 +150,11 @@ class IntegrationCollectionController extends Controller
                     $applicationTools,
                     $applicationDatasets,
                     $applicationPublications,
-                    $collection->userDatasets, 
-                    $collection->userTools, 
-                    $collection->userPublications, 
-                    $collection->applicationDatasets, 
-                    $collection->applicationTools, 
+                    $collection->userDatasets,
+                    $collection->userTools,
+                    $collection->userPublications,
+                    $collection->applicationDatasets,
+                    $collection->applicationTools,
                     $collection->applicationPublications
                 );
 
@@ -163,12 +165,12 @@ class IntegrationCollectionController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Collection get all',
             ]);
-            
+
             return response()->json(
                 $collections
             );
@@ -253,7 +255,7 @@ class IntegrationCollectionController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Collection get ' . $id,
@@ -275,7 +277,7 @@ class IntegrationCollectionController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            
+
             throw new Exception($e->getMessage());
         }
     }
@@ -348,15 +350,15 @@ class IntegrationCollectionController extends Controller
                 $app = Application::where(['id' => $appId])->first();
                 $userId = (int) $app->user_id;
             }
- 
+
             $arrayKeys = [
-                'name', 
-                'description', 
-                'image_link', 
-                'enabled', 
-                'public', 
-                'counter', 
-                'mongo_object_id', 
+                'name',
+                'description',
+                'image_link',
+                'enabled',
+                'public',
+                'counter',
+                'mongo_object_id',
                 'mongo_id',
                 'team_id',
             ];
@@ -364,7 +366,7 @@ class IntegrationCollectionController extends Controller
 
             $collection = Collection::create($array);
             $collectionId = (int) $collection->id;
-            
+
             $array['user_id'] = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
@@ -402,7 +404,7 @@ class IntegrationCollectionController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Collection ' . $collectionId . ' created',
@@ -528,13 +530,13 @@ class IntegrationCollectionController extends Controller
             }
 
             $arrayKeys = [
-                'name', 
-                'description', 
-                'image_link', 
-                'enabled', 
-                'public', 
-                'counter', 
-                'mongo_object_id', 
+                'name',
+                'description',
+                'image_link',
+                'enabled',
+                'public',
+                'counter',
+                'mongo_object_id',
                 'mongo_id',
                 'team_id',
             ];
@@ -687,7 +689,7 @@ class IntegrationCollectionController extends Controller
     public function edit(EditCollection $request, int $id): JsonResponse
     {
         $input = $request->all();
-    
+
         try {
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
@@ -702,13 +704,13 @@ class IntegrationCollectionController extends Controller
             }
 
             $arrayKeys = [
-                'name', 
-                'description', 
-                'image_link', 
-                'enabled', 
-                'public', 
-                'counter', 
-                'mongo_object_id', 
+                'name',
+                'description',
+                'image_link',
+                'enabled',
+                'public',
+                'counter',
+                'mongo_object_id',
                 'mongo_id',
                 'team_id',
             ];
@@ -866,7 +868,7 @@ class IntegrationCollectionController extends Controller
     }
 
     // datasets
-    private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null, int $appId = null) 
+    private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null, int $appId = null)
     {
         $cols = CollectionHasDatasetVersion::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
@@ -877,9 +879,9 @@ class IntegrationCollectionController extends Controller
         }
 
         foreach ($inDatasets as $dataset) {
-            $datasetVersionId=Dataset::where('id',(int) $dataset['id'])->first()->latestVersion()->id;
+            $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
             $checking = $this->checkInCollectionHasDatasetVersions($collectionId, $datasetVersionId);
-        
+
             if (!$checking) {
                 $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId, $appId);
                 MMC::reindexElastic($dataset['id']);
@@ -970,7 +972,7 @@ class IntegrationCollectionController extends Controller
     }
 
     // tools
-    private function checkTools(int $collectionId, array $inTools, int $userId = null, int $appId = null) 
+    private function checkTools(int $collectionId, array $inTools, int $userId = null, int $appId = null)
     {
         $cols = CollectionHasTool::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
@@ -1070,7 +1072,7 @@ class IntegrationCollectionController extends Controller
     }
 
     // durs
-    private function checkDurs(int $collectionId, array $inDurs, int $userId = null, int $appId = null) 
+    private function checkDurs(int $collectionId, array $inDurs, int $userId = null, int $appId = null)
     {
         $cols = CollectionHasDur::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
@@ -1140,7 +1142,7 @@ class IntegrationCollectionController extends Controller
     }
 
     // publications
-    private function checkPublications(int $collectionId, array $inPublications, int $userId = null, int $appId = null) 
+    private function checkPublications(int $collectionId, array $inPublications, int $userId = null, int $appId = null)
     {
         $cols = CollectionHasPublication::where([
             'collection_id' => $collectionId
@@ -1255,7 +1257,9 @@ class IntegrationCollectionController extends Controller
                 continue;
             }
 
-            if (in_array($checkKeyword->name, $inKeywords)) continue;
+            if (in_array($checkKeyword->name, $inKeywords)) {
+                continue;
+            }
 
             if (!in_array($checkKeyword->name, $inKeywords)) {
                 $this->deleteCollectionHasKeywords($kwId);
@@ -1291,7 +1295,7 @@ class IntegrationCollectionController extends Controller
         try {
             return Keyword::updateOrCreate([
                 'name' => $keyword,
-            ],[
+            ], [
                 'name' => $keyword,
                 'enabled' => 1,
             ]);
@@ -1304,7 +1308,7 @@ class IntegrationCollectionController extends Controller
 
             throw new Exception('createUpdateKeyword :: ' . $e->getMessage());
         }
-    } 
+    }
 
     private function deleteCollectionHasKeywords($keywordId)
     {
@@ -1317,7 +1321,7 @@ class IntegrationCollectionController extends Controller
         }
     }
 
-    private function extractInputIdToArray(array $input): Array
+    private function extractInputIdToArray(array $input): array
     {
         $response = [];
         foreach ($input as $value) {
@@ -1327,13 +1331,13 @@ class IntegrationCollectionController extends Controller
         return $response;
     }
 
-        /**
+    /**
      * Insert collection document into elastic index
      *
      * @param integer $collectionId
      * @return void
      */
-    private function indexElasticCollections(int $collectionId): void 
+    private function indexElasticCollections(int $collectionId): void
     {
         $collection = Collection::with([
             'team',
@@ -1399,18 +1403,18 @@ class IntegrationCollectionController extends Controller
         $collection = Collection::where(['id' => $collectionId])
         ->with([
             'keywords',
-            'tools', 
+            'tools',
             'dur',
             'publications',
-            'userDatasets', 
-            'userTools', 
+            'userDatasets',
+            'userTools',
             'userPublications',
             'applicationDatasets',
             'applicationTools',
             'applicationPublications',
             'team',
         ])->first();
-        
+
         // Set the datasets attribute with the latest datasets
         $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
 
@@ -1435,11 +1439,11 @@ class IntegrationCollectionController extends Controller
             $applicationTools,
             $applicationDatasets,
             $applicationPublications,
-            $collection->userDatasets, 
-            $collection->userTools, 
-            $collection->userPublications, 
-            $collection->applicationDatasets, 
-            $collection->applicationTools, 
+            $collection->userDatasets,
+            $collection->userTools,
+            $collection->userPublications,
+            $collection->applicationDatasets,
+            $collection->applicationTools,
             $collection->applicationPublications
         );
 

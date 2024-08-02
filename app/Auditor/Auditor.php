@@ -4,17 +4,16 @@ namespace App\Auditor;
 
 use Config;
 use Exception;
-use App\Models\AuditLog;
 use App\Jobs\AuditLogJob;
 use App\Http\Traits\RequestTransformation;
 
-class Auditor {
-
+class Auditor
+{
     use RequestTransformation;
 
     /**
      * Logs an action to the audit trail
-     * 
+     *
      * @param array $log
      * @return bool
      */
@@ -38,8 +37,8 @@ class Auditor {
             if (Config::get('services.googlepubsub.enabled')) {
                 AuditLogJob::dispatchSync($data);
             }
-    
-            return true;        
+
+            return true;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

@@ -3,17 +3,13 @@
 namespace Database\Seeders;
 
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use Carbon\Carbon;
 use App\Models\Dur;
-use App\Models\DurHasDatasetVersion;
 use App\Models\DurHasKeyword;
-use App\Models\DurHasUser;
 use App\Models\Keyword;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DurSeeder extends Seeder
 {
@@ -127,11 +123,11 @@ class DurSeeder extends Seeder
         ];
         $organisationId = [
             'grid.10025.36',
-            'grid.10223.32', 
+            'grid.10223.32',
             'grid.10306.34',
-            'grid.10586.3a', 
+            'grid.10586.3a',
             'grid.11201.33',
-            'grid.120073.7', 
+            'grid.120073.7',
             'grid.239585.0',
         ];
         $requestCategoryType = [

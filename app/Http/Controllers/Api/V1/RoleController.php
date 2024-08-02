@@ -22,7 +22,7 @@ use Illuminate\Http\Request;
 class RoleController extends Controller
 {
     use RequestTransformation;
-    
+
     public function __construct()
     {
         //
@@ -42,16 +42,16 @@ class RoleController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
-     *             property="data", 
+     *             property="data",
      *             type="array",
-     *             @OA\Items(type="object", 
+     *             @OA\Items(type="object",
      *                @OA\Property(property="id", type="integer", example="1"),
      *                @OA\Property(property="name", type="string", example="custodian.team.admin"),
      *                @OA\Property(property="full_name", type="string", example="TEAM ADMIN"),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                @OA\Property(property="permissions", type="object", 
+     *                @OA\Property(property="permissions", type="object",
      *                   @OA\Property(property="id", type="integer", example="1"),
      *                   @OA\Property(property="role", type="string", example="applications.read"),
      *                   @OA\Property(property="allowed_from_apps", type="integer", example="1"),
@@ -118,16 +118,16 @@ class RoleController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
-     *             property="data", 
+     *             property="data",
      *             type="array",
-     *             @OA\Items(type="object", 
+     *             @OA\Items(type="object",
      *                @OA\Property(property="id", type="integer", example="1"),
      *                @OA\Property(property="name", type="string", example="custodian.team.admin"),
      *                @OA\Property(property="full_name", type="string", example="TEAM ADMIN"),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                @OA\Property(property="permissions", type="object", 
+     *                @OA\Property(property="permissions", type="object",
      *                   @OA\Property(property="id", type="integer", example="1"),
      *                   @OA\Property(property="role", type="string", example="applications.read"),
      *                   @OA\Property(property="allowed_from_apps", type="integer", example="1"),
@@ -205,7 +205,7 @@ class RoleController extends Controller
      *             @OA\Property( property="name", type="string", example="this.is.a.new.role" ),
      *             @OA\Property( property="full_name", type="string", example="TEAM ADMIN" ),
      *             @OA\Property( property="enabled", type="boolean", example="true" ),
-     *             @OA\Property( property="permissions", type="array",   
+     *             @OA\Property( property="permissions", type="array",
      *                @OA\Items(
      *                   type="string",
      *                   example="create",
@@ -254,7 +254,7 @@ class RoleController extends Controller
             $role = Role::create([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
-                'full_name' => array_key_exists('full_name', $input) ? $input['full_name'] : NULL,
+                'full_name' => array_key_exists('full_name', $input) ? $input['full_name'] : null,
             ]);
 
             $roleId = $role->id;
@@ -320,7 +320,7 @@ class RoleController extends Controller
      *             @OA\Property( property="name", type="string", example="this.is.a.new.role" ),
      *             @OA\Property( property="full_name", type="string", example="TEAM ADMIN" ),
      *             @OA\Property( property="enabled", type="boolean", example="true" ),
-     *             @OA\Property( property="permissions", type="array",   
+     *             @OA\Property( property="permissions", type="array",
      *                @OA\Items(
      *                   type="string",
      *                   example="create",
@@ -342,16 +342,16 @@ class RoleController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
-     *             property="data", 
+     *             property="data",
      *             type="array",
-     *             @OA\Items(type="object", 
+     *             @OA\Items(type="object",
      *                @OA\Property(property="id", type="integer", example="1"),
      *                @OA\Property(property="name", type="string", example="hdruk.superadmin"),
      *                @OA\Property(property="full_name", type="string", example="TEAM ADMIN"),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                @OA\Property(property="permissions", type="object", 
+     *                @OA\Property(property="permissions", type="object",
      *                   @OA\Property(property="id", type="integer", example="1"),
      *                   @OA\Property(property="role", type="string", example="applications.read"),
      *                   @OA\Property(property="allowed_from_apps", type="integer", example="1"),
@@ -379,7 +379,7 @@ class RoleController extends Controller
             $role = Role::where('id', $id)->update([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
-                'full_name' => array_key_exists('full_name', $input) ? $input['full_name'] : NULL,
+                'full_name' => array_key_exists('full_name', $input) ? $input['full_name'] : null,
             ]);
 
             RoleHasPermission::where('role_id', $id)->delete();
@@ -445,7 +445,7 @@ class RoleController extends Controller
      *             @OA\Property( property="name", type="string", example="this.is.a.new.role" ),
      *             @OA\Property( property="full_name", type="string", example="TEAM ADMIN" ),
      *             @OA\Property( property="enabled", type="boolean", example="true" ),
-     *             @OA\Property( property="permissions", type="array",   
+     *             @OA\Property( property="permissions", type="array",
      *                @OA\Items(
      *                   type="string",
      *                   example="create",
@@ -467,16 +467,16 @@ class RoleController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
-     *             property="data", 
+     *             property="data",
      *             type="array",
-     *             @OA\Items(type="object", 
+     *             @OA\Items(type="object",
      *                @OA\Property(property="id", type="integer", example="1"),
      *                @OA\Property(property="name", type="string", example="custodian.team.admin"),
      *                @OA\Property(property="full_name", type="string", example="TEAM ADMIN"),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                @OA\Property(property="permissions", type="object", 
+     *                @OA\Property(property="permissions", type="object",
      *                   @OA\Property(property="id", type="integer", example="1"),
      *                   @OA\Property(property="role", type="string", example="applications.read"),
      *                   @OA\Property(property="allowed_from_apps", type="integer", example="1"),
@@ -501,11 +501,11 @@ class RoleController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-           $arrayKeys = [
-                'name',
-                'enabled',
-                'full_name',
-            ];
+            $arrayKeys = [
+                 'name',
+                 'enabled',
+                 'full_name',
+             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
 

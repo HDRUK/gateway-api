@@ -19,7 +19,7 @@ use App\Http\Requests\Feature\UpdateFeature;
 class FeatureController extends Controller
 {
     use RequestTransformation;
-    
+
     /**
      * @OA\Get(
      *    path="/api/v1/features",
@@ -49,7 +49,7 @@ class FeatureController extends Controller
     {
         try {
             $features = Feature::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
-    
+
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
@@ -128,14 +128,14 @@ class FeatureController extends Controller
                 'id' =>  $id,
                 'enabled' => 1,
             ])->get();
-    
+
             if ($features->count()) {
                 return response()->json([
                     'message' => 'success',
                     'data' => $features,
                 ], 200);
             }
-    
+
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,

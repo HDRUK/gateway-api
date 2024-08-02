@@ -19,7 +19,7 @@ class FilterTest extends TestCase
 
     private $accessToken = '';
 
-    public function setUp() :void
+    public function setUp(): void
     {
         $this->commonSetUp();
 
@@ -28,7 +28,7 @@ class FilterTest extends TestCase
             MinimalUserSeeder::class,
             FilterSeeder::class,
             ]
-        );  
+        );
     }
 
     /**
@@ -37,7 +37,7 @@ class FilterTest extends TestCase
      * @return void
      */
     public function test_the_application_can_list_filters()
-    { 
+    {
         $response = $this->get('api/v1/filters', [], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -65,13 +65,13 @@ class FilterTest extends TestCase
                 'per_page',
                 'prev_page_url',
                 'to',
-                'total',                
+                'total',
             ]);
     }
 
     /**
      * Returns a single filter
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_list_a_single_filter()
@@ -114,7 +114,7 @@ class FilterTest extends TestCase
 
     /**
      * Creates a new filter
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_create_a_filter()
@@ -137,14 +137,15 @@ class FilterTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
     }
 
     /**
      * Tests that a filter record can be updated
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_update_a_filter()
@@ -169,11 +170,12 @@ class FilterTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        // Finally, update the last entered filter to 
+        // Finally, update the last entered filter to
         // prove functionality
         $response = $this->json(
             'PUT',
@@ -200,7 +202,7 @@ class FilterTest extends TestCase
 
     /**
      * Tests that a filter record can be edited
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_edit_a_filter()
@@ -293,7 +295,7 @@ class FilterTest extends TestCase
 
     /**
      * Tests it can delete a filter
-     * 
+     *
      * @return void
      */
     public function test_it_can_delete_a_filter()
@@ -318,12 +320,13 @@ class FilterTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        // Finally, update the last entered filter to 
-        // prove functionality        
+        // Finally, update the last entered filter to
+        // prove functionality
         $response = $this->json(
             'DELETE',
             'api/v1/filters/' . $content['data'],
@@ -335,10 +338,11 @@ class FilterTest extends TestCase
             ->assertJsonStructure([
                 'message',
             ]);
-    
+
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_OK.message')
         );
     }

@@ -6,7 +6,6 @@ use Config;
 use Auditor;
 use Exception;
 use App\Exceptions\MMCException;
-use App\Models\Filter;
 use App\Models\Dataset;
 use App\Models\DataProviderColl;
 use App\Models\DataProviderCollHasTeam;
@@ -14,38 +13,37 @@ use App\Models\DatasetVersion;
 use App\Models\Team;
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
-use Http\Client\HttpClient;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
-class MetadataManagementController {
-
+class MetadataManagementController
+{
     /**
      * Configures and builds the client used to reindex ElasticSearch
      * Note: this client is defined here in the MMC facade, making it convenient
      * to mock during testing
-     * 
+     *
      * @return Client
      */
-    public function getElasticClient() {
+    public function getElasticClient()
+    {
         return ClientBuilder::create()
             ->setHosts(config('database.connections.elasticsearch.hosts'))
             ->setSSLVerification(env('ELASTICSEARCH_VERIFY_SSL'))
             ->setBasicAuthentication(env('ELASTICSEARCH_USER'), env('ELASTICSEARCH_PASS'))
             ->build();
     }
-    
+
     /**
-     * Translates an incoming dataset payload via TRASER 
+     * Translates an incoming dataset payload via TRASER
      * from $inputSchema and $inputVersion to $outputSchema and
      * $outputVersion
-     * 
+     *
      * @param string $dataset The incoming dataset to validate
-     * 
+     *
      * @return array
      */
     public function translateDataModelType(
@@ -56,10 +54,9 @@ class MetadataManagementController {
         string $inputVersion = null,
         bool $validateInput = true,
         bool $validateOutput = true,
-        ): array
-    {
+    ): array {
         try {
-            
+
             $queryParams = [
                 'output_schema' => $outputSchema,
                 'output_version' => $outputVersion,
@@ -80,20 +77,20 @@ class MetadataManagementController {
             // ::withBody is an old school call that does *exactly*
             // the same thing, but for some reason, this works
             // whereas ::post does not?!
-            // 
+            //
             // TODO: Needs further investigation. Enigma alert.
             $response = Http::withBody(
-                $dataset, 'application/json'
+                $dataset,
+                'application/json'
             )->post($urlString);
 
             $wasTranslated =  $response->status() === 200;
             $metadata = null;
             $message = null;
-            if($wasTranslated){
+            if($wasTranslated) {
                 $metadata = $response->json();
                 $message = 'translation successful';
-            }
-            else{
+            } else {
                 $message = $response->json();
             }
 
@@ -112,17 +109,18 @@ class MetadataManagementController {
     /**
      * Attempts to validate that the passed $dataset is in
      * GWDM format
-     * 
+     *
      * @param string $dataset The incoming dataset to validate
      * @param string $input_schema The schema to validate against
      * @param string $input_version The schema version to validate against
-     * 
+     *
      * @return bool
      */
     public function validateDataModelType(string $dataset, string $input_schema, string $input_version): bool
     {
         try {
-            $urlString = sprintf('%s/validate?input_schema=%s&input_version=%s',
+            $urlString = sprintf(
+                '%s/validate?input_schema=%s&input_version=%s',
                 env('TRASER_SERVICE_URL', 'http://localhost:8002'),
                 $input_schema,
                 $input_version
@@ -137,10 +135,11 @@ class MetadataManagementController {
             // ::withBody is an old school call that does *exactly*
             // the same thing, but for some reason, this works
             // whereas ::post does not?!.
-            // 
+            //
             // TODO: Needs further investigation. Enigma alert.
             $response = Http::withBody(
-                $dataset, 'application/json'
+                $dataset,
+                'application/json'
             )->post($urlString);
 
             return ($response->status() === 200);
@@ -151,10 +150,10 @@ class MetadataManagementController {
 
     /**
      * Creates an instance of a dataset record within the database
-     * 
+     *
      * @param array $input The array object that makes up the metadata
      *  to store
-     * 
+     *
      * @return Dataset
      */
     public function createDataset(array $input): Dataset
@@ -169,16 +168,16 @@ class MetadataManagementController {
 
     /**
      * (Soft) Deletes a dataset from the system by $id
-     * 
+     *
      * @param string $id The dataset to delete
-     * 
+     *
      * @return void
      */
     public function deleteDataset(string $id): void
     {
         try {
             $dataset = Dataset::with('versions')->where('id', (int)$id)->first();
-            if(!$dataset){
+            if(!$dataset) {
                 throw new Exception('Dataset with id=' . $id . ' cannot be found');
             }
             $dataset->deleted_at = Carbon::now();
@@ -196,9 +195,9 @@ class MetadataManagementController {
 
     /**
      * Calls a re-indexing of Elastic search when a dataset is created, updated or added to a collection.
-     * 
+     *
      * @param string $datasetId The dataset id from the DB.
-     * 
+     *
      * @return void
      */
     public function reindexElastic(string $datasetId): void
@@ -228,10 +227,10 @@ class MetadataManagementController {
                 'sampleAvailability' => $materialTypes,
                 'conformsTo' => explode(',', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
                 'hasTechnicalMetadata' => (bool) count($this->getValueByPossibleKeys($metadata, ['metadata.structuralMetadata'], [])),
-                'named_entities' =>  array_map(fn($entity) => $entity['name'], $datasetMatch->allNamedEntities),
-                'collectionName' => array_map(fn($collection) => $collection['name'], $datasetMatch->allCollections),
-                'dataUseTitles' => array_map(fn($dur) => $dur['project_title'], $datasetMatch->allDurs),
-                'geographicLocation' => array_map(fn($spatialCoverage) => $spatialCoverage['region'], $datasetMatch->allSpatialCoverages),
+                'named_entities' =>  array_map(fn ($entity) => $entity['name'], $datasetMatch->allNamedEntities),
+                'collectionName' => array_map(fn ($collection) => $collection['name'], $datasetMatch->allCollections),
+                'dataUseTitles' => array_map(fn ($dur) => $dur['project_title'], $datasetMatch->allDurs),
+                'geographicLocation' => array_map(fn ($spatialCoverage) => $spatialCoverage['region'], $datasetMatch->allSpatialCoverages),
                 'accessService' => $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.access.accessServiceCategory'], ''),
                 'dataProviderColl' => DataProviderColl::whereIn('id', DataProviderCollHasTeam::where('team_id', $datasetMatch->team_id)->pluck('data_provider_coll_id'))->pluck('name')->all(),
             ];
@@ -258,16 +257,16 @@ class MetadataManagementController {
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-    
+
             throw new Exception($e->getMessage());
         }
     }
 
     /**
      * Calls a re-indexing of Elastic search when a data procider id is given.
-     * 
+     *
      * @param string $teamId The team id from the DB.
-     * 
+     *
      * @return void
      */
     public function reindexElasticDataProvider(string $teamId): void
@@ -290,7 +289,7 @@ class MetadataManagementController {
                         $locations[] = $loc['region'];
                     }
                 }
-                
+
                 unset($metadata); // Only because it's potentially massive.
             }
             usort($datasetTitles, 'strcasecmp');
@@ -346,12 +345,12 @@ class MetadataManagementController {
     }
 
     /**
-     * Calls a delete on the document in ElasticSearch index when a dataset is 
+     * Calls a delete on the document in ElasticSearch index when a dataset is
      * deleted
-     * 
+     *
      * @param string $id The id of the dataset to be deleted
      * @param string $indexType index type: dataset, publication
-     * 
+     *
      * @return void
      */
     public function deleteFromElastic(string $id, string $indexType): void
@@ -363,7 +362,7 @@ class MetadataManagementController {
                 'id' => $id,
                 'headers' => 'application/json'
             ];
-            
+
             $client = $this->getElasticClient();
             $response = $client->delete($params);
 
@@ -393,25 +392,25 @@ class MetadataManagementController {
     public function getMaterialTypes(array $metadata): array|null
     {
         $materialTypes = null;
-        if(version_compare(Config::get('metadata.GWDM.version'),"2.0","<")){
+        if(version_compare(Config::get('metadata.GWDM.version'), "2.0", "<")) {
             $containsTissue = !empty($this->getValueByPossibleKeys($metadata, [
                 'metadata.coverage.biologicalsamples',
                 'metadata.coverage.physicalSampleAvailability',
             ], ''));
-        }
-        else{
+        } else {
             $tissues =  Arr::get($metadata, 'metadata.tissuesSampleCollection', null);
             if (!is_null($tissues)) {
                 $materialTypes = array_map(function ($item) {
                     return $item['materialType'];
                 }, $tissues);
-            } 
+            }
         }
         return $materialTypes;
     }
 
-    public function getContainsTissues(?array $materialTypes){
-        if($materialTypes === null){
+    public function getContainsTissues(?array $materialTypes)
+    {
+        if($materialTypes === null) {
             return false;
         }
         return count($materialTypes) > 0;

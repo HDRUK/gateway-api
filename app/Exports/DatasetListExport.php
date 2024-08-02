@@ -72,7 +72,7 @@ class DatasetListExport implements WithHeadings, FromCollection, WithMapping
                 $publisher = $this->getValueFromPath($item, 'metadata/metadata/summary/publisher/name');
             }
             $datasetType = $this->getValueFromPath($item, 'metadata/metadata/summary/datasetType');
-            
+
             $array[] = [
                 'title' => $title,
                 'abstract' => $abstract,
@@ -88,7 +88,7 @@ class DatasetListExport implements WithHeadings, FromCollection, WithMapping
         return $array;
     }
 
-    public function getValueFromPath(array $item, string $path) 
+    public function getValueFromPath(array $item, string $path)
     {
         $keys = explode('/', $path);
 
@@ -100,7 +100,7 @@ class DatasetListExport implements WithHeadings, FromCollection, WithMapping
                 return null;
             }
         }
-        
+
         return $return;
     }
 
@@ -114,7 +114,7 @@ class DatasetListExport implements WithHeadings, FromCollection, WithMapping
             $splitDate = explode('-', $start);
             return $splitDate[0];
         }
-        
+
         if (!$start && $stop) {
             $splitDate = explode('-', $stop);
             return $splitDate[0];

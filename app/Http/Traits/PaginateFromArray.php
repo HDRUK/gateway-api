@@ -21,10 +21,10 @@ trait PaginateFromArray
         $offset = ($currentPage - 1) * $noItemsPerPage;
         $currentPageItems = array_slice($searchArray, $offset, $noItemsPerPage, false);
         $paginatedItems = new LengthAwarePaginator(
-            $currentPageItems, 
-            count($searchArray), 
-            $noItemsPerPage, 
-            $currentPage, 
+            $currentPageItems,
+            count($searchArray),
+            $noItemsPerPage,
+            $currentPage,
             [
                 'path' => $request->url(),
                 'query' => $request->query(),

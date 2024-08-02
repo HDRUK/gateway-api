@@ -30,7 +30,7 @@ class RunPostMigrations extends Command
         $sleep = $this->argument('sleep');
         $commands = [
             [
-                'command' => 'app:add-super-admin-to-all-teams', 
+                'command' => 'app:add-super-admin-to-all-teams',
                 'arguments' => [],
             ],
             [
@@ -38,7 +38,7 @@ class RunPostMigrations extends Command
                 'arguments' => [
                     '--no-interaction' => true,
                 ],
-            ], 
+            ],
             // ['command' => 'app:sync-hubspot-contacts', 'arguments' => []], // What is this?
             //['command' => 'app:data-providers-post-migration', 'arguments' => []], // seed dataproviders
             [
@@ -112,11 +112,11 @@ class RunPostMigrations extends Command
                 ],
             ],
         ];
-        
+
         foreach ($commands as $commandInfo) {
             $this->call($commandInfo['command'], $commandInfo['arguments']);
         }
-        
+
         return 0;
     }
 }

@@ -24,7 +24,7 @@ use App\Http\Requests\Application\UpdateApplication;
 class ApplicationController extends Controller
 {
     use RequestTransformation;
-    
+
     public function __construct()
     {
         //
@@ -92,21 +92,21 @@ class ApplicationController extends Controller
 
         try {
             $applications = Application::getAll('user_id', $jwtUser)->with(['permissions','team','user','notifications']);
-    
-    
+
+
             $teamId = $request->query('team_id');
             if ($teamId !== null) {
-                $applications = $applications->where('team_id',(int)$teamId);
+                $applications = $applications->where('team_id', (int)$teamId);
             }
-            
+
             if ($request->has('status')) {
                 $applicationStatus = $request->query('status');
                 if ($applicationStatus === "1" || $applicationStatus === "0") {
                     $applications = $applications->where('enabled', (int) $applicationStatus);
                 }
             }
-            
-            $textTerms = $request->query('text',[]);
+
+            $textTerms = $request->query('text', []);
             if ($textTerms !== null) {
                 if (!is_array($textTerms)) {
                     $textTerms = [$textTerms];
@@ -118,14 +118,14 @@ class ApplicationController extends Controller
                     });
                 }
             }
-            
+
             $perPage = request('per_page', Config::get('constants.per_page'));
             $applications = $applications->paginate($perPage, ['*'], 'page');
-    
+
             $applications->getCollection()->each(function ($application) {
                 $application->makeHidden(['client_secret']);
             });
-    
+
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
@@ -134,7 +134,7 @@ class ApplicationController extends Controller
 
             return response()->json(
                 $applications
-            );    
+            );
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -291,9 +291,10 @@ class ApplicationController extends Controller
             // returned, increases security further still
             $appId = Str::random(40);
             $clientId = Str::random(40);
-            $clientSecret = Hash::make($appId . 
-                ':' . $clientId . 
-                ':' . env('APP_AUTH_PRIVATE_SALT') . 
+            $clientSecret = Hash::make(
+                $appId .
+                ':' . $clientId .
+                ':' . env('APP_AUTH_PRIVATE_SALT') .
                 ':' . env('APP_AUTH_PRIVATE_SALT_2')
             );
 
@@ -582,7 +583,7 @@ class ApplicationController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Application ' . $id . ' updated',
             ]);
- 
+
             return response()->json([
                 'message' => 'success',
                 'data' => $application

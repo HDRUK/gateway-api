@@ -16,14 +16,14 @@ class DatasetVersionHasSpatialCoverage extends Model
 
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'dataset_version_has_spatial_coverage';
 
     /**
      * Indicates if the model should be timestamped or not
-     * 
+     *
      * @var bool
      */
     public $timestamps = false;

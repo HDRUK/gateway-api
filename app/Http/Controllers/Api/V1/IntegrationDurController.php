@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-
 use Config;
 use Auditor;
 use Exception;
@@ -33,12 +32,13 @@ use App\Http\Requests\Dur\UpdateDur;
 
 use App\Exceptions\NotFoundException;
 use App\Http\Traits\IntegrationOverride;
-use MetadataManagementController AS MMC;
+use MetadataManagementController as MMC;
 use App\Http\Traits\RequestTransformation;
 
 class IntegrationDurController extends Controller
 {
-    use RequestTransformation, IntegrationOverride;
+    use RequestTransformation;
+    use IntegrationOverride;
 
     /**
      * @OA\Get(
@@ -154,8 +154,8 @@ class IntegrationDurController extends Controller
             $perPage = request('perPage', Config::get('constants.per_page'));
             $durs = Dur::where('enabled', 1)
                 ->with([
-                    'publications', 
-                    'tools', 
+                    'publications',
+                    'tools',
                     'keywords',
                     'userDatasets' => function ($query) {
                         $query->distinct('id');
@@ -177,7 +177,7 @@ class IntegrationDurController extends Controller
             foreach ($sort as $key => $value) {
                 $durs->orderBy('dur.' . $key, strtoupper($value));
             }
-            
+
             $durs = $durs->paginate((int) $perPage, ['*'], 'page')
                 ->through(function ($dur) {
                     if ($dur->datasets) {
@@ -481,7 +481,7 @@ class IntegrationDurController extends Controller
             }
 
             $arrayKeys = [
-                'non_gateway_datasets', 
+                'non_gateway_datasets',
                 'non_gateway_applicants',
                 'funders_and_sponsors',
                 'other_approval_committees',
@@ -564,7 +564,7 @@ class IntegrationDurController extends Controller
             }
 
             $currentDurStatus = Dur::where('id', $durId)->first();
-            if($currentDurStatus->status === 'ACTIVE'){
+            if($currentDurStatus->status === 'ACTIVE') {
                 $this->indexElasticDur($durId);
             }
 
@@ -860,7 +860,7 @@ class IntegrationDurController extends Controller
             }
 
             $currentDurStatus = Dur::where('id', $id)->first();
-            if($currentDurStatus->status === 'ACTIVE'){
+            if($currentDurStatus->status === 'ACTIVE') {
                 $this->indexElasticDur($id);
             }
 
@@ -1148,7 +1148,7 @@ class IntegrationDurController extends Controller
             }
 
             $currentDurStatus = Dur::where('id', $id)->first();
-            if($currentDurStatus->status === 'ACTIVE'){
+            if($currentDurStatus->status === 'ACTIVE') {
                 $this->indexElasticDur($id);
             }
 
@@ -1254,7 +1254,7 @@ class IntegrationDurController extends Controller
     }
 
     // datasets
-    private function checkDatasets(int $durId, array $inDatasets, int $userId = null, int $appId = null) 
+    private function checkDatasets(int $durId, array $inDatasets, int $userId = null, int $appId = null)
     {
         $durDatasets = DurHasDatasetVersion::where(['dur_id' => $durId])->get();
         foreach ($durDatasets as $durDataset) {
@@ -1265,7 +1265,7 @@ class IntegrationDurController extends Controller
         }
 
         foreach ($inDatasets as $dataset) {
-            $datasetVersionId=Dataset::where('id',(int) $dataset['id'])->first()->latestVersion()->id;
+            $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
             $checking = $this->checkInDurHasDatasetVersion($durId, $datasetVersionId);
 
             if (!$checking) {
@@ -1279,7 +1279,7 @@ class IntegrationDurController extends Controller
     {
         try {
 
-            $searchArray= [
+            $searchArray = [
                 'dur_id' => $durId,
                 'dataset_version_id' => $datasetVersionId,
             ];
@@ -1314,7 +1314,7 @@ class IntegrationDurController extends Controller
             }
 
             return DurHasDatasetVersion::withTrashed()->updateOrCreate($searchArray, $arrCreate);
-            
+
         } catch (Exception $e) {
             throw new Exception("addDurHasDatasetVersion :: " . $e->getMessage());
         }
@@ -1332,7 +1332,7 @@ class IntegrationDurController extends Controller
             throw new Exception("checkInDurHasDatasetVersion :: " . $e->getMessage());
         }
     }
-        private function deleteDurHasDatasetVersion(int $durId, int $datasetVersionId)
+    private function deleteDurHasDatasetVersion(int $durId, int $datasetVersionId)
     {
         try {
             return DurHasDatasetVersion::where([
@@ -1345,7 +1345,7 @@ class IntegrationDurController extends Controller
     }
 
     // publications
-    private function checkPublications(int $durId, array $inPublications, int $userId = null, int $appId = null) 
+    private function checkPublications(int $durId, array $inPublications, int $userId = null, int $appId = null)
     {
         $pubs = DurHasPublication::where(['publication_id' => $durId])->get();
         foreach ($pubs as $p) {
@@ -1458,7 +1458,9 @@ class IntegrationDurController extends Controller
                 continue;
             }
 
-            if (in_array($checkKeyword->name, $inKeywords)) continue;
+            if (in_array($checkKeyword->name, $inKeywords)) {
+                continue;
+            }
 
             if (!in_array($checkKeyword->name, $inKeywords)) {
                 $this->deleteDurHasKeywords($kwId);
@@ -1494,7 +1496,7 @@ class IntegrationDurController extends Controller
         try {
             return Keyword::updateOrCreate([
                 'name' => $keyword,
-            ],[
+            ], [
                 'name' => $keyword,
                 'enabled' => 1,
             ]);
@@ -1507,7 +1509,7 @@ class IntegrationDurController extends Controller
 
             throw new Exception('createUpdateKeyword :: ' . $e->getMessage());
         }
-    } 
+    }
 
     private function deleteDurHasKeywords($keywordId)
     {
@@ -1538,7 +1540,9 @@ class IntegrationDurController extends Controller
                 continue;
             }
 
-            if (in_array($checkTool->id, $inTools)) continue;
+            if (in_array($checkTool->id, $inTools)) {
+                continue;
+            }
 
             if (!in_array($checkTool->id, $inTools)) {
                 $this->deleteDurHasTools($durId, $toolId);
@@ -1553,14 +1557,16 @@ class IntegrationDurController extends Controller
     private function updateOrCreateDurHasTools(int $durId, int $toolId)
     {
         try {
-            return DurHasTool::firstOrCreate([
+            return DurHasTool::firstOrCreate(
+                [
                 'dur_id' => $durId,
                 'tool_id' => $toolId,
-            ],[
+            ],
+                [
                 'dur_id' => $durId,
                 'tool_id' => $toolId,
             ]
-        );
+            );
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -1589,7 +1595,7 @@ class IntegrationDurController extends Controller
             throw new Exception('deleteDurHasTools :: ' . $e->getMessage());
         }
     }
-    private function extractInputIdToArray(array $input): Array
+    private function extractInputIdToArray(array $input): array
     {
         $response = [];
         foreach ($input as $value) {
@@ -1601,9 +1607,9 @@ class IntegrationDurController extends Controller
 
     /**
      * Calls a re-indexing of Elastic search when a data use is created or updated
-     * 
+     *
      * @param string $id The dur id from the DB
-     * 
+     *
      * @return void
      */
     public function indexElasticDur(string $id): void
@@ -1656,7 +1662,7 @@ class IntegrationDurController extends Controller
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
-            
+
             $client = MMC::getElasticClient();
             $response = $client->index($params);
 
@@ -1673,7 +1679,7 @@ class IntegrationDurController extends Controller
 
     /**
      * Map the input string to the index of one of the standard mapped sector names.
-     * 
+     *
      * Return null if not found.
      * @return ?int
      */
@@ -1684,15 +1690,15 @@ class IntegrationDurController extends Controller
 
         // Look up mapped sector, with default to null
         $category = Config::get('sectors.' . $sector, null);
-        
+
         return (!is_null($category)) ? $categories->where('name', $category)->first()['id'] : null;
     }
 
     /**
      * Find dataset title associated with a given dataset id.
-     * 
+     *
      * @param int $id The dataset id
-     * 
+     *
      * @return string
      */
     private function getDatasetTitle(int $id): string
@@ -1711,14 +1717,14 @@ class IntegrationDurController extends Controller
         $dur = Dur::where(['id' => $durId])
             ->with([
                 'keywords',
-                'publications', 
-                'tools', 
+                'publications',
+                'tools',
                 'userDatasets' => function ($query) {
                     $query->distinct('id');
-                }, 
+                },
                 'userPublications' => function ($query) {
                     $query->distinct('id');
-                }, 
+                },
                 'applicationDatasets' => function ($query) {
                     $query->distinct('id');
                 },

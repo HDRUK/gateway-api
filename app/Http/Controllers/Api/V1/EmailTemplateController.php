@@ -20,7 +20,7 @@ use App\Http\Requests\EmailTemplate\UpdateEmailTemplate;
 class EmailTemplateController extends Controller
 {
     use RequestTransformation;
-    
+
     public function __construct()
     {
         //
@@ -142,14 +142,14 @@ class EmailTemplateController extends Controller
                 'id' =>  $id,
                 'enabled' => 1,
             ])->get();
-    
+
             if ($emailTemplates->count()) {
                 return response()->json([
                     'message' => 'success',
                     'data' => $emailTemplates,
                 ], 200);
             }
-    
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',

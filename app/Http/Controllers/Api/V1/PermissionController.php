@@ -18,7 +18,7 @@ use App\Http\Requests\Permission\UpdatePermission;
 class PermissionController extends Controller
 {
     use RequestTransformation;
-    
+
     /**
      * Constructor
      */
@@ -122,7 +122,7 @@ class PermissionController extends Controller
      *          )
      *      )
      * )
-     * 
+     *
      */
     public function show(GetPermission $request, int $id): JsonResponse
     {
@@ -130,14 +130,14 @@ class PermissionController extends Controller
             $permissions = Permission::where([
                 'id' => $id,
             ])->get();
-    
+
             if ($permissions->count()) {
                 return response()->json([
                     'message' => 'success',
                     'data' => $permissions,
                 ], 200);
             }
-    
+
             return response()->json([
                 'message' => 'not found',
             ], 404);

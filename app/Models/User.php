@@ -2,15 +2,9 @@
 
 namespace App\Models;
 
-use App\Models\Role;
-use App\Models\Team;
-use App\Models\Tool;
-use App\Models\Permission;
 // use Laravel\Sanctum\HasApiTokens;
-use App\Models\Application;
 use App\Http\Traits\WithJwtUser;
 use Laravel\Passport\HasApiTokens;
-use App\Http\Enums\UserPreferredEmail;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -21,7 +15,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
     use WithJwtUser;
     use HasApiTokens;
 
@@ -109,8 +105,8 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Team::class, 'team_has_users')
             ->withPivot('team_id', 'id')
-            ->orderBy('team_has_users.team_id');  
-    }    
+            ->orderBy('team_has_users.team_id');
+    }
 
     public function notifications(): BelongsToMany
     {
@@ -121,7 +117,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Review::class);
     }
-    
+
     public function applications(): HasMany
     {
         return $this->hasMany(Application::class);
@@ -136,5 +132,5 @@ class User extends Authenticatable
     {
         return $this->hasMany(CohortRequest::class);
     }
-    
+
 }

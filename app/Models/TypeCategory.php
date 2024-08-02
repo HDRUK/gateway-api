@@ -22,35 +22,35 @@ class TypeCategory extends Model
 
     /**
      * Table associated with this model
-     * 
+     *
      * @var string
      */
     public $table = 'type_categories';
 
     /**
      * Indicates if the model should be timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = true;
 
     /**
      * Represents the name of this tool type category
-     * 
+     *
      * @var string
      */
     private $name = '';
 
     /**
      * Represents the description of this tool type category
-     * 
+     *
      * @var string
      */
     private $description = '';
 
     /**
      * Whether or not this name is enabled
-     * 
+     *
      * @var boolean
      */
     private $enabled = false;

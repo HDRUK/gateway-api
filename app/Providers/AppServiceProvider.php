@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
                 foreach ($query->bindings as $i => $binding) {
                     if ($binding instanceof \DateTime) {
                         $bindings[$i] = $binding->format('\'Y-m-d H:i:s\'');
-                    } else if (is_string($binding)) {
+                    } elseif (is_string($binding)) {
                         $bindings[$i] = "'$binding'";
                     } else {
                         $bindings[$i] = "'$binding'";

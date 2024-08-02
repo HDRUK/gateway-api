@@ -52,8 +52,8 @@ class EditPublication extends BaseFormRequest
                 'string',
             ],
             'datasets' => [
-                'nullable', 
-                'array', 
+                'nullable',
+                'array',
             ],
             'datasets.*.id'  => [
                 'integer',

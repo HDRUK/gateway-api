@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -16,7 +15,7 @@ return new class extends Migration
             $table->bigInteger('notification_id')->unsigned();
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('notification_id')->references('id')->on('notifications');
-            $table->unique(['user_id', 'notification_id']);  
+            $table->unique(['user_id', 'notification_id']);
         });
     }
 

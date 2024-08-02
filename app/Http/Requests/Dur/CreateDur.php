@@ -188,7 +188,7 @@ class CreateDur extends BaseFormRequest
                 'string',
             ],
             'mongo_object_id' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'mongo_id' => [

@@ -18,7 +18,6 @@ use App\Http\Requests\Federation\CreateFederation;
 use App\Http\Requests\Federation\DeleteFederation;
 use App\Http\Requests\Federation\GetAllFederation;
 use App\Http\Requests\Federation\UpdateFederation;
-use Illuminate\Support\Str;
 
 use Illuminate\Support\Facades\Http;
 
@@ -100,7 +99,7 @@ class FederationController extends Controller
             $federations = Federation::whereHas('team', function ($query) use ($teamId) {
                 $query->where('id', $teamId);
             })->with(['notifications'])->paginate($perPage, ['*'], 'page');
-    
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'team_id' => $teamId,
@@ -199,11 +198,11 @@ class FederationController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Federation get ' . $federationId,
             ]);
-    
+
             return response()->json([
                 'message' => 'success',
                 'data' => $federations,
-            ], 200);    
+            ], 200);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -300,8 +299,8 @@ class FederationController extends Controller
             $federation = Federation::create($payload);
 
             $secrets_payload = $this->getSecretsPayload($input);
-            
-            if($secrets_payload){
+
+            if($secrets_payload) {
                 $auth_secret_key_location = Config::get('fma.secrets.prependname') . (string)$federation->pid;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
@@ -309,7 +308,7 @@ class FederationController extends Controller
                     "payload" => json_encode($secrets_payload)
                 ];
                 $response = Http::post(env('FMA_SERVICE_URL') . '/federation', $payload);
-                
+
                 if (!$response->successful()) {
                     Federation::where('id', $federation->id)->delete();
                     return response()->json([
@@ -319,10 +318,10 @@ class FederationController extends Controller
                 }
 
                 Federation::where('id', $federation->id)->first()
-                    ->update(["auth_secret_key_location"=>$auth_secret_key_location]);
+                    ->update(["auth_secret_key_location" => $auth_secret_key_location]);
 
             }
-                      
+
             TeamHasFederation::create([
                 'federation_id' => $federation->id,
                 'team_id' => $teamId,
@@ -461,7 +460,7 @@ class FederationController extends Controller
             Federation::where('id', $federationId)->update($updateArray);
 
             $secrets_payload = $this->getSecretsPayload($input);
-            if($secrets_payload){
+            if($secrets_payload) {
                 $auth_secret_key_location = Config::get('fma.secrets.prependname') . (string)$federationId;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
@@ -469,7 +468,7 @@ class FederationController extends Controller
                     "payload" => json_encode($secrets_payload)
                 ];
                 $response = Http::patch(env('FMA_SERVICE_URL') . '/federation', $payload);
-                
+
                 if (!$response->successful()) {
                     return response()->json([
                         'message' => 'something gone wrong with updating federation secret key',
@@ -515,7 +514,7 @@ class FederationController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Federation ' . $federationId . ' updated',
             ]);
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $response,
@@ -629,7 +628,7 @@ class FederationController extends Controller
             Federation::where('id', $federationId)->update($updateArray);
 
             $secrets_payload = $this->getSecretsPayload($input);
-            if($secrets_payload){
+            if($secrets_payload) {
                 $auth_secret_key_location = Config::get('fma.secrets.prependname') . (string)$federationId;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
@@ -637,7 +636,7 @@ class FederationController extends Controller
                     "payload" => json_encode($secrets_payload)
                 ];
                 $response = Http::patch(env('FMA_SERVICE_URL') . '/federation', $payload);
-                
+
                 if (!$response->successful()) {
                     return response()->json([
                         'message' => 'something gone wrong with updating federation secret key',
@@ -858,7 +857,8 @@ class FederationController extends Controller
         }
     }
 
-    private function getSecretsPayload(array $input){
+    private function getSecretsPayload(array $input)
+    {
         $secrets_payload = [];
         $secret_key = $input['auth_secret_key'];
         switch ($input['auth_type']) {
@@ -866,7 +866,7 @@ class FederationController extends Controller
                 $secrets_payload = [
                     "bearer_token" => $secret_key
                 ];
-                break;  
+                break;
             case 'API_KEY':
                 $secrets_payload = [
                     "api_key" => $secret_key,

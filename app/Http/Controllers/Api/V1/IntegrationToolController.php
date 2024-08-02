@@ -22,7 +22,7 @@ use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
 use App\Http\Traits\IntegrationOverride;
-use MetadataManagementController AS MMC;
+use MetadataManagementController as MMC;
 use App\Models\ToolHasProgrammingPackage;
 use App\Http\Traits\RequestTransformation;
 use App\Models\DurHasTool;
@@ -30,7 +30,8 @@ use App\Models\ToolHasProgrammingLanguage;
 
 class IntegrationToolController extends Controller
 {
-    use RequestTransformation, IntegrationOverride;
+    use RequestTransformation;
+    use IntegrationOverride;
 
     /**
      * @OA\Get(
@@ -63,12 +64,12 @@ class IntegrationToolController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Integration Tool get all',
             ]);
-            
+
             return response()->json(
                 $tools
             );
@@ -140,7 +141,7 @@ class IntegrationToolController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Integration Tool get ' . $id,
@@ -251,7 +252,7 @@ class IntegrationToolController extends Controller
             $this->overrideBothTeamAndUserId($teamId, $userId, $request->header());
 
             $tool = Tool::create([
-                'mongo_object_id' => array_key_exists('mongo_object_id',$input) ? $input['mongo_object_id'] : null,
+                'mongo_object_id' => array_key_exists('mongo_object_id', $input) ? $input['mongo_object_id'] : null,
                 'name' => $input['name'],
                 'url' => $input['url'],
                 'description' => $input['description'],
@@ -287,7 +288,7 @@ class IntegrationToolController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Integration Tool ' . $tool->id . ' created',
@@ -450,7 +451,7 @@ class IntegrationToolController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Integration Tool ' . $id . ' updated',
@@ -616,7 +617,7 @@ class IntegrationToolController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Integration Tool ' . $id . ' updated',
@@ -713,12 +714,12 @@ class IntegrationToolController extends Controller
                 PublicationHasTool::where('tool_id', $id)->delete();
                 DurHasTool::where('tool_id', $id)->delete();
             }
-            
+
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'DELETE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Integration Tool ' . $id . ' deleted',
@@ -745,7 +746,7 @@ class IntegrationToolController extends Controller
     private function getToolById(int $toolId)
     {
         $tool = Tool::with([
-            'user', 
+            'user',
             'tag',
             'team',
             'license',
@@ -804,7 +805,7 @@ class IntegrationToolController extends Controller
             foreach ($datasetIds as $value) {
                 if (is_array($value)) {
                     $datasetVersionIDs = DatasetVersion::where('dataset_id', $value['id'])->pluck('id')->all();
-    
+
                     foreach ($datasetVersionIDs as $datasetVersionID) {
                         DatasetVersionHasTool::withTrashed()->updateOrCreate([
                             'tool_id' => $toolId,
@@ -815,7 +816,7 @@ class IntegrationToolController extends Controller
                     }
                 } else {
                     $datasetVersionIDs = DatasetVersion::where('dataset_id', $value)->pluck('id')->all();
-    
+
                     foreach ($datasetVersionIDs as $datasetVersionID) {
                         DatasetVersionHasTool::withTrashed()->updateOrCreate([
                             'tool_id' => $toolId,
@@ -831,7 +832,7 @@ class IntegrationToolController extends Controller
         }
     }
 
-        /**
+    /**
      * Insert data into ToolHasProgrammingLanguage
      *
      * @param array $programmingLanguages
@@ -919,7 +920,7 @@ class IntegrationToolController extends Controller
     }
 
     // publications
-    private function checkPublications(int $toolId, array $inPublications, int $userId = null, int $appId = null) 
+    private function checkPublications(int $toolId, array $inPublications, int $userId = null, int $appId = null)
     {
         $pubs = PublicationHasTool::where(['tool_id' => $toolId])->get();
         foreach ($pubs as $pub) {
@@ -1018,7 +1019,7 @@ class IntegrationToolController extends Controller
         }
     }
 
-    private function extractInputIdToArray(array $input): Array
+    private function extractInputIdToArray(array $input): array
     {
         $response = [];
         foreach ($input as $value) {
@@ -1035,7 +1036,7 @@ class IntegrationToolController extends Controller
      * @param integer $toolId
      * @return void
      */
-    private function indexElasticTools(array $input, int $toolId): void 
+    private function indexElasticTools(array $input, int $toolId): void
     {
         try {
 

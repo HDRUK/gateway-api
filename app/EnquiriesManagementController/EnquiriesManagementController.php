@@ -2,7 +2,6 @@
 
 namespace App\EnquiriesManagementController;
 
-use Config;
 use Auditor;
 use Exception;
 
@@ -11,7 +10,6 @@ use App\Jobs\SendEmailJob;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
-use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\TeamHasUser;
 use App\Models\EnquiryThread;
@@ -20,7 +18,8 @@ use App\Models\EnquiryMessage;
 use App\Models\TeamUserHasRole;
 use App\Models\EnquiryThreadHasDatasetVersion;
 
-class EnquiriesManagementController {
+class EnquiriesManagementController
+{
     public function determineDARManagersFromTeamId(int $teamId, int $enquiryThreadId): ?array
     {
         $team = Team::with('users')->where('id', $teamId)->first();
@@ -44,7 +43,9 @@ class EnquiriesManagementController {
                     'name' => 'dar.manager',
                 ])->first();
 
-                if (!$roleIdeal && !$roleSecondary) continue; // If neither roles are set, ignore
+                if (!$roleIdeal && !$roleSecondary) {
+                    continue;
+                } // If neither roles are set, ignore
 
                 // we don't care about this as we've found our dar.manager users.
                 unset($team['users']);
@@ -52,7 +53,7 @@ class EnquiriesManagementController {
                 $enquiryThread = EnquiryThread::where([
                     'id' => $enquiryThreadId,
                 ])->first();
-                
+
                 $users[] = [
                     'user' => User::where('id', $thu['user_id'])->first()->toArray(),
                     'role' => (($roleIdeal ? $roleIdeal->toArray() : ($roleSecondary ?
@@ -78,7 +79,7 @@ class EnquiriesManagementController {
         ]);
 
         if ($enquiryThread) {
-            foreach ($input['datasets'] as $dataset){
+            foreach ($input['datasets'] as $dataset) {
                 $datasetVersion = DatasetVersion::where("dataset_id", $dataset["id"])
                     ->latest('created_at')->first();
                 $enquiryThreadHasDataset = EnquiryThreadHasDatasetVersion::create([
@@ -157,7 +158,8 @@ class EnquiriesManagementController {
         }
     }
 
-    private function convertThreadToBody(array $in): string {
+    private function convertThreadToBody(array $in): string
+    {
         $str = '';
         $datasetsStr = '<br/><br/>';
 

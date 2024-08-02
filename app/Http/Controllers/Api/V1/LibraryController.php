@@ -304,7 +304,7 @@ class LibraryController extends Controller
                 'user_id' => (int)$jwtUser['id'],
                 'dataset_id' => $input['dataset_id']
             ]);
-            
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
@@ -399,7 +399,7 @@ class LibraryController extends Controller
                 'user_id' => (int)$jwtUser['id'],
                 'dataset_id' => $input['dataset_id'],
             ]);
-            
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
@@ -497,9 +497,9 @@ class LibraryController extends Controller
             if ($library['user_id'] != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to edit this library');
             }
-            
+
             $library->update($array);
-            
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
@@ -570,7 +570,7 @@ class LibraryController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-    
+
             $library = Library::findOrFail($id);
             if ($library) {
 
@@ -590,12 +590,12 @@ class LibraryController extends Controller
                         'message' => Config::get('statuscodes.STATUS_OK.message'),
                     ], Config::get('statuscodes.STATUS_OK.code'));
                 }
-    
+
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
                 ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
             }
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
@@ -612,4 +612,3 @@ class LibraryController extends Controller
     }
 
 }
-

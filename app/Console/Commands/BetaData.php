@@ -37,7 +37,7 @@ class BetaData extends Command
             $this->runMigrations($user);
         } elseif ($coverage) {
             $this->runMigrations($coverage);
-        }elseif ($keyword) {
+        } elseif ($keyword) {
             $this->runMigrations($keyword);
         }
     }
@@ -47,7 +47,7 @@ class BetaData extends Command
         $this->info('Starting migration for demo data');
 
         switch ($value) {
-            case 'user': 
+            case 'user':
                 $this->info('Running seed UserBetaDemo');
                 Artisan::call('db:seed', [
                     '--class' => 'Database\Beta\UserBetaDemo',
@@ -55,7 +55,7 @@ class BetaData extends Command
 
                 break;
 
-            case 'coverage': 
+            case 'coverage':
                 $this->info('Running seed SpatialCoverageSeeder');
                 Artisan::call('db:seed', [
                     '--class' => 'Database\Seeders\SpatialCoverageSeeder',
@@ -63,7 +63,7 @@ class BetaData extends Command
 
                 break;
 
-            case 'keyword': 
+            case 'keyword':
                 $this->info('Running seed KeywordSeeder');
                 Artisan::call('db:seed', [
                     '--class' => 'Database\Seeders\KeywordSeeder',
@@ -73,32 +73,32 @@ class BetaData extends Command
             case 'all':
                 $this->info('Running migrate:fresh');
                 Artisan::call('migrate:fresh');
-        
+
                 $this->info('Running seed SectorSeeder');
                 Artisan::call('db:seed', [
                     '--class' => 'Database\Seeders\SectorSeeder',
                 ]);
-        
+
                 $this->info('Running seed PermissionSeeder');
                 Artisan::call('db:seed', [
                     '--class' => 'Database\Seeders\PermissionSeeder',
                 ]);
-        
+
                 $this->info('Running seed RoleSeeder');
                 Artisan::call('db:seed', [
                     '--class' => 'Database\Seeders\RoleSeeder',
                 ]);
-        
+
                 $this->info('Running seed TeamBetaDemo');
                 Artisan::call('db:seed', [
                     '--class' => 'Database\Beta\TeamBetaDemo',
                 ]);
-        
+
                 $this->info('Running seed UserBetaDemo');
                 Artisan::call('db:seed', [
                     '--class' => 'Database\Beta\UserBetaDemo',
                 ]);
-                
+
                 $this->info('Running seed EmailTemplatesSeeder');
                 Artisan::call('db:seed', [
                     '--class' => 'Database\Seeders\EmailTemplatesSeeder',
@@ -114,7 +114,7 @@ class BetaData extends Command
                     '--class' => 'Database\Seeders\KeywordSeeder',
                 ]);
 
-                break;            
+                break;
         }
 
         $this->info('Completed...');

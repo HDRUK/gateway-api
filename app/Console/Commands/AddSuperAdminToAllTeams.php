@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use Config;
 use App\Models\User;
 use App\Models\Team;
 use App\Models\TeamHasUser;
@@ -30,15 +29,15 @@ class AddSuperAdminToAllTeams extends Command
     public function handle()
     {
         $teamIds = Team::pluck("id");
-        $superAdminIds = User::where("is_admin",true)->pluck('id');
-        foreach($teamIds as $teamId){
-            foreach($superAdminIds as $adminId){
+        $superAdminIds = User::where("is_admin", true)->pluck('id');
+        foreach($teamIds as $teamId) {
+            foreach($superAdminIds as $adminId) {
                 TeamHasUser::updateOrCreate(
                     [
                         'team_id' => $teamId,
                         'user_id' => $adminId,
                     ],
-                    [] 
+                    []
                 );
             }
         }

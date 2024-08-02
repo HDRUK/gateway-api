@@ -1,15 +1,10 @@
 <?php
 
-use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Route;
-use MetadataManagementController AS MMC;
-use App\Http\Controllers\FilterController;
 
 use App\Http\Controllers\ServiceLayerController;
 use App\Http\Controllers\Api\V1\DatasetController;
-use App\Http\Controllers\SSO\CustomAuthorizationController;
-
 
 Route::get('/federations', [ServiceLayerController::class, 'getActiveFederationApplications']);
 Route::patch('/federations/{id}', [ServiceLayerController::class, 'setFederationInvalidRunState']);
@@ -25,7 +20,7 @@ Route::any('/traser', [ServiceLayerController::class, 'traser']);
 foreach (config("service_routes") as $service => $paths) {
     foreach ($paths as $path => $methods) {
         foreach ($methods as $method => $middlewares) {
-            Route::{$method}($service.$path,  [ServiceLayerController::class, $service] )
+            Route::{$method}($service.$path, [ServiceLayerController::class, $service])
                 ->where('any', '.*')
                 ->middleware($middlewares);
         }

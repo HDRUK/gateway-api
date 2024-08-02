@@ -8,7 +8,6 @@ use Exception;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\UserHasRole;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRole\CreateUserRole;
@@ -50,7 +49,7 @@ class UserRoleController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="roles", type="array",   
+     *             @OA\Property(property="roles", type="array",
      *                @OA\Items(
      *                   type="string",
      *                   example="create",
@@ -144,13 +143,13 @@ class UserRoleController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property( property="roles", type="object",  
-     *                @OA\Property( 
+     *             @OA\Property( property="roles", type="object",
+     *                @OA\Property(
      *                   property="read",
      *                   type="boolean",
      *                   example=true,
      *                ),
-     *                @OA\Property( 
+     *                @OA\Property(
      *                   property="create",
      *                   type="boolean",
      *                   example=false,
@@ -195,8 +194,12 @@ class UserRoleController extends Controller
             $addRoles = [];
             $removeRoles = [];
             foreach ($input['roles'] as $key => $value) {
-                if ($value) $addRoles[] = $key;
-                if (!$value) $removeRoles[] = $key;
+                if ($value) {
+                    $addRoles[] = $key;
+                }
+                if (!$value) {
+                    $removeRoles[] = $key;
+                }
             }
 
             Auditor::log([
@@ -204,7 +207,7 @@ class UserRoleController extends Controller
                 'action_type' => 'EDIT',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'User has role The following roles have been changed for user id ' .
-                    $userId . ': added ' . implode(',', $addRoles) . ' and removed ' . 
+                    $userId . ': added ' . implode(',', $addRoles) . ' and removed ' .
                     implode(',', $removeRoles),
             ]);
 
@@ -219,7 +222,7 @@ class UserRoleController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-    
+
             throw new Exception($e->getMessage());
         }
     }
@@ -314,13 +317,14 @@ class UserRoleController extends Controller
         }
     }
 
-    private function assignUserRoles(int $userId, array $roleNames) 
+    private function assignUserRoles(int $userId, array $roleNames)
     {
         foreach ($roleNames as $roleName) {
             $role = Role::where([ 'name' => $roleName, 'enabled' => 1 ])->first();
 
-            if ($role)
+            if ($role) {
                 UserHasRole::create([ 'user_id' => $userId, 'role_id' => $role->id ]);
+            }
         }
     }
 
@@ -329,18 +333,21 @@ class UserRoleController extends Controller
         foreach ($roleNames as $key => $value) {
             $role = Role::where([ 'name' => $key, 'enabled' => 1 ])->first();
 
-            if (!$role)
+            if (!$role) {
                 continue;
+            }
 
             $exists = UserHasRole::where([ 'user_id' => $userId, 'role_id' => $role->id ])->first();
 
             // add user-role
-            if ($value && !$exists)
+            if ($value && !$exists) {
                 UserHasRole::create([ 'user_id' => $userId, 'role_id' => $role->id ]);
+            }
 
             // remove user-role
-            if (!$value && $exists)
+            if (!$value && $exists) {
                 UserHasRole::where([ 'user_id' => $userId, 'role_id' => $role->id ])->delete();
+            }
         }
     }
 }

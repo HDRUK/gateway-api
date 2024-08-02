@@ -71,7 +71,7 @@ class LicenseController extends Controller
     {
         try {
             $licenses = License::where('valid_until', null)->paginate(Config::get('constants.per_page'), ['*'], 'page');
-                            
+
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
@@ -147,7 +147,7 @@ class LicenseController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'License get ' . $id,
             ]);
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $license,
@@ -515,7 +515,7 @@ class LicenseController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
-            
+
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

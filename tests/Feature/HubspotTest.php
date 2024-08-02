@@ -6,8 +6,6 @@ use Config;
 use Tests\TestCase;
 use App\Services\Hubspot;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class HubspotTest extends TestCase
 {

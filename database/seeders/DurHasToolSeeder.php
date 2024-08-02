@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Dur;
 use App\Models\DurHasTool;
 use App\Models\Tool;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DurHasToolSeeder extends Seeder

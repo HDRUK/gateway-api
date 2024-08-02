@@ -14,7 +14,7 @@ trait DatasetFetch
     {
         // Step 1: Get the dataset version IDs from the linkage table
         $versionIds = $linkageTable::where($localTableId, $this->id)->pluck('dataset_version_id')->toArray();
-        
+
         // Step 2: Use the version IDs to find all related dataset IDs through the linkage table
         $datasetIds = DatasetVersion::whereIn('id', $versionIds)
             ->pluck('dataset_id')
@@ -29,7 +29,7 @@ trait DatasetFetch
             // Retrieve dataset version IDs associated with the current dataset
             $datasetVersionIds = $dataset->versions()->whereIn('id', $versionIds)->pluck('id')->toArray();
             // $metadata =$dataset->latestMetadata(); // This can be modified to return metadata
-            
+
             // Add associated dataset versions to the dataset object
             $dataset->setAttribute('dataset_version_ids', $datasetVersionIds);
             // $dataset->setAttribute('latest_metadata', $metadata); // This can be modified to return metadata

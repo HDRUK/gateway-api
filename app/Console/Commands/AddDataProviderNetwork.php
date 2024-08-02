@@ -93,7 +93,7 @@ class AddDataProviderNetwork extends Command
             $dataProviderNetwork = DataProviderColl::create([
                 'name' => $dataProviderNetworkName,
                 'enabled' => 1,
-                'img_url' => NULL,
+                'img_url' => null,
             ]);
 
             echo 'Data Provider network with name ' . $dataProviderNetworkName . ' was created.' . PHP_EOL;
@@ -105,7 +105,7 @@ class AddDataProviderNetwork extends Command
             'team_id' => (int) $team->id,
         ])->first();
         if ($dataProviderNetworkTeam) {
-            echo 'The team ' . $teamName . ' found in relation with ' . 
+            echo 'The team ' . $teamName . ' found in relation with ' .
                 $dataProviderNetworkName . '. skipping ...' . PHP_EOL;
             return false;
         }
@@ -126,7 +126,7 @@ class AddDataProviderNetwork extends Command
         $file = fopen($migrationFile, 'r');
         $headers = fgetcsv($file);
 
-        while (($row = fgetcsv($file)) !== FALSE) {
+        while (($row = fgetcsv($file)) !== false) {
             $item = [];
             foreach ($row as $key => $value) {
                 $item[trim($headers[$key], "\xEF\xBB\xBF")] = $value ?: '';
@@ -135,6 +135,6 @@ class AddDataProviderNetwork extends Command
             $this->csvData[] = $item;
         }
 
-        fclose($file);        
+        fclose($file);
     }
 }

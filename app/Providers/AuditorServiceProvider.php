@@ -10,7 +10,7 @@ class AuditorServiceProvider extends ServiceProvider
 {
     /**
      * Register services.
-     * 
+     *
      * @return void
      */
     public function register(): void
@@ -20,12 +20,12 @@ class AuditorServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap services.
-     * 
+     *
      * @return void
      */
     public function boot(): void
     {
-        $this->app->bind('auditor', function() {
+        $this->app->bind('auditor', function () {
             return new Auditor();
         });
     }

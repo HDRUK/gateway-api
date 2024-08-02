@@ -14,7 +14,6 @@ use App\Models\CohortRequest;
 use App\Models\EmailTemplate;
 use Illuminate\Support\Carbon;
 use App\Models\CohortRequestLog;
-use App\Services\LoggingService;
 use Illuminate\Http\JsonResponse;
 use App\Models\CohortRequestHasLog;
 use App\Http\Controllers\Controller;
@@ -122,7 +121,7 @@ class CohortRequestController extends Controller
      *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="logs", type="array", example="[]", @OA\Items()),
-     *                   @OA\Property(property="accept_declaration", type="boolean", example="0"),  
+     *                   @OA\Property(property="accept_declaration", type="boolean", example="0"),
      *                ),
      *             ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
@@ -151,7 +150,7 @@ class CohortRequestController extends Controller
             $sortArray = $request->has('sort') ? explode(',', $request->query('sort', '')) : [];
             foreach ($sortArray as $item) {
                 $tmp = explode(":", $item);
-                $sort[$tmp[0]]= array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+                $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
             }
 
             $query = CohortRequest::with(['user', 'logs', 'logs.user', 'permissions']);
@@ -272,10 +271,10 @@ class CohortRequestController extends Controller
         try {
             $cohortRequests = CohortRequest::where('id', $id)
                 ->with([
-                    'user', 
+                    'user',
                     'logs' => function ($q) {
                         $q->orderBy('id', 'desc');
-                    }, 
+                    },
                     'logs.user',
                     'permissions',
                     ])
@@ -575,7 +574,7 @@ class CohortRequestController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Cohort Request ' . $id . ' updated',
             ]);
- 
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => CohortRequest::where('id', $id)->first()
@@ -650,7 +649,7 @@ class CohortRequestController extends Controller
             $cohortRequest = CohortRequest::withTrashed()->findOrFail($id);
             $cohortRequest->update(['accept_declaration' => false]);
             $cohortRequest->delete();
-            
+
             CohortRequestHasPermission::where('id', $id)->delete();
 
             $this->updateOrCreateContact($id);
@@ -778,14 +777,14 @@ class CohortRequestController extends Controller
             $query->join('users', 'cohort_requests.user_id', '=', 'users.id');
             $query->orderBy('cohort_requests.created_at', 'asc');
             $result = $query->select('cohort_requests.*')->get();
-           
+
             // callback function that writes to php://output
             $response = new StreamedResponse(
-                function() use ($result) {
+                function () use ($result) {
 
                     // Open output stream
                     $handle = fopen('php://output', 'w');
-                    
+
                     $headerRow = [
                         'User ID',
                         'Name',
@@ -799,9 +798,9 @@ class CohortRequestController extends Controller
 
                     // Add CSV headers
                     fputcsv($handle, $headerRow);
-            
+
                     // add the given number of rows to the file.
-                    foreach ($result as $rowDetails) { 
+                    foreach ($result as $rowDetails) {
                         $row = [
                             (string)$rowDetails['user']['id'],
                             (string)$rowDetails['user']['name'],
@@ -814,16 +813,18 @@ class CohortRequestController extends Controller
                         ];
                         fputcsv($handle, $row);
                     }
-                    
+
                     // Close the output stream
                     fclose($handle);
                 }
             );
 
             $response->headers->set('Content-Type', 'text/csv');
-            $response->headers->set('Content-Disposition',
-                'attachment;filename="Cohort_Discovery_Admin.csv"');
-            $response->headers->set('Cache-Control','max-age=0');
+            $response->headers->set(
+                'Content-Disposition',
+                'attachment;filename="Cohort_Discovery_Admin.csv"'
+            );
+            $response->headers->set('Cache-Control', 'max-age=0');
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

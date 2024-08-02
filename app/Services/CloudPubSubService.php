@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use Config;
@@ -28,7 +29,7 @@ class CloudPubSubService
         }
 
         $topic = $this->pubSubClient->topic(Config::get('services.googlepubsub.pubsub_topic'));
-        $message = (new MessageBuilder)->setData(json_encode($data))->build();
+        $message = (new MessageBuilder())->setData(json_encode($data))->build();
         return $topic->publish($message);
     }
 

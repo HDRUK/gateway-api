@@ -57,7 +57,7 @@ class DataUseExport implements WithHeadings, FromCollection, WithMapping
             $organisationName = $this->getValueFromPath($item, 'organisationName');
             $datasetTitles = $this->getValueFromPath($item, '_source/datasetTitles');
             $publisher = $this->getValueFromPath($item, 'team/name');
-            
+
             $array[] = [
                 'projectTitle' => $projectTitle,
                 'organisationName' => $organisationName,
@@ -70,7 +70,7 @@ class DataUseExport implements WithHeadings, FromCollection, WithMapping
         return $array;
     }
 
-    public function getValueFromPath(array $item, string $path) 
+    public function getValueFromPath(array $item, string $path)
     {
         $keys = explode('/', $path);
 
@@ -82,7 +82,7 @@ class DataUseExport implements WithHeadings, FromCollection, WithMapping
                 return null;
             }
         }
-        
+
         return $return;
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\Permission;
 use App\Models\RoleHasPermission;
 use Illuminate\Database\Seeder;
+
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class RoleSeeder extends Seeder
@@ -115,7 +116,7 @@ class RoleSeeder extends Seeder
                     'datasets.read',
 
                     'permissions.update',
-                    
+
                     'roles.cta.update',
                     'roles.dev.update',
                     'roles.mdm.update',
@@ -167,7 +168,7 @@ class RoleSeeder extends Seeder
 
                     'dur.read',
 
-                    'permissions.update',  
+                    'permissions.update',
 
                     'notifications.read',
                     'notifications.update',
@@ -249,7 +250,7 @@ class RoleSeeder extends Seeder
                 'permissions' => [
                     'datasets.read',
 
-                    'enquiries.read', 
+                    'enquiries.read',
                     'enquiries.update',
 
                     'question-bank.read',
@@ -265,7 +266,7 @@ class RoleSeeder extends Seeder
                     'data-access-applications.review.read',
                     'data-access-applications.review.create',
                     'data-access-applications.review.update',
-                    
+
                     'data-access-applications.status.read',
                     'data-access-applications.status.create',
 
@@ -338,24 +339,28 @@ class RoleSeeder extends Seeder
         }
 
         foreach ($perms as $perm) {
-            Permission::updateOrCreate([
+            Permission::updateOrCreate(
+                [
                 'name' => trim($perm),
             ],
-            [
+                [
                 'name' => trim($perm),
                 'application' => 'gateway'
-            ]);
+            ]
+            );
         }
 
         foreach ($roles as $k => $v) {
-            $role = Role::updateOrCreate([
+            $role = Role::updateOrCreate(
+                [
                 'name' => $k,
-            ], 
-            [
+            ],
+                [
                 'name' => $k,
                 'enabled' => true,
-                'full_name' => array_key_exists('full_name', $v) ? $v['full_name'] : NULL,
-            ]);
+                'full_name' => array_key_exists('full_name', $v) ? $v['full_name'] : null,
+            ]
+            );
 
             RoleHasPermission::where([
                 'role_id' => $role->id,
@@ -383,7 +388,7 @@ class RoleSeeder extends Seeder
                         RoleHasPermission::create([
                             'role_id' => $role->id,
                             'permission_id' => $p->id,
-                        ]);                         
+                        ]);
                     }
                 }
             }

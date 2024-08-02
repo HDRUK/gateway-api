@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\V1\PublicationController;
 use App\Http\Controllers\Api\V1\ToolController;
 use App\Http\Controllers\Api\V1\DurController;
 use App\Http\Controllers\Api\V1\CollectionController;
-use MetadataManagementController AS MMC;
+use MetadataManagementController as MMC;
 
 class ReindexEntities extends Command
 {
@@ -43,7 +43,7 @@ class ReindexEntities extends Command
      */
     public function handle()
     {
-      
+
         $sleep = $this->argument('sleep');
         $this->sleepTimeInMicroseconds = floatval($sleep) * 1000 * 1000;
         echo 'Sleeping between each reindex by ' .  $this->sleepTimeInMicroseconds . "\n";
@@ -57,7 +57,8 @@ class ReindexEntities extends Command
         }
     }
 
-    private function datasets(){
+    private function datasets()
+    {
         $datasetIds = Dataset::pluck('id');
         $progressbar = $this->output->createProgressBar(count($datasetIds));
         foreach ($datasetIds as $id) {
@@ -68,7 +69,8 @@ class ReindexEntities extends Command
         $progressbar->finish();
     }
 
-    private function tools(){
+    private function tools()
+    {
         $toolController = new ToolController();
         $toolIds = Tool::pluck('id');
         $progressbar = $this->output->createProgressBar(count($toolIds));
@@ -80,48 +82,52 @@ class ReindexEntities extends Command
         $progressbar->finish();
     }
 
-    private function publications(){
+    private function publications()
+    {
         $publicationController = new PublicationController();
         $pubicationIds = Publication::pluck('id');
         $progressbar = $this->output->createProgressBar(count($pubicationIds));
         foreach ($pubicationIds as $id) {
             $publicationController->indexElasticPublication($id);
-            usleep($this->sleepTimeInMicroseconds); 
+            usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
         $progressbar->finish();
     }
 
-    private function durs(){
+    private function durs()
+    {
         $durController = new DurController();
         $durIds = Dur::pluck('id');
         $progressbar = $this->output->createProgressBar(count($durIds));
         foreach ($durIds as $id) {
             $durController->indexElasticDur($id);
-            usleep($this->sleepTimeInMicroseconds); 
+            usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
         $progressbar->finish();
     }
 
-    private function collections(){
+    private function collections()
+    {
         $collectionController = new CollectionController();
         $collectionIds = Collection::pluck('id');
         $progressbar = $this->output->createProgressBar(count($collectionIds));
         foreach ($collectionIds as $id) {
             $collectionController->indexElasticCollections($id);
-            usleep($this->sleepTimeInMicroseconds); 
+            usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
         $progressbar->finish();
     }
 
-    private function dataProviders(){
+    private function dataProviders()
+    {
         $providerIds = array_unique(Dataset::pluck('team_id')->toArray());
         $progressbar = $this->output->createProgressBar(count($providerIds));
         foreach ($providerIds as $id) {
             $team = Team::find($id);
-            if($team){
+            if($team) {
                 MMC::reindexElasticDataProvider($team->id);
             }
             $progressbar->advance();

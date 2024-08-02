@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\DataProviderColl;
 use App\Models\DataProviderCollHasTeam;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DataProviderCollsSeeder extends Seeder
 {

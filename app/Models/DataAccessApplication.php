@@ -12,11 +12,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DataAccessApplication extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
 
     /**
      * The table associated with the model
-     * 
+     *
      * @var string
      */
     protected $table = 'dar_applications';

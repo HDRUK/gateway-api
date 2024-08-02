@@ -139,7 +139,7 @@ class ProgrammingLanguageController extends Controller
                     'data' => $programming_language,
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
@@ -457,7 +457,7 @@ class ProgrammingLanguageController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-    
+
             $programming_language = ProgrammingLanguage::findOrFail($id);
             $programming_language->enabled = false;
             if ($programming_language->save()) {
@@ -476,7 +476,7 @@ class ProgrammingLanguageController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
             ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));

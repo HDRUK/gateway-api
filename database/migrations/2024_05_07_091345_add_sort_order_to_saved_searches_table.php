@@ -4,8 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -21,10 +20,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasColumn('saved_searches', 'sort_order'))
-        {
-            Schema::table('saved_searches', function(Blueprint $table)
-            {
+        if (Schema::hasColumn('saved_searches', 'sort_order')) {
+            Schema::table('saved_searches', function (Blueprint $table) {
                 $table->dropColumn('sort_order');
             });
         }

@@ -19,7 +19,7 @@ use App\Http\Requests\Notification\GetNotification;
 class NotificationController extends Controller
 {
     use RequestTransformation;
-    
+
     /**
      * @OA\Get(
      *      path="/api/v1/notifications",
@@ -145,7 +145,7 @@ class NotificationController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Notification get ' . $id,
             ]);
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
@@ -496,7 +496,7 @@ class NotificationController extends Controller
                     'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => 'Notification ' . $id . ' deleted',
                 ]);
-    
+
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                 ], Config::get('statuscodes.STATUS_OK.code'));

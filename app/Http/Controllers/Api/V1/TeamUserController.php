@@ -28,7 +28,7 @@ class TeamUserController extends Controller
 {
     use TeamTransformation;
     use UserRolePermissions;
-    
+
     private const ROLE_CUSTODIAN_TEAM_ADMIN = 'custodian.team.admin';
     private const ASSIGN_PERMISSIONS_IN_TEAM = [
         'roles.dev.update' => [
@@ -87,7 +87,7 @@ class TeamUserController extends Controller
      *          mediaType="application/json",
      *          @OA\Schema(
      *             @OA\Property( property="userId", type="integer", example="1" ),
-     *             @OA\Property( property="roles", type="array",   
+     *             @OA\Property( property="roles", type="array",
      *                @OA\Items(
      *                   type="string",
      *                   example="create",
@@ -145,7 +145,7 @@ class TeamUserController extends Controller
             $sendEmail = $request->has('email') ? $request->boolean('email') : true;
 
             $teamHasUsers = $this->teamHasUser($teamId, $userId);
-            
+
             $this->teamUsersHasRoles($teamHasUsers, $permissions, $teamId, $userId, $jwtUser, $sendEmail);
 
             $this->storeAuditLog($jwtUser['id'], $input['userId'], $teamId, $input, class_basename($this) . '@' . __FUNCTION__);
@@ -202,13 +202,13 @@ class TeamUserController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property( property="roles", type="object",  
-     *                @OA\Property( 
+     *             @OA\Property( property="roles", type="object",
+     *                @OA\Property(
      *                   property="read",
      *                   type="boolean",
      *                   example=true,
      *                ),
-     *                @OA\Property( 
+     *                @OA\Property(
      *                   property="create",
      *                   type="boolean",
      *                   example=false,
@@ -257,8 +257,12 @@ class TeamUserController extends Controller
             $jwtUserRolePerms = $jwtUser['role_perms'];
 
             if (!$jwtUserIsAdmin) {
-                $this->checkUserPermissions(array_keys($input['roles']), $jwtUserRolePerms, $teamId,
-                    self::ASSIGN_PERMISSIONS_IN_TEAM);
+                $this->checkUserPermissions(
+                    array_keys($input['roles']),
+                    $jwtUserRolePerms,
+                    $teamId,
+                    self::ASSIGN_PERMISSIONS_IN_TEAM
+                );
             }
 
             $res = $this->teamUserRoles($teamId, $userId, $input, $jwtUser);
@@ -746,10 +750,10 @@ class TeamUserController extends Controller
             $userAdminsString = '<ul>';
             if (count($userAdmins)) {
                 foreach ($userAdmins as $userAdmin) {
-                    $userAdminsString.= '<li>' . $userAdmin . '</li>';
+                    $userAdminsString .= '<li>' . $userAdmin . '</li>';
                 }
             }
-            $userAdminsString.= '</ul>';
+            $userAdminsString .= '</ul>';
             $replacements = [
                 '[[USER_FIRSTNAME]]' => $user['firstname'],
                 '[[ASSIGNER_NAME]]' => $jwtUser['name'],
@@ -770,7 +774,8 @@ class TeamUserController extends Controller
         }
     }
 
-    private function listOfAdmin(int $teamId) {
+    private function listOfAdmin(int $teamId)
+    {
         try {
             $admins = [];
             $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->get()->toArray();
@@ -796,7 +801,7 @@ class TeamUserController extends Controller
             ]);
 
             throw new Exception($e->getMessage());
-        } 
+        }
     }
 
     /**
@@ -811,8 +816,7 @@ class TeamUserController extends Controller
     private function storeAuditLog(int $currentUserId, int $userId, int $teamId, array $payload, string $actionService)
     {
         try {
-            foreach ($payload['roles'] as $role)
-            {
+            foreach ($payload['roles'] as $role) {
                 Auditor::log([
                     'user_id' => $currentUserId,
                     'target_user_id' => $userId,
@@ -832,7 +836,7 @@ class TeamUserController extends Controller
             ]);
 
             throw new Exception($e->getMessage());
-        } 
+        }
     }
 
     /**
@@ -847,8 +851,7 @@ class TeamUserController extends Controller
     private function updateAuditLog(int $currentUserId, int $userId, int $teamId, array $payload, string $actionService)
     {
         try {
-            foreach ($payload['roles'] as $role => $action)
-            {
+            foreach ($payload['roles'] as $role => $action) {
                 Auditor::log([
                     'user_id' => $currentUserId,
                     'target_user_id' => $userId,
@@ -868,7 +871,7 @@ class TeamUserController extends Controller
             ]);
 
             throw new Exception($e->getMessage());
-        } 
+        }
     }
 
     /**
@@ -886,7 +889,7 @@ class TeamUserController extends Controller
             foreach ($payload['payload_data'] as $item) {
                 $userId = $item['userId'];
                 $roles = $item['roles'];
-    
+
                 foreach ($roles as $role => $action) {
                     Auditor::log([
                         'user_id' => $currentUserId,
@@ -896,7 +899,7 @@ class TeamUserController extends Controller
                         'action_name' => $actionService,
                         'description' => 'User role "' . $role . '" ' . ($action ? 'added' : 'removed'),
                     ]);
-        
+
                 }
             }
         } catch (Exception $e) {
@@ -909,7 +912,7 @@ class TeamUserController extends Controller
             ]);
 
             throw new Exception($e->getMessage());
-        } 
+        }
     }
 
     /**

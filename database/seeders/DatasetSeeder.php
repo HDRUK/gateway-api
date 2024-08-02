@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Dataset;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatasetSeeder extends Seeder

@@ -157,8 +157,8 @@ class SavedSearchController extends Controller
             $savedSearch = SavedSearch::where(['id' => $id,])->with(['filters'])->get();
             if (!$jwtUserIsAdmin && $savedSearch['user_id'] != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to view this saved search');
-            } 
-            
+            }
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
@@ -258,7 +258,7 @@ class SavedSearchController extends Controller
             } else {
                 throw new NotFoundException();
             }
-            
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
@@ -383,7 +383,7 @@ class SavedSearchController extends Controller
                     'terms' => $filter['terms'],
                 ]);
             }
-            
+
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
@@ -493,7 +493,7 @@ class SavedSearchController extends Controller
             if ($savedSearch['user_id'] != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to edit this saved search');
             }
-            
+
             $savedSearch->update($array);
 
             $arraySearchFilter = array_key_exists('filters', $input) ? $input['filters'] : [];
@@ -506,7 +506,7 @@ class SavedSearchController extends Controller
                     'terms' => $filter['terms'],
                 ]);
             }
-            
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
@@ -577,7 +577,7 @@ class SavedSearchController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-    
+
             $savedSearch = SavedSearch::findOrFail($id);
             if ($savedSearch) {
 
@@ -598,12 +598,12 @@ class SavedSearchController extends Controller
                         'message' => Config::get('statuscodes.STATUS_OK.message'),
                     ], Config::get('statuscodes.STATUS_OK.code'));
                 }
-    
+
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
                 ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
             }
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));

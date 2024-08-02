@@ -12,9 +12,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class ProgrammingLanguageTest extends TestCase
 {
     use RefreshDatabase;
-    private $accessToken = '';    
+    private $accessToken = '';
 
-    public function setUp() :void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -29,8 +29,8 @@ class ProgrammingLanguageTest extends TestCase
         ]);
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
-        $content = $response->decodeResponseJson();  
-        $this->accessToken = $content['access_token'];      
+        $content = $response->decodeResponseJson();
+        $this->accessToken = $content['access_token'];
     }
 
     /**
@@ -66,14 +66,14 @@ class ProgrammingLanguageTest extends TestCase
                 'per_page',
                 'prev_page_url',
                 'to',
-                'total',                
+                'total',
             ]);
 
     }
 
     /**
      * Returns a single programming language
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_list_a_single_programming_language()
@@ -100,7 +100,7 @@ class ProgrammingLanguageTest extends TestCase
         $response = $this->get('api/v1/programming_languages/' . $content['data'], [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
-        
+
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [
@@ -116,7 +116,7 @@ class ProgrammingLanguageTest extends TestCase
 
     /**
      * Creates a new programming language
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_create_a_programming_language()
@@ -140,14 +140,15 @@ class ProgrammingLanguageTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
     }
 
     /**
      * Tests that a programming language record can be updated
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_update_a_programming_language()
@@ -173,11 +174,12 @@ class ProgrammingLanguageTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        // Finally, update the last entered programming language to 
+        // Finally, update the last entered programming language to
         // prove functionality
         $response = $this->json(
             'PUT',
@@ -204,7 +206,7 @@ class ProgrammingLanguageTest extends TestCase
 
     /**
      * Tests that a programming language record can be edited
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_edit_a_programming_language()
@@ -257,7 +259,7 @@ class ProgrammingLanguageTest extends TestCase
 
     /**
      * Tests it can delete a programming language
-     * 
+     *
      * @return void
      */
     public function test_it_can_delete_a_programming_language()
@@ -283,12 +285,13 @@ class ProgrammingLanguageTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        // Finally, update the last entered programming language to 
-        // prove functionality        
+        // Finally, update the last entered programming language to
+        // prove functionality
         $response = $this->json(
             'DELETE',
             'api/v1/programming_languages/' . $content['data'],
@@ -302,10 +305,11 @@ class ProgrammingLanguageTest extends TestCase
             ->assertJsonStructure([
                 'message',
             ]);
-    
+
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_OK.message')
         );
     }

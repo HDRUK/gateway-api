@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\EmailTemplate;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class EmailTemplatesSeeder extends Seeder
@@ -88,11 +87,11 @@ class EmailTemplatesSeeder extends Seeder
           ',
         ]);
 
-      // custodian.team.admin - assign
-      EmailTemplate::create([
-        'identifier' => 'custodian.team.admin.assign',
-        'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Team Admin',
-        'body' => '
+        // custodian.team.admin - assign
+        EmailTemplate::create([
+          'identifier' => 'custodian.team.admin.assign',
+          'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Team Admin',
+          'body' => '
         <mjml>
             <mj-head>
                 <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
@@ -158,13 +157,13 @@ class EmailTemplatesSeeder extends Seeder
 
             </mj-body>
         </mjml>',
-      ]);
+        ]);
 
-      // custodian.team.admin - remove
-      EmailTemplate::create([
-        'identifier' => 'custodian.team.admin.remove',
-        'subject' => 'You have been removed as a Team Admin for the [[TEAM_NAME]] team on the Gateway.',
-        'body' => '
+        // custodian.team.admin - remove
+        EmailTemplate::create([
+          'identifier' => 'custodian.team.admin.remove',
+          'subject' => 'You have been removed as a Team Admin for the [[TEAM_NAME]] team on the Gateway.',
+          'body' => '
         <mjml>
             <mj-head>
                 <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
@@ -233,13 +232,13 @@ class EmailTemplatesSeeder extends Seeder
 
             </mj-body>
         </mjml>',
-      ]);
+        ]);
 
-      // custodian.dar.manager - assign
-      EmailTemplate::create([
-        'identifier' => 'custodian.dar.manager.assign',
-        'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Data Access Manager',
-        'body' => '
+        // custodian.dar.manager - assign
+        EmailTemplate::create([
+          'identifier' => 'custodian.dar.manager.assign',
+          'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Data Access Manager',
+          'body' => '
         <mjml>
             <mj-head>
                 <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
@@ -310,7 +309,7 @@ class EmailTemplatesSeeder extends Seeder
             </mj-body>
         </mjml>
           ',
-          'buttons' => '
+            'buttons' => '
                 {
                 "replacements": [
                     {
@@ -324,13 +323,13 @@ class EmailTemplatesSeeder extends Seeder
                     ]
                 }
           ',
-      ]);
+        ]);
 
-      // custodian.dar.manager - remove
-      EmailTemplate::create([
-        'identifier' => 'custodian.dar.manager.remove',
-        'subject' => 'You have been removed as a Data Access Manager for the [[TEAM_NAME]] team on the Gateway.',
-        'body' => '
+        // custodian.dar.manager - remove
+        EmailTemplate::create([
+          'identifier' => 'custodian.dar.manager.remove',
+          'subject' => 'You have been removed as a Data Access Manager for the [[TEAM_NAME]] team on the Gateway.',
+          'body' => '
             <mjml>
                 <mj-head>
                     <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
@@ -401,7 +400,7 @@ class EmailTemplatesSeeder extends Seeder
                     </mj-section>
                 </mj-body>
             </mjml>',
-        ]);
+          ]);
 
         // dar.reviewer - assign
         EmailTemplate::create([
@@ -474,11 +473,11 @@ class EmailTemplatesSeeder extends Seeder
             </mjml>',
       ]);
 
-      // dar.reviewer - remove
-      EmailTemplate::create([
-        'identifier' => 'dar.reviewer.remove',
-        'subject' => 'You have been removed as a Reviewer for the [[TEAM_NAME]] team on the Gateway.',
-        'body' => '
+        // dar.reviewer - remove
+        EmailTemplate::create([
+          'identifier' => 'dar.reviewer.remove',
+          'subject' => 'You have been removed as a Reviewer for the [[TEAM_NAME]] team on the Gateway.',
+          'body' => '
         <mjml>
             <mj-head>
                 <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
@@ -544,13 +543,13 @@ class EmailTemplatesSeeder extends Seeder
 
             </mj-body>
         </mjml>',
-      ]);
+        ]);
 
-      // developer - assign
-      EmailTemplate::create([
-        'identifier' => 'developer.assign',
-        'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Developer',
-        'body' => '
+        // developer - assign
+        EmailTemplate::create([
+          'identifier' => 'developer.assign',
+          'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Developer',
+          'body' => '
         <mjml>
             <mj-head>
                 <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
@@ -614,13 +613,13 @@ class EmailTemplatesSeeder extends Seeder
             </mj-body>
         </mjml>
           ',
-      ]);
+        ]);
 
-      // developer - remove
-      EmailTemplate::create([
-        'identifier' => 'developer.remove',
-        'subject' => 'You have been removed as a Developer for the [[TEAM_NAME]] team on the Gateway.',
-        'body' => '
+        // developer - remove
+        EmailTemplate::create([
+          'identifier' => 'developer.remove',
+          'subject' => 'You have been removed as a Developer for the [[TEAM_NAME]] team on the Gateway.',
+          'body' => '
         <mjml>
             <mj-head>
                 <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
@@ -684,13 +683,13 @@ class EmailTemplatesSeeder extends Seeder
 
             </mj-body>
         </mjml>',
-      ]);
+        ]);
 
-      // metadata.editor - assign
-      EmailTemplate::create([
-        'identifier' => 'metadata.editor.assign',
-        'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Metadata Editor',
-        'body' => '
+        // metadata.editor - assign
+        EmailTemplate::create([
+          'identifier' => 'metadata.editor.assign',
+          'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Metadata Editor',
+          'body' => '
         <mjml>
             <mj-head>
                 <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
@@ -753,13 +752,13 @@ class EmailTemplatesSeeder extends Seeder
 
             </mj-body>
         </mjml>',
-      ]);
+        ]);
 
-      // metadata.editor - remove
-      EmailTemplate::create([
-        'identifier' => 'metadata.editor.remove',
-        'subject' => 'You have been removed as a Metadata Editor for the [[TEAM_NAME]] team on the Gateway.',
-        'body' => '
+        // metadata.editor - remove
+        EmailTemplate::create([
+          'identifier' => 'metadata.editor.remove',
+          'subject' => 'You have been removed as a Metadata Editor for the [[TEAM_NAME]] team on the Gateway.',
+          'body' => '
         <mjml>
             <mj-head>
                 <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
@@ -825,13 +824,13 @@ class EmailTemplatesSeeder extends Seeder
 
             </mj-body>
         </mjml>',
-      ]);
+        ]);
 
-      // custodian.metadata.manager - assign
-      EmailTemplate::create([
-        'identifier' => 'custodian.metadata.manager.assign',
-        'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Metadata Manager',
-        'body' => '
+        // custodian.metadata.manager - assign
+        EmailTemplate::create([
+          'identifier' => 'custodian.metadata.manager.assign',
+          'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Metadata Manager',
+          'body' => '
                 <mjml>
                     <mj-head>
                         <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
@@ -896,7 +895,7 @@ class EmailTemplatesSeeder extends Seeder
 
                     </mj-body>
                 </mjml>',
-        ]);
+          ]);
 
         // custodian.metadata.manager - remove
         EmailTemplate::create([
@@ -974,11 +973,11 @@ class EmailTemplatesSeeder extends Seeder
             ',
         ]);
 
-            // hdruk.superadmin - assign
-            EmailTemplate::create([
-                'identifier' => 'hdruk.superadmin.assign',
-                'subject' => '[[ASSIGNER_NAME]] - hdruk.superadmin.assign',
-                'body' => '
+        // hdruk.superadmin - assign
+        EmailTemplate::create([
+            'identifier' => 'hdruk.superadmin.assign',
+            'subject' => '[[ASSIGNER_NAME]] - hdruk.superadmin.assign',
+            'body' => '
                     <mjml>
                         <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
                             <mj-section background-color="#ffffff">
@@ -2052,7 +2051,7 @@ class EmailTemplatesSeeder extends Seeder
         ]);
 
         $integrationDisabledSubject = 'An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.';
-        
+
         $integrationDevDisabledBody = '
             <mjml>
                 <mj-head>
@@ -2177,7 +2176,7 @@ class EmailTemplatesSeeder extends Seeder
         ]);
 
         $integrationDeletedSubject = 'An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.';
-        
+
         $integrationDevDeletedBody = '
             <mjml>
                 <mj-head>
@@ -2302,7 +2301,7 @@ class EmailTemplatesSeeder extends Seeder
         ]);
 
         $syncErrorSubject = 'An automation error occurred for the [[TEAM_NAME]] team on the Gateway.';
-        
+
         $syncErrorDevBody = '
             <mjml>
                 <mj-head>

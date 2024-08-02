@@ -35,7 +35,7 @@ class CreateTag extends BaseFormRequest
 
     /**
      * Messages
-     * 
+     *
      * @return array
      */
     public function messages(): array

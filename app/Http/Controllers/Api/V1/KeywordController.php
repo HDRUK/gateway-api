@@ -21,7 +21,7 @@ use App\Exceptions\ResourceAlreadyExistsException;
 class KeywordController extends Controller
 {
     use RequestTransformation;
-    
+
     public function __construct()
     {
         //
@@ -237,7 +237,7 @@ class KeywordController extends Controller
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Keywords ' . $keyword->id . ' created',
                 ]);
-    
+
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                     'data' => $keyword->id,
@@ -500,7 +500,7 @@ class KeywordController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Keywords ' . $id . ' deleted',
             ]);
-            
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));

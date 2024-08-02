@@ -39,7 +39,7 @@ trait IntegrationOverride
         if (isset($input['x-application-id']) && isset($input['x-client-id'])) {
             $application = Application::where('app_id', $input['x-application-id'])
                 ->where('client_id', $input['x-client-id'])->first();
-            
+
             if ($application) {
                 $userId = $application->user_id;
             }
@@ -64,12 +64,12 @@ trait IntegrationOverride
 
         return [];
     }
-    private function checkAppCanHandleDataset(int $datasetTeamId, Request $request): void 
+    private function checkAppCanHandleDataset(int $datasetTeamId, Request $request): void
     {
         $teamId = null;
         $this->overrideTeamId($teamId, $request->headers->all());
 
-        if ($datasetTeamId != $teamId){
+        if ($datasetTeamId != $teamId) {
             throw new UnauthorizedException(
                 'This Application is not allowed to interact with datasets from another team!'
             );

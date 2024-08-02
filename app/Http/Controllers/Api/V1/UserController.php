@@ -24,7 +24,9 @@ use App\Http\Traits\RequestTransformation;
 
 class UserController extends Controller
 {
-    use UserTransformation, RequestTransformation, HubspotContacts;
+    use UserTransformation;
+    use RequestTransformation;
+    use HubspotContacts;
 
     /**
      * @OA\Get(
@@ -70,7 +72,7 @@ class UserController extends Controller
             $response = [];
             if (count($jwtUser)) { //should really always be a jwtUser
                 $userIsAdmin = (bool)$jwtUser['is_admin'];
-                if($userIsAdmin){ // if it's the superadmin return a bunch of information
+                if($userIsAdmin) { // if it's the superadmin return a bunch of information
                     $users = User::with(
                         'roles',
                         'roles.permissions',
@@ -78,8 +80,8 @@ class UserController extends Controller
                         'notifications'
                     )->get()->toArray();
                     $response = $this->getUsers($users);
-                } else { 
-                    // otherwise, for now, just return the ids and names 
+                } else {
+                    // otherwise, for now, just return the ids and names
                     // (filtered if appropriate)
                     if ($request->has('filterNames')) {
                         $chars = $request->query('filterNames');
@@ -89,7 +91,8 @@ class UserController extends Controller
                             ->toArray();
                     } else {
                         $response = User::select(
-                            'id','name'
+                            'id',
+                            'name'
                         )->get()->toArray();
                     }
                 }
@@ -104,7 +107,7 @@ class UserController extends Controller
 
             return response()->json([
                 'data' => $response,
-            ], Config::get('statuscodes.STATUS_OK.code'));    
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -181,7 +184,7 @@ class UserController extends Controller
             $users = User::where([
                 'id' => $id,
             ])->get();
-    
+
             if ($users->count()) {
                 $userTeam = User::where('id', $id)->with(
                     'roles',
@@ -202,7 +205,7 @@ class UserController extends Controller
                     'data' => $this->getUsers($userTeam),
                 ], 200);
             }
-    
+
             return response()->json([
                 'message' => 'not found',
             ], 404);
@@ -276,7 +279,7 @@ class UserController extends Controller
                 'lastname' => $input['lastname'],
                 'email' => $input['email'],
                 'secondary_email' => array_key_exists('secondary_email', $input) ?
-                    $input['secondary_email'] : NULL,
+                    $input['secondary_email'] : null,
                 'preferred_email' => array_key_exists('preferred_email', $input) ?
                     $input['preferred_email'] : 'primary',
                 'provider' =>  array_key_exists('provider', $input) ?
@@ -303,7 +306,7 @@ class UserController extends Controller
             // role/permissions outside of a team
 
             $arrayUserNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
-            
+
             $user = User::create($array);
 
             if ($user) {
@@ -439,7 +442,7 @@ class UserController extends Controller
                     "lastname" => $input['lastname'],
                     "email" => $input['email'],
                     'secondary_email' => array_key_exists('secondary_email', $input) ?
-                        $input['secondary_email'] : NULL,
+                        $input['secondary_email'] : null,
                     'preferred_email' => array_key_exists('preferred_email', $input) ?
                         $input['preferred_email'] : 'primary',
                     'provider' =>  Config::get('constants.provider.service'),
@@ -451,10 +454,10 @@ class UserController extends Controller
                     'link' => $input['link'],
                     'orcid' => $input['orcid'],
                     'contact_feedback' => $input['contact_feedback'],
-                    'contact_news' => $input['contact_news'],  
-                    'mongo_id' => $input['mongo_id'], 
+                    'contact_news' => $input['contact_news'],
+                    'mongo_id' => $input['mongo_id'],
                     'mongo_object_id' => $input['mongo_object_id'],
-                    'terms' => array_key_exists('terms', $input) ? $input['terms'] : 0,                
+                    'terms' => array_key_exists('terms', $input) ? $input['terms'] : 0,
                 ];
 
                 $arrayUserNotification = array_key_exists('notifications', $input) ?
@@ -606,8 +609,8 @@ class UserController extends Controller
                 'contact_feedback',
                 'contact_news',
                 'mongo_id',
-                'mongo_object_id', 
-                'terms',                
+                'mongo_object_id',
+                'terms',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -623,7 +626,7 @@ class UserController extends Controller
             User::withTrashed()->where('id', $id)->update($array);
 
             $arrayUserNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
-                
+
             UserHasNotification::where('user_id', $id)->delete();
             foreach ($arrayUserNotification as $value) {
                 UserHasNotification::updateOrCreate([

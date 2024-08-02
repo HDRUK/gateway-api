@@ -11,8 +11,7 @@ class NotFoundException extends Exception
         string $message = '',
         int $code = Response::HTTP_NOT_FOUND,
         Exception $previous = null,
-    ) 
-    {
+    ) {
         $message = $message ? $message : Response::$statusTexts[Response::HTTP_NOT_FOUND];
 
         parent::__construct($message, $code, $previous);

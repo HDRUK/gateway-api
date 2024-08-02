@@ -19,8 +19,9 @@ use App\Http\Requests\DarIntegration\UpdateDARIntegration;
 
 class DarIntegrationController extends Controller
 {
-    use RequestTransformation, IntegrationOverride;
-    
+    use RequestTransformation;
+    use IntegrationOverride;
+
     /**
      * @OA\Get(
      *      path="/api/v1/dar-integration",
@@ -73,7 +74,7 @@ class DarIntegrationController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Integration DAR get all',
@@ -87,7 +88,7 @@ class DarIntegrationController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
@@ -155,7 +156,7 @@ class DarIntegrationController extends Controller
         $input = $request->all();
         $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
-        try {    
+        try {
             $dar = DarIntegration::findOrFail($id);
             if ($dar) {
                 return response()->json([
@@ -163,17 +164,17 @@ class DarIntegrationController extends Controller
                     'data' => $dar,
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
-    
+
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Integration DAR get ' . $id,
             ]);
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
@@ -182,7 +183,7 @@ class DarIntegrationController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
@@ -264,7 +265,7 @@ class DarIntegrationController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Integration DAR ' . $dar->id . ' created',
@@ -279,7 +280,7 @@ class DarIntegrationController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
@@ -385,7 +386,7 @@ class DarIntegrationController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Integration DAR ' . $id . ' updated',
@@ -400,7 +401,7 @@ class DarIntegrationController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -488,12 +489,12 @@ class DarIntegrationController extends Controller
 
         try {
             $arrayKeys = [
-                'enabled', 
-                'notification_email', 
-                'outbound_auth_type', 
-                'outbound_auth_key', 
-                'outbound_endpoints_base_url', 
-                'outbound_endpoints_enquiry', 
+                'enabled',
+                'notification_email',
+                'outbound_auth_type',
+                'outbound_auth_key',
+                'outbound_endpoints_base_url',
+                'outbound_endpoints_enquiry',
                 'outbound_endpoints_5safes',
                 'outbound_endpoints_5safes_files',
                 'inbound_service_account_id',
@@ -507,7 +508,7 @@ class DarIntegrationController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Integration DAR ' . $id . ' updated',
@@ -522,7 +523,7 @@ class DarIntegrationController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),

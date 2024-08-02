@@ -19,7 +19,7 @@ use App\Http\Requests\TeamNotification\CreateTeamNotification;
 class TeamNotificationController extends Controller
 {
     use TeamTransformation;
-    
+
     public function __construct()
     {
         //
@@ -77,7 +77,7 @@ class TeamNotificationController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $teamId) : JsonResponse
+    public function show(Request $request, int $teamId): JsonResponse
     {
         try {
             $input = $request->all();
@@ -85,7 +85,7 @@ class TeamNotificationController extends Controller
 
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $jwtUserId = $jwtUser['id'];
-            
+
             $team = Team::where('id', $teamId)->with(['notifications'])->first();
 
             Auditor::log([
@@ -136,7 +136,7 @@ class TeamNotificationController extends Controller
      *          @OA\Schema(
      *             @OA\Property(property="user_notification_status", type="boolean", example="true"),
      *             @OA\Property(property="team_notification_status", type="boolean", example="true"),
-     *             @OA\Property(property="team_emails", type="array",   
+     *             @OA\Property(property="team_emails", type="array",
      *                @OA\Items(type="string", example="djakubowski@example.org"),
      *             ),
      *          ),
@@ -172,7 +172,7 @@ class TeamNotificationController extends Controller
      *    )
      * )
      */
-    public function store(CreateTeamNotification $request, int $teamId) 
+    public function store(CreateTeamNotification $request, int $teamId)
     {
         try {
             $input = $request->all();
@@ -180,7 +180,7 @@ class TeamNotificationController extends Controller
 
             // team user has notification
             $this->teamUserNotification($input, $teamId);
-            
+
             // team has notifications
             $teamNotifications = TeamHasNotification::where('team_id', $teamId)->pluck('notification_id')->all();
 
@@ -256,7 +256,7 @@ class TeamNotificationController extends Controller
                     'enabled' => $input['user_notification_status'],
                     'email' => null,
                 ]);
-                
+
                 TeamUserHasNotification::create([
                     'team_has_user_id' => $teamHasUserId,
                     'notification_id' => $notification->id,
@@ -269,7 +269,7 @@ class TeamNotificationController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-        
+
             throw new Exception($e->getMessage());
         }
     }
@@ -294,7 +294,7 @@ class TeamNotificationController extends Controller
     }
 
 
-    private function createTeamNotifications(array $input, int $teamId) 
+    private function createTeamNotifications(array $input, int $teamId)
     {
         try {
             Team::where('id', $teamId)->update([

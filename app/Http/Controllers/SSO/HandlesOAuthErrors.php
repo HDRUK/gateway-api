@@ -29,7 +29,7 @@ trait HandlesOAuthErrors
             $this->exceptionHandler()->report($e);
 
             return $this->convertResponse(
-                $e->generateHttpResponse(new Psr7Response)
+                $e->generateHttpResponse(new Psr7Response())
             );
         } catch (Exception $e) {
             $this->exceptionHandler()->report($e);

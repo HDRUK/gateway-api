@@ -73,9 +73,9 @@ class SocialLoginController extends Controller
      *       description="Unauthorized",
      *    ),
      * )
-     * 
+     *
      * redirect to google authorization page
-     * 
+     *
      * @param Request $request
      * @param string $provider
      * @return mixed
@@ -83,7 +83,7 @@ class SocialLoginController extends Controller
     public function login(Request $request, string $provider): mixed
     {
         $redirectUrl = env('GATEWAY_URL');
-        if($request->has("redirect")){
+        if($request->has("redirect")) {
             $redirectUrl = $redirectUrl . $request->query('redirect');
         }
 
@@ -147,10 +147,10 @@ class SocialLoginController extends Controller
      *       description="Unauthorized",
      *    ),
      * )
-     * 
-     * 
+     *
+     *
      * redirect to front end page with token
-     * 
+     *
      * @param Request $request
      * @param string $provider
      * @return mixed
@@ -331,7 +331,7 @@ class SocialLoginController extends Controller
 
     /**
      * update user in database
-     * 
+     *
      * @param User $user
      * @param array $data
      * @param string $provider
@@ -357,7 +357,7 @@ class SocialLoginController extends Controller
 
     /**
      * save user in database
-     * 
+     *
      * @param array $value
      * @return User
      */
@@ -378,7 +378,7 @@ class SocialLoginController extends Controller
 
     /**
      * create JWT token
-     * 
+     *
      * @param User $user
      * @return string
      */
@@ -407,7 +407,7 @@ class SocialLoginController extends Controller
             'created_at' => $currentTime,
             'expired_at' => $expireTime,
         ]);
-        
+
         return $jwt;
     }
 }

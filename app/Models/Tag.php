@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Tool;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -12,32 +11,35 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Tag extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
 
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'tags';
 
     /**
      * Indicates if the model should be timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = true;
 
     /**
      * Description for this tag
-     * 
+     *
      * @var string
      */
     private $description = '';
 
     /**
      * Enabled for this tag
-     * 
+     *
      * @var bool
      */
     private $enabled = true;
