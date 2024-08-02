@@ -61,7 +61,7 @@ class PublicationExport implements WithHeadings, FromCollection, WithMapping
             $journalTitle = $this->getValueFromPath($item, 'journal_name');
             $abstractText = $this->getValueFromPath($item, 'abstract');
             $dateOfPublication = $this->getValueFromPath($item, 'year_of_publication');
-            
+
             $array[] = [
                 'title' => $title,
                 'authors' => $authors,
@@ -74,7 +74,7 @@ class PublicationExport implements WithHeadings, FromCollection, WithMapping
         return $array;
     }
 
-    public function getValueFromPath(array $item, string $path) 
+    public function getValueFromPath(array $item, string $path)
     {
         $keys = explode('/', $path);
 
@@ -86,7 +86,7 @@ class PublicationExport implements WithHeadings, FromCollection, WithMapping
                 return null;
             }
         }
-        
+
         return $return;
     }
 }

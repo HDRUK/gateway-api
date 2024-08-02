@@ -41,7 +41,7 @@ class UpdateTool extends BaseFormRequest
                 'string',
             ],
             'description' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'license' => [
@@ -73,32 +73,32 @@ class UpdateTool extends BaseFormRequest
                 'boolean',
             ],
             'programming_language' => [
-                'nullable', 
+                'nullable',
                 'array',
             ],
             'programming_language.*' => [
                 'integer',
             ],
             'programming_package' => [
-                'nullable', 
+                'nullable',
                 'array',
             ],
             'programming_package.*' => [
                 'integer',
             ],
             'type_category' => [
-                'nullable', 
+                'nullable',
                 'array',
             ],
             'type_category.*' => [
                 'integer',
             ],
             'associated_authors' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'contact_address' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'publications' => [
@@ -144,7 +144,7 @@ class UpdateTool extends BaseFormRequest
                 'string',
             ],
             'any_dataset' => [
-                'nullable', 
+                'nullable',
                 'boolean',
             ],
             'status' => [

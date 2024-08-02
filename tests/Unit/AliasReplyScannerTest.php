@@ -7,18 +7,15 @@ use App\Mail\Email;
 use Tests\TestCase;
 use App\Models\Role;
 use App\Models\Team;
-use Webklex\PHPIMAP\Client;
 
 use Webklex\PHPIMAP\Message;
-use AliasReplyScanner AS ARS;
-use App\Models\EmailTemplate;
+use AliasReplyScanner as ARS;
 use App\Models\EnquiryThread;
 use App\Models\EnquiryMessage;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\TeamSeeder;
 use Database\Seeders\UserSeeder;
 use Tests\Traits\MockExternalApis;
-use Webklex\PHPIMAP\ClientManager;
 
 
 use Database\Seeders\PermissionSeeder;
@@ -33,7 +30,6 @@ use Database\Seeders\TeamUserHasRoleSeeder;
 use App\Exceptions\AliasReplyScannerException;
 use Webklex\PHPIMAP\Support\MessageCollection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-
 
 class AliasReplyScannerTest extends TestCase
 {
@@ -72,7 +68,7 @@ class AliasReplyScannerTest extends TestCase
             $mockedMessage = $this->getMockedMessage($email);
             $this->messages->add($mockedMessage);
         }
-       
+
         ARS::shouldReceive('getNewMessages')
             ->andReturn($this->messages);
 
@@ -84,7 +80,7 @@ class AliasReplyScannerTest extends TestCase
     public function test_it_can_get_new_messages(): void
     {
         $messages = ARS::getNewMessages();
-        $this->assertCount(3,$messages);
+        $this->assertCount(3, $messages);
     }
 
     public function test_it_can_extract_an_alias_from_an_email(): void
@@ -94,7 +90,7 @@ class AliasReplyScannerTest extends TestCase
         $firstMessage = $messages[0];
         $alias = ARS::getAlias($firstMessage);
         $this->assertNotEmpty($alias);
-        $this->assertSame(32,strlen($alias));
+        $this->assertSame(32, strlen($alias));
 
         $secondMessage = $messages[1];
         $alias = ARS::getAlias($secondMessage);
@@ -120,7 +116,7 @@ class AliasReplyScannerTest extends TestCase
             'enabled',
         ]);
 
-        $this->assertEquals($response->id,$thread->id);
+        $this->assertEquals($response->id, $thread->id);
     }
 
     public function test_it_doesnt_find_a_thread_from_a_bad_alias(): void
@@ -129,13 +125,13 @@ class AliasReplyScannerTest extends TestCase
         $this->assertEmpty($thread);
     }
 
-     public function test_it_can_check_messages(): void
+    public function test_it_can_check_messages(): void
     {
         $messages = ARS::getNewMessages();
 
         $firstMessage = $messages[0];
         $thirdMessage = $messages[2];
-    
+
         $text = ARS::getSanitisedBody($firstMessage);
         $check = ARS::checkBodyIsSensible($text);
         $this->assertTrue($check);
@@ -148,7 +144,7 @@ class AliasReplyScannerTest extends TestCase
     public function test_it_can_get_new_safe_messages(): void
     {
         $messages = ARS::getNewMessagesSafe();
-        $this->assertCount(2,$messages);
+        $this->assertCount(2, $messages);
     }
 
     public function test_it_can_scrape_and_store_email_content(): void
@@ -159,12 +155,12 @@ class AliasReplyScannerTest extends TestCase
         $enquiryThread = ARS::getThread($alias);
         $nMessagesBefore = EnquiryMessage::get()->count();
 
-        $enquiryMessage = ARS::scrapeAndStoreContent($firstMessage,$enquiryThread->id);
+        $enquiryMessage = ARS::scrapeAndStoreContent($firstMessage, $enquiryThread->id);
         $this->assertNotEmpty($enquiryMessage);
 
         $nMessagesAfter = EnquiryMessage::get()->count();
         $this->assertTrue($nMessagesAfter == $nMessagesBefore + 1);
-        $this->assertSame($enquiryMessage->message_body,$firstMessage->getHTMLBody());
+        $this->assertSame($enquiryMessage->message_body, $firstMessage->getHTMLBody());
 
     }
 
@@ -184,7 +180,7 @@ class AliasReplyScannerTest extends TestCase
     //     $actualDarManagers = $team->teamUserRoles
     //         ->where("role_name", "custodian.dar.manager")
     //         ->where("enabled", true);
-        
+
     //     $darManagers = ARS::getDarManagersFromEnquiryMessage($enquiryThread->id);
     //     $this->assertEqualsCanonicalizing($darManagers,$actualDarManagers);
     // }
@@ -200,14 +196,15 @@ class AliasReplyScannerTest extends TestCase
 
     //     $teamId = $enquiryThread->team_id;
     //     Team::where("id",$teamId)->delete();
-        
+
     //     $this->expectException(AliasReplyScannerException::class);
     //     ARS::getDarManagersFromEnquiryMessage($enquiryThread->id);
-         
+
     // }
 
 
-    private function getMockedMessage ($email){
+    private function getMockedMessage($email)
+    {
 
         $mock = Mockery::mock(Message::class)
             ->shouldReceive('get')->with(Mockery::any())
@@ -226,7 +223,8 @@ class AliasReplyScannerTest extends TestCase
         return $mock;
     }
 
-      private function getInjectionAttack() {
+    private function getInjectionAttack()
+    {
         return "<HTML>
                 <HEAD>
                 <TITLE>example</title></head><body><img src=http://myImage.png></TITLE>
@@ -240,7 +238,8 @@ class AliasReplyScannerTest extends TestCase
                 </HTML>";
     }
 
-    private function generateRandomCode($length = 50) {
+    private function generateRandomCode($length = 50)
+    {
         $characters = '!@#$%^&*()_-+=<>?{}[]|';
         $code = '';
         for ($i = 0; $i < $length; $i++) {
@@ -249,30 +248,29 @@ class AliasReplyScannerTest extends TestCase
 
         return "<script>".$code."</script>";
     }
-    private function getEmails ($unique_key) {
+    private function getEmails($unique_key)
+    {
         return [
-            [ //email that contains a valid alias 
-                "toaddress"=>"noreply+".$unique_key."@hdruk.ac.uk",
-                "from"=>fake()->email(),
-                "body"=>fake()->paragraph(),
-                "subject"=>fake()->sentence(),
+            [ //email that contains a valid alias
+                "toaddress" => "noreply+".$unique_key."@hdruk.ac.uk",
+                "from" => fake()->email(),
+                "body" => fake()->paragraph(),
+                "subject" => fake()->sentence(),
             ],
-            [//email that doesnt contains a valid alias 
-                "toaddress"=>"noreply@hdruk.ac.uk",
-                "from"=>fake()->email(),
-                "body"=>fake()->paragraph(),
-                "subject"=>fake()->sentence(),
+            [//email that doesnt contains a valid alias
+                "toaddress" => "noreply@hdruk.ac.uk",
+                "from" => fake()->email(),
+                "body" => fake()->paragraph(),
+                "subject" => fake()->sentence(),
             ],
             [//email that contains some nasty code
-                "toaddress"=>"noreply+".$unique_key."@hdruk.ac.uk",
-                "from"=>fake()->email(),
-                "body"=>$this->generateRandomCode(),
-                "subject"=>fake()->sentence(),
+                "toaddress" => "noreply+".$unique_key."@hdruk.ac.uk",
+                "from" => fake()->email(),
+                "body" => $this->generateRandomCode(),
+                "subject" => fake()->sentence(),
             ]
         ];
     }
 
 
 }
-
-?>

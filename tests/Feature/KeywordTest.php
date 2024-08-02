@@ -7,7 +7,6 @@ use Tests\TestCase;
 use Tests\Traits\Authorization;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class KeywordTest extends TestCase
@@ -15,7 +14,7 @@ class KeywordTest extends TestCase
     use RefreshDatabase;
     use Authorization;
 
-    const TEST_URL = '/api/v1/keywords';
+    public const TEST_URL = '/api/v1/keywords';
 
     private $header = [];
 
@@ -74,7 +73,7 @@ class KeywordTest extends TestCase
 
     /**
      * Returns a single keyword
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_list_a_single_keyword()
@@ -99,8 +98,8 @@ class KeywordTest extends TestCase
 
         $responseGet = $this->json(
             'GET',
-            self::TEST_URL . '/' . $content['data'], 
-            [], 
+            self::TEST_URL . '/' . $content['data'],
+            [],
             $this->header,
         );
 
@@ -120,7 +119,7 @@ class KeywordTest extends TestCase
 
     /**
      * Creates a new keyword
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_create_a_keyword()
@@ -150,7 +149,7 @@ class KeywordTest extends TestCase
 
     /**
      * Tests that a keyword record can be updated
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_update_a_keyword()
@@ -199,7 +198,7 @@ class KeywordTest extends TestCase
 
     /**
      * Tests that a keyword record can be edited
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_edit_a_keyword()

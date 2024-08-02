@@ -62,12 +62,12 @@ class FAIRSharingScraper extends Command
 
     /**
      * Actions the "run" step of the discovered CommandConfig
-     * 
+     *
      * @param stdClass $runStep The object containing the steps to "run"
      */
     private function runStep(stdClass $runStep): void
     {
-        $response = null; 
+        $response = null;
         switch(strtolower($runStep->auth_type)) {
             case 'bearer':
                 try {
@@ -90,7 +90,7 @@ class FAIRSharingScraper extends Command
 
     /**
      * Actions the "auth" step of the discovered CommandConfig
-     * 
+     *
      * @param stdClass $authStep The object containing the steps to "auth"
      */
     private function authStep(stdClass $authStep): void
@@ -102,7 +102,7 @@ class FAIRSharingScraper extends Command
             $this->authToken = $response->json()[$authStep->token_response_key];
             return;
         }
-        
+
         throw new Exception('authStep received non 200 status: ' . $response->json());
     }
 }

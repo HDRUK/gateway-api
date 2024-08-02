@@ -7,7 +7,6 @@ use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class LicenseTest extends TestCase
@@ -17,7 +16,7 @@ class LicenseTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/licenses';
+    public const TEST_URL = '/api/v1/licenses';
 
     protected $header = [];
 

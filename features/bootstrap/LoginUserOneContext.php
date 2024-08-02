@@ -6,13 +6,8 @@ use Faker\Factory as Faker;
 use PHPUnit\Framework\Assert;
 use Behat\Behat\Context\Context;
 use App\Models\AuthorisationCode;
-use Behat\Gherkin\Node\TableNode;
-use App\Behat\Context\SharedContext;
-use Behat\Gherkin\Node\PyStringNode;
 use Illuminate\Support\Facades\Http;
-use App\Behat\Context\FeatureContext;
 use App\Http\Controllers\JwtController;
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 
 /**
  * Authentication user one
@@ -60,7 +55,7 @@ class LoginUserOneContext implements Context
             $this->response = Http::post($url, [
                 'email' => $this->email,
                 'password' => $this->password,
-            ]);            
+            ]);
         } catch (GuzzleException $e) {
             throw new Exception($e->getMessage());
         }
@@ -72,11 +67,11 @@ class LoginUserOneContext implements Context
     public function iShouldReceiveASuccessfulResponseFromAuthWithUserOneCredentialsAndWithStatusCode($statusCode)
     {
         Assert::assertEquals(
-            $statusCode, 
-            $this->response->getStatusCode(), 
+            $statusCode,
+            $this->response->getStatusCode(),
             "Expected status code {$statusCode}, and received {$this->response->getStatusCode()}."
         );
-        
+
         $body = json_decode($this->response->body(), true);
         $this->accessToken = $body['access_token'];
     }
@@ -94,7 +89,7 @@ class LoginUserOneContext implements Context
     }
 
     /**
-     * @Then I verify the access token contain user one credentials 
+     * @Then I verify the access token contain user one credentials
      */
     public function iVerifyTheAccessTokenContainUserOneCredentials()
     {
@@ -107,7 +102,7 @@ class LoginUserOneContext implements Context
         $decodeJwt = $jwtController->decode();
 
         Assert::assertTrue(
-            (bool) ((int) $decodeJwt['user']['id'] === (int) $this->userId), 
+            (bool) ((int) $decodeJwt['user']['id'] === (int) $this->userId),
             'we should verify the access token exists for user one with details'
         );
         SharedContext::set('jwt.user.one', $this->accessToken);

@@ -9,7 +9,6 @@ use Database\Seeders\RoleSeeder;
 use App\Models\Role;
 use App\Models\RoleHasPermission;
 use Tests\Traits\Authorization;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class RoleTest extends TestCase
@@ -17,7 +16,7 @@ class RoleTest extends TestCase
     use RefreshDatabase;
     use Authorization;
 
-    const TEST_URL = '/api/v1/roles';
+    public const TEST_URL = '/api/v1/roles';
 
     protected $header = [];
 
@@ -45,7 +44,7 @@ class RoleTest extends TestCase
 
     /**
      * Get All Roles with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_roles_with_success(): void
@@ -83,7 +82,7 @@ class RoleTest extends TestCase
 
     /**
      * Get Role by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_role_by_id_with_success(): void
@@ -109,7 +108,7 @@ class RoleTest extends TestCase
 
     /**
      * Create new Role with success
-     * 
+     *
      * @return void
      */
     public function test_add_new_role_with_success(): void
@@ -146,7 +145,7 @@ class RoleTest extends TestCase
 
     /**
      * Create update Role with success
-     * 
+     *
      * @return void
      */
     public function test_update_role_with_success(): void

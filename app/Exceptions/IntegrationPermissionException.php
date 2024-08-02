@@ -9,7 +9,7 @@ use Illuminate\Http\Response;
 class IntegrationPermissionException extends Exception
 {
     public function __construct(
-        string $message = "",
+        string $message = '',
         int $code = Response::HTTP_BAD_REQUEST,
         Exception $previous = null,
     ) {

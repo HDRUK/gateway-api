@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Permission;
 use App\Models\TeamHasUser;
 use App\Models\TeamUserHasPermission;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class TeamUserHasPermissionSeeder extends Seeder

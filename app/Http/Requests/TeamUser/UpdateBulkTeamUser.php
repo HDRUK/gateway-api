@@ -26,7 +26,7 @@ class UpdateBulkTeamUser extends BaseFormRequest
                 'array',
                 'min:1',
             ],
-            'payload_data.*.userId' =>[
+            'payload_data.*.userId' => [
                 'required',
                 'exists:users,id',
                 function ($attribute, $value, $fail) {
@@ -67,5 +67,6 @@ class UpdateBulkTeamUser extends BaseFormRequest
         $payloadData = json_decode($this->getContent(), true);
 
         $this->merge(['teamId' => $this->route('teamId')]);
-        $this->merge(['payload_data' => $payloadData]); }
+        $this->merge(['payload_data' => $payloadData]);
+    }
 }

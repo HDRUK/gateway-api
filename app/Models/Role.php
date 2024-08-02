@@ -12,14 +12,14 @@ class Role extends Model
 
     /**
      * The table representing this model
-     * 
+     *
      * @var string
      */
     protected $table = 'roles';
 
     /**
      * Whether or not this model uses timestamps
-     * 
+     *
      * @var boolean
      */
     public $timestamps = true;
@@ -36,14 +36,14 @@ class Role extends Model
 
     /**
      * The name representing this model record
-     * 
+     *
      * @var string
      */
     public string $name = '';
 
     /**
      * Whether or not this record is enabled
-     * 
+     *
      * @var boolean
      */
     public bool $enabled = true;

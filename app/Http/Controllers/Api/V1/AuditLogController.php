@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
-use Carbon\Carbon;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +15,6 @@ use App\Http\Requests\AuditLog\EditAuditLog;
 use App\Http\Requests\AuditLog\CreateAuditLog;
 use App\Http\Requests\AuditLog\DeleteAuditLog;
 use App\Http\Requests\AuditLog\UpdateAuditLog;
-use App\Exceptions\InternalServerErrorException;
 
 class AuditLogController extends Controller
 {
@@ -120,7 +118,7 @@ class AuditLogController extends Controller
      *          )
      *      )
      * )
-     */    
+     */
     public function show(GetAuditLog $request, int $id): JsonResponse
     {
         try {
@@ -174,7 +172,7 @@ class AuditLogController extends Controller
      *          )
      *      )
      * )
-     */    
+     */
     public function store(CreateAuditLog $request): JsonResponse
     {
         try {

@@ -6,15 +6,9 @@ use Exception;
 use Faker\Factory as Faker;
 use PHPUnit\Framework\Assert;
 use Behat\Behat\Context\Context;
-use App\Models\AuthorisationCode;
-use Behat\Gherkin\Node\TableNode;
-use App\Behat\Context\SharedContext;
 use App\Models\Application;
 use App\Models\Dataset;
-use App\Models\Notification;
-use Behat\Gherkin\Node\PyStringNode;
 use Illuminate\Support\Facades\Http;
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 
 /**
  * Defines application create features from the specific context.
@@ -62,9 +56,9 @@ class ManageDatasetWithApplicationContext implements Context
             $payload = [
                 "metadata" => $this->getMetadata(),
             ];
-    
+
             $url = $this->baseUri . '/api/v1/integrations/datasets';
-    
+
             $this->response = Http::withHeaders([
                 'x-application-id' => $this->application['app_id'],
                 'x-client-id' => $this->application['client_id'],
@@ -80,8 +74,8 @@ class ManageDatasetWithApplicationContext implements Context
     public function iShouldReceiveASuccessfulResponseForCreateDatasetWithApplicationWithStatusCode($statusCode)
     {
         Assert::assertEquals(
-            $statusCode, 
-            $this->response->getStatusCode(), 
+            $statusCode,
+            $this->response->getStatusCode(),
             "Expected status code {$statusCode}, and received {$this->response->getStatusCode()}."
         );
     }
@@ -114,7 +108,7 @@ class ManageDatasetWithApplicationContext implements Context
     {
         try {
             $url = $this->baseUri . '/api/v1/integrations/datasets/' . $this->datasetId;
-    
+
             $this->response = Http::withHeaders([
                 'x-application-id' => $this->application['app_id'],
                 'x-client-id' => $this->application['client_id'],

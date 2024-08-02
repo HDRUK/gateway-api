@@ -12,6 +12,7 @@ use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\LibrarySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Traits\MockExternalApis;
+
 class LibraryTest extends TestCase
 {
     use RefreshDatabase;
@@ -20,7 +21,7 @@ class LibraryTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/libraries';
+    public const TEST_URL = '/api/v1/libraries';
 
     protected $header = [];
 
@@ -47,7 +48,7 @@ class LibraryTest extends TestCase
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-        
+
         $response->assertJsonStructure([
                 'current_page',
                 'data' => [
@@ -88,7 +89,7 @@ class LibraryTest extends TestCase
             'dataset_id' => 2,
         ], $this->header);
 
-        
+
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
                 'message',

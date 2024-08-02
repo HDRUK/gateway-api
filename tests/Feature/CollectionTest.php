@@ -1,6 +1,7 @@
 <?php
 
 namespace Tests\Feature;
+
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Tool;
@@ -38,7 +39,7 @@ class CollectionTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/collections';
+    public const TEST_URL = '/api/v1/collections';
 
     protected $header = [];
 
@@ -76,7 +77,7 @@ class CollectionTest extends TestCase
 
     /**
      * Get All Collections with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_collections_with_success(): void
@@ -126,7 +127,7 @@ class CollectionTest extends TestCase
 
     /**
      * Get Collection by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_collection_by_id_with_success(): void
@@ -164,7 +165,7 @@ class CollectionTest extends TestCase
 
     /**
      * Create new Collection with success
-     * 
+     *
      * @return void
      */
     public function test_add_new_collection_with_success(): void
@@ -207,7 +208,7 @@ class CollectionTest extends TestCase
      *
      * @return void
      */
-    public function test_update_collection_with_success(): void 
+    public function test_update_collection_with_success(): void
     {
         // create new collection
         $mockDataIns = [
@@ -408,6 +409,7 @@ class CollectionTest extends TestCase
             ['status' => 'ACTIVE'],
             $this->header
         );
+
         $response->assertStatus(200);
 
         $countTrashedAfterUnarchiving = Collection::onlyTrashed()->count();

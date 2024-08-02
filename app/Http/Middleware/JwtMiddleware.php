@@ -2,8 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use Config;
-
 use Closure;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -28,7 +26,7 @@ class JwtMiddleware
      *     bearerFormat="JWT",
      *     securityScheme="bearerAuth",
      * )
-     * 
+     *
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
@@ -76,11 +74,11 @@ class JwtMiddleware
 
         // Otherwise fall back to bearer authorization header
         $authorization = $request->header('Authorization');
-        $splitAuthorization = explode(' ',$authorization);
+        $splitAuthorization = explode(' ', $authorization);
 
         if (strtolower(trim($splitAuthorization[0])) === 'bearer') {
             $jwtBearer = $splitAuthorization[1];
-            
+
             $jwtController = new JwtController();
             $jwtController->setJwt($jwtBearer);
             $isValidJwt = $jwtController->isValid();

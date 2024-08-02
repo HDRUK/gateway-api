@@ -10,7 +10,6 @@ use App\Models\TeamHasUser;
 use App\Models\UserHasRole;
 use App\Models\TeamUserHasRole;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class UserStartDemo extends Seeder
 {
@@ -30,7 +29,7 @@ class UserStartDemo extends Seeder
 
     /**
      * Generically creates users per passed params
-     * 
+     *
      * @param string $firstname     The firstname of the user to create
      * @param string $lastname      The lastname of the user to create
      * @param string $email         The email address of the user to create
@@ -38,7 +37,7 @@ class UserStartDemo extends Seeder
      * @param string $provider      The provider of the user to create
      * @param bool $isAdmin         Whether this user being created is an admin
      * @param array $roles          The roles that should be applied to the user being created
-     * 
+     *
      * @return void
      */
     private function createUser(

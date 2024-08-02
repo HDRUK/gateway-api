@@ -58,7 +58,8 @@ class DatasetTableExport implements WithHeadings, FromCollection, WithMapping
         foreach ($data as $item) {
             $version = $this->getValueFromPath($item, 'metadata/gwdmVersion');
             $title = $this->getValueFromPath($item, 'metadata/metadata/summary/title');
-            $populationSize = ($version !== '1.0') ? $this->getValueFromPath($item, 'metadata/metadata/summary/populationSize') : '';
+            $populationSize = ($version !== '1.0') ?
+                $this->getValueFromPath($item, 'metadata/metadata/summary/populationSize') : '';
             $startDate = $this->getValueFromPath($item, 'metadata/metadata/provenance/temporal/startDate');
             $endData = $this->getValueFromPath($item, 'metadata/metadata/provenance/temporal/endData');
             $accessService = $this->getValueFromPath($item, 'metadata/metadata/accesibility/access/accessService');
@@ -71,15 +72,16 @@ class DatasetTableExport implements WithHeadings, FromCollection, WithMapping
             } else {
                 $publisher = $this->getValueFromPath($item, 'metadata/metadata/summary/publisher/name');
             }
-            
+
             $array[] = [
                 'title' => $title,
-                'populationSize' => (int) $populationSize,
+                'populationSize' => (int)$populationSize,
                 'dataRange' => $this->convertDate($startDate, $endData),
                 'accessService' => $accessService,
                 'dataStandard' => $dataStandard,
                 'cohortDiscovery' => $cohortDiscovery,
-                'structuralMetadata' => ($structuralMetadata === null) ? '' : (count($structuralMetadata) ? 'true' : ''),
+                'structuralMetadata' => ($structuralMetadata === null) ?
+                    '' : (count($structuralMetadata) ? 'true' : ''),
                 'publisher' => $publisher,
             ];
         }
@@ -87,7 +89,7 @@ class DatasetTableExport implements WithHeadings, FromCollection, WithMapping
         return $array;
     }
 
-    public function getValueFromPath(array $item, string $path) 
+    public function getValueFromPath(array $item, string $path)
     {
         $keys = explode('/', $path);
 
@@ -99,7 +101,7 @@ class DatasetTableExport implements WithHeadings, FromCollection, WithMapping
                 return null;
             }
         }
-        
+
         return $return;
     }
 
@@ -113,7 +115,7 @@ class DatasetTableExport implements WithHeadings, FromCollection, WithMapping
             $splitDate = explode('-', $start);
             return $splitDate[0];
         }
-        
+
         if (!$start && $stop) {
             $splitDate = explode('-', $stop);
             return $splitDate[0];

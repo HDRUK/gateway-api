@@ -21,14 +21,14 @@ class Upload extends Model
 
     /**
      * Table associated with this model
-     * 
+     *
      * @var string
      */
     public $table = 'uploads';
 
     /**
      * Indicates if the model should be timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = true;

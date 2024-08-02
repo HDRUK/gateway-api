@@ -6,7 +6,6 @@ use App\Models\Team;
 use App\Models\TeamHasUser;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class TeamHasUserSeeder extends Seeder
 {

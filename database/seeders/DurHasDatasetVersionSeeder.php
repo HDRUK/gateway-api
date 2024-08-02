@@ -7,7 +7,6 @@ use App\Models\Dur;
 use App\Models\DurHasDatasetVersion;
 use App\Models\Dataset;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DurHasDatasetVersionSeeder extends Seeder
 {

@@ -15,7 +15,7 @@ class SharedContext
     {
         return self::$data[$key] ?? null;
     }
-    
+
     public static function reset()
     {
         return self::$data = [];

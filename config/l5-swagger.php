@@ -139,7 +139,7 @@ return [
              * @note This option overwrites `paths.excludes`
              * @see \OpenApi\scan
             */
-            'exclude' => [                
+            'exclude' => [
                 'Http/Controllers/Api/V1/AuditLogController',
                 'Http/Controllers/Api/V1/FilterController',
                 'Http/Controllers/Api/V1/PermissionController',

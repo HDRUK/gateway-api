@@ -17,7 +17,6 @@ use App\Models\Collection;
 use App\Models\DurHasTool;
 use App\Models\Publication;
 use App\Models\PublicationHasDatasetVersion;
-use App\Models\DataProvider;
 use App\Models\TypeCategory;
 
 use Illuminate\Http\Request;
@@ -25,24 +24,20 @@ use App\Exports\DataUseExport;
 use App\Models\DatasetVersionHasTool;
 use App\Models\DatasetVersion;
 use App\Exports\ToolListExport;
-use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
 use App\Exports\DatasetListExport;
 use App\Exports\PublicationExport;
 use App\Models\ProgrammingPackage;
-use App\Models\PublicationHasTool;
 use App\Exports\DataProviderCollExport;
 use App\Exports\DataProviderExport;
 use App\Exports\DatasetTableExport;
-use App\Models\DataProviderHasTeam;
 use App\Models\ProgrammingLanguage;
 use App\Models\ToolHasTypeCategory;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exceptions\NotFoundException;
 use App\Http\Traits\PaginateFromArray;
 use App\Models\DataProviderCollHasTeam;
 use MetadataManagementController as MMC;
@@ -146,17 +141,16 @@ class SearchController extends Controller
             $input = $request->all();
 
             $download = array_key_exists('download', $input) ? $input['download'] : false;
-            $downloadType = array_key_exists('download_type', $input) ? $input['download_type'] : "list";
-            $sort = $request->query('sort', "score:desc");
-            $viewType = $request->query('view_type', "full");
+            $downloadType = array_key_exists('download_type', $input) ? $input['download_type'] : 'list';
+            $sort = $request->query('sort', 'score:desc');
+            $viewType = $request->query('view_type', 'full');
 
-            $tmp = explode(":", $sort);
+            $tmp = explode(':', $sort);
             $sortInput = $tmp[0];
             $sortField = ($sortInput === 'title') ? 'shortTitle' : $sortInput;
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
-            $filters = (isset($request['filters']) ? $request['filters'] : []);
-            $aggs = Filter::where('type', 'dataset')->where("enabled", 1)->get()->toArray();
+            $aggs = Filter::where('type', 'dataset')->where('enabled', 1)->get()->toArray();
             $input['aggs'] = $aggs;
 
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/datasets';
@@ -174,8 +168,9 @@ class SearchController extends Controller
                 !isset($response['hits']['hits']) || !is_array($response['hits']['hits']) ||
                 !isset($response['hits']['total']['value'])
             ) {
-
-                return response()->json(['message' => 'Hits not being properly returned by the search service'], 404);
+                return response()->json([
+                    'message' => 'Hits not being properly returned by the search service'
+                ], 404);
             }
 
             $datasetsArray = $response['hits']['hits'];
@@ -190,9 +185,9 @@ class SearchController extends Controller
             foreach ($datasetsArray as $i => $dataset) {
                 $foundFlag = false;
                 foreach ($datasetsModels as $model) {
-                    if ((int) $dataset['_id'] === $model['id']) {
+                    if ((int)$dataset['_id'] === $model['id']) {
                         $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
-                        if ($viewType === 'mini') {
+                        if (strtolower($viewType) === 'mini') {
                             $datasetsArray[$i]['metadata'] = $this->trimPayload($model['versions'][0]['metadata'], $model);
                         } else {
                             $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
@@ -208,20 +203,20 @@ class SearchController extends Controller
                 }
             }
 
-            if ($download && $downloadType === "list") {
+            if ($download && strtolower($downloadType) === 'list') {
                 Auditor::log([
                     'action_type' => 'GET',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => "Search datasets export data - list",
+                    'description' => 'Search datasets export data - list',
                 ]);
                 return Excel::download(new DatasetListExport($datasetsArray), 'datasets.csv');
             }
 
-            if ($download && $downloadType === "table") {
+            if ($download && strtolower($downloadType) === 'table') {
                 Auditor::log([
                     'action_type' => 'POST',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => "Search datasets export data - table",
+                    'description' => 'Search datasets export data - table',
                 ]);
                 return Excel::download(new DatasetTableExport($datasetsArray), 'datasets.csv');
             }
@@ -240,11 +235,17 @@ class SearchController extends Controller
             Auditor::log([
                 'action_type' => 'POST',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => "Search datasets",
+                'description' => 'Search datasets',
             ]);
 
             return response()->json($final, 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -295,7 +296,7 @@ class SearchController extends Controller
     public function similarDatasets(Request $request): JsonResponse
     {
         try {
-            $id = (string) $request['id'];
+            $id = (string)$request['id'];
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/similar/datasets';
             $response = Http::post($urlString, ['id' => $id]);
 
@@ -309,7 +310,7 @@ class SearchController extends Controller
             $datasetsModels = Dataset::with('versions')->whereIn('id', $matchedIds)->get()->toArray();
             foreach ($datasetsArray as $i => $dataset) {
                 foreach ($datasetsModels as $model) {
-                    if ((int) $dataset['_id'] === $model['id']) {
+                    if ((int)$dataset['_id'] === $model['id']) {
                         $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
                         $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
                         $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
@@ -320,11 +321,17 @@ class SearchController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => "Search similar datasets",
+                'description' => 'Search similar datasets',
             ]);
 
             return response()->json(['data' => $datasetsArray], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -421,14 +428,13 @@ class SearchController extends Controller
 
             $download = array_key_exists('download', $input) ? $input['download'] : false;
 
-            $sort = $request->query('sort', "score:desc");
+            $sort = $request->query('sort', 'score:desc');
 
-            $tmp = explode(":", $sort);
+            $tmp = explode(':', $sort);
             $sortField = $tmp[0];
 
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
-            $filters = (isset($request['filters']) ? $request['filters'] : []);
             $aggs = Filter::where('type', 'tool')->get()->toArray();
             $input['aggs'] = $aggs;
 
@@ -448,10 +454,9 @@ class SearchController extends Controller
             foreach ($toolsArray as $i => $tool) {
                 $foundFlag = false;
                 foreach ($toolModels as $model) {
-                    if ((int) $tool['_id'] === $model['id']) {
+                    if ((int)$tool['_id'] === $model['id']) {
 
                         $toolsArray[$i]['name'] = $model['name'];
-
                         $toolsArray[$i]['description'] = $model['description'];
 
                         // uploader
@@ -463,24 +468,34 @@ class SearchController extends Controller
                         $toolsArray[$i]['team_name'] = $team ? $team->name : '';
 
                         // type_category
-                        $toolHasTypeCategoryIds = ToolHasTypeCategory::where('tool_id', $model['id'])->pluck('type_category_id')->all();
-                        $toolsArray[$i]['type_category'] = $toolHasTypeCategoryIds ? TypeCategory::whereIn('id', $toolHasTypeCategoryIds)->pluck('name')->all() : [];
+                        $toolHasTypeCategoryIds = ToolHasTypeCategory::where('tool_id', $model['id'])
+                            ->pluck('type_category_id')->all();
+                        $toolsArray[$i]['type_category'] = $toolHasTypeCategoryIds ?
+                            TypeCategory::whereIn('id', $toolHasTypeCategoryIds)->pluck('name')->all() : [];
 
                         // license
                         $license = License::where('id', $model['license'])->first();
                         $toolsArray[$i]['license'] = $license ? $license->label : '';
 
                         // programming_language
-                        $toolHasProgrammingLangIds = ToolHasProgrammingLanguage::where('tool_id', $model['id'])->pluck('programming_language_id')->all();
-                        $toolsArray[$i]['programming_language'] = $toolHasProgrammingLangIds ? ProgrammingLanguage::whereIn('id', $toolHasProgrammingLangIds)->pluck('name')->all() : [];
+                        $toolHasProgrammingLangIds = ToolHasProgrammingLanguage::where('tool_id', $model['id'])
+                            ->pluck('programming_language_id')->all();
+                        $toolsArray[$i]['programming_language'] = $toolHasProgrammingLangIds ?
+                            ProgrammingLanguage::whereIn('id', $toolHasProgrammingLangIds)
+                            ->pluck('name')->all() : [];
 
                         // programming_package
-                        $toolHasProgrammingPackageIds = ToolHasProgrammingPackage::where('tool_id', $model['id'])->pluck('programming_package_id')->all();
-                        $toolsArray[$i]['programming_package'] = $toolHasProgrammingPackageIds ? ProgrammingPackage::whereIn('id', $toolHasProgrammingPackageIds)->pluck('name')->all() : [];
+                        $toolHasProgrammingPackageIds = ToolHasProgrammingPackage::where('tool_id', $model['id'])
+                            ->pluck('programming_package_id')->all();
+                        $toolsArray[$i]['programming_package'] = $toolHasProgrammingPackageIds ?
+                            ProgrammingPackage::whereIn('id', $toolHasProgrammingPackageIds)
+                            ->pluck('name')->all() : [];
 
                         // datasets
-                        $datasetVersionHasToolIds = DatasetVersionHasTool::where('tool_id', $model['id'])->pluck('dataset_version_id')->all();
-                        $datasetHasToolIds = DatasetVersion::whereIn('id', $datasetVersionHasToolIds)->pluck('dataset_id')->all();
+                        $datasetVersionHasToolIds = DatasetVersionHasTool::where('tool_id', $model['id'])
+                            ->pluck('dataset_version_id')->all();
+                        $datasetHasToolIds = DatasetVersion::whereIn('id', $datasetVersionHasToolIds)
+                            ->pluck('dataset_id')->all();
 
                         $toolsArray[$i]['datasets'] = $this->getDatasetTitle($datasetHasToolIds);
 
@@ -511,7 +526,7 @@ class SearchController extends Controller
                 Auditor::log([
                     'action_type' => 'POST',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => "Search tools export data - list",
+                    'description' => 'Search tools export data - list',
                 ]);
                 return Excel::download(new ToolListExport($toolsArraySorted), 'tools.csv');
             }
@@ -528,11 +543,17 @@ class SearchController extends Controller
             Auditor::log([
                 'action_type' => 'POST',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => "Search tools",
+                'description' => 'Search tools',
             ]);
 
             return response()->json($final, 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -621,12 +642,11 @@ class SearchController extends Controller
         try {
             $input = $request->all();
 
-            $sort = $request->query('sort', "score:desc");
+            $sort = $request->query('sort', 'score:desc');
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
-            $filters = (isset($request['filters']) ? $request['filters'] : []);
             $aggs = Filter::where('type', 'collection')->get()->toArray();
             $input['aggs'] = $aggs;
 
@@ -645,7 +665,7 @@ class SearchController extends Controller
             foreach ($collectionArray as $i => $collection) {
                 $foundFlag = false;
                 foreach ($collectionModels as $model) {
-                    if ((int) $collection['_id'] === $model['id']) {
+                    if ((int)$collection['_id'] === $model['id']) {
                         $collectionArray[$i]['_source']['created_at'] = $model['created_at'];
                         $collectionArray[$i]['name'] = $model['name'];
                         $collectionArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
@@ -674,11 +694,17 @@ class SearchController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => "Search collections",
+                'description' => 'Search collections',
             ]);
 
             return response()->json($final, 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -767,14 +793,13 @@ class SearchController extends Controller
         try {
             $input = $request->all();
             $download = array_key_exists('download', $input) ? $input['download'] : false;
-            $sort = $request->query('sort', "score:desc");
+            $sort = $request->query('sort', 'score:desc');
 
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
 
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
-            $filters = (isset($request['filters']) ? $request['filters'] : []);
             $aggs = Filter::where('type', 'dataUseRegister')->get()->toArray();
             $input['aggs'] = $aggs;
 
@@ -797,7 +822,7 @@ class SearchController extends Controller
             foreach ($durArray as $i => $dur) {
                 $foundFlag = false;
                 foreach ($durModels as $model) {
-                    if ((int) $dur['_id'] === $model['id']) {
+                    if ((int)$dur['_id'] === $model['id']) {
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
                         $durArray[$i]['projectTitle'] = $model['project_title'];
                         $durArray[$i]['organisationName'] = $model['organisation_name'];
@@ -820,7 +845,7 @@ class SearchController extends Controller
                 Auditor::log([
                     'action_type' => 'GET',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => "Search dur export data",
+                    'description' => 'Search dur export data',
                 ]);
                 return Excel::download(new DataUseExport($durArray), 'dur.csv');
             }
@@ -844,6 +869,12 @@ class SearchController extends Controller
 
             return response()->json($final, 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -962,7 +993,7 @@ class SearchController extends Controller
             $input = $request->all();
 
             $download = array_key_exists('download', $input) ? $input['download'] : false;
-            $sort = $request->query('sort', "score:desc");
+            $sort = $request->query('sort', 'score:desc');
 
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
@@ -972,8 +1003,6 @@ class SearchController extends Controller
             $source = !is_null($input['source']) ? $input['source'] : 'GAT';
 
             if ($source === 'GAT') {
-
-                $filters = (isset($request['filters']) ? $request['filters'] : []);
                 $aggs = Filter::where('type', 'paper')->get()->toArray();
                 $input['aggs'] = $aggs;
 
@@ -992,7 +1021,7 @@ class SearchController extends Controller
                 foreach ($pubArray as $i => $p) {
                     $foundFlag = false;
                     foreach ($pubModels as $model) {
-                        if ((int) $p['_id'] === $model['id']) {
+                        if ((int)$p['_id'] === $model['id']) {
                             $pubArray[$i]['_source']['created_at'] = $model['created_at'];
                             $pubArray[$i]['paper_title'] = $model['paper_title'];
                             // This is an in-transit workaround to remove header elements of the abstract text in the request.
@@ -1042,7 +1071,8 @@ class SearchController extends Controller
                     // This requires more thought, and only a temporary fix. LS.
                     $pubArray[$i]['abstract'] = preg_replace('/<h4>(.*?)<\/h4>/', '', $paper['abstractText']);
                     $pubArray[$i]['authors'] = $paper['authorString'];
-                    $pubArray[$i]['journal_name'] = isset($paper['journalInfo']) ? $paper['journalInfo']['journal']['title'] : '';
+                    $pubArray[$i]['journal_name'] = isset($paper['journalInfo']) ?
+                        $paper['journalInfo']['journal']['title'] : '';
                     $pubArray[$i]['year_of_publication'] = $paper['pubYear'];
                     $pubArray[$i]['full_text_url'] = $paper['fullTextUrlList']['fullTextUrl'][0]['url'];
                     $pubArray[$i]['url'] = $paper['fullTextUrlList']['fullTextUrl'][0]['url'];
@@ -1072,11 +1102,17 @@ class SearchController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => "Search publications",
+                'description' => 'Search publications',
             ]);
 
             return response()->json($final, 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -1248,14 +1284,13 @@ class SearchController extends Controller
         try {
             $input = $request->all();
             $download = array_key_exists('download', $input) ? $input['download'] : false;
-            $sort = $request->query('sort', "score:desc");
+            $sort = $request->query('sort', 'score:desc');
 
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
 
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
-            $filters = (isset($request['filters']) ? $request['filters'] : []);
             $aggs = Filter::where('type', 'dataProviderColl')->get()->toArray();
             $input['aggs'] = $aggs;
 
@@ -1274,7 +1309,7 @@ class SearchController extends Controller
             foreach ($dataProviderCollArray as $i => $dp) {
                 $foundFlag = false;
                 foreach ($dataProviderCollModels as $model) {
-                    if ((int) $dp['_id'] === $model['id']) {
+                    if ((int)$dp['_id'] === $model['id']) {
                         $dataProviderCollArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $dataProviderCollArray[$i]['name'] = $model['name'];
                         $dataProviderCollArray[$i]['datasetTitles'] = $this->dataProviderDatasetTitles($model);
@@ -1293,7 +1328,7 @@ class SearchController extends Controller
                 Auditor::log([
                     'action_type' => 'GET',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => "Search data provider export data",
+                    'description' => 'Search data provider export data',
                 ]);
                 return Excel::download(new DataProviderCollExport($dataProviderCollArray), 'dataProviderColl.csv');
             }
@@ -1312,11 +1347,17 @@ class SearchController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => "Search data provider",
+                'description' => 'Search data provider',
             ]);
 
             return response()->json($final, 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -1400,14 +1441,13 @@ class SearchController extends Controller
         try {
             $input = $request->all();
             $download = array_key_exists('download', $input) ? $input['download'] : false;
-            $sort = $request->query('sort', "score:desc");
+            $sort = $request->query('sort', 'score:desc');
 
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
 
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
-            $filters = (isset($request['filters']) ? $request['filters'] : []);
             $aggs = Filter::where('type', 'dataProvider')->get()->toArray();
             $input['aggs'] = $aggs;
 
@@ -1426,7 +1466,7 @@ class SearchController extends Controller
             foreach ($dataProviderArray as $i => $dp) {
                 $foundFlag = false;
                 foreach ($dataProviderModels as $model) {
-                    if ((int) $dp['_id'] === $model['id']) {
+                    if ((int)$dp['_id'] === $model['id']) {
                         $dataProviderArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $dataProviderArray[$i]['name'] = $model['name'];
                         $dataProviderArray[$i]['team_logo'] = $model['team_logo'];
@@ -1444,7 +1484,7 @@ class SearchController extends Controller
                 Auditor::log([
                     'action_type' => 'GET',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => "Search data provider export data",
+                    'description' => 'Search data provider export data',
                 ]);
                 return Excel::download(new DataProviderExport($dataProviderArray), 'dataProvider.csv');
             }
@@ -1463,11 +1503,17 @@ class SearchController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => "Search data provider",
+                'description' => 'Search data provider',
             ]);
 
             return response()->json($final, 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -1475,9 +1521,9 @@ class SearchController extends Controller
     /**
      * Find dataset titles associated with a given Dur model instance.
      * Returns an array of titles.
-     * 
+     *
      * @param Dur $durMatch The Dur model the find dataset titles for
-     * 
+     *
      * @return array
      */
     private function durDatasetTitles(Dur $durMatch): array
@@ -1496,11 +1542,11 @@ class SearchController extends Controller
 
     /**
      * Sorts results returned by the search service according to sort field and direction
-     * 
+     *
      * @param array $resultArray The results from the keyword search
      * @param string $sortField The field to sort result by (e.g. name, created_at etc.)
      * @param string $sortDirection The direction to sort the result (i.e. asc, desc)
-     * 
+     *
      * @return array
      */
     private function sortSearchResult(array $resultArray, string $sortField, string $sortDirection): array
@@ -1625,7 +1671,9 @@ class SearchController extends Controller
         $toolNames = [];
 
         $toolIds = DurHasTool::where('dur_id', $durId)->pluck('tool_id')->all();
-        if (!count($toolIds)) return [];
+        if (!count($toolIds)) {
+            return [];
+        }
 
         $toolNames = Tool::whereIn('id', $toolIds)->pluck('name')->all();
 
@@ -1637,7 +1685,9 @@ class SearchController extends Controller
         $durNames = [];
 
         $durIds = DurHasTool::where('tool_id', $toolId)->pluck('dur_id')->all();
-        if (!count($durIds)) return [];
+        if (!count($durIds)) {
+            return [];
+        }
 
         $durNames = Dur::whereIn('id', $durIds)->where('status', 'ACTIVE')->pluck('project_title')->all();
 
