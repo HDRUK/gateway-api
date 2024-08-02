@@ -101,7 +101,6 @@ docker_build(
         run("php artisan cache:clear"),
         run("php artisan config:clear", trigger="./.env"),
         run("php artisan l5-swagger:generate"),
-        run('composer run lint'),
     ],
 )
 
