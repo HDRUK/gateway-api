@@ -144,36 +144,38 @@ class SearchController extends Controller
     {
         try {
             $input = $request->all();
-            
+
             $download = array_key_exists('download', $input) ? $input['download'] : false;
             $downloadType = array_key_exists('download_type', $input) ? $input['download_type'] : "list";
-            $sort = $request->query('sort',"score:desc");
+            $sort = $request->query('sort', "score:desc");
             $viewType = $request->query('view_type', "full");
-        
+
             $tmp = explode(":", $sort);
             $sortInput = $tmp[0];
             $sortField = ($sortInput === 'title') ? 'shortTitle' : $sortInput;
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
             $filters = (isset($request['filters']) ? $request['filters'] : []);
-            $aggs = Filter::where('type', 'dataset')->where("enabled",1)->get()->toArray();
+            $aggs = Filter::where('type', 'dataset')->where("enabled", 1)->get()->toArray();
             $input['aggs'] = $aggs;
 
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/datasets';
             $response = Http::post($urlString, $input);
-            
+
             if (!$response->successful()) {
                 return response()->json([
-                    'message' => 'No response from '.$urlString,
+                    'message' => 'No response from ' . $urlString,
                 ], 404);
             }
             $response = $response->json();
 
-            if (!isset($response['hits']) || !is_array($response['hits']) || 
-                !isset($response['hits']['hits']) || !is_array($response['hits']['hits']) || 
-                !isset($response['hits']['total']['value'])) {
+            if (
+                !isset($response['hits']) || !is_array($response['hits']) ||
+                !isset($response['hits']['hits']) || !is_array($response['hits']['hits']) ||
+                !isset($response['hits']['total']['value'])
+            ) {
 
-                    return response()->json(['message' => 'Hits not being properly returned by the search service'], 404);
+                return response()->json(['message' => 'Hits not being properly returned by the search service'], 404);
             }
 
             $datasetsArray = $response['hits']['hits'];
@@ -181,7 +183,7 @@ class SearchController extends Controller
             $matchedIds = [];
             // join to created at from DB
             foreach (array_values($datasetsArray) as $i => $d) {
-               $matchedIds[] = $d['_id'];
+                $matchedIds[] = $d['_id'];
             }
 
             $datasetsModels = Dataset::with('versions')->whereIn('id', $matchedIds)->get()->toArray();
@@ -209,7 +211,7 @@ class SearchController extends Controller
             if ($download && $downloadType === "list") {
                 Auditor::log([
                     'action_type' => 'GET',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => "Search datasets export data - list",
                 ]);
                 return Excel::download(new DatasetListExport($datasetsArray), 'datasets.csv');
@@ -218,7 +220,7 @@ class SearchController extends Controller
             if ($download && $downloadType === "table") {
                 Auditor::log([
                     'action_type' => 'POST',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => "Search datasets export data - table",
                 ]);
                 return Excel::download(new DatasetTableExport($datasetsArray), 'datasets.csv');
@@ -237,12 +239,11 @@ class SearchController extends Controller
 
             Auditor::log([
                 'action_type' => 'POST',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => "Search datasets",
             ]);
 
             return response()->json($final, 200);
-
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -302,7 +303,7 @@ class SearchController extends Controller
             $matchedIds = [];
             // join to data from DB
             foreach (array_values($datasetsArray) as $i => $d) {
-               $matchedIds[] = $d['_id'];
+                $matchedIds[] = $d['_id'];
             }
 
             $datasetsModels = Dataset::with('versions')->whereIn('id', $matchedIds)->get()->toArray();
@@ -318,12 +319,11 @@ class SearchController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => "Search similar datasets",
             ]);
 
             return response()->json(['data' => $datasetsArray], 200);
-
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -421,8 +421,8 @@ class SearchController extends Controller
 
             $download = array_key_exists('download', $input) ? $input['download'] : false;
 
-            $sort = $request->query('sort',"score:desc");   
-        
+            $sort = $request->query('sort', "score:desc");
+
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
 
@@ -447,7 +447,7 @@ class SearchController extends Controller
 
             foreach ($toolsArray as $i => $tool) {
                 $foundFlag = false;
-                foreach ($toolModels as $model){
+                foreach ($toolModels as $model) {
                     if ((int) $tool['_id'] === $model['id']) {
 
                         $toolsArray[$i]['name'] = $model['name'];
@@ -490,7 +490,7 @@ class SearchController extends Controller
 
                         $toolsArray[$i]['_source']['programmingLanguage'] = $model['tech_stack'];
                         $category = null;
-                        if($model->category){
+                        if ($model->category) {
                             $category = $model->category['name'];
                         }
                         $toolsArray[$i]['_source']['category'] = $category;
@@ -504,13 +504,13 @@ class SearchController extends Controller
                     continue;
                 }
             }
-     
+
             $toolsArraySorted = $this->sortSearchResult($toolsArray, $sortField, $sortDirection);
 
             if ($download) {
                 Auditor::log([
                     'action_type' => 'POST',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => "Search tools export data - list",
                 ]);
                 return Excel::download(new ToolListExport($toolsArraySorted), 'tools.csv');
@@ -527,12 +527,11 @@ class SearchController extends Controller
 
             Auditor::log([
                 'action_type' => 'POST',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => "Search tools",
             ]);
 
             return response()->json($final, 200);
-
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -622,7 +621,7 @@ class SearchController extends Controller
         try {
             $input = $request->all();
 
-            $sort = $request->query('sort',"score:desc");   
+            $sort = $request->query('sort', "score:desc");
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
@@ -645,7 +644,7 @@ class SearchController extends Controller
 
             foreach ($collectionArray as $i => $collection) {
                 $foundFlag = false;
-                foreach ($collectionModels as $model){
+                foreach ($collectionModels as $model) {
                     if ((int) $collection['_id'] === $model['id']) {
                         $collectionArray[$i]['_source']['created_at'] = $model['created_at'];
                         $collectionArray[$i]['name'] = $model['name'];
@@ -674,12 +673,11 @@ class SearchController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => "Search collections",
             ]);
 
             return response()->json($final, 200);
-
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -769,8 +767,8 @@ class SearchController extends Controller
         try {
             $input = $request->all();
             $download = array_key_exists('download', $input) ? $input['download'] : false;
-            $sort = $request->query('sort',"score:desc");   
-        
+            $sort = $request->query('sort', "score:desc");
+
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
 
@@ -821,7 +819,7 @@ class SearchController extends Controller
             if ($download) {
                 Auditor::log([
                     'action_type' => 'GET',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => "Search dur export data",
                 ]);
                 return Excel::download(new DataUseExport($durArray), 'dur.csv');
@@ -840,12 +838,11 @@ class SearchController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => "Search dur",
             ]);
 
             return response()->json($final, 200);
-
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -963,10 +960,10 @@ class SearchController extends Controller
     {
         try {
             $input = $request->all();
-            
+
             $download = array_key_exists('download', $input) ? $input['download'] : false;
-            $sort = $request->query('sort',"score:desc");   
-        
+            $sort = $request->query('sort', "score:desc");
+
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
 
@@ -1006,14 +1003,14 @@ class SearchController extends Controller
                             $pubArray[$i]['year_of_publication'] = $model['year_of_publication'];
                             $pubArray[$i]['full_text_url'] = 'https://doi.org/' . $model['paper_doi'];
                             $pubArray[$i]['url'] = $model['url'];
-                            
+
                             // Use accessor to get datasets and their link types
                             $datasets = $model->allDatasets;
                             $datasetLinkTypes = [];
                             foreach ($datasets as $dataset) {
                                 $linkType = PublicationHasDatasetVersion::where([
                                     ['publication_id', '=', $model['id']],
-                                    ['dataset_version_id', '=', $dataset->id]
+                                    ['dataset_version_id', '=', $dataset['id']]
                                 ])->value('link_type') ?? 'UNKNOWN';
                                 $datasetLinkTypes[] = $linkType;
                             }
@@ -1032,7 +1029,7 @@ class SearchController extends Controller
             } else {
 
                 $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search';
-                $input['field'] = ['TITLE','ABSTRACT','METHODS'];
+                $input['field'] = ['TITLE', 'ABSTRACT', 'METHODS'];
                 $response = Http::post($urlString, $input);
 
                 $pubArray = $response['resultList']['result'];
@@ -1055,7 +1052,7 @@ class SearchController extends Controller
             if ($download) {
                 Auditor::log([
                     'action_type' => 'GET',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => "Search publications export data",
                 ]);
                 return Excel::download(new PublicationExport($pubArray), 'publications.csv');
@@ -1074,12 +1071,11 @@ class SearchController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => "Search publications",
             ]);
 
             return response()->json($final, 200);
-
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -1122,19 +1118,19 @@ class SearchController extends Controller
     {
         try {
             $input = $request->all();
-            
+
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi';
             $response = Http::post($urlString, $input);
 
             if (!isset($response['resultList']['result']) || !is_array($response['resultList']['result'])) {
-                    CloudLogger::write([
-                        'action_type' => 'SEARCH',
-                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                        'description' => 'Malformed response from search service. Response was: ' . json_encode($response->json()),
-                    ]);
-                    return response()->json([
-                        'message' => 'Malformed response from search service. Response was: ' . json_encode($response->json())
-                    ], 404);
+                CloudLogger::write([
+                    'action_type' => 'SEARCH',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Malformed response from search service. Response was: ' . json_encode($response->json()),
+                ]);
+                return response()->json([
+                    'message' => 'Malformed response from search service. Response was: ' . json_encode($response->json())
+                ], 404);
             } else {
                 $pubMatch = $response['resultList']['result'];
             }
@@ -1159,7 +1155,7 @@ class SearchController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => "Search for publication by doi",
             ]);
 
@@ -1167,7 +1163,6 @@ class SearchController extends Controller
                 'message' => 'success',
                 'data' => $pubResult
             ], 200);
-
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -1253,8 +1248,8 @@ class SearchController extends Controller
         try {
             $input = $request->all();
             $download = array_key_exists('download', $input) ? $input['download'] : false;
-            $sort = $request->query('sort',"score:desc");   
-        
+            $sort = $request->query('sort', "score:desc");
+
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
 
@@ -1278,7 +1273,7 @@ class SearchController extends Controller
 
             foreach ($dataProviderCollArray as $i => $dp) {
                 $foundFlag = false;
-                foreach ($dataProviderCollModels as $model){
+                foreach ($dataProviderCollModels as $model) {
                     if ((int) $dp['_id'] === $model['id']) {
                         $dataProviderCollArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $dataProviderCollArray[$i]['name'] = $model['name'];
@@ -1297,7 +1292,7 @@ class SearchController extends Controller
             if ($download) {
                 Auditor::log([
                     'action_type' => 'GET',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => "Search data provider export data",
                 ]);
                 return Excel::download(new DataProviderCollExport($dataProviderCollArray), 'dataProviderColl.csv');
@@ -1316,12 +1311,11 @@ class SearchController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => "Search data provider",
             ]);
 
             return response()->json($final, 200);
-
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -1406,8 +1400,8 @@ class SearchController extends Controller
         try {
             $input = $request->all();
             $download = array_key_exists('download', $input) ? $input['download'] : false;
-            $sort = $request->query('sort',"score:desc");   
-        
+            $sort = $request->query('sort', "score:desc");
+
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
 
@@ -1431,7 +1425,7 @@ class SearchController extends Controller
 
             foreach ($dataProviderArray as $i => $dp) {
                 $foundFlag = false;
-                foreach ($dataProviderModels as $model){
+                foreach ($dataProviderModels as $model) {
                     if ((int) $dp['_id'] === $model['id']) {
                         $dataProviderArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $dataProviderArray[$i]['name'] = $model['name'];
@@ -1449,7 +1443,7 @@ class SearchController extends Controller
             if ($download) {
                 Auditor::log([
                     'action_type' => 'GET',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => "Search data provider export data",
                 ]);
                 return Excel::download(new DataProviderExport($dataProviderArray), 'dataProvider.csv');
@@ -1468,12 +1462,11 @@ class SearchController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => "Search data provider",
             ]);
 
             return response()->json($final, 200);
-
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -1517,17 +1510,17 @@ class SearchController extends Controller
             return $resultArraySorted;
         }
 
-        if ($sortDirection === 'asc') { 
+        if ($sortDirection === 'asc') {
             usort(
-                $resultArray, 
-                function($a, $b) use ($sortField) {
+                $resultArray,
+                function ($a, $b) use ($sortField) {
                     return $a['_source'][$sortField] <=> $b['_source'][$sortField];
                 }
             );
         } else {
             usort(
-                $resultArray, 
-                function($a, $b) use ($sortField) {
+                $resultArray,
+                function ($a, $b) use ($sortField) {
                     return -1 * ($a['_source'][$sortField] <=> $b['_source'][$sortField]);
                 }
             );
@@ -1538,13 +1531,13 @@ class SearchController extends Controller
     private function trimPayload(array &$input, array &$dataset): array
     {
         $miniMetadata = $input['metadata'];
-    
+
         $materialTypes = MMC::getMaterialTypes($input);
         $containsTissue = MMC::getContainsTissues($materialTypes);
         $hasTechnicalMetadata = (bool) count(MMC::getValueByPossibleKeys($input, ['metadata.structuralMetadata'], []));
 
         $accessServiceCategory = null;
-        if(array_key_exists('accessServiceCategory', $miniMetadata['accessibility']['access'])) {
+        if (array_key_exists('accessServiceCategory', $miniMetadata['accessibility']['access'])) {
             $accessServiceCategory  = $miniMetadata['accessibility']['access']['accessServiceCategory'];
         }
 
@@ -1633,9 +1626,9 @@ class SearchController extends Controller
 
         $toolIds = DurHasTool::where('dur_id', $durId)->pluck('tool_id')->all();
         if (!count($toolIds)) return [];
-        
+
         $toolNames = Tool::whereIn('id', $toolIds)->pluck('name')->all();
-        
+
         return $toolNames;
     }
 
