@@ -22,7 +22,7 @@ class ReindexEntities extends Command
      *
      * @var string
      */
-    protected $signature = 'app:reindex-entities {entity?} {sleep=0} {index?}';
+    protected $signature = 'app:reindex-entities {entity?} {sleep=0} {minIndex?} {maxIndex?}';
 
     /**
      * The console command description.
@@ -39,11 +39,18 @@ class ReindexEntities extends Command
     protected $sleepTimeInMicroseconds = 0;
 
     /**
-     * Specific index to run
+     * Specific index to start run from
      *
      * @var int
      */
-    protected $index = 0;
+    protected $minIndex = 0;
+
+    /**
+     * Specific index to end run
+     *
+     * @var int
+     */
+    protected $maxIndex = 0;
 
     /**
      * Execute the console command.
@@ -57,7 +64,8 @@ class ReindexEntities extends Command
 
         $entity = $this->argument('entity');
 
-        $this->index = $this->argument('index');
+        $this->minIndex = $this->argument('minIndex');
+        $this->maxIndex = $this->argument('maxIndex');
 
         if ($entity && method_exists($this, $entity)) {
             $this->$entity();
@@ -68,12 +76,18 @@ class ReindexEntities extends Command
 
     private function datasets()
     {
-        $datasetIds = [];
-        if ($this->index) {
-            $datasetIds = Dataset::pluck('id');
-        } else {
-            $datasetIds = [$this->index];
+
+        $minIndex = $this->minIndex;
+        $maxIndex = $this->maxIndex;
+        $datasetIds = Dataset::pluck('id')->toArray();
+        if (isset($minIndex) && isset($maxIndex)) {
+            $datasetIds = array_slice($datasetIds, $minIndex, $maxIndex - $minIndex + 1);
+        } elseif (isset($minIndex)) {
+            $datasetIds = array_slice($datasetIds, $minIndex);
+        } elseif (isset($maxIndex)) {
+            $datasetIds = array_slice($datasetIds, 0, $maxIndex + 1);
         }
+
 
         $progressbar = $this->output->createProgressBar(count($datasetIds));
         foreach ($datasetIds as $id) {
