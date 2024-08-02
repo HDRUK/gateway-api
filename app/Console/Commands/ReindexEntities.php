@@ -91,6 +91,7 @@ class ReindexEntities extends Command
                 // Check if $tissues is set to [[]] and set it to [] if so
                 if ($tissues === [[]]) {
                     $metadata['metadata']['tissuesSampleCollection'] = [];
+                    \Log::info("Found bad data and cleaned it!");
 
                     DatasetVersion::where('id', $datasetVersion->id)->update([
                         'metadata' => json_encode(json_encode($metadata)),
