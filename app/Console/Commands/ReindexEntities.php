@@ -8,6 +8,7 @@ use App\Models\Team;
 use App\Models\Dur;
 use App\Models\Tool;
 use App\Models\Collection;
+use App\Jobs\TermExtraction; 
 use Illuminate\Console\Command;
 use App\Http\Controllers\Api\V1\PublicationController;
 use App\Http\Controllers\Api\V1\ToolController;
@@ -65,6 +66,36 @@ class ReindexEntities extends Command
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
+        $progressbar->finish();
+    }
+
+    private function datasetTermExtraction(){
+        // Fetch all datasets
+        $datasetIds = Dataset::pluck('id');
+        $progressbar = $this->output->createProgressBar(count($datasetIds));
+
+        foreach ($datasetIds as $id) {
+
+            $dataset = Dataset::where('id',$id)->first();
+
+            if ($dataset->status === Dataset::STATUS_ACTIVE) {
+                // Retrieve the latest metadata
+                $latestMetadata = $dataset->latestMetadata()->first();
+
+                if ($latestMetadata) {
+                    // Dispatch the TermExtraction job
+                    TermExtraction::dispatch(
+                        $dataset->id,
+                        $dataset->lastMetadataVersionNumber()->version,
+                        base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6)),
+                        "on"
+                    );
+                }
+            }
+            usleep($this->sleepTimeInMicroseconds);
+            $progressbar->advance();
+        }
+
         $progressbar->finish();
     }
 
