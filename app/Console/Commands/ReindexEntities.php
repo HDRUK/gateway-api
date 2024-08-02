@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\V1\PublicationController;
 use App\Http\Controllers\Api\V1\ToolController;
 use App\Http\Controllers\Api\V1\DurController;
 use App\Http\Controllers\Api\V1\CollectionController;
-use MetadataManagementController AS MMC;
+use MetadataManagementController as MMC;
 
 class ReindexEntities extends Command
 {
@@ -22,7 +22,7 @@ class ReindexEntities extends Command
      *
      * @var string
      */
-    protected $signature = 'app:reindex-entities {entity?} {sleep=0}';
+    protected $signature = 'app:reindex-entities {entity?} {sleep=0} {index?}';
 
     /**
      * The console command description.
@@ -39,16 +39,25 @@ class ReindexEntities extends Command
     protected $sleepTimeInMicroseconds = 0;
 
     /**
+     * Specific index to run
+     *
+     * @var int
+     */
+    protected $index = 0;
+
+    /**
      * Execute the console command.
      */
     public function handle()
     {
-      
+
         $sleep = $this->argument("sleep");
         $this->sleepTimeInMicroseconds = floatval($sleep) * 1000 * 1000;
         echo "Sleeping between each reindex by " .  $this->sleepTimeInMicroseconds . "\n";
 
         $entity = $this->argument('entity');
+
+        $this->index = $this->argument('index');
 
         if ($entity && method_exists($this, $entity)) {
             $this->$entity();
@@ -57,8 +66,15 @@ class ReindexEntities extends Command
         }
     }
 
-    private function datasets(){
-        $datasetIds = Dataset::pluck('id');
+    private function datasets()
+    {
+        $datasetIds = [];
+        if ($this->index) {
+            $datasetIds = Dataset::pluck('id');
+        } else {
+            $datasetIds = [$this->index];
+        }
+
         $progressbar = $this->output->createProgressBar(count($datasetIds));
         foreach ($datasetIds as $id) {
             MMC::reindexElastic($id);
@@ -68,7 +84,8 @@ class ReindexEntities extends Command
         $progressbar->finish();
     }
 
-    private function tools(){
+    private function tools()
+    {
         $toolController = new ToolController();
         $toolIds = Tool::pluck('id');
         $progressbar = $this->output->createProgressBar(count($toolIds));
@@ -80,48 +97,52 @@ class ReindexEntities extends Command
         $progressbar->finish();
     }
 
-    private function publications(){
+    private function publications()
+    {
         $publicationController = new PublicationController();
         $pubicationIds = Publication::pluck('id');
         $progressbar = $this->output->createProgressBar(count($pubicationIds));
         foreach ($pubicationIds as $id) {
             $publicationController->indexElasticPublication($id);
-            usleep($this->sleepTimeInMicroseconds); 
+            usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
         $progressbar->finish();
     }
 
-    private function durs(){
+    private function durs()
+    {
         $durController = new DurController();
         $durIds = Dur::pluck('id');
         $progressbar = $this->output->createProgressBar(count($durIds));
         foreach ($durIds as $id) {
             $durController->indexElasticDur($id);
-            usleep($this->sleepTimeInMicroseconds); 
+            usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
         $progressbar->finish();
     }
 
-    private function collections(){
+    private function collections()
+    {
         $collectionController = new CollectionController();
         $collectionIds = Collection::pluck('id');
         $progressbar = $this->output->createProgressBar(count($collectionIds));
         foreach ($collectionIds as $id) {
             $collectionController->indexElasticCollections($id);
-            usleep($this->sleepTimeInMicroseconds); 
+            usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
         $progressbar->finish();
     }
 
-    private function dataProviders(){
+    private function dataProviders()
+    {
         $providerIds = array_unique(Dataset::pluck('team_id')->toArray());
         $progressbar = $this->output->createProgressBar(count($providerIds));
         foreach ($providerIds as $id) {
             $team = Team::find($id);
-            if($team){
+            if ($team) {
                 MMC::reindexElasticDataProvider($team->id);
             }
             $progressbar->advance();
@@ -129,5 +150,4 @@ class ReindexEntities extends Command
         }
         $progressbar->finish();
     }
-
 }
