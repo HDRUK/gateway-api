@@ -75,7 +75,7 @@ class ReindexEntities extends Command
         }
     }
 
-    private function cleanMaterialType($id)
+    private function checkAndCleanMaterialType($id)
     {
 
         $datasetVersion = DatasetVersion::where([
@@ -90,8 +90,11 @@ class ReindexEntities extends Command
 
                 // Check if $tissues is set to [[]] and set it to [] if so
                 if ($tissues === [[]]) {
-                    $tissues = [];
-                    echo "badddd found!!! \n";
+                    $metadata['metadata']['tissuesSampleCollection'] = [];
+
+                    DatasetVersion::where('id', $datasetVersion->id)->update([
+                        'metadata' => json_encode(json_encode($metadata)),
+                    ]);
                 }
             }
         }
@@ -116,7 +119,7 @@ class ReindexEntities extends Command
 
         $progressbar = $this->output->createProgressBar(count($datasetIds));
         foreach ($datasetIds as $id) {
-            $this->cleanMaterialType($id);
+            $this->checkAndCleanMaterialType($id);
             //MMC::reindexElastic($id);
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
