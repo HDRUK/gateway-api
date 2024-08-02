@@ -42,16 +42,16 @@ class ReindexEntities extends Command
     /**
      * Specific index to start run from
      *
-     * @var int
+     * @var int|null
      */
-    protected $minIndex;
+    protected $minIndex = null;
 
     /**
      * Specific index to end run
      *
-     * @var int
+     * @var int|null
      */
-    protected $maxIndex;
+    protected $maxIndex = null;
 
     /**
      * Execute the console command.
@@ -65,8 +65,8 @@ class ReindexEntities extends Command
 
         $entity = $this->argument('entity');
 
-        $this->minIndex = $this->argument('minIndex');
-        $this->maxIndex = $this->argument('maxIndex');
+        $this->minIndex = is_null($this->argument('minIndex')) ? null : (int) $this->argument('minIndex');
+        $this->maxIndex = is_null($this->argument('maxIndex')) ? null : (int) $this->argument('maxIndex');
 
         if ($entity && method_exists($this, $entity)) {
             $this->$entity();
