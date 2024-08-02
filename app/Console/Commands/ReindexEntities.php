@@ -44,14 +44,14 @@ class ReindexEntities extends Command
      *
      * @var int
      */
-    protected $minIndex = 0;
+    protected $minIndex;
 
     /**
      * Specific index to end run
      *
      * @var int
      */
-    protected $maxIndex = 0;
+    protected $maxIndex;
 
     /**
      * Execute the console command.
