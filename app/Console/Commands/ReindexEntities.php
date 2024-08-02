@@ -99,10 +99,6 @@ class ReindexEntities extends Command
                 }
             }
         }
-
-        //DatasetVersion::where('id', $datasetVersion->id)->update([
-        //    'metadata' => json_encode(json_encode($metadata)),
-        //]);
     }
 
     private function datasets()
@@ -121,7 +117,7 @@ class ReindexEntities extends Command
         $progressbar = $this->output->createProgressBar(count($datasetIds));
         foreach ($datasetIds as $id) {
             $this->checkAndCleanMaterialType($id);
-            //MMC::reindexElastic($id);
+            MMC::reindexElastic($id);
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
