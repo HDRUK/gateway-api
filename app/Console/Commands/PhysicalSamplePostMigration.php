@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use Illuminate\Console\Command;
-use MetadataManagementController AS MMC;
+use MetadataManagementController as MMC;
 
 class PhysicalSamplePostMigration extends Command
 {
@@ -29,7 +29,6 @@ class PhysicalSamplePostMigration extends Command
     {
         parent::__construct();
         $this->csvData = $this->readMigrationFile(storage_path() . '/migration_files/datasets_physical_samples_cleaned.csv');
-
     }
 
     /**
@@ -47,7 +46,7 @@ class PhysicalSamplePostMigration extends Command
             $mongoPid = $csv['mongo_pid'];
             $samples = $csv['physical_samples'];
 
-            $samplesList = explode(";", $samples); 
+            $samplesList = explode(";", $samples);
 
             $formattedSamplesArray = [];
             foreach ($samplesList as $sample) {
@@ -70,16 +69,15 @@ class PhysicalSamplePostMigration extends Command
                         $metadata['metadata']['tissuesSampleCollection'] = $formattedSamplesArray;
                     }
 
-                    DatasetVersion::where('id', $dataset->id)->update([
+                    DatasetVersion::where('id', $datasetVersion->id)->update([
                         'metadata' => json_encode(json_encode($metadata)),
                     ]);
-
                 }
 
                 if ($sleepTimeInMicroseconds !== null) {
                     MMC::reindexElastic($dataset->id);
                     usleep($sleepTimeInMicroseconds);
-                }                
+                }
             }
             $progressbar->advance();
         }
@@ -103,7 +101,7 @@ class PhysicalSamplePostMigration extends Command
         }
 
         fclose($file);
-        
+
         return $response;
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use App\Models\Publication;
 use App\Models\Team;
 use App\Models\Dur;
@@ -74,9 +75,32 @@ class ReindexEntities extends Command
         }
     }
 
-    private function datasets()
+    private function cleanMaterialType($id)
     {
 
+        $datasetVersion = DatasetVersion::where([
+            'id' => $id,
+        ])->first();
+
+        $metadata = $datasetVersion->metadata;
+
+        if (array_key_exists('tissuesSampleCollection', $metadata['metadata'])) {
+            if (!is_null($metadata['metadata']['tissuesSampleCollection'])) {
+                $tissues = $metadata['metadata']['tissuesSampleCollection'];
+
+                foreach ($tissues as $tissue) {
+                    echo json_encode($tissue['materialType']) . "\n";
+                }
+            }
+        }
+
+        //DatasetVersion::where('id', $datasetVersion->id)->update([
+        //    'metadata' => json_encode(json_encode($metadata)),
+        //]);
+    }
+
+    private function datasets()
+    {
         $minIndex = $this->minIndex;
         $maxIndex = $this->maxIndex;
         $datasetIds = Dataset::pluck('id')->toArray();
@@ -88,10 +112,10 @@ class ReindexEntities extends Command
             $datasetIds = array_slice($datasetIds, 0, $maxIndex + 1);
         }
 
-
         $progressbar = $this->output->createProgressBar(count($datasetIds));
         foreach ($datasetIds as $id) {
-            MMC::reindexElastic($id);
+            $this->cleanMaterialType($id);
+            //MMC::reindexElastic($id);
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
