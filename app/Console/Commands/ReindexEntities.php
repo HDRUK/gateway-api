@@ -88,8 +88,10 @@ class ReindexEntities extends Command
             if (!is_null($metadata['metadata']['tissuesSampleCollection'])) {
                 $tissues = $metadata['metadata']['tissuesSampleCollection'];
 
-                foreach ($tissues as $tissue) {
-                    echo json_encode($tissue['materialType']) . "\n";
+                // Check if $tissues is set to [[]] and set it to [] if so
+                if ($tissues === [[]]) {
+                    $tissues = [];
+                    echo "badddd found!!! \n";
                 }
             }
         }
