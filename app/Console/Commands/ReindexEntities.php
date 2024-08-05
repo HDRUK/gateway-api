@@ -67,13 +67,11 @@ class ReindexEntities extends Command
                 $dataset = Dataset::where('id', $id)->first();
                 if ($dataset->status === Dataset::STATUS_ACTIVE) {
                     $latestMetadata = $dataset->latestMetadata()->first();
-                    if ($latestMetadata) {
-                        TermExtraction::dispatch(
-                            $dataset->id,
+                    TermExtraction::dispatch(
+                            $id,
                             $dataset->lastMetadataVersionNumber()->version,
                             base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6))
                         );
-                    }
                 }
             }
             MMC::reindexElastic($id);
