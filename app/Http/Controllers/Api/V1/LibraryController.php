@@ -584,7 +584,7 @@ class LibraryController extends Controller
                         'user_id' => (int)$jwtUser['id'],
                         'action_type' => 'DELETE',
                         'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                        'description' => "library " . $id . " deleted",
+                        'description' => 'library ' . $id . ' deleted',
                     ]);
 
                     return response()->json([
