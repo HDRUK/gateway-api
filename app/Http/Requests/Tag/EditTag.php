@@ -5,7 +5,6 @@ namespace App\Http\Requests\Tag;
 use App\Http\Requests\BaseFormRequest;
 use Illuminate\Validation\Rule;
 
-
 class EditTag extends BaseFormRequest
 {
     /**

@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Application;
 
-use App\Models\Application;
 use App\Http\Requests\BaseFormRequest;
 
 class EditApplication extends BaseFormRequest

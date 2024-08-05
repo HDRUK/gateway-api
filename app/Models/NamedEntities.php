@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\DatasetVersionHasNamedEntities;
 use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -12,18 +11,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class NamedEntities extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable, DatasetFetch;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
+    use DatasetFetch;
 
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'named_entities';
 
     /**
      * Indicates if the model should be timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = true;
@@ -34,7 +37,7 @@ class NamedEntities extends Model
 
     /**
      * Name of this named_entity
-     * 
+     *
      * @var string
      */
     private $name = '';

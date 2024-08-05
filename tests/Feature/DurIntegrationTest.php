@@ -43,7 +43,7 @@ class DurIntegrationTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/integrations/dur';
+    public const TEST_URL = '/api/v1/integrations/dur';
 
     protected $header = [];
 
@@ -94,7 +94,7 @@ class DurIntegrationTest extends TestCase
             ApplicationHasPermission::firstOrCreate([
                 'application_id' => $this->integration->id,
                 'permission_id' => $perm->id,
-            ]);            
+            ]);
         }
 
         // Add Integration auth keys to the header generated in commonSetUp
@@ -104,7 +104,7 @@ class DurIntegrationTest extends TestCase
 
     /**
      * Get All DataUseRegisters with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_integration_dur_with_success(): void
@@ -188,7 +188,7 @@ class DurIntegrationTest extends TestCase
 
     /**
      * Get DataUseRegister by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_integration_dur_by_id_with_success(): void
@@ -267,7 +267,7 @@ class DurIntegrationTest extends TestCase
 
     /**
      * Create new DataUseRegister with success
-     * 
+     *
      * @return void
      */
     public function test_add_new_integration_dur_with_success(): void
@@ -312,7 +312,7 @@ class DurIntegrationTest extends TestCase
      *
      * @return void
      */
-    public function test_update_integration_dur_with_success(): void 
+    public function test_update_integration_dur_with_success(): void
     {
         // create dur
         $userId = (int) User::all()->random()->id;
@@ -346,8 +346,8 @@ class DurIntegrationTest extends TestCase
         // Check that the sector has been correctly mapped.
         $dur_index = $response->json()['data'];
         $this->assertEquals(
-           Dur::where('id', $dur_index)->first()['sector_id'],
-           Sector::where('name', 'Academia')->first()['id']
+            Dur::where('id', $dur_index)->first()['sector_id'],
+            Sector::where('name', 'Academia')->first()['id']
         );
         // update
         $mockDataUpdate = [

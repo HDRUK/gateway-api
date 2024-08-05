@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Http\Controllers\Api\V1\PublicationController;
 use App\Models\Publication;
 use Illuminate\Console\Command;
-use MetadataManagementController AS MMC;
 
 class PublicationTypePostMigration extends Command
 {
@@ -55,7 +54,7 @@ class PublicationTypePostMigration extends Command
                 $progressbar->advance();
                 continue;
             }
-            
+
             foreach ($publications as $publication) {
                 if ($publication->paper_title != $paperName) {
                     $progressbar->advance();
@@ -65,17 +64,17 @@ class PublicationTypePostMigration extends Command
                 }
 
                 $publication->publication_type = $publicationType;
-            
+
                 $publication->save();
-            
+
                 echo 'Updated or created record with id ' . $publication->id . ', doi ' . $paperDOI . ', with publication type ' . $publicationType . "\n";
-            
+
                 if ($reindexEnabled) {
                     $publicationController->indexElasticPublication($publication->id);
                     sleep(1);
                 }
             }
-            
+
             $progressbar->advance();
         }
 
@@ -88,7 +87,7 @@ class PublicationTypePostMigration extends Command
         $file = fopen($migrationFile, 'r');
         $headers = fgetcsv($file);
 
-        while (($row = fgetcsv($file)) !== FALSE) {
+        while (($row = fgetcsv($file)) !== false) {
             $item = [];
             foreach ($row as $key => $value) {
                 $item[$headers[$key]] = $value ?: '';
@@ -98,7 +97,7 @@ class PublicationTypePostMigration extends Command
         }
 
         fclose($file);
-        
+
         return $response;
     }
 }

@@ -2,8 +2,9 @@
 
 namespace App\Jobs;
 
+use Auditor;
 use Exception;
-use MetadataManagementController AS MMC;
+use MetadataManagementController as MMC;
 
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
@@ -20,11 +21,14 @@ use Illuminate\Support\Facades\Http;
 
 class TermExtraction implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     public $tries = 1;
     public $timeout = 300;
-    
+
     private string $datasetId = '';
     private int $version;
     private string $data = '';
@@ -45,7 +49,7 @@ class TermExtraction implements ShouldQueue
 
     /**
      * Execute the job.
-     * 
+     *
      * @return void
      */
     public function handle(): void
@@ -55,7 +59,7 @@ class TermExtraction implements ShouldQueue
 
         $tedUrl = env('TED_SERVICE_URL');
         $tedEnabled = env('TED_ENABLED');
-        if($tedEnabled === true){
+        if($tedEnabled === true) {
             $this->postToTermExtractionDirector(json_encode($data['metadata']), $this->datasetId);
         }
 
@@ -66,9 +70,9 @@ class TermExtraction implements ShouldQueue
 
     /**
      * Passes the incoming dataset to TED for extraction
-     * 
+     *
      * @param string $dataset   The dataset json passed to this process
-     * 
+     *
      * @return void
      */
     private function postToTermExtractionDirector(string $dataset, string $datasetId): void
@@ -97,6 +101,12 @@ class TermExtraction implements ShouldQueue
             }
 
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

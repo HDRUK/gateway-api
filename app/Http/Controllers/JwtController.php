@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Exception;
-use Carbon\Carbon;
 
 class JwtController extends Controller
 {
@@ -44,7 +43,7 @@ class JwtController extends Controller
 
     /**
      * set header
-     * 
+     *
      * @param array $value
      * @return array
      */
@@ -55,7 +54,7 @@ class JwtController extends Controller
 
     /**
      * set payload
-     * 
+     *
      * @param array $value
      * @return array
      */
@@ -66,7 +65,7 @@ class JwtController extends Controller
 
     /**
      * set jwt value
-     * 
+     *
      * @param string $value
      * @return string
      */
@@ -77,7 +76,7 @@ class JwtController extends Controller
 
     /**
      * create the JWT token
-     * 
+     *
      * @return string
      */
     public function create(): string
@@ -95,7 +94,7 @@ class JwtController extends Controller
 
     /**
      * check if JWT token is valid
-     * 
+     *
      * @return boolean
      */
     public function isValid()
@@ -120,13 +119,13 @@ class JwtController extends Controller
             $isSignatureValid = ($base64UrlSignature === $signatureProvided);
 
             if ($isTokenExpired || !$isSignatureValid) {
-                return FALSE;
+                return false;
             } else {
-                return TRUE;
+                return true;
             }
         }
 
-        return FALSE;
+        return false;
     }
 
     /**
@@ -149,7 +148,7 @@ class JwtController extends Controller
 
     /**
      * encode value in base64
-     * 
+     *
      * @param string $value
      * @return string
      */

@@ -5,21 +5,17 @@ namespace App\Http\Controllers\SSO;
 use CloudLogger;
 use Illuminate\Http\Request;
 use App\Models\CohortRequest;
-use Laravel\Passport\Passport;
 use Laravel\Passport\Bridge\User;
 use App\Http\Controllers\Controller;
-use Laravel\Passport\ClientRepository;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
 use League\OAuth2\Server\AuthorizationServer;
-use App\Http\Controllers\SSO\HandlesOAuthErrors;
 use Illuminate\Contracts\Routing\ResponseFactory;
-use League\OAuth2\Server\RequestTypes\AuthorizationRequest;
 
 class CustomAuthorizationController extends Controller
 {
     use HandlesOAuthErrors;
-    
+
     /**
      * The authorization server.
      *
@@ -46,9 +42,8 @@ class CustomAuthorizationController extends Controller
      * @param  \Psr\Http\Message\ServerRequestInterface  $psrRequest
      */
     public function customAuthorize(
-        ServerRequestInterface $psrRequest, 
-    )
-    {
+        ServerRequestInterface $psrRequest,
+    ) {
         // $userId = session('cr_uid');
 
         // mock user id for with we need:
@@ -75,11 +70,12 @@ class CustomAuthorizationController extends Controller
     private function approveRequest($authRequest, int $userId)
     {
         $authRequest->setUser(new User($userId));
- 
+
         $authRequest->setAuthorizationApproved(true);
- 
+
         return $this->server->completeAuthorizationRequest(
-            $authRequest, new Psr7Response
+            $authRequest,
+            new Psr7Response()
         );
     }
 }

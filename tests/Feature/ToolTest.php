@@ -24,7 +24,6 @@ use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
 use Database\Seeders\ToolSeeder;
-use App\Http\Requests\ToolRequest;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
@@ -56,10 +55,10 @@ class ToolTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/tools';
-    const TEST_URL_TEAM = '/api/v1/teams';
-    const TEST_URL_NOTIFICATION = '/api/v1/notifications';
-    const TEST_URL_USER = '/api/v1/users';
+    public const TEST_URL = '/api/v1/tools';
+    public const TEST_URL_TEAM = '/api/v1/teams';
+    public const TEST_URL_NOTIFICATION = '/api/v1/notifications';
+    public const TEST_URL_USER = '/api/v1/users';
 
     protected $header = [];
 
@@ -100,7 +99,7 @@ class ToolTest extends TestCase
 
     /**
      * Get All Tools with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_tools_with_success(): void
@@ -126,7 +125,7 @@ class ToolTest extends TestCase
                     'deleted_at',
                     'user',
                     'tag',
-                    'associated_authors', 
+                    'associated_authors',
                     'contact_address',
                     'publications',
                     'durs',
@@ -153,7 +152,7 @@ class ToolTest extends TestCase
 
     /**
      * Get Tool by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_tool_by_id_with_success(): void
@@ -177,10 +176,10 @@ class ToolTest extends TestCase
                 'deleted_at',
                 'user',
                 'tag',
-                'programming_languages', 
-                'programming_packages', 
-                'type_category', 
-                'associated_authors', 
+                'programming_languages',
+                'programming_packages',
+                'type_category',
+                'associated_authors',
                 'contact_address',
                 'publications',
                 'durs',
@@ -194,7 +193,7 @@ class ToolTest extends TestCase
 
     /**
      * Create new Tool with success
-     * 
+     *
      * @return void
      */
     public function test_add_new_tool_with_success(): void
@@ -253,7 +252,7 @@ class ToolTest extends TestCase
 
     /**
      * Get All tools for a given team with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_team_tools_with_success(): void
@@ -271,13 +270,13 @@ class ToolTest extends TestCase
             ],
             $this->header,
         );
-        
+
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
 
         // Create the new team
         $teamName1 = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
-        
+
         $responseCreateTeam = $this->json(
             'POST',
             self::TEST_URL_TEAM,
@@ -364,7 +363,7 @@ class ToolTest extends TestCase
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' =>" https://orcid.org/75697342",
+                'orcid' => " https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1,
                 'mongo_id' => 1234566,
@@ -572,7 +571,7 @@ class ToolTest extends TestCase
 
     /**
      * Insert data into tool_has_tags table with success
-     * 
+     *
      * @return void
      */
     public function test_insert_data_in_tool_has_tags(): void
@@ -606,7 +605,7 @@ class ToolTest extends TestCase
      *
      * @return void
      */
-    public function test_update_tool_with_success(): void 
+    public function test_update_tool_with_success(): void
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         // insert
@@ -725,15 +724,15 @@ class ToolTest extends TestCase
         $toolHasTypeCategories = ToolHasTypeCategory::where('tool_id', $toolIdInsert)->get();
         $this->assertEquals(count($toolHasTypeCategories), 1);
         $this->assertEquals($toolHasTypeCategories[0]['type_category_id'], 1);
-        
+
         $publicationHasTool = PublicationHasTool::where('tool_id', $toolIdInsert)->get();
         $this->assertEquals(count($publicationHasTool), count($generatedPublications));
-        
+
         $durHasTool = DurHasTool::where('tool_id', $toolIdInsert)->get();
         $this->assertEquals(count($durHasTool), 2);
         $this->assertEquals($durHasTool[0]['dur_id'], 1);
         $this->assertEquals($durHasTool[1]['dur_id'], 2);
-        
+
         $collectionHasTool = CollectionHasTool::where('tool_id', $toolIdInsert)->get();
         $this->assertEquals(count($collectionHasTool), count($generatedCollections));
 
@@ -848,18 +847,18 @@ class ToolTest extends TestCase
 
         $this->assertEquals($toolHasTags[0]['tag_id'], 2);
 
-        // edit 
+        // edit
         $mockDataEdit1 = array(
             "name" => "Ea fuga ab aperiam nihil quis e1.",
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque. e1",
         );
 
         $responseEdit1 = $this->json(
-                'PATCH',
-                self::TEST_URL . '/' . $toolIdInsert,
-                $mockDataEdit1,
-                $this->header
-            );
+            'PATCH',
+            self::TEST_URL . '/' . $toolIdInsert,
+            $mockDataEdit1,
+            $this->header
+        );
 
         $responseEdit1->assertJsonStructure([
             'message',
@@ -869,7 +868,7 @@ class ToolTest extends TestCase
         $this->assertEquals($responseEdit1['data']['name'], $mockDataEdit1['name']);
         $this->assertEquals($responseEdit1['data']['description'], $mockDataEdit1['description']);
 
-        // edit 
+        // edit
         $licenseIdNew = License::where('valid_until', null)->get()->random()->id;
         $mockDataEdit2 = [
             'url' => 'http://dach.com/odio-facilis-ex-culpa-e2',
@@ -927,6 +926,7 @@ class ToolTest extends TestCase
             $mockDataIns,
             $this->header
         );
+
         $responseIns->assertStatus(201);
         $responseIns->assertJsonStructure([
             'message',
@@ -1038,7 +1038,7 @@ class ToolTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertEquals(
-            $countBefore+1,
+            $countBefore + 1,
             $countAfter,
             "actual value is equals to expected"
         );

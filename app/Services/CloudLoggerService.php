@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use Config;
@@ -8,7 +9,7 @@ class CloudLoggerService
 {
     protected $logging;
     protected $logger;
-    
+
     public function __construct()
     {
         $this->logging = new LoggingClient([

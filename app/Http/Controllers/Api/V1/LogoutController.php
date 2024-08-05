@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Illuminate\Http\Request;
 use App\Models\AuthorisationCode;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Cookie;
 
 class LogoutController extends Controller
 {
@@ -35,7 +34,7 @@ class LogoutController extends Controller
      *        )
      *    ),
      * )
-     * 
+     *
      * @param Request $request
      * @return mixed
      */

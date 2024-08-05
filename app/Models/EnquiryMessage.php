@@ -19,7 +19,7 @@ class EnquiryMessage extends Model
 
     /**
      * Table associated with this model
-     * 
+     *
      * @var string
      */
     protected $table = 'enquiry_messages';
@@ -38,7 +38,7 @@ class EnquiryMessage extends Model
 
     public function thread(): BelongsTo
     {
-        return $this->belongsTo(EnquiryThread::class,'thread_id');
+        return $this->belongsTo(EnquiryThread::class, 'thread_id');
     }
 
 }

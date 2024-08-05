@@ -10,7 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class DataProviderColl extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'enabled',
@@ -19,16 +20,16 @@ class DataProviderColl extends Model
         'img_url',
     ];
 
-    /** 
+    /**
      * Table associated with this model
-     * 
+     *
      * @var string
     */
     protected $table = 'data_provider_colls';
 
     /**
      * Indicates if this model is timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = true;
@@ -42,21 +43,21 @@ class DataProviderColl extends Model
 
     /**
      * Indicates whether this model is enabled or disabled
-     * 
+     *
      * @var bool
      */
     private $enabled = false;
 
     /**
      * Represents the name of this DataProvider
-     * 
+     *
      * @var string
      */
     private $name = '';
 
     /**
      * Represents the image url for this DataProvider
-     * 
+     *
      * @var string
      */
     private $imgUrl = '';

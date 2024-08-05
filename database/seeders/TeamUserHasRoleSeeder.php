@@ -6,7 +6,6 @@ use App\Models\Role;
 use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class TeamUserHasRoleSeeder extends Seeder
 {

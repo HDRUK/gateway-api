@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-
 class DatasetVersionHasTool extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
 
     protected $fillable = [
@@ -20,14 +20,14 @@ class DatasetVersionHasTool extends Model
 
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'dataset_version_has_tool';
 
     /**
      * Indicates if the model should be timestamped or not
-     * 
+     *
      * @var bool
      */
     public $timestamps = false;

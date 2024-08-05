@@ -193,7 +193,7 @@ class UpdateDur extends FormRequest
                 'string',
             ],
             'mongo_object_id' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'mongo_id' => [

@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-use App\Models\Tool;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,11 +12,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DatasetVersion extends Model
 {
-    use HasFactory, SoftDeletes, Prunable;
+    use HasFactory;
+    use SoftDeletes;
+    use Prunable;
 
     /**
      * Table associated with this model
-     * 
+     *
      * @var string
      */
     protected $table = 'dataset_versions';
@@ -27,7 +29,7 @@ class DatasetVersion extends Model
 
     /**
      * Indicates if the model should be timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = true;
@@ -39,14 +41,14 @@ class DatasetVersion extends Model
     ];
 
     /**
-     * Accessor for the metadata field to convert json string to 
+     * Accessor for the metadata field to convert json string to
      * php array for inclusion in json response object. Weirdly
      * the $casts of metadata to array _was_ failing. Possibly due
      * to the encoding of the string being added to the db field.
      * Needs further investigation as this is just a workaround.
-     * 
+     *
      * @param $value The original value prior to pre-processing
-     * 
+     *
      * @return array The json metadata string as an array
      */
     public function getMetadataAttribute($value): array
@@ -67,13 +69,13 @@ class DatasetVersion extends Model
         return $decodedValue;
     }
 
-     /**
-     * Scope a query to filter on metadata summary title
-     *
-     * @param Builder $query
-     * @param string $filterTitle
-     * @return Builder
-     */
+    /**
+    * Scope a query to filter on metadata summary title
+    *
+    * @param Builder $query
+    * @param string $filterTitle
+    * @return Builder
+    */
     public function scopeFilterTitle(Builder $query, string $filterTitle): Builder
     {
         return $query->whereRaw(
@@ -90,7 +92,7 @@ class DatasetVersion extends Model
         return $this->belongsToMany(NamedEntities::class, 'dataset_version_has_named_entities');
     }
 
-        /**
+    /**
      *  Spatial coverage that belong to the dataset version.
      */
     public function spatialCoverage(): BelongsToMany
@@ -106,7 +108,7 @@ class DatasetVersion extends Model
     {
         return $this->belongsToMany(Tool::class, 'dataset_version_has_tool');
     }
-    
+
     /**
      * The durs that belong to the dataset version.
      */
@@ -123,7 +125,7 @@ class DatasetVersion extends Model
         return $this->hasMany(PublicationHasDatasetVersion::class);
     }
 
-        /**
+    /**
      * The collections that belong to the dataset version.
      */
     public function collections(): HasMany
@@ -137,15 +139,15 @@ class DatasetVersion extends Model
     public function linkedDatasetVersions(): BelongsToMany
     {
         return $this->belongsToMany(
-            DatasetVersion::class, 
+            DatasetVersion::class,
             'dataset_version_has_dataset_version',
             'dataset_version_source_id',
             'dataset_version_target_id'
         )->withPivot(
-            'dataset_version_source_id', 
-            'dataset_version_target_id', 
-            'linkage_type', 
-            'direct_linkage', 
+            'dataset_version_source_id',
+            'dataset_version_target_id',
+            'linkage_type',
+            'direct_linkage',
             'description'
         );
     }

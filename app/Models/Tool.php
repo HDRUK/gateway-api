@@ -2,15 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Dur;
-use App\Models\Tag;
-use App\Models\User;
-use App\Models\License;
-use App\Models\Category;
-use App\Models\Collection;
-use App\Models\Publication;
-use App\Models\DatasetVersionHasTool;
-use App\Models\DatasetVersion;
 use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -22,38 +13,42 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Tool extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable, DatasetFetch;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
+    use DatasetFetch;
 
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
     public const STATUS_ARCHIVED = 'ARCHIVED';
-    
+
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'tools';
 
     /**
      * Indicates if the model should be timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = true;
 
     protected $fillable = [
-        'mongo_object_id', 
-        'mongo_id', 
-        'name', 
-        'url', 
-        'description', 
-        'license', 
-        'tech_stack', 
-        'category_id', 
-        'user_id', 
+        'mongo_object_id',
+        'mongo_id',
+        'name',
+        'url',
+        'description',
+        'license',
+        'tech_stack',
+        'category_id',
+        'user_id',
         'enabled',
-        'associated_authors', 
+        'associated_authors',
         'contact_address',
         'any_dataset',
         'status',
@@ -93,7 +88,7 @@ class Tool extends Model
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class,'category_id', 'id');
+        return $this->belongsTo(Category::class, 'category_id', 'id');
     }
 
     public function team(): BelongsTo

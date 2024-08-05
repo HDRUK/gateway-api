@@ -64,7 +64,7 @@ trait UserTransformation
                     'is_question_bank' => $team['is_question_bank'],
                 ];
 
-                $teamHasUserId = (int) $team['pivot']['id'];
+                $teamHasUserId = (int)$team['pivot']['id'];
 
                 $roles = TeamHasUser::where('id', $teamHasUserId)->with('roles')->get()->toArray();
 
@@ -76,6 +76,7 @@ trait UserTransformation
 
                 $tmpTeam[] = $tmp;
                 unset($tmp);
+                unset($roles);
                 unset($tmpPerm);
             }
             $tmpUser['teams'] = $tmpTeam;
@@ -98,6 +99,7 @@ trait UserTransformation
 
             unset($tmpTeam);
             unset($tmpUser);
+            unset($notifications);
             unset($tmpNotification);
         }
 

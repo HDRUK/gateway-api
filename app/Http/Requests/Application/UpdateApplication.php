@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Application;
 
 use App\Http\Requests\BaseFormRequest;
-use App\Models\Application;
 
 class UpdateApplication extends BaseFormRequest
 {
@@ -15,7 +14,7 @@ class UpdateApplication extends BaseFormRequest
     public function rules(): array
     {
         $id = $this->route('id');
-        
+
         return [
             'id' => [
                 'required',

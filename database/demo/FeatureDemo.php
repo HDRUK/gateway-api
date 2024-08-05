@@ -6,7 +6,6 @@ use Exception;
 use Illuminate\Database\Seeder;
 use App\Models\AuthorisationCode;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class FeatureDemo extends Seeder
 {

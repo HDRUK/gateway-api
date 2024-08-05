@@ -6,14 +6,13 @@ use App\Models\License;
 use Tests\TestCase;
 use Database\Seeders\LicenseSeeder;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class UpdateLicensesTest extends TestCase
 {
     use RefreshDatabase;
-    
-    public function setUp() :void
+
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -34,7 +33,7 @@ class UpdateLicensesTest extends TestCase
             'https://data.europa.eu/api/hub/search/vocabularies/licence' => Http::response($this->mockEuLicenseApiResponse(), 200),
             'http://publications.europa.eu/resource/authority/licence/*' => Http::response($this->mockLicenseDetails(), 200)
         ]);
-    
+
         $this->artisan('app:update-eu-licenses')->assertExitCode(0);
 
         $licenseAfter = License::where([

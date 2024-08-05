@@ -19,7 +19,7 @@ class CreateTool extends BaseFormRequest
                 'string',
             ],
             'name' => [
-                'required', 
+                'required',
                 'string',
                 function ($attribute, $value, $fail) {
                     $exists = Tool::withTrashed()->where('name', $value)->count();
@@ -30,24 +30,24 @@ class CreateTool extends BaseFormRequest
                 },
             ],
             'url' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'description' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'license' => [
-                'nullable', 
+                'nullable',
                 'int',
                 'exists:licenses,id',
             ],
             'tech_stack' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'user_id' => [
-                'required', 
+                'required',
                 'integer'
             ],
             'team_id' => [
@@ -55,43 +55,43 @@ class CreateTool extends BaseFormRequest
                 'exists:teams,id',
             ],
             'tag' => [
-                'nullable', 
-                'array', 
+                'nullable',
+                'array',
             ],
             'tag.*' => [
                 'integer',
             ],
             'enabled' => [
-                'required', 
+                'required',
                 'boolean',
             ],
             'programming_language' => [
-                'nullable', 
+                'nullable',
                 'array',
             ],
             'programming_language.*' => [
                 'integer',
             ],
             'programming_package' => [
-                'nullable', 
+                'nullable',
                 'array',
             ],
             'programming_package.*' => [
                 'integer',
             ],
             'type_category' => [
-                'nullable', 
+                'nullable',
                 'array',
             ],
             'type_category.*' => [
                 'integer',
             ],
             'associated_authors' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'contact_address' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'publications.*.id'  => [
@@ -135,7 +135,7 @@ class CreateTool extends BaseFormRequest
                 'string',
             ],
             'any_dataset' => [
-                'nullable', 
+                'nullable',
                 'boolean',
             ],
             'status' => [

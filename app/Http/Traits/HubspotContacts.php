@@ -2,7 +2,7 @@
 
 namespace App\Http\Traits;
 
-use Config;        
+use Config;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Sector;
@@ -19,11 +19,11 @@ trait HubspotContacts
         $hubspotEnabled = Config::get('services.hubspot.enabled');
 
         if (!$hubspotEnabled) {
-            return; 
+            return;
         }
 
         $hubspotService = new Hubspot();
-        
+
         $user = User::where('id', $id)->first();
 
         if ($user) {
@@ -31,20 +31,20 @@ trait HubspotContacts
                 'id' => $user->sector_id,
                 'enabled' => 1,
             ])->first();
-    
+
             $commPreference = [];
             ($user->contact_feedback) ?? $commPreference[] = UserContactPreference::USER_FEEDBACK->value;
             ($user->contact_news) ?? $commPreference[] = UserContactPreference::USER_NEWS->value;
-    
+
             $email = trim(strtolower($user->email));
-    
+
             $cohortRequest = CohortRequest::where([
                 'user_id' => $user->id,
                 'request_status' => 'APPROVED',
             ])->first();
 
             $rolesFullNamesByUserId = $this->getUserRoleNames($user->id);
-    
+
             $hubspot = [
                 'firstname' => $user->firstname,
                 'lastname' => $user->lastname,
@@ -52,26 +52,27 @@ trait HubspotContacts
                 'orcid_number' => $user->orcid ? preg_replace('/[^0-9]/', '', $user->orcid) : '',
                 'related_organisation_sector' => $sector ? $sector->name : '',
                 'company' => $user->organisation,
-                'communication_preference' => count($commPreference) ? implode(";", $commPreference) : '',
+                'communication_preference' => count($commPreference) ? implode(';', $commPreference) : '',
                 'gateway_registered_user' => 'Yes',
-                'gateway_roles' => 'User' . ($rolesFullNamesByUserId ? ';' . implode(";", $rolesFullNamesByUserId) : ''),
+                'gateway_roles' => 'User' . ($rolesFullNamesByUserId ? ';' . implode(';', $rolesFullNamesByUserId) : ''),
                 'cohort_registered_user' => $cohortRequest ? 'Yes' : 'No',
             ];
-    
+
             // update contact preferences
             if ($user->hubspot_id) {
-                $hubspotService->updateContactById((int) $user->hubspot_id, $hubspot);
+                $hubspotService->updateContactById((int)$user->hubspot_id, $hubspot);
             }
-            
+
             // create new contact hubspot and update users table
-            if (!$user->hubspot_id){
+            if (!$user->hubspot_id) {
                 // check by email
                 $hubspotId = $hubspotService->getContactByEmail($email);
                 if (!$hubspotId) {
                     $createContact = $hubspotService->createContact($hubspot);
-                    $hubspotId = (is_array($createContact) && array_key_exists('vid', $createContact)) ? $createContact['vid'] : null;
+                    $hubspotId = (is_array($createContact) &&
+                        array_key_exists('vid', $createContact)) ? $createContact['vid'] : null;
                 }
-    
+
                 if ($hubspotId) {
                     $hubspotService->updateContactById((int) $hubspotId, $hubspot);
                 }

@@ -1,6 +1,7 @@
 <?php
 
 namespace Tests\Feature;
+
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Tool;
@@ -44,7 +45,7 @@ class CollectionIntegrationTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/integrations/collections';
+    public const TEST_URL = '/api/v1/integrations/collections';
 
     protected $header = [];
 
@@ -89,7 +90,7 @@ class CollectionIntegrationTest extends TestCase
 
         foreach ($perms as $perm) {
             // Use firstOrCreate ignoring the return as we only care that missing perms
-            // of the above are added, rather than retrieving existing            
+            // of the above are added, rather than retrieving existing
             ApplicationHasPermission::firstOrCreate([
                 'application_id' => $this->integration->id,
                 'permission_id' => $perm->id,
@@ -103,7 +104,7 @@ class CollectionIntegrationTest extends TestCase
 
     /**
      * Get All Collections with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_integration_collections_with_success(): void
@@ -155,7 +156,7 @@ class CollectionIntegrationTest extends TestCase
 
     /**
      * Get Collection by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_integration_collection_by_id_with_success(): void
@@ -192,7 +193,7 @@ class CollectionIntegrationTest extends TestCase
 
     /**
      * Create new Collection with success
-     * 
+     *
      * @return void
      */
     public function test_add_new_integration_collection_with_success(): void
@@ -231,7 +232,7 @@ class CollectionIntegrationTest extends TestCase
      *
      * @return void
      */
-    public function test_update_integration_collection_with_success(): void 
+    public function test_update_integration_collection_with_success(): void
     {
         // create new collection
         $mockDataIns = [

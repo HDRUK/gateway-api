@@ -15,21 +15,21 @@ class SchemaProfileChecksum extends Model
 
     /**
      * Table associated with this model
-     * 
+     *
      * @var string
      */
     protected $table = 'schema_profile_checksums';
 
     /**
      * Whether this model uses timestamps
-     * 
+     *
      * @var bool
      */
     public $timestamps = false;
 
     /**
      * Represents the calculated checksum of the previous schema check
-     * 
+     *
      * @var string
      */
     private $checksum = '';

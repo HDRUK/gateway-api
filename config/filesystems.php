@@ -98,7 +98,7 @@ return [
                 'apiEndpoint' => env('GOOGLE_CLOUD_STORAGE_API_ENDPOINT', null),
                 'visibility' => 'private',
                 'visibility_handler' => null,
-                'metadata' => ['cacheControl'=> 'public,max-age=86400'],
+                'metadata' => ['cacheControl' => 'public,max-age=86400'],
                 'throw' => true,
             ],
             'scanned' => [
@@ -111,7 +111,7 @@ return [
                 'apiEndpoint' => env('GOOGLE_CLOUD_STORAGE_API_ENDPOINT', null),
                 'visibility' => 'private',
                 'visibility_handler' => null,
-                'metadata' => ['cacheControl'=> 'public,max-age=86400'],
+                'metadata' => ['cacheControl' => 'public,max-age=86400'],
                 'throw' => true,
             ],
             'media' => [
@@ -124,7 +124,7 @@ return [
                 'apiEndpoint' => env('GOOGLE_CLOUD_STORAGE_API_ENDPOINT', null),
                 'visibility' => 'public',
                 'visibility_handler' => null,
-                'metadata' => ['cacheControl'=> 'public,max-age=86400'],
+                'metadata' => ['cacheControl' => 'public,max-age=86400'],
                 'throw' => true,
             ],
         ],

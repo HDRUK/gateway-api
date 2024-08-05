@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Models\Publication;
 use Illuminate\Database\Seeder;
 use App\Models\DurHasPublication;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DurHasPublicationSeeder extends Seeder
 {

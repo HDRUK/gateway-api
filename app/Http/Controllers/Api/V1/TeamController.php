@@ -69,9 +69,9 @@ class TeamController extends Controller
      *                    @OA\Property(property="member_of", type="string", example="someOrg"),
      *                    @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *                    @OA\Property(property="application_form_updated_by", type="integer", example="555"),
-     *                    @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"), 
-     *                    @OA\Property(property="users", type="array", example="[]", @OA\Items()), 
-     *                    @OA\Property(property="notifications", type="array", example="[]", @OA\Items()), 
+     *                    @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
+     *                    @OA\Property(property="users", type="array", example="[]", @OA\Items()),
+     *                    @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
      *                    @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *                    @OA\Property(property="is_provider", type="boolean", example="1"),
      *                    @OA\Property(property="url", type="string", example="https://example/image.jpg"),
@@ -96,9 +96,10 @@ class TeamController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $sort = [];
             $sortArray = $request->has('sort') ? explode(',', $request->query('sort', '')) : [];
             foreach ($sortArray as $item) {
@@ -136,16 +137,23 @@ class TeamController extends Controller
             $teams['data'] = $this->getTeams($teams['data']);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Get all',
             ]);
 
             return response()->json(
                 $teams
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -207,17 +215,17 @@ class TeamController extends Controller
      */
     public function show(GetTeam $request, int $teamId): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->get()->toArray();
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Get by " . $teamId,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Get by ' . $teamId,
             ]);
 
             return response()->json([
@@ -225,6 +233,14 @@ class TeamController extends Controller
                 'data' => $this->getTeams($userTeam),
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -349,7 +365,7 @@ class TeamController extends Controller
      *          description="Team details",
      *          @OA\JsonContent(
      *              required={
-     *                  "name", 
+     *                  "name",
      *                  "enabled",
      *                  "allows_messaging",
      *                  "workflow_enabled",
@@ -397,28 +413,29 @@ class TeamController extends Controller
      */
     public function store(CreateTeam $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $team = null;
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $arrayTeam = array_filter($input, function ($key) {
                 return $key !== 'notifications' || $key !== 'users';
             }, ARRAY_FILTER_USE_KEY);
             $arrayTeamNotification = $input['notifications'];
             $arrayTeamUsers = $input['users'];
-            $superAdminIds = User::where("is_admin",true)->pluck('id');
+            $superAdminIds = User::where('is_admin', true)->pluck('id');
             $team = Team::create($arrayTeam);
 
             if ($team) {
                 foreach ($arrayTeamNotification as $value) {
                     TeamHasNotification::updateOrCreate([
-                        'team_id' => (int) $team->id,
-                        'notification_id' => (int) $value,
+                        'team_id' => (int)$team->id,
+                        'notification_id' => (int)$value,
                     ]);
                 }
 
                 //make sure the super admin is added to this team on creation
-                foreach($superAdminIds as $adminId){
+                foreach($superAdminIds as $adminId) {
                     TeamHasUser::create(
                         ['team_id' => $team->id, 'user_id' => $adminId],
                     );
@@ -427,13 +444,13 @@ class TeamController extends Controller
                 $roles = Role::where(['name' => 'custodian.team.admin'])->first();
                 foreach ($arrayTeamUsers as $value) {
                     $teamHasUsers = TeamHasUser::create([
-                        'team_id' => (int) $team->id,
-                        'user_id' => (int) $value,
+                        'team_id' => (int)$team->id,
+                        'user_id' => (int)$value,
                     ]);
 
                     TeamUserHasRole::updateOrCreate([
-                        'team_has_user_id' => (int) $teamHasUsers->id,
-                        'role_id' => (int) $roles->id,
+                        'team_has_user_id' => (int)$teamHasUsers->id,
+                        'role_id' => (int)$roles->id,
                     ]);
                 }
             } else {
@@ -441,10 +458,10 @@ class TeamController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Team " . $team->id . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team ' . $team->id . ' created',
             ]);
 
             return response()->json([
@@ -452,9 +469,17 @@ class TeamController extends Controller
                 'data' => $team->id,
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $team->id,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
-        
+
     }
 
     /**
@@ -480,7 +505,7 @@ class TeamController extends Controller
      *          description="Team definition",
      *          @OA\JsonContent(
      *              required={
-     *                  "name", 
+     *                  "name",
      *                  "enabled",
      *                  "allows_messaging",
      *                  "workflow_enabled",
@@ -554,10 +579,10 @@ class TeamController extends Controller
      */
     public function update(UpdateTeam $request, int $teamId): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $arrayKeys = [
                 'name',
                 'enabled',
@@ -593,10 +618,10 @@ class TeamController extends Controller
             $this->updateTeamAdminUsers($teamId, $users);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Team " . $teamId . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team ' . $teamId . ' updated',
             ]);
 
             return response()->json([
@@ -604,6 +629,14 @@ class TeamController extends Controller
                 'data' => Team::where('id', $teamId)->first(),
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => (int)$teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -692,10 +725,10 @@ class TeamController extends Controller
      */
     public function edit(EditTeam $request, int $teamId): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $arrayKeys = [
                 'name',
                 'enabled',
@@ -723,8 +756,8 @@ class TeamController extends Controller
             TeamHasNotification::where('team_id', $teamId)->delete();
             foreach ($arrayTeamNotification as $value) {
                 TeamHasNotification::updateOrCreate([
-                    'team_id' => (int) $teamId,
-                    'notification_id' => (int) $value,
+                    'team_id' => (int)$teamId,
+                    'notification_id' => (int)$value,
                 ]);
             }
 
@@ -732,17 +765,24 @@ class TeamController extends Controller
             $this->updateTeamAdminUsers($teamId, $users);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Team " . $teamId . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team ' . $teamId . ' updated',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Team::where('id', $teamId)->first()
+                'data' => Team::where('id', $teamId)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -790,17 +830,17 @@ class TeamController extends Controller
      */
     public function destroy(DeleteTeam $request, int $teamId): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $team = Team::findOrFail($teamId);
             if ($team) {
                 TeamHasNotification::where('team_id', $teamId)->delete();
 
                 $deletePermanently = false;
                 if ($request->has('deletePermanently')) {
-                    $deletePermanently = (bool) $request->query('deletePermanently');
+                    $deletePermanently = (bool)$request->query('deletePermanently');
                 }
 
                 $team->delete();
@@ -811,14 +851,21 @@ class TeamController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Team " . $teamId . " deleted",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team ' . $teamId . ' deleted',
             ]);
 
             throw new NotFoundException();
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -828,7 +875,7 @@ class TeamController extends Controller
         // check in team
         $roleId = Role::where(['name' => 'custodian.team.admin'])->first()->id;
         $existTeamHasUsers = TeamHasUser::where([
-            'team_id' => (int) $teamId,
+            'team_id' => (int)$teamId,
         ])->get();
         foreach ($existTeamHasUsers as $existTeamHasUser) {
             if (in_array($existTeamHasUser->user_id, $users)) {
@@ -836,20 +883,20 @@ class TeamController extends Controller
             }
 
             TeamUserHasRole::where([
-                'team_has_user_id' => (int) $existTeamHasUser->id,
-                'role_id' => (int) $roleId,
+                'team_has_user_id' => (int)$existTeamHasUser->id,
+                'role_id' => (int)$roleId,
             ])->delete();
         }
 
         foreach ($users as $user) {
             $teamhasUser = TeamHasUser::updateOrCreate([
-                'team_id' => (int) $teamId,
-                'user_id' => (int) $user,
+                'team_id' => (int)$teamId,
+                'user_id' => (int)$user,
             ]);
 
             TeamUserHasRole::updateOrCreate([
-                'team_has_user_id' => (int) $teamhasUser->id,
-                'role_id' => (int) $roleId,
+                'team_has_user_id' => (int)$teamhasUser->id,
+                'role_id' => (int)$roleId,
             ]);
         }
     }
@@ -874,7 +921,7 @@ class TeamController extends Controller
         $version = $dataset->latestVersion();
         $withLinks = DatasetVersion::where('id', $version['id'])
             ->with(['linkedDatasetVersions'])
-            ->first(); 
+            ->first();
 
         if (!$withLinks) {
             return;

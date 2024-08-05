@@ -4,6 +4,7 @@ namespace Database\Demo;
 
 use App\Models\Sector;
 use Illuminate\Database\Seeder;
+
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class SectorDemo extends Seeder

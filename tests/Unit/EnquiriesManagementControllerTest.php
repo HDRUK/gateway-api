@@ -13,7 +13,6 @@ use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use Database\Seeders\MinimalUserSeeder;
 
-use Illuminate\Support\Facades\Config;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EnquiriesManagementControllerTest extends TestCase

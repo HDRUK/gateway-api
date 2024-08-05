@@ -6,13 +6,8 @@ use Exception;
 use Faker\Factory as Faker;
 use PHPUnit\Framework\Assert;
 use Behat\Behat\Context\Context;
-use App\Models\AuthorisationCode;
-use Behat\Gherkin\Node\TableNode;
-use App\Behat\Context\SharedContext;
 use App\Models\Notification;
-use Behat\Gherkin\Node\PyStringNode;
 use Illuminate\Support\Facades\Http;
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 
 /**
  * Defines team create features from the specific context.
@@ -65,8 +60,8 @@ class CreateNotificationContext implements Context
     public function iShouldReceiveASuccessfulResponseForCreateNotificationWithStatusCode($statusCode)
     {
         Assert::assertEquals(
-            $statusCode, 
-            $this->response->getStatusCode(), 
+            $statusCode,
+            $this->response->getStatusCode(),
             "Expected status code {$statusCode}, and received {$this->response->getStatusCode()}."
         );
     }

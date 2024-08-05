@@ -52,7 +52,7 @@ class EditActivityLog extends BaseFormRequest
                 'sometimes',
                 'nullable',
                 'string',
-            ], 
+            ],
         ];
     }
 

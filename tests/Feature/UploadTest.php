@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use Config;
 use Tests\TestCase;
 
 use App\Models\Collection;
@@ -18,12 +17,10 @@ use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
 
-use MetadataManagementController AS MMC;
 
 use Tests\Traits\MockExternalApis;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
 class UploadTest extends TestCase
 {
@@ -33,7 +30,7 @@ class UploadTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/files';
+    public const TEST_URL = '/api/v1/files';
 
     protected $header = [];
 
@@ -57,7 +54,7 @@ class UploadTest extends TestCase
 
     /**
      * Upload a file with success
-     * 
+     *
      * @return void
      */
     public function test_upload_file_with_success(): void
@@ -65,8 +62,8 @@ class UploadTest extends TestCase
         $file = UploadedFile::fake()->create('test_file.csv');
         // post file to files endpoint
         $response = $this->json(
-            'POST', 
-            self::TEST_URL, 
+            'POST',
+            self::TEST_URL,
             [
                 'file' => $file
             ],
@@ -76,7 +73,7 @@ class UploadTest extends TestCase
                 'Authorization' => $this->header['Authorization']
             ]
         );
-        
+
         $response->assertJsonStructure([
             'data' => [
                 'id',
@@ -85,7 +82,7 @@ class UploadTest extends TestCase
                 'filename',
                 'file_location',
                 'user_id',
-                'status', 
+                'status',
                 'error'
             ]
         ]);
@@ -94,7 +91,7 @@ class UploadTest extends TestCase
 
     /**
      * Show an upload with success
-     * 
+     *
      * @return void
      */
     public function test_show_upload_with_success(): void
@@ -102,8 +99,8 @@ class UploadTest extends TestCase
         $file = UploadedFile::fake()->create('test_file.csv');
         // post file to files endpoint
         $response = $this->json(
-            'POST', 
-            self::TEST_URL, 
+            'POST',
+            self::TEST_URL,
             [
                 'file' => $file
             ],
@@ -113,7 +110,7 @@ class UploadTest extends TestCase
                 'Authorization' => $this->header['Authorization']
             ]
         );
-        
+
         $id = $response->decodeResponseJson()['data']['id'];
 
         $response = $this->json('GET', self::TEST_URL . '/' . $id, [], $this->header);
@@ -126,7 +123,7 @@ class UploadTest extends TestCase
                 'filename',
                 'file_location',
                 'user_id',
-                'status', 
+                'status',
                 'error'
             ]
         ]);
@@ -135,7 +132,7 @@ class UploadTest extends TestCase
 
     /**
      * Retrieve file content with success
-     * 
+     *
      * @return void
      */
     public function test_retrieve_file_content_with_success(): void
@@ -143,8 +140,8 @@ class UploadTest extends TestCase
         $file = UploadedFile::fake()->create('test_file.csv');
         // post file to files endpoint
         $response = $this->json(
-            'POST', 
-            self::TEST_URL, 
+            'POST',
+            self::TEST_URL,
             [
                 'file' => $file
             ],
@@ -154,7 +151,7 @@ class UploadTest extends TestCase
                 'Authorization' => $this->header['Authorization']
             ]
         );
-        
+
         $id = $response->decodeResponseJson()['data']['id'];
 
         $upload = Upload::findOrFail($id);
@@ -204,7 +201,7 @@ class UploadTest extends TestCase
 
     /**
      * Upload a dur with success
-     * 
+     *
      * @return void
      */
     public function test_dur_from_upload_with_success(): void
@@ -212,13 +209,13 @@ class UploadTest extends TestCase
         $countBefore = Dur::count();
         $team = Team::all()->random()->id;
         $file = new UploadedFile(
-            getcwd() . '/tests/Unit/test_files/DataUseUploadTemplate_v2.xlsx', 
+            getcwd() . '/tests/Unit/test_files/DataUseUploadTemplate_v2.xlsx',
             'DataUseUploadTemplate_v2.xlsx',
         );
         // post file to files endpoint
         $response = $this->json(
-            'POST', 
-            self::TEST_URL . '?entity_flag=dur-from-upload&team_id=' . $team, 
+            'POST',
+            self::TEST_URL . '?entity_flag=dur-from-upload&team_id=' . $team,
             [
                 'file' => $file
             ],
@@ -228,7 +225,7 @@ class UploadTest extends TestCase
                 'Authorization' => $this->header['Authorization']
             ]
         );
-        
+
         $response->assertJsonStructure([
             'data' => [
                 'id',
@@ -237,7 +234,7 @@ class UploadTest extends TestCase
                 'filename',
                 'file_location',
                 'user_id',
-                'status', 
+                'status',
                 'error'
             ]
         ]);
@@ -258,7 +255,7 @@ class UploadTest extends TestCase
 
     /**
      * Upload a dataset from file with success
-     * 
+     *
      * @return void
      */
     public function test_dataset_from_upload_with_success(): void
@@ -266,13 +263,13 @@ class UploadTest extends TestCase
         $countBefore = Dataset::count();
         $team = Team::all()->random()->id;
         $file = new UploadedFile(
-            getcwd() . '/tests/Unit/test_files/gwdm_v2_uploaded.json', 
+            getcwd() . '/tests/Unit/test_files/gwdm_v2_uploaded.json',
             'gwdm_v2_uploaded.json',
         );
         // post file to files endpoint
         $response = $this->json(
-            'POST', 
-            self::TEST_URL . '?entity_flag=dataset-from-upload&team_id=' . $team, 
+            'POST',
+            self::TEST_URL . '?entity_flag=dataset-from-upload&team_id=' . $team,
             [
                 'file' => $file
             ],
@@ -282,7 +279,7 @@ class UploadTest extends TestCase
                 'Authorization' => $this->header['Authorization']
             ]
         );
-        
+
         $response->assertJsonStructure([
             'data' => [
                 'id',
@@ -291,7 +288,7 @@ class UploadTest extends TestCase
                 'filename',
                 'file_location',
                 'user_id',
-                'status', 
+                'status',
                 'error'
             ]
         ]);
@@ -310,7 +307,7 @@ class UploadTest extends TestCase
 
     /**
      * Upload structural metadata from file with success
-     * 
+     *
      * @return void
      */
     public function test_structural_metadata_from_upload_with_success(): void
@@ -318,13 +315,13 @@ class UploadTest extends TestCase
         $countBefore = Dataset::count();
         $dataset = Dataset::all()->random()->id;
         $file = new UploadedFile(
-            getcwd() . '/tests/Unit/test_files/StructuralMetadataTemplate.xlsx', 
+            getcwd() . '/tests/Unit/test_files/StructuralMetadataTemplate.xlsx',
             'StructuralMetadataTemplate.xlsx',
         );
         // post file to files endpoint
         $response = $this->json(
-            'POST', 
-            self::TEST_URL . '?entity_flag=structural-metadata-upload&dataset_id=' . $dataset, 
+            'POST',
+            self::TEST_URL . '?entity_flag=structural-metadata-upload&dataset_id=' . $dataset,
             [
                 'file' => $file
             ],
@@ -334,7 +331,7 @@ class UploadTest extends TestCase
                 'Authorization' => $this->header['Authorization']
             ]
         );
-        
+
         $response->assertJsonStructure([
             'data' => [
                 'id',
@@ -343,7 +340,7 @@ class UploadTest extends TestCase
                 'filename',
                 'file_location',
                 'user_id',
-                'status', 
+                'status',
                 'error'
             ]
         ]);
@@ -373,7 +370,8 @@ class UploadTest extends TestCase
 
         $this->assertIsArray($latestVersion['metadata']['structuralMetadata']);
         $this->assertEquals(
-            $latestVersion['metadata']['structuralMetadata'][0]['name'], 'Test Table'
+            $latestVersion['metadata']['structuralMetadata'][0]['name'],
+            'Test Table'
         );
         $this->assertIsArray(
             $latestVersion['metadata']['structuralMetadata'][0]['columns']
@@ -381,12 +379,12 @@ class UploadTest extends TestCase
         $this->assertEquals(
             $latestVersion['metadata']['structuralMetadata'][0]['columns'][0]['name'],
             'Test Column'
-        );        
+        );
     }
 
     /**
      * Upload a team image with success
-     * 
+     *
      * @return void
      */
     public function test_team_logo_from_upload_with_success(): void
@@ -395,8 +393,8 @@ class UploadTest extends TestCase
         $file = UploadedFile::fake()->image('team_logo.jpg', 600, 300);
         // post file to files endpoint
         $response = $this->json(
-            'POST', 
-            self::TEST_URL . '?entity_flag=teams-media&team_id=' . $teamId, 
+            'POST',
+            self::TEST_URL . '?entity_flag=teams-media&team_id=' . $teamId,
             [
                 'file' => $file
             ],
@@ -406,7 +404,7 @@ class UploadTest extends TestCase
                 'Authorization' => $this->header['Authorization']
             ]
         );
-        
+
         $response->assertJsonStructure([
             'data' => [
                 'id',
@@ -415,7 +413,7 @@ class UploadTest extends TestCase
                 'filename',
                 'file_location',
                 'user_id',
-                'status', 
+                'status',
                 'error'
             ]
         ]);
@@ -436,7 +434,7 @@ class UploadTest extends TestCase
 
     /**
      * Upload a team image with failure
-     * 
+     *
      * @return void
      */
     public function test_team_logo_from_upload_failure(): void
@@ -446,8 +444,8 @@ class UploadTest extends TestCase
         $file = UploadedFile::fake()->image('team_logo.jpg', 400, 300);
         // post file to files endpoint
         $response = $this->json(
-            'POST', 
-            self::TEST_URL . '?entity_flag=teams-media&team_id=' . $teamId, 
+            'POST',
+            self::TEST_URL . '?entity_flag=teams-media&team_id=' . $teamId,
             [
                 'file' => $file
             ],
@@ -457,7 +455,7 @@ class UploadTest extends TestCase
                 'Authorization' => $this->header['Authorization']
             ]
         );
-        
+
         $response->assertJsonStructure([
             'data' => [
                 'id',
@@ -466,7 +464,7 @@ class UploadTest extends TestCase
                 'filename',
                 'file_location',
                 'user_id',
-                'status', 
+                'status',
                 'error'
             ]
         ]);
@@ -480,7 +478,7 @@ class UploadTest extends TestCase
 
     /**
      * Upload a collection image with success
-     * 
+     *
      * @return void
      */
     public function test_collection_image_from_upload_with_success(): void
@@ -489,8 +487,8 @@ class UploadTest extends TestCase
         $file = UploadedFile::fake()->image('collection_image.jpg', 600, 300);
         // post file to files endpoint
         $response = $this->json(
-            'POST', 
-            self::TEST_URL . '?entity_flag=collections-media&collection_id=' . $collectionId, 
+            'POST',
+            self::TEST_URL . '?entity_flag=collections-media&collection_id=' . $collectionId,
             [
                 'file' => $file
             ],
@@ -500,7 +498,7 @@ class UploadTest extends TestCase
                 'Authorization' => $this->header['Authorization']
             ]
         );
-        
+
         $response->assertJsonStructure([
             'data' => [
                 'id',
@@ -509,7 +507,7 @@ class UploadTest extends TestCase
                 'filename',
                 'file_location',
                 'user_id',
-                'status', 
+                'status',
                 'error'
             ]
         ]);
@@ -530,7 +528,7 @@ class UploadTest extends TestCase
 
     /**
      * Upload a collection image with failure
-     * 
+     *
      * @return void
      */
     public function test_collection_image_from_upload_failure(): void
@@ -540,8 +538,8 @@ class UploadTest extends TestCase
         $file = UploadedFile::fake()->image('collection_image.jpg', 400, 300);
         // post file to files endpoint
         $response = $this->json(
-            'POST', 
-            self::TEST_URL . '?entity_flag=collections-media&collection_id=' . $collectionId, 
+            'POST',
+            self::TEST_URL . '?entity_flag=collections-media&collection_id=' . $collectionId,
             [
                 'file' => $file
             ],
@@ -551,7 +549,7 @@ class UploadTest extends TestCase
                 'Authorization' => $this->header['Authorization']
             ]
         );
-        
+
         $response->assertJsonStructure([
             'data' => [
                 'id',
@@ -560,7 +558,7 @@ class UploadTest extends TestCase
                 'filename',
                 'file_location',
                 'user_id',
-                'status', 
+                'status',
                 'error'
             ]
         ]);

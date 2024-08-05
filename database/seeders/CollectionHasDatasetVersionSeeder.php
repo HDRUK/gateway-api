@@ -7,7 +7,6 @@ use App\Models\Collection;
 use App\Models\CollectionHasDatasetVersion;
 use App\Models\Dataset;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CollectionHasDatasetVersionSeeder extends Seeder
 {

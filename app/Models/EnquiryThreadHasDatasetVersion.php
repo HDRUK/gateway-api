@@ -11,14 +11,14 @@ class EnquiryThreadHasDatasetVersion extends Model
 
     /**
      * Table associated with this model
-     * 
+     *
      * @var string
      */
     protected $table = 'enquiry_thread_has_dataset_version';
 
     /**
      * Indicates if this model is timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = false;

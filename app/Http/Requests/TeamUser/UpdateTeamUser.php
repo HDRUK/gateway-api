@@ -40,7 +40,7 @@ class UpdateTeamUser extends BaseFormRequest
                 function ($attribute, $value, $fail) {
                     foreach ($value as $perm => $status) {
                         $exists = Role::where('name', $perm)->first();
-                        
+
                         if (!$exists) {
                             $fail('The role `' . $perm . '` does not exist in the roles table.');
                             break;

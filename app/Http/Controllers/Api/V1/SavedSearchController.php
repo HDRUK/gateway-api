@@ -81,16 +81,23 @@ class SavedSearchController extends Controller
             $savedSearches = $savedSearches->paginate($perPage);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Saved Search get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Saved Search get all',
             ]);
 
             return response()->json(
                 $savedSearches,
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -150,13 +157,13 @@ class SavedSearchController extends Controller
             $savedSearch = SavedSearch::where(['id' => $id,])->with(['filters'])->get();
             if (!$jwtUserIsAdmin && $savedSearch['user_id'] != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to view this saved search');
-            } 
-            
+            }
+
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Saved Search get " . $id,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Saved Search get ' . $id,
             ]);
 
             return response()->json([
@@ -164,6 +171,13 @@ class SavedSearchController extends Controller
                 'data' => $savedSearch,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -236,20 +250,20 @@ class SavedSearchController extends Controller
             if ($savedSearch) {
                 foreach ($arraySearchFilter as $filter) {
                     SavedSearchHasFilter::updateOrCreate([
-                        'saved_search_id' => (int) $savedSearch->id,
-                        'filter_id' => (int) $filter['id'],
+                        'saved_search_id' => (int)$savedSearch->id,
+                        'filter_id' => (int)$filter['id'],
                         'terms' => $filter['terms'],
                     ]);
                 }
             } else {
                 throw new NotFoundException();
             }
-            
+
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Saved Search " . $savedSearch->id . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Saved Search ' . $savedSearch->id . ' created',
             ]);
 
             return response()->json([
@@ -257,6 +271,13 @@ class SavedSearchController extends Controller
                 'data' => $savedSearch->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -357,24 +378,31 @@ class SavedSearchController extends Controller
             SavedSearchHasFilter::where('saved_search_id', $id)->delete();
             foreach ($arraySearchFilter as $filter) {
                 SavedSearchHasFilter::updateOrCreate([
-                    'saved_search_id' => (int) $id,
-                    'filter_id' => (int) $filter['id'],
+                    'saved_search_id' => (int)$id,
+                    'filter_id' => (int)$filter['id'],
                     'terms' => $filter['terms'],
                 ]);
             }
-            
+
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Saved Search " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Saved Search ' . $id . ' updated',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => SavedSearch::where('id', $id)->first()
+                'data' => $savedSearch,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -465,7 +493,7 @@ class SavedSearchController extends Controller
             if ($savedSearch['user_id'] != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to edit this saved search');
             }
-            
+
             $savedSearch->update($array);
 
             $arraySearchFilter = array_key_exists('filters', $input) ? $input['filters'] : [];
@@ -473,24 +501,31 @@ class SavedSearchController extends Controller
             SavedSearchHasFilter::where('saved_search_id', $id)->delete();
             foreach ($arraySearchFilter as $filter) {
                 SavedSearchHasFilter::updateOrCreate([
-                    'saved_search_id' => (int) $id,
-                    'filter_id' => (int) $filter['id'],
+                    'saved_search_id' => (int)$id,
+                    'filter_id' => (int)$filter['id'],
                     'terms' => $filter['terms'],
                 ]);
             }
-            
+
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Saved Search " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Saved Search ' . $id . ' updated',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => SavedSearch::where('id', $id)->first()
+                'data' => $savedSearch,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -542,7 +577,7 @@ class SavedSearchController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-    
+
             $savedSearch = SavedSearch::findOrFail($id);
             if ($savedSearch) {
 
@@ -553,26 +588,33 @@ class SavedSearchController extends Controller
                 $savedSearch->enabled = false;
                 if ($savedSearch->save()) {
                     Auditor::log([
-                        'user_id' => (int) $jwtUser['id'],
+                        'user_id' => (int)$jwtUser['id'],
                         'action_type' => 'DELETE',
-                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                        'description' => "Saved Search " . $id . " deleted",
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => 'Saved Search ' . $id . ' deleted',
                     ]);
 
                     return response()->json([
                         'message' => Config::get('statuscodes.STATUS_OK.message'),
                     ], Config::get('statuscodes.STATUS_OK.code'));
                 }
-    
+
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
                 ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
             }
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

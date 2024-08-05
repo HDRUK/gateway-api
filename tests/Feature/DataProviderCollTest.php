@@ -4,14 +4,11 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 
-use App\Models\DataProvider;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
-use Tests\Traits\Authorization;
 use Database\Seeders\TeamSeeder;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
-use App\Models\DataProviderHasTeam;
 
 use Database\Seeders\DatasetSeeder;
 
@@ -25,7 +22,6 @@ use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TeamHasUserSeeder;
-use Database\Seeders\DataProviderSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
@@ -43,7 +39,7 @@ class DataProviderCollTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/data_provider_colls';
+    public const TEST_URL = '/api/v1/data_provider_colls';
 
     protected $header = [];
 
@@ -226,7 +222,7 @@ class DataProviderCollTest extends TestCase
         ]);
 
         $dpsId = $response->decodeResponseJson()['data'];
-        
+
         $payload['name'] = 'Loki Updated Data Provider';
 
         $response = $this->json(
@@ -348,7 +344,7 @@ class DataProviderCollTest extends TestCase
             [],
             $this->header,
         );
-        
+
         $content = $response->decodeResponseJson()['data'];
 
         $this->assertTrue(count($content['teams']) === 2);

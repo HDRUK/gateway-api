@@ -5,19 +5,13 @@ namespace App\Behat\Context;
 use Exception;
 use App\Models\Role;
 use App\Models\User;
-use App\Jobs\SendEmailJob;
 use App\Models\TeamHasUser;
 use Faker\Factory as Faker;
-use App\Models\EmailTemplate;
 use PHPUnit\Framework\Assert;
 use App\Models\TeamUserHasRole;
 use Behat\Behat\Context\Context;
-use Behat\Gherkin\Node\TableNode;
-use App\Behat\Context\SharedContext;
-use Behat\Gherkin\Node\PyStringNode;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 
 /**
  * Defines Remove Role user two from team one using user one credentials in specific context.
@@ -43,9 +37,9 @@ class RemoveRoleUserTwoFromTeamOneByUserOneContext implements Context
         $this->teamOne = SharedContext::get('team.one');
         $this->accessToken = SharedContext::get('jwt.user.one');
     }
-     /**
-     * @Given I have user one with credentials I send a update request to path with team one and user two for update roles
-     */
+    /**
+    * @Given I have user one with credentials I send a update request to path with team one and user two for update roles
+    */
     public function iHaveUserOneWithCredentialsISendAUpdateRequestToPathWithTeamOneAndUserTwoForUpdateRoles()
     {
         try {
@@ -74,12 +68,12 @@ class RemoveRoleUserTwoFromTeamOneByUserOneContext implements Context
     public function iShouldReceiveASuccessfulResponseWithStatusCodeAfterUpdateRoleUserOneForTeamOneUsingUserOneCredentials($statusCode)
     {
         Assert::assertEquals(
-            $statusCode, 
-            $this->response->getStatusCode(), 
+            $statusCode,
+            $this->response->getStatusCode(),
             "Expected status code {$statusCode}, and received {$this->response->getStatusCode()}."
         );
     }
-    
+
     /**
      * @Then I verify that the role for user one was updated for team one using user one credentials in email
      */
@@ -93,7 +87,7 @@ class RemoveRoleUserTwoFromTeamOneByUserOneContext implements Context
             throw new \Exception("Email to {$recipient} not found in log");
         }
     }
-        
+
     /**
      * @Then I verify that the role for user one was updated for team one using user one credentials in database
      */

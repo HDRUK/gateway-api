@@ -8,7 +8,6 @@ use App\Models\DatasetVersion;
 use App\Models\Publication;
 use App\Models\PublicationHasDatasetVersion;
 use Illuminate\Console\Command;
-use MetadataManagementController AS MMC;
 
 class DatasetPublicationLinkagePostMigration extends Command
 {
@@ -87,7 +86,7 @@ class DatasetPublicationLinkagePostMigration extends Command
             // Since we have both records, create or update a new record in PublicationHasDatasetVersion with the supplied link type.
             $publication_has_dataset = PublicationHasDatasetVersion::where([['publication_id', '=', (int) $publication->id],
                         ['dataset_version_id', '=', (int) $datasetVersionId]])->first();
-            
+
             PublicationHasDatasetVersion::updateOrCreate(
                 [
                     'publication_id' => (int) $publicationId,
@@ -115,7 +114,7 @@ class DatasetPublicationLinkagePostMigration extends Command
         $file = fopen($migrationFile, 'r');
         $headers = fgetcsv($file);
 
-        while (($row = fgetcsv($file)) !== FALSE) {
+        while (($row = fgetcsv($file)) !== false) {
             $item = [];
             foreach ($row as $key => $value) {
                 $item[$headers[$key]] = $value ?: '';
@@ -125,7 +124,7 @@ class DatasetPublicationLinkagePostMigration extends Command
         }
 
         fclose($file);
-        
+
         return $response;
     }
 }

@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class SpatialCoverage extends Model
 {
-    use HasFactory, DatasetFetch;
+    use HasFactory;
+    use DatasetFetch;
 
     protected $fillable = [
         'region',
@@ -22,28 +22,28 @@ class SpatialCoverage extends Model
 
     /**
      * Table associated with this model
-     * 
+     *
      * @var string
      */
     public $table = 'spatial_coverage';
 
     /**
      * Indicates if the model should be timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = true;
 
     /**
      * Represents the region of this spatial coverage
-     * 
+     *
      * @var string
      */
     private $region = '';
 
     /**
      * Whether or not this region is enabled
-     * 
+     *
      * @var boolean
      */
     private $enabled = false;
