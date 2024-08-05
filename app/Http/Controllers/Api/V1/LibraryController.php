@@ -89,16 +89,12 @@ class LibraryController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            $jwtUserIsAdmin = $jwtUser['is_admin'];
 
             $perPage = request('perPage', Config::get('constants.per_page'));
 
-            if ($jwtUserIsAdmin) {
-                $libraries = Library::with(['dataset.team']);
-            } else {
-                $libraries = Library::where('user_id', $jwtUser['id'])
-                    ->with(['dataset.team']);
-            }
+            $libraries = Library::where('user_id', $jwtUser['id'])
+                ->with(['dataset.team']);
+
 
             $libraries = $libraries->paginate($perPage);
 

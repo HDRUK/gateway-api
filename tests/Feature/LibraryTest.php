@@ -12,6 +12,7 @@ use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\LibrarySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Traits\MockExternalApis;
+
 class LibraryTest extends TestCase
 {
     use RefreshDatabase;
@@ -47,34 +48,34 @@ class LibraryTest extends TestCase
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-        
+
         $response->assertJsonStructure([
-                'current_page',
-                'data' => [
-                    0 => [ // Assuming 'data' is an array of libraries
-                        'id',
-                        'created_at',
-                        'updated_at',
-                        'user_id',
-                        'dataset_id',
-                        'dataset_status',
-                        'data_provider_id',
-                        'data_provider_dar_status',
-                        'data_provider_name'
-                    ],
+            'current_page',
+            'data' => [
+                0 => [ // Assuming 'data' is an array of libraries
+                    'id',
+                    'created_at',
+                    'updated_at',
+                    'user_id',
+                    'dataset_id',
+                    'dataset_status',
+                    'data_provider_id',
+                    'data_provider_dar_status',
+                    'data_provider_name'
                 ],
-                'first_page_url',
-                'from',
-                'last_page',
-                'last_page_url',
-                'links',
-                'next_page_url',
-                'path',
-                'per_page',
-                'prev_page_url',
-                'to',
-                'total',
-            ]);
+            ],
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',
+        ]);
     }
 
     /**
@@ -88,7 +89,7 @@ class LibraryTest extends TestCase
             'dataset_id' => 2,
         ], $this->header);
 
-        
+
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
                 'message',
