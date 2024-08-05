@@ -13,11 +13,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class CohortRequest extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
 
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'cohort_requests';
@@ -110,7 +113,7 @@ class CohortRequest extends Model
                 foreach ($values as $value) {
                     $query->orWhere('organisation', 'LIKE', '%' . $value . '%');
                 }
-            });        
+            });
         });
     }
 

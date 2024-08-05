@@ -16,7 +16,7 @@ class Keyword extends Model
 
     /**
      * Table associated with this model
-     * 
+     *
      * @var string
      */
     protected $table = 'keywords';
@@ -30,7 +30,7 @@ class Keyword extends Model
 
     /**
      * Indicates if this model is timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = true;

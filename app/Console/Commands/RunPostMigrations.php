@@ -27,31 +27,96 @@ class RunPostMigrations extends Command
      */
     public function handle()
     {
-        $sleep = $this->argument("sleep");
+        $sleep = $this->argument('sleep');
         $commands = [
-            ['command' => 'app:add-super-admin-to-all-teams', 'arguments' => []],
-            ['command' => 'app:post-run-update-full-name-role', 'arguments' => ['--no-interaction' => true]], 
+            [
+                'command' => 'app:add-super-admin-to-all-teams',
+                'arguments' => [],
+            ],
+            [
+                'command' => 'app:post-run-update-full-name-role',
+                'arguments' => [
+                    '--no-interaction' => true,
+                ],
+            ],
             // ['command' => 'app:sync-hubspot-contacts', 'arguments' => []], // What is this?
             //['command' => 'app:data-providers-post-migration', 'arguments' => []], // seed dataproviders
-            ['command' => 'app:add-data-provider-network', 'arguments' => []], // seed dataproviders
-            ['command' => 'app:physical-sample-post-migration', 'arguments' => []], // datasets
-            ['command' => 'app:datasets-post-migration', 'arguments' => []], // datasets
-            ['command' => 'app:update-eu-licenses', 'arguments' => []], // add licenses before post-migrating tools? - not working!!!!
-            ['command' => 'app:tools-post-migration-process', 'arguments' => []], // tools
-            ['command' => 'app:publication-type-post-migration', 'arguments' => []], // publications
-            ['command' => 'app:dataset-publication-linkage-post-migration', 'arguments' => []], // dataset linkage
-            ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'datasets', 'sleep' => $sleep]],
-            ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'tools', 'sleep' => $sleep]],
-            ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'publications', 'sleep' => $sleep]],
-            ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'durs', 'sleep' => $sleep]],
-            ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'collections', 'sleep' => $sleep]],
-            ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'dataProviders', 'sleep' => $sleep]],
+            [
+                'command' => 'app:add-data-provider-network',
+                'arguments' => [],
+            ], // seed dataproviders
+            [
+                'command' => 'app:physical-sample-post-migration',
+                'arguments' => [],
+            ], // datasets
+            [
+                'command' => 'app:datasets-post-migration',
+                'arguments' => [],
+            ], // datasets
+            [
+                'command' => 'app:update-eu-licenses',
+                'arguments' => [],
+            ], // add licenses before post-migrating tools? - not working!!!!
+            [
+                'command' => 'app:tools-post-migration-process',
+                'arguments' => [],
+            ], // tools
+            [
+                'command' => 'app:publication-type-post-migration',
+                'arguments' => [],
+            ], // publications
+            [
+                'command' => 'app:dataset-publication-linkage-post-migration',
+                'arguments' => [],
+            ], // dataset linkage
+            [
+                'command' => 'app:reindex-entities',
+                'arguments' => [
+                    'entity' => 'datasets',
+                    'sleep' => $sleep,
+                ],
+            ],
+            [
+                'command' => 'app:reindex-entities',
+                'arguments' => [
+                    'entity' => 'tools',
+                    'sleep' => $sleep,
+                ],
+            ],
+            [
+                'command' => 'app:reindex-entities',
+                'arguments' => [
+                    'entity' => 'publications',
+                    'sleep' => $sleep,
+                ],
+            ],
+            [
+                'command' => 'app:reindex-entities',
+                'arguments' => [
+                    'entity' => 'durs',
+                    'sleep' => $sleep,
+                ],
+            ],
+            [
+                'command' => 'app:reindex-entities',
+                'arguments' => [
+                    'entity' => 'collections',
+                    'sleep' => $sleep,
+                ],
+            ],
+            [
+                'command' => 'app:reindex-entities',
+                'arguments' => [
+                    'entity' => 'dataProviders',
+                    'sleep' => $sleep,
+                ],
+            ],
         ];
-        
+
         foreach ($commands as $commandInfo) {
             $this->call($commandInfo['command'], $commandInfo['arguments']);
         }
-        
+
         return 0;
     }
 }

@@ -130,10 +130,11 @@ class PostMigrationUpdateEmailEnquiry extends Command
             </mjml>
         ';
 
-        EmailTemplate::updateOrCreate([
+        EmailTemplate::updateOrCreate(
+            [
             'identifier' => 'dar.notifymessage'
         ],
-        [
+            [
             'identifier' => 'dar.notifymessage',
             'subject' => 'Reply notification message',
             'body' => $templateDarNotifyMessage

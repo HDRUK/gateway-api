@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Team;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -13,7 +11,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Notification extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
 
     protected $fillable = [
         'notification_type',
@@ -29,42 +30,42 @@ class Notification extends Model
 
     /**
      * Table associated with this model
-     * 
+     *
      * @var string
      */
     protected $table = 'notifications';
 
     /**
      * Indicates if this model is timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = true;
 
     /**
      * Represents the notification type
-     * 
+     *
      * @var string
      */
     private $notification_type = '';
 
     /**
      * Indicates the message associated with this notification
-     * 
+     *
      * @var string
      */
     private $message = '';
 
     /**
      * Indicates whether entities opt in to receiving this notification
-     * 
+     *
      * @var bool
      */
     private $opt_in = false;
 
     /**
      * Indicates whether this model is enabled or disabled
-     * 
+     *
      * @var bool
      */
     private $enabled = false;

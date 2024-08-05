@@ -29,12 +29,13 @@ trait HandlesOAuthErrors
             $this->exceptionHandler()->report($e);
 
             return $this->convertResponse(
-                $e->generateHttpResponse(new Psr7Response)
+                $e->generateHttpResponse(new Psr7Response())
             );
         } catch (Exception $e) {
             $this->exceptionHandler()->report($e);
 
-            return new Response($this->configuration()->get('app.debug') ? $e->getMessage() : 'Error.', 500);
+            return new Response($this->configuration()->get('app.debug') ?
+                $e->getMessage() : 'Error.', 500);
         }
     }
 

@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\DarIntegration;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DarIntegrationSeeder extends Seeder

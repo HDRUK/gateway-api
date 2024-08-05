@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\Collection;
 use App\Models\CollectionHasDur;
 use App\Models\Dur;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class CollectionHasDurSeeder extends Seeder

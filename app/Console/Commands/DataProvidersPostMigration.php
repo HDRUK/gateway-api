@@ -6,14 +6,12 @@ use Exception;
 
 use App\Models\Team;
 use App\Models\Dataset;
-use App\Models\DataProvider;
 use Illuminate\Console\Command;
 use App\Models\DataProviderColl;
 
-use App\Models\DataProviderHasTeam;
 
 use App\Models\DataProviderCollHasTeam;
-use MetadataManagementController AS MMC;
+use MetadataManagementController as MMC;
 
 class DataProvidersPostMigration extends Command
 {
@@ -26,7 +24,7 @@ class DataProvidersPostMigration extends Command
 
     /**
      * The file of migration mappings translated to CSV array
-     * 
+     *
      * @var array
      */
     private $csvData = [];
@@ -56,7 +54,7 @@ class DataProvidersPostMigration extends Command
                         'img_url' => 'http://placeholder.com',
                         'enabled' => true
                     ]);
-                    
+
                     $team = Team::where('name', $csv['name'])->first();
                     if (!$team) {
                         continue;
@@ -81,7 +79,7 @@ class DataProvidersPostMigration extends Command
         $file = fopen($migrationFile, 'r');
         $headers = fgetcsv($file);
 
-        while (($row = fgetcsv($file)) !== FALSE) {
+        while (($row = fgetcsv($file)) !== false) {
             $item = [];
             foreach ($row as $key => $value) {
                 $item[$headers[$key]] = $value ?: '';
@@ -90,7 +88,7 @@ class DataProvidersPostMigration extends Command
             $this->csvData[] = $item;
         }
 
-        fclose($file);        
+        fclose($file);
     }
 
     /**
@@ -99,7 +97,7 @@ class DataProvidersPostMigration extends Command
      * @param integer $id
      * @return void
      */
-    private function indexElasticDataProvider(int $id): void 
+    private function indexElasticDataProvider(int $id): void
     {
         $provider = DataProviderColl::where('id', $id)->with('teams')->first();
 

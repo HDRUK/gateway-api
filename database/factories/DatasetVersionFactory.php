@@ -2,9 +2,7 @@
 
 namespace Database\Factories;
 
-use Config;
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 use Tests\Traits\MockExternalApis;

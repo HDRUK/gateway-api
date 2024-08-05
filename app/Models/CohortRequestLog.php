@@ -12,7 +12,7 @@ class CohortRequestLog extends Model
 
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'cohort_request_logs';

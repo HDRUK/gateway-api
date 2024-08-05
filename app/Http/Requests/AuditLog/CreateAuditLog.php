@@ -42,7 +42,7 @@ class CreateAuditLog extends BaseFormRequest
     /**
      * Provides informational messages based on the invalid request
      * parameters.
-     * 
+     *
      * @return array<string, string>
      */
     public function messages(): array

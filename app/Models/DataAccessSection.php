@@ -11,7 +11,7 @@ class DataAccessSection extends Model
 
     /**
      * The table associated with this model
-     * 
+     *
      * @var string
      */
     protected $table = 'dar_sections';

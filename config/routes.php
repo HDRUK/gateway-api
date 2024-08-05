@@ -535,7 +535,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
-            'check.integration.access:permissions,tools.read',            
+            'check.integration.access:permissions,tools.read',
             'sanitize.input',
         ],
         'constraint' => [
@@ -1910,7 +1910,7 @@ return [
             'check.access:permissions,team-members.update',
         ],
         'constraint' => [
-            'teamId' => '[0-9]+', 
+            'teamId' => '[0-9]+',
             'userId' => '[0-9]+',
         ],
     ],
@@ -2189,7 +2189,7 @@ return [
             'teamId' => '[0-9]+',
         ],
     ],
-    
+
     // team.federation
     [
         'name' => 'team.federation',
@@ -2857,7 +2857,7 @@ return [
         'middleware' => ['jwt.verify'],
         'constraint' => [],
     ],
-    
+
     // publications
     [
         'name' => 'publications.index',
@@ -3271,7 +3271,7 @@ return [
         'constraint' => [
             'id' => '[0-9]+',
         ],
-    ],    
+    ],
 
     // Form hydration - metadata onboarding
     [
@@ -3285,7 +3285,7 @@ return [
         ],
         'constraint' => [],
     ],
-    
+
     // licences
     [
         'name' => 'licences',

@@ -16,14 +16,14 @@ class CohortRequestHasPermission extends Model
 
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'cohort_request_has_permissions';
 
     /**
      * Indicates if the model should be timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = false;

@@ -4,18 +4,16 @@ namespace App\Auditor;
 
 use Config;
 use Exception;
-use App\Models\AuditLog;
 use App\Jobs\AuditLogJob;
-use Carbon\CarbonImmutable;
 use App\Http\Traits\RequestTransformation;
 
-class Auditor {
-
+class Auditor
+{
     use RequestTransformation;
 
     /**
      * Logs an action to the audit trail
-     * 
+     *
      * @param array $log
      * @return bool
      */
@@ -37,16 +35,10 @@ class Auditor {
             $data['created_at'] = gettimeofday(true) * 1000000;
 
             if (Config::get('services.googlepubsub.enabled')) {
-                AuditLogJob::dispatch($data);
+                AuditLogJob::dispatchSync($data);
             }
 
-            $audit = AuditLog::create($data);
-
-            if (!$audit) {
-                return false;
-            }
-    
-            return true;        
+            return true;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

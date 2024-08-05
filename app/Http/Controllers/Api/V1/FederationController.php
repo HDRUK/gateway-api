@@ -18,7 +18,6 @@ use App\Http\Requests\Federation\CreateFederation;
 use App\Http\Requests\Federation\DeleteFederation;
 use App\Http\Requests\Federation\GetAllFederation;
 use App\Http\Requests\Federation\UpdateFederation;
-use Illuminate\Support\Str;
 
 use Illuminate\Support\Facades\Http;
 
@@ -92,27 +91,35 @@ class FederationController extends Controller
      */
     public function index(GetAllFederation $request, int $teamId)
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $perPage = request('per_page', Config::get('constants.per_page'));
             $federations = Federation::whereHas('team', function ($query) use ($teamId) {
                 $query->where('id', $teamId);
             })->with(['notifications'])->paginate($perPage, ['*'], 'page');
-    
+
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'team_id' => $teamId,
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Federation get all",
+                'description' => 'Federation get all',
             ]);
 
             return response()->json(
                 $federations
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -176,27 +183,35 @@ class FederationController extends Controller
      */
     public function show(GetFederation $request, int $teamId, int $federationId)
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $federations = Federation::whereHas('team', function ($query) use ($teamId) {
                 $query->where('id', $teamId);
             })->where('id', $federationId)->with(['notifications'])->first()->toArray();
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'team_id' => $teamId,
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Federation get " . $federationId,
+                'description' => 'Federation get ' . $federationId,
             ]);
-    
+
             return response()->json([
                 'message' => 'success',
                 'data' => $federations,
-            ], 200);    
+            ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -265,10 +280,10 @@ class FederationController extends Controller
      */
     public function store(CreateFederation $request, int $teamId)
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $payload = [
                 'federation_type' => $input['federation_type'],
                 'auth_type' => $input['auth_type'],
@@ -284,8 +299,8 @@ class FederationController extends Controller
             $federation = Federation::create($payload);
 
             $secrets_payload = $this->getSecretsPayload($input);
-            
-            if($secrets_payload){
+
+            if($secrets_payload) {
                 $auth_secret_key_location = Config::get('fma.secrets.prependname') . (string)$federation->pid;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
@@ -293,7 +308,7 @@ class FederationController extends Controller
                     "payload" => json_encode($secrets_payload)
                 ];
                 $response = Http::post(env('FMA_SERVICE_URL') . '/federation', $payload);
-                
+
                 if (!$response->successful()) {
                     Federation::where('id', $federation->id)->delete();
                     return response()->json([
@@ -303,10 +318,10 @@ class FederationController extends Controller
                 }
 
                 Federation::where('id', $federation->id)->first()
-                    ->update(["auth_secret_key_location"=>$auth_secret_key_location]);
+                    ->update(["auth_secret_key_location" => $auth_secret_key_location]);
 
             }
-                      
+
             TeamHasFederation::create([
                 'federation_id' => $federation->id,
                 'team_id' => $teamId,
@@ -328,11 +343,11 @@ class FederationController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'team_id' => $teamId,
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Federation " . $federation->id . " created",
+                'description' => 'Federation ' . $federation->id . ' created',
             ]);
 
             return response()->json([
@@ -340,6 +355,14 @@ class FederationController extends Controller
                 'data' => $federation->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -419,10 +442,10 @@ class FederationController extends Controller
      */
     public function update(UpdateFederation $request, int $teamId, int $federationId)
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $updateArray = [
                 'federation_type' => $input['federation_type'],
                 'auth_type' => $input['auth_type'],
@@ -437,7 +460,7 @@ class FederationController extends Controller
             Federation::where('id', $federationId)->update($updateArray);
 
             $secrets_payload = $this->getSecretsPayload($input);
-            if($secrets_payload){
+            if($secrets_payload) {
                 $auth_secret_key_location = Config::get('fma.secrets.prependname') . (string)$federationId;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
@@ -445,7 +468,7 @@ class FederationController extends Controller
                     "payload" => json_encode($secrets_payload)
                 ];
                 $response = Http::patch(env('FMA_SERVICE_URL') . '/federation', $payload);
-                
+
                 if (!$response->successful()) {
                     return response()->json([
                         'message' => 'something gone wrong with updating federation secret key',
@@ -479,23 +502,32 @@ class FederationController extends Controller
                 ]);
             }
 
-            $response = Federation::where('id', '=', $federationId)->whereHas('team', function ($query) use ($teamId) {
+            $response = Federation::where('id', '=', $federationId)
+                ->whereHas('team', function ($query) use ($teamId) {
                     $query->where('id', $teamId);
                 })->with(['notifications'])->first();
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'team_id' => $teamId,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Federation " . $federationId . " updated",
+                'description' => 'Federation ' . $federationId . ' updated',
             ]);
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $response,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -575,10 +607,10 @@ class FederationController extends Controller
      */
     public function edit(EditFederation $request, int $teamId, int $federationId)
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $arrayKeys = [
                 'federation_type',
                 'auth_type',
@@ -596,7 +628,7 @@ class FederationController extends Controller
             Federation::where('id', $federationId)->update($updateArray);
 
             $secrets_payload = $this->getSecretsPayload($input);
-            if($secrets_payload){
+            if($secrets_payload) {
                 $auth_secret_key_location = Config::get('fma.secrets.prependname') . (string)$federationId;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
@@ -604,7 +636,7 @@ class FederationController extends Controller
                     "payload" => json_encode($secrets_payload)
                 ];
                 $response = Http::patch(env('FMA_SERVICE_URL') . '/federation', $payload);
-                
+
                 if (!$response->successful()) {
                     return response()->json([
                         'message' => 'something gone wrong with updating federation secret key',
@@ -641,16 +673,17 @@ class FederationController extends Controller
                 }
             }
 
-            $response = Federation::where('id', '=', $federationId)->whereHas('team', function ($query) use ($teamId) {
-                $query->where('id', $teamId);
-            })->with(['notifications'])->first();
+            $response = Federation::where('id', '=', $federationId)
+                ->whereHas('team', function ($query) use ($teamId) {
+                    $query->where('id', $teamId);
+                })->with(['notifications'])->first();
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'team_id' => $teamId,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Federation " . $federationId . " updated",
+                'description' => 'Federation ' . $federationId . ' updated',
             ]);
 
             return response()->json([
@@ -658,6 +691,14 @@ class FederationController extends Controller
                 'data' => $response
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -724,10 +765,10 @@ class FederationController extends Controller
      */
     public function destroy(DeleteFederation $request, int $teamId, int $federationId)
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $federationNotifications = FederationHasNotification::where([
                 'federation_id' => $federationId,
             ])->pluck('notification_id');
@@ -745,17 +786,24 @@ class FederationController extends Controller
             ])->delete();
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'team_id' => $teamId,
                 'action_type' => 'DELETE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Federation " . $federationId . " deleted",
+                'description' => 'Federation ' . $federationId . ' deleted',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -794,32 +842,39 @@ class FederationController extends Controller
     public function testFederation(Request $request)
     {
         $input = $request->all();
+
         try {
-            
-            $response = Http::post(env('FMA_SERVICE_URL') . '/test',$input);
+            $response = Http::post(env('FMA_SERVICE_URL') . '/test', $input);
             return response()->json($response->json());
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
 
-    private function getSecretsPayload(array $input){
+    private function getSecretsPayload(array $input)
+    {
         $secrets_payload = [];
         $secret_key = $input['auth_secret_key'];
         switch ($input['auth_type']) {
-            case "BEARER":
+            case 'BEARER':
                 $secrets_payload = [
                     "bearer_token" => $secret_key
                 ];
-                break;  
-            case "API_KEY":
+                break;
+            case 'API_KEY':
                 $secrets_payload = [
                     "api_key" => $secret_key,
                     "client_id" => "", //something needs to happen here??
                     "client_secret" => "" //something needs to happen here??
                 ];
                 break;
-            case "NO_AUTH":
+            case 'NO_AUTH':
                 $secrets_payload = null;
                 break;
         }

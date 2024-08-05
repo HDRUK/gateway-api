@@ -2,11 +2,10 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;  
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -44,7 +43,7 @@ return new class extends Migration
             }
         }
 
-        
+
         // Drop the old table
         Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('dataset_has_named_entities');
@@ -84,7 +83,7 @@ return new class extends Migration
         }
 
         Schema::disableForeignKeyConstraints();
-        Schema::dropIfExists('dataset_version_has_named_entities');  
+        Schema::dropIfExists('dataset_version_has_named_entities');
         Schema::enableForeignKeyConstraints();
     }
 };

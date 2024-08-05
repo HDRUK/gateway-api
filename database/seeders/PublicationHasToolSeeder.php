@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Models\Publication;
 use App\Models\PublicationHasTool;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class PublicationHasToolSeeder extends Seeder
 {
@@ -35,6 +34,6 @@ class PublicationHasToolSeeder extends Seeder
                     'updated_at' => now(),
                 ]);
             }
-        }  
+        }
     }
 }

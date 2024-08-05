@@ -2,7 +2,6 @@
 
 namespace App\AliasReplyScanner;
 
-use Auditor;
 use Exception;
 use CloudLogger;
 use App\Models\Team;
@@ -16,24 +15,26 @@ use App\Models\EnquiryMessage;
 use Webklex\PHPIMAP\ClientManager;
 
 use EnquiriesManagementController as EMC;
-use App\Exceptions\AliasReplyScannerException;
 
-class AliasReplyScanner {
-
-    public function getImapClient() {
+class AliasReplyScanner
+{
+    public function getImapClient()
+    {
         $cm = new ClientManager($options = []);
         $client = $cm->make(config('mail.mailers.ars.imap'));
         $client->connect();
         return $client;
     }
 
-    public function getNewMessages(){
+    public function getNewMessages()
+    {
         $client = $this->getImapClient();
         $inbox = $client->getFolder(config('mail.mailers.ars.inbox'));
         return $inbox->messages()->all()->get();
     }
 
-    public function getNewMessagesSafe(){
+    public function getNewMessagesSafe()
+    {
         $messages = $this->getNewMessages();
         return $messages->filter(function ($msg) {
             $body = $this->getSanitisedBody($msg);
@@ -41,19 +42,21 @@ class AliasReplyScanner {
         });
     }
 
-    public function getSanitisedBody($message){
+    public function getSanitisedBody($message)
+    {
         $body = $message->getHTMLBody();
         $sanitized = strip_tags($body);
         return $sanitized;
     }
-    public function checkBodyIsSensible($text){
+    public function checkBodyIsSensible($text)
+    {
         // Remove punctuation and special characters
         $text = preg_replace('/[^a-zA-Z0-9\s]/', '', $text);
 
         // Tokenize the text into words
         $words = str_word_count($text, 1);
 
-        if(count($words)==0){
+        if(count($words) == 0) {
             return false;
         }
 
@@ -82,11 +85,11 @@ class AliasReplyScanner {
     }
 
     public function getThread($alias)
-    {         
-        return EnquiryThread::where("unique_key",$alias)->first();
+    {
+        return EnquiryThread::where("unique_key", $alias)->first();
     }
 
-    public function scrapeAndStoreContent($message,$threadId)
+    public function scrapeAndStoreContent($message, $threadId)
     {
         $body = $this->getSanitisedBody($message);
         $from = $message->getFrom();
@@ -108,14 +111,15 @@ class AliasReplyScanner {
         return $enquiryMessage;
     }
 
-    public function deleteMessage($message){
+    public function deleteMessage($message)
+    {
         return $message->delete($expunge = true);
     }
 
     public function notifyDarManagesOfNewMessage($threadId)
     {
         $usersToNotify = [];
-        
+
         $enquiryThread = EnquiryThread::where([
             'id' => $threadId,
         ])->first();
@@ -134,7 +138,7 @@ class AliasReplyScanner {
             CloudLogger::write([
                 'action_type' => 'NOTIFY',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' . 
+                'description' => 'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' .
                     $threadId,
             ]);
 

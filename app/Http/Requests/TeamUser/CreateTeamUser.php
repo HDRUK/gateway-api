@@ -15,7 +15,7 @@ class CreateTeamUser extends BaseFormRequest
     {
         return [
             'teamId' => [
-                'int', 
+                'int',
                 'required',
                 'exists:teams,id',
             ],

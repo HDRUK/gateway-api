@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Team;
 use App\Models\Notification;
 use App\Models\TeamHasNotification;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class TeamHasNotificationSeeder extends Seeder

@@ -26,7 +26,7 @@ class ReviewTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/reviews';
+    public const TEST_URL = '/api/v1/reviews';
 
     protected $header = [];
 
@@ -52,7 +52,7 @@ class ReviewTest extends TestCase
 
     /**
      * Get All Reviews with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_reviews_with_success(): void
@@ -90,14 +90,14 @@ class ReviewTest extends TestCase
             'per_page',
             'prev_page_url',
             'to',
-            'total',           
+            'total',
         ]);
         $response->assertStatus(200);
     }
 
     /**
      * Get Review by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_review_by_id_with_success(): void
@@ -128,11 +128,11 @@ class ReviewTest extends TestCase
 
     /**
      * Create new Review with success
-     * 
+     *
      * @return void
      */
     public function test_add_new_review_with_success(): void
-    {    
+    {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         // tool
         $responseTool = $this->json(
@@ -172,7 +172,7 @@ class ReviewTest extends TestCase
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
                 'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",           
+                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -496,7 +496,7 @@ class ReviewTest extends TestCase
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
                 'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",                
+                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );

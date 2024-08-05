@@ -7,7 +7,6 @@ use App\Models\Collection;
 use App\Models\Publication;
 use Illuminate\Database\Seeder;
 use App\Models\CollectionHasPublication;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CollectionHasPublicationSeeder extends Seeder
 {

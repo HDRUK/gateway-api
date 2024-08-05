@@ -6,7 +6,6 @@ use Exception;
 use Illuminate\Database\Seeder;
 use App\Models\AuthorisationCode;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class TeamUserRoleDemo extends Seeder
 {
@@ -15,13 +14,13 @@ class TeamUserRoleDemo extends Seeder
      */
     public function run(): void
     {
-        /** 
+        /**
          * we have team now:
          * | id   | name                     | mongo_object_id            | user ids       |
          * | ==== | ======================== | ========================== | ============== |
          * |  1   | 'HEALTH DATA RESEARCH'   | '5f7b1a2bce9f65e6ed83e7da' | 3, 4, 5, 6     |
          * | ---- | ------------------------ | -------------------------- | -------------- |
-         * |  2   | 'SAIL'                   | '5f3f98068af2ef61552e1d75' | 7, 8, 9, 10    | 
+         * |  2   | 'SAIL'                   | '5f3f98068af2ef61552e1d75' | 7, 8, 9, 10    |
          * | ---- | ------------------------ | -------------------------- | -------------- |
          * |  3   | 'PUBLIC HEALTH SCOTLAND' | '5f8992a97150a1b050be0712' | 11, 12, 13, 14 |
          * | ==== | ======================== | ========================== | ============== |

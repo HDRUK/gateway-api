@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
-use App\Models\Team;
 use Illuminate\Database\Seeder;
 use Tests\Traits\MockExternalApis;
 

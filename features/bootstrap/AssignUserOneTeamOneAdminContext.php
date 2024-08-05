@@ -5,19 +5,13 @@ namespace App\Behat\Context;
 use Exception;
 use App\Models\Role;
 use App\Models\User;
-use App\Jobs\SendEmailJob;
 use App\Models\TeamHasUser;
 use Faker\Factory as Faker;
-use App\Models\EmailTemplate;
 use PHPUnit\Framework\Assert;
 use App\Models\TeamUserHasRole;
 use Behat\Behat\Context\Context;
-use Behat\Gherkin\Node\TableNode;
-use App\Behat\Context\SharedContext;
-use Behat\Gherkin\Node\PyStringNode;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 
 /**
  * Defines assign user one to team one with "custodian.team.admin" role features from the specific context.
@@ -75,8 +69,8 @@ class AssignUserOneTeamOneAdminContext implements Context
     public function iShouldReceiveASuccessfulResponseWithStatusCodeAfterUserOneWasAssignedToTheTeamOneLikeAdmin($statusCode)
     {
         Assert::assertEquals(
-            $statusCode, 
-            $this->response->getStatusCode(), 
+            $statusCode,
+            $this->response->getStatusCode(),
             "Expected status code {$statusCode}, and received {$this->response->getStatusCode()}."
         );
     }
@@ -118,7 +112,7 @@ class AssignUserOneTeamOneAdminContext implements Context
         $roles = Role::where([
             'name' => $role,
         ])->first();
-        
+
         $found = false;
         if ($roles) {
             $userTeam = TeamHasUser::where([

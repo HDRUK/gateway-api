@@ -2,13 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Team;
-use App\Models\User;
-use App\Models\Sector;
-use App\Models\DurHasDatasetVersion;
-use App\Models\Keyword;
-use App\Models\Application;
-use App\Models\Publication;
 use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
@@ -20,7 +13,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Dur extends Model
 {
-    use HasFactory, SoftDeletes, Prunable, DatasetFetch;
+    use HasFactory;
+    use SoftDeletes;
+    use Prunable;
+    use DatasetFetch;
 
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
@@ -30,14 +26,14 @@ class Dur extends Model
 
     /**
      * Table associated with this model
-     * 
+     *
      * @var string
      */
     protected $table = 'dur';
 
     /**
      * The attributes that are mass assignable
-     * 
+     *
      * @var array<int, string>
      */
     protected $fillable = [
@@ -161,7 +157,7 @@ class Dur extends Model
     {
         return $this->belongsToMany(Application::class, 'dur_has_publications');
     }
-    
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

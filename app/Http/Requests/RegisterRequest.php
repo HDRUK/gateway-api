@@ -4,7 +4,6 @@ namespace App\Http\Requests;
 
 use Config;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 class RegisterRequest extends BaseFormRequest
 {
@@ -18,8 +17,8 @@ class RegisterRequest extends BaseFormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
-                'required', 
-                'string', 
+                'required',
+                'string',
                 'email',
                 Rule::unique('users')->where(function ($query) {
                     $query->where('email', $this->email)
@@ -32,7 +31,7 @@ class RegisterRequest extends BaseFormRequest
 
     /**
      * Messages
-     * 
+     *
      * @return array
      */
     public function messages(): array

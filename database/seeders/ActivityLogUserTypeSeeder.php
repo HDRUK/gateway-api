@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Http\Enums\ActivityLogUserType as ActivityLogUserTypeEnums;
 use App\Models\ActivityLogUserType;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ActivityLogUserTypeSeeder extends Seeder
@@ -22,7 +21,7 @@ class ActivityLogUserTypeSeeder extends Seeder
         ActivityLogUserType::create([
             'name' => ActivityLogUserTypeEnums::CUSTODIAN,
         ]);
-        
+
         ActivityLogUserType::create([
             'name' => ActivityLogUserTypeEnums::APPLICANT,
         ]);

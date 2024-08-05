@@ -12,7 +12,7 @@ class AuthTest extends TestCase
     use RefreshDatabase;
     use Authorization;
 
-    const TEST_URL_AUTH = '/api/v1/auth';
+    public const TEST_URL_AUTH = '/api/v1/auth';
 
     /**
      * Set up the database
@@ -32,21 +32,22 @@ class AuthTest extends TestCase
 
     /**
      * Test authorization with success
-     * 
+     *
      * @return void
      */
     public function test_authorization_with_success(): void
     {
         $this->authorisationUser();
 
-        $response = $this->json('POST', 
-                                self::TEST_URL_AUTH, 
-                                [
-                                    'email' => $this->user['email'], 
+        $response = $this->json(
+            'POST',
+            self::TEST_URL_AUTH,
+            [
+                                    'email' => $this->user['email'],
                                     'password' => $this->user['password'],
-                                ], 
-                                ['Accept' => 'application/json'],
-                            );
+                                ],
+            ['Accept' => 'application/json'],
+        );
 
         $response->assertStatus(200);
         $this->assertArrayHasKey('access_token', $response);
@@ -55,7 +56,7 @@ class AuthTest extends TestCase
 
     /**
      * Test who generate an exception
-     * 
+     *
      * @return void
      */
     public function test_authorization_generate_exception(): void

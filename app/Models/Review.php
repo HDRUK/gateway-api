@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Tool;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -12,11 +11,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Review extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
 
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'reviews';
