@@ -76,9 +76,7 @@ class ReindexEntities extends Command
                     }
                 }
             }
-
             MMC::reindexElastic($id);
-
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
