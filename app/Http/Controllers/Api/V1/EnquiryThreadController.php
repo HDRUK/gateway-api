@@ -281,12 +281,14 @@ class EnquiryThreadController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-        } finally {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
-                'data' => null,
-            ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+            
+            throw new Exception ($e->getMessage());
         }
+
+        return response()->json([
+            'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
+            'data' => null,
+        ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
     }
 
     private function mapDatasets(array $datasets): array
