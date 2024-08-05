@@ -207,8 +207,8 @@ class LibraryController extends Controller
 
             // Fetch the library with dataset and team
             $library = Library::with(['dataset.team'])
-                        ->where('id', $id)
-                        ->firstOrFail();
+                ->where('id', $id)
+                ->firstOrFail();
 
             if (!$jwtUserIsAdmin && $library['user_id'] != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to view this library');
@@ -610,5 +610,4 @@ class LibraryController extends Controller
             throw new Exception($e->getMessage());
         }
     }
-
 }
