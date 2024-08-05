@@ -310,7 +310,6 @@ class LibraryController extends Controller
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => "library " . $library->id . " created",
                 'description' => 'library ' . $library->id . ' created',
             ]);
 
