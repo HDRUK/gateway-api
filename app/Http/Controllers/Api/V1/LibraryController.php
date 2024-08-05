@@ -6,6 +6,7 @@ use Config;
 use Auditor;
 use Exception;
 use App\Models\Library;
+use App\Models\Dataset;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -88,29 +89,27 @@ class LibraryController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            $jwtUserIsAdmin = $jwtUser['is_admin'];
 
             $perPage = request('perPage', Config::get('constants.per_page'));
 
-            if ($jwtUserIsAdmin) {
-                $libraries = Library::with(['dataset.team']);
-            } else {
-                $libraries = Library::where('user_id', $jwtUser['id'])
-                    ->with(['dataset.team']);
-            }
+            $libraries = Library::where('user_id', $jwtUser['id'])
+                ->with(['dataset.team']);
+
 
             $libraries = $libraries->paginate($perPage);
 
             $transformedLibraries = $libraries->getCollection()->map(function ($library) {
                 $dataset = $library->dataset;
-                $team = $dataset->team->first();
+                $team = $dataset->team;
 
                 // Using dynamic attributes to avoid undefined property error
                 $library->setAttribute('dataset_id', (int)$dataset->id);
+                $library->setAttribute('dataset_name', $dataset->versions[0]->metadata['metadata']['summary']['shortTitle']);
                 $library->setAttribute('dataset_status', $dataset->status);
                 $library->setAttribute('data_provider_id', $team->pid);
                 $library->setAttribute('data_provider_dar_status', $team->uses_5_safes);
                 $library->setAttribute('data_provider_name', $team->name);
+                $library->setAttribute('data_provider_dar_enabled', $team->is_question_bank);
 
 
                 unset($library->dataset);
@@ -215,7 +214,7 @@ class LibraryController extends Controller
             }
 
             $dataset = $library->dataset->first();
-            $team = $dataset->team->first();
+            $team = $dataset->team;
 
             // Using dynamic attributes to avoid undefined property error
             $library->setAttribute('dataset_id', (int)$dataset->datasetid);
@@ -223,6 +222,8 @@ class LibraryController extends Controller
             $library->setAttribute('data_provider_id', $team->pid);
             $library->setAttribute('data_provider_dar_status', $team->uses_5_safes);
             $library->setAttribute('data_provider_name', $team->name);
+            $library->setAttribute('dataset_name', $dataset->versions[0]->metadata['metadata']['summary']['shortTitle']);
+            $library->setAttribute('data_provider_dar_enabled', $team->is_question_bank);
 
             unset($library->dataset);
 
