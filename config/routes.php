@@ -2063,9 +2063,7 @@ return [
         'path' => '/datasets/export',
         'methodController' => 'DatasetController@export',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-        ],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
