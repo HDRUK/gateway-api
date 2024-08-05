@@ -23,7 +23,7 @@ class ReindexEntities extends Command
      *
      * @var string
      */
-    protected $signature = 'app:reindex-entities {entity?} {sleep=0}';
+    protected $signature = 'app:reindex-entities {entity?} {sleep=0} {--term-extraction}';
 
     /**
      * The console command description.
@@ -58,44 +58,30 @@ class ReindexEntities extends Command
         }
     }
 
-    private function datasets(){
+    private function datasets($termExtraction = false){
         $datasetIds = Dataset::pluck('id');
         $progressbar = $this->output->createProgressBar(count($datasetIds));
         foreach ($datasetIds as $id) {
-            MMC::reindexElastic($id);
-            usleep($this->sleepTimeInMicroseconds);
-            $progressbar->advance();
-        }
-        $progressbar->finish();
-    }
-
-    private function datasetTermExtraction(){
-        // Fetch all datasets
-        $datasetIds = Dataset::pluck('id');
-        $progressbar = $this->output->createProgressBar(count($datasetIds));
-
-        foreach ($datasetIds as $id) {
-
-            $dataset = Dataset::where('id',$id)->first();
-
-            if ($dataset->status === Dataset::STATUS_ACTIVE) {
-                // Retrieve the latest metadata
-                $latestMetadata = $dataset->latestMetadata()->first();
-
-                if ($latestMetadata) {
-                    // Dispatch the TermExtraction job
-                    TermExtraction::dispatch(
-                        $dataset->id,
-                        $dataset->lastMetadataVersionNumber()->version,
-                        base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6)),
-                        "on"
-                    );
+            
+            if ($termExtraction) {
+                $dataset = Dataset::where('id', $id)->first();
+                if ($dataset->status === Dataset::STATUS_ACTIVE) {
+                    $latestMetadata = $dataset->latestMetadata()->first();
+                    if ($latestMetadata) {
+                        TermExtraction::dispatch(
+                            $dataset->id,
+                            $dataset->lastMetadataVersionNumber()->version,
+                            base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6))
+                        );
+                    }
                 }
             }
+
+            MMC::reindexElastic($id);
+
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
-
         $progressbar->finish();
     }
 
