@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use Config;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,7 +19,7 @@ class NotificationFactory extends Factory
         return [
             'notification_type' => fake()->words(5, true),
             'message' => fake()->words(3, true),
-            'opt_in'=> fake()->boolean(),
+            'opt_in' => fake()->boolean(),
             'enabled' => fake()->boolean(),
             'email' => fake()->unique()->safeEmail(),
         ];

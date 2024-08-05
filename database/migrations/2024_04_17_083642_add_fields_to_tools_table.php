@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -25,42 +24,32 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasColumn('tools', 'programming_language'))
-        {
-            Schema::table('tools', function(Blueprint $table)
-            {
+        if (Schema::hasColumn('tools', 'programming_language')) {
+            Schema::table('tools', function (Blueprint $table) {
                 $table->dropColumn('programming_language');
             });
         }
 
-        if (Schema::hasColumn('tools', 'programming_package'))
-        {
-            Schema::table('tools', function(Blueprint $table)
-            {
+        if (Schema::hasColumn('tools', 'programming_package')) {
+            Schema::table('tools', function (Blueprint $table) {
                 $table->dropColumn('programming_package');
             });
         }
 
-        if (Schema::hasColumn('tools', 'type_category'))
-        {
-            Schema::table('tools', function(Blueprint $table)
-            {
+        if (Schema::hasColumn('tools', 'type_category')) {
+            Schema::table('tools', function (Blueprint $table) {
                 $table->dropColumn('type_category');
             });
         }
 
-        if (Schema::hasColumn('tools', 'associated_authors'))
-        {
-            Schema::table('tools', function(Blueprint $table)
-            {
+        if (Schema::hasColumn('tools', 'associated_authors')) {
+            Schema::table('tools', function (Blueprint $table) {
                 $table->dropColumn('associated_authors');
             });
         }
 
-        if (Schema::hasColumn('tools', 'contact_address'))
-        {
-            Schema::table('tools', function(Blueprint $table)
-            {
+        if (Schema::hasColumn('tools', 'contact_address')) {
+            Schema::table('tools', function (Blueprint $table) {
                 $table->dropColumn('contact_address');
             });
         }

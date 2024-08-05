@@ -80,6 +80,10 @@ if cfg.get("darasEnabled"):
 if cfg.get('clamavEnabled'):
     include(cfg.get('clamavServiceRoot') + '/Tiltfile')
 
+## Implements a watcher for local file changes to automatically
+## fix linting issues in real-time, locally.
+local_resource('linting', cmd='composer run lint', deps=['./'])
+
 
 docker_build(
     ref="hdruk/" + cfg.get("name"),

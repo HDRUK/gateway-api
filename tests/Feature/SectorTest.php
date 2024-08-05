@@ -12,9 +12,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class SectorTest extends TestCase
 {
     use RefreshDatabase;
-    private $accessToken = '';    
+    private $accessToken = '';
 
-    public function setUp() :void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -29,8 +29,8 @@ class SectorTest extends TestCase
         ]);
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
-        $content = $response->decodeResponseJson();  
-        $this->accessToken = $content['access_token'];      
+        $content = $response->decodeResponseJson();
+        $this->accessToken = $content['access_token'];
     }
 
     /**
@@ -66,14 +66,14 @@ class SectorTest extends TestCase
                 'per_page',
                 'prev_page_url',
                 'to',
-                'total',                
+                'total',
             ]);
 
     }
 
     /**
      * Returns a single sector
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_list_a_single_sector()
@@ -100,7 +100,7 @@ class SectorTest extends TestCase
         $response = $this->get('api/v1/sectors/' . $content['data'], [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
-        
+
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [
@@ -116,7 +116,7 @@ class SectorTest extends TestCase
 
     /**
      * Creates a new sector
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_create_a_sector()
@@ -140,14 +140,15 @@ class SectorTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
     }
 
     /**
      * Tests that a sector record can be updated
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_update_a_sector()
@@ -173,11 +174,12 @@ class SectorTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        // Finally, update the last entered sector to 
+        // Finally, update the last entered sector to
         // prove functionality
         $response = $this->json(
             'PUT',
@@ -204,7 +206,7 @@ class SectorTest extends TestCase
 
     /**
      * Tests that a sector record can be edited
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_edit_a_sector()
@@ -303,7 +305,7 @@ class SectorTest extends TestCase
 
     /**
      * Tests it can delete a sector
-     * 
+     *
      * @return void
      */
     public function test_it_can_delete_a_sector()
@@ -329,12 +331,13 @@ class SectorTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        // Finally, update the last entered sector to 
-        // prove functionality        
+        // Finally, update the last entered sector to
+        // prove functionality
         $response = $this->json(
             'DELETE',
             'api/v1/sectors/' . $content['data'],
@@ -348,10 +351,11 @@ class SectorTest extends TestCase
             ->assertJsonStructure([
                 'message',
             ]);
-    
+
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_OK.message')
         );
     }

@@ -5,19 +5,13 @@ namespace App\Behat\Context;
 use Exception;
 use App\Models\Role;
 use App\Models\User;
-use App\Jobs\SendEmailJob;
 use App\Models\TeamHasUser;
 use Faker\Factory as Faker;
-use App\Models\EmailTemplate;
 use PHPUnit\Framework\Assert;
 use App\Models\TeamUserHasRole;
 use Behat\Behat\Context\Context;
-use Behat\Gherkin\Node\TableNode;
-use App\Behat\Context\SharedContext;
-use Behat\Gherkin\Node\PyStringNode;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 
 /**
  * Defines assign user two to team one with custodian dar manager role features from the specific context.
@@ -50,7 +44,7 @@ class AssignUsertwoTeamOneCDarManagerContext implements Context
     {
         try {
             File::put(storage_path('logs/email.log'), '');
-            
+
             $arrayRole = [$role];
             $payload = [
                 "userId" => $this->userTwo['id'],
@@ -74,8 +68,8 @@ class AssignUsertwoTeamOneCDarManagerContext implements Context
     public function iShouldReceiveASuccessfulResponseWithStatusCodeAfterUserTwoWasAssignedToTheTeamOneLikeCustodianDarManager($statusCode)
     {
         Assert::assertEquals(
-            $statusCode, 
-            $this->response->getStatusCode(), 
+            $statusCode,
+            $this->response->getStatusCode(),
             "Expected status code {$statusCode}, and received {$this->response->getStatusCode()}."
         );
     }
@@ -117,7 +111,7 @@ class AssignUsertwoTeamOneCDarManagerContext implements Context
         $roles = Role::where([
             'name' => $role,
         ])->first();
-        
+
         $found = false;
         if ($roles) {
             $userTeam = TeamHasUser::where([

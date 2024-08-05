@@ -10,7 +10,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 final class AuthorisationCode extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
 
     /**
      * The table associated with the model.
@@ -18,10 +21,10 @@ final class AuthorisationCode extends Model
      * @var string
      */
     protected $table = 'authorisation_codes';
-    
+
     /**
      * Whether or not this model supports timestamps
-     * 
+     *
      * @var boolean
      */
     public $timestamps = false;

@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use Config;
 use App\Models\Tag;
 use Tests\TestCase;
 use Database\Seeders\TagSeeder;
@@ -14,7 +13,7 @@ class TagTest extends TestCase
     use RefreshDatabase;
     use Authorization;
 
-    const TEST_URL = '/api/v1/tags';
+    public const TEST_URL = '/api/v1/tags';
 
     protected $header = [];
 
@@ -40,7 +39,7 @@ class TagTest extends TestCase
 
     /**
      * Get All Tags with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_tags_with_success(): void
@@ -70,14 +69,14 @@ class TagTest extends TestCase
             'per_page',
             'prev_page_url',
             'to',
-            'total',            
+            'total',
         ]);
         $response->assertStatus(200);
     }
 
     /**
      * Get Tag by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_tag_by_id_with_success(): void
@@ -109,13 +108,13 @@ class TagTest extends TestCase
     public function test_create_tag_with_success(): void
     {
         $response = $this->json(
-            'POST', 
-            self::TEST_URL, 
+            'POST',
+            self::TEST_URL,
             [
                 'type' =>  'Tag-123456789',
                 'enabled' => 1,
                 'description' => 'type for test',
-            ], 
+            ],
             $this->header,
         );
 
@@ -135,13 +134,13 @@ class TagTest extends TestCase
     {
         // create 1
         $responseCreate1 = $this->json(
-            'POST', 
+            'POST',
             self::TEST_URL,
             [
                 'type' =>  'Tag-123456789',
                 'enabled' => 1,
                 'description' => 'type for test'
-            ], 
+            ],
             $this->header,
         );
 
@@ -180,13 +179,13 @@ class TagTest extends TestCase
     {
         $countBefore = Tag::all()->count();
         $response = $this->json(
-            'POST', 
+            'POST',
             self::TEST_URL,
             [
                 'type' =>  'Type Test',
                 'enabled' => 1,
                 'description' => 'type for test'
-            ], 
+            ],
             $this->header,
         );
 
@@ -202,13 +201,13 @@ class TagTest extends TestCase
         $tagId = (int) $response['data'];
 
         $responseUpdate = $this->json(
-            'PUT', 
+            'PUT',
             self::TEST_URL . '/' . $tagId,
             [
                 'type' =>  'Type Test Update',
                 'enabled' => 1,
                 'description' => 'type for test'
-            ], 
+            ],
             $this->header,
         );
         $countAfterUpdate = Tag::all()->count();

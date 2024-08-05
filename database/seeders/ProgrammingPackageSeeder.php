@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\ProgrammingPackage;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ProgrammingPackageSeeder extends Seeder
@@ -31,7 +30,7 @@ class ProgrammingPackageSeeder extends Seeder
         foreach ($names as $name) {
             ProgrammingPackage::create([
                 'name' => $name,
-                'enabled' => true,       
+                'enabled' => true,
             ]);
         }
     }

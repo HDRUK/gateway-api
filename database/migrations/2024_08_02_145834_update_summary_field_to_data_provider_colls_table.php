@@ -10,8 +10,8 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::table('datasets', function (Blueprint $table) {
-            $table->boolean('has_technical_details')->default(1)->change();
+        Schema::table('data_provider_colls', function (Blueprint $table) {
+            $table->string('summary', 256)->nullable(true)->default(null)->change();
         });
     }
 
@@ -20,8 +20,8 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        Schema::table('datasets', function (Blueprint $table) {
-            $table->boolean('has_technical_details')->default(0)->change();
+        Schema::table('data_provider_colls', function (Blueprint $table) {
+            $table->string('summary', 256)->default(null)->change();
         });
     }
 };

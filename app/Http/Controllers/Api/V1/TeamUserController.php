@@ -28,14 +28,28 @@ class TeamUserController extends Controller
 {
     use TeamTransformation;
     use UserRolePermissions;
-    
+
     private const ROLE_CUSTODIAN_TEAM_ADMIN = 'custodian.team.admin';
     private const ASSIGN_PERMISSIONS_IN_TEAM = [
-        'roles.dev.update' => ['developer'],
-        'roles.mdm.update' => ['hdruk.dar', 'custodian.metadata.manager'],
-        'roles.mde.update' => ['hdruk.dar', 'custodian.metadata.manager', 'metadata.editor'],
-        'roles.dar-m.update' => ['custodian.dar.manager'],
-        'roles.dar-r.update' => ['custodian.dar.manager', 'dar.reviewer']
+        'roles.dev.update' => [
+            'developer',
+        ],
+        'roles.mdm.update' => [
+            'hdruk.dar',
+            'custodian.metadata.manager',
+        ],
+        'roles.mde.update' => [
+            'hdruk.dar',
+            'custodian.metadata.manager',
+            'metadata.editor',
+        ],
+        'roles.dar-m.update' => [
+            'custodian.dar.manager',
+        ],
+        'roles.dar-r.update' => [
+            'custodian.dar.manager',
+            'dar.reviewer',
+        ],
     ];
 
     public function __construct()
@@ -73,7 +87,7 @@ class TeamUserController extends Controller
      *          mediaType="application/json",
      *          @OA\Schema(
      *             @OA\Property( property="userId", type="integer", example="1" ),
-     *             @OA\Property( property="roles", type="array",   
+     *             @OA\Property( property="roles", type="array",
      *                @OA\Items(
      *                   type="string",
      *                   example="create",
@@ -115,10 +129,10 @@ class TeamUserController extends Controller
      */
     public function store(CreateTeamUser $request, int $teamId): JsonResponse
     {
-        try {
-            $input = $request->all();
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        try {
             $jwtUserIsAdmin = $jwtUser['is_admin'];
             $jwtUserRolePerms = $jwtUser['role_perms'];
 
@@ -131,15 +145,23 @@ class TeamUserController extends Controller
             $sendEmail = $request->has('email') ? $request->boolean('email') : true;
 
             $teamHasUsers = $this->teamHasUser($teamId, $userId);
-            
+
             $this->teamUsersHasRoles($teamHasUsers, $permissions, $teamId, $userId, $jwtUser, $sendEmail);
 
-            $this->storeAuditLog($jwtUser["id"], $input['userId'], $teamId, $input, class_basename($this) . '@'.__FUNCTION__);
+            $this->storeAuditLog($jwtUser['id'], $input['userId'], $teamId, $input, class_basename($this) . '@' . __FUNCTION__);
 
             return response()->json([
                 'message' => 'success',
             ], 201);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -180,13 +202,13 @@ class TeamUserController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property( property="roles", type="object",  
-     *                @OA\Property( 
+     *             @OA\Property( property="roles", type="object",
+     *                @OA\Property(
      *                   property="read",
      *                   type="boolean",
      *                   example=true,
      *                ),
-     *                @OA\Property( 
+     *                @OA\Property(
      *                   property="create",
      *                   type="boolean",
      *                   example=false,
@@ -227,26 +249,39 @@ class TeamUserController extends Controller
      */
     public function update(UpdateTeamUser $request, int $teamId, int $userId): JsonResponse
     {
-        try {
-            $input = $request->all();
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        try {
             $jwtUserIsAdmin = $jwtUser['is_admin'];
             $jwtUserRolePerms = $jwtUser['role_perms'];
 
             if (!$jwtUserIsAdmin) {
-                $this->checkUserPermissions(array_keys($input['roles']), $jwtUserRolePerms, $teamId, self::ASSIGN_PERMISSIONS_IN_TEAM);
+                $this->checkUserPermissions(
+                    array_keys($input['roles']),
+                    $jwtUserRolePerms,
+                    $teamId,
+                    self::ASSIGN_PERMISSIONS_IN_TEAM
+                );
             }
 
             $res = $this->teamUserRoles($teamId, $userId, $input, $jwtUser);
 
-            $this->updateAuditLog($jwtUser["id"], $userId, $teamId, $input, class_basename($this) . '@'.__FUNCTION__);
+            $this->updateAuditLog($jwtUser["id"], $userId, $teamId, $input, class_basename($this) . '@' . __FUNCTION__);
 
             return response()->json([
                 'message' => 'success',
                 'data' => $res,
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -356,10 +391,10 @@ class TeamUserController extends Controller
      */
     public function updateBulk(UpdateBulkTeamUser $request, int $teamId): JsonResponse
     {
-        try {
-            $input = $request->all();
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        try {
             $jwtUserIsAdmin = $jwtUser['is_admin'];
             $jwtUserRolePerms = $jwtUser['role_perms'];
 
@@ -380,13 +415,21 @@ class TeamUserController extends Controller
                 ];
             }
 
-            $this->updateBulkAuditLog($jwtUser["id"], $teamId, $input, class_basename($this) . '@'.__FUNCTION__);
+            $this->updateBulkAuditLog($jwtUser['id'], $teamId, $input, class_basename($this) . '@' . __FUNCTION__);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $response,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -453,9 +496,10 @@ class TeamUserController extends Controller
      */
     public function destroy(DeleteTeamUser $request, int $teamId, int $userId): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $jwtUserIsAdmin = $jwtUser['is_admin'];
             $jwtUserRolePerms = $jwtUser['role_perms'];
 
@@ -485,12 +529,20 @@ class TeamUserController extends Controller
                 'user_id' => $teamHasUsers->user_id,
             ])->delete();
 
-            $this->destroyAuditLog($jwtUser["id"], $userId, $teamId, class_basename($this) . '@'.__FUNCTION__);
+            $this->destroyAuditLog($jwtUser['id'], $userId, $teamId, class_basename($this) . '@' . __FUNCTION__);
 
             return response()->json([
                 'message' => 'success',
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -539,6 +591,14 @@ class TeamUserController extends Controller
 
             return true;
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => $userId,
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -567,6 +627,14 @@ class TeamUserController extends Controller
 
             return $teamHasUsers->toArray();
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => $userId,
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -597,6 +665,14 @@ class TeamUserController extends Controller
                 }
             }
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => $userId,
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -642,6 +718,14 @@ class TeamUserController extends Controller
 
             return $updatesMade;
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => $userId,
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -666,10 +750,10 @@ class TeamUserController extends Controller
             $userAdminsString = '<ul>';
             if (count($userAdmins)) {
                 foreach ($userAdmins as $userAdmin) {
-                    $userAdminsString.= '<li>' . $userAdmin . '</li>';
+                    $userAdminsString .= '<li>' . $userAdmin . '</li>';
                 }
             }
-            $userAdminsString.= '</ul>';
+            $userAdminsString .= '</ul>';
             $replacements = [
                 '[[USER_FIRSTNAME]]' => $user['firstname'],
                 '[[ASSIGNER_NAME]]' => $jwtUser['name'],
@@ -680,11 +764,18 @@ class TeamUserController extends Controller
 
             SendEmailJob::dispatch($to, $template, $replacements);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
 
-    private function listOfAdmin(int $teamId) {
+    private function listOfAdmin(int $teamId)
+    {
         try {
             $admins = [];
             $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->get()->toArray();
@@ -702,8 +793,15 @@ class TeamUserController extends Controller
 
             return $admins;
         } catch (Exception $e) {
+            Auditor::log([
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
-        } 
+        }
     }
 
     /**
@@ -718,8 +816,7 @@ class TeamUserController extends Controller
     private function storeAuditLog(int $currentUserId, int $userId, int $teamId, array $payload, string $actionService)
     {
         try {
-            foreach ($payload['roles'] as $role)
-            {
+            foreach ($payload['roles'] as $role) {
                 Auditor::log([
                     'user_id' => $currentUserId,
                     'target_user_id' => $userId,
@@ -730,8 +827,16 @@ class TeamUserController extends Controller
                 ]);
             }
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => $currentUserId,
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
-        } 
+        }
     }
 
     /**
@@ -746,8 +851,7 @@ class TeamUserController extends Controller
     private function updateAuditLog(int $currentUserId, int $userId, int $teamId, array $payload, string $actionService)
     {
         try {
-            foreach ($payload['roles'] as $role => $action)
-            {
+            foreach ($payload['roles'] as $role => $action) {
                 Auditor::log([
                     'user_id' => $currentUserId,
                     'target_user_id' => $userId,
@@ -758,8 +862,16 @@ class TeamUserController extends Controller
                 ]);
             }
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => $currentUserId,
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
-        } 
+        }
     }
 
     /**
@@ -777,7 +889,7 @@ class TeamUserController extends Controller
             foreach ($payload['payload_data'] as $item) {
                 $userId = $item['userId'];
                 $roles = $item['roles'];
-    
+
                 foreach ($roles as $role => $action) {
                     Auditor::log([
                         'user_id' => $currentUserId,
@@ -787,12 +899,20 @@ class TeamUserController extends Controller
                         'action_name' => $actionService,
                         'description' => 'User role "' . $role . '" ' . ($action ? 'added' : 'removed'),
                     ]);
-        
+
                 }
             }
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => $currentUserId,
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
-        } 
+        }
     }
 
     /**
@@ -816,6 +936,14 @@ class TeamUserController extends Controller
                 'description' => 'User was removed',
             ]);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => $currentUserId,
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

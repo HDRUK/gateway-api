@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\EnquiryThread;
 use App\Models\EnquiryMessage;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class EnquiryMessageSeeder extends Seeder
@@ -17,7 +16,7 @@ class EnquiryMessageSeeder extends Seeder
     {
         $threads = EnquiryThread::all();
         foreach ($threads as $thread) {
-            $messagesPerThread = fake()->numberBetween(1,10);
+            $messagesPerThread = fake()->numberBetween(1, 10);
             EnquiryMessage::factory($messagesPerThread)->create([
                 'thread_id' => $thread->id
             ]);

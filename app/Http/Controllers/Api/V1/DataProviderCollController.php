@@ -65,7 +65,7 @@ class DataProviderCollController extends Controller
             $input = $request->all();
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $dps = DataProviderColl::with([
+            $dpc = DataProviderColl::with([
                 'teams'
                 ])->where('enabled', 1)
                 ->paginate((int) $perPage, ['*'], 'page');
@@ -77,10 +77,16 @@ class DataProviderCollController extends Controller
             ]);
 
             return response()->json(
-                $dps,
+                $dpc,
             );
 
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -132,7 +138,7 @@ class DataProviderCollController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         try {
-            $dps = DataProviderColl::with([
+            $dpc = DataProviderColl::with([
                 'teams',
                 ])->where('id', $id)->firstOrFail();
 
@@ -144,9 +150,15 @@ class DataProviderCollController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $dps
+                'data' => $dpc
             ]);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -199,19 +211,19 @@ class DataProviderCollController extends Controller
     public function showSummary(Request $request, int $id): JsonResponse
     {
         try {
-            $dp = DataProviderColl::select('id', 'name', 'img_url')->where([
+            $dpc = DataProviderColl::select('id', 'name', 'img_url')->where([
                 'id' => $id,
                 'enabled' => 1,
             ])->first();
 
-            if (!$dp) {
+            if (!$dpc) {
                 return response()->json([
                     'message' => 'DataProviderColl not found or not enabled',
                     'data' => null,
                 ], 404);
             }
 
-            $this->getTeams($dp);
+            $this->getTeams($dpc);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -222,18 +234,59 @@ class DataProviderCollController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => [
-                    'id' => $dp->id,
-                    'name' => $dp->name,
-                    'img_url' => $dp->img_url,
-                    'summary' => $dp->summary,
+                    'id' => $dpc->id,
+                    'name' => $dpc->name,
+                    'img_url' => $dpc->img_url,
+                    'summary' => $dpc->summary,
                     'datasets' => $this->datasets,
-                    'durs' => Dur::select('id', 'project_title', 'organisation_name', 'status', 'created_at', 'updated_at')->whereIn('id', $this->durs)->get()->toArray(),
-                    'tools' => Tool::select('id', 'name', 'enabled', 'created_at', 'updated_at')->with(['user'])->whereIn('id', $this->tools)->get()->toArray(), //TOFIX: this always returns `user = null` because the syntax is incorrect.
-                    'publications' => Publication::select('id', 'paper_title', 'authors', 'publication_type', 'publication_type_mk1', 'created_at', 'updated_at')->whereIn('id', $this->publications)->get()->toArray(),
-                    'collections' => Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', $this->collections)->get()->toArray(),
+                    'durs' => Dur::select(
+                        'id',
+                        'project_title',
+                        'organisation_name',
+                        'status',
+                        'created_at',
+                        'updated_at'
+                    )->whereIn('id', $this->durs)
+                    ->get()->toArray(),
+
+                    'tools' => Tool::select(
+                        'id',
+                        'name',
+                        'enabled',
+                        'created_at',
+                        'updated_at'
+                    )->with(['user'])
+                    ->whereIn('id', $this->tools)
+                    ->get()->toArray(), //TOFIX: this always returns `user = null` because the syntax is incorrect.
+
+                    'publications' => Publication::select(
+                        'id',
+                        'paper_title',
+                        'authors',
+                        'publication_type',
+                        'publication_type_mk1',
+                        'created_at',
+                        'updated_at'
+                    )->whereIn('id', $this->publications)
+                    ->get()->toArray(),
+
+                    'collections' => Collection::select(
+                        'id',
+                        'name',
+                        'image_link',
+                        'created_at',
+                        'updated_at'
+                    )->whereIn('id', $this->collections)
+                    ->get()->toArray(),
                 ],
             ]);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -284,7 +337,7 @@ class DataProviderCollController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $dps = DataProviderColl::create([
+            $dpc = DataProviderColl::create([
                 'enabled' => $input['enabled'],
                 'name' => $input['name'],
                 'img_url' => $input['img_url'],
@@ -292,33 +345,40 @@ class DataProviderCollController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'DataProvider ' . $dps->id . ' created',
+                'description' => 'DataProvider ' . $dpc->id . ' created',
             ]);
 
             foreach ($input['team_ids'] as $teamId) {
                 DataProviderCollHasTeam::create([
-                    'data_provider_coll_id' => $dps->id,
+                    'data_provider_coll_id' => $dpc->id,
                     'team_id' => $teamId,
                 ]);
 
                 Auditor::log([
-                    'user_id' => (int) $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'CREATE',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'DataProviderCollHasTeam ' . $dps->id . '/' . $teamId . ' created',
+                    'description' => 'DataProviderCollHasTeam ' . $dpc->id . '/' . $teamId . ' created',
                 ]);
             }
 
-            $this->indexElasticDataProviderColl((int) $dps->id);
+            $this->indexElasticDataProviderColl((int) $dpc->id);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $dps->id,
+                'data' => $dpc->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -395,20 +455,20 @@ class DataProviderCollController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $dps = DataProviderColl::where('id', $id)->first();
+            $dpc = DataProviderColl::where('id', $id)->first();
 
-            $dps->enabled = $input['enabled'];
-            $dps->name = $input['name'];
-            $dps->img_url = $input['img_url'];
-            $dps->summary = $input['summary'];
-            $dps->save();
+            $dpc->enabled = $input['enabled'];
+            $dpc->name = $input['name'];
+            $dpc->img_url = $input['img_url'];
+            $dpc->summary = $input['summary'];
+            $dpc->save();
 
             if (isset($input['team_ids']) && !empty($input['team_ids'])) {
-                DataProviderCollHasTeam::where('data_provider_coll_id', $dps->id)->delete();
+                DataProviderCollHasTeam::where('data_provider_coll_id', $dpc->id)->delete();
 
                 foreach ($input['team_ids'] as $teamId) {
                     DataProviderCollHasTeam::create([
-                        'data_provider_coll_id' => $dps->id,
+                        'data_provider_coll_id' => $dpc->id,
                         'team_id' => $teamId,
                     ]);
                 }
@@ -418,10 +478,17 @@ class DataProviderCollController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $dps,
+                'data' => $dpc,
             ], Config::get('statuscodes.STATUS_OK.code'));
 
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -497,20 +564,20 @@ class DataProviderCollController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $dps = DataProviderColl::where('id', $id)->first();
+            $dpc = DataProviderColl::where('id', $id)->first();
 
-            $dps->enabled = (isset($input['enabled']) ? $input['enabled'] : $dps->enabled);
-            $dps->name = (isset($input['name']) ? $input['name'] : $dps->name);
-            $dps->img_url = (isset($input['img_url']) ? $input['img_url'] : $dps->img_url);
-            $dps->summary = (isset($input['summary']) ? $input['summary'] : $dps->summary);
-            $dps->save();
+            $dpc->enabled = (isset($input['enabled']) ? $input['enabled'] : $dpc->enabled);
+            $dpc->name = (isset($input['name']) ? $input['name'] : $dpc->name);
+            $dpc->img_url = (isset($input['img_url']) ? $input['img_url'] : $dpc->img_url);
+            $dpc->summary = (isset($input['summary']) ? $input['summary'] : $dpc->summary);
+            $dpc->save();
 
             if (isset($input['team_ids']) && !empty($input['team_ids'])) {
-                DataProviderCollHasTeam::where('data_provider_coll_id', $dps->id)->delete();
+                DataProviderCollHasTeam::where('data_provider_coll_id', $dpc->id)->delete();
 
                 foreach ($input['team_ids'] as $teamId) {
                     DataProviderCollHasTeam::create([
-                        'data_provider_coll_id' => $dps->id,
+                        'data_provider_coll_id' => $dpc->id,
                         'team_id' => $teamId,
                     ]);
                 }
@@ -520,10 +587,17 @@ class DataProviderCollController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $dps,
+                'data' => $dpc,
             ], Config::get('statuscodes.STATUS_OK.code'));
 
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -580,7 +654,7 @@ class DataProviderCollController extends Controller
             DataProviderColl::where(['id' => $id])->delete();
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'DataProvider ' . $id . ' deleted',
@@ -589,8 +663,15 @@ class DataProviderCollController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
-            
+
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -601,11 +682,11 @@ class DataProviderCollController extends Controller
      * @param integer $id
      * @return void
      */
-    private function indexElasticDataProviderColl(int $id): void 
+    private function indexElasticDataProviderColl(int $id): void
     {
         $provider = DataProviderColl::where('id', $id)->with('teams')->first();
 
-        
+
         $datasetTitles = array();
         $locations = array();
         foreach ($provider['teams'] as $team) {
@@ -641,6 +722,12 @@ class DataProviderCollController extends Controller
             $client->index($params);
 
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -691,7 +778,9 @@ class DataProviderCollController extends Controller
         $datasetType = MMC::getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
 
         if (empty($title) || $title === '') {
-            Log::error('DataProviderCollController: Dataset title is empty or unknown', ['datasetId' => $dataset->id]);
+            Log::error('DataProviderCollController: Dataset title is empty or unknown', [
+                'datasetId' => $dataset->id
+            ]);
         }
 
         $this->datasets[] = [

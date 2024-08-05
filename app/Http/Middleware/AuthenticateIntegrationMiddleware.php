@@ -2,13 +2,10 @@
 
 namespace App\Http\Middleware;
 
-use Config;
-
 use Closure;
 use Hash;
 use App\Models\Application;
 use Illuminate\Http\Request;
-use App\Exceptions\NotFoundException;
 use App\Exceptions\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -24,14 +21,14 @@ class AuthenticateIntegrationMiddleware
      *     bearerFormat="JWT",
      *     securityScheme="bearerAppAuth",
      * )
-     * 
+     *
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(!($request->header('x-application-id') && $request->header('x-client_id'))){
+        if(!($request->header('x-application-id') && $request->header('x-client_id'))) {
             throw new UnauthorizedException('Please provide a x-application-id and x-client-id in your headers');
         }
 
@@ -48,7 +45,8 @@ class AuthenticateIntegrationMiddleware
         $clientSecret = $app->client_secret;
         if (!($clientId == $request->header('x-client-id') && Hash::check(
             $appId . ':' . $clientId . ':' . env('APP_AUTH_PRIVATE_SALT') . ':' . env('APP_AUTH_PRIVATE_SALT_2'),
-            $clientSecret))
+            $clientSecret
+        ))
         ) {
             throw new UnauthorizedException('The credentials provided are invalid');
         }
@@ -66,4 +64,3 @@ class AuthenticateIntegrationMiddleware
     }
 
 }
-

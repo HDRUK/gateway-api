@@ -61,11 +61,11 @@ class EditUser extends BaseFormRequest
                 'string',
             ],
             'provider' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'providerid' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'bio' => [
@@ -94,7 +94,7 @@ class EditUser extends BaseFormRequest
                 'integer',
             ],
             'mongo_object_id' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'terms' => [

@@ -9,7 +9,7 @@ class AliasReplyScannerProvider extends ServiceProvider
 {
     /**
      * Register services
-     * 
+     *
      * @return void
      */
     public function register(): void
@@ -19,12 +19,12 @@ class AliasReplyScannerProvider extends ServiceProvider
 
     /**
      * Bootstrap services.
-     * 
+     *
      * @return void
      */
     public function boot(): void
     {
-        $this->app->bind('aliasreplyscanner', function() {
+        $this->app->bind('aliasreplyscanner', function () {
             return new AliasReplyScanner();
         });
     }

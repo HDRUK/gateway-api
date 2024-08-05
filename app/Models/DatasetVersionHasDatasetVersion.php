@@ -42,7 +42,7 @@ class DatasetVersionHasDatasetVersion extends Model
     /**
      * Get the second dataset linked by this linkage.
      */
-    
+
     public function dataset2()
     {
         return $this->belongsTo(Dataset::class, 'dataset_version_target_id');

@@ -10,7 +10,6 @@ use Database\Seeders\EmailTemplatesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 
-
 class EmailServiceTest extends TestCase
 {
     use RefreshDatabase;
@@ -27,7 +26,7 @@ class EmailServiceTest extends TestCase
     /**
      * Tests that the email service can replace placeholder text
      * within an mjml encoded email body
-     * 
+     *
      * @return void
      */
     public function test_the_email_service_replaces_text(): void
@@ -78,5 +77,3 @@ class EmailServiceTest extends TestCase
     }
 
 }
-
-?>

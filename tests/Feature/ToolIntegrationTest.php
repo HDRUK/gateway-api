@@ -17,7 +17,6 @@ use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
 
-use App\Http\Requests\ToolRequest;
 use Tests\Traits\MockExternalApis;
 use App\Models\ToolHasTypeCategory;
 use Database\Seeders\DatasetSeeder;
@@ -50,10 +49,10 @@ class ToolIntegrationTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/integrations/tools';
+    public const TEST_URL = '/api/v1/integrations/tools';
 
     protected $header = [];
-    
+
     protected $integration = [];
 
     /**
@@ -112,7 +111,7 @@ class ToolIntegrationTest extends TestCase
 
     /**
      * Get All Tools with success
-     * 
+     *
      * @return void
      */
     public function test_integration_get_all_tools_with_success(): void
@@ -158,7 +157,7 @@ class ToolIntegrationTest extends TestCase
 
     /**
      * Get Tool by Id with success
-     * 
+     *
      * @return void
      */
     public function test_integration_get_tool_by_id_with_success(): void
@@ -181,7 +180,7 @@ class ToolIntegrationTest extends TestCase
                 'deleted_at',
                 'user',
                 'tag',
-                'programming_languages', 
+                'programming_languages',
                 'programming_packages',
                 'type_category',
                 'publications',
@@ -193,7 +192,7 @@ class ToolIntegrationTest extends TestCase
 
     /**
      * Create new Tool with success
-     * 
+     *
      * @return void
      */
     public function test_integration_add_new_tool_with_success(): void
@@ -228,7 +227,7 @@ class ToolIntegrationTest extends TestCase
 
     /**
      * Insert data into tool_has_tags table with success
-     * 
+     *
      * @return void
      */
     public function test_integration_insert_data_in_tool_has_tags(): void
@@ -262,7 +261,7 @@ class ToolIntegrationTest extends TestCase
      *
      * @return void
      */
-    public function test_integration_update_tool_with_success(): void 
+    public function test_integration_update_tool_with_success(): void
     {
         // insert
         $licenseId = License::where('valid_until', null)->get()->random()->id;
@@ -454,7 +453,7 @@ class ToolIntegrationTest extends TestCase
 
         $this->assertEquals($toolHasTags[0]['tag_id'], 2);
 
-        // edit 
+        // edit
         $mockDataEdit1 = array(
             'name' => 'Ea fuga ab aperiam nihil quis e1.',
             'description' => 'Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque. e1',
@@ -476,7 +475,7 @@ class ToolIntegrationTest extends TestCase
         $this->assertEquals($responseEdit1['data']['name'], $mockDataEdit1['name']);
         $this->assertEquals($responseEdit1['data']['description'], $mockDataEdit1['description']);
 
-        // edit 
+        // edit
         $mockDataEdit2 = array(
             'url' => 'http://dach.com/odio-facilis-ex-culpa-e2',
             'license' => $licenseId,

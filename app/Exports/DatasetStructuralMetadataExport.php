@@ -17,7 +17,7 @@ class DatasetStructuralMetadataExport implements WithHeadings, FromCollection, W
     {
         $this->data = $this->exportable($data);
     }
-    
+
     /**
     * @return \Illuminate\Support\Collection
     */
@@ -63,7 +63,7 @@ class DatasetStructuralMetadataExport implements WithHeadings, FromCollection, W
                     'column_name' => $column['name'] ? $column['name'] : '',
                     'column_description' => $column['description'] ? $column['description'] : '',
                     'data_type' => $column['dataType'] ? $column['dataType'] : '',
-                    'sensitivity' => $column['sensitive'] === true ? 'true' : 'false',    
+                    'sensitivity' => $column['sensitive'] === true ? 'true' : 'false',
                 ];
             }
         }

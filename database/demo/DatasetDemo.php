@@ -7,8 +7,7 @@ use App\Models\Team;
 use Illuminate\Database\Seeder;
 use App\Models\AuthorisationCode;
 use Illuminate\Support\Facades\Http;
-use Symfony\Component\Console\Helper\ProgressBar;
-use Symfony\Component\Console\Output\ConsoleOutput;
+
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DatasetDemo extends Seeder
@@ -117,7 +116,7 @@ class DatasetDemo extends Seeder
     {
         return [
             'extra' => [
-                'id' => '1234', 
+                'id' => '1234',
                 'pid' => '5124f2',
                 'controlledKeyWords' => [
                     'Papers',

@@ -61,7 +61,7 @@ class ReindexEntities extends Command
 
         $sleep = $this->argument("sleep");
         $this->sleepTimeInMicroseconds = floatval($sleep) * 1000 * 1000;
-        echo "Sleeping between each reindex by " .  $this->sleepTimeInMicroseconds . "\n";
+        echo 'Sleeping between each reindex by ' .  $this->sleepTimeInMicroseconds . "\n";
 
         $entity = $this->argument('entity');
 

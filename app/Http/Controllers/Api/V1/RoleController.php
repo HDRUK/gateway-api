@@ -22,7 +22,7 @@ use Illuminate\Http\Request;
 class RoleController extends Controller
 {
     use RequestTransformation;
-    
+
     public function __construct()
     {
         //
@@ -42,16 +42,16 @@ class RoleController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
-     *             property="data", 
+     *             property="data",
      *             type="array",
-     *             @OA\Items(type="object", 
+     *             @OA\Items(type="object",
      *                @OA\Property(property="id", type="integer", example="1"),
      *                @OA\Property(property="name", type="string", example="custodian.team.admin"),
      *                @OA\Property(property="full_name", type="string", example="TEAM ADMIN"),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                @OA\Property(property="permissions", type="object", 
+     *                @OA\Property(property="permissions", type="object",
      *                   @OA\Property(property="id", type="integer", example="1"),
      *                   @OA\Property(property="role", type="string", example="applications.read"),
      *                   @OA\Property(property="allowed_from_apps", type="integer", example="1"),
@@ -65,23 +65,30 @@ class RoleController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $roles = Role::with(['permissions'])->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Role get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Role get all',
             ]);
 
             return response()->json(
                 $roles
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -111,16 +118,16 @@ class RoleController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
-     *             property="data", 
+     *             property="data",
      *             type="array",
-     *             @OA\Items(type="object", 
+     *             @OA\Items(type="object",
      *                @OA\Property(property="id", type="integer", example="1"),
      *                @OA\Property(property="name", type="string", example="custodian.team.admin"),
      *                @OA\Property(property="full_name", type="string", example="TEAM ADMIN"),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                @OA\Property(property="permissions", type="object", 
+     *                @OA\Property(property="permissions", type="object",
      *                   @OA\Property(property="id", type="integer", example="1"),
      *                   @OA\Property(property="role", type="string", example="applications.read"),
      *                   @OA\Property(property="allowed_from_apps", type="integer", example="1"),
@@ -148,18 +155,18 @@ class RoleController extends Controller
      */
     public function show(GetRole $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $roles = Role::with(['permissions'])->where(['id' => $id])->get();
 
             if ($roles->count()) {
                 Auditor::log([
-                    'user_id' => (int) $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'GET',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Role get " . $id,
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Role get ' . $id,
                 ]);
 
                 return response()->json([
@@ -170,6 +177,13 @@ class RoleController extends Controller
 
             throw new NotFoundException();
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -191,7 +205,7 @@ class RoleController extends Controller
      *             @OA\Property( property="name", type="string", example="this.is.a.new.role" ),
      *             @OA\Property( property="full_name", type="string", example="TEAM ADMIN" ),
      *             @OA\Property( property="enabled", type="boolean", example="true" ),
-     *             @OA\Property( property="permissions", type="array",   
+     *             @OA\Property( property="permissions", type="array",
      *                @OA\Items(
      *                   type="string",
      *                   example="create",
@@ -233,14 +247,14 @@ class RoleController extends Controller
      */
     public function store(CreateRole $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $role = Role::create([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
-                'full_name' => array_key_exists('full_name', $input) ? $input['full_name'] : NULL,
+                'full_name' => array_key_exists('full_name', $input) ? $input['full_name'] : null,
             ]);
 
             $roleId = $role->id;
@@ -257,10 +271,10 @@ class RoleController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Role " . $role->id . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Role ' . $role->id . ' created',
             ]);
 
             return response()->json([
@@ -268,6 +282,13 @@ class RoleController extends Controller
                 'data' => $role->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -299,7 +320,7 @@ class RoleController extends Controller
      *             @OA\Property( property="name", type="string", example="this.is.a.new.role" ),
      *             @OA\Property( property="full_name", type="string", example="TEAM ADMIN" ),
      *             @OA\Property( property="enabled", type="boolean", example="true" ),
-     *             @OA\Property( property="permissions", type="array",   
+     *             @OA\Property( property="permissions", type="array",
      *                @OA\Items(
      *                   type="string",
      *                   example="create",
@@ -321,16 +342,16 @@ class RoleController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
-     *             property="data", 
+     *             property="data",
      *             type="array",
-     *             @OA\Items(type="object", 
+     *             @OA\Items(type="object",
      *                @OA\Property(property="id", type="integer", example="1"),
      *                @OA\Property(property="name", type="string", example="hdruk.superadmin"),
      *                @OA\Property(property="full_name", type="string", example="TEAM ADMIN"),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                @OA\Property(property="permissions", type="object", 
+     *                @OA\Property(property="permissions", type="object",
      *                   @OA\Property(property="id", type="integer", example="1"),
      *                   @OA\Property(property="role", type="string", example="applications.read"),
      *                   @OA\Property(property="allowed_from_apps", type="integer", example="1"),
@@ -351,14 +372,14 @@ class RoleController extends Controller
      */
     public function update(UpdateRole $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            Role::where('id', $id)->update([
+        try {
+            $role = Role::where('id', $id)->update([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
-                'full_name' => array_key_exists('full_name', $input) ? $input['full_name'] : NULL,
+                'full_name' => array_key_exists('full_name', $input) ? $input['full_name'] : null,
             ]);
 
             RoleHasPermission::where('role_id', $id)->delete();
@@ -375,17 +396,24 @@ class RoleController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Role " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Role ' . $id . ' updated',
             ]);
 
             return response()->json([
                 'message' => 'success',
-                'data' => Role::with(['permissions'])->where(['id' => $id])->first()
+                'data' => $role,
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -417,7 +445,7 @@ class RoleController extends Controller
      *             @OA\Property( property="name", type="string", example="this.is.a.new.role" ),
      *             @OA\Property( property="full_name", type="string", example="TEAM ADMIN" ),
      *             @OA\Property( property="enabled", type="boolean", example="true" ),
-     *             @OA\Property( property="permissions", type="array",   
+     *             @OA\Property( property="permissions", type="array",
      *                @OA\Items(
      *                   type="string",
      *                   example="create",
@@ -439,16 +467,16 @@ class RoleController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
-     *             property="data", 
+     *             property="data",
      *             type="array",
-     *             @OA\Items(type="object", 
+     *             @OA\Items(type="object",
      *                @OA\Property(property="id", type="integer", example="1"),
      *                @OA\Property(property="name", type="string", example="custodian.team.admin"),
      *                @OA\Property(property="full_name", type="string", example="TEAM ADMIN"),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                @OA\Property(property="permissions", type="object", 
+     *                @OA\Property(property="permissions", type="object",
      *                   @OA\Property(property="id", type="integer", example="1"),
      *                   @OA\Property(property="role", type="string", example="applications.read"),
      *                   @OA\Property(property="allowed_from_apps", type="integer", example="1"),
@@ -469,19 +497,19 @@ class RoleController extends Controller
      */
     public function edit(EditRole $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $arrayKeys = [
-                'name',
-                'enabled',
-                'full_name',
-            ];
+                 'name',
+                 'enabled',
+                 'full_name',
+             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
-            Role::where('id', $id)->update($array);
+            $role = Role::where('id', $id)->update($array);
 
             if (array_key_exists('permissions', $input)) {
                 RoleHasPermission::where('role_id', $id)->delete();
@@ -499,17 +527,24 @@ class RoleController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Role " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Role ' . $id . ' updated',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Role::with(['permissions'])->where(['id' => $id])->first()
+                'data' => $role,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -557,18 +592,18 @@ class RoleController extends Controller
      */
     public function destroy(DeleteRole $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             RoleHasPermission::where('role_id', $id)->delete();
             Role::where('id', $id)->delete();
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Role " . $id . " deleted",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Role ' . $id . ' deleted',
             ]);
 
             return response()->json([
@@ -577,6 +612,13 @@ class RoleController extends Controller
 
             throw new NotFoundException();
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

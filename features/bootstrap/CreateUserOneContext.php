@@ -6,12 +6,8 @@ use Exception;
 use Faker\Factory as Faker;
 use PHPUnit\Framework\Assert;
 use Behat\Behat\Context\Context;
-use Behat\Gherkin\Node\TableNode;
-use App\Behat\Context\SharedContext;
 use App\Models\User;
-use Behat\Gherkin\Node\PyStringNode;
 use Illuminate\Support\Facades\Http;
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 
 /**
  * Defines create user one features from the specific context.
@@ -58,7 +54,7 @@ class CreateUserOneContext implements Context
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
                 'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",           
+                'mongo_object_id' => "12345abcde",
             ];
 
             $url = $this->baseUri . $path;
@@ -71,15 +67,15 @@ class CreateUserOneContext implements Context
             throw new Exception($e->getMessage());
         }
     }
-    
+
     /**
      * @Then I should receive a successful create user one response with status code :statusCode
      */
     public function iShouldReceiveASuccessfulCreateUserOneResponseWithStatusCode($statusCode)
     {
         Assert::assertEquals(
-            $statusCode, 
-            $this->response->getStatusCode(), 
+            $statusCode,
+            $this->response->getStatusCode(),
             "Expected status code {$statusCode}, and received {$this->response->getStatusCode()}."
         );
     }

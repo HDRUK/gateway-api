@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use Hash;
 use Config;
 use Tests\TestCase;
 use App\Models\User;
@@ -14,7 +13,7 @@ class RegisterTest extends TestCase
 {
     use RefreshDatabase;
 
-    const TEST_URL = '/api/v1/register';
+    public const TEST_URL = '/api/v1/register';
 
     protected $user = [];
 
@@ -30,7 +29,7 @@ class RegisterTest extends TestCase
         $this->seed([
             SectorSeeder::class,
         ]);
-      
+
         $this->runMockHubspot();
 
         $this->user = [
@@ -47,7 +46,7 @@ class RegisterTest extends TestCase
 
     /**
      * Test register user with success
-     * 
+     *
      * @return void
      */
     public function test_register_user_with_success_in_database(): void
@@ -86,7 +85,7 @@ class RegisterTest extends TestCase
                     return Http::response([], 200);
                 }
             },
-        
+
             // GET (by vid)
             "http://hub.local/contacts/v1/contact/vid/*/profile" => function ($request) {
                 if ($request->method() === 'GET') {
@@ -95,14 +94,14 @@ class RegisterTest extends TestCase
                     return Http::response([], 204);
                 }
             },
-        
+
             // GET (by email)
             "http://hub.local/contacts/v1/contact/email/*/profile" => function ($request) {
                 if ($request->method() === 'GET') {
                     return Http::response(['vid' => 12345], 200);
                 }
             },
-        
+
             // POST (create contact)
             'http://hub.local/contacts/v1/contact' => function ($request) {
                 if ($request->method() === 'POST') {

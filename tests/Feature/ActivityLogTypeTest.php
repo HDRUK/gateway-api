@@ -16,7 +16,7 @@ class ActivityLogTypeTest extends TestCase
 
     private $accessToken = '';
 
-    public function setUp() :void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -37,7 +37,7 @@ class ActivityLogTypeTest extends TestCase
 
     /**
      * List all ActivityLogType
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_list_activity_log_types()
@@ -67,13 +67,13 @@ class ActivityLogTypeTest extends TestCase
                 'per_page',
                 'prev_page_url',
                 'to',
-                'total',                
+                'total',
             ]);
     }
 
     /**
      * Tests that an ActivityLogType can be listed by id
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_list_a_single_activity_log_type()
@@ -114,7 +114,7 @@ class ActivityLogTypeTest extends TestCase
 
     /**
      * Tests that an ActivityLogType can be created
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_create_an_activity_log_type()
@@ -134,17 +134,18 @@ class ActivityLogTypeTest extends TestCase
             ->assertJsonStructure([
                 'message',
                 'data',
-            ]);        
-        
+            ]);
+
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
     }
 
     /**
      * Tests it can update an ActivityLogType
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_update_an_activity_log_types()
@@ -166,10 +167,11 @@ class ActivityLogTypeTest extends TestCase
             ->assertJsonStructure([
                 'message',
                 'data',
-            ]);        
-        
+            ]);
+
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
@@ -187,13 +189,13 @@ class ActivityLogTypeTest extends TestCase
         );
 
         $content = $response->decodeResponseJson();
-        
+
         $this->assertEquals($content['data']['name'], 'updated activity log type');
     }
 
     /**
      * Tests it can edit an ActivityLogType
-     * 
+     *
      * @return void
      */
     public function test_id_can_edit_an_activity_log_type()
@@ -273,7 +275,7 @@ class ActivityLogTypeTest extends TestCase
 
     /**
      * Tests it can delete an ActivityLogType
-     * 
+     *
      * @return void
      */
     public function test_it_can_delete_an_activity_log_type()
@@ -295,10 +297,11 @@ class ActivityLogTypeTest extends TestCase
             ->assertJsonStructure([
                 'message',
                 'data',
-            ]);        
-        
+            ]);
+
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
@@ -317,9 +320,10 @@ class ActivityLogTypeTest extends TestCase
             ->assertJsonStructure([
                 'message',
             ]);
-        
+
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_OK.message')
         );
     }

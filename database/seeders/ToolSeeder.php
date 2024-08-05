@@ -16,7 +16,7 @@ class ToolSeeder extends Seeder
         Tool::factory()->count(8)->create([
             'enabled' => 1,
         ]);
-        
+
         // Seed additional tools that are not enabled
         Tool::factory()->count(2)->create([
             'enabled' => 0,

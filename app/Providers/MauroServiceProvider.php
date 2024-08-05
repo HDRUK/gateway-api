@@ -10,7 +10,7 @@ class MauroServiceProvider extends ServiceProvider
 {
     /**
      * Register services
-     * 
+     *
      * @return void
      */
     public function register(): void
@@ -20,12 +20,12 @@ class MauroServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap services.
-     * 
+     *
      * @return void
      */
     public function boot(): void
     {
-        $this->app->bind('mauro', function() {
+        $this->app->bind('mauro', function () {
             return new Mauro();
         });
     }

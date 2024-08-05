@@ -6,6 +6,7 @@ use App\Models\Tag;
 use App\Models\Tool;
 use App\Models\ToolHasTag;
 use Illuminate\Database\Seeder;
+
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class ToolHasTagSeeder extends Seeder

@@ -3,11 +3,7 @@
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Route;
-use MetadataManagementController AS MMC;
-use App\Http\Controllers\FilterController;
 
-use App\Http\Controllers\ServiceLayerController;
-use App\Http\Controllers\Api\V1\DatasetController;
 use App\Http\Controllers\SSO\CustomAuthorizationController;
 
 /*
@@ -49,7 +45,7 @@ Route::get('/sso/authorize', [CustomAuthorizationController::class, 'customAutho
 
 
 // stop all all other routes
-Route::any('{path}', function() {
+Route::any('{path}', function () {
     $response = [
         'message' => 'Resource not found',
     ];

@@ -66,11 +66,11 @@ class UpdateUser extends BaseFormRequest
                 'string',
             ],
             'provider' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'providerid' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'bio' => [

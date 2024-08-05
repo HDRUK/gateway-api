@@ -5,15 +5,13 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        if (Schema::hasColumn('saved_searches', 'sort_order'))
-        {
+        if (Schema::hasColumn('saved_searches', 'sort_order')) {
             $sortOrders = SavedSearch::all();
 
             DB::statement("ALTER TABLE saved_searches DROP COLUMN sort_order");
@@ -62,8 +60,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasColumn('saved_searches', 'sort_order'))
-        {
+        if (Schema::hasColumn('saved_searches', 'sort_order')) {
             $sortOrders = SavedSearch::all();
 
             DB::statement("ALTER TABLE saved_searches DROP COLUMN sort_order");

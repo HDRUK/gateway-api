@@ -8,9 +8,7 @@ use App\Models\CohortRequest;
 use App\Models\CohortRequestHasLog;
 use App\Models\CohortRequestHasPermission;
 use App\Models\CohortRequestLog;
-use Illuminate\Support\Carbon;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CohortRequestSeeder extends Seeder
 {

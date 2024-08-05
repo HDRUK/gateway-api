@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Hash;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
@@ -10,7 +9,7 @@ use App\Models\UserHasRole;
 use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use Illuminate\Database\Seeder;
-use App\Models\TeamUserHasPermission;
+
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class UserAdminsSeeder extends Seeder
@@ -69,7 +68,7 @@ class UserAdminsSeeder extends Seeder
             ],
             true
         );
-        
+
         $this->createUser(
             'Dev',
             'Eloper',
@@ -162,19 +161,25 @@ class UserAdminsSeeder extends Seeder
 
     /**
      * Generically creates users per passed params
-     * 
+     *
      * @param string $firstname     The firstname of the user to create
      * @param string $lastname      The lastname of the user to create
      * @param string $email         The email address of the user to create
      * @param string $password      The password of the user to create
      * @param bool $isAdmin         Whether this user being created is an admin
      * @param array $roles          The roles that should be applied to the user being created
-     * 
+     *
      * @return void
      */
-    private function createUser(string $firstname, string $lastname, string $email,
-        string $password, bool $isAdmin, array $roles, bool $assignTeam = false): void
-    {
+    private function createUser(
+        string $firstname,
+        string $lastname,
+        string $email,
+        string $password,
+        bool $isAdmin,
+        array $roles,
+        bool $assignTeam = false
+    ): void {
         $user = User::where('email', $email)->first();
         if ($user) {
             return;
@@ -190,7 +195,7 @@ class UserAdminsSeeder extends Seeder
             'is_admin' => $isAdmin,
         ]);
 
-        if ($assignTeam && Team::count()>0) {
+        if ($assignTeam && Team::count() > 0) {
             $teamId = Team::all()->random()->id;
 
             $thuId = TeamHasUser::create([

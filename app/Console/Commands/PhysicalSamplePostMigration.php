@@ -91,7 +91,7 @@ class PhysicalSamplePostMigration extends Command
         $file = fopen($migrationFile, 'r');
         $headers = fgetcsv($file);
 
-        while (($row = fgetcsv($file)) !== FALSE) {
+        while (($row = fgetcsv($file)) !== false) {
             $item = [];
             foreach ($row as $key => $value) {
                 $item[$headers[$key]] = $value ?: '';

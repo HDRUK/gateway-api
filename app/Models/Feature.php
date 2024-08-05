@@ -10,11 +10,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Feature extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
 
     /**
      * Table associated with this model
-     * 
+     *
      * @var string
      */
     protected $table = 'features';
@@ -28,21 +31,21 @@ class Feature extends Model
 
     /**
      * Indicates if the model should be timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = true;
 
     /**
      * Enabled for this tag
-     * 
+     *
      * @var bool
      */
     private $enabled = true;
 
     /**
      * Feature name
-     * 
+     *
      * @var string
      */
     private $name = '';
