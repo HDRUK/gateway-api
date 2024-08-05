@@ -11,7 +11,7 @@ class RunPostMigrations extends Command
      *
      * @var string
      */
-    protected $signature = 'app:run-post-migrations {sleep=1}';
+    protected $signature = 'app:run-post-migrations {sleep=1} {--term-extraction}';
 
     /**
      * The console command description.
@@ -28,6 +28,8 @@ class RunPostMigrations extends Command
     public function handle()
     {
         $sleep = $this->argument("sleep");
+        $termExtraction = $this->option('term-extraction');
+        
         $commands = [
             ['command' => 'app:add-super-admin-to-all-teams', 'arguments' => []],
             ['command' => 'app:post-run-update-full-name-role', 'arguments' => ['--no-interaction' => true]], 
@@ -40,7 +42,7 @@ class RunPostMigrations extends Command
             ['command' => 'app:tools-post-migration-process', 'arguments' => []], // tools
             ['command' => 'app:publication-type-post-migration', 'arguments' => []], // publications
             ['command' => 'app:dataset-publication-linkage-post-migration', 'arguments' => []], // dataset linkage
-            ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'datasets', 'sleep' => $sleep]],
+            ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'datasets', 'sleep' => $sleep, '--term-extraction' => $termExtraction]],
             ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'tools', 'sleep' => $sleep]],
             ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'publications', 'sleep' => $sleep]],
             ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'durs', 'sleep' => $sleep]],
