@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Library;
+use App\Models\User;
 use Tests\Traits\Authorization;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\DatasetVersionSeeder;
@@ -23,6 +24,7 @@ class LibraryTest extends TestCase
     public const TEST_URL = '/api/v1/libraries';
 
     protected $header = [];
+    protected $user = [];
 
 
     public function setUp(): void
@@ -30,7 +32,7 @@ class LibraryTest extends TestCase
         $this->commonSetUp();
 
         $jwt = $this->getAuthorisationJwt();
-        $user = $this->getUserFromJwt($jwt);
+        $this->user = $this->getUserFromJwt($jwt);
 
         $this->seed([
             MinimalUserSeeder::class,
@@ -38,7 +40,8 @@ class LibraryTest extends TestCase
             DatasetVersionSeeder::class,
         ]);
         //seed for this user...
-        Library::factory(10)->create(['user_id' => $user['id']]);
+        Library::factory(10)->create(['user_id' => $this->user['id']]);
+        Library::factory(10)->create(['user_id' => User::all()->random()]);
     }
 
     /**
@@ -82,6 +85,14 @@ class LibraryTest extends TestCase
             'to',
             'total',
         ]);
+
+        $userLibrary = Library::where("user_id", $this->user['id'])->pluck("id")->toArray();
+        $ids = array_map(function ($dataset) {
+            return $dataset['id'];
+        }, $response['data']);
+
+        $differenceArray = array_diff($userLibrary, $ids);
+        $this->assertEmpty($differenceArray);
     }
 
     /**
