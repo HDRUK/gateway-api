@@ -238,7 +238,6 @@ class SocialLoginController extends Controller
             return redirect()->away($redirectUrl)->withCookies($cookies);
         } catch (Exception $e) {
             Auditor::log([
-                'target_user_id' => $user->id,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
