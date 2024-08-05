@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use App\Models\Publication;
 use App\Models\Team;
 use App\Models\Dur;
@@ -22,7 +23,7 @@ class ReindexEntities extends Command
      *
      * @var string
      */
-    protected $signature = 'app:reindex-entities {entity?} {sleep=0}';
+    protected $signature = 'app:reindex-entities {entity?} {sleep=0} {minIndex?} {maxIndex?}';
 
     /**
      * The console command description.
@@ -39,16 +40,33 @@ class ReindexEntities extends Command
     protected $sleepTimeInMicroseconds = 0;
 
     /**
+     * Specific index to start run from
+     *
+     * @var int|null
+     */
+    protected $minIndex = null;
+
+    /**
+     * Specific index to end run
+     *
+     * @var int|null
+     */
+    protected $maxIndex = null;
+
+    /**
      * Execute the console command.
      */
     public function handle()
     {
 
-        $sleep = $this->argument('sleep');
+        $sleep = $this->argument("sleep");
         $this->sleepTimeInMicroseconds = floatval($sleep) * 1000 * 1000;
         echo 'Sleeping between each reindex by ' .  $this->sleepTimeInMicroseconds . "\n";
 
         $entity = $this->argument('entity');
+
+        $this->minIndex = is_null($this->argument('minIndex')) ? null : (int) $this->argument('minIndex');
+        $this->maxIndex = is_null($this->argument('maxIndex')) ? null : (int) $this->argument('maxIndex');
 
         if ($entity && method_exists($this, $entity)) {
             $this->$entity();
@@ -57,11 +75,48 @@ class ReindexEntities extends Command
         }
     }
 
+    private function checkAndCleanMaterialType($id)
+    {
+
+        $datasetVersion = DatasetVersion::where([
+            'id' => $id,
+        ])->first();
+
+        $metadata = $datasetVersion->metadata;
+
+        if (array_key_exists('tissuesSampleCollection', $metadata['metadata'])) {
+            if (!is_null($metadata['metadata']['tissuesSampleCollection'])) {
+                $tissues = $metadata['metadata']['tissuesSampleCollection'];
+
+                // Check if $tissues is set to [[]] and set it to [] if so
+                if ($tissues === [[]]) {
+                    $metadata['metadata']['tissuesSampleCollection'] = [];
+                    \Log::info("Found bad data (datasetId=" . $id . ") and cleaned it!");
+
+                    DatasetVersion::where('id', $datasetVersion->id)->update([
+                        'metadata' => json_encode(json_encode($metadata)),
+                    ]);
+                }
+            }
+        }
+    }
+
     private function datasets()
     {
-        $datasetIds = Dataset::pluck('id');
+        $minIndex = $this->minIndex;
+        $maxIndex = $this->maxIndex;
+        $datasetIds = Dataset::pluck('id')->toArray();
+        if (isset($minIndex) && isset($maxIndex)) {
+            $datasetIds = array_slice($datasetIds, $minIndex, $maxIndex - $minIndex + 1);
+        } elseif (isset($minIndex)) {
+            $datasetIds = array_slice($datasetIds, $minIndex);
+        } elseif (isset($maxIndex)) {
+            $datasetIds = array_slice($datasetIds, 0, $maxIndex + 1);
+        }
+
         $progressbar = $this->output->createProgressBar(count($datasetIds));
         foreach ($datasetIds as $id) {
+            $this->checkAndCleanMaterialType($id);
             MMC::reindexElastic($id);
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
@@ -127,7 +182,7 @@ class ReindexEntities extends Command
         $progressbar = $this->output->createProgressBar(count($providerIds));
         foreach ($providerIds as $id) {
             $team = Team::find($id);
-            if($team) {
+            if ($team) {
                 MMC::reindexElasticDataProvider($team->id);
             }
             $progressbar->advance();
@@ -135,5 +190,4 @@ class ReindexEntities extends Command
         }
         $progressbar->finish();
     }
-
 }
