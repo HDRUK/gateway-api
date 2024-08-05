@@ -405,7 +405,6 @@ class LibraryController extends Controller
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => "library " . $id . " updated",
                 'description' => 'library ' . $id . ' updated',
             ]);
 
