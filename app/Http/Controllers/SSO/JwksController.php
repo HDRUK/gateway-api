@@ -15,7 +15,7 @@ class JwksController extends Controller
         // $kid = $jwt->headers()->get('kid');
         // $path = file_get_contents(__DIR__ . '/../../../storage/oauth-private.key');
         // $details = openssl_pkey_get_details(openssl_pkey_get_private($path));
-        
+
         $filePath = storage_path('oauth-public.key');
         if (!file_exists($filePath)) {
             throw new Exception('File not found');

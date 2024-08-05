@@ -12,7 +12,6 @@ use App\Models\Upload;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 class UploadController extends Controller
@@ -55,57 +54,69 @@ class UploadController extends Controller
      */
     public function upload(Request $request): JsonResponse
     {
-        $input = $request->all();
-        $file  = $request->file('file');
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $fileSystem = env('SCANNING_FILESYSTEM_DISK', 'local_scan');
-        $entityFlag = $request->query('entity_flag', 'none');
-        $teamId = $request->query('team_id', null);
-        $inputSchema = $request->query("input_schema",null);
-        $inputVersion = $request->query("input_version",null);
-        $elasticIndexing = $request->boolean('elastic_indexing', true);
-        $datasetId = $request->query('dataset_id', null);
-        $collectionId = $request->query('collection_id', null);
-        
-        // store unscanned
-        $storedFilename = time() . '_' . $file->getClientOriginalName();
-        $filePath = $file->storeAs(
-            '', $storedFilename, $fileSystem . '.unscanned'
-        );
-        
-        // write to uploads
-        $upload = Upload::create([
-            'filename' => $file->getClientOriginalName(),
-            'file_location' => $filePath,
-            'user_id' => (int) $jwtUser['id'],
-            'status' => 'PENDING'
-        ]);
+        try {
+            $input = $request->all();
+            $file  = $request->file('file');
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $fileSystem = env('SCANNING_FILESYSTEM_DISK', 'local_scan');
+            $entityFlag = $request->query('entity_flag', 'none');
+            $teamId = $request->query('team_id', null);
+            $inputSchema = $request->query("input_schema", null);
+            $inputVersion = $request->query("input_version", null);
+            $elasticIndexing = $request->boolean('elastic_indexing', true);
+            $datasetId = $request->query('dataset_id', null);
+            $collectionId = $request->query('collection_id', null);
 
-        // spawn scan job
-        ScanFileUpload::dispatch(
-            (int) $upload->id, 
-            $fileSystem, 
-            $entityFlag, 
-            (int) $jwtUser['id'], 
-            (int) $teamId,
-            $inputSchema,
-            $inputVersion,
-            $elasticIndexing,
-            $datasetId,
-            $collectionId,
-        );
+            // store unscanned
+            $storedFilename = time() . '_' . $file->getClientOriginalName();
+            $filePath = $file->storeAs(
+                '',
+                $storedFilename,
+                $fileSystem . '.unscanned'
+            );
 
-        // audit log
-        Auditor::log([
-            'action_type' => 'POST',
-            'action_name' => class_basename($this) . '@'.__FUNCTION__,
-            'description' => "File upload",
-        ]);
+            // write to uploads
+            $upload = Upload::create([
+                'filename' => $file->getClientOriginalName(),
+                'file_location' => $filePath,
+                'user_id' => (int)$jwtUser['id'],
+                'status' => 'PENDING'
+            ]);
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_OK.message'),
-            'data' => Upload::where('id', $upload->id)->first()
-        ]);
+            // spawn scan job
+            ScanFileUpload::dispatch(
+                (int)$upload->id,
+                $fileSystem,
+                $entityFlag,
+                (int)$jwtUser['id'],
+                (int)$teamId,
+                $inputSchema,
+                $inputVersion,
+                $elasticIndexing,
+                $datasetId,
+                $collectionId,
+            );
+
+            // audit log
+            Auditor::log([
+                'action_type' => 'POST',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'File upload',
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => Upload::where('id', $upload->id)->first()
+            ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'POST',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -145,18 +156,28 @@ class UploadController extends Controller
      */
     public function show(Request $request, int $id): JsonResponse
     {
-        $upload = Upload::findOrFail($id);
+        try {
+            $upload = Upload::findOrFail($id);
 
-        Auditor::log([
-            'action_type' => 'GET',
-            'action_name' => class_basename($this) . '@'.__FUNCTION__,
-            'description' => "Show uploaded file",
-        ]);
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Show uploaded file',
+            ]);
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_OK.message'),
-            'data' => $upload
-        ]);
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $upload
+            ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -193,41 +214,51 @@ class UploadController extends Controller
      */
     public function content(Request $request, int $id): JsonResponse
     {
-        $upload = Upload::findOrFail($id);
-        if ($upload->status === 'PENDING') {
+        try {
+            $upload = Upload::findOrFail($id);
+            if ($upload->status === 'PENDING') {
+                Auditor::log([
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Get uploaded file content failed due to pending malware scan',
+                ]);
+                return response()->json([
+                    'message' => 'File scan is pending'
+                ]);
+            } elseif ($upload->status === 'FAILED') {
+                Auditor::log([
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Get uploaded file content failed due to failed malware scan',
+                ]);
+                return response()->json([
+                    'message' => 'File failed scan, content cannot be retrieved'
+                ]);
+            } else {
+                $contents = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
+                    ->get($upload->file_location);
+
+                Auditor::log([
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Get uploaded file content: ' . $upload->file_location,
+                ]);
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => [
+                        'filename' => $upload->filename,
+                        'content' => $contents
+                    ]
+                ]);
+            }
+        } catch (Exception $e) {
             Auditor::log([
-                'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Get uploaded file content failed due to pending malware scan",
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
             ]);
-            return response()->json([
-                'message' => 'File scan is pending'
-            ]);
-        } else if ($upload->status === 'FAILED') {
-            Auditor::log([
-                'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Get uploaded file content failed due to failed malware scan",
-            ]);
-            return response()->json([
-                'message' => 'File failed scan, content cannot be retrieved'
-            ]);
-        } else {
-            $contents = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
-                ->get($upload->file_location);
-                
-            Auditor::log([
-                'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Get uploaded file content",
-            ]);
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => [
-                    'filename' => $upload->filename,
-                    'content' => $contents
-                ]
-            ]);
+
+            throw new Exception($e->getMessage());
         }
     }
 }

@@ -10,6 +10,7 @@ use App\Models\CohortRequestLog;
 use App\Models\AuthorisationCode;
 use App\Models\CohortRequestHasLog;
 use Illuminate\Support\Facades\Http;
+
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CohortRequestDemo extends Seeder

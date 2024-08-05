@@ -15,7 +15,7 @@ class SavedSearchHasFilter extends Model
 
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'saved_search_has_filters';
@@ -31,7 +31,7 @@ class SavedSearchHasFilter extends Model
 
     /**
      * Indicates if the model should be timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = false;

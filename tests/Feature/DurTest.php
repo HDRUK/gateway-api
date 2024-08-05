@@ -14,7 +14,6 @@ use App\Models\Keyword;
 use App\Models\Publication;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
-use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
 use App\Models\Tool;
 use Database\Seeders\ToolSeeder;
@@ -30,7 +29,6 @@ use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
-use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\DurHasPublicationSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
@@ -47,10 +45,10 @@ class DurTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/dur';
-    const TEST_URL_TEAM = '/api/v1/teams';
-    const TEST_URL_NOTIFICATION = '/api/v1/notifications';
-    const TEST_URL_USER = '/api/v1/users';
+    public const TEST_URL = '/api/v1/dur';
+    public const TEST_URL_TEAM = '/api/v1/teams';
+    public const TEST_URL_NOTIFICATION = '/api/v1/notifications';
+    public const TEST_URL_USER = '/api/v1/users';
 
     protected $header = [];
 
@@ -88,7 +86,7 @@ class DurTest extends TestCase
     }
     /**
      * Get All Data Use Registers with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_dur_with_success(): void
@@ -171,7 +169,7 @@ class DurTest extends TestCase
 
     /**
      * Get Dur by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_dur_by_id_with_success(): void
@@ -251,7 +249,7 @@ class DurTest extends TestCase
 
     /**
      * Create new Dur with success
-     * 
+     *
      * @return void
      */
     public function test_add_new_dur_with_success(): void
@@ -262,8 +260,10 @@ class DurTest extends TestCase
         /*
         * use the endpoint /api/v1/datause/count to find unique values of the field 'status'
         */
-        $responseCount = $this->json('GET', self::TEST_URL .
-            '/count/status?team_id=' . $teamId ,
+        $responseCount = $this->json(
+            'GET',
+            self::TEST_URL .
+            '/count/status?team_id=' . $teamId,
             [],
             $this->header
         );
@@ -311,8 +311,10 @@ class DurTest extends TestCase
         /*
         * compare the counts per status to before the ACTIVE one was added
         */
-        $responseCount = $this->json('GET', self::TEST_URL . 
-            '/count/status?team_id=' . $teamId ,
+        $responseCount = $this->json(
+            'GET',
+            self::TEST_URL .
+            '/count/status?team_id=' . $teamId,
             [],
             $this->header
         );
@@ -321,12 +323,12 @@ class DurTest extends TestCase
         $teamCountDraftAfter = array_key_exists('DRAFT', $responseCount['data']) ? $responseCount['data']['DRAFT'] : 0;
 
         $this->assertEquals($teamCountDraftAfter, $teamCountDraftBefore);
-        $this->assertEquals($teamCountActiveAfter, $teamCountActiveBefore+1);
+        $this->assertEquals($teamCountActiveAfter, $teamCountActiveBefore + 1);
     }
 
     /**
      * Create and Update Dur with success
-     * 
+     *
      * @return void
      */
     public function test_update_dur_with_success(): void
@@ -396,7 +398,7 @@ class DurTest extends TestCase
 
     /**
      * Create and Update and Edit Dur with success
-     * 
+     *
      * @return void
      */
     public function test_edit_dur_with_success(): void
@@ -478,7 +480,7 @@ class DurTest extends TestCase
 
     /**
      * Create and delete Dur with success
-     * 
+     *
      * @return void
      */
     public function test_delete_dur_with_success(): void
@@ -658,7 +660,7 @@ class DurTest extends TestCase
             'data',
         ]);
 
-        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();  
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
         $teamId = $contentCreateTeam['data'];
 
         // create user
@@ -717,7 +719,7 @@ class DurTest extends TestCase
         $countNewRow = $countAfter - $countBefore;
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
-        
+
         $responseDownload = $this->json(
             'GET',
             self::TEST_URL . '/export',
@@ -731,7 +733,7 @@ class DurTest extends TestCase
 
     /**
      * Create and Upload Dur with success
-     * 
+     *
      * @return void
      */
     public function test_upload_dur_with_success(): void

@@ -6,7 +6,6 @@ use App\Models\DataAccessTemplate;
 use App\Models\DataAccessTemplateHasQuestion;
 use App\Models\QuestionBank;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DataAccessTemplateSeeder extends Seeder
@@ -23,7 +22,7 @@ class DataAccessTemplateSeeder extends Seeder
         DataAccessTemplate::all()->each(function ($model) {
 
             $nquestions = QuestionBank::count();
-            $n = fake()->numberBetween(3,$nquestions);
+            $n = fake()->numberBetween(3, $nquestions);
 
             $numbers = range(1, $nquestions);
             shuffle($numbers);
@@ -38,7 +37,7 @@ class DataAccessTemplateSeeder extends Seeder
                 ]);
                 $count++;
             }
-          
+
         });
 
     }

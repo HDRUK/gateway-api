@@ -5,7 +5,6 @@ namespace App\Http\Middleware;
 use Closure;
 
 use App\Models\Application;
-use App\Models\ApplicationHasPermission;
 
 use App\Exceptions\IntegrationPermissionException;
 
@@ -19,7 +18,7 @@ class CheckIntegrationAccessMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $type='permissions|roles', string $data=''): Response
+    public function handle(Request $request, Closure $next, string $type = 'permissions|roles', string $data = ''): Response
     {
         // Owing to a previous middleware authenticating the application, we can assume
         // that this has already happened, so, we just check application permissions
@@ -29,7 +28,7 @@ class CheckIntegrationAccessMiddleware
             ->where('client_id', $request->header('x-client-id'))
             ->first()
             ->toArray();
-        
+
         if (!$application) {
             throw new IntegrationPermissionException('No known integration matches supplied credentials');
         }

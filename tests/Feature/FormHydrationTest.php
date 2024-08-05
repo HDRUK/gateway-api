@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use Tests\TestCase;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use MetadataManagementController AS MMC;
+use MetadataManagementController as MMC;
 use Config;
 
 use App\Models\Dataset;
@@ -60,7 +60,7 @@ class FormHydrationTest extends TestCase
         $response = $this->get('api/v1/form_hydration/schema');
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
          ->assertJsonStructure([
-                'data' =>[
+                'data' => [
                 'identifier' => [
                     'required',
                     'title',
@@ -79,7 +79,7 @@ class FormHydrationTest extends TestCase
         $response = $this->get('api/v1/form_hydration/schema?model=HDRUK');
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
          ->assertJsonStructure([
-                'data' =>[
+                'data' => [
                 'identifier' => [
                     'required',
                     'title',
@@ -95,7 +95,7 @@ class FormHydrationTest extends TestCase
         $responseOldVersion = $this->get('api/v1/form_hydration/schema?model=HDRUK&version=2.1.2');
         $responseOldVersion->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
          ->assertJsonStructure([
-                'data' =>[
+                'data' => [
                 'identifier' => [
                     'required',
                     'title',
@@ -112,7 +112,7 @@ class FormHydrationTest extends TestCase
 
 
     }
-    
+
     public function test_form_hydration_schema_will_fail(): void
     {
         $response = $this->get('api/v1/form_hydration/schema?model=blah');
@@ -122,7 +122,7 @@ class FormHydrationTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
     }
 
-    public function test_get_form_hydration_with_success(): void 
+    public function test_get_form_hydration_with_success(): void
     {
         $hydratedForm = [
             "schema_fields" => [
@@ -155,14 +155,14 @@ class FormHydrationTest extends TestCase
         ];
         MMC::shouldReceive("getOnboardingFormHydrated")->andReturn($hydratedForm);
         MMC::shouldReceive("translateDataModelType")
-            ->andReturnUsing(function(string $metadata){
-            return [
-                "traser_message" => "",
-                "wasTranslated" => true,
-                "metadata" => json_decode($metadata,true)["metadata"],
-                "statusCode" => "200",
-            ];
-        });
+            ->andReturnUsing(function (string $metadata) {
+                return [
+                    "traser_message" => "",
+                    "wasTranslated" => true,
+                    "metadata" => json_decode($metadata, true)["metadata"],
+                    "statusCode" => "200",
+                ];
+            });
         MMC::shouldReceive("validateDataModelType")->andReturn(true);
         MMC::makePartial();
 
@@ -190,7 +190,7 @@ class FormHydrationTest extends TestCase
                     "defaultValues"
                 ]
             ]);
-        
+
     }
-    
+
 }

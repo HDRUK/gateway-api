@@ -4,14 +4,12 @@ namespace Tests\Unit;
 
 use Tests\TestCase;
 
-use App\Jobs\SendEmailJob;
 use App\Models\Permission;
 use App\Models\CohortRequest;
 use Illuminate\Support\Carbon;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Mail;
 
-use Illuminate\Support\Facades\Queue;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use App\Models\CohortRequestHasPermission;

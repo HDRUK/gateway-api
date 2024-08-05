@@ -49,18 +49,20 @@ class DataProviderCollExport implements WithHeadings, FromCollection, WithMappin
             $name = $this->getValueFromPath($item, 'name');
             $datasetTitles = $this->getValueFromPath($item, 'datasetTitles');
             $geographicLocations = $this->getValueFromPath($item, 'geographicLocations');
-            
+
             $array[] = [
                 'name' => $name,
-                'datasetTitles' => !is_array($datasetTitles) ? $datasetTitles : (count($datasetTitles) ? implode(', ', $datasetTitles) : ''),
-                'geographicLocations' => !is_array($geographicLocations) ? $geographicLocations : (count($geographicLocations) ? implode(', ', $geographicLocations) : ''),
+                'datasetTitles' => !is_array($datasetTitles) ?
+                    $datasetTitles : (count($datasetTitles) ? implode(', ', $datasetTitles) : ''),
+                'geographicLocations' => !is_array($geographicLocations) ?
+                    $geographicLocations : (count($geographicLocations) ? implode(', ', $geographicLocations) : ''),
             ];
         }
 
         return $array;
     }
 
-    public function getValueFromPath(array $item, string $path) 
+    public function getValueFromPath(array $item, string $path)
     {
         $keys = explode('/', $path);
 
@@ -72,7 +74,7 @@ class DataProviderCollExport implements WithHeadings, FromCollection, WithMappin
                 return null;
             }
         }
-        
+
         return $return;
     }
 }

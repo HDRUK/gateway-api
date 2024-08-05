@@ -17,7 +17,7 @@ class UserTest extends TestCase
     use RefreshDatabase;
     use Authorization;
 
-    const TEST_URL = '/api/v1/users';
+    public const TEST_URL = '/api/v1/users';
 
     protected $header = [];
     protected $adminJwt = '';
@@ -39,7 +39,7 @@ class UserTest extends TestCase
         ]);
         $this->authorisationUser();
         $this->adminJwt = $this->getAuthorisationJwt();
-        
+
         $this->header = [
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $this->adminJwt,
@@ -54,7 +54,7 @@ class UserTest extends TestCase
 
     /**
      * Get All Users with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_users_with_success(): void
@@ -93,19 +93,19 @@ class UserTest extends TestCase
                     'roles',
                     'hubspot_id',
                 ],
-            ],   
+            ],
         ]);
         $response->assertStatus(200);
     }
 
     /**
      * Get All Users with success as non admin
-     * 
+     *
      * @return void
      */
     public function test_non_admin_get_all_users_with_success(): void
     {
-        // Create User with a highly unique name 
+        // Create User with a highly unique name
         $responseUser = $this->json(
             'POST',
             '/api/v1/users',
@@ -123,7 +123,7 @@ class UserTest extends TestCase
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
                 'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",           
+                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -138,7 +138,7 @@ class UserTest extends TestCase
                     'id',
                     'name'
                 ],
-            ],   
+            ],
         ]);
         $response->assertStatus(200);
 
@@ -151,7 +151,7 @@ class UserTest extends TestCase
 
     /**
      * Get User by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_user_by_id_with_success(): void
@@ -165,7 +165,7 @@ class UserTest extends TestCase
 
     /**
      * Create new User with success
-     * 
+     *
      * @return void
      */
     public function test_add_new_user_with_success(): void
@@ -207,7 +207,7 @@ class UserTest extends TestCase
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 1,
-                'contact_news' => 1, 
+                'contact_news' => 1,
                 'mongo_id' => 1234567,
                 'mongo_object_id' => "12345abcde",
                 'notifications' => [$notificationID],
@@ -243,7 +243,7 @@ class UserTest extends TestCase
         );
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
- 
+
         $responseCreate = $this->json(
             'POST',
             self::TEST_URL,
@@ -261,7 +261,7 @@ class UserTest extends TestCase
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 1,
-                'contact_news' => 1, 
+                'contact_news' => 1,
                 'mongo_id' => 1234567,
                 'mongo_object_id' => "12345abcde",
                 'notifications' => [$notificationID],
@@ -269,8 +269,8 @@ class UserTest extends TestCase
             $this->header
         );
 
-        $responseCreate->assertStatus(201);      
-        
+        $responseCreate->assertStatus(201);
+
         $contentCreate = $responseCreate->decodeResponseJson();
         $this->assertEquals($contentCreate['message'], 'created');
 
@@ -294,7 +294,7 @@ class UserTest extends TestCase
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 0,
-                'contact_news' => 0, 
+                'contact_news' => 0,
                 'mongo_id' => 1234567,
                 'mongo_object_id' => "12345abcde",
                 'notifications' => [$notificationID],
@@ -425,7 +425,7 @@ class UserTest extends TestCase
         $this->assertEquals($contentEdit1['data']['firstname'], 'JustE1');
         $this->assertEquals($contentEdit1['data']['lastname'], 'TestE1');
         $this->assertEquals(
-            $contentEdit1['data']['notifications'][0]['notification_type'], 
+            $contentEdit1['data']['notifications'][0]['notification_type'],
             "applicationSubmitted",
         );
 
@@ -567,7 +567,7 @@ class UserTest extends TestCase
                     return Http::response([], 200);
                 }
             },
-        
+
             // GET (by vid)
             "http://hub.local/contacts/v1/contact/vid/*/profile" => function ($request) {
                 if ($request->method() === 'GET') {
@@ -576,14 +576,14 @@ class UserTest extends TestCase
                     return Http::response([], 204);
                 }
             },
-        
+
             // GET (by email)
             "http://hub.local/contacts/v1/contact/email/*/profile" => function ($request) {
                 if ($request->method() === 'GET') {
                     return Http::response(['vid' => 12345], 200);
                 }
             },
-        
+
             // POST (create contact)
             'http://hub.local/contacts/v1/contact' => function ($request) {
                 if ($request->method() === 'POST') {

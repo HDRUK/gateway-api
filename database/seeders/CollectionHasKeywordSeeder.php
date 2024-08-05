@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Collection;
 use App\Models\CollectionHasKeyword;
 use App\Models\Keyword;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class CollectionHasKeywordSeeder extends Seeder

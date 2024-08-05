@@ -4,7 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-
 class RemoveAuthSecretAndAddPidToFederationsTable extends Migration
 {
     public function up()
@@ -14,11 +13,11 @@ class RemoveAuthSecretAndAddPidToFederationsTable extends Migration
             $table->dropColumn('auth_secret_key');
         });
         Schema::table('federations', function (Blueprint $table) {
-            $table->string('auth_secret_key_location')->nullable()->after('auth_type'); 
+            $table->string('auth_secret_key_location')->nullable()->after('auth_type');
         });
-        Schema::table('federations', function (Blueprint $table) {    
+        Schema::table('federations', function (Blueprint $table) {
             // Add a new field for PID
-            $table->string('pid')->nullable()->after('id'); 
+            $table->string('pid')->nullable()->after('id');
         });
     }
 

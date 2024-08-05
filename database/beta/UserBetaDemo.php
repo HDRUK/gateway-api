@@ -10,7 +10,6 @@ use App\Models\TeamHasUser;
 use App\Models\UserHasRole;
 use App\Models\TeamUserHasRole;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class UserBetaDemo extends Seeder
 {
@@ -659,7 +658,7 @@ class UserBetaDemo extends Seeder
 
     /**
      * Generically creates users per passed params
-     * 
+     *
      * @param string $firstname     The firstname of the user to create
      * @param string $lastname      The lastname of the user to create
      * @param string $email         The email address of the user to create
@@ -669,7 +668,7 @@ class UserBetaDemo extends Seeder
      * @param array $roles          The roles that should be applied to the user being created
      * @param bool $assignTeam      if assigned to a team
      * @param string $teamName      Team name
-     * 
+     *
      * @return void
      */
     private function createUser(
@@ -697,12 +696,12 @@ class UserBetaDemo extends Seeder
                 'password' => $password,
                 'is_admin' => $isAdmin,
                 'preferred_email' => 'primary',
-                'secondary_email' => NULL,
-                'organisation' => NULL,
-                'bio' => NULL,
-                'domain' => NULL,
-                'link' => NULL,
-                'orcid' => NULL,
+                'secondary_email' => null,
+                'organisation' => null,
+                'bio' => null,
+                'domain' => null,
+                'link' => null,
+                'orcid' => null,
             ]);
 
             if ($assignTeam) {
@@ -735,18 +734,19 @@ class UserBetaDemo extends Seeder
         }
     }
 
-    private function generatePassword($length = 15) {
+    private function generatePassword($length = 15)
+    {
         // Define the characters that can be used in the password
         $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789';
         $password = ''; // Initialize the password string
-    
+
         // Generate the password
         for ($i = 0; $i < $length; $i++) {
             // Pick a random character from the $chars string and append it to the password
             $randomIndex = rand(0, strlen($chars) - 1);
             $password .= $chars[$randomIndex];
         }
-    
+
         return $password;
     }
 }

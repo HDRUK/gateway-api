@@ -2,11 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasNamedEntities;
 use App\Models\NamedEntities;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatasetVersionHasNamedEntitiesSeeder extends Seeder
@@ -23,7 +21,7 @@ class DatasetVersionHasNamedEntitiesSeeder extends Seeder
             $datasetHasNamedEntities = DatasetVersionHasNamedEntities::where([
                 'dataset_version_id' => $datasetVersionId,
                 'named_entities_id' => $namedEntitiesId,
-            ])->first();    
+            ])->first();
 
             if (!$datasetHasNamedEntities) {
                 DatasetVersionHasNamedEntities::create([

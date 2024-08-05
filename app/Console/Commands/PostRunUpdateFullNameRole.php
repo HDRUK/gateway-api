@@ -38,22 +38,28 @@ class PostRunUpdateFullNameRole extends Command
         $isInteractive = !$this->option('no-interaction');
 
         if ($isInteractive) {
-            $askInitFullName = $this->ask('Do you want this "roles.full_name" column to be initialized? [yes]/no', 'yes');
+            $askInitFullName = $this->ask(
+                'Do you want this "roles.full_name" column to be initialized? [yes]/no',
+                'yes'
+            );
         } else {
             $askInitFullName = 'yes';
         }
         if ($askInitFullName === 'yes') {
             Role::query()->update([
-                'full_name' => NULL,
+                'full_name' => null,
             ]);
         }
 
         if ($isInteractive) {
-            $askUpdateFullName = $this->ask('Do you want the "roles.full_name" field to be updated? [yes]/no', 'yes');
+            $askUpdateFullName = $this->ask(
+                'Do you want the "roles.full_name" field to be updated? [yes]/no',
+                'yes'
+            );
         } else {
             $askUpdateFullName = 'yes';
         }
-    
+
         if ($askUpdateFullName === 'yes') {
             foreach ($array as $key => $value) {
                 Role::where([

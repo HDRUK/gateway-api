@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\EnquiryThread;
 
-
 class EnquiryThreadSeeder extends Seeder
 {
     /**
@@ -13,6 +12,6 @@ class EnquiryThreadSeeder extends Seeder
      */
     public function run(): void
     {
-       EnquiryThread::factory(10)->create();
+        EnquiryThread::factory(10)->create();
     }
 }

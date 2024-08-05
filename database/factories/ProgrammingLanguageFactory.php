@@ -20,6 +20,6 @@ class ProgrammingLanguageFactory extends Factory
             'name' => fake()->word(),
             'enabled' => fake()->randomElement([0, 1]),
         ];
-    
+
     }
 }

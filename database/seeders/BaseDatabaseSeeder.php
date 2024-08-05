@@ -14,13 +14,13 @@ class BaseDatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
-            FilterSeeder::class, 
-            SectorSeeder::class, 
+            FilterSeeder::class,
+            SectorSeeder::class,
             PermissionSeeder::class,
             RoleSeeder::class,
             LicenseSeeder::class,
-            ActivityLogUserTypeSeeder::class, 
-            EmailTemplatesSeeder::class, 
+            ActivityLogUserTypeSeeder::class,
+            EmailTemplatesSeeder::class,
             FAIRShareCommandSeeder::class,
             KeywordSeeder::class,
             SpatialCoverageSeeder::class,

@@ -7,17 +7,18 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
 
 class DataAccessTemplateHasQuestion extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
 
     /**
      * The table associated with the model
-     * 
+     *
      * @var string
      */
     protected $table = 'dar_template_has_questions';

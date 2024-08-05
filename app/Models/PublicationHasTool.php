@@ -10,7 +10,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PublicationHasTool extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
 
     protected $fillable = [
         'publication_id',
@@ -22,14 +25,14 @@ class PublicationHasTool extends Model
 
     /**
      * The table associated with the model
-     * 
+     *
      * @var string
      */
     protected $table = 'publication_has_tools';
 
     /**
      * Indicates if the model should be timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = false;

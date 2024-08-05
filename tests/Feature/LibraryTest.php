@@ -9,7 +9,6 @@ use Tests\Traits\Authorization;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\LibrarySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Traits\MockExternalApis;
 
@@ -21,7 +20,7 @@ class LibraryTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/libraries';
+    public const TEST_URL = '/api/v1/libraries';
 
     protected $header = [];
 
@@ -38,7 +37,7 @@ class LibraryTest extends TestCase
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
         ]);
-        //seed for this user... 
+        //seed for this user...
         Library::factory(10)->create(['user_id' => $user['id']]);
     }
 

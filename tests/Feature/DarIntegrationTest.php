@@ -16,7 +16,6 @@ use Database\Seeders\DarIntegrationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ApplicationSeeder;
 
-use Tests\Traits\Authorization;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -29,13 +28,13 @@ class DarIntegrationTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL_DAR = '/api/v1/integrations/dar';
+    public const TEST_URL_DAR = '/api/v1/integrations/dar';
 
     private $integration = null;
 
     protected $header = [];
 
-    public function setUp() :void
+    public function setUp(): void
     {
         $this->commonSetUp();
 
@@ -62,7 +61,7 @@ class DarIntegrationTest extends TestCase
                 'permission_id' => $perm->id,
             ]);
         }
-        
+
         // Add Integration auth keys to the header generated in commonSetUp
         $this->header['x-application-id'] = $this->integration['app_id'];
         $this->header['x-client-id'] = $this->integration['client_id'];
@@ -108,21 +107,21 @@ class DarIntegrationTest extends TestCase
                 'per_page',
                 'prev_page_url',
                 'to',
-                'total',                
+                'total',
             ]);
 
     }
 
     /**
      * Returns a single DAR
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_list_a_single_dar()
     {
         $dar = DarIntegration::all()->first();
         $response = $this->json('GET', self::TEST_URL_DAR . '/' . $dar->id, [], $this->header);
-        
+
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [
@@ -147,7 +146,7 @@ class DarIntegrationTest extends TestCase
     // REMOVED - Perm Matrix doesn't allow application created DAR
     // /**
     //  * Creates a new DAR
-    //  * 
+    //  *
     //  * @return void
     //  */
     // public function test_the_application_can_create_a_dar()
@@ -176,13 +175,13 @@ class DarIntegrationTest extends TestCase
     //         ]);
 
     //     $content = $response->decodeResponseJson();
-    //     $this->assertEquals($content['message'], 
+    //     $this->assertEquals($content['message'],
     //         Config::get('statuscodes.STATUS_CREATED.message'));
     // }
 
     /**
      * Tests that a DAR record can be updated
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_update_a_dar()
@@ -221,7 +220,7 @@ class DarIntegrationTest extends TestCase
 
     /**
      * Tests that a DAR record can be updated
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_edit_a_dar()
@@ -312,7 +311,7 @@ class DarIntegrationTest extends TestCase
     // REMOVED - Perms Matrix doesn't allow application delete of DAR
     // /**
     //  * Tests it can delete a DAR
-    //  * 
+    //  *
     //  * @return void
     //  */
     // public function test_it_can_delete_a_dar()
@@ -347,7 +346,7 @@ class DarIntegrationTest extends TestCase
     //         Config::get('statuscodes.STATUS_CREATED.message')
     //     );
 
-    //     // Finally, delete the last entered DAR to 
+    //     // Finally, delete the last entered DAR to
     //     // prove functionality
     //     $response = $this->json(
     //         'DELETE',

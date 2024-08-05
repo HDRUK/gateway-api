@@ -11,7 +11,7 @@ class ValidationTest extends TestCase
     use RefreshDatabase;
     use Authorization;
 
-    const TEST_URL = '/api/v1/features';
+    public const TEST_URL = '/api/v1/features';
 
     protected $header = [];
 

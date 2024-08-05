@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests\Collection;
 
-use App\Models\Keyword;
-use Illuminate\Validation\Rule;
 use App\Http\Requests\BaseFormRequest;
 
 class CreateCollection extends BaseFormRequest
@@ -116,7 +114,7 @@ class CreateCollection extends BaseFormRequest
                 'integer',
             ],
             'mongo_object_id' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'created_at' => [

@@ -10,22 +10,22 @@ class EnquiriesManagementControllerServiceProvider extends ServiceProvider
 {
     /**
      * Register services
-     * 
+     *
      * @return void
      */
     public function register(): void
     {
-        // 
+        //
     }
 
     /**
      * Bootstrap services
-     * 
+     *
      * @return void
      */
     public function boot(): void
     {
-        $this->app->bind('enquiriesmanagementcontroller', function() {
+        $this->app->bind('enquiriesmanagementcontroller', function () {
             return new EnquiriesManagementController();
         });
     }

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Config;
+use Auditor;
 use Exception;
 use App\Jobs\SendEmailJob;
 use App\Models\CohortRequest;
@@ -95,7 +96,8 @@ class CohortUserExpiry extends Command
             $cohort = CohortRequest::where('id', $cohortId)->first();
             $cohortRequestUserId = $cohort['user_id'];
             $user = User::where('id', $cohortRequestUserId)->first();
-            $userEmail = ($user['preferred_email'] === 'primary') ? $user['email'] : $user['secondary_email'];
+            $userEmail = ($user['preferred_email'] === 'primary') ?
+                $user['email'] : $user['secondary_email'];
             $template = null;
             switch ($cohortRequestStatus) {
                 case 'WILL_EXPIRE': // submitted
@@ -124,8 +126,14 @@ class CohortUserExpiry extends Command
             ];
 
             SendEmailJob::dispatch($to, $template, $replacements);
-        } catch (Exception $exception) {
-            throw new Exception("Cohort Request send email :: " . $exception->getMessage());
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('Cohort Request send email :: ' . $e->getMessage());
         }
     }
 }

@@ -6,7 +6,6 @@ use App\Models\UserHasRole;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
 use Database\Seeders\SectorSeeder;
-use Illuminate\Support\Facades\Http;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -59,7 +58,7 @@ class UserRoleTest extends TestCase
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
                 'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",           
+                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -76,7 +75,7 @@ class UserRoleTest extends TestCase
                     'custodian.metadata.manager',
                     'metadata.editor',
                     'dar.reviewer'
-                ]         
+                ]
             ],
             $this->header
         );
@@ -103,7 +102,7 @@ class UserRoleTest extends TestCase
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
                 'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",           
+                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -119,7 +118,7 @@ class UserRoleTest extends TestCase
                     'custodian.metadata.manager',
                     'metadata.editor',
                     'dar.reviewer'
-                ]         
+                ]
             ],
             $this->header
         );
@@ -132,7 +131,7 @@ class UserRoleTest extends TestCase
             [
                 'roles' => [
                     'custodian.metadata.manager' => false,
-                ]         
+                ]
             ],
             $this->header
         );
@@ -163,7 +162,7 @@ class UserRoleTest extends TestCase
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
                 'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",           
+                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -179,7 +178,7 @@ class UserRoleTest extends TestCase
                     'custodian.metadata.manager',
                     'metadata.editor',
                     'dar.reviewer'
-                ]         
+                ]
             ],
             $this->header
         );
@@ -192,7 +191,7 @@ class UserRoleTest extends TestCase
             [
                 'roles' => [
                     'custodian.metadata.manager' => false,
-                ]         
+                ]
             ],
             $this->header
         );

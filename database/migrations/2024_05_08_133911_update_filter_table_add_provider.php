@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -26,7 +25,7 @@ return new class extends Migration
         Schema::table('filters', function (Blueprint $table) {
             $table->dropColumn('type_old');
             $table->unique(['type', 'keys']);
-        });        
+        });
     }
 
     /**
@@ -35,9 +34,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::disableForeignKeyConstraints();
-        
+
         $foreignKeys = $this->listTableForeignKeys('filters');
-        
+
         if(in_array('filters_type_keys_unique', $foreignKeys)) {
             DB::statement('ALTER TABLE `filters` DROP FOREIGN KEY `filters_type_keys_unique`');
             DB::statement('ALTER TABLE `filters` DROP KEY `filters_type_keys_unique`');
@@ -64,7 +63,7 @@ return new class extends Migration
 
         Schema::table('filters', function (Blueprint $table) {
             $table->renameColumn('type_old', 'type');
-        }); 
+        });
 
         Schema::enableForeignKeyConstraints();
     }
@@ -73,7 +72,7 @@ return new class extends Migration
     {
         $conn = Schema::getConnection()->getDoctrineSchemaManager();
 
-        return array_map(function($key) {
+        return array_map(function ($key) {
             return $key->getName();
         }, $conn->listTableForeignKeys($table));
     }

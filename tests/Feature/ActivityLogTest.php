@@ -11,7 +11,6 @@ use Database\Seeders\ActivityLogUserTypeSeeder;
 use Database\Seeders\ActivityLogSeeder;
 
 use Tests\Traits\Authorization;
-use Illuminate\Testing\Fluent\AssertableJson;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ActivityLogTest extends TestCase
@@ -19,11 +18,11 @@ class ActivityLogTest extends TestCase
     use RefreshDatabase;
     use Authorization;
 
-    const TEST_URL = '/api/v1/users';
+    public const TEST_URL = '/api/v1/users';
 
     protected $header = [];
 
-    public function setUp() :void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -44,14 +43,14 @@ class ActivityLogTest extends TestCase
 
     /**
      * List all ActivityLogs
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_list_activity_logs()
     {
         $response = $this->get('api/v1/activity_logs', $this->header);
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))                
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [
                     0 => [
@@ -80,13 +79,13 @@ class ActivityLogTest extends TestCase
                 'per_page',
                 'prev_page_url',
                 'to',
-                'total',                
+                'total',
             ]);
     }
 
     /**
      * Tests that an activity log can be listed by id
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_list_a_single_activity_log()
@@ -139,7 +138,7 @@ class ActivityLogTest extends TestCase
 
     /**
      * Tests that an activity log can be created
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_create_an_activity_log()
@@ -165,17 +164,18 @@ class ActivityLogTest extends TestCase
             ->assertJsonStructure([
                 'message',
                 'data',
-            ]);        
-        
+            ]);
+
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
     }
 
     /**
      * Tests it can update an activity log
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_update_an_activity_log()
@@ -203,10 +203,11 @@ class ActivityLogTest extends TestCase
             ->assertJsonStructure([
                 'message',
                 'data',
-            ]);        
-        
+            ]);
+
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
@@ -230,7 +231,7 @@ class ActivityLogTest extends TestCase
         );
 
         $content = $response->decodeResponseJson();
-        
+
         $this->assertEquals($content['data']['event_type'], 'updated_test_case');
         $this->assertEquals($content['data']['user_type_id'], 2);
         $this->assertEquals($content['data']['log_type_id'], 2);
@@ -240,7 +241,7 @@ class ActivityLogTest extends TestCase
 
     /**
      * Tests it can edit an activity log
-     * 
+     *
      * @return void
      */
     public function test_it_can_edit_an_activity_log()
@@ -315,7 +316,7 @@ class ActivityLogTest extends TestCase
         );
 
         $contentPatch1 = $responsePatch1->decodeResponseJson();
-        
+
         $this->assertEquals($contentPatch1['data']['event_type'], 'updated_test_case_edit');
 
         // edit/patch
@@ -330,7 +331,7 @@ class ActivityLogTest extends TestCase
         );
 
         $contentPatch2 = $responsePatch2->decodeResponseJson();
-        
+
         $this->assertEquals($contentPatch2['data']['event_type'], 'updated_test_case_edit_another');
         $this->assertEquals($contentPatch2['data']['user_type_id'], 1);
 
@@ -365,7 +366,7 @@ class ActivityLogTest extends TestCase
 
     /**
      * Tests it can delete an activity log
-     * 
+     *
      * @return void
      */
     public function test_it_can_delete_an_activity_log()
@@ -393,10 +394,11 @@ class ActivityLogTest extends TestCase
             ->assertJsonStructure([
                 'message',
                 'data',
-            ]);        
-        
+            ]);
+
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
@@ -413,9 +415,10 @@ class ActivityLogTest extends TestCase
             ->assertJsonStructure([
                 'message',
             ]);
-        
+
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_OK.message')
         );
     }

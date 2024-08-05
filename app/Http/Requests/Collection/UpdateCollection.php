@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests\Collection;
 
-use App\Models\Keyword;
-use App\Models\Collection;
 use App\Http\Requests\BaseFormRequest;
 
 class UpdateCollection extends BaseFormRequest
@@ -121,7 +119,7 @@ class UpdateCollection extends BaseFormRequest
                 'integer',
             ],
             'mongo_object_id' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'created_at' => [

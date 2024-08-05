@@ -2,13 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\Team;
-use App\Models\User;
 use App\Models\TeamHasUser;
 use App\Models\Notification;
 use Illuminate\Database\Seeder;
 use App\Models\TeamUserHasNotification;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class TeamUserHasNotificationSeeder extends Seeder
 {

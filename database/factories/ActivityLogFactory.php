@@ -2,8 +2,6 @@
 
 namespace Database\Factories;
 
-use Config;
-
 use App\Models\User;
 use App\Models\ActivityLogType;
 use App\Models\ActivityLogUserType;
@@ -17,7 +15,7 @@ class ActivityLogFactory extends Factory
 {
     /**
      * Define the model's default state.
-     * 
+     *
      * @return array<string, mixed>
      */
     public function definition(): array

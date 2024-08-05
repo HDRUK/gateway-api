@@ -40,9 +40,9 @@ class ReviewController extends Controller
      *        @OA\JsonContent(
      *           @OA\Property(property="message", type="string", example="success"),
      *           @OA\Property(
-     *               property="data", 
+     *               property="data",
      *               type="array",
-     *               @OA\Items(type="object", 
+     *               @OA\Items(type="object",
      *                  @OA\Property(property="id", type="integer", example="1"),
      *                  @OA\Property(property="tool_id", type="integer", example="1"),
      *                  @OA\Property(property="user_id", type="integer", example="1"),
@@ -52,7 +52,7 @@ class ReviewController extends Controller
      *                  @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
      *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                  @OA\Property(property="tool", type="object", 
+     *                  @OA\Property(property="tool", type="object",
      *                     @OA\Property(property="id", type="integer", example="1"),
      *                     @OA\Property(property="mongo_object_id", type="string", example="ce37b00y7eiux03cca09pr0u"),
      *                     @OA\Property(property="name", type="string", example="Vel id iure aut qui quia rerum."),
@@ -66,7 +66,7 @@ class ReviewController extends Controller
      *                     @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
      *                     @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
      *                  ),
-     *                  @OA\Property(property="user", type="object", 
+     *                  @OA\Property(property="user", type="object",
      *                     @OA\Property(property="id", type="integer", example="1"),
      *                     @OA\Property(property="name", type="string", example="Rocio Mayer"),
      *                     @OA\Property(property="firstname", type="string", example="something or null"),
@@ -89,17 +89,18 @@ class ReviewController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $reviews = Review::with(['tool', 'user'])->paginate(Config::get('constants.per_page'), ['*'], 'page');
+        try {
+            $reviews = Review::with(['tool', 'user'])
+                ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Review get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Review get all',
             ]);
 
             return response()->json(
@@ -135,9 +136,9 @@ class ReviewController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
-     *             property="data", 
+     *             property="data",
      *             type="array",
-     *             @OA\Items(type="object", 
+     *             @OA\Items(type="object",
      *                @OA\Property(property="id", type="integer", example="1"),
      *                @OA\Property(property="tool_id", type="integer", example="1"),
      *                @OA\Property(property="user_id", type="integer", example="1"),
@@ -147,7 +148,7 @@ class ReviewController extends Controller
      *                @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
      *                @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                @OA\Property(property="tool", type="object", 
+     *                @OA\Property(property="tool", type="object",
      *                   @OA\Property(property="id", type="integer", example="1"),
      *                   @OA\Property(property="mongo_object_id", type="string", example="ce37b00y7eiux03cca09pr0u"),
      *                   @OA\Property(property="name", type="string", example="Vel id iure aut qui quia rerum."),
@@ -161,7 +162,7 @@ class ReviewController extends Controller
      *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
      *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
      *                ),
-     *                @OA\Property(property="user", type="object", 
+     *                @OA\Property(property="user", type="object",
      *                   @OA\Property(property="id", type="integer", example="1"),
      *                   @OA\Property(property="name", type="string", example="Rocio Mayer"),
      *                   @OA\Property(property="firstname", type="string", example="something or null"),
@@ -196,20 +197,20 @@ class ReviewController extends Controller
      */
     public function show(GetReview $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $reviews = Review::with(['tool', 'user'])
                         ->where(['id' => $id])
                         ->get();
 
             if ($reviews->count()) {
                 Auditor::log([
-                    'user_id' => (int) $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'GET',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Review get " . $id,
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Review get ' . $id,
                 ]);
 
                 return response()->json([
@@ -220,6 +221,13 @@ class ReviewController extends Controller
 
             throw new NotFoundException();
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -269,7 +277,7 @@ class ReviewController extends Controller
      *       )
      *    )
      * )
-     * 
+     *
      * Create a new review
      *
      * @param CreateReview $request
@@ -277,23 +285,23 @@ class ReviewController extends Controller
      */
     public function store(CreateReview $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $review = Review::create([
-                'tool_id' => (int) $input['tool_id'],
-                'user_id' => (int) $input['user_id'],
-                'rating' => (int) $input['rating'],
+                'tool_id' => (int)$input['tool_id'],
+                'user_id' => (int)$input['user_id'],
+                'rating' => (int)$input['rating'],
                 'review_text' => $input['review_text'],
                 'review_state' => $input['review_state'],
             ]);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Review " . $review->id . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Review ' . $review->id . ' created',
             ]);
 
             return response()->json([
@@ -301,6 +309,13 @@ class ReviewController extends Controller
                 'data' => $review->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -378,11 +393,11 @@ class ReviewController extends Controller
      */
     public function update(UpdateReview $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            Review::where('id', $id)->update([
+        try {
+            $review = Review::where('id', $id)->update([
                 'tool_id' => $input['tool_id'],
                 'user_id' => $input['user_id'],
                 'rating' => $input['rating'],
@@ -391,17 +406,24 @@ class ReviewController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Review " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Review ' . $id . ' updated',
             ]);
 
             return response()->json([
                 'message' => 'success',
-                'data' => Review::where('id', $id)->first()
+                'data' => $review,
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -479,10 +501,10 @@ class ReviewController extends Controller
      */
     public function edit(EditReview $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $arrayKeys = [
                 'tool_id',
                 'user_id',
@@ -492,21 +514,27 @@ class ReviewController extends Controller
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
-
-            Review::where('id', $id)->update($array);
+            $review = Review::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Review " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Review ' . $id . ' updated',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Review::where('id', $id)->first()
+                'data' => $review,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -558,21 +586,21 @@ class ReviewController extends Controller
      */
     public function destroy(DeleteReview $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $review = Review::findOrFail($id);
             if ($review) {
                 $review->delete();
 
                 Auditor::log([
-                    'user_id' => (int) $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'DELETE',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Review " . $id . " deleted",
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Review ' . $id . ' deleted',
                 ]);
-    
+
                 return response()->json([
                     'message' => 'success',
                 ], 200);
@@ -580,6 +608,13 @@ class ReviewController extends Controller
 
             throw new NotFoundException();
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

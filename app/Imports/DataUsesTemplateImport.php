@@ -13,12 +13,12 @@ class DataUsesTemplateImport implements ToModel, WithStartRow
 {
     use MapOrganisationSector;
 
-    private $data; 
+    private $data;
     public int $durId;
 
     public function __construct(array $data = [])
     {
-        $this->data = $data; 
+        $this->data = $data;
         $this->durId = 0;
     }
 
@@ -80,7 +80,7 @@ class DataUsesTemplateImport implements ToModel, WithStartRow
         return $dur;
     }
 
-    private function calculateExcelDate(int $excelDate) 
+    private function calculateExcelDate(int $excelDate)
     {
         return Carbon::parse('1900-01-01')->addDays($excelDate);
     }

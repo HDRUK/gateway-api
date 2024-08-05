@@ -4,12 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 
-use App\Mail\Email;
 
 use App\Models\User;
 
 use App\Jobs\SendEmailJob;
-use Illuminate\Http\Request;
 
 use App\Models\EmailTemplate;
 use App\Http\Controllers\Controller;
@@ -30,7 +28,7 @@ class EmailController extends Controller
                 'name' => $user['name'],
             ],
         ];
-    
+
         if ($template) {
             SendEmailJob::dispatch($toArray, $template, $body['replacements']);
             return response()->json([

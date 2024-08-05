@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\SpatialCoverage;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class SpatialCoverageSeeder extends Seeder
@@ -25,7 +24,7 @@ class SpatialCoverageSeeder extends Seeder
         foreach ($regions as $region) {
             SpatialCoverage::create([
                 'region' => $region,
-                'enabled' => true,       
+                'enabled' => true,
             ]);
         }
     }

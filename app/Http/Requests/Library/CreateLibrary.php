@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Library;
 
-use Illuminate\Validation\Rule;
 use App\Http\Requests\BaseFormRequest;
 
 class CreateLibrary extends BaseFormRequest

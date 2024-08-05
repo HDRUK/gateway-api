@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\TypeCategory;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class TypeCategorySeeder extends Seeder
@@ -32,7 +31,7 @@ class TypeCategorySeeder extends Seeder
             TypeCategory::create([
                 'name' => $name,
                 'description' => $description,
-                'enabled' => true,       
+                'enabled' => true,
             ]);
         }
     }

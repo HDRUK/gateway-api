@@ -4,7 +4,6 @@ namespace App\Http\Requests\SavedSearch;
 
 use Illuminate\Validation\Rule;
 use App\Http\Requests\BaseFormRequest;
-use App\Http\Enums\SortOrderSavedSearch;
 
 class UpdateSavedSearch extends BaseFormRequest
 {
