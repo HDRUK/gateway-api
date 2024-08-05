@@ -53,11 +53,11 @@ class EnquiryThreadController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $perPage = request('perPage', Config::get('constants.per_page'));
-            
+
             $enquiryThreads = EnquiryThread::paginate($perPage);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'EnquiryThread get all',
@@ -69,10 +69,10 @@ class EnquiryThreadController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'EnquiryThread get all - FAILED: ' . $e->getMessage(),
+                'description' => $e->getMessage(),
             ]);
 
             throw new Exception($e->getMessage());
@@ -133,7 +133,7 @@ class EnquiryThreadController extends Controller
             $enquiryThread = EnquiryThread::where('id', $id)->get();
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'EnquiryThread get ' . $id,
@@ -145,10 +145,10 @@ class EnquiryThreadController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'EnquiryThread get ' . $id . ' - FAILED: ' . $e->getMessage(),
+                'description' => $e->getMessage(),
             ]);
 
             throw new Exception($e->getMessage());
@@ -247,10 +247,10 @@ class EnquiryThreadController extends Controller
 
             if (empty($usersToNotify)) {
                 Auditor::log([
-                    'user_id' => (int) $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'POST',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' . 
+                    'description' => 'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' .
                         $enquiryThreadId,
                 ]);
 
@@ -264,7 +264,7 @@ class EnquiryThreadController extends Controller
             EMC::sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'EnquiryThread ' . $enquiryThreadId . ' created',
@@ -275,6 +275,13 @@ class EnquiryThreadController extends Controller
                 'data' => $enquiryThreadId,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+        } finally {
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
                 'data' => null,

@@ -14,7 +14,7 @@ class FeatureTest extends TestCase
     use RefreshDatabase;
     use Authorization;
 
-    const TEST_URL = '/api/v1/features';
+    public const TEST_URL = '/api/v1/features';
 
     protected $header = [];
 
@@ -40,7 +40,7 @@ class FeatureTest extends TestCase
 
     /**
      * Get All Features with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_features_with_success(): void
@@ -61,7 +61,7 @@ class FeatureTest extends TestCase
                     'deleted_at',
                 ],
             ],
-            'current_page',            
+            'current_page',
             'first_page_url',
             'from',
             'last_page',
@@ -72,13 +72,13 @@ class FeatureTest extends TestCase
             'per_page',
             'prev_page_url',
             'to',
-            'total',            
+            'total',
         ]);
     }
 
     /**
      * Get Feature by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_feature_by_id_with_success(): void
@@ -102,7 +102,7 @@ class FeatureTest extends TestCase
 
     /**
      * Create new Feature with success
-     * 
+     *
      * @return void
      */
     public function test_add_new_feature_with_success(): void
@@ -110,8 +110,8 @@ class FeatureTest extends TestCase
         $countBefore = FeatureModel::all()->count();
 
         $response = $this->json(
-            'POST', 
-            self::TEST_URL . '/', 
+            'POST',
+            self::TEST_URL . '/',
             [
                 'name' => 'fake_for_test',
                 'enabled' => true,
@@ -128,7 +128,7 @@ class FeatureTest extends TestCase
 
     /**
      * Edit Feature with success
-     * 
+     *
      * @return void
      */
     public function test_edit_feature_with_success(): void
@@ -199,7 +199,7 @@ class FeatureTest extends TestCase
         $this->assertEquals($contentEdit2['data']['name'], 'fake_for_test_e2');
         $this->assertEquals($contentEdit2['data']['enabled'], false);
     }
-    
+
     /**
      * SoftDelete Feature by Id with success
      *

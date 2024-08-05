@@ -14,7 +14,7 @@ class CheckAccessMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $type='permissions|roles', string $data=''): Response
+    public function handle(Request $request, Closure $next, string $type = 'permissions|roles', string $data = ''): Response
     {
         $input = $request->all();
         $jwtUserIsAdminId = $input['jwt_user']['is_admin'];
@@ -29,7 +29,7 @@ class CheckAccessMiddleware
             throw new UnauthorizedException();
         }
 
-        $currentUserRoles= [];
+        $currentUserRoles = [];
         $currentUserPermissions = [];
         if ($teamId) {
             $currentUserRoles = array_unique(array_merge($input['jwt_user']['role_perms']['extra']['roles'], $input['jwt_user']['role_perms']['teams'][(string) $teamId]['roles']));

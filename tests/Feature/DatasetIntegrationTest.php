@@ -32,15 +32,15 @@ class DatasetIntegrationTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL_DATASET = '/api/v1/integrations/datasets';
-    const TEST_URL_TEAM = 'api/v1/teams';
-    const TEST_URL_NOTIFICATION = 'api/v1/notifications';
-    const TEST_URL_USER = 'api/v1/users';
+    public const TEST_URL_DATASET = '/api/v1/integrations/datasets';
+    public const TEST_URL_TEAM = 'api/v1/teams';
+    public const TEST_URL_NOTIFICATION = 'api/v1/notifications';
+    public const TEST_URL_USER = 'api/v1/users';
 
     private $metadata = null;
 
     protected $header = [];
-    
+
 
     /**
      * Set up the database
@@ -50,7 +50,7 @@ class DatasetIntegrationTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-        
+
         $this->seed([
             MinimalUserSeeder::class,
             DatasetSeeder::class,
@@ -59,7 +59,7 @@ class DatasetIntegrationTest extends TestCase
             ApplicationSeeder::class,
             SpatialCoverageSeeder::class,
         ]);
-        
+
         $this->integration = Application::where('id', 1)->first();
 
         $perms = Permission::whereIn('name', [
@@ -77,11 +77,11 @@ class DatasetIntegrationTest extends TestCase
                 'permission_id' => $perm->id,
             ]);
         }
-        
+
         // Add Integration auth keys to the header generated in commonSetUp
         $this->header['x-application-id'] = $this->integration->app_id;
         $this->header['x-client-id'] = $this->integration->client_id;
-        
+
         // Lengthy process, but a more consistent representation
         // of an incoming dataset
         $this->metadata = $this->getMetadata();
@@ -89,7 +89,7 @@ class DatasetIntegrationTest extends TestCase
 
     /**
      * Get All Datasets with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_datasets_with_success(): void
@@ -121,7 +121,7 @@ class DatasetIntegrationTest extends TestCase
 
     /**
      * Get Dataset by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_one_dataset_by_id_with_success(): void
@@ -270,7 +270,7 @@ class DatasetIntegrationTest extends TestCase
 
     /**
      * Create new Dataset with success
-     * 
+     *
      * @return void
      */
     public function test_create_delete_dataset_with_success(): void
@@ -327,7 +327,7 @@ class DatasetIntegrationTest extends TestCase
             'data',
         ]);
 
-        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();  
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
         $teamId = $contentCreateTeam['data'];
 
         // create user
@@ -359,7 +359,7 @@ class DatasetIntegrationTest extends TestCase
         // create dataset
         $responseCreateDataset = $this->json(
             'POST',
-            self::TEST_URL_DATASET, 
+            self::TEST_URL_DATASET,
             [
                 'metadata' => $this->metadata,
             ],
@@ -382,7 +382,8 @@ class DatasetIntegrationTest extends TestCase
         $responseDeleteDataset->assertStatus(200);
 
         // delete team
-        $responseDeleteTeam = $this->json('DELETE',
+        $responseDeleteTeam = $this->json(
+            'DELETE',
             self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
             [],
             $this->header
@@ -408,9 +409,9 @@ class DatasetIntegrationTest extends TestCase
 
     public function test_cannot_delete_dataset_from_another_team(): void
     {
-       
-        $dataset = Dataset::where("team_id","!=", $this->integration->team_id)->first();
-         $responseDeleteDataset = $this->json(
+
+        $dataset = Dataset::where("team_id", "!=", $this->integration->team_id)->first();
+        $responseDeleteDataset = $this->json(
             'DELETE',
             self::TEST_URL_DATASET . '/' . $dataset->id . '?deletePermanently=true',
             [],
@@ -422,9 +423,9 @@ class DatasetIntegrationTest extends TestCase
     }
     public function test_cannot_update_dataset_from_another_team(): void
     {
-       
-        $dataset = Dataset::where("team_id","!=", $this->integration->team_id)->first();
-         $responseDeleteDataset = $this->json(
+
+        $dataset = Dataset::where("team_id", "!=", $this->integration->team_id)->first();
+        $responseDeleteDataset = $this->json(
             'PUT',
             self::TEST_URL_DATASET . '/' . $dataset->id . '?deletePermanently=true',
             $this->metadata,
@@ -437,10 +438,10 @@ class DatasetIntegrationTest extends TestCase
 
     public function test_cannot_get_without_correct_auth_and_permissions(): void
     {
-        
+
         $responseCreateDataset = $this->json(
             'POST',
-            self::TEST_URL_DATASET, 
+            self::TEST_URL_DATASET,
             [
                 'metadata' => $this->metadata,
             ],
@@ -497,8 +498,8 @@ class DatasetIntegrationTest extends TestCase
                                 ]
                             ]);
 
-        Application::findOrFail($this->integration->id)->update(["enabled"=>false]);
-        
+        Application::findOrFail($this->integration->id)->update(["enabled" => false]);
+
         $responseGetDataset = $this->json(
             'GET',
             self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
@@ -507,7 +508,7 @@ class DatasetIntegrationTest extends TestCase
         );
         $responseGetDataset->assertStatus(400)
             ->assertSeeText("Application has not been enabled!");
-        
+
 
     }
 

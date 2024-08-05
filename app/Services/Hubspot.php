@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use Config;
@@ -46,7 +47,7 @@ class Hubspot
             ];
 
             $response = Http::withHeaders($this->header)->post($url, $body);
-            
+
             // Returns a 204 No Content response on success
             return $response->json();
         } catch (Exception $e) {
@@ -75,7 +76,7 @@ class Hubspot
             $url = $this->baseUrl . '/contacts/v1/contact/vid/' . $id . '/profile';
 
             $response = Http::withHeaders($this->header)->get($url);
-    
+
             return $response->json();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());

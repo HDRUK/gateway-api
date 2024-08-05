@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use Config;
 use Tests\TestCase;
 use App\Models\Tool;
 use App\Models\Publication;
@@ -30,13 +29,13 @@ class PublicationTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/publications';
+    public const TEST_URL = '/api/v1/publications';
 
     protected $header = [];
 
     /**
      * Set up the databse
-     * 
+     *
      * @return void
      */
     public function setUp(): void
@@ -60,7 +59,7 @@ class PublicationTest extends TestCase
 
     /**
      * Get all publications with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_publications_with_success(): void
@@ -104,7 +103,7 @@ class PublicationTest extends TestCase
 
     /**
      * Get Publication by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_publication_by_id_with_success(): void
@@ -134,7 +133,7 @@ class PublicationTest extends TestCase
 
     /**
      * Create new Publication with success
-     * 
+     *
      * @return void
      */
     public function test_create_publication_with_success(): void
@@ -182,7 +181,7 @@ class PublicationTest extends TestCase
 
     /**
      * Create a new publication without success
-     * 
+     *
      * @return void
      */
     public function test_create_publication_without_success(): void
@@ -197,8 +196,8 @@ class PublicationTest extends TestCase
                 'paper_doi' => '10.1000/182',
                 'publication_type' => 'Paper and such',
                 'journal_name' => 'Something Journal-y here',
-                'abstract' => 'Some blurb about this made up paper written by people who should never meet.', 
-                'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html', 
+                'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html',
                 'datasets' => [
                     0 => [
                         'id' => 1,
@@ -220,7 +219,7 @@ class PublicationTest extends TestCase
 
     /**
      * Update a publication with success
-     * 
+     *
      * @return void
      */
     public function test_update_publication_with_success(): void
@@ -254,7 +253,7 @@ class PublicationTest extends TestCase
 
         $countAfter = Publication::all()->count();
         $this->assertTrue((bool) ($countAfter - $countBefore));
-        
+
         $response->assertJsonStructure([
             'message',
             'data'
@@ -294,53 +293,62 @@ class PublicationTest extends TestCase
         $this->assertEquals($content['paper_title'], 'Not A Test Paper Title');
     }
 
-    public function test_can_count_with_success(): void{
+    public function test_can_count_with_success(): void
+    {
 
-        $responseCount = $this->json('GET', self::TEST_URL . 
+        $responseCount = $this->json(
+            'GET',
+            self::TEST_URL .
             '/count/status',
             [],
             $this->header
         );
         $responseCount->assertStatus(200);
         $countDraft = $responseCount['data']['DRAFT'];
-        $this->assertTrue($countDraft===10);
+        $this->assertTrue($countDraft === 10);
 
 
-        Publication::factory(1)->create(['status'=>'ACTIVE']);
+        Publication::factory(1)->create(['status' => 'ACTIVE']);
 
-        $responseCount = $this->json('GET', self::TEST_URL . 
+        $responseCount = $this->json(
+            'GET',
+            self::TEST_URL .
             '/count/status',
             [],
             $this->header
         );
         $responseCount->assertStatus(200);
         $countActive = $responseCount['data']['ACTIVE'];
-        $this->assertTrue($countActive===1);
+        $this->assertTrue($countActive === 1);
 
         //now delete one
         $response = $this->json('DELETE', self::TEST_URL . '/1', [], $this->header);
         $response->assertStatus(200);
 
-        $responseCount = $this->json('GET', self::TEST_URL . 
+        $responseCount = $this->json(
+            'GET',
+            self::TEST_URL .
             '/count/status',
             [],
             $this->header
         );
         $responseCount->assertStatus(200);
         $countArchived = $responseCount['data']['ARCHIVED'];
-        $this->assertTrue($countArchived===1);
+        $this->assertTrue($countArchived === 1);
 
         $ownerId = 1;
-        Publication::take(5)->update(['owner_id'=>$ownerId]);
-    
-        $responseCount = $this->json('GET', self::TEST_URL . 
+        Publication::take(5)->update(['owner_id' => $ownerId]);
+
+        $responseCount = $this->json(
+            'GET',
+            self::TEST_URL .
             '/count/status?owner_id='. $ownerId,
             [],
             $this->header
         );
         $responseCount->assertStatus(200);
         $countDraft = $responseCount['data']['DRAFT'];
-        $this->assertTrue($countDraft===5);
+        $this->assertTrue($countDraft === 5);
 
     }
 
@@ -349,7 +357,7 @@ class PublicationTest extends TestCase
         $countBefore = Publication::all()->count();
         $response = $this->json(
             'PATCH',
-            self::TEST_URL . "/1" ,
+            self::TEST_URL . "/1",
             [
                 'status' => 'ARCHIVED'
             ],
@@ -362,7 +370,7 @@ class PublicationTest extends TestCase
 
         $response = $this->json(
             'PATCH',
-            self::TEST_URL . "/2" ,
+            self::TEST_URL . "/2",
             [
                 'status' => 'ACTIVE'
             ],
@@ -370,9 +378,9 @@ class PublicationTest extends TestCase
         );
 
         $response->assertStatus(200);
-        $countActive = Publication::where("status",Publication::STATUS_ACTIVE)->count();
-        $countDraft = Publication::where("status",Publication::STATUS_DRAFT)->count();
-        $countArchived = Publication::withTrashed()->where("status",Publication::STATUS_ARCHIVED)->count();
+        $countActive = Publication::where("status", Publication::STATUS_ACTIVE)->count();
+        $countDraft = Publication::where("status", Publication::STATUS_DRAFT)->count();
+        $countArchived = Publication::withTrashed()->where("status", Publication::STATUS_ARCHIVED)->count();
         $this->assertTrue($countActive === 1);
         $this->assertTrue($countArchived === 1);
         $this->assertTrue($countDraft === ($countBefore - 2));
@@ -381,7 +389,7 @@ class PublicationTest extends TestCase
 
     public function test_can_filter_publications(): void
     {
-        $firstPublicationTitle = Publication::where("id",1)->get()->first()->paper_title;
+        $firstPublicationTitle = Publication::where("id", 1)->get()->first()->paper_title;
         $response = $this->json(
             'GET',
             self::TEST_URL . "?paper_title=" . $firstPublicationTitle,
@@ -395,7 +403,7 @@ class PublicationTest extends TestCase
 
     public function test_can_filter_publications_on_status(): void
     {
-        //all seeded publications are draft 
+        //all seeded publications are draft
         $response = $this->json(
             'GET',
             self::TEST_URL . "?status=DRAFT",
@@ -408,7 +416,7 @@ class PublicationTest extends TestCase
         //change one of the publications to active
         $response = $this->json(
             'PATCH',
-            self::TEST_URL . "/1" ,
+            self::TEST_URL . "/1",
             [
                 'status' => 'ACTIVE'
             ],
@@ -429,7 +437,7 @@ class PublicationTest extends TestCase
         //update 2 other publications to be archived
         $response = $this->json(
             'PATCH',
-            self::TEST_URL . "/2" ,
+            self::TEST_URL . "/2",
             [
                 'status' => 'ARCHIVED'
             ],
@@ -439,7 +447,7 @@ class PublicationTest extends TestCase
 
         $response = $this->json(
             'PATCH',
-            self::TEST_URL . "/3" ,
+            self::TEST_URL . "/3",
             [
                 'status' => 'ARCHIVED'
             ],
@@ -455,7 +463,7 @@ class PublicationTest extends TestCase
         );
         $response->assertStatus(200);
         $this->assertCount(2, $response['data']);
-        
+
 
     }
 
@@ -465,7 +473,7 @@ class PublicationTest extends TestCase
     public function test_soft_delete_and_unarchive_publication_with_success(): void
     {
         $countBefore = Publication::count();
-        
+
         $response = $this->json('DELETE', self::TEST_URL . '/1', [], $this->header);
         $response->assertStatus(200);
 

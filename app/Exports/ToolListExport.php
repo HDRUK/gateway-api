@@ -52,10 +52,14 @@ class ToolListExport implements WithHeadings, FromCollection, WithMapping
         $response = [];
 
         foreach ($data as $item) {
-            $name = array_key_exists('name', $item['_source']) ? $item['_source']['name'] : '';
-            $category = array_key_exists('category', $item['_source']) ? $item['_source']['category'] : '';
-            $programmingLanguage = array_key_exists('programmingLanguage', $item['_source']) ? $item['_source']['programmingLanguage'] : '';
-            $description = array_key_exists('description', $item['_source']) ? $item['_source']['description'] : '';
+            $name = array_key_exists('name', $item['_source']) ?
+                $item['_source']['name'] : '';
+            $category = array_key_exists('category', $item['_source']) ?
+                $item['_source']['category'] : '';
+            $programmingLanguage = array_key_exists('programmingLanguage', $item['_source']) ?
+                $item['_source']['programmingLanguage'] : '';
+            $description = array_key_exists('description', $item['_source']) ?
+                $item['_source']['description'] : '';
 
             $response[] = [
                 'name' => $name,

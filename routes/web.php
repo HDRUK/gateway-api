@@ -38,7 +38,7 @@ Route::middleware('auth:api')->get('/oauth/logmeout', function (Request $request
 });
 
 // stop all all other routes
-Route::any('{path}', function() {
+Route::any('{path}', function () {
     $response = [
         'message' => 'Resource not found',
     ];

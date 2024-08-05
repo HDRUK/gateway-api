@@ -10,17 +10,17 @@ class EnquiryThread extends Model
 {
     use HasFactory;
 
-     protected $fillable = [
-        'user_id',
-        'team_id',
-        'project_title',
-        'unique_key',
-        'enabled',
+    protected $fillable = [
+       'user_id',
+       'team_id',
+       'project_title',
+       'unique_key',
+       'enabled',
     ];
 
     /**
      * Table associated with this model
-     * 
+     *
      * @var string
      */
     protected $table = 'enquiry_thread';

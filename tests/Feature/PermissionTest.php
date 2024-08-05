@@ -14,7 +14,7 @@ class PermissionTest extends TestCase
     use RefreshDatabase;
     use Authorization;
 
-    const TEST_URL = '/api/v1/permissions';
+    public const TEST_URL = '/api/v1/permissions';
 
     protected $header = [];
 
@@ -40,7 +40,7 @@ class PermissionTest extends TestCase
 
     /**
      * Get All Permissions with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_permissions_with_success(): void
@@ -63,7 +63,7 @@ class PermissionTest extends TestCase
 
     /**
      * Get Tag by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_permission_by_id_with_success(): void
@@ -85,7 +85,7 @@ class PermissionTest extends TestCase
 
     /**
      * Create new Permission with success
-     * 
+     *
      * @return void
      */
     public function test_add_new_permission_with_success(): void
@@ -211,7 +211,7 @@ class PermissionTest extends TestCase
             $this->header
         );
         $countAfterAdd = Permission::all()->count();
-        $this->assertTrue($countBefore+1 === $countAfterAdd, 'Response was successfully');
+        $this->assertTrue($countBefore + 1 === $countAfterAdd, 'Response was successfully');
         $responseAdd->assertStatus(201);
 
         $id = $responseAdd['data'];

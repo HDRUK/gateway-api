@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\TestController;
 
-Route::get('/test', function() {
+Route::get('/test', function () {
     return Response::json([
         'message' => 'lorem ipsum dolor sit amet, consectetur adip',
     ]);
@@ -22,7 +22,7 @@ foreach (config('routes') as $route) {
 }
 
 // stop all all other routes
-Route::any('{path}', function() {
+Route::any('{path}', function () {
     $response = [
         'message' => 'Resource not found',
     ];

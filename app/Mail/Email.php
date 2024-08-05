@@ -6,7 +6,6 @@ use App\Models\EmailTemplate;
 use App\Exceptions\MailSendException;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Address;
@@ -17,7 +16,8 @@ use Illuminate\Support\Facades\Http;
 
 class Email extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
     private $template = null;
     private $replacements = [];
@@ -71,8 +71,10 @@ class Email extends Mailable
     {
         $this->replaceBodyText();
 
-        $response = Http::withBasicAuth(env('MJML_API_APPLICATION_KEY', ''),
-            env('MJML_API_KEY', ''))
+        $response = Http::withBasicAuth(
+            env('MJML_API_APPLICATION_KEY', ''),
+            env('MJML_API_KEY', '')
+        )
             ->post(env('MJML_RENDER_URL', ''), [
                 'mjml' => $this->template['body'],
             ]);
@@ -96,7 +98,7 @@ class Email extends Mailable
             foreach ($buttons['replacements'] as $b) {
                 $this->template['body'] = str_replace($b['placeholder'], $b['actual'], $this->template['body']);
             }
-         }
+        }
     }
 
     private function replaceSubjectText(): void

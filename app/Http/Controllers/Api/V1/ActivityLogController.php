@@ -19,7 +19,7 @@ use App\Http\Requests\ActivityLog\UpdateActivityLog;
 class ActivityLogController extends Controller
 {
     use RequestTransformation;
-    
+
     /**
      * @OA\Get(
      *      path="/api/v1/activity_logs",
@@ -58,7 +58,7 @@ class ActivityLogController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $activityLogs = ActivityLog::getAll('user_id', $jwtUser)->paginate(Config::get('constants.per_page'), ['*'], 'page');
-    
+
             return response()->json(
                 $activityLogs
             );
@@ -125,7 +125,7 @@ class ActivityLogController extends Controller
                     'data' => $activityLog,
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
-    
+
             throw new NotFoundException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());

@@ -5,8 +5,6 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Carbon\CarbonImmutable;
 use App\Http\Controllers\JwtController;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class JwtControllerTest extends TestCase
 {

@@ -74,7 +74,7 @@ class AuthController extends Controller
      *       description="Missing Property",
      *    ),
      * )
-     * 
+     *
      * @param Request $request
      */
     public function checkAuthorization(Request $request)

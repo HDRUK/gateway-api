@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Filter;
 use Illuminate\Database\Seeder;
+
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class FilterSeeder extends Seeder
@@ -37,10 +38,10 @@ class FilterSeeder extends Seeder
             'sampleAvailability'
         ];
 
-        $this->seed_filter("dataset",$filters);
+        $this->seed_filter("dataset", $filters);
     }
 
-     public function seed_datauses_filters(): void
+    public function seed_datauses_filters(): void
     {
         $filters = [
             'publisherName',
@@ -53,7 +54,7 @@ class FilterSeeder extends Seeder
         ];
 
 
-        $this->seed_filter("dataUseRegister",$filters);
+        $this->seed_filter("dataUseRegister", $filters);
     }
 
     public function seed_tools_filters(): void
@@ -66,7 +67,7 @@ class FilterSeeder extends Seeder
             'typeCategory'
         ];
 
-        $this->seed_filter("tool",$filters);
+        $this->seed_filter("tool", $filters);
     }
 
 
@@ -78,7 +79,7 @@ class FilterSeeder extends Seeder
             'dataProviderColl'
         ];
 
-        $this->seed_filter("collection",$filters);
+        $this->seed_filter("collection", $filters);
     }
 
     public function seed_publication_filters(): void
@@ -90,7 +91,7 @@ class FilterSeeder extends Seeder
             'datasetLinkTypes'
         ];
 
-        $this->seed_filter("paper",$filters);
+        $this->seed_filter("paper", $filters);
     }
 
     public function seed_data_provider_filters(): void
@@ -101,19 +102,19 @@ class FilterSeeder extends Seeder
             'geographicLocation'
         ];
 
-        $this->seed_filter("dataProvider",$filters);
+        $this->seed_filter("dataProvider", $filters);
     }
 
     public function seed_filter(string $type, array $filters): void
     {
-        foreach ($filters as $filter){
+        foreach ($filters as $filter) {
             $checkFilter = Filter::where([
-                'type' => $type, 
+                'type' => $type,
                 'keys' => $filter,
             ])->first();
             if (!$checkFilter) {
                 Filter::create([
-                    'type' => $type, 
+                    'type' => $type,
                     'keys' => $filter,
                     'enabled' => true,
                 ]);

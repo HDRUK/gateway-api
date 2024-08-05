@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Dataset;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
@@ -12,7 +11,10 @@ use Illuminate\Notifications\Notifiable;
 
 class Library extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
 
     protected $fillable = [
         'user_id',

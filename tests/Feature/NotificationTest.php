@@ -15,7 +15,7 @@ class NotificationTest extends TestCase
 
     private $accessToken = '';
 
-    public function setUp() :void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -30,8 +30,8 @@ class NotificationTest extends TestCase
         ]);
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
-        $content = $response->decodeResponseJson();  
-        $this->accessToken = $content['access_token'];      
+        $content = $response->decodeResponseJson();
+        $this->accessToken = $content['access_token'];
     }
 
     /**
@@ -71,14 +71,14 @@ class NotificationTest extends TestCase
                 'per_page',
                 'prev_page_url',
                 'to',
-                'total',                
+                'total',
             ]);
 
     }
 
     /**
      * Returns a single notification
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_list_a_single_notification()
@@ -109,7 +109,7 @@ class NotificationTest extends TestCase
         $response = $this->get('api/v1/notifications/' . $content['data'], [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
-        
+
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [
@@ -129,7 +129,7 @@ class NotificationTest extends TestCase
 
     /**
      * Creates a new notification
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_create_a_notification()
@@ -156,14 +156,15 @@ class NotificationTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
     }
 
     /**
      * Update an existing notification
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_update_a_notification()
@@ -192,11 +193,12 @@ class NotificationTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        // Finally, update the last entered notification to 
+        // Finally, update the last entered notification to
         // prove functionality
         $response = $this->json(
             'PUT',
@@ -226,7 +228,7 @@ class NotificationTest extends TestCase
 
     /**
      * Edit an existing notification
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_edit_a_notification()
@@ -336,7 +338,7 @@ class NotificationTest extends TestCase
     }
     /**
      * Tests it can delete a notification
-     * 
+     *
      * @return void
      */
     public function test_it_can_delete_a_notification()
@@ -365,10 +367,11 @@ class NotificationTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
-       
+
         // Finally, delete the notification we just created
         $response = $this->json(
             'DELETE',
@@ -385,7 +388,8 @@ class NotificationTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_OK.message')
         );
     }

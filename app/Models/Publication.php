@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Tool;
-use App\Models\PublicationHasDatasetVersion;
 use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
@@ -13,7 +11,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Publication extends Model
 {
-    use HasFactory, SoftDeletes, Prunable, DatasetFetch;
+    use HasFactory;
+    use SoftDeletes;
+    use Prunable;
+    use DatasetFetch;
 
 
     public const STATUS_ACTIVE = 'ACTIVE';
@@ -22,7 +23,7 @@ class Publication extends Model
 
     /**
      * The table associated with this model.
-     * 
+     *
      * @var string
      */
     protected $table = 'publications';

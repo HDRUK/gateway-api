@@ -14,7 +14,6 @@ use App\Models\CohortRequest;
 use App\Models\EmailTemplate;
 use Illuminate\Support\Carbon;
 use App\Models\CohortRequestLog;
-use App\Services\LoggingService;
 use Illuminate\Http\JsonResponse;
 use App\Models\CohortRequestHasLog;
 use App\Http\Controllers\Controller;
@@ -122,7 +121,7 @@ class CohortRequestController extends Controller
      *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="logs", type="array", example="[]", @OA\Items()),
-     *                   @OA\Property(property="accept_declaration", type="boolean", example="0"),  
+     *                   @OA\Property(property="accept_declaration", type="boolean", example="0"),
      *                ),
      *             ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
@@ -143,15 +142,15 @@ class CohortRequestController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $sort = [];
             $sortArray = $request->has('sort') ? explode(',', $request->query('sort', '')) : [];
             foreach ($sortArray as $item) {
                 $tmp = explode(":", $item);
-                $sort[$tmp[0]]= array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+                $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
             }
 
             $query = CohortRequest::with(['user', 'logs', 'logs.user', 'permissions']);
@@ -192,16 +191,23 @@ class CohortRequestController extends Controller
             $cohortRequests = $query->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Cohort Request get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Cohort Request get all',
             ]);
 
             return response()->json(
                 $cohortRequests
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -259,16 +265,16 @@ class CohortRequestController extends Controller
      */
     public function show(GetCohortRequest $request, int $id): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            
             $cohortRequests = CohortRequest::where('id', $id)
                 ->with([
-                    'user', 
+                    'user',
                     'logs' => function ($q) {
                         $q->orderBy('id', 'desc');
-                    }, 
+                    },
                     'logs.user',
                     'permissions',
                     ])
@@ -281,10 +287,10 @@ class CohortRequestController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Cohort Request get " . $id,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Cohort Request get ' . $id,
             ]);
 
             return response()->json([
@@ -292,6 +298,13 @@ class CohortRequestController extends Controller
                 'data' => $cohortRequests,
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Cohort Request get ' . $id,
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -340,12 +353,13 @@ class CohortRequestController extends Controller
      */
     public function store(CreateCohortRequest $request): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
         try {
             $id = 0;
             $cohortRequest = null;
             $notAllowUpdateRequest = ['PENDING', 'APPROVED', 'BANNED', 'SUSPENDED'];
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $checkRequestByUserId = CohortRequest::where([
                 'user_id' => (int) $jwtUser['id'],
@@ -391,10 +405,10 @@ class CohortRequestController extends Controller
             $this->sendEmail($cohortRequest->id);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Cohort Request " . ($id ?: $cohortRequest->id) . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Cohort Request ' . ($id ?: $cohortRequest->id) . ' created',
             ]);
 
             return response()->json([
@@ -403,6 +417,13 @@ class CohortRequestController extends Controller
             ], Config::get('statuscodes.STATUS_CREATED.code'));
 
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -478,9 +499,10 @@ class CohortRequestController extends Controller
      */
     public function update(UpdateCohortRequest $request, int $id): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $requestStatus = strtoupper(trim($input['request_status']));
 
             $currCohortRequest = CohortRequest::where('id', $id)->first();
@@ -544,21 +566,27 @@ class CohortRequestController extends Controller
             }
 
             $this->sendEmail($id);
-
             $this->updateOrCreateContact((int) $jwtUser['id']);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Cohort Request " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Cohort Request ' . $id . ' updated',
             ]);
- 
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => CohortRequest::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Cohort Request ' . $id . ' updated',
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -614,29 +642,36 @@ class CohortRequestController extends Controller
      */
     public function destroy(DeleteCohortRequest $request, int $id): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            
             $cohortRequest = CohortRequest::withTrashed()->findOrFail($id);
             $cohortRequest->update(['accept_declaration' => false]);
             $cohortRequest->delete();
-            
+
             CohortRequestHasPermission::where('id', $id)->delete();
 
             $this->updateOrCreateContact($id);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Cohort Request " . $id . " deleted",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Cohort Request ' . $id . ' deleted',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -742,53 +777,72 @@ class CohortRequestController extends Controller
             $query->join('users', 'cohort_requests.user_id', '=', 'users.id');
             $query->orderBy('cohort_requests.created_at', 'asc');
             $result = $query->select('cohort_requests.*')->get();
-           
+
             // callback function that writes to php://output
             $response = new StreamedResponse(
-                function() use ($result) {
+                function () use ($result) {
 
                     // Open output stream
                     $handle = fopen('php://output', 'w');
-                    
-                    $headerRow = ['User ID', 'Name', 'Email address', 'Organisation', 'Status', 'Date Requested', 'Date Actioned','Live'];
+
+                    $headerRow = [
+                        'User ID',
+                        'Name',
+                        'Email address',
+                        'Organisation',
+                        'Status',
+                        'Date Requested',
+                        'Date Actioned',
+                        'Live',
+                    ];
 
                     // Add CSV headers
                     fputcsv($handle, $headerRow);
-            
+
                     // add the given number of rows to the file.
-                    foreach ($result as $rowDetails) { 
+                    foreach ($result as $rowDetails) {
                         $row = [
-                            (string) $rowDetails['user']['id'],
-                            (string) $rowDetails['user']['name'],
-                            (string) $rowDetails['user']['email'],
-                            (string) $rowDetails['user']['organisation'],
-                            (string) $rowDetails['request_status'],
-                            (string) $rowDetails['created_at'],
-                            (string) $rowDetails['updated_at'],
-                            (string) $rowDetails['accept_declaration'],
+                            (string)$rowDetails['user']['id'],
+                            (string)$rowDetails['user']['name'],
+                            (string)$rowDetails['user']['email'],
+                            (string)$rowDetails['user']['organisation'],
+                            (string)$rowDetails['request_status'],
+                            (string)$rowDetails['created_at'],
+                            (string)$rowDetails['updated_at'],
+                            (string)$rowDetails['accept_declaration'],
                         ];
                         fputcsv($handle, $row);
                     }
-                    
+
                     // Close the output stream
                     fclose($handle);
                 }
             );
 
             $response->headers->set('Content-Type', 'text/csv');
-            $response->headers->set('Content-Disposition', 'attachment;filename="Cohort_Discovery_Admin.csv"');
-            $response->headers->set('Cache-Control','max-age=0');
+            $response->headers->set(
+                'Content-Disposition',
+                'attachment;filename="Cohort_Discovery_Admin.csv"'
+            );
+            $response->headers->set('Cache-Control', 'max-age=0');
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'EXPORT',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Cohort Request exported",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Cohort Request exported',
             ]);
 
             return $response;
 
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -868,16 +922,23 @@ class CohortRequestController extends Controller
 
             // Audit log
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Cohort Request assign admin permission for id " . $id,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Cohort Request assign admin permission for id ' . $id,
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Cohort Request exported',
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -957,16 +1018,23 @@ class CohortRequestController extends Controller
 
             // Audit log
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Cohort Request remove admin permission for id " . $id,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Cohort Request remove admin permission for id ' . $id,
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -1039,16 +1107,23 @@ class CohortRequestController extends Controller
             ]));
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Access rquest for user",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Access rquest for user',
             ]);
 
             $rquestInitUrl = Config::get('services.rquest.init_url');
             return redirect()->away($rquestInitUrl);
-        } catch (Exception $exception) {
-            throw new Exception("Cohort Request send email :: " . $exception->getMessage());
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('Cohort Request send email :: ' . $e->getMessage());
         }
     }
 
@@ -1115,8 +1190,14 @@ class CohortRequestController extends Controller
                 SendEmailJob::dispatch($to, $template, $replacements);
             }
 
-        } catch (Exception $exception) {
-            throw new Exception("Cohort Request send email :: " . $exception->getMessage());
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('Cohort Request send email :: ' . $e->getMessage());
         }
     }
 

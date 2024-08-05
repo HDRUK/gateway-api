@@ -6,7 +6,6 @@ use App\Models\Federation;
 use App\Models\Notification;
 use Illuminate\Database\Seeder;
 use App\Models\FederationHasNotification;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class FederationSeeder extends Seeder
 {

@@ -2,14 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Dur;
-use App\Models\Tool;
-use App\Models\Collection;
-use App\Models\Application;
-use App\Models\DataVersion;
-use App\Models\NamedEntities;
-use App\Models\Publication;
-use App\Models\SpatialCoverage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,14 +9,15 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Dataset extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
 
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
@@ -36,14 +29,14 @@ class Dataset extends Model
 
     /**
      * Table associated with this model
-     * 
+     *
      * @var string
      */
     protected $table = 'datasets';
 
     /**
      * Indicates if the model should be timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = true;
@@ -70,7 +63,7 @@ class Dataset extends Model
         'is_cohort_discovery' => 'boolean',
     ];
 
-    
+
     /**
      * The version history of metadata that respond to this dataset.
      */
@@ -135,9 +128,9 @@ class Dataset extends Model
      */
     public function scopeOrderByMetadata(Builder $query, string $field, string $direction): Builder
     {
-        return $query->orderBy(DatasetVersion::selectRaw("JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.".$field."')") 
-                            ->whereColumn('datasets.id','dataset_versions.dataset_id')
-                            ->latest()->limit(1),$direction);
+        return $query->orderBy(DatasetVersion::selectRaw("JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.".$field."')")
+                            ->whereColumn('datasets.id', 'dataset_versions.dataset_id')
+                            ->latest()->limit(1), $direction);
     }
 
     /**
@@ -152,9 +145,9 @@ class Dataset extends Model
     public function getAllNamedEntitiesAttribute()
     {
         return $this->getRelationsViaDatasetVersion(
-            DatasetVersionHasNamedEntities::class, 
-            NamedEntities::class, 
-            'named_entities_id' 
+            DatasetVersionHasNamedEntities::class,
+            NamedEntities::class,
+            'named_entities_id'
         );
     }
 
@@ -162,8 +155,8 @@ class Dataset extends Model
     public function getAllSpatialCoveragesAttribute()
     {
         return $this->getRelationsViaDatasetVersion(
-            DatasetVersionHasSpatialCoverage::class, 
-            SpatialCoverage::class, 
+            DatasetVersionHasSpatialCoverage::class,
+            SpatialCoverage::class,
             'spatial_coverage_id'
         );
     }
@@ -172,8 +165,8 @@ class Dataset extends Model
     public function getAllToolsAttribute()
     {
         return $this->getRelationsViaDatasetVersion(
-            DatasetVersionHasTool::class, 
-            Tool::class, 
+            DatasetVersionHasTool::class,
+            Tool::class,
             'tool_id'
         );
     }
@@ -182,8 +175,8 @@ class Dataset extends Model
     public function getAllCollectionsAttribute()
     {
         return $this->getRelationsViaDatasetVersion(
-            CollectionHasDatasetVersion::class, 
-            Collection::class, 
+            CollectionHasDatasetVersion::class,
+            Collection::class,
             'collection_id'
         );
     }
@@ -192,8 +185,8 @@ class Dataset extends Model
     public function getAllDursAttribute()
     {
         return $this->getRelationsViaDatasetVersion(
-            DurHasDatasetVersion::class, 
-            Dur::class, 
+            DurHasDatasetVersion::class,
+            Dur::class,
             'dur_id'
         );
     }
@@ -202,8 +195,8 @@ class Dataset extends Model
     public function getAllPublicationsAttribute()
     {
         return $this->getRelationsViaDatasetVersion(
-            PublicationHasDatasetVersion::class, 
-            Publication::class, 
+            PublicationHasDatasetVersion::class,
+            Publication::class,
             'publication_id'
         );
     }
@@ -213,7 +206,7 @@ class Dataset extends Model
      */
     public function getRelationsViaDatasetVersion($linkageTable, $targetTable, $foreignTableId)
     {
-        // Step 1: Get the dataset version IDs 
+        // Step 1: Get the dataset version IDs
         $versionIds = $this->versions()->pluck('id')->toArray();
 
         // Step 2: Use the version IDs to find all related entityIDs through the linkage table
@@ -221,8 +214,8 @@ class Dataset extends Model
             ->pluck($foreignTableId)
             ->unique()
             ->toArray();
-            
-        // Step 3: Retrieve all entities using the collected entities IDs    
+
+        // Step 3: Retrieve all entities using the collected entities IDs
         $entities = $targetTable::whereIn('id', $entityIds)->get();
 
         // Iterate through each entity and add associated dataset versions
@@ -234,7 +227,7 @@ class Dataset extends Model
                 ->toArray();
 
             // Add associated dataset versions to the entity object
-            $entity->setAttribute('dataset_version_ids', $datasetVersionIds);  
+            $entity->setAttribute('dataset_version_ids', $datasetVersionIds);
         }
 
         // Return the collection of entities with injected dataset version IDs

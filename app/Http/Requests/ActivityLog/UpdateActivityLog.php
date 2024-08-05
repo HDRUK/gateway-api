@@ -60,7 +60,7 @@ class UpdateActivityLog extends BaseFormRequest
                 'sometimes',
                 'nullable',
                 'string',
-            ], 
+            ],
         ];
     }
 

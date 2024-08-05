@@ -4,7 +4,6 @@ namespace Database\Demo;
 
 use App\Models\Permission;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class PermissionDemo extends Seeder
 {

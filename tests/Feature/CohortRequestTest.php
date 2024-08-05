@@ -7,7 +7,6 @@ use Tests\TestCase;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasPermission;
 use Tests\Traits\Authorization;
-use Database\Seeders\UserSeeder;
 use Database\Seeders\SectorSeeder;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Http;
@@ -15,7 +14,6 @@ use Illuminate\Support\Facades\Mail;
 use Database\Seeders\CohortRequestSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\EmailTemplatesSeeder;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CohortRequestTest extends TestCase
@@ -26,7 +24,7 @@ class CohortRequestTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/cohort_requests';
+    public const TEST_URL = '/api/v1/cohort_requests';
 
     protected $header = [];
 
@@ -56,7 +54,7 @@ class CohortRequestTest extends TestCase
 
     /**
      * Get All Cohort Requests with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_cohort_requests_with_success(): void
@@ -100,7 +98,7 @@ class CohortRequestTest extends TestCase
 
     /**
      * Get Cohort Request by id with success
-     * 
+     *
      * @return void
      */
     public function test_get_cohort_request_by_id_with_success(): void
@@ -120,7 +118,7 @@ class CohortRequestTest extends TestCase
 
     /**
      * Create Cohort Request with success
-     * 
+     *
      * @return void
      */
     public function test_create_cohort_request_with_success(): void
@@ -164,7 +162,7 @@ class CohortRequestTest extends TestCase
 
     /**
      * Update Cohort Request with success
-     * 
+     *
      * @return void
      */
     public function test_update_cohort_request_with_success(): void
@@ -225,7 +223,7 @@ class CohortRequestTest extends TestCase
 
     /**
      * Check request status update and accept declaration
-     * 
+     *
      * @return void
      */
     public function test_request_status_update_and_accept_declaration(): void
@@ -306,7 +304,7 @@ class CohortRequestTest extends TestCase
 
     /**
      * Download Cohort Request Admin dashboard export with success
-     * 
+     *
      * @return void
      */
     public function test_download_cohort_request_dashboard_with_success(): void
@@ -327,16 +325,16 @@ class CohortRequestTest extends TestCase
             "\"User ID\""
         );
     }
-    
+
     /**
      * Delete Cohort Request with success
-     * 
+     *
      * @return void
      */
     public function test_delete_cohort_request_with_success(): void
     {
         Mail::fake();
-        
+
         // create
         $responseCreate = $this->json(
             'POST',
@@ -401,16 +399,16 @@ class CohortRequestTest extends TestCase
             'message',
         ]);
     }
-        
+
     /**
      * Assign / Remove admin permission
-     * 
+     *
      * @return void
      */
     public function test_assign_remove_admin_cohort_request_with_success(): void
     {
         Mail::fake();
-        
+
         // create
         $responseCreate = $this->json(
             'POST',
@@ -507,7 +505,7 @@ class CohortRequestTest extends TestCase
                     return Http::response([], 200);
                 }
             },
-        
+
             // GET (by vid)
             "http://hub.local/contacts/v1/contact/vid/*/profile" => function ($request) {
                 if ($request->method() === 'GET') {
@@ -516,14 +514,14 @@ class CohortRequestTest extends TestCase
                     return Http::response([], 204);
                 }
             },
-        
+
             // GET (by email)
             "http://hub.local/contacts/v1/contact/email/*/profile" => function ($request) {
                 if ($request->method() === 'GET') {
                     return Http::response(['vid' => 12345], 200);
                 }
             },
-        
+
             // POST (create contact)
             'http://hub.local/contacts/v1/contact' => function ($request) {
                 if ($request->method() === 'POST') {

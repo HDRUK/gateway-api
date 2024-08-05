@@ -10,7 +10,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class CollectionHasDur extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
 
     protected $fillable = [
         'collection_id',
@@ -24,14 +27,14 @@ class CollectionHasDur extends Model
 
     /**
      * The table associated with the model
-     * 
+     *
      * @var string
      */
     protected $table = 'collection_has_durs';
 
     /**
      * Indicates if the model should be timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = false;

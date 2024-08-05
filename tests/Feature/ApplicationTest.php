@@ -7,8 +7,6 @@ use Config;
 use Tests\TestCase;
 
 use App\Models\Application;
-use App\Models\Permission;
-use App\Models\ApplicationHasPermission;
 
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ApplicationSeeder;
@@ -16,7 +14,6 @@ use Database\Seeders\ApplicationSeeder;
 use Tests\Traits\Authorization;
 use App\Http\Traits\IntegrationOverride;
 
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ApplicationTest extends TestCase
@@ -25,7 +22,7 @@ class ApplicationTest extends TestCase
     use Authorization;
     use IntegrationOverride;
 
-    const TEST_URL = '/api/v1/applications';
+    public const TEST_URL = '/api/v1/applications';
 
     protected $header = [];
 
@@ -54,9 +51,9 @@ class ApplicationTest extends TestCase
     public function test_get_all_applications_with_success(): void
     {
         $response = $this->json(
-            'GET', 
-            self::TEST_URL, 
-            [], 
+            'GET',
+            self::TEST_URL,
+            [],
             $this->header,
         );
 
@@ -139,9 +136,9 @@ class ApplicationTest extends TestCase
 
         // get by id
         $responseGet = $this->json(
-            'GET', 
-            self::TEST_URL . '/' . $id, 
-            [], 
+            'GET',
+            self::TEST_URL . '/' . $id,
+            [],
             $this->header,
         );
 
