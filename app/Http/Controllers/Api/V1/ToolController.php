@@ -1485,7 +1485,7 @@ class ToolController extends Controller
                 ->pluck('dataset_version_id')
                 ->all();
 
-            $datasetIDs = DatasetVersion::whereIn('dataset_version_id', $datasetVersionIDs)
+            $datasetIDs = DatasetVersion::whereIn('id', $datasetVersionIDs)
                 ->pluck('dataset_id')
                 ->all();
 
