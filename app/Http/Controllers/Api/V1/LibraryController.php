@@ -207,7 +207,7 @@ class LibraryController extends Controller
             }
 
             $dataset = $library->dataset->first();
-            $team = $dataset->team->first();
+            $team = $dataset->team;
 
             // Using dynamic attributes to avoid undefined property error
             $library->setAttribute('dataset_id', (int)$dataset->datasetid);
@@ -215,6 +215,8 @@ class LibraryController extends Controller
             $library->setAttribute('data_provider_id', $team->pid);
             $library->setAttribute('data_provider_dar_status', $team->uses_5_safes);
             $library->setAttribute('data_provider_name', $team->name);
+            $library->setAttribute('dataset_name', $dataset->versions[0]->metadata['metadata']['summary']['shortTitle']);
+            $library->setAttribute('data_provider_dar_enabled', $team->is_question_bank);
 
             unset($library->dataset);
 

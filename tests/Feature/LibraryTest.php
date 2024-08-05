@@ -30,12 +30,16 @@ class LibraryTest extends TestCase
     {
         $this->commonSetUp();
 
+        $jwt = $this->getAuthorisationJwt();
+        $user = $this->getUserFromJwt($jwt);
+
         $this->seed([
             MinimalUserSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
-            LibrarySeeder::class,
         ]);
+        //seed for this user... 
+        Library::factory(10)->create(['user_id' => $user['id']]);
     }
 
     /**
@@ -45,6 +49,7 @@ class LibraryTest extends TestCase
      */
     public function test_the_application_can_list_libraries()
     {
+
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
@@ -58,10 +63,12 @@ class LibraryTest extends TestCase
                     'updated_at',
                     'user_id',
                     'dataset_id',
+                    'dataset_name',
                     'dataset_status',
                     'data_provider_id',
                     'data_provider_dar_status',
-                    'data_provider_name'
+                    'data_provider_name',
+                    'data_provider_dar_enabled'
                 ],
             ],
             'first_page_url',
@@ -112,7 +119,9 @@ class LibraryTest extends TestCase
                     'dataset_status',
                     'data_provider_id',
                     'data_provider_dar_status',
-                    'data_provider_name'
+                    'data_provider_name',
+                    'data_provider_name',
+                    'data_provider_dar_enabled'
                 ],
             ]);
     }
