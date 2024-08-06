@@ -73,8 +73,10 @@ class ReindexEntities extends Command
                             base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6))
                         );
                 }
+            } else {
+                MMC::reindexElastic($id);
             }
-            MMC::reindexElastic($id);
+            
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
