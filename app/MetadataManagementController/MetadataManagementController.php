@@ -15,7 +15,6 @@ use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
@@ -116,7 +115,7 @@ class MetadataManagementController
      *
      * @return bool
      */
-    public function validateDataModelType(string $dataset, string $input_schema, string $input_version): bool
+    public function validateDataModelType(string &$dataset, string $input_schema, string $input_version): bool
     {
         try {
             $urlString = sprintf(
@@ -156,12 +155,12 @@ class MetadataManagementController
      *
      * @return Dataset
      */
-    public function createDataset(array $input): Dataset
+    public function createDataset(array &$input): Dataset
     {
         return Dataset::create($input);
     }
 
-    public function createDatasetVersion(array $input): DatasetVersion
+    public function createDatasetVersion(array &$input): DatasetVersion
     {
         return DatasetVersion::create($input);
     }
@@ -188,6 +187,10 @@ class MetadataManagementController
                 $metadata->deleted_at = Carbon::now();
                 $metadata->save();
             }
+
+            unset(
+                $dataset
+            );
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -244,6 +247,15 @@ class MetadataManagementController
 
             $client = $this->getElasticClient();
             $client->index($params);
+
+            unset(
+                $datasetMatch,
+                $metadata,
+                $materialTypes,
+                $containsTissue,
+                $toIndex,
+                $params,
+            );
 
         } catch (Exception $e) {
             \Log::error('Error reindexing ElasticSearch', [
@@ -311,6 +323,15 @@ class MetadataManagementController
             $client = $this->getElasticClient();
             $client->index($params);
 
+            unset(
+                $datasets,
+                $datasetTitles,
+                $locations,
+                $dataTypes,
+                $toIndex,
+                $params,
+            );
+
         } catch (Exception $e) {
             \Log::error('Error reindexing ElasticSearch', [
                 'teamId' => $teamId,
@@ -337,10 +358,7 @@ class MetadataManagementController
                 return $value;
             }
         }
-        Log::info('No value found for any of the specified keys', [
-            'keys' => $keys,
-            'array' => $array
-        ]);
+
         return $default;
     }
 
@@ -366,6 +384,12 @@ class MetadataManagementController
             $client = $this->getElasticClient();
             $response = $client->delete($params);
 
+            unset(
+                $client,
+                $response,
+                $params,
+            );
+
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -382,6 +406,10 @@ class MetadataManagementController
 
             $urlString = env('TRASER_SERVICE_URL') . '/get/form_hydration?' . http_build_query($queryParams);
             $response = Http::get($urlString);
+
+            unset(
+                $queryParams,
+            );
 
             return $response->json();
         } catch (Exception $e) {
