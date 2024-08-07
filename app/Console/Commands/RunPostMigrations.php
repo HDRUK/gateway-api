@@ -11,7 +11,7 @@ class RunPostMigrations extends Command
      *
      * @var string
      */
-    protected $signature = 'app:run-post-migrations {sleep=1}';
+    protected $signature = 'app:run-post-migrations {sleep=1} {--term-extraction}';
 
     /**
      * The console command description.
@@ -27,7 +27,9 @@ class RunPostMigrations extends Command
      */
     public function handle()
     {
-        $sleep = $this->argument('sleep');
+        $sleep = $this->argument("sleep");
+        $termExtraction = $this->option('term-extraction');
+
         $commands = [
             [
                 'command' => 'app:add-super-admin-to-all-teams',
@@ -41,6 +43,7 @@ class RunPostMigrations extends Command
             ],
             // ['command' => 'app:sync-hubspot-contacts', 'arguments' => []], // What is this?
             //['command' => 'app:data-providers-post-migration', 'arguments' => []], // seed dataproviders
+
             [
                 'command' => 'app:add-data-provider-network',
                 'arguments' => [],
@@ -74,6 +77,7 @@ class RunPostMigrations extends Command
                 'arguments' => [
                     'entity' => 'datasets',
                     'sleep' => $sleep,
+                    '--term-extraction' => $termExtraction
                 ],
             ],
             [
