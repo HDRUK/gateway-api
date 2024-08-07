@@ -80,7 +80,7 @@ class ReindexEntities extends Command
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
-        $progressbar->finish();
+        $progressbar->finish(); 
     }
 
     private function tools(){
