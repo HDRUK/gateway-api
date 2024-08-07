@@ -119,6 +119,8 @@ class ReindexEntities extends Command
         $progressbar = $this->output->createProgressBar(count($datasetIds));
         foreach ($datasetIds as $id) {
             $this->checkAndCleanMaterialType($id);
+            $termExtraction = $this->option('term-extraction'); // Initialize $termExtraction based on the command option
+
             if ($termExtraction) {
                 $dataset = Dataset::where('id', $id)->first();
                 if ($dataset->status === Dataset::STATUS_ACTIVE) {
