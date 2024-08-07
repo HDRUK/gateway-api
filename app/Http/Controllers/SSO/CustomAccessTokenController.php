@@ -23,7 +23,6 @@ class CustomAccessTokenController extends AuthController
             // Extract request data
             $data = json_decode($request->getBody()->getContents(), true);
             CloudLogger::write('request :: ' . json_encode($request));
-            CloudLogger::write('request all :: ' . json_encode($request->all()));
             CloudLogger::write('request getbody :: ' . json_encode($request->getBody()));
             CloudLogger::write('data :: ' . json_encode($data));
             \Log::info(json_encode($data));
@@ -68,9 +67,9 @@ class CustomAccessTokenController extends AuthController
 
             // Return error response
             return response()->json([
-                'error' => $e->getErrorType(),
+                'error' => $e->statusCode(),
                 'message' => $e->getMessage(),
-            ], $e->getHttpStatusCode());
+            ], $e->getCode());
         }
     }
 }

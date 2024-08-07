@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use CloudLogger;
 use Config;
 use Throwable;
 use Illuminate\Http\Request;
@@ -69,6 +70,12 @@ class Handler extends ExceptionHandler
             'code' => $statusCode,
             'message' => $e->getMessage(),
         ];
+
+        if (Config::get('services.googlelogging.enabled')) {
+            CloudLogger::write('EXCEPTIONS :: ' . json_encode($response));
+        } else {
+            \Log::error('EXCEPTIONS :: ' . json_encode($response));
+        }
 
         if (Config::get('app.debug')) {
             $response['details'] = [
