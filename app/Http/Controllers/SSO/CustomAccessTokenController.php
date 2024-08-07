@@ -15,10 +15,10 @@ class CustomAccessTokenController extends AuthController
     {
         try {
 
-            $response = parent::issueToken($request);
+            // $response = parent::issueToken($request);
 
-            $datatest = json_decode($response->getBody(), true);
-            CloudLogger::write('datatest :: ' . $datatest);
+            // $datatest = json_decode($response->getBody(), true);
+            // CloudLogger::write('datatest :: ' . $datatest);
 
             // Extract request data
             $data = json_decode($request->getBody()->getContents(), true);
@@ -67,7 +67,6 @@ class CustomAccessTokenController extends AuthController
 
             // Return error response
             return response()->json([
-                'error' => $e->statusCode(),
                 'message' => $e->getMessage(),
             ], $e->getCode());
         }
