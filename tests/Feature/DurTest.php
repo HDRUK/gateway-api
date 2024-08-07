@@ -733,6 +733,8 @@ class DurTest extends TestCase
             $this->header,
         );
 
+        // dd($responseDownload->decodeResponseJson());
+
         $content = $responseDownload->streamedContent();
         $this->assertMatchesRegularExpression('/Non-Gateway Datasets/', $content);
     }
