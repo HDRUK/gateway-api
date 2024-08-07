@@ -13,7 +13,7 @@ class CustomAccessTokenController extends AuthController
 {
     public function customIssueToken(ServerRequestInterface $request)
     {
-        try {
+        // try {
 
             // $response = parent::issueToken($request);
 
@@ -67,14 +67,14 @@ class CustomAccessTokenController extends AuthController
             // Return custom response
             return response()->json($content, $tokenResponse->status());
 
-        } catch (OAuthServerException $e) {
-            // Log the error
-            \Log::error('Token issuance failed: ' . $e->getMessage());
+        // } catch (OAuthServerException $e) {
+        //     // Log the error
+        //     \Log::error('Token issuance failed: ' . $e->getMessage());
 
-            // Return error response
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], $e->getCode());
-        }
+        //     // Return error response
+        //     return response()->json([
+        //         'message' => $e->getMessage(),
+        //     ], $e->getCode());
+        // }
     }
 }
