@@ -103,7 +103,7 @@ class ReindexEntities extends Command
         }
     }
 
-    private function datasets($termExtraction)
+    private function datasets()
     {
         $minIndex = $this->minIndex;
         $maxIndex = $this->maxIndex;
@@ -121,7 +121,6 @@ class ReindexEntities extends Command
         $progressbar = $this->output->createProgressBar(count($datasetIds));
         foreach ($datasetIds as $id) {
             $this->checkAndCleanMaterialType($id);
-            
             if ($termExtraction) {
                 $dataset = Dataset::where('id', $id)->first();
                 if ($dataset->status === Dataset::STATUS_ACTIVE) {
