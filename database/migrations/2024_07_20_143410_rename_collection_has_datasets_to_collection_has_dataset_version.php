@@ -39,8 +39,20 @@ return new class () extends Migration {
         // Retrieve the correct dataset_version_id and insert data into the new table
         $oldData = DB::table('collection_has_datasets')->get();
 
+        $uniqueEntries = [];
+
         foreach ($oldData as $data) {
             $datasetVersion = DB::table('dataset_versions')->where('dataset_id', $data->dataset_id)->latest('created_at')->first();
+
+            //this migration sets a composite primary key
+            // - for whatever reason, we need to check this hasnt already been set
+            // - likely due to duplicate data somehow?
+            $uniqueKey = $data->collection_id . '-' . $datasetVersion->id;
+            if (isset($uniqueEntries[$uniqueKey])) {
+                //skip if composite primary key has already been registered
+                continue;
+            }
+
 
             if ($datasetVersion) {
                 DB::table('collection_has_dataset_version')->insert([
@@ -52,6 +64,8 @@ return new class () extends Migration {
                     'created_at' => $data->created_at,
                     'updated_at' => $data->updated_at,
                 ]);
+                //register the composite primary key as being used..
+                $uniqueEntries[$uniqueKey] = true;
             }
         }
 
@@ -98,9 +112,9 @@ return new class () extends Migration {
             if ($dataset) {
                 // Check for duplicates before inserting
                 $exists = DB::table('collection_has_datasets')
-                            ->where('collection_id', $data->collection_id)
-                            ->where('dataset_id', $dataset->dataset_id)
-                            ->exists();
+                    ->where('collection_id', $data->collection_id)
+                    ->where('dataset_id', $dataset->dataset_id)
+                    ->exists();
 
                 if (!$exists) {
                     DB::table('collection_has_datasets')->insert([
