@@ -32,7 +32,8 @@ class CustomAccessTokenController extends AuthController
             }
 
             // Log the token request
-            \Log::info('Token requested for user: ' . $data['username']);
+            // \Log::info('Token requested for user: ' . $data['username']);
+            CloudLogger::write('Token requested for user: ' . $data['username']);
 
             // Call the parent method to issue the token
             $tokenResponse = parent::issueToken($request);
