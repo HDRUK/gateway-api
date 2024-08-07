@@ -124,7 +124,7 @@ class ReindexEntities extends Command
         $progressbar->finish();
     }
 
-    private function tools()
+    private function tools() 
     {
         $toolController = new ToolController();
         $toolIds = Tool::pluck('id');

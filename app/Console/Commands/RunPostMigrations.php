@@ -40,7 +40,7 @@ class RunPostMigrations extends Command
                 ],
             ],
             // ['command' => 'app:sync-hubspot-contacts', 'arguments' => []], // What is this?
-            //['command' => 'app:data-providers-post-migration', 'arguments' => []], // seed dataproviders
+            // ['command' => 'app:data-providers-post-migration', 'arguments' => []], // seed dataproviders
             [
                 'command' => 'app:add-data-provider-network',
                 'arguments' => [],
