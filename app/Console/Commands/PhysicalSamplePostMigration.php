@@ -4,11 +4,12 @@ namespace App\Console\Commands;
 
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use App\Http\Traits\IndexElastic;
 use Illuminate\Console\Command;
-use MetadataManagementController as MMC;
 
 class PhysicalSamplePostMigration extends Command
 {
+    use IndexElastic;
     /**
      * The name and signature of the console command.
      *
@@ -75,7 +76,7 @@ class PhysicalSamplePostMigration extends Command
                 }
 
                 if ($sleepTimeInMicroseconds !== null) {
-                    MMC::reindexElastic($dataset->id);
+                    $this->reindexElastic($dataset->id);
                     usleep($sleepTimeInMicroseconds);
                 }
             }

@@ -13,16 +13,14 @@ use App\Models\DatasetVersion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Models\CollectionHasDur;
-use App\Models\DataProviderColl;
 use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Models\CollectionHasDatasetVersion;
 use App\Models\CollectionHasKeyword;
 use App\Exceptions\NotFoundException;
-use App\Models\DataProviderCollHasTeam;
 use App\Models\CollectionHasPublication;
-use MetadataManagementController as MMC;
+use App\Http\Traits\IndexElastic;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\Collection\GetCollection;
 use App\Http\Requests\Collection\EditCollection;
@@ -32,6 +30,7 @@ use App\Http\Requests\Collection\UpdateCollection;
 
 class CollectionController extends Controller
 {
+    use IndexElastic;
     use RequestTransformation;
 
     public function __construct()
@@ -1043,7 +1042,7 @@ class CollectionController extends Controller
 
             if (!$checking) {
                 $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId);
-                MMC::reindexElastic($dataset['id']);
+                $this->reindexElastic($dataset['id']);
             }
         }
     }
@@ -1477,81 +1476,6 @@ class CollectionController extends Controller
         }
 
         return $response;
-    }
-
-    /**
-     * Insert collection document into elastic index
-     *
-     * @param integer $collectionId
-     * @return void
-     */
-    public function indexElasticCollections(int $collectionId): void
-    {
-        $collection = Collection::with(['team', 'keywords'])->where('id', $collectionId)->first();
-        $datasets = $collection->allDatasets  ?? [];
-
-        $datasetIds = array_map(function ($dataset) {
-            return $dataset['id'];
-        }, $datasets);
-
-        $collection = $collection->toArray();
-        $team = $collection['team'];
-
-        $datasetTitles = array();
-        $datasetAbstracts = array();
-        foreach ($datasetIds as $d) {
-            $metadata = Dataset::where(['id' => $d])
-                ->first()
-                ->latestVersion()
-                ->metadata;
-            $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-            $datasetAbstracts[] = $metadata['metadata']['summary']['abstract'];
-        }
-
-        $keywords = array();
-        foreach ($collection['keywords'] as $k) {
-            $keywords[] = $k['name'];
-        }
-
-        $dataProviderColl = [];
-        if (array_key_exists('team_id', $collection)) {
-            $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $collection['team_id'])
-                ->pluck('data_provider_coll_id')
-                ->all();
-            $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
-                ->pluck('name')
-                ->all();
-        }
-
-        try {
-            $toIndex = [
-                'publisherName' => isset($team['name']) ? $team['name'] : '',
-                'description' => $collection['description'],
-                'name' => $collection['name'],
-                'datasetTitles' => $datasetTitles,
-                'datasetAbstracts' => $datasetAbstracts,
-                'keywords' => $keywords,
-                'dataProviderColl' => $dataProviderColl
-            ];
-            $params = [
-                'index' => 'collection',
-                'id' => $collectionId,
-                'body' => $toIndex,
-                'headers' => 'application/json'
-            ];
-
-            $client = MMC::getElasticClient();
-            $client->index($params);
-
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
     }
 
 }

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-use App\Models\Tag;
 use App\Models\Tool;
 use App\Models\ToolHasTag;
 use App\Models\Application;
@@ -22,7 +21,7 @@ use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
 use App\Http\Traits\IntegrationOverride;
-use MetadataManagementController as MMC;
+use App\Http\Traits\IndexElastic;
 use App\Models\ToolHasProgrammingPackage;
 use App\Http\Traits\RequestTransformation;
 use App\Models\DurHasTool;
@@ -30,6 +29,7 @@ use App\Models\ToolHasProgrammingLanguage;
 
 class IntegrationToolController extends Controller
 {
+    use IndexElastic;
     use RequestTransformation;
     use IntegrationOverride;
 
@@ -282,7 +282,7 @@ class IntegrationToolController extends Controller
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($tool->id, $publications, $userId, $appId);
 
-            $this->indexElasticTools($input, (int)$tool->id);
+            $this->indexElasticTools((int) $tool->id);
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
@@ -1029,46 +1029,4 @@ class IntegrationToolController extends Controller
         return $response;
     }
 
-    /**
-     * Insert tool document into elastic index
-     *
-     * @param array $input
-     * @param integer $toolId
-     * @return void
-     */
-    private function indexElasticTools(array $input, int $toolId): void
-    {
-        try {
-
-            $tags = Tag::whereIn('id', $input['tag'])->get()->toArray();
-            $tagsDescription = array();
-            foreach ($tags as $t) {
-                $tagsDescription[] = $t['description'];
-            }
-
-            $toIndex = [
-                'name' => $input['name'],
-                'description' => $input['description'],
-                'tags' => $tagsDescription
-            ];
-            $params = [
-                'index' => 'tools',
-                'id' => $toolId,
-                'body' => $toIndex,
-                'headers' => 'application/json'
-            ];
-
-            $client = MMC::getElasticClient();
-            $client->index($params);
-
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
 }

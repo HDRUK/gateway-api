@@ -27,12 +27,13 @@ use App\Exceptions\NotFoundException;
 use App\Http\Requests\Team\CreateTeam;
 use App\Http\Requests\Team\DeleteTeam;
 use App\Http\Requests\Team\UpdateTeam;
+use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\RequestTransformation;
-use MetadataManagementController as MMC;
 
 class TeamController extends Controller
 {
+    use GetValueByPossibleKeys;
     use TeamTransformation;
     use RequestTransformation;
 
@@ -931,9 +932,9 @@ class TeamController extends Controller
 
         $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
 
-        $title = MMC::getValueByPossibleKeys($metadataSummary, ['title'], '');
-        $populationSize = MMC::getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
-        $datasetType = MMC::getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
+        $title = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
+        $populationSize = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
+        $datasetType = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
 
         $this->datasets[] = [
             'id' => $dataset->id,

@@ -10,15 +10,12 @@ use App\Models\Dur;
 use App\Models\Tool;
 use App\Models\Collection;
 use App\Jobs\TermExtraction;
+use App\Http\Traits\IndexElastic;
 use Illuminate\Console\Command;
-use App\Http\Controllers\Api\V1\PublicationController;
-use App\Http\Controllers\Api\V1\ToolController;
-use App\Http\Controllers\Api\V1\DurController;
-use App\Http\Controllers\Api\V1\CollectionController;
-use MetadataManagementController as MMC;
 
 class ReindexEntities extends Command
 {
+    use IndexElastic;
     /**
      * The name and signature of the console command.
      *
@@ -132,7 +129,7 @@ class ReindexEntities extends Command
                     );
                 }
             } else {
-                MMC::reindexElastic($id);
+                $this->reindexElastic($id);
             }
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
@@ -142,11 +139,10 @@ class ReindexEntities extends Command
 
     private function tools()
     {
-        $toolController = new ToolController();
         $toolIds = Tool::pluck('id');
         $progressbar = $this->output->createProgressBar(count($toolIds));
         foreach ($toolIds as $id) {
-            $toolController->indexElasticTools($id);
+            $this->indexElasticTools($id);
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
@@ -155,11 +151,10 @@ class ReindexEntities extends Command
 
     private function publications()
     {
-        $publicationController = new PublicationController();
         $pubicationIds = Publication::pluck('id');
         $progressbar = $this->output->createProgressBar(count($pubicationIds));
         foreach ($pubicationIds as $id) {
-            $publicationController->indexElasticPublication($id);
+            $this->indexElasticPublication($id);
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
@@ -168,11 +163,10 @@ class ReindexEntities extends Command
 
     private function durs()
     {
-        $durController = new DurController();
         $durIds = Dur::pluck('id');
         $progressbar = $this->output->createProgressBar(count($durIds));
         foreach ($durIds as $id) {
-            $durController->indexElasticDur($id);
+            $this->indexElasticDur($id);
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
@@ -181,11 +175,10 @@ class ReindexEntities extends Command
 
     private function collections()
     {
-        $collectionController = new CollectionController();
         $collectionIds = Collection::pluck('id');
         $progressbar = $this->output->createProgressBar(count($collectionIds));
         foreach ($collectionIds as $id) {
-            $collectionController->indexElasticCollections($id);
+            $this->indexElasticCollections($id);
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
@@ -199,7 +192,7 @@ class ReindexEntities extends Command
         foreach ($providerIds as $id) {
             $team = Team::find($id);
             if ($team) {
-                MMC::reindexElasticDataProvider($team->id);
+                $this->reindexElasticDataProvider($team->id);
             }
             $progressbar->advance();
             usleep($this->sleepTimeInMicroseconds);

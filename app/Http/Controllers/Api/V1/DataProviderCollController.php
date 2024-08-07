@@ -21,10 +21,14 @@ use App\Models\DataProviderCollHasTeam;
 use App\Models\Dur;
 use App\Models\Publication;
 use App\Models\Tool;
-use MetadataManagementController as MMC;
+use App\Http\Traits\GetValueByPossibleKeys;
+use App\Http\Traits\IndexElastic;
 
 class DataProviderCollController extends Controller
 {
+    use IndexElastic;
+    use GetValueByPossibleKeys;
+
     private $datasets = [];
     private $durs = [];
     private $tools = [];
@@ -676,62 +680,6 @@ class DataProviderCollController extends Controller
         }
     }
 
-    /**
-     * Insert data provider document into elastic index
-     *
-     * @param integer $id
-     * @return void
-     */
-    private function indexElasticDataProviderColl(int $id): void
-    {
-        $provider = DataProviderColl::where('id', $id)->with('teams')->first();
-
-
-        $datasetTitles = array();
-        $locations = array();
-        foreach ($provider['teams'] as $team) {
-            $datasets = Dataset::where('team_id', $team['id'])->with(['versions'])->get();
-
-            foreach ($datasets as $dataset) {
-                $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
-                $metadata = $dataset['versions'][0];
-                $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
-                foreach ($dataset['spatialCoverage'] as $loc) {
-                    if (!in_array($loc['region'], $locations)) {
-                        $locations[] = $loc['region'];
-                    }
-                }
-            }
-        }
-        usort($datasetTitles, 'strcasecmp');
-
-        try {
-            $toIndex = [
-                'name' => $provider['name'],
-                'datasetTitles' => $datasetTitles,
-                'geographicLocation' => $locations,
-            ];
-            $params = [
-                'index' => 'dataprovidercoll',
-                'id' => $id,
-                'body' => $toIndex,
-                'headers' => 'application/json'
-            ];
-
-            $client = MMC::getElasticClient();
-            $client->index($params);
-
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
     public function getTeams(DataProviderColl $dp)
     {
         $idTeams = DataProviderCollHasTeam::where(['data_provider_coll_id' => $dp->id])->pluck('team_id')->toArray();
@@ -773,9 +721,9 @@ class DataProviderCollController extends Controller
 
         $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
 
-        $title = MMC::getValueByPossibleKeys($metadataSummary, ['title'], '');
-        $populationSize = MMC::getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
-        $datasetType = MMC::getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
+        $title = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
+        $populationSize = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
+        $datasetType = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
 
         if (empty($title) || $title === '') {
             Log::error('DataProviderCollController: Dataset title is empty or unknown', [
