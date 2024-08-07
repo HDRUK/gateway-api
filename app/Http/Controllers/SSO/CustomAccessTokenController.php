@@ -33,30 +33,36 @@ class CustomAccessTokenController extends AuthController
             // }
 
             // Additional security check (example: check if user is banned)
-            $user = User::where('email', $data['username'])->first();
-            if ($user && $user->is_banned) {
-                throw new OAuthServerException('User is banned', 403, 'access_denied');
-            }
+            // $user = User::where('email', $data['username'])->first();
+            // if ($user && $user->is_banned) {
+            //     throw new OAuthServerException('User is banned', 403, 'access_denied');
+            // }
 
-            // Log the token request
-            // \Log::info('Token requested for user: ' . $data['username']);
-            CloudLogger::write('Token requested for user: ' . $data['username']);
+            // // Log the token request
+            // // \Log::info('Token requested for user: ' . $data['username']);
+            // CloudLogger::write('Token requested for user: ' . $data['username']);
 
             // Call the parent method to issue the token
             $tokenResponse = parent::issueToken($request);
+            CloudLogger::write('tokenResponse :: ' . json_encode($tokenResponse));
 
             // Decode the response
             $content = json_decode($tokenResponse->getContent(), true);
 
             // Add custom data to the response
+            // $content['custom_data'] = [
+            //     'user_id' => $user->id,
+            //     'roles' => $user->roles->pluck('name'),
+            //     'last_login' => now()->toDateTimeString(),
+            // ];
             $content['custom_data'] = [
-                'user_id' => $user->id,
-                'roles' => $user->roles->pluck('name'),
+                'user_id' => 1,
+                'roles' => ['GENERAL_ACCESS'],
                 'last_login' => now()->toDateTimeString(),
             ];
 
             // Update user's last login time
-            $user->update(['last_login_at' => now()]);
+            // $user->update(['last_login_at' => now()]);
 
             // Return custom response
             return response()->json($content, $tokenResponse->status());
