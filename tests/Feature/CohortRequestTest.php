@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Database\Seeders\CohortRequestSeeder;
 use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\EmailTemplatesSeeder;
+use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CohortRequestTest extends TestCase
@@ -42,7 +42,7 @@ class CohortRequestTest extends TestCase
             MinimalUserSeeder::class,
             SectorSeeder::class,
             CohortRequestSeeder::class,
-            EmailTemplatesSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
@@ -309,6 +309,12 @@ class CohortRequestTest extends TestCase
      */
     public function test_download_cohort_request_dashboard_with_success(): void
     {
+        // Profiler middleware can't handle with streamed response,
+        // but as it's a download, its implied that it may take a
+        // bit longer, therefore we can safely ignore this for
+        // profiling.
+        Config::set('profiling.profiler_active', false);
+
         Mail::fake();
 
         $responseDownload = $this->json(

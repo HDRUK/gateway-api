@@ -1323,60 +1323,66 @@ class DurController extends Controller
      */
     public function export(Request $request): StreamedResponse
     {
-        $teamId = $request->query('team_id', null);
-        $durId = $request->query('dur_id', null);
-        $durs = Dur::when($teamId, function ($query) use ($teamId) {
-            return $query->where('team_id', '=', $teamId);
-        })->when($durId, function ($query) use ($durId) {
-            return $query->where('id', '=', $durId);
-        })->get();
+        try {
+            Config::set('profiling.profiler_active', false);
 
-        // callback function that writes to php://output
-        $response = new StreamedResponse(
-            function () use ($durs) {
+            $teamId = $request->query('team_id', null);
+            $durId = $request->query('dur_id', null);
+            $durs = Dur::when($teamId, function ($query) use ($teamId) {
+                return $query->where('team_id', '=', $teamId);
+            })->when($durId, function ($query) use ($durId) {
+                return $query->where('id', '=', $durId);
+            })->get();
 
-                // Open output stream
-                $handle = fopen('php://output', 'w');
+            // callback function that writes to php://output
+            $response = new StreamedResponse(
+                function () use ($durs) {
 
-                // Call the model for specific headings to include
-                $headerRow = Dur::exportHeadings();
+                    // Open output stream
+                    $handle = fopen('php://output', 'w');
 
-                // Add CSV headers
-                fputcsv($handle, $headerRow);
+                    // Call the model for specific headings to include
+                    $headerRow = Dur::exportHeadings();
 
-                foreach ($durs as $rowDetails) {
-                    $fieldNames = $rowDetails->getFillable();
-                    $dataRow = [];
+                    // Add CSV headers
+                    fputcsv($handle, $headerRow);
 
-                    foreach ($fieldNames as $name) {
-                        switch (gettype($rowDetails->{$name})) {
-                            case 'array':
-                                // For arrays, join elements and produce a single string
-                                $dataRow[] = implode('|', $rowDetails->{$name});
-                                break;
-                            default:
-                                // Otherwise just ensure we replace nulls with an empty string
-                                if ($rowDetails->{$name} !== null) {
-                                    $dataRow[] = $rowDetails->{$name};
-                                } else {
-                                    $dataRow[] = '';
-                                }
-                                break;
+                    foreach ($durs as $rowDetails) {
+                        $fieldNames = $rowDetails->getFillable();
+                        $dataRow = [];
+
+                        foreach ($fieldNames as $name) {
+                            switch (gettype($rowDetails->{$name})) {
+                                case 'array':
+                                    // For arrays, join elements and produce a single string
+                                    $dataRow[] = implode('|', $rowDetails->{$name});
+                                    break;
+                                default:
+                                    // Otherwise just ensure we replace nulls with an empty string
+                                    if ($rowDetails->{$name} !== null) {
+                                        $dataRow[] = $rowDetails->{$name};
+                                    } else {
+                                        $dataRow[] = '';
+                                    }
+                                    break;
+                            }
                         }
+                        fputcsv($handle, $dataRow);
                     }
-                    fputcsv($handle, $dataRow);
+
+                    // Close the output stream
+                    fclose($handle);
                 }
+            );
 
-                // Close the output stream
-                fclose($handle);
-            }
-        );
+            $response->headers->set('Content-Type', 'text/csv');
+            $response->headers->set('Content-Disposition', 'attachment;filename="Datasets.csv"');
+            $response->headers->set('Cache-Control', 'max-age=0');
 
-        $response->headers->set('Content-Type', 'text/csv');
-        $response->headers->set('Content-Disposition', 'attachment;filename="Datasets.csv"');
-        $response->headers->set('Cache-Control', 'max-age=0');
-
-        return $response;
+            return $response;
+        } catch (Exception $e) {
+            dd($e->getMessage());
+        }
     }
 
     /**
@@ -1575,6 +1581,8 @@ class DurController extends Controller
      */
     public function exportTemplate(Request $request)
     {
+        Config::set('profiling.profiler_active', false);
+
         try {
             $file = Config::get('mock_data.data_use_upload_template');
 

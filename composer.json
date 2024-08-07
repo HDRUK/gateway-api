@@ -52,6 +52,7 @@
         "pestphp/pest": "^2.4",
         "php-http/mock-client": "^1.6",
         "phpstan/phpstan": "^1.9",
+        "phpunit/php-timer": "^6.0",
         "phpunit/phpunit": "^10.0",
         "soulcodex/laravel-behat": "^1.0",
         "spatie/laravel-ignition": "^2.0",

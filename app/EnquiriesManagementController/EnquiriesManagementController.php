@@ -26,6 +26,7 @@ class EnquiriesManagementController
         $teamHasUserIds = TeamHasUser::where('team_id', $team->id)->get();
         $roleIdeal = null;
         $roleSecondary = null;
+        $enquiryThread = null;
 
         $users = null;
 
@@ -63,6 +64,14 @@ class EnquiriesManagementController
             }
         }
 
+        unset(
+            $team,
+            $teamHasUserIds,
+            $roleIdeal,
+            $roleSecondary,
+            $enquiryThread,
+        );
+
         return $users;
     }
 
@@ -87,6 +96,8 @@ class EnquiriesManagementController
                     'dataset_version_id' =>  $datasetVersion->id,
                     'interest_type' => $dataset['interest_type'],
                 ]);
+
+                unset($datasetVersion);
             }
         }
 
@@ -148,6 +159,13 @@ class EnquiriesManagementController
                     $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
                 }
             }
+
+            unset(
+                $template,
+                $team,
+                $user,
+                $replacements,
+            );
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

@@ -4,14 +4,12 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
-class BaseDatabaseSeeder extends Seeder
+class ProductionSeeder extends Seeder
 {
     /**
-     * Seed the application's baseline database.
-     *
-     * @return void
+     * Run the database seeds.
      */
-    public function run()
+    public function run(): void
     {
         $this->call([
             FilterSeeder::class,
@@ -19,9 +17,8 @@ class BaseDatabaseSeeder extends Seeder
             PermissionSeeder::class,
             RoleSeeder::class,
             LicenseSeeder::class,
-            ActivityLogUserTypeSeeder::class,
+            ActivityLogUserTypeSeeder::class, // ??? Thought this had be superseded by Audit?
             EmailTemplateSeeder::class,
-            FAIRShareCommandSeeder::class,
             KeywordSeeder::class,
             SpatialCoverageSeeder::class,
             QuestionBankSeeder::class,
@@ -30,7 +27,7 @@ class BaseDatabaseSeeder extends Seeder
             ProgrammingPackageSeeder::class,
             TypeCategorySeeder::class,
             CohortRequestEmailSeeder::class,
-            UserAdminsSeeder::class,
+            ProdUserAdminSeeder::class,
         ]);
     }
 }

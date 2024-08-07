@@ -610,6 +610,12 @@ class DurTest extends TestCase
 
     public function test_download_dur_table_with_success(): void
     {
+        // Profiler middleware can't handle with streamed response,
+        // but as it's a download, its implied that it may take a
+        // bit longer, therefore we can safely ignore this for
+        // profiling.
+        Config::set('profiling.profiler_active', false);
+
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -727,6 +733,8 @@ class DurTest extends TestCase
             $this->header,
         );
 
+        // dd($responseDownload->decodeResponseJson());
+
         $content = $responseDownload->streamedContent();
         $this->assertMatchesRegularExpression('/Non-Gateway Datasets/', $content);
     }
@@ -776,6 +784,12 @@ class DurTest extends TestCase
 
     public function test_can_download_template_file()
     {
+        // Profiler middleware can't handle with streamed response,
+        // but as it's a download, its implied that it may take a
+        // bit longer, therefore we can safely ignore this for
+        // profiling.
+        Config::set('profiling.profiler_active', false);
+
         // Mock the storage disk
         Storage::fake('mock');
 
@@ -799,6 +813,12 @@ class DurTest extends TestCase
 
     public function test_download_template_file_with_file_not_found()
     {
+        // Profiler middleware can't handle with streamed response,
+        // but as it's a download, its implied that it may take a
+        // bit longer, therefore we can safely ignore this for
+        // profiling.
+        Config::set('profiling.profiler_active', false);
+
         // Mock the config
         Config::set('mock_data.data_use_upload_template', 'non_existent_file.xlsx');
 
