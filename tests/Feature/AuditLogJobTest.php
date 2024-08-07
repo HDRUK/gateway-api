@@ -7,8 +7,6 @@ use Tests\TestCase;
 use App\Jobs\AuditLogJob;
 use App\Services\CloudLoggerService;
 use App\Services\CloudPubSubService;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AuditLogJobTest extends TestCase
 {
@@ -39,7 +37,7 @@ class AuditLogJobTest extends TestCase
         $job = new AuditLogJob($auditLogData);
         $job->handle($cloudPubSubMock, $cloudLoggerMock);
 
-                // Assert
+        // Assert
         // Verify that publishMessage was called with the correct data
         $this->assertTrue(
             method_exists($cloudPubSubMock, 'publishMessage'),

@@ -14,26 +14,21 @@ use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
 
 use App\Jobs\TermExtraction;
-use MetadataManagementController AS MMC;
+use MetadataManagementController as MMC;
 
 use App\Http\Traits\IntegrationOverride;
 
 use App\Http\Controllers\Controller;
-use App\Exceptions\NotFoundException;
 
 use Illuminate\Support\Str;
-use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Requests\Dataset\CreateDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
 use App\Http\Requests\Dataset\EditDataset;
-
-use Illuminate\Support\Facades\Http;
 
 class IntegrationDatasetController extends Controller
 {
@@ -125,117 +120,136 @@ class IntegrationDatasetController extends Controller
         try {
             $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
-            
+
             $matches = [];
-            $teamId = $request->query('team_id',null);
+            $teamId = $request->query('team_id', null);
             $filterStatus = $request->query('status', null);
             $datasetId = $request->query('dataset_id', null);
             $mongoPId = $request->query('mongo_pid', null);
-    
+
             // Injection to override the team_id in the scenario that an integration
             // is making the call, to only provide data the integration is allowed
             // to see
             $this->overrideTeamId($teamId, $request->headers->all());
-            
+
             $sort = $request->query('sort', 'created:desc');
-            
+
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
-    
+
             $sortOnMetadata = str_starts_with($sortField, 'metadata.');
-    
+
             $allFields = collect(Dataset::first())->keys()->toArray();
             if (!$sortOnMetadata && count($allFields) > 0 && !in_array($sortField, $allFields)) {
                 return response()->json([
                     'message' => '\"' . $sortField .'\" is not a valid field to sort on'
                 ], 400);
             }
-    
+
             $validDirections = ['desc', 'asc'];
-    
+
             if (!in_array($sortDirection, $validDirections)) {
                 //if the sort direction is not desc or asc then return a bad request
                 return response()->json([
-                    'message' => 'Sort direction must be either: ' . 
-                        implode(' OR ',$validDirections) . 
+                    'message' => 'Sort direction must be either: ' .
+                        implode(' OR ', $validDirections) .
                         '. Not "' . $sortDirection .'"'
                     ], 400);
             }
-    
-            // apply any initial filters to get initial datasets 
+
+            // apply any initial filters to get initial datasets
             $filterTitle = $request->query('title', null);
-    
+
             $initialDatasets = Dataset::when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
             })->when($datasetId, function ($query) use ($datasetId) {
-                    return $query->where('datasetid', '=', $datasetId);
+                return $query->where('datasetid', '=', $datasetId);
             })->when($mongoPId, function ($query) use ($mongoPId) {
                 return $query->where('mongo_pid', '=', $mongoPId);
-            })->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
+            })->when(
+                $request->has('withTrashed') || $filterStatus === 'ARCHIVED',
                 function ($query) {
                     return $query->withTrashed();
-            })->when($filterStatus, 
+                }
+            )->when(
+                $filterStatus,
                 function ($query) use ($filterStatus) {
                     return $query->where('status', '=', $filterStatus);
-            })->select(['id', 'updated'])->get();
-    
+                }
+            )->select(['id', 'updated'])->get();
+
             // Map initially found datasets to just ids.
             foreach ($initialDatasets as $ds) {
                 $matches[] = $ds->id;
             }
-    
+
             if (!empty($filterTitle)) {
                 // If we've received a 'title' for the search, then only return
                 // datasets that match that title
                 $titleMatches = [];
-                
+
                 // For each of the initially found datasets matching previous
                 // filters and refine further on textual based matches.
                 foreach ($matches as $m) {
                     $version = DatasetVersion::where('dataset_id', $m)
                     ->filterTitle($filterTitle)
                     ->latest('version')->select('dataset_id')->first();
-    
+
                     if ($version) {
                         $titleMatches[] = $version->dataset_id;
                     }
                 }
-    
+
                 // Finally intersect our two arrays to find commonality between all
                 // filtering methods. This will return a much slimmer array of returned
                 // items
-                $matches = array_intersect($matches, $titleMatches);            
+                $matches = array_intersect($matches, $titleMatches);
             }
-    
+
             $perPage = request('per_page', Config::get('constants.per_page'));
-    
-            // perform query for the matching datasets with ordering and pagination. 
+
+            // perform query for the matching datasets with ordering and pagination.
             // Include soft-deleted versions.
-            $datasets = Dataset::with(['versions' => fn($version) => $version->withTrashed()->latest()])
+            $datasets = Dataset::with(['versions' => fn ($version) => $version->withTrashed()->latest()])
                 ->whereIn('id', $matches)
-                ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
+                ->when(
+                    $request->has('withTrashed') || $filterStatus === 'ARCHIVED',
                     function ($query) {
                         return $query->withTrashed();
-                    })
-                ->when($sortOnMetadata, 
-                    fn($query) => $query->orderByMetadata($sortField, $sortDirection),
-                    fn($query) => $query->orderBy($sortField, $sortDirection)
+                    }
+                )
+                ->when(
+                    $sortOnMetadata,
+                    fn ($query) => $query->orderByMetadata($sortField, $sortDirection),
+                    fn ($query) => $query->orderBy($sortField, $sortDirection)
                 )
                 ->paginate($perPage, ['*'], 'page');
-    
+
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dataset get all",
+                'description' => 'Dataset get all',
             ]);
 
             return response()->json(
                 $datasets
-            );    
+            );
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -302,7 +316,7 @@ class IntegrationDatasetController extends Controller
      *          )
      *      )
      * )
-     * 
+     *
      */
     public function show(GetDataset $request, int $id): JsonResponse
     {
@@ -318,17 +332,19 @@ class IntegrationDatasetController extends Controller
             $dataset->setAttribute('collections', $dataset->allCollections  ?? []);
 
             if (!$dataset) {
-                return response()->json(['message' => 'Dataset not found'], 404);
+                return response()->json([
+                    'message' => 'Dataset not found'
+                ], 404);
             }
 
-            // Retrieve the latest version 
+            // Retrieve the latest version
             $latestVersion = $dataset->versions()->latest('version')->first();
-        
-            $this->checkAppCanHandleDataset($dataset->team_id,$request);
-        
+
+            $this->checkAppCanHandleDataset($dataset->team_id, $request);
+
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
-      
+
 
             if ($outputSchemaModel && $outputSchemaModelVersion) {
                 $version = $dataset->latestVersion();
@@ -340,33 +356,33 @@ class IntegrationDatasetController extends Controller
                     Config::get('metadata.GWDM.name'),
                     Config::get('metadata.GWDM.version'),
                 );
-               
+
                 if ($translated['wasTranslated']) {
                     return response()->json([
-                        'message' => 'success, translated to model='.$outputSchemaModel." version=".$outputSchemaModelVersion,
+                        'message' => 'success, translated to model=' . $outputSchemaModel .
+                            " version=" . $outputSchemaModelVersion,
                         'data' => $translated['metadata'],
                     ], 200);
-                }
-                else {
+                } else {
                     return response()->json([
                         'message' => 'failed to translate',
                         'details' => $translated
                     ], 400);
                 }
-            }
-            elseif ($outputSchemaModel) {
+            } elseif ($outputSchemaModel) {
                 throw new Exception('You have given a schema_model but not a schema_version');
-            }
-            elseif ($outputSchemaModelVersion) {
+            } elseif ($outputSchemaModelVersion) {
                 throw new Exception('You have given a schema_version but not schema_model');
             }
-            
+
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dataset get " . $id,
+                'description' => 'Dataset get ' . $id,
             ]);
 
             return response()->json([
@@ -375,6 +391,16 @@ class IntegrationDatasetController extends Controller
             ], 200);
 
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -429,10 +455,11 @@ class IntegrationDatasetController extends Controller
             // If this is coming from an integration, we override the default settings
             // so these aren't required as part of the payload and inferred from the
             // application token being used instead
-            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());            
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $team = Team::where('id', $applicationOverrideDefaultValues['team_id'])->first()->toArray();
-            $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
+            $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ?
+                $input['is_cohort_discovery'] : false;
 
             $input['metadata'] = $this->extractMetadata($input);
 
@@ -441,15 +468,15 @@ class IntegrationDatasetController extends Controller
             //   already in the GWDM with GWDM_CURRENT_VERSION
             // - if it is not, traser will try to work out what the metadata is
             //   and translate it into the GWDM
-            // - otherwise traser will return a non-200 error 
+            // - otherwise traser will return a non-200 error
 
             $payload = $input['metadata'];
             $payload['extra'] = [
-                "id"=>"placeholder",
-                "pid"=>"placeholder",
-                "datasetType"=>"Healthdata",
-                "publisherId"=>$team['pid'],
-                "publisherName"=>$team['name']
+                'id' => 'placeholder',
+                'pid' => 'placeholder',
+                'datasetType' => 'Healthdata',
+                'publisherId' => $team['pid'],
+                'publisherName' => $team['name']
             ];
 
             $traserResponse = MMC::translateDataModelType(
@@ -462,7 +489,8 @@ class IntegrationDatasetController extends Controller
                 $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
                 $input['metadata']['metadata'] = $traserResponse['metadata'];
 
-                $mongo_object_id = array_key_exists('mongo_object_id', $input) ? $input['mongo_object_id'] : null;
+                $mongo_object_id = array_key_exists('mongo_object_id', $input) ?
+                    $input['mongo_object_id'] : null;
                 $mongo_id = array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null;
                 $mongo_pid = array_key_exists('mongo_pid', $input) ? $input['mongo_pid'] : null;
                 $datasetid = array_key_exists('datasetid', $input) ? $input['datasetid'] : null;
@@ -470,8 +498,10 @@ class IntegrationDatasetController extends Controller
                 $pid = array_key_exists('pid', $input) ? $input['pid'] : (string) Str::uuid();
 
                 $dataset = MMC::createDataset([
-                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                        $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                        $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                     'mongo_object_id' => $mongo_object_id,
                     'mongo_id' => $mongo_id,
                     'mongo_pid' => $mongo_pid,
@@ -480,12 +510,14 @@ class IntegrationDatasetController extends Controller
                     'updated' => now(),
                     'submitted' => now(),
                     'pid' => $pid,
-                    'create_origin' => (isset($applicationOverrideDefaultValues['create_origin']) ? $applicationOverrideDefaultValues['create_origin'] : $input['create_origin']),
-                    'status' => (isset($applicationOverrideDefaultValues['status']) ? $applicationOverrideDefaultValues['status'] : $input['status']),
+                    'create_origin' => (isset($applicationOverrideDefaultValues['create_origin']) ?
+                        $applicationOverrideDefaultValues['create_origin'] : $input['create_origin']),
+                    'status' => (isset($applicationOverrideDefaultValues['status']) ?
+                        $applicationOverrideDefaultValues['status'] : $input['status']),
                     'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
 
-    
+
                 $publisher = null;
                 $required = [
                         'gatewayId' => strval($dataset->id), //note: do we really want this in the GWDM?
@@ -495,33 +527,33 @@ class IntegrationDatasetController extends Controller
                         'revisions' => []
                     ];
 
-                // ------------------------------------------------------------------- 
+                // -------------------------------------------------------------------
                 // * Create a new 'required' section for the metadata to be saved
                 //    - otherwise this section is filled with placeholders by all translations to GWDM
-                // * Force correct publisher field based on the team associated with 
+                // * Force correct publisher field based on the team associated with
                 //
-                // Note: 
-                //     - This is hopefully a rare scenario when the BE has to be changed due to an update 
-                //        to the GWDM 
+                // Note:
+                //     - This is hopefully a rare scenario when the BE has to be changed due to an update
+                //        to the GWDM
                 //     - future releases of the GWDM will hopefully not modify anything that we need to
                 //       set via the MMC
-                //     - we can't pass the publisherId nor the gatewayPid of the dataset to traser before  
+                //     - we can't pass the publisherId nor the gatewayPid of the dataset to traser before
                 //       they have been created, this is why we are doing this..
                 //     - GWDM >= 1.1 versions have a change related to these sections of the GWDM
-                //         - addition of the field 'version' in the required field 
-                //         - restructure of the 'publisher' in the summary field 
+                //         - addition of the field 'version' in the required field
+                //         - restructure of the 'publisher' in the summary field
                 //            - publisher.publisherId --> publisher.gatewayId
                 //            - publisher.publisherName --> publisher.name
-                // ------------------------------------------------------------------- 
-                if(version_compare(Config::get('metadata.GWDM.version'),"1.1","<")){
+                // -------------------------------------------------------------------
+                if(version_compare(Config::get('metadata.GWDM.version'), '1.1', '<')) {
                     $publisher = [
                         'publisherId' => $team['pid'],
                         'publisherName' => $team['name'],
                     ];
-                } else{
+                } else {
                     $version = $this->getVersion(1);
-                    if(array_key_exists( 'version', $input['metadata']['metadata']['required'])){
-                       $version = $input['metadata']['metadata']['required']['version'];
+                    if(array_key_exists('version', $input['metadata']['metadata']['required'])) {
+                        $version = $input['metadata']['metadata']['required']['version'];
                     }
                     $required['version'] = $version;
                     $publisher = [
@@ -553,11 +585,13 @@ class IntegrationDatasetController extends Controller
                 );
 
                 Auditor::log([
-                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                        $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                        $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                     'action_type' => 'CREATE',
                     'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Dataset " . $dataset->id . " with version " . $version->id . " created",
+                    'description' => 'Dataset ' . $dataset->id . ' with version ' . $version->id . ' created',
                 ]);
 
                 return response()->json([
@@ -565,14 +599,23 @@ class IntegrationDatasetController extends Controller
                     'data' => $dataset->id,
                     'version' => $version->id,
                 ], 201);
-            }
-            else {
+            } else {
                 return response()->json([
                     'message' => 'metadata is in an unknown format and cannot be processed',
                     'details' => $traserResponse,
                 ], 400);
             }
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -635,14 +678,15 @@ class IntegrationDatasetController extends Controller
      */
     public function update(UpdateDataset $request, int $id)
     {
+        $input = $request->all();
+
         try {
             $currDataset = Dataset::findOrFail($id);
-            $this->checkAppCanHandleDataset($currDataset->team_id,$request);
-
-            $input = $request->all();
+            $this->checkAppCanHandleDataset($currDataset->team_id, $request);
 
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
-            $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
+            $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ?
+                $input['is_cohort_discovery'] : false;
 
             $teamId = $applicationOverrideDefaultValues['team_id'];
             $userId = $applicationOverrideDefaultValues['user_id'];
@@ -660,11 +704,11 @@ class IntegrationDatasetController extends Controller
 
             $payload = $input['metadata'];
             $payload['extra'] = [
-                "id"=>$id,
-                "pid"=>$currentPid,
-                "datasetType"=>"Healthdata",
-                "publisherId"=>$team['pid'],
-                "publisherName"=>$team['name']
+                'id' => $id,
+                'pid' => $currentPid,
+                'datasetType' => 'Healthdata',
+                'publisherId' => $team['pid'],
+                'publisherName' => $team['name']
             ];
 
             $traserResponse = MMC::translateDataModelType(
@@ -680,12 +724,16 @@ class IntegrationDatasetController extends Controller
                 // Update the existing dataset parent record with incoming data
                 $updateTime = now();
                 $updatedDataset = $currDataset->update([
-                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                        $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                        $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                     'updated' => $updateTime,
                     'pid' => $currentPid,
-                    'create_origin' => (isset($applicationOverrideDefaultValues['create_origin']) ? $applicationOverrideDefaultValues['create_origin'] : $input['create_origin']),
-                    'status' => (isset($applicationOverrideDefaultValues['status']) ? $applicationOverrideDefaultValues['status'] : $input['status']),
+                    'create_origin' => (isset($applicationOverrideDefaultValues['create_origin']) ?
+                        $applicationOverrideDefaultValues['create_origin'] : $input['create_origin']),
+                    'status' => (isset($applicationOverrideDefaultValues['status']) ?
+                        $applicationOverrideDefaultValues['status'] : $input['status']),
                     'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
 
@@ -696,22 +744,22 @@ class IntegrationDatasetController extends Controller
                 $lastVersionCode = $this->getVersion($lastVersionNumber);
 
                 $lastMetadata = $currDataset->lastMetadata();
-     
+
                 //update the GWDM modified date and version
                 $input['metadata']['metadata']['required']['modified'] = $updateTime;
-                if(version_compare(Config::get('metadata.GWDM.version'),"1.0",">")){   
-                    if(version_compare($lastMetadata['gwdmVersion'],"1.0",">")){
+                if(version_compare(Config::get('metadata.GWDM.version'), '1.0', '>')) {
+                    if(version_compare($lastMetadata['gwdmVersion'], '1.0', '>')) {
                         $lastVersionCode = $lastMetadata['metadata']['required']['version'];
                     }
                 }
-                
+
                 //update the GWDM revisions
                 // NOTE: Calum 12/1/24
                 //       - url set with a placeholder right now, should be revised before production
                 //       - https://hdruk.atlassian.net/browse/GAT-3392
                 $input['metadata']['metadata']['required']['revisions'][] = [
-                    "url"=>"https://placeholder.blah/".$currentPid."?version=".$lastVersionCode, 
-                    "version"=>$lastVersionCode
+                    'url' => 'https://placeholder.blah/' . $currentPid . '?version=' . $lastVersionCode,
+                    'version' => $lastVersionCode
                 ];
 
                 $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
@@ -727,25 +775,36 @@ class IntegrationDatasetController extends Controller
                 MMC::reindexElastic($currDataset->id);
 
                 Auditor::log([
-                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                        $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                        $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                     'action_type' => 'UPDATE',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Dataset " . $id . " with version " . ($lastVersionNumber + 1) . " updated",
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Dataset ' . $id . ' with version ' . ($lastVersionNumber + 1) . ' updated',
                 ]);
 
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                     'data' => Dataset::with('versions')->where('id', '=', $currDataset->id)->first(),
                 ], Config::get('statuscodes.STATUS_OK.code'));
-            } 
-            else {
+            } else {
                 return response()->json([
                     'message' => 'metadata is in an unknown format and cannot be processed',
                     'details' => $traserResponse,
                 ], 400);
             }
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : null),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : null),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -794,7 +853,7 @@ class IntegrationDatasetController extends Controller
                     ->where(['id' => $id])
                     ->first();
 
-                $this->checkAppCanHandleDataset($datasetModel->team_id,$request);
+                $this->checkAppCanHandleDataset($datasetModel->team_id, $request);
 
                 if ($request['status'] !== Dataset::STATUS_ARCHIVED) {
                     if (in_array($request['status'], [
@@ -814,21 +873,35 @@ class IntegrationDatasetController extends Controller
                         }
 
                         Auditor::log([
-                            'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                            'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                            'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                                $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                            'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                                $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                             'action_type' => 'UPDATE',
                             'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                            'description' => "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
+                            'description' => 'Dataset ' . $id . ' marked as ' . strtoupper($request['status']) . ' updated',
                         ]);
                     } else {
-                        throw new Exception('unknown status type');
+                        $message = 'unknown status type';
+
+                        Auditor::log([
+                            'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                                $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                            'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                                $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                            'action_type' => 'EXCEPTION',
+                            'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                            'description' => $message,
+                        ]);
+
+                        throw new Exception($message);
                     }
                 }
             } else {
                 $datasetModel = Dataset::where(['id' => $id])
                     ->first();
 
-                $this->checkAppCanHandleDataset($datasetModel->team_id,$request);
+                $this->checkAppCanHandleDataset($datasetModel->team_id, $request);
 
                 if ($datasetModel['status'] === Dataset::STATUS_ARCHIVED) {
                     return response()->json([
@@ -846,15 +919,17 @@ class IntegrationDatasetController extends Controller
                     throw new Exception('unknown status type');
                 }
 
-                // TODO remaining edit steps e.g. if dataset appears in the request 
-                // body validate, translate if needed, update Mauro data model, etc.  
+                // TODO remaining edit steps e.g. if dataset appears in the request
+                // body validate, translate if needed, update Mauro data model, etc.
 
                 Auditor::log([
-                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                        $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                        $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                     'action_type' => 'UPDATE',
                     'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
+                    'description' => 'Dataset ' . $id . ' marked as ' . strtoupper($request['status']) . ' updated',
                 ]);
             }
 
@@ -862,6 +937,16 @@ class IntegrationDatasetController extends Controller
                 'message' => 'success'
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -916,23 +1001,35 @@ class IntegrationDatasetController extends Controller
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $dataset = Dataset::findOrFail($id);
-            $this->checkAppCanHandleDataset($dataset->team_id,$request);
+            $this->checkAppCanHandleDataset($dataset->team_id, $request);
 
             MMC::deleteDataset($id);
             MMC::deleteFromElastic($id, 'dataset');
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'DELETE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dataset " . $id . " deleted",
+                'description' => 'Dataset ' . $id . ' deleted',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -989,7 +1086,7 @@ class IntegrationDatasetController extends Controller
             //   already in the GWDM with GWDM_CURRENT_VERSION
             // - if it is not, traser will try to work out what the metadata is
             //   and translate it into the GWDM
-            // - otherwise traser will return a non-200 error 
+            // - otherwise traser will return a non-200 error
             $traserResponse = MMC::translateDataModelType(
                 json_encode($input['metadata']),
                 Config::get('metadata.GWDM.name'),
@@ -1009,12 +1106,21 @@ class IntegrationDatasetController extends Controller
                 'payload_received' => $input,
             ], 400);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
 
-    private function getVersion(int $version){
-        if($version>999) throw new Exception("too many versions");
+    private function getVersion(int $version)
+    {
+        if($version > 999) {
+            throw new Exception('too many versions');
+        }
 
         $version = max(0, $version);
 
@@ -1027,9 +1133,10 @@ class IntegrationDatasetController extends Controller
         return $formattedVersion;
     }
 
-    private function extractMetadata (Mixed $metadata){
+    private function extractMetadata(Mixed $metadata)
+    {
 
-        if(isset($metadata['metadata']['metadata'])){
+        if(isset($metadata['metadata']['metadata'])) {
             $metadata = $metadata['metadata'];
         }
 
@@ -1042,7 +1149,7 @@ class IntegrationDatasetController extends Controller
                 unset($metadata['metadata']);
                 $metadata = $tmpMetadata;
             }
-        } else if (is_string($metadata)) {
+        } elseif (is_string($metadata)) {
             $tmpMetadata['metadata'] = json_decode($metadata, true);
             unset($metadata);
             $metadata = $tmpMetadata;
@@ -1051,7 +1158,7 @@ class IntegrationDatasetController extends Controller
     }
 
 
-    private function mapCoverage(array $metadata, DatasetVersion $version): void 
+    private function mapCoverage(array $metadata, DatasetVersion $version): void
     {
         if (!isset($metadata['metadata']['coverage']['spatial'])) {
             return;
@@ -1064,10 +1171,10 @@ class IntegrationDatasetController extends Controller
         $matchFound = false;
         foreach ($ukCoverages as $c) {
             if (str_contains($coverage, strtolower($c['region']))) {
-                
+
                 DatasetVersionHasSpatialCoverage::updateOrCreate([
-                    'dataset_version_id' => (int) $version['id'],
-                    'spatial_coverage_id' => (int) $c['id'],
+                    'dataset_version_id' => (int)$version['id'],
+                    'spatial_coverage_id' => (int)$c['id'],
                 ]);
                 $matchFound = true;
             }
@@ -1077,14 +1184,14 @@ class IntegrationDatasetController extends Controller
             if (str_contains($coverage, 'united kingdom')) {
                 foreach ($ukCoverages as $c) {
                     DatasetVersionHasSpatialCoverage::updateOrCreate([
-                        'dataset_version_id' => (int) $version['id'],
-                        'spatial_coverage_id' => (int) $c['id'],
+                        'dataset_version_id' => (int)$version['id'],
+                        'spatial_coverage_id' => (int)$c['id'],
                     ]);
                 }
             } else {
                 DatasetVersionHasSpatialCoverage::updateOrCreate([
-                    'dataset_version_id' => (int) $version['id'],
-                    'spatial_coverage_id' => (int) $worldId,
+                    'dataset_version_id' => (int)$version['id'],
+                    'spatial_coverage_id' => (int)$worldId,
                 ]);
             }
         }

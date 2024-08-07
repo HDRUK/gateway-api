@@ -2,7 +2,6 @@
 
 namespace App\Http\Traits;
 
-use App\Models\Role;
 use App\Models\User;
 use Lcobucci\JWT\Token;
 use App\Models\CohortRequest;

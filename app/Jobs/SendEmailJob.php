@@ -6,7 +6,6 @@ use App\Mail\Email;
 use App\Models\EmailTemplate;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -16,7 +15,10 @@ use Illuminate\Support\Facades\Mail;
 
 class SendEmailJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     public $to = [];
     private $template = null;
@@ -39,7 +41,7 @@ class SendEmailJob implements ShouldQueue
      */
     public function handle(): void
     {
-         Mail::to($this->to)
-            ->send(new Email($this->template, $this->replacements, $this->fromAddress));
+        Mail::to($this->to)
+           ->send(new Email($this->template, $this->replacements, $this->fromAddress));
     }
 }

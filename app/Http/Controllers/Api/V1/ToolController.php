@@ -28,7 +28,6 @@ use App\Models\CollectionHasTool;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tool\GetTool;
@@ -37,10 +36,9 @@ use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
 
-use MetadataManagementController AS MMC;
+use MetadataManagementController as MMC;
 
 use App\Http\Traits\RequestTransformation;
-
 
 class ToolController extends Controller
 {
@@ -148,13 +146,13 @@ class ToolController extends Controller
             $perPage = request('per_page', Config::get('constants.per_page'));
 
             $sort = $request->query('sort', 'name:desc');
-            $tmp = explode(":", $sort);
+            $tmp = explode(':', $sort);
             $sortField = $tmp[0];
             $sortDirection = array_key_exists(1, $tmp) ? $tmp[1] : 'desc';
 
             // Get all field names from the Tool model
             $allFields = collect(Tool::first())->keys()->toArray();
-            
+
             // Validate sort field and direction
             if (!in_array($sortField, $allFields)) {
                 return response()->json([
@@ -165,7 +163,7 @@ class ToolController extends Controller
             $validDirections = ['desc', 'asc'];
             if (!in_array($sortDirection, $validDirections)) {
                 return response()->json([
-                    "message" => "Sort direction must be either: " . implode(' OR ', $validDirections) . 
+                    "message" => 'Sort direction must be either: ' . implode(' OR ', $validDirections) .
                         '. Not "' . $sortDirection . '"'
                 ], 400);
             }
@@ -189,15 +187,18 @@ class ToolController extends Controller
             ->when($userId, function ($query) use ($userId) {
                 return $query->where('user_id', '=', $userId);
             })
-            ->when($filterStatus, 
+            ->when(
+                $filterStatus,
                 function ($query) use ($filterStatus) {
                     return $query->where('status', '=', $filterStatus)
-                        ->when($filterStatus === Tool::STATUS_ARCHIVED, 
-                                    function ($query) {
-                                        return $query->withTrashed();
-                                    }
-                                );
-                })
+                        ->when(
+                            $filterStatus === Tool::STATUS_ARCHIVED,
+                            function ($query) {
+                                return $query->withTrashed();
+                            }
+                        );
+                }
+            )
             ->when($filterTitle, function ($query) use ($filterTitle) {
                 return $query->where('name', 'like', '%' . $filterTitle . '%');
             })
@@ -213,14 +214,20 @@ class ToolController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Tool get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Tool get all',
             ]);
 
             return response()->json(
                 $tools
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -270,7 +277,7 @@ class ToolController extends Controller
     public function count(Request $request, string $field): JsonResponse
     {
         try {
-            $teamId = $request->query('team_id',null);
+            $teamId = $request->query('team_id', null);
             $counts = Tool::when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
             })->withTrashed()
@@ -340,8 +347,8 @@ class ToolController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Tool get " . $id,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Tool get ' . $id,
             ]);
 
             return response()->json([
@@ -349,6 +356,12 @@ class ToolController extends Controller
                 'data' => $tool,
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -428,32 +441,21 @@ class ToolController extends Controller
      */
     public function store(CreateTool $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            $userId = null;
-            $appId = null;
-            if (array_key_exists('user_id', $input)) {
-                $userId = (int) $input['user_id'];
-            } elseif (array_key_exists('jwt_user', $input)) {
-                $userId = (int) $input['jwt_user']['id'];
-            } elseif (array_key_exists('app_user', $input)) {
-                $appId = (int) $input['app']['id'];
-                $app = Application::where(['id' => $appId])->first();
-                $userId = (int) $app->user_id;
-            }
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $arrayKeys = [
-                'mongo_object_id', 
-                'name', 
-                'url', 
-                'description', 
-                'license', 
-                'tech_stack', 
-                'category_id', 
+                'mongo_object_id',
+                'name',
+                'url',
+                'description',
+                'license',
+                'tech_stack',
+                'category_id',
                 'user_id',
                 'enabled',
-                'team_id', 
+                'team_id',
                 'mongo_id',
                 'associated_authors',
                 'contact_address',
@@ -465,40 +467,40 @@ class ToolController extends Controller
             $tool = Tool::create($array);
             $toolId = $tool->id;
 
-            $this->insertToolHasTag($input['tag'], (int) $toolId);
+            $this->insertToolHasTag($input['tag'], (int)$toolId);
             if (array_key_exists('dataset', $input)) {
-                $this->insertDatasetVersionHasTool($input['dataset'], (int) $toolId);
+                $this->insertDatasetVersionHasTool($input['dataset'], (int)$toolId);
             }
             if (array_key_exists('programming_language', $input)) {
-                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $toolId);
+                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int)$toolId);
             }
             if (array_key_exists('programming_package', $input)) {
-                $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $toolId);
+                $this->insertToolHasProgrammingPackage($input['programming_package'], (int)$toolId);
             }
             if (array_key_exists('type_category', $input)) {
-                $this->insertToolHasTypeCategory($input['type_category'], (int) $toolId);
+                $this->insertToolHasTypeCategory($input['type_category'], (int)$toolId);
             }
 
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
-            $this->checkPublications($toolId, $publications, $array['user_id'], $appId);
+            $this->checkPublications($toolId, $publications, (int)$jwtUser['id']);
 
             if (array_key_exists('durs', $input)) {
-                $this->insertDurHasTool($input['durs'], (int) $toolId);
+                $this->insertDurHasTool($input['durs'], (int)$toolId);
             }
 
             $collections = array_key_exists('collections', $input) ? $input['collections'] : [];
-            $this->checkCollections($toolId, $collections, $array['user_id'], $appId);
+            $this->checkCollections($toolId, $collections, (int)$jwtUser['id']);
 
             $currentTool = Tool::where('id', $toolId)->first();
-            if($currentTool->status === Tool::STATUS_ACTIVE){
+            if($currentTool->status === Tool::STATUS_ACTIVE) {
                 $this->indexElasticTools((int) $toolId);
             }
-            
+
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Tool " . $toolId . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Tool ' . $tool->id . ' created',
             ]);
 
             return response()->json([
@@ -506,6 +508,13 @@ class ToolController extends Controller
                 'data' => $toolId,
             ], 201);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -593,40 +602,29 @@ class ToolController extends Controller
      */
     public function update(UpdateTool $request, int $id): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $initTool = Tool::withTrashed()->where('id', $id)->first();
 
             if ($initTool['status'] === Tool::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
                 throw new Exception('Cannot update current putoolblication! Status already "ARCHIVED"');
             }
 
-            $userId = null;
-            $appId = null;
-            if (array_key_exists('user_id', $input)) {
-                $userId = (int) $input['user_id'];
-            } elseif (array_key_exists('jwt_user', $input)) {
-                $userId = (int) $input['jwt_user']['id'];
-            } elseif (array_key_exists('app_user', $input)) {
-                $appId = (int) $input['app']['id'];
-                $app = Application::where(['id' => $appId])->first();
-                $userId = (int) $app->user_id;
-            }
-
             $arrayKeys = [
-                'mongo_object_id', 
-                'name', 
-                'url', 
-                'description', 
-                'license', 
-                'tech_stack', 
-                'category_id', 
+                'mongo_object_id',
+                'name',
+                'url',
+                'description',
+                'license',
+                'tech_stack',
+                'category_id',
                 'user_id',
                 'enabled',
-                'team_id', 
+                'team_id',
                 'mongo_id',
-                'associated_authors', 
+                'associated_authors',
                 'contact_address',
                 'any_dataset',
                 'status',
@@ -637,46 +635,48 @@ class ToolController extends Controller
             Tool::where('id', $id)->first()->update($array);
 
             ToolHasTag::where('tool_id', $id)->delete();
-            $this->insertToolHasTag($input['tag'], (int) $id);
+            $this->insertToolHasTag($input['tag'], (int)$id);
 
             if (array_key_exists('dataset', $input)) {
                 DatasetVersionHasTool::where('tool_id', $id)->delete();
-                $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
+                $this->insertDatasetVersionHasTool($input['dataset'], (int)$id);
             }
             ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
             if (array_key_exists('programming_language', $input)) {
-                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $id);
+                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int)$id);
             }
             ToolHasProgrammingPackage::where('tool_id', $id)->delete();
             if (array_key_exists('programming_package', $input)) {
-                $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $id);
+                $this->insertToolHasProgrammingPackage($input['programming_package'], (int)$id);
             }
             ToolHasTypeCategory::where('tool_id', $id)->delete();
             if (array_key_exists('type_category', $input)) {
-                $this->insertToolHasTypeCategory($input['type_category'], (int) $id);
+                $this->insertToolHasTypeCategory($input['type_category'], (int)$id);
             }
 
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
-            $this->checkPublications($id, $publications, $array['user_id'], $appId);
+            $this->checkPublications($id, $publications, (int)$jwtUser['id']);
 
             DurHasTool::where('tool_id', $id)->delete();
             if (array_key_exists('durs', $input)) {
-                $this->insertDurHasTool($input['durs'], (int) $id);
+                $this->insertDurHasTool($input['durs'], (int)$id);
             }
 
             $collections = array_key_exists('collections', $input) ? $input['collections'] : [];
-            $this->checkCollections($id, $collections, $array['user_id'], $appId);
+            $this->checkCollections($id, $collections, (int)$jwtUser['id']);
 
             $currentTool = Tool::where('id', $id)->first();
-            if($currentTool->status === Tool::STATUS_ACTIVE){
-                $this->indexElasticTools((int) $id);
+            if ($currentTool->status === Tool::STATUS_ACTIVE) {
+                if ($request['enabled']) {
+                    $this->indexElasticTools((int) $id);
+                }
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Tool " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Tool ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -684,6 +684,13 @@ class ToolController extends Controller
                 'data' => $this->getToolById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -780,10 +787,10 @@ class ToolController extends Controller
      */
     public function edit(EditTool $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             if ($request->has('unarchive')) {
                 // Restore the tool and related models
                 $toolModel = Tool::withTrashed()
@@ -813,17 +820,6 @@ class ToolController extends Controller
                 } else {
                     throw new Exception('Cannot unarchive current tool because valid status not supplied');
                 }
-    
-            }
-            
-            $userId = null;
-            $appId = null;
-            if ($request->has('userId')) {
-                $userId = (int) $input['userId'];
-            } elseif (array_key_exists('jwt_user', $input)) {
-                $userId = (int) $input['jwt_user']['id'];
-            } elseif (array_key_exists('app_user', $input)) {
-                $appId = (int) $input['app']['id'];
             }
 
             $arrayKeys = [
@@ -838,7 +834,7 @@ class ToolController extends Controller
                 'enabled',
                 'team_id',
                 'mongo_id',
-                'associated_authors', 
+                'associated_authors',
                 'contact_address',
                 'any_dataset',
                 'status',
@@ -856,52 +852,51 @@ class ToolController extends Controller
 
             if (array_key_exists('tag', $input)) {
                 ToolHasTag::where('tool_id', $id)->delete();
-                $this->insertToolHasTag($input['tag'], (int) $id);
+                $this->insertToolHasTag($input['tag'], (int)$id);
             };
 
             if (array_key_exists('dataset', $input)) {
                 DatasetVersionHasTool::where('tool_id', $id)->delete();
-                $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
+                $this->insertDatasetVersionHasTool($input['dataset'], (int)$id);
             }
 
             if (array_key_exists('programming_language', $input)) {
                 ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
-                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $id);
+                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int)$id);
             }
             if (array_key_exists('programming_package', $input)) {
                 ToolHasProgrammingPackage::where('tool_id', $id)->delete();
-                $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $id);
+                $this->insertToolHasProgrammingPackage($input['programming_package'], (int)$id);
             }
             if (array_key_exists('type_category', $input)) {
                 ToolHasTypeCategory::where('tool_id', $id)->delete();
-                $this->insertToolHasTypeCategory($input['type_category'], (int) $id);
+                $this->insertToolHasTypeCategory($input['type_category'], (int)$id);
             }
 
-            $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
             if (array_key_exists('publications', $input)) {
                 $publications = $input['publications'];
-                $this->checkPublications($id, $publications, $userIdFinal, $appId);
+                $this->checkPublications($id, $publications, (int)$jwtUser['id']);
             }
 
             if (array_key_exists('durs', $input)) {
-                $this->insertDurHasTool($input['durs'], (int) $id);
+                $this->insertDurHasTool($input['durs'], (int)$id);
             }
 
             if (array_key_exists('collections', $input)) {
                 $collections = $input['collections'];
-                $this->checkCollections($id, $collections, $userIdFinal, $appId);
+                $this->checkCollections($id, $collections, (int)$jwtUser['id']);
             }
-            
+
             $currentTool = Tool::where('id', $id)->first();
-            if($currentTool->status === Tool::STATUS_ACTIVE){
+            if($currentTool->status === Tool::STATUS_ACTIVE) {
                 $this->indexElasticTools($id);
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Tool " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Tool ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -909,6 +904,13 @@ class ToolController extends Controller
                 'data' => $this->getToolById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -964,10 +966,10 @@ class ToolController extends Controller
      */
     public function destroy(DeleteTool $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $tool = Tool::where(['id' => $id])->first();
             if ($tool) {
                 $tool->deleted_at = Carbon::now();
@@ -981,12 +983,12 @@ class ToolController extends Controller
                 PublicationHasTool::where('tool_id', $id)->delete();
                 DurHasTool::where('tool_id', $id)->delete();
                 CollectionHasTool::where('tool_id', $id)->delete();
-                
+
                 Auditor::log([
-                    'user_id' => (int) $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'DELETE',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Tool " . $id . " deleted",
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Tool ' . $id . ' deleted',
                 ]);
 
                 return response()->json([
@@ -996,6 +998,13 @@ class ToolController extends Controller
 
             throw new NotFoundException();
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -1003,7 +1012,7 @@ class ToolController extends Controller
     private function getToolById(int $toolId)
     {
         $tool = Tool::with([
-            'user', 
+            'user',
             'tag',
             'team',
             'license',
@@ -1037,13 +1046,19 @@ class ToolController extends Controller
                     continue;
                 }
                 ToolHasTag::updateOrCreate([
-                    'tool_id' => (int) $toolId,
-                    'tag_id' => (int) $value,
+                    'tool_id' => (int)$toolId,
+                    'tag_id' => (int)$value,
                 ]);
             }
 
             return true;
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -1061,7 +1076,7 @@ class ToolController extends Controller
             foreach ($datasetIds as $value) {
                 if (is_array($value)) {
                     $datasetVersionIDs = DatasetVersion::where('dataset_id', $value['id'])->pluck('id')->all();
-    
+
                     foreach ($datasetVersionIDs as $datasetVersionID) {
                         DatasetVersionHasTool::withTrashed()->updateOrCreate([
                             'tool_id' => $toolId,
@@ -1072,7 +1087,7 @@ class ToolController extends Controller
                     }
                 } else {
                     $datasetVersionIDs = DatasetVersion::where('dataset_id', $value)->pluck('id')->all();
-    
+
                     foreach ($datasetVersionIDs as $datasetVersionID) {
                         DatasetVersionHasTool::withTrashed()->updateOrCreate([
                             'tool_id' => $toolId,
@@ -1084,6 +1099,12 @@ class ToolController extends Controller
             }
             return true;
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -1100,13 +1121,19 @@ class ToolController extends Controller
         try {
             foreach ($programmingLanguages as $value) {
                 ToolHasProgrammingLanguage::updateOrCreate([
-                    'tool_id' => (int) $toolId,
-                    'programming_language_id' => (int) $value,
+                    'tool_id' => (int)$toolId,
+                    'programming_language_id' => (int)$value,
                 ]);
             }
 
             return true;
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -1123,13 +1150,19 @@ class ToolController extends Controller
         try {
             foreach ($programmingPackages as $value) {
                 ToolHasProgrammingPackage::updateOrCreate([
-                    'tool_id' => (int) $toolId,
-                    'programming_package_id' => (int) $value,
+                    'tool_id' => (int)$toolId,
+                    'programming_package_id' => (int)$value,
                 ]);
             }
 
             return true;
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -1146,13 +1179,19 @@ class ToolController extends Controller
         try {
             foreach ($typeCategories as $value) {
                 ToolHasTypeCategory::updateOrCreate([
-                    'tool_id' => (int) $toolId,
-                    'type_category_id' => (int) $value,
+                    'tool_id' => (int)$toolId,
+                    'type_category_id' => (int)$value,
                 ]);
             }
 
             return true;
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -1169,19 +1208,25 @@ class ToolController extends Controller
         try {
             foreach ($durs as $value) {
                 DurHasTool::updateOrCreate([
-                    'tool_id' => (int) $toolId,
-                    'dur_id' => (int) $value,
+                    'tool_id' => (int)$toolId,
+                    'dur_id' => (int)$value,
                 ]);
             }
 
             return true;
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
 
     // publications
-    private function checkPublications(int $toolId, array $inPublications, int $userId = null, int $appId = null) 
+    private function checkPublications(int $toolId, array $inPublications, int $userId = null)
     {
         $pubs = PublicationHasTool::where(['tool_id' => $toolId])->get();
         foreach ($pubs as $pub) {
@@ -1191,15 +1236,15 @@ class ToolController extends Controller
         }
 
         foreach ($inPublications as $publication) {
-            $checking = $this->checkInPublicationHasTools($toolId, (int) $publication['id']);
+            $checking = $this->checkInPublicationHasTools($toolId, (int)$publication['id']);
 
             if (!$checking) {
-                $this->addPublicationHasTool($toolId, $publication, $userId, $appId);
+                $this->addPublicationHasTool($toolId, $publication, $userId);
             }
         }
     }
 
-    private function addPublicationHasTool(int $toolId, array $publication, int $userId = null, int $appId = null)
+    private function addPublicationHasTool(int $toolId, array $publication, int $userId = null)
     {
         try {
             $arrCreate = [
@@ -1208,7 +1253,7 @@ class ToolController extends Controller
             ];
 
             if (array_key_exists('user_id', $publication)) {
-                $arrCreate['user_id'] = (int) $publication['user_id'];
+                $arrCreate['user_id'] = (int)$publication['user_id'];
             } elseif ($userId) {
                 $arrCreate['user_id'] = $userId;
             }
@@ -1222,10 +1267,6 @@ class ToolController extends Controller
                 $arrCreate['updated_at'] = $publication['updated_at'];
             }
 
-            if ($appId) {
-                $arrCreate['application_id'] = $appId;
-            }
-
             return PublicationHasTool::updateOrCreate(
                 $arrCreate,
                 [
@@ -1234,7 +1275,13 @@ class ToolController extends Controller
                 ]
             );
         } catch (Exception $e) {
-            throw new Exception("addPublicationHasTool :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('addPublicationHasTool :: ' . $e->getMessage());
         }
     }
 
@@ -1246,7 +1293,13 @@ class ToolController extends Controller
                 'publication_id' => $publicationId,
             ])->first();
         } catch (Exception $e) {
-            throw new Exception("checkInPublicationHasTools :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('checkInPublicationHasTools :: ' . $e->getMessage());
         }
     }
 
@@ -1258,12 +1311,18 @@ class ToolController extends Controller
                 'publication_id' => $publicationId,
             ])->delete();
         } catch (Exception $e) {
-            throw new Exception("deletePublicationHasTools :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('deletePublicationHasTools :: ' . $e->getMessage());
         }
     }
 
     // collections
-    private function checkCollections(int $toolId, array $inCollections, int $userId = null, int $appId = null) 
+    private function checkCollections(int $toolId, array $inCollections, int $userId = null)
     {
         $colls = CollectionHasTool::where(['tool_id' => $toolId])->get();
         foreach ($colls as $coll) {
@@ -1276,12 +1335,12 @@ class ToolController extends Controller
             $checking = $this->checkInCollectionHasTools($toolId, (int) $collection['id']);
 
             if (!$checking) {
-                $this->addCollectionHasTool($toolId, $collection, $userId, $appId);
+                $this->addCollectionHasTool($toolId, $collection, $userId);
             }
         }
     }
 
-    private function addCollectionHasTool(int $toolId, array $collection, int $userId = null, int $appId = null)
+    private function addCollectionHasTool(int $toolId, array $collection, int $userId = null)
     {
         try {
             $arrCreate = [
@@ -1290,7 +1349,7 @@ class ToolController extends Controller
             ];
 
             if (array_key_exists('user_id', $collection)) {
-                $arrCreate['user_id'] = (int) $collection['user_id'];
+                $arrCreate['user_id'] = (int)$collection['user_id'];
             } elseif ($userId) {
                 $arrCreate['user_id'] = $userId;
             }
@@ -1304,10 +1363,6 @@ class ToolController extends Controller
                 $arrCreate['updated_at'] = $collection['updated_at'];
             }
 
-            if ($appId) {
-                $arrCreate['application_id'] = $appId;
-            }
-
             return CollectionHasTool::updateOrCreate(
                 $arrCreate,
                 [
@@ -1316,7 +1371,13 @@ class ToolController extends Controller
                 ]
             );
         } catch (Exception $e) {
-            throw new Exception("addCollectionHasTool :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('addCollectionHasTool :: ' . $e->getMessage());
         }
     }
 
@@ -1328,7 +1389,13 @@ class ToolController extends Controller
                 'collection_id' => $collectionId,
             ])->first();
         } catch (Exception $e) {
-            throw new Exception("checkInCollecionHasTools :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('checkInCollecionHasTools :: ' . $e->getMessage());
         }
     }
 
@@ -1340,11 +1407,17 @@ class ToolController extends Controller
                 'collection_id' => $collectionId,
             ])->delete();
         } catch (Exception $e) {
-            throw new Exception("deleteCollectionHasTools :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('deleteCollectionHasTools :: ' . $e->getMessage());
         }
     }
 
-    private function extractInputIdToArray(array $input): Array
+    private function extractInputIdToArray(array $input): array
     {
         $response = [];
         foreach ($input as $value) {
@@ -1353,18 +1426,25 @@ class ToolController extends Controller
 
         return $response;
     }
-    
+
     /**
      * Insert tool document into elastic index
      *
      * @param integer $toolId
      * @return void
      */
-    public function indexElasticTools(int $toolId): void 
+    public function indexElasticTools(int $toolId): void
     {
         try {
             $tool = Tool::where('id', $toolId)
-                ->with(['programmingLanguages', 'programmingPackages', 'tag', 'category', 'typeCategory', 'license'])
+                ->with([
+                    'programmingLanguages',
+                    'programmingPackages',
+                    'tag',
+                    'category',
+                    'typeCategory',
+                    'license',
+                ])
                 ->first();
 
             $license = License::where('id', $tool['license'])->first();
@@ -1405,7 +1485,7 @@ class ToolController extends Controller
                 ->pluck('dataset_version_id')
                 ->all();
 
-            $datasetIDs = DatasetVersion::whereIn('dataset_version_id', $datasetVersionIDs)
+            $datasetIDs = DatasetVersion::whereIn('id', $datasetVersionIDs)
                 ->pluck('dataset_id')
                 ->all();
 
@@ -1458,6 +1538,12 @@ class ToolController extends Controller
             $client->index($params);
 
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

@@ -16,14 +16,14 @@ class TeamHasFederation extends Model
 
     /**
      * The table associated with the model
-     * 
+     *
      * @var string
      */
     protected $table = 'team_has_federations';
 
     /**
      * Indicates if the model should be timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = false;

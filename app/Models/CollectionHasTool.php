@@ -10,7 +10,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CollectionHasTool extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
 
     protected $fillable = [
         'collection_id',
@@ -24,14 +27,14 @@ class CollectionHasTool extends Model
 
     /**
      * The table associated with the model
-     * 
+     *
      * @var string
      */
     protected $table = 'collection_has_tools';
 
     /**
      * Indicates if the model should be timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = false;

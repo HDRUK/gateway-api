@@ -43,7 +43,7 @@ class DataProviderExport implements WithHeadings, FromCollection, WithMapping
         $array = [];
         foreach ($data as $item) {
             $name = $this->getValueFromPath($item, 'name');
-            
+
             $array[] = [
                 'name' => $name,
             ];
@@ -52,7 +52,7 @@ class DataProviderExport implements WithHeadings, FromCollection, WithMapping
         return $array;
     }
 
-    public function getValueFromPath(array $item, string $path) 
+    public function getValueFromPath(array $item, string $path)
     {
         $keys = explode('/', $path);
 
@@ -64,7 +64,7 @@ class DataProviderExport implements WithHeadings, FromCollection, WithMapping
                 return null;
             }
         }
-        
+
         return $return;
     }
 }

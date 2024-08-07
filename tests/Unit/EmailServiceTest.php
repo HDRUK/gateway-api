@@ -6,10 +6,9 @@ use App\Mail\Email;
 use App\Models\EmailTemplate;
 
 use Tests\TestCase;
-use Database\Seeders\EmailTemplatesSeeder;
+use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-
 
 class EmailServiceTest extends TestCase
 {
@@ -20,14 +19,14 @@ class EmailServiceTest extends TestCase
         parent::setUp();
 
         $this->seed([
-            EmailTemplatesSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
     }
 
     /**
      * Tests that the email service can replace placeholder text
      * within an mjml encoded email body
-     * 
+     *
      * @return void
      */
     public function test_the_email_service_replaces_text(): void
@@ -78,5 +77,3 @@ class EmailServiceTest extends TestCase
     }
 
 }
-
-?>

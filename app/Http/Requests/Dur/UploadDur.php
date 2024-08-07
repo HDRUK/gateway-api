@@ -31,8 +31,8 @@ class UploadDur extends BaseFormRequest
                 'string',
             ],
             'datasets' => [ // Dataset(s) name*
-                'nullable', 
-                'array', 
+                'nullable',
+                'array',
             ],
             'datasets.*.id'  => [
                 'integer',

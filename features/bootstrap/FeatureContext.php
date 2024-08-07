@@ -2,14 +2,9 @@
 
 namespace App\Behat\Context;
 
-use Dotenv\Dotenv;
 use Behat\Behat\Context\Context;
-use Behat\Gherkin\Node\TableNode;
-use App\Behat\Context\SharedContext;
-use Behat\Gherkin\Node\PyStringNode;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Contracts\Console\Kernel;
 use Behat\Behat\Hook\Scope\BeforeFeatureScope;
 use Behat\Testwork\Hook\Scope\BeforeSuiteScope;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,7 +15,8 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithDatabase;
  */
 class FeatureContext implements Context
 {
-    use RefreshDatabase, InteractsWithDatabase;
+    use RefreshDatabase;
+    use InteractsWithDatabase;
 
     private $sharedContext;
 
@@ -55,7 +51,7 @@ class FeatureContext implements Context
             Artisan::call('db:seed');
             echo Artisan::output();
         }
-        
+
         // empty 'logs/email.log'
         File::put(storage_path('logs/email.log'), '');
     }

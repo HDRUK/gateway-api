@@ -19,7 +19,7 @@ use App\Http\Requests\TeamNotification\CreateTeamNotification;
 class TeamNotificationController extends Controller
 {
     use TeamTransformation;
-    
+
     public function __construct()
     {
         //
@@ -77,7 +77,7 @@ class TeamNotificationController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $teamId) : JsonResponse
+    public function show(Request $request, int $teamId): JsonResponse
     {
         try {
             $input = $request->all();
@@ -85,14 +85,14 @@ class TeamNotificationController extends Controller
 
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $jwtUserId = $jwtUser['id'];
-            
+
             $team = Team::where('id', $teamId)->with(['notifications'])->first();
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Team Notification get for teams " . $teamId,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team Notification get for teams ' . $teamId,
             ]);
 
             return response()->json([
@@ -100,6 +100,14 @@ class TeamNotificationController extends Controller
                 'data' => $this->getTeamNotifications($team, $teamId, $jwtUserId)
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -128,7 +136,7 @@ class TeamNotificationController extends Controller
      *          @OA\Schema(
      *             @OA\Property(property="user_notification_status", type="boolean", example="true"),
      *             @OA\Property(property="team_notification_status", type="boolean", example="true"),
-     *             @OA\Property(property="team_emails", type="array",   
+     *             @OA\Property(property="team_emails", type="array",
      *                @OA\Items(type="string", example="djakubowski@example.org"),
      *             ),
      *          ),
@@ -164,7 +172,7 @@ class TeamNotificationController extends Controller
      *    )
      * )
      */
-    public function store(CreateTeamNotification $request, int $teamId) 
+    public function store(CreateTeamNotification $request, int $teamId)
     {
         try {
             $input = $request->all();
@@ -172,7 +180,7 @@ class TeamNotificationController extends Controller
 
             // team user has notification
             $this->teamUserNotification($input, $teamId);
-            
+
             // team has notifications
             $teamNotifications = TeamHasNotification::where('team_id', $teamId)->pluck('notification_id')->all();
 
@@ -184,16 +192,24 @@ class TeamNotificationController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Team Notification for team " . $teamId . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team Notification for team ' . $teamId . ' created',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -240,13 +256,20 @@ class TeamNotificationController extends Controller
                     'enabled' => $input['user_notification_status'],
                     'email' => null,
                 ]);
-                
+
                 TeamUserHasNotification::create([
                     'team_has_user_id' => $teamHasUserId,
                     'notification_id' => $notification->id,
                 ]);
             }
         } catch (Exception $e) {
+            Auditor::log([
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -259,12 +282,19 @@ class TeamNotificationController extends Controller
                 Notification::where('id', $item)->delete();
             }
         } catch (Exception $e) {
+            Auditor::log([
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
 
 
-    private function createTeamNotifications(array $input, int $teamId) 
+    private function createTeamNotifications(array $input, int $teamId)
     {
         try {
             Team::where('id', $teamId)->update([
@@ -284,6 +314,13 @@ class TeamNotificationController extends Controller
                 ]);
             }
         } catch (Exception $e) {
+            Auditor::log([
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

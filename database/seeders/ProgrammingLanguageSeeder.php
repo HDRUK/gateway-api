@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\ProgrammingLanguage;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ProgrammingLanguageSeeder extends Seeder
@@ -33,7 +32,7 @@ class ProgrammingLanguageSeeder extends Seeder
         foreach ($names as $name) {
             ProgrammingLanguage::create([
                 'name' => $name,
-                'enabled' => true,       
+                'enabled' => true,
             ]);
         }
     }

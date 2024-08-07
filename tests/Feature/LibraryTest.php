@@ -5,13 +5,14 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Library;
+use App\Models\User;
 use Tests\Traits\Authorization;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\LibrarySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Traits\MockExternalApis;
+
 class LibraryTest extends TestCase
 {
     use RefreshDatabase;
@@ -20,21 +21,27 @@ class LibraryTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/libraries';
+    public const TEST_URL = '/api/v1/libraries';
 
     protected $header = [];
+    protected $user = [];
 
 
     public function setUp(): void
     {
         $this->commonSetUp();
 
+        $jwt = $this->getAuthorisationJwt();
+        $this->user = $this->getUserFromJwt($jwt);
+
         $this->seed([
             MinimalUserSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
-            LibrarySeeder::class,
         ]);
+        //seed for this user...
+        Library::factory(10)->create(['user_id' => $this->user['id']]);
+        Library::factory(10)->create(['user_id' => User::all()->random()]);
     }
 
     /**
@@ -44,37 +51,48 @@ class LibraryTest extends TestCase
      */
     public function test_the_application_can_list_libraries()
     {
+
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-        
+
         $response->assertJsonStructure([
-                'current_page',
-                'data' => [
-                    0 => [ // Assuming 'data' is an array of libraries
-                        'id',
-                        'created_at',
-                        'updated_at',
-                        'user_id',
-                        'dataset_id',
-                        'dataset_status',
-                        'data_provider_id',
-                        'data_provider_dar_status',
-                        'data_provider_name'
-                    ],
+            'current_page',
+            'data' => [
+                0 => [ // Assuming 'data' is an array of libraries
+                    'id',
+                    'created_at',
+                    'updated_at',
+                    'user_id',
+                    'dataset_id',
+                    'dataset_name',
+                    'dataset_status',
+                    'data_provider_id',
+                    'data_provider_dar_status',
+                    'data_provider_name',
+                    'data_provider_dar_enabled'
                 ],
-                'first_page_url',
-                'from',
-                'last_page',
-                'last_page_url',
-                'links',
-                'next_page_url',
-                'path',
-                'per_page',
-                'prev_page_url',
-                'to',
-                'total',
-            ]);
+            ],
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',
+        ]);
+
+        $userLibrary = Library::where("user_id", $this->user['id'])->pluck("id")->toArray();
+        $ids = array_map(function ($dataset) {
+            return $dataset['id'];
+        }, $response['data']);
+
+        $differenceArray = array_diff($userLibrary, $ids);
+        $this->assertEmpty($differenceArray);
     }
 
     /**
@@ -88,7 +106,7 @@ class LibraryTest extends TestCase
             'dataset_id' => 2,
         ], $this->header);
 
-        
+
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
                 'message',
@@ -111,7 +129,9 @@ class LibraryTest extends TestCase
                     'dataset_status',
                     'data_provider_id',
                     'data_provider_dar_status',
-                    'data_provider_name'
+                    'data_provider_name',
+                    'data_provider_name',
+                    'data_provider_dar_enabled'
                 ],
             ]);
     }

@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use Carbon\Carbon;
-use App\Mail\Email;
 use Tests\TestCase;
 
 use App\Jobs\SendEmailJob;
@@ -12,20 +10,19 @@ use Illuminate\Support\Facades\Bus;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use App\Exceptions\EmailTemplateException;
-use Database\Seeders\EmailTemplatesSeeder;
+use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EmailServiceTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
+    use RefreshDatabase;
+    use WithFaker;
 
     public function setUp(): void
     {
         parent::setUp([
-            EmailTemplatesSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
         $this->seed();
 
@@ -43,7 +40,7 @@ class EmailServiceTest extends TestCase
 
         Http::fake([
             env('MJML_RENDER_URL') => Http::response(
-                ["html"=>"<html>content</html>"], 
+                ["html" => "<html>content</html>"],
                 201,
                 ['application/json']
             )

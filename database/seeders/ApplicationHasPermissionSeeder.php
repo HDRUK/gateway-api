@@ -6,7 +6,6 @@ use App\Models\ApplicationHasPermission;
 use App\Models\Permission;
 use App\Models\Application;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class ApplicationHasPermissionSeeder extends Seeder
 {

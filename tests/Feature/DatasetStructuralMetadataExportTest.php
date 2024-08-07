@@ -9,10 +9,8 @@ use Tests\Traits\MockExternalApis;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\WithFaker;
 use App\Exports\DatasetStructuralMetadataExport;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-
 
 class DatasetStructuralMetadataExportTest extends TestCase
 {
@@ -39,8 +37,8 @@ class DatasetStructuralMetadataExportTest extends TestCase
     {
         Storage::fake('local');
 
-        $data = Arr::has($this->testMetadata, 'metadata.structuralMetadata') ? 
-            $this->testMetadata['metadata']['structuralMetadata'] : 
+        $data = Arr::has($this->testMetadata, 'metadata.structuralMetadata') ?
+            $this->testMetadata['metadata']['structuralMetadata'] :
             [];
 
         $export = new DatasetStructuralMetadataExport($data);

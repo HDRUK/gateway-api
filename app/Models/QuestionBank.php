@@ -12,32 +12,35 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QuestionBank extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
 
     /**
      * The table associated with the model
-     * 
+     *
      * @var string
      */
 
-     protected $table = 'question_bank_questions';
+    protected $table = 'question_bank_questions';
 
-     protected $fillable = [
-        'section_id',
-        'user_id',
-        'team_id',
-        'locked',
-        'force_required',
-        'allow_guidance'
-     ];
+    protected $fillable = [
+       'section_id',
+       'user_id',
+       'team_id',
+       'locked',
+       'force_required',
+       'allow_guidance'
+    ];
 
-     public function user(): BelongsTo
-     {
-         return $this->belongsTo(User::class);
-     }
- 
-     public function team(): BelongsTo
-     {
-         return $this->belongsTo(Team::class);
-     }
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
 }

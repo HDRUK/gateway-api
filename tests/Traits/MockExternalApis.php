@@ -6,19 +6,17 @@ use Config;
 use Http\Mock\Client;
 use Nyholm\Psr7\Response;
 
-use Tests\Traits\Authorization;
 
 use Database\Seeders\SectorSeeder;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Elastic\Elasticsearch\ClientBuilder;
-use MetadataManagementController AS MMC;
+use MetadataManagementController as MMC;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 
 trait MockExternalApis
 {
-
     use Authorization;
     private $dataset = null;
     private $datasetUpdate = null;
@@ -57,16 +55,16 @@ trait MockExternalApis
         switch (true) {
             case version_compare($version, "1.0", "<="):
                 return $this->getMetadataV1p0();
-    
+
             case version_compare($version, "1.2", "<="):
                 #note: v1.1 and v1.2 were not that different so can use this example metadata
                 return $this->getMetadataV1p1();
-    
+
             case version_compare($version, "2.0", "<="):
                 return $this->getMetadataV2p0();
-            }
+        }
     }
-    
+
     public function setUp(): void
     {
         parent::setUp();
@@ -94,23 +92,23 @@ trait MockExternalApis
         // This is a PSR-7 response
         // Mock two responses, one for creating a dataset, another for deleting
         $createResponse = new Response(
-            200, 
+            200,
             [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
             'Document created'
         );
         $deleteResponse = new Response(
-            200, 
+            200,
             [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
             'Document deleted'
         );
 
         // Stack the responses expected in the create/archive/delete dataset test
         // create -> soft delete/archive -> unarchive -> permanent delete
-        for ($i=0; $i < 100; $i++) {
+        for ($i = 0; $i < 100; $i++) {
             $mockElastic->addResponse($createResponse);
         }
 
-        for ($i=0; $i < 100; $i++) {
+        for ($i = 0; $i < 100; $i++) {
             $mockElastic->addResponse($deleteResponse);
         }
 
@@ -118,7 +116,7 @@ trait MockExternalApis
 
         Http::fake([
             env('TED_SERVICE_URL', 'http://localhost:8001') => Http::response(
-                ['id' => 11, 'extracted_terms' => ['test', 'fake']], 
+                ['id' => 11, 'extracted_terms' => ['test', 'fake']],
                 201,
                 ['application/json']
             )
@@ -152,7 +150,7 @@ trait MockExternalApis
                                     'shortTitle' => 'Asthma dataset',
                                     'title' => 'Asthma dataset',
                                     'dataUseTitles' => [],
-                                    'populationSize'=> 1000,
+                                    'populationSize' => 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -175,7 +173,7 @@ trait MockExternalApis
                                     'shortTitle' => 'Another asthma dataset',
                                     'title' => 'Another asthma dataset',
                                     'dataUseTitles' => [],
-                                    'populationSize'=> 1000,
+                                    'populationSize' => 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -198,7 +196,7 @@ trait MockExternalApis
                                     'shortTitle' => 'Third asthma dataset',
                                     'title' => 'Third asthma dataset',
                                     'dataUseTitles' => [],
-                                    'populationSize'=> 1000,
+                                    'populationSize' => 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -221,7 +219,7 @@ trait MockExternalApis
                                     'shortTitle' => 'Fourth asthma dataset',
                                     'title' => 'Fourth asthma dataset',
                                     'dataUseTitles' => [],
-                                    'populationSize'=> 1000,
+                                    'populationSize' => 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -274,7 +272,7 @@ trait MockExternalApis
                                     'shortTitle' => 'Asthma dataset',
                                     'title' => 'Asthma dataset',
                                     'dataUseTitles' => [],
-                                    'populationSize'=> 1000,
+                                    'populationSize' => 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -297,7 +295,7 @@ trait MockExternalApis
                                     'shortTitle' => 'Another asthma dataset',
                                     'title' => 'Another asthma dataset',
                                     'dataUseTitles' => [],
-                                    'populationSize'=> 1000,
+                                    'populationSize' => 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -320,7 +318,7 @@ trait MockExternalApis
                                     'shortTitle' => 'Third asthma dataset',
                                     'title' => 'Third asthma dataset',
                                     'dataUseTitles' => [],
-                                    'populationSize'=> 1000,
+                                    'populationSize' => 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -542,7 +540,7 @@ trait MockExternalApis
                 ['application/json']
             )
         ]);
-        
+
         // Mock the search service - data uses
         Http::fake([
             env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur*' => Http::response(
@@ -790,7 +788,7 @@ trait MockExternalApis
                                 'journalInfo' => [
                                     'journal' => [
                                         'title' => 'Journal of Health'
-                                    ]  
+                                    ]
                                 ],
                                 'pubYear' => '2020',
                                 'abstractText' => 'A longer description of the paper',
@@ -847,7 +845,8 @@ trait MockExternalApis
         ]);
 
         Http::fake([
-            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi' => Http::response([
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi' => Http::response(
+                [
                 "hitCount" => 1,
                 "resultList" => [
                     "result" => [
@@ -863,8 +862,9 @@ trait MockExternalApis
                     ]
                 ]
             ],
-            200,
-            ['application/json'])
+                200,
+                ['application/json']
+            )
         ]);
 
         // Mock the search service - data providers
@@ -1002,7 +1002,7 @@ trait MockExternalApis
                     'isInfected' => false,
                     'file' => '1716469707_test_file.csv',
                     'viruses' => [],
-                ], 
+                ],
                 200,
                 ['application/json']
             )
@@ -1012,14 +1012,14 @@ trait MockExternalApis
         // makePartial so other MMC methods are not mocked
         MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
         MMC::shouldReceive("translateDataModelType")
-            ->andReturnUsing(function(string $metadata){
-            return [
-                "traser_message" => "",
-                "wasTranslated" => true,
-                "metadata" => json_decode($metadata,true)["metadata"],
-                "statusCode" => "200",
-            ];
-        });
+            ->andReturnUsing(function (string $metadata) {
+                return [
+                    "traser_message" => "",
+                    "wasTranslated" => true,
+                    "metadata" => json_decode($metadata, true)["metadata"],
+                    "statusCode" => "200",
+                ];
+            });
         MMC::shouldReceive("validateDataModelType")->andReturn(true);
         MMC::makePartial();
 
@@ -1027,7 +1027,7 @@ trait MockExternalApis
 
         Http::fake([
             env('MJML_RENDER_URL') => Http::response(
-                ["html"=>"<html>content</html>"], 
+                ["html" => "<html>content</html>"],
                 201,
                 ['application/json']
             )
@@ -1035,7 +1035,7 @@ trait MockExternalApis
 
         Http::fake([
             env('FMA_SERVICE_URL').'*' => Http::response(
-                ['message'=>'success'], 
+                ['message' => 'success'],
                 200,
                 ['application/json']
             )
@@ -1048,7 +1048,7 @@ trait MockExternalApis
                     return Http::response([], 200);
                 }
             },
-        
+
             // GET (by vid)
             "http://hub.local/contacts/v1/contact/vid/*/profile" => function ($request) {
                 if ($request->method() === 'GET') {
@@ -1057,14 +1057,14 @@ trait MockExternalApis
                     return Http::response([], 204);
                 }
             },
-        
+
             // GET (by email)
             "http://hub.local/contacts/v1/contact/email/*/profile" => function ($request) {
                 if ($request->method() === 'GET') {
                     return Http::response(['vid' => 12345], 200);
                 }
             },
-        
+
             // POST (create contact)
             'http://hub.local/contacts/v1/contact' => function ($request) {
                 if ($request->method() === 'POST') {

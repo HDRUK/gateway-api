@@ -6,6 +6,7 @@ use Config;
 use Auditor;
 use Exception;
 use App\Models\Library;
+use App\Models\Dataset;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -88,29 +89,27 @@ class LibraryController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            $jwtUserIsAdmin = $jwtUser['is_admin'];
 
             $perPage = request('perPage', Config::get('constants.per_page'));
 
-            if ($jwtUserIsAdmin) {
-                $libraries = Library::with(['dataset.team']);
-            } else {
-                $libraries = Library::where('user_id', $jwtUser['id'])
-                    ->with(['dataset.team']);
-            }
+            $libraries = Library::where('user_id', $jwtUser['id'])
+                ->with(['dataset.team']);
+
 
             $libraries = $libraries->paginate($perPage);
 
             $transformedLibraries = $libraries->getCollection()->map(function ($library) {
                 $dataset = $library->dataset;
-                $team = $dataset->team->first();
+                $team = $dataset->team;
 
                 // Using dynamic attributes to avoid undefined property error
                 $library->setAttribute('dataset_id', (int)$dataset->id);
+                $library->setAttribute('dataset_name', $dataset->versions[0]->metadata['metadata']['summary']['shortTitle']);
                 $library->setAttribute('dataset_status', $dataset->status);
                 $library->setAttribute('data_provider_id', $team->pid);
                 $library->setAttribute('data_provider_dar_status', $team->uses_5_safes);
                 $library->setAttribute('data_provider_name', $team->name);
+                $library->setAttribute('data_provider_dar_enabled', $team->is_question_bank);
 
 
                 unset($library->dataset);
@@ -126,14 +125,21 @@ class LibraryController extends Controller
             );
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => "library get all",
+                'description' => 'library get all',
             ]);
 
             return response()->json($paginatedTransformedLibraries);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -200,15 +206,15 @@ class LibraryController extends Controller
 
             // Fetch the library with dataset and team
             $library = Library::with(['dataset.team'])
-                        ->where('id', $id)
-                        ->firstOrFail();
+                ->where('id', $id)
+                ->firstOrFail();
 
             if (!$jwtUserIsAdmin && $library['user_id'] != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to view this library');
             }
 
             $dataset = $library->dataset->first();
-            $team = $dataset->team->first();
+            $team = $dataset->team;
 
             // Using dynamic attributes to avoid undefined property error
             $library->setAttribute('dataset_id', (int)$dataset->datasetid);
@@ -216,14 +222,16 @@ class LibraryController extends Controller
             $library->setAttribute('data_provider_id', $team->pid);
             $library->setAttribute('data_provider_dar_status', $team->uses_5_safes);
             $library->setAttribute('data_provider_name', $team->name);
+            $library->setAttribute('dataset_name', $dataset->versions[0]->metadata['metadata']['summary']['shortTitle']);
+            $library->setAttribute('data_provider_dar_enabled', $team->is_question_bank);
 
             unset($library->dataset);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => "library get " . $id,
+                'description' => 'library get ' . $id,
             ]);
 
             return response()->json([
@@ -239,6 +247,13 @@ class LibraryController extends Controller
                 'message' => 'not found',
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             return response()->json([
                 'message' => 'An error occurred',
             ], Config::get('statuscodes.STATUS_INTERNAL_SERVER_ERROR.code'));
@@ -287,15 +302,15 @@ class LibraryController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $library = Library::create([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'dataset_id' => $input['dataset_id']
             ]);
-            
+
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "library " . $library->id . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'library ' . $library->id . ' created',
             ]);
 
             return response()->json([
@@ -303,6 +318,13 @@ class LibraryController extends Controller
                 'data' => $library->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -375,15 +397,15 @@ class LibraryController extends Controller
                 throw new UnauthorizedException('You do not have permission to edit this library');
             }
             $library->update([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'dataset_id' => $input['dataset_id'],
             ]);
-            
+
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "library " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'library ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -391,6 +413,13 @@ class LibraryController extends Controller
                 'data' => Library::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -469,14 +498,14 @@ class LibraryController extends Controller
             if ($library['user_id'] != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to edit this library');
             }
-            
+
             $library->update($array);
-            
+
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "library " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'library ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -484,6 +513,13 @@ class LibraryController extends Controller
                 'data' => Library::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -535,7 +571,7 @@ class LibraryController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-    
+
             $library = Library::findOrFail($id);
             if ($library) {
 
@@ -545,29 +581,34 @@ class LibraryController extends Controller
 
                 if ($library->delete()) {
                     Auditor::log([
-                        'user_id' => (int) $jwtUser['id'],
+                        'user_id' => (int)$jwtUser['id'],
                         'action_type' => 'DELETE',
-                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                        'description' => "library " . $id . " deleted",
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => 'library ' . $id . ' deleted',
                     ]);
 
                     return response()->json([
                         'message' => Config::get('statuscodes.STATUS_OK.message'),
                     ], Config::get('statuscodes.STATUS_OK.code'));
                 }
-    
+
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
                 ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
             }
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
-
 }
-

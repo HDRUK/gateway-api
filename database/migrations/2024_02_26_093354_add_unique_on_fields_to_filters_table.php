@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -37,7 +36,7 @@ return new class extends Migration
     {
         $conn = Schema::getConnection()->getDoctrineSchemaManager();
 
-        return array_map(function($key) {
+        return array_map(function ($key) {
             return $key->getName();
         }, $conn->listTableForeignKeys($table));
     }

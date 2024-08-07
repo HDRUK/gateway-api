@@ -6,7 +6,6 @@ use App\Models\Application;
 use App\Models\Notification;
 use Illuminate\Database\Seeder;
 use App\Models\ApplicationHasNotification;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class ApplicationSeeder extends Seeder
 {
@@ -18,7 +17,7 @@ class ApplicationSeeder extends Seeder
         Application::factory(10)->create();
 
         $applications = Application::all();
-        
+
         foreach ($applications as $application) {
 
             $applicationId = $application->id;

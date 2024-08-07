@@ -2,13 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Dur;
-use App\Models\Team;
-use App\Models\Tool;
-use App\Models\User;
-use App\Models\Keyword;
-use App\Models\Publication;
-use App\Models\CollectionHasDatasetVersion;
 use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -21,7 +14,11 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Collection extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable, DatasetFetch;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
+    use DatasetFetch;
 
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
@@ -29,7 +26,7 @@ class Collection extends Model
 
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'collections';
@@ -49,7 +46,7 @@ class Collection extends Model
         'updated_on',
         'status',
     ];
-    
+
     protected $casts = [
         'enabled' => 'boolean',
     ];

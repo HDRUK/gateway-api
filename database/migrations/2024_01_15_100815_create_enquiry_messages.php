@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -15,9 +14,9 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->bigInteger('thread_id')->unsigned();
-            $table->string('from',255);
+            $table->string('from', 255);
             $table->longText('message_body');
-            
+
             $table->foreign('thread_id')->references('id')->on('enquiry_thread');
         });
     }

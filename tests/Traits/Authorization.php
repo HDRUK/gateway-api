@@ -5,21 +5,20 @@ namespace Tests\Traits;
 use Hash;
 use Config;
 use App\Models\User;
-use App\Auditor\Auditor;
 use App\Http\Controllers\JwtController;
 
 trait Authorization
 {
-    const CFG_TEST_NAME = 'constants.test.user.name';
-    const CFG_TEST_EMAIL = 'constants.test.user.email';
-    const CFG_TEST_PASSWORD = 'constants.test.user.password';
-    const CFG_TEST_ADMIN = 'constants.test.user.is_admin';
-    const CFG_PROVIDER_SERVICE = 'constants.provider.service';
+    public const CFG_TEST_NAME = 'constants.test.user.name';
+    public const CFG_TEST_EMAIL = 'constants.test.user.email';
+    public const CFG_TEST_PASSWORD = 'constants.test.user.password';
+    public const CFG_TEST_ADMIN = 'constants.test.user.is_admin';
+    public const CFG_PROVIDER_SERVICE = 'constants.provider.service';
 
-    const CFG_NONADMIN_NAME = 'constants.test.non_admin.name';
-    const CFG_NONADMIN_EMAIL = 'constants.test.non_admin.email';
-    const CFG_NONADMIN_PASSWORD = 'constants.test.non_admin.password';
-    const CFG_NONADMIN_ADMIN = 'constants.test.non_admin.is_admin';
+    public const CFG_NONADMIN_NAME = 'constants.test.non_admin.name';
+    public const CFG_NONADMIN_EMAIL = 'constants.test.non_admin.email';
+    public const CFG_NONADMIN_PASSWORD = 'constants.test.non_admin.password';
+    public const CFG_NONADMIN_ADMIN = 'constants.test.non_admin.is_admin';
 
     public function authorisationUser(bool $admin = true): bool
     {
@@ -58,7 +57,7 @@ trait Authorization
         return true;
     }
 
-    public function getAuthorisationJwt(bool $admin = true) : mixed
+    public function getAuthorisationJwt(bool $admin = true): mixed
     {
         if ($admin) {
             $authData = [
@@ -73,11 +72,11 @@ trait Authorization
         }
 
         $response = $this->json('POST', '/api/v1/auth', $authData, ['Accept' => 'application/json']);
-        
+
         return $response['access_token'];
     }
 
-    public function getUserFromJwt(string $jwt) : mixed
+    public function getUserFromJwt(string $jwt): mixed
     {
         $jwtController = new JwtController();
         $jwtController->setJwt($jwt);

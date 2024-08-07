@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Hash;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 

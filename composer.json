@@ -45,13 +45,14 @@
         "fakerphp/faker": "^1.9.1",
         "friends-of-behat/mink-extension": "^2.7",
         "larastan/larastan": "^2.0",
-        "laravel/pint": "^1.0",
+        "laravel/pint": "^1.17",
         "laravel/sail": "^1.18",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^7.0",
         "pestphp/pest": "^2.4",
         "php-http/mock-client": "^1.6",
         "phpstan/phpstan": "^1.9",
+        "phpunit/php-timer": "^6.0",
         "phpunit/phpunit": "^10.0",
         "soulcodex/laravel-behat": "^1.0",
         "spatie/laravel-ignition": "^2.0",
@@ -101,6 +102,9 @@
         ],
         "pest": [
             "php -d memory_limit=512M vendor/bin/pest"
+        ],
+        "lint": [
+            "vendor/bin/pint --preset psr12"
         ]
     },
     "extra": {

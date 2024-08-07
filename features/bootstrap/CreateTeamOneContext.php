@@ -4,17 +4,11 @@ namespace App\Behat\Context;
 
 use Exception;
 use App\Models\Team;
-use GuzzleHttp\Client;
 use Faker\Factory as Faker;
 use PHPUnit\Framework\Assert;
 use App\Http\Enums\TeamMemberOf;
 use Behat\Behat\Context\Context;
-use App\Models\AuthorisationCode;
-use Behat\Gherkin\Node\TableNode;
-use App\Behat\Context\SharedContext;
-use Behat\Gherkin\Node\PyStringNode;
 use Illuminate\Support\Facades\Http;
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 
 /**
  * Defines team one create features from the specific context.
@@ -47,8 +41,8 @@ class CreateTeamOneContext implements Context
     {
         try {
             $this->teamName = $teamName;
-            $payload = [  
-                'name' =>$teamName, 
+            $payload = [
+                'name' => $teamName,
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
@@ -86,8 +80,8 @@ class CreateTeamOneContext implements Context
     public function iShouldReceiveASuccessfulResponseWithStatusCode($statusCode)
     {
         Assert::assertEquals(
-            $statusCode, 
-            $this->response->getStatusCode(), 
+            $statusCode,
+            $this->response->getStatusCode(),
             "Expected status code {$statusCode}, and received {$this->response->getStatusCode()}."
         );
     }

@@ -7,7 +7,6 @@ use App\Models\QuestionBankVersion;
 use App\Models\DataAccessSection;
 
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class QuestionBankSeeder extends Seeder
@@ -30,7 +29,7 @@ class QuestionBankSeeder extends Seeder
 
         $count = 0;
         foreach ($jsonData as $section) {
-            
+
             $sectionModel = DataAccessSection::create([
                 'name' => $section['title'],
                 'description' => $section['description'],
@@ -46,7 +45,7 @@ class QuestionBankSeeder extends Seeder
                     'parent_section' => $sectionModel->id,
                     'order' => $count,
                 ]);
-            
+
 
                 foreach ($subSection['questions'] as $question) {
                     $questionModel = QuestionBank::create([
@@ -73,7 +72,7 @@ class QuestionBankSeeder extends Seeder
 
             $count += 1;
         }
-        
+
     }
 
 }

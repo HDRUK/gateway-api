@@ -24,7 +24,7 @@ class FederationTest extends TestCase
 
     /**
      * Get All Federations By Team ID with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_federation_by_team_id_with_success(): void
@@ -165,7 +165,7 @@ class FederationTest extends TestCase
 
     /**
      * Get FederationsBy Federation Id & Team ID with success
-     * 
+     *
      * @return void
      */
     public function test_get_federation_by_id_and_by_team_id_with_success(): void
@@ -294,7 +294,7 @@ class FederationTest extends TestCase
 
     /**
      * Create FederationsBy by Team ID with success
-     * 
+     *
      * @return void
      */
     public function test_create_federation_by_team_id_with_success(): void
@@ -442,7 +442,7 @@ class FederationTest extends TestCase
 
     /**
      * Update Federations by Federation Id & Team ID with success
-     * 
+     *
      * @return void
      */
     public function test_update_federation_by_federation_id_and_team_id_with_success(): void
@@ -638,7 +638,7 @@ class FederationTest extends TestCase
 
     /**
      * Edit Federations by Federation Id & Team ID with success
-     * 
+     *
      * @return void
      */
     public function test_edit_federation_by_federation_id_and_team_id_with_success(): void
@@ -883,7 +883,7 @@ class FederationTest extends TestCase
 
     /**
      * Delete Federations by Federation Id & Team ID with success
-     * 
+     *
      * @return void
      */
     public function test_delete_federation_by_federation_id_and_team_id_with_success(): void

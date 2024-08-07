@@ -6,7 +6,6 @@ use App\Models\Team;
 use App\Models\Federation;
 use Illuminate\Database\Seeder;
 use App\Models\TeamHasFederation;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class TeamHasFederationSeeder extends Seeder
 {

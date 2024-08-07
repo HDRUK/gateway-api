@@ -8,7 +8,7 @@ use Illuminate\Http\Response;
 class UnauthorizedException extends Exception
 {
     public function __construct(
-        string $message = "",
+        string $message = '',
         int $code = Response::HTTP_UNAUTHORIZED,
         Exception $previous = null,
     ) {

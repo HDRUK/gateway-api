@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use Config;
 use App\Models\Dataset;
 use App\Models\TeamHasUser;
 use Illuminate\Database\Eloquent\Factories\Factory;
