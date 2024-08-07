@@ -1,8 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\SSO\OpenIdController;
 use App\Http\Controllers\SSO\JwksController;
+use App\Http\Controllers\SSO\OpenIdController;
+use App\Http\Controllers\SSO\CustomAccessTokenController;
 use App\Http\Controllers\SSO\CustomAuthorizationController;
 
 /*
@@ -17,6 +18,7 @@ use App\Http\Controllers\SSO\CustomAuthorizationController;
 */
 
 Route::get('/oauth/authorize', [CustomAuthorizationController::class, 'customAuthorize']);
+Route::post('/oauth/token', [CustomAccessTokenController::class, 'customIssueToken']);
 
 Route::get('/oauth/.well-known/jwks', [JwksController::class, 'getJwks']);
 Route::get('/oauth/.well-known/openid-configuration', [OpenIdController::class, 'getOpenIdConfiguration']);
