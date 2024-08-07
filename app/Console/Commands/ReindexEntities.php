@@ -9,7 +9,6 @@ use App\Models\Team;
 use App\Models\Dur;
 use App\Models\Tool;
 use App\Models\Collection;
-use App\Jobs\TermExtraction; 
 use Illuminate\Console\Command;
 use App\Http\Controllers\Api\V1\PublicationController;
 use App\Http\Controllers\Api\V1\ToolController;
@@ -24,8 +23,7 @@ class ReindexEntities extends Command
      *
      * @var string
      */
-
-    protected $signature = 'app:reindex-entities {entity?} {sleep=0} {minIndex?} {maxIndex?} {--term-extraction}';
+    protected $signature = 'app:reindex-entities {entity?} {sleep=0} {minIndex?} {maxIndex?}';
 
     /**
      * The console command description.
@@ -119,23 +117,11 @@ class ReindexEntities extends Command
         $progressbar = $this->output->createProgressBar(count($datasetIds));
         foreach ($datasetIds as $id) {
             $this->checkAndCleanMaterialType($id);
-            if ($termExtraction) {
-                $dataset = Dataset::where('id', $id)->first();
-                if ($dataset->status === Dataset::STATUS_ACTIVE) {
-                    $latestMetadata = $dataset->latestMetadata()->first();
-                    TermExtraction::dispatch(
-                            $id,
-                            $dataset->lastMetadataVersionNumber()->version,
-                            base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6))
-                        );
-                }
-            } else {
-                MMC::reindexElastic($id);
-            }
+            MMC::reindexElastic($id);
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
-        $progressbar->finish(); 
+        $progressbar->finish();
     }
 
     private function tools()
