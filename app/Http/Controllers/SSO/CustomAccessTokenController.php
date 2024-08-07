@@ -18,7 +18,8 @@ class CustomAccessTokenController extends AuthController
             $data = json_decode($request->getBody()->getContents(), true);
             CloudLogger::write('request :: ' . json_encode($request));
             CloudLogger::write('request all :: ' . json_encode($request->all()));
-            CloudLogger::write(json_encode($data));
+            CloudLogger::write('request getbody :: ' . json_encode($request->getBody()));
+            CloudLogger::write('data :: ' . json_encode($data));
             \Log::info(json_encode($data));
 
             // Custom validation
