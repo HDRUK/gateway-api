@@ -56,6 +56,8 @@ class CustomAuthorizationController extends Controller
 
         return $this->withErrorHandling(function () use ($psrRequest, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
+            CloudLogger::write(json_encode($authRequest));
+            CloudLogger::write(json_encode($userId));
             return $this->approveRequest($authRequest, $userId);
         });
     }
