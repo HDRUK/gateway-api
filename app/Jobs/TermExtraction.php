@@ -35,18 +35,18 @@ class TermExtraction implements ShouldQueue
     private int $version;
     private string $data = '';
 
-    private bool $reIndexElastic = false;
+    private bool $reIndexElastic = true;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $datasetId, int $version, string $data, ?string $elasticIndex = "on")
+    public function __construct(string $datasetId, int $version, string $data, ?bool $elasticIndex)
     {
         $this->datasetId = $datasetId;
         $this->version = $version;
         $this->data = $data;
 
-        $this->reIndexElastic = ($elasticIndex === "on" ? true : false);
+        $this->reIndexElastic = is_null($elasticIndex) ? true : $elasticIndex;
     }
 
     /**
