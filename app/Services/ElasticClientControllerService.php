@@ -23,8 +23,10 @@ class ElasticClientControllerService
     {
         return ClientBuilder::create()
             ->setHosts(config('database.connections.elasticsearch.hosts'))
-            ->setSSLVerification(env('ELASTICSEARCH_VERIFY_SSL'))
-            ->setBasicAuthentication(env('ELASTICSEARCH_USER'), env('ELASTICSEARCH_PASS'))
-            ->build();
+            ->setSSLVerification(config('services.elasticclient.verify_ssl'))
+            ->setBasicAuthentication(
+                config('services.elasticclient.user'),
+                config('services.elasticclient.password')
+            )->build();
     }
 }
