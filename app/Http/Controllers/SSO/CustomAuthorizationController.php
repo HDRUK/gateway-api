@@ -53,27 +53,17 @@ class CustomAuthorizationController extends Controller
         ClientRepository $clients,
         TokenRepository $tokens,
     ) {
-        return $this->withErrorHandling(function () use ($psrRequest, $request, $clients, $tokens) {
+        // $userId = session('cr_uid');
+
+        // mock user id for with we need:
+        // - cohort_regests.request_status = 'APPROVED'
+        $cohortRequests = CohortRequest::where(['request_status' => 'APPROVED'])->first();
+        $userId = $cohortRequests->user_id;
+        // end mock user id
+
+        return $this->withErrorHandling(function () use ($psrRequest, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
- 
-            $scopes = $this->parseScopes($authRequest);
- 
-            $token = $tokens->findValidToken(
-                $user = $request->user(),
-                $client = $clients->find($authRequest->getClient()->getIdentifier())
-            );
- 
-            if ($token && $token->scopes === collect($scopes)->pluck('id')->all()) {
-                return $this->approveRequest($authRequest, $user);
-            }
- 
-            $request->session()->put('authRequest', $authRequest);
- 
-            $authRequest = $this->getAuthRequestFromSession($request);
- 
-            return $this->server->completeAuthorizationRequest(
-                $authRequest, new Psr7Response
-            );
+            return $this->approveRequest($authRequest, $userId);
         });
     }
 
