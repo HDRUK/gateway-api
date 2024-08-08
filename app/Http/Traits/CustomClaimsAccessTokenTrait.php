@@ -36,7 +36,7 @@ trait CustomClaimsAccessTokenTrait
             ->expiresAt($this->getExpiryDateTime())
             ->relatedTo((string)$this->getUserIdentifier())
             ->withClaim('scopes', $this->getScopes())
-            ->withClaim('email', $this->getScopes())
+            ->withClaim('email', $user->email)
             ->withClaim('firstname', $user->firstname)
             ->withClaim('lastname', $user->lastname)
             ->withClaim('rquestroles', $rquestroles) // rquestroles - custom claim
