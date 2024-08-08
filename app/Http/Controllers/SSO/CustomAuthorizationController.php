@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\SSO;
 
 use CloudLogger;
+use Laravel\Passport\ClientRepository;
 use Illuminate\Http\Request;
 use App\Models\CohortRequest;
 use Laravel\Passport\Bridge\User;
@@ -43,6 +44,8 @@ class CustomAuthorizationController extends Controller
      */
     public function customAuthorize(
         ServerRequestInterface $psrRequest,
+        Request $request,
+        ClientRepository $clients,
     ) {
         // $userId = session('cr_uid');
 
@@ -54,10 +57,47 @@ class CustomAuthorizationController extends Controller
 
         CloudLogger::write('Start authorization for userId :: ' . $userId);
 
-        return $this->withErrorHandling(function () use ($psrRequest, $userId) {
-            $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
-            return $this->approveRequest($authRequest, $userId);
+        $authRequest = $this->withErrorHandling(function () use ($psrRequest) {
+            return $this->server->validateAuthorizationRequest($psrRequest);
         });
+
+        $scopes = $this->parseScopes($authRequest);
+        $user = User::find($userId);
+        $client = $clients->find($authRequest->getClient()->getIdentifier());
+
+        $request->session()->put('authToken', $authToken = Str::random());
+        $request->session()->put('authRequest', $authRequest);
+
+        CloudLogger::write([
+            'client' => $client,
+            'user' => $user,
+            'scopes' => $scopes,
+            'request' => $request,
+            'authToken' => $authToken,
+        ]);
+
+        return $this->response->withParameters([
+            'client' => $client,
+            'user' => $user,
+            'scopes' => $scopes,
+            'request' => $request,
+            'authToken' => $authToken,
+        ]);
+    }
+
+    /**
+     * Transform the authorization requests's scopes into Scope instances.
+     *
+     * @param  \League\OAuth2\Server\RequestTypes\AuthorizationRequest  $authRequest
+     * @return array
+     */
+    protected function parseScopes($authRequest)
+    {
+        return Passport::scopesFor(
+            collect($authRequest->getScopes())->map(function ($scope) {
+                return $scope->getIdentifier();
+            })->unique()->all()
+        );
     }
 
     /**
