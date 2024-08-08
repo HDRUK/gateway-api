@@ -20,6 +20,8 @@ trait CustomClaimsAccessTokenTrait
      */
     private function convertToJWT()
     {
+        // https://github.com/HDRUK/gateway-api/blob/2f0f2df3d94a75b8a1a4920a64cd0c6a2267c2d3/src/resources/utilities/ga4gh.utils.js#L10
+        
         $this->initJwtConfiguration();
 
         $rquestroles = $this->getRquestroles($this->getUserIdentifier());
@@ -27,6 +29,13 @@ trait CustomClaimsAccessTokenTrait
         $user = User::where([
             'id' => $this->getUserIdentifier(),
         ])->first();
+
+        $ga4ghVisaV1 = [
+            'type' => 'AffiliationAndRole',
+            'asserted' => $user->created_at,
+            'value' => 'no.organization',
+            'source' => env('GATEWAY_URL'), // temp
+        ];
 
         return $this->jwtConfiguration->builder()
             ->permittedFor($this->getClient()->getIdentifier())
@@ -39,7 +48,9 @@ trait CustomClaimsAccessTokenTrait
             ->withClaim('email', $user->email)
             ->withClaim('firstname', $user->firstname)
             ->withClaim('lastname', $user->lastname)
-            ->withClaim('rquestroles', $rquestroles) // rquestroles - custom claim
+            ->withClaim('rquestroles', $rquestroles)
+            ->withClaim('ga4gh_visa_v1', $ga4ghVisaV1)
+            ->withClaim('iss', env('GATEWAY_URL'))
             ->getToken($this->jwtConfiguration->signer(), $this->jwtConfiguration->signingKey());
     }
 
