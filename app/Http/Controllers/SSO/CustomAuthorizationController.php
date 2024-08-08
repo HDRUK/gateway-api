@@ -4,9 +4,10 @@ namespace App\Http\Controllers\SSO;
 
 use CloudLogger;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use App\Models\CohortRequest;
 // use Laravel\Passport\Bridge\User;
+use App\Models\CohortRequest;
 use Laravel\Passport\Passport;
 use App\Http\Controllers\Controller;
 use Laravel\Passport\ClientRepository;
