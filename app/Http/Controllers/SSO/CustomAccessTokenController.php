@@ -13,9 +13,10 @@ class CustomAccessTokenController extends AuthController
 {
     public function customIssueToken(ServerRequestInterface $request)
     {
-        $data = json_decode(parent::issueToken($request)->content(), true);
-        CloudLogger::write('data :: ' . json_encode($data));
-        CloudLogger::write('session :: ' . json_encode(session()->all()));
+        // $data = json_decode(parent::issueToken($request)->content(), true);
+        $data = json_decode($request->getBody()->getContents(), true);
+        \Log::info('data :: ' . json_encode($data));
+        \Log::info('session :: ' . json_encode(session()->all()));
     }
 
     // public function customIssueToken(ServerRequestInterface $request)
