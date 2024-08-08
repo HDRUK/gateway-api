@@ -15,6 +15,7 @@ use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
 use League\OAuth2\Server\AuthorizationServer;
 use Illuminate\Contracts\Routing\ResponseFactory;
+use Laravel\Passport\Contracts\AuthorizationViewResponse;
 
 class CustomAuthorizationController extends Controller
 {
@@ -34,7 +35,7 @@ class CustomAuthorizationController extends Controller
      */
     protected $response;
 
-    public function __construct(AuthorizationServer $server, ResponseFactory $response)
+    public function __construct(AuthorizationServer $server, AuthorizationViewResponse $response)
     {
         $this->server = $server;
         $this->response = $response;
