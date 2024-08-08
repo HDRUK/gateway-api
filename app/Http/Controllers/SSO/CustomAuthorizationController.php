@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\SSO;
 
 use CloudLogger;
-use Laravel\Passport\ClientRepository;
 use Illuminate\Http\Request;
 use App\Models\CohortRequest;
+use Laravel\Passport\Passport;
 use Laravel\Passport\Bridge\User;
 use App\Http\Controllers\Controller;
+use Laravel\Passport\ClientRepository;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
 use League\OAuth2\Server\AuthorizationServer;
