@@ -35,10 +35,9 @@ class CustomAuthorizationController extends Controller
      */
     protected $response;
 
-    public function __construct(AuthorizationServer $server, AuthorizationViewResponse $response)
+    public function __construct(AuthorizationServer $server)
     {
         $this->server = $server;
-        $this->response = $response;
     }
 
     /**
@@ -80,7 +79,14 @@ class CustomAuthorizationController extends Controller
             'authToken' => $authToken,
         ]);
 
-        return $this->response->withParameters([
+        // return $this->response->withParameters([
+        //     'client' => $client,
+        //     'user' => $user,
+        //     'scopes' => $scopes,
+        //     'request' => $request,
+        //     'authToken' => $authToken,
+        // ]);
+        return response()->json([
             'client' => $client,
             'user' => $user,
             'scopes' => $scopes,
