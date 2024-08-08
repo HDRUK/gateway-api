@@ -51,7 +51,6 @@ class CustomAuthorizationController extends Controller
         ServerRequestInterface $psrRequest,
         Request $request,
         ClientRepository $clients,
-        TokenRepository $tokens,
     ) {
         // $userId = session('cr_uid');
 
