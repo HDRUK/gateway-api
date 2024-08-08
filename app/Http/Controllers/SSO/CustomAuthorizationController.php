@@ -36,9 +36,10 @@ class CustomAuthorizationController extends Controller
      */
     protected $response;
 
-    public function __construct(AuthorizationServer $server)
+    public function __construct(AuthorizationServer $server, ResponseFactory $response)
     {
         $this->server = $server;
+        $this->response = $response;
     }
 
     /**
@@ -50,42 +51,30 @@ class CustomAuthorizationController extends Controller
         ServerRequestInterface $psrRequest,
         Request $request,
         ClientRepository $clients,
+        TokenRepository $tokens,
     ) {
-        // $userId = session('cr_uid');
-
-        // mock user id for with we need:
-        // - cohort_regests.request_status = 'APPROVED'
-        $cohortRequests = CohortRequest::where(['request_status' => 'APPROVED'])->first();
-        $userId = $cohortRequests->user_id;
-        // end mock user id
-
-        CloudLogger::write('Start authorization for userId :: ' . $userId);
-
-        $authRequest = $this->withErrorHandling(function () use ($psrRequest) {
-            return $this->server->validateAuthorizationRequest($psrRequest);
+        return $this->withErrorHandling(function () use ($psrRequest, $request, $clients, $tokens) {
+            $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
+ 
+            $scopes = $this->parseScopes($authRequest);
+ 
+            $token = $tokens->findValidToken(
+                $user = $request->user(),
+                $client = $clients->find($authRequest->getClient()->getIdentifier())
+            );
+ 
+            if ($token && $token->scopes === collect($scopes)->pluck('id')->all()) {
+                return $this->approveRequest($authRequest, $user);
+            }
+ 
+            $request->session()->put('authRequest', $authRequest);
+ 
+            $authRequest = $this->getAuthRequestFromSession($request);
+ 
+            return $this->server->completeAuthorizationRequest(
+                $authRequest, new Psr7Response
+            );
         });
-
-        $scopes = $this->parseScopes($authRequest);
-        $user = UserModel::find($userId);
-        $client = $clients->find($authRequest->getClient()->getIdentifier());
-
-        $request->session()->put('authToken', $authToken = Str::random());
-        $request->session()->put('authRequest', $authRequest);
-
-        $authRequest = $this->getAuthRequestFromSession($request);
-
-        \Log::info(json_encode([
-            'client' => $client,
-            'user' => $user,
-            'scopes' => $scopes,
-            'request' => $request,
-            'authToken' => $authToken,
-        ]));
-        \Log::info(json_encode($authRequest));
-
-        return $this->server->completeAuthorizationRequest(
-            $authRequest, new Psr7Response
-        );
     }
 
     /**
