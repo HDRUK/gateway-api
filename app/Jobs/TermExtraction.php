@@ -4,12 +4,13 @@ namespace App\Jobs;
 
 use Auditor;
 use Exception;
-use MetadataManagementController as MMC;
 
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\NamedEntities;
 use App\Models\DatasetVersionHasNamedEntities;
+
+use App\Http\Traits\IndexElastic;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Http;
 
 class TermExtraction implements ShouldQueue
 {
+    use IndexElastic;
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
@@ -33,18 +35,18 @@ class TermExtraction implements ShouldQueue
     private int $version;
     private string $data = '';
 
-    private bool $reIndexElastic = false;
+    private bool $reIndexElastic = true;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $datasetId, int $version, string $data, ?string $elasticIndex = "on")
+    public function __construct(string $datasetId, int $version, string $data, ?bool $elasticIndex = true)
     {
         $this->datasetId = $datasetId;
         $this->version = $version;
         $this->data = $data;
 
-        $this->reIndexElastic = ($elasticIndex === "on" ? true : false);
+        $this->reIndexElastic = is_null($elasticIndex) ? true : $elasticIndex;
     }
 
     /**
@@ -64,7 +66,7 @@ class TermExtraction implements ShouldQueue
         }
 
         if ($this->reIndexElastic) {
-            MMC::reindexElastic($this->datasetId);
+            $this->reindexElastic($this->datasetId);
         }
     }
 

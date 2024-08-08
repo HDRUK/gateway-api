@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Elastic\Elasticsearch\ClientBuilder;
 use MetadataManagementController as MMC;
+use ElasticClientController as ECC;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 
 trait MockExternalApis
@@ -1008,9 +1009,6 @@ trait MockExternalApis
             )
         ]);
 
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
         MMC::shouldReceive("translateDataModelType")
             ->andReturnUsing(function (string $metadata) {
                 return [
@@ -1022,6 +1020,11 @@ trait MockExternalApis
             });
         MMC::shouldReceive("validateDataModelType")->andReturn(true);
         MMC::makePartial();
+
+        // Mock the ECC getElasticClient method to return the mock client
+        // makePartial so other MMC methods are not mocked
+        ECC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
+        ECC::makePartial();
 
         $this->dataset_store = [];
 

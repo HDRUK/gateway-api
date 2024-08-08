@@ -38,9 +38,10 @@ use App\Models\ToolHasTypeCategory;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Traits\GetValueByPossibleKeys;
+use App\Http\Traits\IndexElastic;
 use App\Http\Traits\PaginateFromArray;
 use App\Models\DataProviderCollHasTeam;
-use MetadataManagementController as MMC;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
 use Illuminate\Database\Eloquent\Casts\Json;
@@ -51,6 +52,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SearchController extends Controller
 {
+    use IndexElastic;
+    use GetValueByPossibleKeys;
     use PaginateFromArray;
 
     /**
@@ -1578,9 +1581,9 @@ class SearchController extends Controller
     {
         $miniMetadata = $input['metadata'];
 
-        $materialTypes = MMC::getMaterialTypes($input);
-        $containsTissue = MMC::getContainsTissues($materialTypes);
-        $hasTechnicalMetadata = (bool) count(MMC::getValueByPossibleKeys($input, ['metadata.structuralMetadata'], []));
+        $materialTypes = $this->getMaterialTypes($input);
+        $containsTissue = $this->getContainsTissues($materialTypes);
+        $hasTechnicalMetadata = (bool) count($this->getValueByPossibleKeys($input, ['metadata.structuralMetadata'], []));
 
         $accessServiceCategory = null;
         if (array_key_exists('accessServiceCategory', $miniMetadata['accessibility']['access'])) {

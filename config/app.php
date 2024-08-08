@@ -201,6 +201,7 @@ return [
         App\Providers\EnquiriesManagementControllerServiceProvider::class,
         App\Providers\CloudLoggerProvider::class,
         App\Providers\CloudPubSubProvider::class,
+        App\Providers\ElasticClientControllerServiceProvider::class,
     ],
 
     /*
@@ -221,6 +222,7 @@ return [
         'EnquiriesManagementController' => App\EnquiriesManagementController\EnquiriesManagementControllerFacade::class,
         'CloudLogger' => App\Facades\CloudLoggerFacade::class,
         'CloudPubSub' => App\Facades\CloudPubSubFacade::class,
+        'ElasticClientController' => App\Facades\ElasticClientControllerFacade::class,
     ])->toArray(),
 
 ];

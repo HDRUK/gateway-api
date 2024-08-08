@@ -10,6 +10,8 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
 use App\Jobs\TermExtraction;
+use App\Http\Traits\GetValueByPossibleKeys;
+use App\Http\Traits\IndexElastic;
 use App\Http\Traits\MetadataOnboard;
 
 use Illuminate\Http\Request;
@@ -33,6 +35,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DatasetController extends Controller
 {
+    use IndexElastic;
+    use GetValueByPossibleKeys;
     use MetadataOnboard;
 
     /**
@@ -452,7 +456,7 @@ class DatasetController extends Controller
             if ($exportStructuralMetadata === 'structuralMetadata') {
                 $arrayDataset = $dataset->toArray();
                 $latestVersionId = $latestVersion->id;
-                $versions = MMC::getValueByPossibleKeys($arrayDataset, ['versions'], []);
+                $versions = $this->getValueByPossibleKeys($arrayDataset, ['versions'], []);
 
                 $count = 0;
                 if (count($versions)) {
@@ -463,7 +467,7 @@ class DatasetController extends Controller
                         $count++;
                     }
                 }
-                $export = count($versions) ? MMC::getValueByPossibleKeys($arrayDataset, ['versions.' . $count . '.metadata.metadata.structuralMetadata'], []) : [];
+                $export = count($versions) ? $this->getValueByPossibleKeys($arrayDataset, ['versions.' . $count . '.metadata.metadata.structuralMetadata'], []) : [];
 
                 Auditor::log([
                     'action_type' => 'GET',
@@ -780,7 +784,7 @@ class DatasetController extends Controller
                         $elasticIndexing
                     );
 
-                    MMC::reindexElastic($currDataset->id);
+                    $this->reindexElastic($currDataset->id);
                 }
 
                 Auditor::log([
@@ -864,7 +868,7 @@ class DatasetController extends Controller
                     $metadata->save();
 
                     if ($request['status'] === Dataset::STATUS_ACTIVE) {
-                        MMC::reindexElastic($id);
+                        $this->reindexElastic($id);
                     }
 
                     Auditor::log([
@@ -993,7 +997,7 @@ class DatasetController extends Controller
 
         try {
             MMC::deleteDataset($id);
-            MMC::deleteFromElastic($id, 'dataset');
+            $this->deleteFromElastic($id, 'dataset');
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
