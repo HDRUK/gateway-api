@@ -71,28 +71,17 @@ class CustomAuthorizationController extends Controller
         $request->session()->put('authToken', $authToken = Str::random());
         $request->session()->put('authRequest', $authRequest);
 
-        CloudLogger::write([
+        \Log::info(json_encode([
             'client' => $client,
             'user' => $user,
             'scopes' => $scopes,
             'request' => $request,
             'authToken' => $authToken,
-        ]);
+        ]));
 
-        // return $this->response->withParameters([
-        //     'client' => $client,
-        //     'user' => $user,
-        //     'scopes' => $scopes,
-        //     'request' => $request,
-        //     'authToken' => $authToken,
-        // ]);
-        return response()->json([
-            'client' => $client,
-            'user' => $user,
-            'scopes' => $scopes,
-            'request' => $request,
-            'authToken' => $authToken,
-        ]);
+        return $this->server->completeAuthorizationRequest(
+            $authRequest, new Psr7Response
+        );
     }
 
     /**
