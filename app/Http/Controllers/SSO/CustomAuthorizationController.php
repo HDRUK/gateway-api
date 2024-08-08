@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\SSO;
 
 use CloudLogger;
-use App\Models\User as UserModel;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Laravel\Passport\Bridge\User;
 use App\Models\CohortRequest;
 use Laravel\Passport\Passport;
+use App\Models\User as UserModel;
+use Laravel\Passport\Bridge\User;
 use App\Http\Controllers\Controller;
 use Laravel\Passport\ClientRepository;
 use Nyholm\Psr7\Response as Psr7Response;
@@ -16,10 +16,11 @@ use Psr\Http\Message\ServerRequestInterface;
 use League\OAuth2\Server\AuthorizationServer;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Laravel\Passport\Contracts\AuthorizationViewResponse;
+use Laravel\Passport\Http\Controllers\RetrievesAuthRequestFromSession;
 
 class CustomAuthorizationController extends Controller
 {
-    use HandlesOAuthErrors;
+    use HandlesOAuthErrors, RetrievesAuthRequestFromSession;
 
     /**
      * The authorization server.
@@ -70,6 +71,8 @@ class CustomAuthorizationController extends Controller
 
         $request->session()->put('authToken', $authToken = Str::random());
         $request->session()->put('authRequest', $authRequest);
+
+        $authRequest = $this->getAuthRequestFromSession($request);
 
         \Log::info(json_encode([
             'client' => $client,
