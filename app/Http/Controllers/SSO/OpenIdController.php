@@ -59,6 +59,14 @@ class OpenIdController extends Controller
 
             // logme out
             'revocation_endpoint'       => env('APP_URL') . '/oauth/logmeout',
+
+            'token_endpoint_auth_methods_supported' => [
+                'none',
+                'client_secret_basic',
+                'client_secret_jwt',
+                'client_secret_post',
+                'private_key_jwt'
+            ],
         ];
 
         return response()->json($config);

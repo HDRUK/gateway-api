@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\SSO;
 
 use CloudLogger;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\CohortRequest;
+// use Laravel\Passport\Bridge\User;
 use Laravel\Passport\Passport;
-use Laravel\Passport\Bridge\User;
 use App\Http\Controllers\Controller;
 use Laravel\Passport\ClientRepository;
 use Nyholm\Psr7\Response as Psr7Response;
