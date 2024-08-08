@@ -1,12 +1,17 @@
 <?php
 
-namespace App\ElasticClientController;
+namespace App\Services;
 
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
 
-class ElasticClientController
+class ElasticClientControllerService
 {
+    public function __construct()
+    {
+        //
+    }
+
     /**
      * Configures and builds the client used to reindex ElasticSearch
      * Note: this client is defined here in the MMC facade, making it convenient

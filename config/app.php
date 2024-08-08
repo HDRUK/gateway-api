@@ -222,7 +222,7 @@ return [
         'EnquiriesManagementController' => App\EnquiriesManagementController\EnquiriesManagementControllerFacade::class,
         'CloudLogger' => App\Facades\CloudLoggerFacade::class,
         'CloudPubSub' => App\Facades\CloudPubSubFacade::class,
-        'ElasticClientController' => App\ElasticClientController\ElasticClientControllerFacade::class,
+        'ElasticClientController' => App\Facades\ElasticClientControllerFacade::class,
     ])->toArray(),
 
 ];

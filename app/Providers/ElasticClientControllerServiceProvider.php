@@ -2,8 +2,7 @@
 
 namespace App\Providers;
 
-use App\ElasticClientController\ElasticClientController;
-
+use App\Services\ElasticClientControllerService;
 use Illuminate\Support\ServiceProvider;
 
 class ElasticClientControllerServiceProvider extends ServiceProvider
@@ -15,7 +14,9 @@ class ElasticClientControllerServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(ElasticClientControllerService::class, function ($app) {
+            return new ElasticClientControllerService();
+        });
     }
 
     /**
@@ -25,8 +26,6 @@ class ElasticClientControllerServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->app->bind('elasticclientcontroller', function () {
-            return new ElasticClientController();
-        });
+        //
     }
 }
