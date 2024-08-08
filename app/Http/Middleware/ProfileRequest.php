@@ -10,11 +10,12 @@ use SebastianBergmann\Timer\ResourceUsageFormatter;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProfileRequest
 {
-    public function handle(Request $request, Closure $next): JsonResponse|StreamedResponse
+    public function handle(Request $request, Closure $next): JsonResponse|StreamedResponse|RedirectResponse
     {
         if (Config::get('profiling.profiler_active')) {
             // Create our profiler
