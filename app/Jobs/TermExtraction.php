@@ -40,7 +40,7 @@ class TermExtraction implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(string $datasetId, int $version, string $data, ?bool $elasticIndex)
+    public function __construct(string $datasetId, int $version, string $data, ?bool $elasticIndex = true)
     {
         $this->datasetId = $datasetId;
         $this->version = $version;
