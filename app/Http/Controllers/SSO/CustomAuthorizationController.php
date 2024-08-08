@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\SSO;
 
 use CloudLogger;
-use App\Models\User;
+use App\Models\User as UserModel;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-// use Laravel\Passport\Bridge\User;
+use Laravel\Passport\Bridge\User;
 use App\Models\CohortRequest;
 use Laravel\Passport\Passport;
 use App\Http\Controllers\Controller;
@@ -65,7 +65,7 @@ class CustomAuthorizationController extends Controller
         });
 
         $scopes = $this->parseScopes($authRequest);
-        $user = User::find($userId);
+        $user = UserModel::find($userId);
         $client = $clients->find($authRequest->getClient()->getIdentifier());
 
         $request->session()->put('authToken', $authToken = Str::random());
@@ -78,6 +78,7 @@ class CustomAuthorizationController extends Controller
             'request' => $request,
             'authToken' => $authToken,
         ]));
+        \Log::info(json_encode($authRequest));
 
         return $this->server->completeAuthorizationRequest(
             $authRequest, new Psr7Response
