@@ -116,6 +116,8 @@ class ReindexEntities extends Command
             $datasetIds = array_slice($datasetIds, 0, $maxIndex + 1);
         }
 
+        $termExtraction = $this->option('term-extraction'); // Initialize $termExtraction based on the command option
+
         $progressbar = $this->output->createProgressBar(count($datasetIds));
         foreach ($datasetIds as $id) {
             $this->checkAndCleanMaterialType($id);
