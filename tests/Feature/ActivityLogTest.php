@@ -41,6 +41,11 @@ class ActivityLogTest extends TestCase
         ];
     }
 
+    public function test_that_false_is_true(): void
+    {
+        $this->assertTrue(false);
+    }
+
     /**
      * List all ActivityLogs
      *
