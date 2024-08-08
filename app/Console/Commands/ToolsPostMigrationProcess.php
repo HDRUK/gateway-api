@@ -124,7 +124,7 @@ class ToolsPostMigrationProcess extends Command
                     $tool->license = $licenceId;
                     $tool->save();
 
-                    $this->indexElasticTool($tool->id);
+                    $this->indexElasticTools($tool->id);
 
                     echo 'completed post-process of migration for tool ' . $tool->id . PHP_EOL;
                 } else {
