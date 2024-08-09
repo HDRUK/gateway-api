@@ -52,6 +52,7 @@ class Tool extends Model
         'contact_address',
         'any_dataset',
         'status',
+        'team_id',
     ];
 
     /**
