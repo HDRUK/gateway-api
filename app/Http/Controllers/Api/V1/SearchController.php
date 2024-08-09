@@ -184,7 +184,7 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $datasetsModels = Dataset::with('versions')->whereIn('id', $matchedIds)->get()->toArray();
+            $datasetsModels = Dataset::with('versions', 'team')->whereIn('id', $matchedIds)->get()->toArray();
             foreach ($datasetsArray as $i => $dataset) {
                 $foundFlag = false;
                 foreach ($datasetsModels as $model) {
@@ -197,6 +197,8 @@ class SearchController extends Controller
                         }
                         $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
                         $datasetsArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model);
+                        $datasetsArray[$i]['team']['id'] = $model['team']['id'];
+                        $datasetsArray[$i]['team']['is_question_bank'] = $model['team']['is_question_bank'];
                         $foundFlag = true;
                     }
                 }
