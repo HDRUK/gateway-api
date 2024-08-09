@@ -21,7 +21,7 @@ class AddDataProviderNetwork extends Command
      *
      * @var string
      */
-    protected $description = 'Data Provider Network for import, based on file "../storage/migration_files/data_provider_networkv3.csv"';
+    protected $description = 'Data Provider Network for import, based on file "../storage/migration_files/data_provider_networkv3-Introduction.csv"';
 
     private $csvData = [];
 
@@ -36,7 +36,7 @@ class AddDataProviderNetwork extends Command
      */
     public function handle()
     {
-        $askDataProviderNetwork = $this->ask('Data Provider Network for import, based on file "../storage/migration_files/data_provider_networkv3.csv"? [default value all]', 'all');
+        $askDataProviderNetwork = $this->ask('Data Provider Network for import, based on file "../storage/migration_files/data_provider_networkv3-Introduction.csv"? [default value all]', 'all');
         $askInitDataProviderNetwork = $this->ask('Do you want to initialize the database for "Data Provider Network"? yes/no [default value no]', 'no');
 
         if ($askInitDataProviderNetwork === 'yes') {
