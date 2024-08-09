@@ -531,7 +531,7 @@ trait IndexElastic
                 'description' => $tool['description'],
                 'license' => $license ? $license['label'] : null,
                 'techStack' => $tool['tech_stack'],
-                'category' => $tool['category']['name'],
+                'category' => $tool['category'] ? $tool['category']['name'] : '',
                 'typeCategory' => $typeCategories,
                 'associatedAuthors' => $tool['associated_authors'],
                 'programmingLanguages' => $programmingLanguages,
