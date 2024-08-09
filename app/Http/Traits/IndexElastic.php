@@ -449,7 +449,7 @@ trait IndexElastic
      */
     public function indexElasticTools(int $toolId): void
     {
-        // try {
+        try {
             $tool = Tool::where('id', $toolId)
                 ->with([
                     'programmingLanguages',
@@ -551,15 +551,15 @@ trait IndexElastic
             $client = ECC::getElasticClient();
             $client->index($params);
 
-        // } catch (Exception $e) {
-        //     Auditor::log([
-        //         'action_type' => 'EXCEPTION',
-        //         'action_name' => class_basename($this) . '@' . __FUNCTION__,
-        //         'description' => $e->getMessage(),
-        //     ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
 
-        //     throw new Exception($e->getMessage());
-        // }
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
