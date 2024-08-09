@@ -73,6 +73,10 @@ class RunPostMigrations extends Command
                 'arguments' => [],
             ], // dataset linkage
             [
+                'command' => 'app:post-migration-publishers',
+                'arguments' => [],
+            ],
+            [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'datasets',
