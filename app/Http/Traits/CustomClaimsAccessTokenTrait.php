@@ -48,7 +48,7 @@ trait CustomClaimsAccessTokenTrait
             ->withClaim('scopes', $this->getScopes())
             ->withClaim('email', $user->email)
             ->withClaim('preferred_username', $user->name)
-            ->withClaim('fullname', $user->firstname . ' ' . $user->firstname)
+            ->withClaim('fullname', $user->lastname . ' ' . $user->firstname)
             ->withClaim('firstname', $user->firstname)
             ->withClaim('lastname', $user->lastname)
             ->withClaim('rquestroles', $rquestroles)
