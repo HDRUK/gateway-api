@@ -42,8 +42,8 @@ Content-Type: application/json
 Accept: application/json
 
 {
-    "email": {{uEmailDar}},
-    "password": {{uPasswordDar}}
+    "email": {{uEmail}},
+    "password": {{uPassword}}
 }
 
 # ### Variables jwt token
@@ -342,32 +342,67 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "mongo_object_id": "649d6a39d30c534553c7fb8d",
-    "name": "Effectiveness of COVID-19 Vaccination in Brazil Using Mobile Data - Github repository",
-    "url": "https://github.com/noispuc/ICODA_EFFECT_Brazil",
-    "description": "ICODA Grand Challenge - Drive Project\nThis is the code repository of the EFFECT-Brazil driver project from the ICODA Grand Challenge.\n\nThe project is driven by a multiprofessional team of researchers from the Center for Healthcare Operations and Intelligence (Núcleo de Operações e Inteligência em Saúde) (NOIS), of the Department of Industrial Engineering @ PUC-Rio\n\nContact us at:\nTwitter: @NOIS_PUCRio\nnois [at] puc-rio [dot] br",
-    "license": "",
-    "tech_stack": "R",
-    "category_id": 74,
     "user_id": 1,
-    "tag": [303],
-    "dataset": [842,842],
-    "enabled": true,
-    "mongo_id": 2895357616393892,
-    "programming_language": [9],
-    "programming_package": [],
-    "publications": [
+    "team_id": 2,
+    "url": "http://www.google.com",
+    "name": "new tool another",
+    "type_category": [
+        1,
+        6
+    ],
+    "description": "ANOTHER TEST DESCRIPTION TEST DESCRIPTION TEST DESCRIPTION TEST DESCRIPTION ",
+    "associated_authors": "author1",
+    "programming_language": [
+        6,
+        11
+    ],
+    "keywords": [
+        "keyword1"
+    ],
+    "any_dataset": false,
+    "dataset": [
         {
-            "id": 2776
-        },
-        {
-            "id": 2742
-        },
-        {
-            "id": 2812
+            "link_type": "USED_IN",
+            "id": 10
         }
-    ]
-}
+    ],
+    "link": "",
+    "durs": [],
+    "publications": [],
+    "tools": [],
+    "results": "TEST RESULTS TEST RESULTS TEST RESULTS TEST RESULTS TEST RESULTS TEST RESULTS ",
+    "enabled": true,
+    "tag": [],
+    "status": "ACTIVE"
+} 
+
+# {
+#     "mongo_object_id": "649d6a39d30c534553c7fb8d",
+#     "name": "Effectiveness of COVID-19 Vaccination in Brazil Using Mobile Data - Github repository",
+#     "url": "https://github.com/noispuc/ICODA_EFFECT_Brazil",
+#     "description": "ICODA Grand Challenge - Drive Project\nThis is the code repository of the EFFECT-Brazil driver project from the ICODA Grand Challenge.\n\nThe project is driven by a multiprofessional team of researchers from the Center for Healthcare Operations and Intelligence (Núcleo de Operações e Inteligência em Saúde) (NOIS), of the Department of Industrial Engineering @ PUC-Rio\n\nContact us at:\nTwitter: @NOIS_PUCRio\nnois [at] puc-rio [dot] br",
+#     "license": "",
+#     "tech_stack": "R",
+#     "category_id": 74,
+#     "user_id": 1,
+#     "tag": [303],
+#     "dataset": [842,842],
+#     "enabled": true,
+#     "mongo_id": 2895357616393892,
+#     "programming_language": [9],
+#     "programming_package": [],
+#     "publications": [
+#         {
+#             "id": 2776
+#         },
+#         {
+#             "id": 2742
+#         },
+#         {
+#             "id": 2812
+#         }
+#     ]
+# }
 
 
 # {
