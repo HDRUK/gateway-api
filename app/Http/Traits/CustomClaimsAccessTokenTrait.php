@@ -41,15 +41,17 @@ trait CustomClaimsAccessTokenTrait
             ->permittedFor($this->getClient()->getIdentifier())
             ->identifiedBy($this->getIdentifier())
             ->issuedAt(new \DateTimeImmutable())
+            ->issuedBy(env('GATEWAY_URL'))
             ->canOnlyBeUsedAfter(new \DateTimeImmutable())
             ->expiresAt($this->getExpiryDateTime())
             ->relatedTo((string)$this->getUserIdentifier())
             ->withClaim('scopes', $this->getScopes())
             ->withClaim('email', $user->email)
+            ->withClaim('preferred_username', $user->name)
+            ->withClaim('fullname', $user->firstname . ' ' . $user->firstname)
             ->withClaim('firstname', $user->firstname)
             ->withClaim('lastname', $user->lastname)
             ->withClaim('rquestroles', $rquestroles)
-            ->withClaim('ga4gh_visa_v1', $ga4ghVisaV1)
             ->getToken($this->jwtConfiguration->signer(), $this->jwtConfiguration->signingKey());
     }
 
