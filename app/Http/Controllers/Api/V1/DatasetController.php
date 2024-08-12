@@ -402,8 +402,16 @@ class DatasetController extends Controller
             }
 
             // Inject attributes via the dataset version table
+            // notes Calum 12th August 2024...
+            // - This is a mess.. why is `pulibcations_count` returning something different than dataset->allPublications??
+            // - Tools linakge not returned
+            // - For the FE i just need a tools linkage count so i'm gonna return `count(dataset->allTools)` for now
+            // - Same for collections
+            // - Leaving this as it is as im not 100% sure what any FE knock-on effect would be
             $dataset->setAttribute('durs_count', $dataset->latestVersion()->durHasDatasetVersions()->count());
             $dataset->setAttribute('publications_count', $dataset->latestVersion()->publicationHasDatasetVersions()->count());
+            $dataset->setAttribute('tools_count', count($dataset->allTools));
+            $dataset->setAttribute('collections_count', count($dataset->allCollections));
             $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
             $dataset->setAttribute('durs', $dataset->allDurs  ?? []);
             $dataset->setAttribute('publications', $dataset->allPublications  ?? []);
