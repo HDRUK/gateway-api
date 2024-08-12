@@ -215,9 +215,11 @@ class DataProviderCollController extends Controller
     public function showSummary(Request $request, int $id): JsonResponse
     {
         try {
-            $dpc = DataProviderColl::select('id', 'name', 'img_url')->where([
-                'id' => $id,
-                'enabled' => 1,
+            $dpc = DataProviderColl::select('id', 'name', 'img_url', 'enabled')
+                ->with('teams')
+                ->where([
+                    'id' => $id,
+                    'enabled' => 1,
             ])->first();
 
             if (!$dpc) {
@@ -227,7 +229,7 @@ class DataProviderCollController extends Controller
                 ], 404);
             }
 
-            $this->getTeams($dpc);
+            $teamsResult = $this->getTeams($dpc);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -235,54 +237,60 @@ class DataProviderCollController extends Controller
                 'description' => 'DataProviderColl get ' . $id,
             ]);
 
+            $durs = Dur::select(
+                'id',
+                'project_title',
+                'organisation_name',
+                'status',
+                'created_at',
+                'updated_at'
+            )->whereIn('id', $this->durs)->get()->toArray();
+            $tools = Tool::select(
+                'id',
+                'name',
+                'enabled',
+                'created_at',
+                'updated_at'
+            )->with(['user'])->whereIn('id', $this->tools)->get()->toArray();
+            $publications = Publication::select(
+                'id',
+                'paper_title',
+                'authors',
+                'publication_type',
+                'publication_type_mk1',
+                'created_at',
+                'updated_at'
+            )->whereIn('id', $this->publications)->get()->toArray();
+            $collections = Collection::select(
+                'id',
+                'name',
+                'image_link',
+                'created_at',
+                'updated_at'
+            )->whereIn('id', $this->collections)->get()->toArray();
+
+            $result = [
+                'id' => $dpc->id,
+                'name' => $dpc->name,
+                'img_url' => $dpc->img_url,
+                'summary' => $dpc->summary,
+                'enabled' => $dpc->enabled,
+                'teams_counts' => $teamsResult,
+                'datasets_total' => count($this->datasets),
+                'datasets' => $this->datasets,
+                'durs_total' => count($durs),
+                'durs' => $durs,
+                'tools_total' => count($tools),
+                'tools' => $tools,
+                'publications_total' => count($publications),
+                'publications' => $publications,
+                'collections_total' => count($collections),
+                'collections' => $collections
+            ];
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => [
-                    'id' => $dpc->id,
-                    'name' => $dpc->name,
-                    'img_url' => $dpc->img_url,
-                    'summary' => $dpc->summary,
-                    'datasets' => $this->datasets,
-                    'durs' => Dur::select(
-                        'id',
-                        'project_title',
-                        'organisation_name',
-                        'status',
-                        'created_at',
-                        'updated_at'
-                    )->whereIn('id', $this->durs)
-                    ->get()->toArray(),
-
-                    'tools' => Tool::select(
-                        'id',
-                        'name',
-                        'enabled',
-                        'created_at',
-                        'updated_at'
-                    )->with(['user'])
-                    ->whereIn('id', $this->tools)
-                    ->get()->toArray(), //TOFIX: this always returns `user = null` because the syntax is incorrect.
-
-                    'publications' => Publication::select(
-                        'id',
-                        'paper_title',
-                        'authors',
-                        'publication_type',
-                        'publication_type_mk1',
-                        'created_at',
-                        'updated_at'
-                    )->whereIn('id', $this->publications)
-                    ->get()->toArray(),
-
-                    'collections' => Collection::select(
-                        'id',
-                        'name',
-                        'image_link',
-                        'created_at',
-                        'updated_at'
-                    )->whereIn('id', $this->collections)
-                    ->get()->toArray(),
-                ],
+                'data' => $result,
             ]);
         } catch (Exception $e) {
             Auditor::log([
@@ -683,23 +691,48 @@ class DataProviderCollController extends Controller
     public function getTeams(DataProviderColl $dp)
     {
         $idTeams = DataProviderCollHasTeam::where(['data_provider_coll_id' => $dp->id])->pluck('team_id')->toArray();
+        $teamsResult = [];
 
         foreach ($idTeams as $idTeam) {
             $team = Team::select('id', 'name')->where(['id' => $idTeam])->first();
-            $this->getDatasets((int) $team->id);
+            $counts = $this->getDatasets((int) $team->id);
             $teamCollections = Collection::where(['team_id' => $idTeam])->pluck('id')->toArray();
 
             $this->collections = array_unique([...$this->collections, ...$teamCollections]);
+
+            $teamsResult[] = array_merge([
+                'name' => $team->name,
+            ], $counts);
         }
+
+        return $teamsResult;
     }
 
     public function getDatasets(int $teamId)
     {
         $datasetIds = Dataset::where(['team_id' => $teamId])->pluck('id')->toArray();
 
+        $teamResourceIds = [
+            'durs' => [],
+            'publications' => [],
+            'tools' => [],
+            'collections' => []
+        ];
         foreach ($datasetIds as $datasetId) {
-            $this->checkingDataset($datasetId);
+            $datasetResources = $this->checkingDataset($datasetId);
+            foreach ($datasetResources as $k => $v) {
+                $teamResourceIds[$k] = array_unique(array_merge($v, $teamResourceIds[$k]));
+            }
         }
+        $counts = [
+            'datasets_count' => count($datasetIds),
+            'durs_count' => count($teamResourceIds['durs']),
+            'publications_count' => count($teamResourceIds['publications']),
+            'tools_count' => count($teamResourceIds['tools']),
+            'collections_count' => count($teamResourceIds['collections']),
+        ];
+
+        return $counts;
     }
 
     public function checkingDataset(int $datasetId)
@@ -743,5 +776,14 @@ class DataProviderCollController extends Controller
         $this->publications = array_unique(array_merge($this->publications, $publicationIds));
         $this->tools = array_unique(array_merge($this->tools, $toolIds));
         $this->collections = array_unique(array_merge($this->collections, $collectionIds));
+
+        $datasetResources = [
+            'durs' => $durIds,
+            'publications' => $publicationIds,
+            'tools' => $toolIds,
+            'collections' => $collectionIds
+        ];
+
+        return $datasetResources;
     }
 }

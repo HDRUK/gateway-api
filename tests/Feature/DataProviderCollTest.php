@@ -17,6 +17,7 @@ use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
+use App\Models\DataProviderColl;
 use App\Models\DataProviderCollHasTeam;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
@@ -153,6 +154,43 @@ class DataProviderCollTest extends TestCase
                 'collections',
             ]
         ]);
+    }
+
+    public function test_data_provider_collection_summary()
+    {
+        $id = DataProviderColl::where(['enabled' => 1])->first()->id;
+        $response = $this->get('api/v1/data_provider_colls/' . $id . '/summary', [], $this->header);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'img_url',
+                    'summary',
+                    'enabled',
+                    'teams_counts' => [
+                        0 => [
+                            'name',
+                            'datasets_count',
+                            'tools_count',
+                            'durs_count',
+                            'publications_count',
+                            'collections_count'
+                        ]
+                    ],
+                    'datasets_total',
+                    'datasets',
+                    'durs_total',
+                    'durs',
+                    'tools_total',
+                    'tools',
+                    'publications_total',
+                    'publications',
+                    'collections_total',
+                    'collections',
+                ],
+            ]);
     }
 
     public function test_create_data_provider_coll_with_success(): void
