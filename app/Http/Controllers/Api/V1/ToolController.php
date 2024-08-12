@@ -178,33 +178,33 @@ class ToolController extends Controller
                 'durs',
                 'collections',
             ])
-            ->when($mongoId, function ($query) use ($mongoId) {
-                return $query->where('mongo_id', '=', $mongoId);
-            })
-            ->when($teamId, function ($query) use ($teamId) {
-                return $query->where('team_id', '=', $teamId);
-            })
-            ->when($userId, function ($query) use ($userId) {
-                return $query->where('user_id', '=', $userId);
-            })
-            ->when(
-                $filterStatus,
-                function ($query) use ($filterStatus) {
-                    return $query->where('status', '=', $filterStatus)
-                        ->when(
-                            $filterStatus === Tool::STATUS_ARCHIVED,
-                            function ($query) {
-                                return $query->withTrashed();
-                            }
-                        );
-                }
-            )
-            ->when($filterTitle, function ($query) use ($filterTitle) {
-                return $query->where('name', 'like', '%' . $filterTitle . '%');
-            })
-            ->where('enabled', 1)
-            ->orderBy($sortField, $sortDirection)
-            ->paginate($perPage, ['*'], 'page');
+                ->when($mongoId, function ($query) use ($mongoId) {
+                    return $query->where('mongo_id', '=', $mongoId);
+                })
+                ->when($teamId, function ($query) use ($teamId) {
+                    return $query->where('team_id', '=', $teamId);
+                })
+                ->when($userId, function ($query) use ($userId) {
+                    return $query->where('user_id', '=', $userId);
+                })
+                ->when(
+                    $filterStatus,
+                    function ($query) use ($filterStatus) {
+                        return $query->where('status', '=', $filterStatus)
+                            ->when(
+                                $filterStatus === Tool::STATUS_ARCHIVED,
+                                function ($query) {
+                                    return $query->withTrashed();
+                                }
+                            );
+                    }
+                )
+                ->when($filterTitle, function ($query) use ($filterTitle) {
+                    return $query->where('name', 'like', '%' . $filterTitle . '%');
+                })
+                ->where('enabled', 1)
+                ->orderBy($sortField, $sortDirection)
+                ->paginate($perPage, ['*'], 'page');
 
             // Transform collection to include datasets
             $tools->map(function ($tool) {
@@ -288,7 +288,7 @@ class ToolController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => "Tool count",
             ]);
 
@@ -492,7 +492,7 @@ class ToolController extends Controller
             $this->checkCollections($toolId, $collections, (int)$jwtUser['id']);
 
             $currentTool = Tool::where('id', $toolId)->first();
-            if($currentTool->status === Tool::STATUS_ACTIVE) {
+            if ($currentTool->status === Tool::STATUS_ACTIVE) {
                 $this->indexElasticTools((int) $toolId);
             }
 
@@ -796,7 +796,8 @@ class ToolController extends Controller
                 $toolModel = Tool::withTrashed()
                     ->find($id);
                 if (($request['status'] !== Tool::STATUS_ARCHIVED) && (in_array($request['status'], [
-                    Tool::STATUS_ACTIVE, Tool::STATUS_DRAFT
+                    Tool::STATUS_ACTIVE,
+                    Tool::STATUS_DRAFT
                 ]))) {
                     $toolModel->status = $request['status'];
                     $toolModel->deleted_at = null;
@@ -814,7 +815,7 @@ class ToolController extends Controller
                     Auditor::log([
                         'user_id' => (int) $jwtUser['id'],
                         'action_type' => 'UPDATE',
-                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
                         'description' => "Tool " . $id . " unarchived",
                     ]);
                 } else {
@@ -888,7 +889,7 @@ class ToolController extends Controller
             }
 
             $currentTool = Tool::where('id', $id)->first();
-            if($currentTool->status === Tool::STATUS_ACTIVE) {
+            if ($currentTool->status === Tool::STATUS_ACTIVE) {
                 $this->indexElasticTools($id);
             }
 
@@ -1023,9 +1024,9 @@ class ToolController extends Controller
             'durs',
             'collections',
         ])
-        ->withTrashed()
-        ->where(['id' => $toolId])
-        ->first();
+            ->withTrashed()
+            ->where(['id' => $toolId])
+            ->first();
 
         $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
         return $tool;
@@ -1485,7 +1486,7 @@ class ToolController extends Controller
                 ->pluck('dataset_version_id')
                 ->all();
 
-            $datasetIDs = DatasetVersion::whereIn('dataset_version_id', $datasetVersionIDs)
+            $datasetIDs = DatasetVersion::whereIn('id', $datasetVersionIDs)
                 ->pluck('dataset_id')
                 ->all();
 
@@ -1536,7 +1537,6 @@ class ToolController extends Controller
 
             $client = MMC::getElasticClient();
             $client->index($params);
-
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
