@@ -249,6 +249,7 @@ class DataProviderCollController extends Controller
                 'id',
                 'name',
                 'enabled',
+                'status',
                 'created_at',
                 'updated_at'
             )->with(['user'])->whereIn('id', $this->tools)->get()->toArray();
@@ -258,6 +259,7 @@ class DataProviderCollController extends Controller
                 'authors',
                 'publication_type',
                 'publication_type_mk1',
+                'status',
                 'created_at',
                 'updated_at'
             )->whereIn('id', $this->publications)->get()->toArray();
@@ -265,6 +267,7 @@ class DataProviderCollController extends Controller
                 'id',
                 'name',
                 'image_link',
+                'status',
                 'created_at',
                 'updated_at'
             )->whereIn('id', $this->collections)->get()->toArray();
