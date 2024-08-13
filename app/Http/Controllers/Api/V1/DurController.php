@@ -16,7 +16,6 @@ use App\Models\Application;
 use Illuminate\Http\Request;
 use App\Models\DurHasDatasetVersion;
 use App\Models\DurHasKeyword;
-use App\Models\DataProviderColl;
 use App\Http\Requests\Dur\GetDur;
 use App\Http\Traits\MapOrganisationSector;
 use App\Models\DurHasPublication;
@@ -31,13 +30,13 @@ use App\Exceptions\NotFoundException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
-use App\Models\DataProviderCollHasTeam;
-use MetadataManagementController as MMC;
+use App\Http\Traits\IndexElastic;
 use App\Http\Traits\RequestTransformation;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DurController extends Controller
 {
+    use IndexElastic;
     use RequestTransformation;
     use MapOrganisationSector;
 
@@ -1323,60 +1322,66 @@ class DurController extends Controller
      */
     public function export(Request $request): StreamedResponse
     {
-        $teamId = $request->query('team_id', null);
-        $durId = $request->query('dur_id', null);
-        $durs = Dur::when($teamId, function ($query) use ($teamId) {
-            return $query->where('team_id', '=', $teamId);
-        })->when($durId, function ($query) use ($durId) {
-            return $query->where('id', '=', $durId);
-        })->get();
+        try {
+            Config::set('profiling.profiler_active', false);
 
-        // callback function that writes to php://output
-        $response = new StreamedResponse(
-            function () use ($durs) {
+            $teamId = $request->query('team_id', null);
+            $durId = $request->query('dur_id', null);
+            $durs = Dur::when($teamId, function ($query) use ($teamId) {
+                return $query->where('team_id', '=', $teamId);
+            })->when($durId, function ($query) use ($durId) {
+                return $query->where('id', '=', $durId);
+            })->get();
 
-                // Open output stream
-                $handle = fopen('php://output', 'w');
+            // callback function that writes to php://output
+            $response = new StreamedResponse(
+                function () use ($durs) {
 
-                // Call the model for specific headings to include
-                $headerRow = Dur::exportHeadings();
+                    // Open output stream
+                    $handle = fopen('php://output', 'w');
 
-                // Add CSV headers
-                fputcsv($handle, $headerRow);
+                    // Call the model for specific headings to include
+                    $headerRow = Dur::exportHeadings();
 
-                foreach ($durs as $rowDetails) {
-                    $fieldNames = $rowDetails->getFillable();
-                    $dataRow = [];
+                    // Add CSV headers
+                    fputcsv($handle, $headerRow);
 
-                    foreach ($fieldNames as $name) {
-                        switch (gettype($rowDetails->{$name})) {
-                            case 'array':
-                                // For arrays, join elements and produce a single string
-                                $dataRow[] = implode('|', $rowDetails->{$name});
-                                break;
-                            default:
-                                // Otherwise just ensure we replace nulls with an empty string
-                                if ($rowDetails->{$name} !== null) {
-                                    $dataRow[] = $rowDetails->{$name};
-                                } else {
-                                    $dataRow[] = '';
-                                }
-                                break;
+                    foreach ($durs as $rowDetails) {
+                        $fieldNames = $rowDetails->getFillable();
+                        $dataRow = [];
+
+                        foreach ($fieldNames as $name) {
+                            switch (gettype($rowDetails->{$name})) {
+                                case 'array':
+                                    // For arrays, join elements and produce a single string
+                                    $dataRow[] = implode('|', $rowDetails->{$name});
+                                    break;
+                                default:
+                                    // Otherwise just ensure we replace nulls with an empty string
+                                    if ($rowDetails->{$name} !== null) {
+                                        $dataRow[] = $rowDetails->{$name};
+                                    } else {
+                                        $dataRow[] = '';
+                                    }
+                                    break;
+                            }
                         }
+                        fputcsv($handle, $dataRow);
                     }
-                    fputcsv($handle, $dataRow);
+
+                    // Close the output stream
+                    fclose($handle);
                 }
+            );
 
-                // Close the output stream
-                fclose($handle);
-            }
-        );
+            $response->headers->set('Content-Type', 'text/csv');
+            $response->headers->set('Content-Disposition', 'attachment;filename="Datasets.csv"');
+            $response->headers->set('Cache-Control', 'max-age=0');
 
-        $response->headers->set('Content-Type', 'text/csv');
-        $response->headers->set('Content-Disposition', 'attachment;filename="Datasets.csv"');
-        $response->headers->set('Cache-Control', 'max-age=0');
-
-        return $response;
+            return $response;
+        } catch (Exception $e) {
+            dd($e->getMessage());
+        }
     }
 
     /**
@@ -1575,6 +1580,8 @@ class DurController extends Controller
      */
     public function exportTemplate(Request $request)
     {
+        Config::set('profiling.profiler_active', false);
+
         try {
             $file = Config::get('mock_data.data_use_upload_template');
 
@@ -1605,7 +1612,7 @@ class DurController extends Controller
 
             if (!$checking) {
                 $this->addDurHasDatasetVersion($durId, $dataset, $datasetVersionId, $userId);
-                MMC::reindexElastic($dataset['id']);
+                $this->reindexElastic($dataset['id']);
             }
         }
     }
@@ -1942,91 +1949,6 @@ class DurController extends Controller
         return array_map(function ($value) {
             return $value['id'];
         }, $input);
-    }
-
-    /**
-     * Calls a re-indexing of Elastic search when a data use is created or updated
-     *
-     * @param string $id The dur id from the DB
-     *
-     * @return void
-     */
-    public function indexElasticDur(string $id): void
-    {
-        try {
-
-            $durMatch = Dur::where(['id' => $id])
-                ->with(['keywords', 'team', 'sector'])
-                ->first();
-
-            $datasets = $durMatch->allDatasets  ?? [];
-
-            $datasetIds = array_map(function ($dataset) {
-                return $dataset['id'];
-            }, $datasets);
-
-            $durMatch = $durMatch->toArray();
-
-            $datasetTitles = array();
-            foreach ($datasetIds as $d) {
-                $metadata = Dataset::where(['id' => $d])
-                    ->first()
-                    ->latestVersion()
-                    ->metadata;
-                $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-            }
-
-            $keywords = array();
-            foreach ($durMatch['keywords'] as $k) {
-                $keywords[] = $k['name'];
-            }
-
-            $sector = ($durMatch['sector'] != null) ? Sector::where(
-                [
-                    'id' => $durMatch['sector']
-                ]
-            )->first()->name : null;
-
-            $dataProviderId = DataProviderCollHasTeam::where('team_id', $durMatch['team_id'])
-                ->pluck('data_provider_coll_id')
-                ->all();
-            $dataProvider = DataProviderColl::whereIn('id', $dataProviderId)
-                ->pluck('name')
-                ->all();
-
-            $toIndex = [
-                'projectTitle' => $durMatch['project_title'],
-                'laySummary' => $durMatch['lay_summary'],
-                'publicBenefitStatement' => $durMatch['public_benefit_statement'],
-                'technicalSummary' => $durMatch['technical_summary'],
-                'fundersAndSponsors' => $durMatch['funders_and_sponsors'],
-                'publisherName' => $durMatch['team']['name'],
-                'organisationName' => $durMatch['organisation_name'],
-                'datasetTitles' => $datasetTitles,
-                'keywords' => $keywords,
-                'sector' => $sector,
-                'dataProvider' => $dataProvider
-            ];
-
-            $params = [
-                'index' => 'datauseregister',
-                'id' => $id,
-                'body' => $toIndex,
-                'headers' => 'application/json'
-            ];
-
-            $client = MMC::getElasticClient();
-            $response = $client->index($params);
-
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
     }
 
     /**

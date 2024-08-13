@@ -10,6 +10,8 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
 use App\Jobs\TermExtraction;
+use App\Http\Traits\GetValueByPossibleKeys;
+use App\Http\Traits\IndexElastic;
 use App\Http\Traits\MetadataOnboard;
 
 use Illuminate\Http\Request;
@@ -33,6 +35,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DatasetController extends Controller
 {
+    use IndexElastic;
+    use GetValueByPossibleKeys;
     use MetadataOnboard;
 
     /**
@@ -398,8 +402,16 @@ class DatasetController extends Controller
             }
 
             // Inject attributes via the dataset version table
+            // notes Calum 12th August 2024...
+            // - This is a mess.. why is `pulibcations_count` returning something different than dataset->allPublications??
+            // - Tools linakge not returned
+            // - For the FE i just need a tools linkage count so i'm gonna return `count(dataset->allTools)` for now
+            // - Same for collections
+            // - Leaving this as it is as im not 100% sure what any FE knock-on effect would be
             $dataset->setAttribute('durs_count', $dataset->latestVersion()->durHasDatasetVersions()->count());
             $dataset->setAttribute('publications_count', $dataset->latestVersion()->publicationHasDatasetVersions()->count());
+            $dataset->setAttribute('tools_count', count($dataset->allTools));
+            $dataset->setAttribute('collections_count', count($dataset->allCollections));
             $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
             $dataset->setAttribute('durs', $dataset->allDurs  ?? []);
             $dataset->setAttribute('publications', $dataset->allPublications  ?? []);
@@ -452,7 +464,7 @@ class DatasetController extends Controller
             if ($exportStructuralMetadata === 'structuralMetadata') {
                 $arrayDataset = $dataset->toArray();
                 $latestVersionId = $latestVersion->id;
-                $versions = MMC::getValueByPossibleKeys($arrayDataset, ['versions'], []);
+                $versions = $this->getValueByPossibleKeys($arrayDataset, ['versions'], []);
 
                 $count = 0;
                 if (count($versions)) {
@@ -463,7 +475,7 @@ class DatasetController extends Controller
                         $count++;
                     }
                 }
-                $export = count($versions) ? MMC::getValueByPossibleKeys($arrayDataset, ['versions.' . $count . '.metadata.metadata.structuralMetadata'], []) : [];
+                $export = count($versions) ? $this->getValueByPossibleKeys($arrayDataset, ['versions.' . $count . '.metadata.metadata.structuralMetadata'], []) : [];
 
                 Auditor::log([
                     'action_type' => 'GET',
@@ -780,7 +792,7 @@ class DatasetController extends Controller
                         $elasticIndexing
                     );
 
-                    MMC::reindexElastic($currDataset->id);
+                    $this->reindexElastic($currDataset->id);
                 }
 
                 Auditor::log([
@@ -864,7 +876,7 @@ class DatasetController extends Controller
                     $metadata->save();
 
                     if ($request['status'] === Dataset::STATUS_ACTIVE) {
-                        MMC::reindexElastic($id);
+                        $this->reindexElastic($id);
                     }
 
                     Auditor::log([
@@ -993,7 +1005,7 @@ class DatasetController extends Controller
 
         try {
             MMC::deleteDataset($id);
-            MMC::deleteFromElastic($id, 'dataset');
+            $this->deleteFromElastic($id, 'dataset');
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

@@ -108,6 +108,9 @@ class AliasReplyScanner
 
         $this->notifyDarManagesOfNewMessage($threadId);
 
+        unset($body);
+        unset($from);
+
         return $enquiryMessage;
     }
 
@@ -182,6 +185,20 @@ class AliasReplyScanner
         $cleanedText = implode("\n", array_filter($lines));
         $body = trim(str_replace('P {margin-top:0;margin-bottom:0;}', '', str_replace(["\r\n", "\n"], "<br/>", $cleanedText)));
         $this->sendEmail('dar.notifymessage', $payload, $usersToNotify, $enquiryThread->user_id, $body);
+
+        unset(
+            $payload,
+            $messageBody,
+            $lines,
+            $cleanedText,
+            $body,
+            $enquiryMessage,
+            $enquiryThread,
+            $enquiryThreads,
+            $team,
+            $user,
+            $usersToNotify,
+        );
     }
 
     public function sendEmail(string $ident, array $threadDetail, array $usersToNotify, int $userId, string $replyMessage): void
@@ -214,6 +231,12 @@ class AliasReplyScanner
                     $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
                 }
             }
+            unset(
+                $template,
+                $replacements,
+                $from,
+                $something,
+            );
         } catch (Exception $e) {
             CloudLogger::write('ERROR reply email enquiry thread :: ' . json_encode($e->getMessage()));
         }

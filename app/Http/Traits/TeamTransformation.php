@@ -140,6 +140,11 @@ trait TeamTransformation
 
         $response->user = $user;
 
+        unset(
+            $user,
+            $teamHasUser,
+        );
+
         return $response;
     }
 }
