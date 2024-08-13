@@ -683,7 +683,7 @@ class DatasetController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $elasticIndexing = (isset($input['elastic_indexing']) ? $input['elastic_indexing'] : null);
+            $elasticIndexing = $request->boolean('elastic_indexing', true);
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $teamId = (int)$input['team_id'];
@@ -704,20 +704,20 @@ class DatasetController extends Controller
                 "publisherName" => $team['name']
             ];
 
-            $submittedMetadata = $input['metadata']['metadata'];
-            $gwdmMetadata = null;
-
-
             $inputSchema = isset($input['metadata']['schemaModel']) ? $input['metadata']['schemaModel'] : null;
             $inputVersion = isset($input['metadata']['schemaVersion']) ? $input['metadata']['schemaVersion'] : null;
 
+            $submittedMetadata = $input['metadata']['metadata'];
+            $gwdmMetadata = null;
 
             $traserResponse = MMC::translateDataModelType(
                 json_encode($payload),
                 Config::get('metadata.GWDM.name'),
                 Config::get('metadata.GWDM.version'),
-                $inputSchema,
-                $inputVersion,
+                $inputSchema, //user can force an input version to avoid traser unknown errors
+                $inputVersion, // as above
+                $request['status'] !== Dataset::STATUS_DRAFT, // Disable input validation if it's a draft
+                $request['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
             );
             if ($traserResponse['wasTranslated']) {
                 //set the gwdm metadata
@@ -728,11 +728,6 @@ class DatasetController extends Controller
                     'details' => $traserResponse,
                 ], 400);
             }
-
-
-            //$gwdmMetadata = $currDataset->latestMetadata()->first()['metadata']['metadata'];
-
-
 
             // Update the existing dataset parent record with incoming data
             $updateTime = now();
@@ -746,40 +741,47 @@ class DatasetController extends Controller
                 'is_cohort_discovery' => $isCohortDiscovery,
             ]);
 
-            // Determine the last version of metadata
+
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
-            if ($currDataset->status !== Dataset::STATUS_DRAFT) {
-                $versionNumber = $versionNumber + 1;
-            }
-            $versionCode = $this->getVersion($versionNumber);
+            if($request['status'] === Dataset::STATUS_ACTIVE) {
+                // Determine the last version of metadata
 
-            $lastMetadata = $currDataset->lastMetadata();
-
-
-            //update the GWDM modified date and version
-            $input['metadata']['metadata']['required']['modified'] = $updateTime;
-            if(version_compare(Config::get('metadata.GWDM.version'), '1.0', '>')) {
-                if(version_compare($lastMetadata['gwdmVersion'], '1.0', '>')) {
-                    $versionCode = $lastMetadata['metadata']['required']['version'];
+                if ($currDataset->status !== Dataset::STATUS_DRAFT) {
+                    $versionNumber = $versionNumber + 1;
                 }
+                $versionCode = $this->getVersion($versionNumber);
+                $lastMetadata = $currDataset->lastMetadata();
+
+                //update the GWDM modified date and version
+                $gwdmMetadata['required']['modified'] = $updateTime;
+                if(version_compare(Config::get('metadata.GWDM.version'), '1.0', '>')) {
+                    if(version_compare($lastMetadata['gwdmVersion'], '1.0', '>')) {
+                        $versionCode = $lastMetadata['metadata']['required']['version'];
+                    }
+                }
+
+                //update the GWDM revisions
+                // NOTE: Calum 12/1/24
+                //       - url set with a placeholder right now, should be revised before production
+                //       - https://hdruk.atlassian.net/browse/GAT-3392
+                $gwdmMetadata['required']['revisions'][] = [
+                    "url" => "https://placeholder.blah/" . $currentPid . '?version=' . $versionCode,
+                    "version" => $versionCode
+                ];
+
             }
 
-            //update the GWDM revisions
-            // NOTE: Calum 12/1/24
-            //       - url set with a placeholder right now, should be revised before production
-            //       - https://hdruk.atlassian.net/browse/GAT-3392
-            $input['metadata']['metadata']['required']['revisions'][] = [
-                "url" => "https://placeholder.blah/" . $currentPid . '?version=' . $versionCode,
-                "version" => $versionCode
+            $metadataSaveObject = [
+                'gwdmVersion' =>  Config::get('metadata.GWDM.version'),
+                'metadata' => $gwdmMetadata,
+                'original_metadata' => $submittedMetadata,
             ];
-
-            $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
 
             // Update or create new metadata version based on draft status
             if ($currDataset->status !== Dataset::STATUS_DRAFT) {
                 DatasetVersion::create([
                     'dataset_id' => $currDataset->id,
-                    'metadata' => json_encode($input['metadata']),
+                    'metadata' => json_encode($metadataSaveObject),
                     'version' => ($versionNumber),
                 ]);
             } else {
@@ -788,7 +790,7 @@ class DatasetController extends Controller
                     'dataset_id' => $currDataset->id,
                     'version' => $versionNumber,
                 ])->update([
-                    'metadata' => json_encode($input['metadata']),
+                    'metadata' => json_encode($metadataSaveObject),
                 ]);
             }
 
@@ -800,8 +802,6 @@ class DatasetController extends Controller
                     base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
                     $elasticIndexing
                 );
-
-                $this->reindexElastic($currDataset->id);
             }
 
             Auditor::log([
@@ -812,9 +812,13 @@ class DatasetController extends Controller
                 'description' => 'Dataset ' . $id . ' with version ' . ($versionNumber + 1) . ' updated',
             ]);
 
+            //note Calum 13/08/2024
+            // - ive removed returning the data because i dont know what the hell is going on with
+            //   the show() method and 'withLinks' etc. etc. [see above]
+            // - i think its safe that the PUT method doesnt try to return the updated data
+            // - GET /dataset/{id} should be used to get the latest dataset and metadata
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Dataset::with('versions')->where('id', '=', $currDataset->id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
