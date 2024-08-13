@@ -197,6 +197,34 @@ class TeamTest extends TestCase
     }
 
     /**
+     * Show summary of a team.
+     *
+     * @return void
+     */
+    public function test_the_application_can_show_team_summary()
+    {
+        $id = Team::where(['enabled' => 1])->first()->id;
+        $response = $this->get('api/v1/teams/' . $id . '/summary', [
+            'Authorization' => 'bearer ' . $this->accessToken,
+        ]);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'is_provider',
+                    'introduction',
+                    'datasets',
+                    'durs',
+                    'tools',
+                    'publications',
+                    'collections',
+                ],
+            ]);
+    }
+
+    /**
      * Create a new team.
      *
      * @return void
