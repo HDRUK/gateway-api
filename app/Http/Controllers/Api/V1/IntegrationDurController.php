@@ -31,12 +31,13 @@ use App\Http\Requests\Dur\DeleteDur;
 use App\Http\Requests\Dur\UpdateDur;
 
 use App\Exceptions\NotFoundException;
+use App\Http\Traits\IndexElastic;
 use App\Http\Traits\IntegrationOverride;
-use MetadataManagementController as MMC;
 use App\Http\Traits\RequestTransformation;
 
 class IntegrationDurController extends Controller
 {
+    use IndexElastic;
     use RequestTransformation;
     use IntegrationOverride;
 
@@ -1270,7 +1271,7 @@ class IntegrationDurController extends Controller
 
             if (!$checking) {
                 $this->addDurHasDatasetVersion($durId, $dataset, $datasetVersionId, $userId, $appId);
-                MMC::reindexElastic($dataset['id']);
+                $this->reindexElastic($dataset['id']);
             }
         }
     }
@@ -1603,78 +1604,6 @@ class IntegrationDurController extends Controller
         }
 
         return $response;
-    }
-
-    /**
-     * Calls a re-indexing of Elastic search when a data use is created or updated
-     *
-     * @param string $id The dur id from the DB
-     *
-     * @return void
-     */
-    public function indexElasticDur(string $id): void
-    {
-        try {
-
-            $durMatch = Dur::where(['id' => $id])
-                ->with(['keywords', 'sector'])
-                ->first();
-
-            $datasets = $durMatch->allDatasets  ?? [];
-
-            $datasetIds = array_map(function ($dataset) {
-                return $dataset['id'];
-            }, $datasets);
-
-            $durMatch =  $durMatch->toArray();
-
-            $datasetTitles = array();
-            foreach ($datasetIds as $d) {
-                $metadata = Dataset::where(['id' => $d])
-                    ->first()
-                    ->latestVersion()
-                    ->metadata;
-                $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-            }
-
-            $keywords = array();
-            foreach ($durMatch['keywords'] as $k) {
-                $keywords[] = $k['name'];
-            }
-
-            $sector = ($durMatch['sector'] != null) ?
-                Sector::where(['id' => $durMatch['sector']])->first()->name : null;
-
-            $toIndex = [
-                'projectTitle' => $durMatch['project_title'],
-                'laySummary' => $durMatch['lay_summary'],
-                'publicBenefitStatement' => $durMatch['public_benefit_statement'],
-                'technicalSummary' => $durMatch['technical_summary'],
-                'fundersAndSponsors' => $durMatch['funders_and_sponsors'],
-                'datasetTitles' => $datasetTitles,
-                'keywords' => $keywords,
-                'sector' => $sector,
-            ];
-
-            $params = [
-                'index' => 'data_uses',
-                'id' => $id,
-                'body' => $toIndex,
-                'headers' => 'application/json'
-            ];
-
-            $client = MMC::getElasticClient();
-            $response = $client->index($params);
-
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
     }
 
     /**

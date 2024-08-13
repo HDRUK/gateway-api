@@ -38,6 +38,9 @@ class Auditor
                 AuditLogJob::dispatchSync($data);
             }
 
+            unset($arrayKeys);
+            unset($data);
+
             return true;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());

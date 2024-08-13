@@ -2,12 +2,13 @@
 
 namespace App\Console\Commands;
 
-use App\Http\Controllers\Api\V1\PublicationController;
 use App\Models\Publication;
 use Illuminate\Console\Command;
+use App\Http\Traits\IndexElastic;
 
 class PublicationTypePostMigration extends Command
 {
+    use IndexElastic;
     /**
      * The name and signature of the console command.
      *
@@ -38,7 +39,6 @@ class PublicationTypePostMigration extends Command
         $reindex = $this->argument('reindex');
         $reindexEnabled = $reindex !== null;
 
-        $publicationController = new PublicationController();
         $progressbar = $this->output->createProgressBar(count($this->csvData));
         $progressbar->start();
 
@@ -70,7 +70,7 @@ class PublicationTypePostMigration extends Command
                 echo 'Updated or created record with id ' . $publication->id . ', doi ' . $paperDOI . ', with publication type ' . $publicationType . "\n";
 
                 if ($reindexEnabled) {
-                    $publicationController->indexElasticPublication($publication->id);
+                    $this->indexElasticPublication($publication->id);
                     sleep(1);
                 }
             }

@@ -4,11 +4,12 @@ namespace App\Console\Commands;
 
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use App\Http\Traits\IndexElastic;
 use Illuminate\Console\Command;
-use MetadataManagementController as MMC;
 
 class PhysicalSamplePostMigration extends Command
 {
+    use IndexElastic;
     /**
      * The name and signature of the console command.
      *
@@ -29,7 +30,6 @@ class PhysicalSamplePostMigration extends Command
     {
         parent::__construct();
         $this->csvData = $this->readMigrationFile(storage_path() . '/migration_files/datasets_physical_samples_cleaned.csv');
-
     }
 
     /**
@@ -70,14 +70,13 @@ class PhysicalSamplePostMigration extends Command
                         $metadata['metadata']['tissuesSampleCollection'] = $formattedSamplesArray;
                     }
 
-                    DatasetVersion::where('id', $dataset->id)->update([
+                    DatasetVersion::where('id', $datasetVersion->id)->update([
                         'metadata' => json_encode(json_encode($metadata)),
                     ]);
-
                 }
 
                 if ($sleepTimeInMicroseconds !== null) {
-                    MMC::reindexElastic($dataset->id);
+                    $this->reindexElastic($dataset->id);
                     usleep($sleepTimeInMicroseconds);
                 }
             }

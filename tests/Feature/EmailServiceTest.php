@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Bus;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use Database\Seeders\EmailTemplatesSeeder;
+use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -22,7 +22,7 @@ class EmailServiceTest extends TestCase
     public function setUp(): void
     {
         parent::setUp([
-            EmailTemplatesSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
         $this->seed();
 
@@ -32,6 +32,7 @@ class EmailServiceTest extends TestCase
     public function tearDown(): void
     {
         Bus::fake();
+        parent::tearDown();
     }
 
     public function test_dispatch_email_job()

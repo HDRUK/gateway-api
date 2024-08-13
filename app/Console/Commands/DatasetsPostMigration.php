@@ -5,11 +5,12 @@ namespace App\Console\Commands;
 use Config;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use App\Http\Traits\IndexElastic;
 use Illuminate\Console\Command;
-use MetadataManagementController as MMC;
 
 class DatasetsPostMigration extends Command
 {
+    use IndexElastic;
     /**
      * The name and signature of the console command.
      *
@@ -44,7 +45,7 @@ class DatasetsPostMigration extends Command
             $datasetIds = Dataset::pluck('id');
             $progressbar = $this->output->createProgressBar(count($datasetIds));
             foreach ($datasetIds as $id) {
-                MMC::reindexElastic($id);
+                $this->reindexElastic($id);
                 sleep(1); // to not kill ElasticSearch
                 $progressbar->advance();
             }

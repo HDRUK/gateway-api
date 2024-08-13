@@ -16,6 +16,7 @@ use App\Models\SpatialCoverage;
 use App\Jobs\TermExtraction;
 use MetadataManagementController as MMC;
 
+use App\Http\Traits\IndexElastic;
 use App\Http\Traits\IntegrationOverride;
 
 use App\Http\Controllers\Controller;
@@ -32,6 +33,7 @@ use App\Http\Requests\Dataset\EditDataset;
 
 class IntegrationDatasetController extends Controller
 {
+    use IndexElastic;
     use IntegrationOverride;
 
     /**
@@ -772,7 +774,7 @@ class IntegrationDatasetController extends Controller
                 ]);
 
 
-                MMC::reindexElastic($currDataset->id);
+                $this->reindexElastic($currDataset->id);
 
                 Auditor::log([
                     'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
@@ -869,7 +871,7 @@ class IntegrationDatasetController extends Controller
                         $metadata->save();
 
                         if ($request['status'] === Dataset::STATUS_ACTIVE) {
-                            MMC::reindexElastic($id);
+                            $this->reindexElastic($id);
                         }
 
                         Auditor::log([
@@ -1004,7 +1006,7 @@ class IntegrationDatasetController extends Controller
             $this->checkAppCanHandleDataset($dataset->team_id, $request);
 
             MMC::deleteDataset($id);
-            MMC::deleteFromElastic($id, 'dataset');
+            $this->deleteFromElastic($id, 'dataset');
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
