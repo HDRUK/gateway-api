@@ -137,7 +137,7 @@ class MetadataManagementTest extends TestCase
         $finalDataset = Dataset::where("id", $initialActiveId)->first();
         $versionAfterUpdate = $finalDataset->lastMetadataVersionNumber()->version;
 
-        //when a draft, the version number should have been increased
+        //when active, the version number should have been increased
         $this->assertTrue($versionAfterUpdate === $versionBeforeUpdate + 1);
 
         $latestDatasetVersion =  Dataset::find($initialActiveId)->latestVersion();
