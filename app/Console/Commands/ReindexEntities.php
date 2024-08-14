@@ -121,6 +121,7 @@ class ReindexEntities extends Command
             if ($termExtraction) {
                 $dataset = Dataset::where('id', $id)->first();
                 if ($dataset->status === Dataset::STATUS_ACTIVE) {
+                    echo "--> calling term extractor! \n";
                     $latestMetadata = $dataset->latestMetadata()->first();
                     TermExtraction::dispatch(
                         $id,
