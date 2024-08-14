@@ -33,6 +33,7 @@ trait TeamTransformation
                 'access_requests_management' => $team['access_requests_management'],
                 'uses_5_safes' => $team['uses_5_safes'],
                 'is_admin' => $team['is_admin'],
+                'team_logo' => $team['team_logo'],
                 'member_of' => $team['member_of'],
                 'contact_point' => $team['contact_point'],
                 'application_form_updated_by' => $team['application_form_updated_by'],
