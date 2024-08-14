@@ -66,6 +66,14 @@ trait MockExternalApis
         }
     }
 
+    public function getPublicSchema()
+    {
+        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/hdruk_3p0p0_dataset_min.json', 0, null);
+        $json = json_decode($jsonFile, true);
+
+        return $json;
+    }
+
     public function setUp(): void
     {
         parent::setUp();
@@ -76,6 +84,7 @@ trait MockExternalApis
 
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
+        $this->currentUser = $this->getUserFromJwt($jwt);
         $this->header = [
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $jwt,
