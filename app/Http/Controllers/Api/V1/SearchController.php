@@ -751,6 +751,16 @@ class SearchController extends Controller
      *              description="Sort direction",
      *          ),
      *      ),
+     *      @OA\Parameter(
+     *          name="download",
+     *          in="query",
+     *          description="Download a csv of the results (default: false)",
+     *          example="true",
+     *          @OA\Schema(
+     *              type="boolean",
+     *              example="false",
+     *          ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
