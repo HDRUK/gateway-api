@@ -2475,7 +2475,7 @@ class EmailTemplateSeeder extends Seeder
                         <mj-section padding="20px 0px 20px 0px" border="none" direction="ltr" text-align="center" background-repeat="repeat" background-size="auto" background-position="top center" background-color="#ffffff" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-image align="center" height="auto" src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" width="226px" padding="10px 0px 10px 0px" >
-                                    </mj-image>
+                                </mj-image>
                             </mj-column>
                         </mj-section>
                         <mj-section background-repeat="no-repeat" background-size="cover" background-position="top center" border="none" direction="ltr"
@@ -2488,24 +2488,24 @@ class EmailTemplateSeeder extends Seeder
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[TEAM_NAME]],<br><br>
                                     You have received an enquiry from [[USER_FIRST_NAME]], details of which can be found in the thread below. You can respond by using the reply button within your email client.<br><br>
-                            Submitted information
-                            <div>[[MESSAGE_BODY]]</div>
-                            </mj-text>
+                                    Submitted information
+                                    <div>[[MESSAGE_BODY]]</div>
+                                </mj-text>
                             </mj-column>
-                            </mj-section>
-                            <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
+                        </mj-section>
+                        <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                            <mj-button align="center" background-color="#00ACCA" color="#ffffff" font-weight="normal" border-radius="4px" padding="10px 25px 10px 25px" inner-padding="10px 25px 10px 25px" line-height="120%" target="_blank" vertical-align="middle" border="none" text-align="center" href="#" >View message on the Gateway</mj-button>
-                            <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" ><br><br>
-                            </mj-text>
+                                <mj-button align="center" background-color="#00ACCA" color="#ffffff" font-weight="normal" border-radius="4px" padding="10px 25px 10px 25px" inner-padding="10px 25px 10px 25px" line-height="120%" target="_blank" vertical-align="middle" border="none" text-align="center" href="#" >View message on the Gateway</mj-button>
+                                <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" ><br><br>
+                                </mj-text>
                             </mj-column>
-                            </mj-section>
-                            <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
+                        </mj-section>
+                        <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                            <mj-text align="center" padding="10px 25px 10px 25px" >
-                                <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                            </mj-text>
-                            <mj-text align="center" color="#3C3C3B" padding="10px 25px 10px 25px" >@HDR UK [[CURRENT_YEAR]]. All rights reserved.</mj-text>
+                                <mj-text align="center" padding="10px 25px 10px 25px" >
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text align="center" color="#3C3C3B" padding="10px 25px 10px 25px" >@HDR UK [[CURRENT_YEAR]]. All rights reserved.</mj-text>
                             </mj-column>
                         </mj-section>
                     </mj-body>
