@@ -8,7 +8,9 @@ on:
 
 env:
   PROJECT_ID: '${{ secrets.PROJECT_ID }}'
-  GAR_LOCATION: '${{ secrets.GAR_LOCATION }}' 
+  GAR_LOCATION: '${{ secrets.GAR_LOCATION }}'
+  SLACK_WEBHOOK_URL: '${{ secrets.SLACK_WEBHOOK_URL}}'
+  SLACK_CHANNEL: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL_DEV }}'
 
 jobs:
   build:
@@ -22,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: GAT-3817
 
       - name: Read VERSION file
         id: getversion
@@ -68,7 +70,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: GAT-3817
 
       - name: Google Auth
         id: auth
