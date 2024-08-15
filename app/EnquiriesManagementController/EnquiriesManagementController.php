@@ -89,7 +89,7 @@ class EnquiriesManagementController
 
         if ($enquiryThread) {
             foreach ($input['datasets'] as $dataset) {
-                $datasetVersion = DatasetVersion::where("dataset_id", $dataset["id"])
+                $datasetVersion = DatasetVersion::where("dataset_id", $dataset["dataset_id"])
                     ->latest('created_at')->first();
                 $enquiryThreadHasDataset = EnquiryThreadHasDatasetVersion::create([
                     'enquiry_thread_id' => $enquiryThread->id,
