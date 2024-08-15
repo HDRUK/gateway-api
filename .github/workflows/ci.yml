@@ -50,5 +50,5 @@ jobs:
         status: ${{ job.status }}
         steps: ${{ toJson(steps) }}
         channel: ${{ env.SLACK_CHANNEL }}
-        message: Running automated tests on {{ env.GITHUB_REF_NAME }} branch failed
+        message: Running CI tests on {{ env.GITHUB_REF_NAME }} branch
       if: always()

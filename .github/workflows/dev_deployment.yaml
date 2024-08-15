@@ -4,13 +4,13 @@ run-name: ${{ github.actor }} triggered deploy to DEV pipeline
 on:
   push:
     branches:
-      - 'dev'
+      - 'GAT-3817'
 
 env:
   PROJECT_ID: '${{ secrets.PROJECT_ID }}'
   GAR_LOCATION: '${{ secrets.GAR_LOCATION }}'
   SLACK_WEBHOOK_URL: '${{ secrets.SLACK_WEBHOOK_URL}}'
-  SLACK_CHANNEL: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL_DEV }}'
+  SLACK_CHANNEL: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL }}'
 
 jobs:
   build:
@@ -96,3 +96,13 @@ jobs:
 
         with:
           args: run services update '${{ env.SERVICE_NAME }}' --image='${{ env.GAR_LOCATION }}'-docker.pkg.dev/'${{ env.PROJECT_ID }}'/'${{ env.GAR_NAME }}'/${{ steps.getversion.outputs.version }}:${{ github.sha }} --region='${{ env.SERVICE_REGION }}' --project='${{ env.PROJECT_ID }}' 
+
+      - name: Run Notification
+        id: runnotificationsent
+        uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+          channel: ${{ env.SLACK_CHANNEL }}
+          message: Deploying {{ env.GITHUB_REF_NAME }} branch
+        if: always()
