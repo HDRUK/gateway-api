@@ -222,6 +222,7 @@ class EnquiryThreadController extends Controller
                         '[[USER_FIRST_NAME]]' => $user->firstname,
                         '[[USER_LAST_NAME]]' => $user->lastname,
                         '[[USER_ORGANISATION]]' => $user->organisation,
+                        '[[CONTACT_NUMBER]]' => $input['contact_number'],
                         '[[PROJECT_TITLE]]' => $input['project_title'],
                         '[[RESEARCH_AIM]]' => $input['research_aim'],
                         '[[OTHER_DATASETS_YES_NO]]' => $input['other_datasets'],

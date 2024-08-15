@@ -186,11 +186,12 @@ class EnquiriesManagementController
         }
 
         $str .= 'Name: ' . $in['message']['message_body']['[[USER_FIRST_NAME]]'] . ' ' . $in['message']['message_body']['[[USER_LAST_NAME]]'] . '<br/>';
-        $str .= 'Organisation: ' . $in['message']['message_body']['[[USER_ORGANISATION]]'] . '<br/>';
+        $str .= 'Applicant organisation: ' . $in['message']['message_body']['[[USER_ORGANISATION]]'] . '<br/>';
+        $str .= 'Contact number: ' . $in['message']['message_body']['[[CONTACT_NUMBER]]'] . '<br/>';
         $str .= 'Project title: ' . $in['thread']['project_title'] . '<br/>';
         $str .= 'Research aim: ' . $in['message']['message_body']['[[RESEARCH_AIM]]'] . '<br/>';
         $str .= 'Datasets of interest: ' . $datasetsStr . '<br/>';
-        $str .= 'Are there other datasets you would like to link with the ones listed above: ' . $in['message']['message_body']['[[OTHER_DATASETS_YES_NO]]'] . '<br/>';
+        $str .= 'Are there other datasets you would like to link with the ones listed above? ' . $in['message']['message_body']['[[OTHER_DATASETS_YES_NO]]'] . '<br/>';
         $str .= 'Do you know which parts of the datasets you are interested in? ' . $in['message']['message_body']['[[DATASETS_PARTS_YES_NO]]'] . '<br/>';
         $str .= 'Funding: ' . $in['message']['message_body']['[[FUNDING]]'] . '<br/>';
         $str .= 'Potential research benefits: ' . $in['message']['message_body']['[[PUBLIC_BENEFIT]]'] . '<br/>';
