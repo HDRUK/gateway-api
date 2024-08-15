@@ -22,13 +22,16 @@ jobs:
     environment: dev
     steps:
       - name: Checkout
+        id: checkout
         uses: actions/checkout@v4
         with:
           ref: GAT-3817
 
       - name: Read VERSION file
         id: getversion
-        run: echo "version=$(cat version.yaml)" >> $GITHUB_OUTPUT
+        run: |
+            sed -n 's/^appVersion:\(.*\)/\1/p' < chart/gateway-api/Chart.yaml > version
+            echo "version=$(sed '/.*\"\(.*\)\".*/ s//\1/g' version)" >> $GITHUB_OUTPUT
 
       - name: Google Auth
         id: auth
@@ -68,6 +71,7 @@ jobs:
     environment: dev
     steps:
       - name: Checkout
+        id: checkout
         uses: actions/checkout@v4
         with:
           ref: GAT-3817
@@ -82,7 +86,9 @@ jobs:
 
       - name: Read VERSION file
         id: getversion
-        run: echo "version=$(cat version.yaml)" >> $GITHUB_OUTPUT
+        run: |
+            sed -n 's/^appVersion:\(.*\)/\1/p' < chart/gateway-api/Chart.yaml > version
+            echo "version=$(sed '/.*\"\(.*\)\".*/ s//\1/g' version)" >> $GITHUB_OUTPUT
           
       - name: Deploy to Cloud Run
         uses: actions-hub/gcloud@master
