@@ -39,15 +39,19 @@ jobs:
         php-version: '8.3'
 
     - name: Composer install
+      id: composerinstall
       run: "composer install"
 
     - name: Run static analysis
+      id: composerphpstan
       run: "composer run phpstan"
   
     - name: Run unit tests
+      id: unittests
       run: "php artisan test"
 
     - name: Run code sniffer
+      id: codesniffer
       run: "composer run phpcs"
 
     - name: Run Notification
