@@ -110,5 +110,5 @@ jobs:
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
           channel: ${{ env.SLACK_CHANNEL }}
-          message: Deploying {{ env.GITHUB_REF_NAME }} branch
+          message: Deploying {{ env.GITHUB_REF_NAME }} branch to DEV ${{ job.status }}
         if: always()
