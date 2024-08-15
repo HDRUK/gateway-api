@@ -23,9 +23,11 @@ trait GetValueByPossibleKeys
                 return $value;
             }
         }
-        Log::info('No value found for any of the specified keys', [
-            'keys' => $keys,
-        ]);
+        // Removing, as it doesn't really serve a purpose dumping this to stdout.
+        // Suggest, if we care about it, then we audit it instead.
+        // Log::info('No value found for any of the specified keys', [
+        //     'keys' => $keys,
+        // ]);
         return $default;
     }
 }
