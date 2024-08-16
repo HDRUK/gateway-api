@@ -171,6 +171,10 @@ class EnquiryThreadController extends Controller
      *                  @OA\Property(property="user_id", type="integer", example="123"),
      *                  @OA\Property(property="team_id", type="integer", example="1234"),
      *                  @OA\Property(property="project_title", type="string", example="Project Title"),
+     *                  @OA\Property(property="is_dar_dialogue", type="boolean", example="false"),
+     *                  @OA\Property(property="is_dar_review", type="boolean", example="false"),
+     *                  @OA\Property(property="is_feasibility_enquiry", type="boolean", example="false"),
+     *                  @OA\Property(property="is_general_enquiry", type="boolean", example="false"),
      *                  @OA\Property(property="enabled", type="boolean", example="true"),
      *          ),
      *      ),
@@ -204,7 +208,7 @@ class EnquiryThreadController extends Controller
         $user = User::where('id', $jwtUser['id'])->first();
 
         try {
-            if ($input['is_feasibility_enquiry'] == true) {
+            if ($input['is_feasibility_enquiry'] === true && $input['is_general_enquiry'] === false) {
                 $payload = [
                     'thread' => [
                         'user_id' => $user->id,
