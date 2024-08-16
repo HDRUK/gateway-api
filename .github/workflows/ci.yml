@@ -12,8 +12,10 @@ on:
       - GAT-3817
       - release
 permissions:
+  actions: write
+  contents: write
   deployments: none
-  
+
 env:
   SLACK_WEBHOOK_URL: '${{ secrets.SLACK_WEBHOOK_URL}}'
   SLACK_CHANNEL: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL }}'
