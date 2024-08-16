@@ -121,18 +121,6 @@ class EnquiriesManagementController
     {
         $something = null;
 
-        $usersToNotify = [
-            0 => [
-                0 => [
-                    'user' => [
-                        'firstname' => 'Sam',
-                        'lastname' => 'Cox',
-                        'email' => 'sam.cox@hdruk.ac.uk'
-                    ]
-                    ],
-            ],
-        ];
-
         try {
             $template = EmailTemplate::where('identifier', $ident)->first();
             $team = Team::where('id', $threadDetail['thread']['team_id'])->first();
