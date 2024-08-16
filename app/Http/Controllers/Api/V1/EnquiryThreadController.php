@@ -236,7 +236,7 @@ class EnquiryThreadController extends Controller
                         ],
                     ],
                 ];
-            } elseif ($input['is_general_enquiry'] == true) {
+            } else {
                 $payload = [
                     'thread' => [
                         'user_id' => $user->id,
@@ -318,6 +318,11 @@ class EnquiryThreadController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
+                'data' => null,
+            ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
         }
     }
 
