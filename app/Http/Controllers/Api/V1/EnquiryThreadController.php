@@ -204,35 +204,67 @@ class EnquiryThreadController extends Controller
         $user = User::where('id', $jwtUser['id'])->first();
 
         try {
-            $payload = [
-                'thread' => [
-                    'user_id' => $user->id,
-                    'team_id' => $team->id,
-                    'project_title' => $input['project_title'],
-                    'unique_key' => md5(microtime() . $jwtUser['id']), // Not random, but should be unique
-                    'is_dar_dialogue' => $input['is_dar_dialogue'],
-                    'is_dar_review' => $input['is_dar_review'],
-                    'datasets' => $this->mapDatasets($input['datasets']),
-                    'enabled' => true,
-                ],
-                'message' => [
-                    'from' => $input['from'],
-                    'message_body' => [
-                        '[[TEAM_NAME]]' => $team->name,
-                        '[[USER_FIRST_NAME]]' => $user->firstname,
-                        '[[USER_LAST_NAME]]' => $user->lastname,
-                        '[[USER_ORGANISATION]]' => $user->organisation,
-                        '[[CONTACT_NUMBER]]' => $input['contact_number'],
-                        '[[PROJECT_TITLE]]' => $input['project_title'],
-                        '[[RESEARCH_AIM]]' => $input['research_aim'],
-                        '[[OTHER_DATASETS_YES_NO]]' => $input['other_datasets'],
-                        '[[DATASETS_PARTS_YES_NO]]' => $input['dataset_parts_known'],
-                        '[[FUNDING]]' => $input['funding'],
-                        '[[PUBLIC_BENEFIT]]' => $input['potential_research_benefit'],
-                        '[[CURRENT_YEAR]]' => date('Y'),
+            if ($input['is_feasibility_enquiry'] == true) {
+                $payload = [
+                    'thread' => [
+                        'user_id' => $user->id,
+                        'team_id' => $team->id,
+                        'project_title' => $input['project_title'],
+                        'unique_key' => md5(microtime() . $jwtUser['id']), // Not random, but should be unique
+                        'is_dar_dialogue' => $input['is_dar_dialogue'],
+                        'is_dar_review' => $input['is_dar_review'],
+                        'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
+                        'is_general_enquiry' => $input['is_general_enquiry'],
+                        'datasets' => $this->mapDatasets($input['datasets']),
+                        'enabled' => true,
                     ],
-                ],
-            ];
+                    'message' => [
+                        'from' => $input['from'],
+                        'message_body' => [
+                            '[[TEAM_NAME]]' => $team->name,
+                            '[[USER_FIRST_NAME]]' => $user->firstname,
+                            '[[USER_LAST_NAME]]' => $user->lastname,
+                            '[[USER_ORGANISATION]]' => $user->organisation,
+                            '[[CONTACT_NUMBER]]' => $input['contact_number'],
+                            '[[PROJECT_TITLE]]' => $input['project_title'],
+                            '[[RESEARCH_AIM]]' => $input['research_aim'],
+                            '[[OTHER_DATASETS_YES_NO]]' => $input['other_datasets'],
+                            '[[DATASETS_PARTS_YES_NO]]' => $input['dataset_parts_known'],
+                            '[[FUNDING]]' => $input['funding'],
+                            '[[PUBLIC_BENEFIT]]' => $input['potential_research_benefit'],
+                            '[[CURRENT_YEAR]]' => date('Y'),
+                        ],
+                    ],
+                ];
+            } elseif ($input['is_general_enquiry'] == true) {
+                $payload = [
+                    'thread' => [
+                        'user_id' => $user->id,
+                        'team_id' => $team->id,
+                        'project_title' => $input['project_title'],
+                        'unique_key' => md5(microtime() . $jwtUser['id']), // Not random, but should be unique
+                        'is_dar_dialogue' => $input['is_dar_dialogue'],
+                        'is_dar_review' => $input['is_dar_review'],
+                        'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
+                        'is_general_enquiry' => $input['is_general_enquiry'],
+                        'datasets' => $this->mapDatasets($input['datasets']),
+                        'enabled' => true,
+                    ],
+                    'message' => [
+                        'from' => $input['from'],
+                        'message_body' => [
+                            '[[TEAM_NAME]]' => $team->name,
+                            '[[USER_FIRST_NAME]]' => $user->firstname,
+                            '[[USER_LAST_NAME]]' => $user->lastname,
+                            '[[USER_ORGANISATION]]' => $user->organisation,
+                            '[[CONTACT_NUMBER]]' => $input['contact_number'],
+                            '[[PROJECT_TITLE]]' => $input['project_title'],
+                            '[[QUERY]]' => $input['query'],
+                            '[[CURRENT_YEAR]]' => date('Y'),
+                        ],
+                    ],
+                ];
+            }
 
             // For each dataset we need to determine if teams are responsible for the data providing
             // if not, then a separate enquiry thread and message are created for that team also.
@@ -262,7 +294,11 @@ class EnquiryThreadController extends Controller
             }
 
             // Spawn email notifications to all DAR managers for this team
-            EMC::sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser);
+            if ($input['is_feasibility_enquiry'] == true) {
+                EMC::sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser);
+            } elseif ($input['is_general_enquiry'] == true) {
+                EMC::sendEmail('generalenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
+            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

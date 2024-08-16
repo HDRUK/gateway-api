@@ -2502,7 +2502,7 @@ GET {{baseUrl}}/api/{{apiVersion}}/enquiry_threads/1 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
-#### create EnquiryThread
+#### create feasibility EnquiryThread
 POST {{baseUrl}}/api/{{apiVersion}}/enquiry_threads HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
@@ -2513,6 +2513,8 @@ Authorization: Bearer {{accessToken}}
     "project_title": "project title for test",
     "is_dar_dialogue": true,
     "is_dar_review": false,
+    "is_feasibility_enquiry": true,
+    "is_general_enquiry": false,
     "datasets": [
         {
             "dataset_id": 4,
@@ -2529,4 +2531,36 @@ Authorization: Bearer {{accessToken}}
     "dataset_parts_known": "NO",
     "funding": "funding test",
     "potential_research_benefit": "potential research benefit"
+}
+
+#### create general EnquiryThread
+POST {{baseUrl}}/api/{{apiVersion}}/enquiry_threads HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "from": "sam.cox@hdruk.ac.uk",
+    "team_id": 4,
+    "project_title": "project title for test",
+    "is_dar_dialogue": true,
+    "is_dar_review": false,
+    "is_feasibility_enquiry": false,
+    "is_general_enquiry": true,
+    "datasets": [
+        {
+            "dataset_id": 4,
+            "interest_type": "PRIMARY"
+        },
+        {
+            "dataset_id": 6,
+            "interest_type": "SECONDARY"
+        }
+    ],
+    "contact_number": "01234 567890",
+    "research_aim": "research aim test",
+    "other_datasets": "NO",
+    "dataset_parts_known": "NO",
+    "funding": "funding test",
+    "potential_research_benefit": "potential research benefit",
+    "query": "Hi there, I'd like to ask some questions about this dataset please. Could you tell me where I might find it?\nThanks, Joe"
 }

@@ -84,6 +84,8 @@ class EnquiriesManagementController
             'unique_key' => $input['unique_key'],
             'is_dar_dialogue' => $input['is_dar_dialogue'],
             'is_dar_review' => $input['is_dar_review'],
+            'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
+            'is_general_enquiry' => $input['is_general_enquiry'],
             'enabled' => $input['enabled'],
         ]);
 
@@ -119,17 +121,32 @@ class EnquiriesManagementController
     {
         $something = null;
 
+        $usersToNotify = [
+            0 => [
+                0 => [
+                    'user' => [
+                        'firstname' => 'Sam',
+                        'lastname' => 'Cox',
+                        'email' => 'sam.cox@hdruk.ac.uk'
+                    ]
+                    ],
+            ],
+        ];
+
         try {
             $template = EmailTemplate::where('identifier', $ident)->first();
             $team = Team::where('id', $threadDetail['thread']['team_id'])->first();
             $user = User::where('id', $jwtUser['id'])->first();
 
-            $threadDetail['message']['message_body']['[[DATASETS]]'] = $threadDetail['thread']['datasets'];
+            if (array_key_exists('datasets', $threadDetail['thread'])) {
+                $threadDetail['message']['message_body']['[[DATASETS]]'] = $threadDetail['thread']['datasets'];
+            }
 
             $replacements = [
                 '[[CURRENT_YEAR]]' => $threadDetail['message']['message_body']['[[CURRENT_YEAR]]'],
                 '[[TEAM_NAME]]' => $threadDetail['message']['message_body']['[[TEAM_NAME]]'],
                 '[[USER_FIRST_NAME]]' => $threadDetail['message']['message_body']['[[USER_FIRST_NAME]]'],
+                '[[PROJECT_TITLE]]' => $threadDetail['message']['message_body']['[[PROJECT_TITLE]]'],
                 '[[MESSAGE_BODY]]' => $this->convertThreadToBody($threadDetail),
             ];
 
@@ -188,14 +205,17 @@ class EnquiriesManagementController
         $str .= 'Name: ' . $in['message']['message_body']['[[USER_FIRST_NAME]]'] . ' ' . $in['message']['message_body']['[[USER_LAST_NAME]]'] . '<br/>';
         $str .= 'Applicant organisation: ' . $in['message']['message_body']['[[USER_ORGANISATION]]'] . '<br/>';
         $str .= 'Contact number: ' . $in['message']['message_body']['[[CONTACT_NUMBER]]'] . '<br/>';
-        $str .= 'Project title: ' . $in['thread']['project_title'] . '<br/>';
-        $str .= 'Research aim: ' . $in['message']['message_body']['[[RESEARCH_AIM]]'] . '<br/>';
-        $str .= 'Datasets of interest: ' . $datasetsStr . '<br/>';
-        $str .= 'Are there other datasets you would like to link with the ones listed above? ' . $in['message']['message_body']['[[OTHER_DATASETS_YES_NO]]'] . '<br/>';
-        $str .= 'Do you know which parts of the datasets you are interested in? ' . $in['message']['message_body']['[[DATASETS_PARTS_YES_NO]]'] . '<br/>';
-        $str .= 'Funding: ' . $in['message']['message_body']['[[FUNDING]]'] . '<br/>';
-        $str .= 'Potential research benefits: ' . $in['message']['message_body']['[[PUBLIC_BENEFIT]]'] . '<br/>';
-
+        if ($in['thread']['is_feasibility_enquiry']) {
+            $str .= 'Project title: ' . $in['thread']['project_title'] . '<br/>';
+            $str .= 'Research aim: ' . $in['message']['message_body']['[[RESEARCH_AIM]]'] . '<br/>';
+            $str .= 'Datasets of interest: ' . $datasetsStr . '<br/>';
+            $str .= 'Are there other datasets you would like to link with the ones listed above? ' . $in['message']['message_body']['[[OTHER_DATASETS_YES_NO]]'] . '<br/>';
+            $str .= 'Do you know which parts of the datasets you are interested in? ' . $in['message']['message_body']['[[DATASETS_PARTS_YES_NO]]'] . '<br/>';
+            $str .= 'Funding: ' . $in['message']['message_body']['[[FUNDING]]'] . '<br/>';
+            $str .= 'Potential research benefits: ' . $in['message']['message_body']['[[PUBLIC_BENEFIT]]'] . '<br/>';
+        } elseif ($in['thread']['is_general_enquiry']) {
+            $str .= 'Enquiry: ' . $in['message']['message_body']['[[QUERY]]'] . '<br/>';
+        }
         return $str;
     }
 }
