@@ -2,8 +2,10 @@
 
 namespace Database\Demo;
 
+use App\Models\Federation;
+use App\Models\TeamHasFederation;
+
 use Illuminate\Database\Seeder;
-use App\Models\AuthorisationCode;
 use Illuminate\Support\Facades\Http;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -51,13 +53,15 @@ class FederationDemo extends Seeder
             ],
         ];
 
-        $authorisation = AuthorisationCode::first();
         foreach ($federations as $teamId => $federation) {
-            $url = env('APP_URL') . '/api/v1/teams/' . $teamId . '/federations';
-            Http::withHeaders([
-                'Authorization' => 'Bearer ' . $authorisation->jwt,
-                'Content-Type' => 'application/json',
-            ])->post($url, $federation);
+
+            $fed = Federation::create($federation);
+            if ($fed) {
+                TeamHasFederation::create([
+                    'team_id' => $teamId,
+                    'federation_id' => $fed->id,
+                ]);
+            }
         }
     }
 }

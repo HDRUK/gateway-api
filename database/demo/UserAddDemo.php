@@ -3,8 +3,10 @@
 namespace Database\Demo;
 
 use Exception;
+
+use App\Models\User;
+
 use Illuminate\Database\Seeder;
-use App\Models\AuthorisationCode;
 use Illuminate\Support\Facades\Http;
 
 class UserAddDemo extends Seeder
@@ -34,9 +36,6 @@ class UserAddDemo extends Seeder
             '608c107c8c89a2a492406773',
         ];
 
-        $url = env('APP_URL') . '/api/v1/users';
-        $authorisation = AuthorisationCode::first();
-
         for ($i = 0; $i < 12; $i++) {
             try {
                 $firstName = fake()->firstName();
@@ -61,10 +60,7 @@ class UserAddDemo extends Seeder
                     'terms' => fake()->numberBetween(0, 1),
                 ];
 
-                Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $authorisation->jwt,
-                    'Content-Type' => 'application/json',
-                ])->post($url, $payload);
+                User::create($payload);
             } catch (Exception $exception) {
                 throw new Exception($exception->getMessage());
             }

@@ -7,7 +7,6 @@ use Config;
 use Exception;
 use App\Models\User;
 use Carbon\CarbonImmutable;
-use App\Models\AuthorisationCode;
 use App\Http\Requests\UserRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\HubspotContacts;
@@ -143,13 +142,6 @@ class RegisterController extends Controller
 
         $this->jwt->setPayload($arrayClaims);
         $jwt = $this->jwt->create();
-
-        AuthorisationCode::createRow([
-            'user_id' => (int)$user->id,
-            'jwt' => (string)$jwt,
-            'created_at' => $currentTime,
-            'expired_at' => $expireTime,
-        ]);
 
         return $jwt;
     }

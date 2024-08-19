@@ -3,8 +3,10 @@
 namespace Database\Demo;
 
 use Exception;
+
+use App\Models\Feature;
+
 use Illuminate\Database\Seeder;
-use App\Models\AuthorisationCode;
 use Illuminate\Support\Facades\Http;
 
 class FeatureDemo extends Seeder
@@ -15,8 +17,6 @@ class FeatureDemo extends Seeder
     public function run(): void
     {
         $features = include getcwd() . '/database/demo/files/features_short.php';
-        $url = env('APP_URL') . '/api/v1/features';
-        $authorisation = AuthorisationCode::first();
 
         foreach ($features as $feature) {
             try {
@@ -24,11 +24,8 @@ class FeatureDemo extends Seeder
                     'name' => trim($feature),
                     'enabled' => true
                 ];
+                Feature::create($payload);
 
-                Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $authorisation->jwt,
-                    'Content-Type' => 'application/json', // Adjust content type as needed
-                ])->post($url, $payload);
             } catch (Exception $exception) {
                 throw new Exception($exception->getMessage());
             }

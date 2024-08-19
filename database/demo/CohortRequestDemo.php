@@ -7,7 +7,6 @@ use App\Models\CohortRequest;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Seeder;
 use App\Models\CohortRequestLog;
-use App\Models\AuthorisationCode;
 use App\Models\CohortRequestHasLog;
 use Illuminate\Support\Facades\Http;
 
@@ -82,19 +81,14 @@ class CohortRequestDemo extends Seeder
         ]);
 
         // moved id = 3 in active status
-        $authorisation = AuthorisationCode::first();
         $cohortRequestId = 3;
-        $url = env('APP_URL') . '/api/v1/cohort_requests/' . $cohortRequestId;
         $payload = [
             'request_status' => 'APPROVED',
             'details' => 'As the designated approver for BCP request application access, I am responsible for verifying that individuals seeking access adhere to our security policies. This includes confirming their role in business continuity planning and ensuring that granting access aligns with the principle of least privilege.',
         ];
 
         try {
-            Http::withHeaders([
-                'Authorization' => 'Bearer ' . $authorisation->jwt,
-                'Content-Type' => 'application/json',
-            ])->put($url, $payload);
+            CohortRequest::where(['id' => $cohortRequestId])->update($payload);
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage());
         }

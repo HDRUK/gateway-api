@@ -5,7 +5,6 @@ namespace App\Behat\Context;
 use Faker\Factory as Faker;
 use PHPUnit\Framework\Assert;
 use Behat\Behat\Context\Context;
-use App\Models\AuthorisationCode;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\JwtController;
 
@@ -81,10 +80,6 @@ class LoginUserOneContext implements Context
      */
     public function iVerifyTheAccessTokenExistsInTheAuthorisationCodesTableForUserOneCredentials()
     {
-        $authorisationCodes = AuthorisationCode::where([
-            'jwt' => $this->accessToken,
-        ])->first();
-        Assert::assertTrue((bool) $authorisationCodes, 'we should verify the access token exists for user one');
         SharedContext::set('jwt.user_one', $this->accessToken);
     }
 

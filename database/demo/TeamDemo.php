@@ -3,8 +3,10 @@
 namespace Database\Demo;
 
 use Exception;
+
+use App\Models\Team;
+
 use Illuminate\Database\Seeder;
-use App\Models\AuthorisationCode;
 use Illuminate\Support\Facades\Http;
 
 class TeamDemo extends Seeder
@@ -62,15 +64,10 @@ class TeamDemo extends Seeder
             ],
         ];
 
-        $url = env('APP_URL') . '/api/v1/teams';
-        $authorisation = AuthorisationCode::first();
-
         foreach ($teams as $team) {
             try {
-                Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $authorisation->jwt,
-                    'Content-Type' => 'application/json',
-                ])->post($url, $team);
+                Team::create($team);
+
             } catch (Exception $exception) {
                 throw new Exception($exception->getMessage());
             }

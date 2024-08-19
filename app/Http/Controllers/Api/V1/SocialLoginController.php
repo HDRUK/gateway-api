@@ -400,13 +400,6 @@ class SocialLoginController extends Controller
         $this->jwt->setPayload($arrayClaims);
         $jwt = $this->jwt->create();
 
-        AuthorisationCode::createRow([
-            'user_id' => (int)$user->id,
-            'jwt' => (string)$jwt,
-            'created_at' => $currentTime,
-            'expired_at' => $expireTime,
-        ]);
-
         return $jwt;
     }
 }

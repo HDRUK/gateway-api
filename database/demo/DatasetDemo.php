@@ -4,8 +4,8 @@ namespace Database\Demo;
 
 use Exception;
 use App\Models\Team;
+use App\Models\Dataset;
 use Illuminate\Database\Seeder;
-use App\Models\AuthorisationCode;
 use Illuminate\Support\Facades\Http;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -80,7 +80,6 @@ class DatasetDemo extends Seeder
         ];
 
         $url = env('APP_URL') . '/api/v1/datasets';
-        $authorisation = AuthorisationCode::first();
 
         foreach ($items as $item) {
             try {
@@ -99,10 +98,7 @@ class DatasetDemo extends Seeder
                         'status' => $item['status'],
                     ];
 
-                    Http::withHeaders([
-                        'Authorization' => 'Bearer ' . $authorisation->jwt,
-                        'Content-Type' => 'application/json', // Adjust content type as needed
-                    ])->post($url, $payload);
+                    Dataset::create($payload);
                 } else {
                     throw new Exception("Team with id : " . $item['team_id'] . " not found");
                 }

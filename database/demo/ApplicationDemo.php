@@ -4,7 +4,6 @@ namespace Database\Demo;
 
 use Exception;
 use Illuminate\Database\Seeder;
-use App\Models\AuthorisationCode;
 use Illuminate\Support\Facades\Http;
 
 class ApplicationDemo extends Seeder
@@ -62,7 +61,6 @@ class ApplicationDemo extends Seeder
             ],
         ];
 
-        $authorisation = AuthorisationCode::first();
         $url = env('APP_URL') . '/api/v1/applications';
         foreach ($applications as $application) {
             try {
