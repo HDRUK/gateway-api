@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-Docker-Desktop: https://www.docker.com/products/docker-desktop/
+Rancher-Desktop: https://rancherdesktop.io/
 
 -   Ensure that Kubernetes is enabled and running
 -   Can be tested by running `kubectl get all` - if running, you'll be presented with a list
@@ -12,7 +12,7 @@ Docker-Desktop: https://www.docker.com/products/docker-desktop/
 
 Helm: https://helm.sh/docs/intro/install/
 
-With Docker-desktop and Helm installed, you'll need an instance of mysql. Using Helm you can run the following commands:
+With Rancher-desktop and Helm installed, you'll need an instance of mysql. Using Helm you can run the following commands:
 
 -   To install the mysql repo: `helm repo add bitnami https://charts.bitnami.com/bitnami`
 -   To install mysql container: `helm install mysql bitnami/mysql`
