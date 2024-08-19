@@ -17,7 +17,7 @@ class EnquiryThread extends Model
        'unique_key',
        'enabled',
        'is_dar_dialogue',
-       'is_dar_status',
+       'is_dar_review',
        'is_general_enquiry',
        'is_feasibility_enquiry',
     ];

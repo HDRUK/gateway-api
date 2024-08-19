@@ -2512,7 +2512,7 @@ Authorization: Bearer {{accessToken}}
     "team_id": 4,
     "project_title": "project title for test",
     "is_dar_dialogue": true,
-    "is_dar_review": false,
+    "is_dar_status": false,
     "is_feasibility_enquiry": true,
     "is_general_enquiry": false,
     "datasets": [
