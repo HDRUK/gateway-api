@@ -445,7 +445,8 @@ class UserController extends Controller
                         $input['secondary_email'] : null,
                     'preferred_email' => array_key_exists('preferred_email', $input) ?
                         $input['preferred_email'] : 'primary',
-                    'provider' =>  Config::get('constants.provider.service'),
+                    'provider' =>  array_key_exists('provider', $input) ?
+                        $input['provider'] : null,
                     'providerid' => array_key_exists('providerid', $input) ? $input['providerid'] : null,
                     'sector_id' => $input['sector_id'],
                     'organisation' => $input['organisation'],

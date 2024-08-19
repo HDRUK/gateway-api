@@ -7,7 +7,6 @@ use Exception;
 use App\Models\Feature;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Http;
 
 class FeatureDemo extends Seeder
 {

@@ -6,7 +6,6 @@ use App\Models\Federation;
 use App\Models\TeamHasFederation;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Http;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 

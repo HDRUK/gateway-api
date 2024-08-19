@@ -7,7 +7,6 @@ use Exception;
 use App\Models\Filter;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Http;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 

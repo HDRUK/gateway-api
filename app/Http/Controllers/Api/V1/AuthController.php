@@ -8,7 +8,6 @@ use Exception;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
-use App\Models\AuthorisationCode;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\JwtController;
@@ -81,7 +80,9 @@ class AuthController extends Controller
     {
         $input = $request->all();
 
-        $user = User::where('email', $input['email'])->where('provider', Config::get('constants.provider.service'))->first();
+        $user = User::where('email', $input['email'])
+            ->where('provider', Config::get('constants.provider.service'))
+            ->first();
         if (!$user) {
             throw new Exception("User not found");
         }
@@ -131,15 +132,6 @@ class AuthController extends Controller
         ];
 
         $this->jwt->setPayload($arrayClaims);
-        $jwt = $this->jwt->create();
-
-        AuthorisationCode::createRow([
-            'user_id' => (int) $user->id,
-            'jwt' => (string) $jwt,
-            'created_at' => $currentTime,
-            'expired_at' => $expireTime,
-        ]);
-
-        return $jwt;
+        return $this->jwt->create();
     }
 }

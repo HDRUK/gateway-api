@@ -8,7 +8,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Database\Seeder;
 use App\Models\CohortRequestLog;
 use App\Models\CohortRequestHasLog;
-use Illuminate\Support\Facades\Http;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 

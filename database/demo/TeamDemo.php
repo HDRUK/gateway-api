@@ -7,7 +7,6 @@ use Exception;
 use App\Models\Team;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Http;
 
 class TeamDemo extends Seeder
 {

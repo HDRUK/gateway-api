@@ -6,7 +6,6 @@ use Exception;
 use App\Models\Team;
 use App\Models\Dataset;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Http;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 

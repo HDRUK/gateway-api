@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use Tests\Traits\Authorization;
-use App\Models\AuthorisationCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class LogoutTest extends TestCase

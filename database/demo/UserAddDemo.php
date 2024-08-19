@@ -7,7 +7,6 @@ use Exception;
 use App\Models\User;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Http;
 
 class UserAddDemo extends Seeder
 {
