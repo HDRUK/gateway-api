@@ -30,6 +30,7 @@ class ProfileRequest
             if ($response instanceof JsonResponse) {
                 // Stop our profiler
                 $duration = (new ResourceUsageFormatter())->resourceUsage($timer->stop());
+                dd($request->route()->getAction());
                 $parts = explode('\\', $request->route()->getAction()['controller']);
                 $className = $parts[count($parts) - 1];
 
