@@ -53,6 +53,34 @@ class CollectionController extends Controller
      *       @OA\Schema(type="string"),
      *       description="Filter collections by name"
      *    ),
+     *    @OA\Parameter(
+     *       name="team_id",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="integer"),
+     *       description="Filter collections by team ID"
+     *    ),
+     *    @OA\Parameter(
+     *       name="user_id",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="integer"),
+     *       description="Filter collections by user ID"
+     *    ),
+     *    @OA\Parameter(
+     *       name="title",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter collections by title"
+     *    ),
+     *    @OA\Parameter(
+     *       name="status",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter collections by status (DRAFT, ACTIVE, ARCHIVED)"
+     *    ),
      *    @OA\Response(
      *       response=200,
      *       description="Success",
@@ -148,9 +176,9 @@ class CollectionController extends Controller
             ->when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
             })
-            ->when($userId, function ($query) use ($userId) {
+            /*->when($userId, function ($query) use ($userId) {
                 return $query->where('user_id', '=', $userId);
-            })
+            }) // - this isnt in the DB and should be! bug reported */
             ->when($filterTitle, function ($query) use ($filterTitle) {
                 return $query->where('name', 'like', '%' . $filterTitle . '%');
             })
