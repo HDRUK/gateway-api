@@ -1,5 +1,5 @@
-{
-    "identifier": "5124f2",
+{"metadata":{
+    "identifier": "7d91eb8b-7331-4048-b4e9-13d0980cec8b",
     "issued": "2020-08-05T14:35:59Z",
     "modified": "2021-01-28T14:15:46Z",
     "revisions": [
@@ -27,7 +27,7 @@
         "keywords": ["Preprints,Papers,HDR UK"],
         "doiName": "10.1093/ije/dyx196",
         "title": "HDR UK Papers & Preprints",
-        "dataProvider": {
+        "dataCustodian": {
             "name": "HEALTH DATA RESEARCH UK",
             "identifier": "https://placeholder-for-publisher-page/null",
             "contactPoint": "susheel.varma@hdruk.ac.uk"
@@ -42,7 +42,7 @@
     "coverage": {
         "pathway": "NOT APPLICABLE",
         "spatial": "https://www.geonames.org/countries/GB/united-kingdom.html",
-        "followup": "UNKNOWN",
+        "followUp": "UNKNOWN",
         "datasetCompleteness": null,
         "typicalAgeRangeMin": null,
         "typicalAgeRangeMax": null,
@@ -53,8 +53,8 @@
             "purpose": ["Other"],
             "source": ["Machine generated"],
             "collectionSource": ["Other"],
-            "datasetType": "Health and disease",
-            "datasetSubType": "Not applicable",
+            "datasetType": ["Health and disease"],
+            "datasetSubType": ["Not applicable"],
             "imageContrast": null
         },
         "temporal": {
@@ -67,14 +67,13 @@
     },
     "accessibility": {
         "access": {
-            "deliveryLeadTime": "OTHER",
-            "jurisdiction": "GB-ENG",
+            "deliveryLeadTime": "Other",
+            "jurisdiction": ["GB-ENG"],
             "dataController": "HDR UK",
             "dataProcessor": "HDR UK",
             "accessRights": "https://raw.githubusercontent.com/HDRUK/papers/master/LICENSE",
             "accessService": "https://github.com/HDRUK/papers",
             "accessRequestCost": "Free",
-            "accessMode": "New project",
             "accessServiceCategory": null
         },
         "usage": {
@@ -85,8 +84,8 @@
         "formatAndStandards": {
             "conformsTo": [],
             "vocabularyEncodingScheme": ["OTHER"],
-            "language": "en",
-            "format": "CSV,JSON"
+            "language": ["en"],
+            "format": ["CSV,JSON"]
         }
     },
     "enrichmentAndLinkage": {
@@ -123,4 +122,5 @@
         ],
         "syntheticDataWebLink": null
     }
+}
 }

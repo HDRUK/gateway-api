@@ -175,7 +175,7 @@ class MetadataManagementController
         }
     }
 
-    public function getOnboardingFormHydrated(string $name, string $version, string $dataTypes): array
+    public function getOnboardingFormHydrated(string $name, string $version, ?string $dataTypes): array
     {
         try {
             $queryParams = [

@@ -191,10 +191,10 @@ class FormHydrationController extends Controller
             'metadata.metadata.accessibility.access.deliveryLeadTime',
             $datasets
         );
-        $defaultValues['Format'] = $this->mostCommonValue(
+        $defaultValues['Format'] = [$this->mostCommonValue(
             'metadata.metadata.accessibility.formatAndStandards.format',
             $datasets
-        );
+        )];
 
         $defaultValues = array_merge($defaultValues, $this->generalDefaults());
         return $defaultValues;
@@ -203,9 +203,9 @@ class FormHydrationController extends Controller
     private function generalDefaults(): array
     {
         return [
-            'Jurisdiction' => 'UK',
-            'Language' => 'en',
-            'Biological sample availability' => 'None/not Available'
+            'Jurisdiction' => ['UK'],
+            'Language' => ['en'],
+            'Biological sample availability' => ['None/not Available']
         ];
     }
 

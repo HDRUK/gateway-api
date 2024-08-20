@@ -699,7 +699,7 @@ class DatasetController extends Controller
             $payload['extra'] = [
                 "id" => $id,
                 "pid" => $currentPid,
-                "datasetType" => "Healthdata",
+                "datasetType" => "Health and disease",
                 "publisherId" => $team['pid'],
                 "publisherName" => $team['name']
             ];
