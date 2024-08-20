@@ -141,6 +141,9 @@ class CollectionController extends Controller
                 $sort,
                 fn ($query) => $query->orderBy($sortField, $sortDirection)
             )
+            ->when($teamId, function ($query) use ($teamId) {
+                return $query->where('team_id', '=', $teamId);
+            })
             ->paginate((int) $perPage, ['*'], 'page');
 
             $collections->getCollection()->transform(function ($collection) {
