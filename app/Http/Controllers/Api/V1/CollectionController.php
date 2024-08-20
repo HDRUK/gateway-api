@@ -102,7 +102,11 @@ class CollectionController extends Controller
         try {
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
             $name = $request->query('name', null);
+            $filterTitle = $request->query('title', null);
             $filterStatus = $request->query('status', null);
+
+            $teamId = $request->query('team_id', null);
+            $userId = $request->query('user_id', null);
 
             $sort = $request->query('sort', 'name:desc');
             $tmp = explode(":", $sort);
@@ -143,6 +147,12 @@ class CollectionController extends Controller
             )
             ->when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
+            })
+            ->when($userId, function ($query) use ($userId) {
+                return $query->where('user_id', '=', $userId);
+            })
+            ->when($filterTitle, function ($query) use ($filterTitle) {
+                return $query->where('name', 'like', '%' . $filterTitle . '%');
             })
             ->paginate((int) $perPage, ['*'], 'page');
 
