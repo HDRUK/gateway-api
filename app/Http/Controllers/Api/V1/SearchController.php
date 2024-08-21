@@ -848,7 +848,7 @@ class SearchController extends Controller
                             function ($item) {
                                 return $item['id'];
                             },
-                            $durMatch['datasets']
+                            $model['datasets']
                         );
                         $durArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $durArray[$i]['toolNames'] = $this->durToolNames($model['id']);
