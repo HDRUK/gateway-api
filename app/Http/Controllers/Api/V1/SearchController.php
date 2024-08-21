@@ -1551,7 +1551,6 @@ class SearchController extends Controller
                 ->metadata;
             $datasetTitles[$d['id']] = $metadata['metadata']['summary']['shortTitle'];
         }
-        usort($datasetTitles, 'strcasecmp');
         return $datasetTitles;
     }
 
