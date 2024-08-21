@@ -1320,6 +1320,15 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'count_unique_fields_collections',
+        'method' => 'get',
+        'path' => '/collections/count/{field}',
+        'methodController' => 'CollectionController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
         'name' => 'collections',
         'method' => 'get',
         'path' => '/collections/{id}',
