@@ -838,7 +838,6 @@ class SearchController extends Controller
                 $foundFlag = false;
                 foreach ($durModels as $model) {
                     if ((int)$dur['_id'] === $model['id']) {
-
                         $datasetTitles = $this->durDatasetTitles($model);
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
                         $durArray[$i]['projectTitle'] = $model['project_title'];
@@ -1537,7 +1536,7 @@ class SearchController extends Controller
     }
 
     /**
-     * Find datasets titles associated with a given Dur model instance.
+     * Find dataset titles associated with a given Dur model instance.
      * Returns an array of titles.
      *
      * @param Dur $durMatch The Dur model the find dataset titles for
