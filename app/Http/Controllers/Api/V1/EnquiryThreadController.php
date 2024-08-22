@@ -169,7 +169,6 @@ class EnquiryThreadController extends Controller
      *          @OA\JsonContent(
      *              required={"user_id", "team_id", "project_title"},
      *                  @OA\Property(property="user_id", type="integer", example="123"),
-     *                  @OA\Property(property="team_id", type="integer", example="1234"),
      *                  @OA\Property(property="project_title", type="string", example="Project Title"),
      *                  @OA\Property(property="is_dar_dialogue", type="boolean", example="false"),
      *                  @OA\Property(property="is_dar_status", type="boolean", example="false"),
@@ -204,15 +203,14 @@ class EnquiryThreadController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        $team = Team::where('id', $input['team_id'])->first();
-        $user = User::where('id', $jwtUser['id'])->first();
+        User::where('id', $jwtUser['id'])->first();
 
         try {
             if ($input['is_feasibility_enquiry'] === true && $input['is_general_enquiry'] === false) {
                 $payload = [
                     'thread' => [
                         'user_id' => $user->id,
-                        'team_id' => $team->id,
+                        'team_id' => "",
                         'project_title' => $input['project_title'],
                         'unique_key' => md5(microtime() . $jwtUser['id']), // Not random, but should be unique
                         'is_dar_dialogue' => $input['is_dar_dialogue'],
@@ -225,7 +223,7 @@ class EnquiryThreadController extends Controller
                     'message' => [
                         'from' => $input['from'],
                         'message_body' => [
-                            '[[TEAM_NAME]]' => $team->name,
+                            '[[TEAM_NAME]]' => "",
                             '[[USER_FIRST_NAME]]' => $user->firstname,
                             '[[USER_LAST_NAME]]' => $user->lastname,
                             '[[USER_ORGANISATION]]' => $user->organisation,
@@ -244,7 +242,7 @@ class EnquiryThreadController extends Controller
                 $payload = [
                     'thread' => [
                         'user_id' => $user->id,
-                        'team_id' => $team->id,
+                        'team_id' => "",
                         'project_title' => $input['project_title'],
                         'unique_key' => md5(microtime() . $jwtUser['id']), // Not random, but should be unique
                         'is_dar_dialogue' => $input['is_dar_dialogue'],
@@ -257,7 +255,7 @@ class EnquiryThreadController extends Controller
                     'message' => [
                         'from' => $input['from'],
                         'message_body' => [
-                            '[[TEAM_NAME]]' => $team->name,
+                            '[[TEAM_NAME]]' => "",
                             '[[USER_FIRST_NAME]]' => $user->firstname,
                             '[[USER_LAST_NAME]]' => $user->lastname,
                             '[[USER_ORGANISATION]]' => $user->organisation,
@@ -276,7 +274,7 @@ class EnquiryThreadController extends Controller
                 $t = Team::where('id', $d['team_id'])->first();
 
                 $payload['thread']['team_id'] = $t->id;
-
+                $payload['message']['message_body']['[[TEAM_NAME]]'] = $t->name;
                 $enquiryThreadId = EMC::createEnquiryThread($payload['thread']);
                 $enquiryMessageId = EMC::createEnquiryMessage($enquiryThreadId, $payload['message']);
                 $usersToNotify[] = EMC::determineDARManagersFromTeamId($t->id, $enquiryThreadId);

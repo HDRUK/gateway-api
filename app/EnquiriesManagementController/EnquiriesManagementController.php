@@ -80,10 +80,10 @@ class EnquiriesManagementController
         $enquiryThread = EnquiryThread::create([
             'user_id' => $input['user_id'],
             'team_id' => $input['team_id'],
-            'project_title' => $input['project_title'],
+            'project_title' => is_null($input['project_title']) ? "" : $input['project_title'],
             'unique_key' => $input['unique_key'],
             'is_dar_dialogue' => $input['is_dar_dialogue'],
-            'is_dar_review' => $input['is_dar_review'],
+            'is_dar_status' => $input['is_dar_status'],
             'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
             'is_general_enquiry' => $input['is_general_enquiry'],
             'enabled' => $input['enabled'],
