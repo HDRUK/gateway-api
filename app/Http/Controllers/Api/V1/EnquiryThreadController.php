@@ -203,7 +203,7 @@ class EnquiryThreadController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        User::where('id', $jwtUser['id'])->first();
+        $user = User::where('id', $jwtUser['id'])->first();
 
         try {
             if ($input['is_feasibility_enquiry'] === true && $input['is_general_enquiry'] === false) {
