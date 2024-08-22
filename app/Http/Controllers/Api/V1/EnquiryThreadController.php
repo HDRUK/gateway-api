@@ -172,7 +172,7 @@ class EnquiryThreadController extends Controller
      *                  @OA\Property(property="team_id", type="integer", example="1234"),
      *                  @OA\Property(property="project_title", type="string", example="Project Title"),
      *                  @OA\Property(property="is_dar_dialogue", type="boolean", example="false"),
-     *                  @OA\Property(property="is_dar_review", type="boolean", example="false"),
+     *                  @OA\Property(property="is_dar_status", type="boolean", example="false"),
      *                  @OA\Property(property="is_feasibility_enquiry", type="boolean", example="false"),
      *                  @OA\Property(property="is_general_enquiry", type="boolean", example="false"),
      *                  @OA\Property(property="enabled", type="boolean", example="true"),
@@ -216,7 +216,7 @@ class EnquiryThreadController extends Controller
                         'project_title' => $input['project_title'],
                         'unique_key' => md5(microtime() . $jwtUser['id']), // Not random, but should be unique
                         'is_dar_dialogue' => $input['is_dar_dialogue'],
-                        'is_dar_review' => $input['is_dar_review'],
+                        'is_dar_status' => $input['is_dar_status'],
                         'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
                         'is_general_enquiry' => $input['is_general_enquiry'],
                         'datasets' => $this->mapDatasets($input['datasets']),
@@ -248,7 +248,7 @@ class EnquiryThreadController extends Controller
                         'project_title' => $input['project_title'],
                         'unique_key' => md5(microtime() . $jwtUser['id']), // Not random, but should be unique
                         'is_dar_dialogue' => $input['is_dar_dialogue'],
-                        'is_dar_review' => $input['is_dar_review'],
+                        'is_dar_status' => $input['is_dar_status'],
                         'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
                         'is_general_enquiry' => $input['is_general_enquiry'],
                         'datasets' => $this->mapDatasets($input['datasets']),
