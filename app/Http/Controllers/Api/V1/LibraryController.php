@@ -57,7 +57,7 @@ class LibraryController extends Controller
      *                      @OA\Property(property="user_id", type="integer", example="123"),
      *                      @OA\Property(property="dataset_id", type="string", example="dataset12345"),
      *                      @OA\Property(property="dataset_status", type="string", example="ACTIVE"),
-     *                      @OA\Property(property="data_provider_id", type="string", example="PID12345"),
+     *                      @OA\Property(property="data_provider_id", type="string", example="123"),
      *                      @OA\Property(property="data_provider_dar_status", type="boolean", example=false),
      *                      @OA\Property(property="data_provider_name", type="string", example="Team Name")
      *                  )
@@ -106,10 +106,11 @@ class LibraryController extends Controller
                 $library->setAttribute('dataset_id', (int)$dataset->id);
                 $library->setAttribute('dataset_name', $dataset->versions[0]->metadata['metadata']['summary']['shortTitle']);
                 $library->setAttribute('dataset_status', $dataset->status);
-                $library->setAttribute('data_provider_id', $team->pid);
+                $library->setAttribute('data_provider_id', $team->id);
                 $library->setAttribute('data_provider_dar_status', $team->uses_5_safes);
                 $library->setAttribute('data_provider_name', $team->name);
                 $library->setAttribute('data_provider_dar_enabled', $team->is_question_bank);
+                $library->setAttribute('data_provider_member_of', $team->member_of);
 
 
                 unset($library->dataset);
@@ -219,11 +220,12 @@ class LibraryController extends Controller
             // Using dynamic attributes to avoid undefined property error
             $library->setAttribute('dataset_id', (int)$dataset->datasetid);
             $library->setAttribute('dataset_status', $dataset->status);
-            $library->setAttribute('data_provider_id', $team->pid);
+            $library->setAttribute('data_provider_id', $team->id);
             $library->setAttribute('data_provider_dar_status', $team->uses_5_safes);
             $library->setAttribute('data_provider_name', $team->name);
             $library->setAttribute('dataset_name', $dataset->versions[0]->metadata['metadata']['summary']['shortTitle']);
             $library->setAttribute('data_provider_dar_enabled', $team->is_question_bank);
+            $library->setAttribute('data_provider_member_of', $team->member_of);
 
             unset($library->dataset);
 

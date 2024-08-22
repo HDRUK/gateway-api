@@ -199,6 +199,8 @@ class SearchController extends Controller
                         $datasetsArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model);
                         $datasetsArray[$i]['team']['id'] = $model['team']['id'];
                         $datasetsArray[$i]['team']['is_question_bank'] = $model['team']['is_question_bank'];
+                        $datasetsArray[$i]['team']['name'] = $model['team']['name'];
+                        $datasetsArray[$i]['team']['member_of'] = $model['team']['member_of'];
                         $foundFlag = true;
                     }
                 }
