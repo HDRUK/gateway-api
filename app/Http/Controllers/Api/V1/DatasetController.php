@@ -432,6 +432,12 @@ class DatasetController extends Controller
                 if ($withLinks) {
                     $dataset->setAttribute('versions', [$withLinks]);
                 }
+                /*return response()->json([
+                    'id' => $latestVersion['id'],
+                    'datasetId' => $id,
+                    'collections_count' => count($dataset->allCollections),
+                    'linked_dataset_versions' => $withLinks['linked_dataset_versions']
+                ]);*/
             }
 
             if ($outputSchemaModel && $outputSchemaModelVersion) {
