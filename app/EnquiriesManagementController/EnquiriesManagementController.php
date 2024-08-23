@@ -151,18 +151,15 @@ class EnquiriesManagementController
                     continue;
                 }
 
-                // In case for multiple users to notify, loop again for actual details.
-                foreach ($u as $arr) {
-                    $to = [
-                        'to' => [
-                            'email' => $arr['user']['email'],
-                            'name' => $arr['user']['firstname'] . ' ' . $arr['user']['lastname'],
-                        ],
-                    ];
+                $to = [
+                    'to' => [
+                        'email' => $u['user']['email'],
+                        'name' => $u['user']['firstname'] . ' ' . $u['user']['lastname'],
+                    ],
+                ];
 
-                    $from = 'devreply+' . $threadDetail['thread']['unique_key'] . '@healthdatagateway.org';
-                    $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
-                }
+                $from = 'devreply+' . $threadDetail['thread']['unique_key'] . '@healthdatagateway.org';
+                $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
             }
 
             unset(

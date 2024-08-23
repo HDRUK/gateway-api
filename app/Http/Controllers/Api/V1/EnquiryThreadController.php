@@ -198,7 +198,6 @@ class EnquiryThreadController extends Controller
     {
         $enquiryThreadId = null;
         $enquiryMessageId = null;
-        $usersToNotify = null;
 
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -276,9 +275,9 @@ class EnquiryThreadController extends Controller
                 $payload['message']['message_body']['[[TEAM_NAME]]'] = $t->name;
                 $enquiryThreadId = EMC::createEnquiryThread($payload['thread']);
                 $enquiryMessageId = EMC::createEnquiryMessage($enquiryThreadId, $payload['message']);
-                $usersToNotify[] = EMC::determineDARManagersFromTeamId($t->id, $enquiryThreadId);
+                $usersToNotify = EMC::determineDARManagersFromTeamId($t->id, $enquiryThreadId);
 
-                if ($usersToNotify[array_key_last($usersToNotify)] == []) {
+                if (empty($usersToNotify)) {
                     Auditor::log([
                         'user_id' => (int)$jwtUser['id'],
                         'action_type' => 'POST',
