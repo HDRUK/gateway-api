@@ -278,7 +278,7 @@ class EnquiryThreadController extends Controller
                 $enquiryMessageId = EMC::createEnquiryMessage($enquiryThreadId, $payload['message']);
                 $usersToNotify[] = EMC::determineDARManagersFromTeamId($t->id, $enquiryThreadId);
 
-                if (empty($usersToNotify)) {
+                if ($usersToNotify[array_key_last($usersToNotify)] == []) {
                     Auditor::log([
                         'user_id' => (int)$jwtUser['id'],
                         'action_type' => 'POST',

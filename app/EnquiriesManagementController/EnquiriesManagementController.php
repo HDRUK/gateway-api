@@ -28,7 +28,7 @@ class EnquiriesManagementController
         $roleSecondary = null;
         $enquiryThread = null;
 
-        $users = null;
+        $users = [];
 
         foreach ($teamHasUserIds as $thu) {
             $teamUserHasRoles = TeamUserHasRole::where('team_has_user_id', $thu->id)->get();
