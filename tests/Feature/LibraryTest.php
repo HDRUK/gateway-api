@@ -70,7 +70,8 @@ class LibraryTest extends TestCase
                     'data_provider_id',
                     'data_provider_dar_status',
                     'data_provider_name',
-                    'data_provider_dar_enabled'
+                    'data_provider_dar_enabled',
+                    'data_provider_member_of',
                 ],
             ],
             'first_page_url',
@@ -131,7 +132,8 @@ class LibraryTest extends TestCase
                     'data_provider_dar_status',
                     'data_provider_name',
                     'data_provider_name',
-                    'data_provider_dar_enabled'
+                    'data_provider_dar_enabled',
+                    'data_provider_member_of',
                 ],
             ]);
     }

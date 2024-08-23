@@ -22,8 +22,8 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::table('enquiry_thread', function (Blueprint $table) {
-            $table->dropColumn('is_dar_dialogue');
-            $table->dropColumn('is_dar_status');
+            $table->dropColumn('is_general_enquiry');
+            $table->dropColumn('is_feasibility_enquiry');
         });
     }
 };

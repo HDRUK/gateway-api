@@ -28,7 +28,7 @@ class EnquiriesManagementController
         $roleSecondary = null;
         $enquiryThread = null;
 
-        $users = null;
+        $users = [];
 
         foreach ($teamHasUserIds as $thu) {
             $teamUserHasRoles = TeamUserHasRole::where('team_has_user_id', $thu->id)->get();
@@ -80,10 +80,10 @@ class EnquiriesManagementController
         $enquiryThread = EnquiryThread::create([
             'user_id' => $input['user_id'],
             'team_id' => $input['team_id'],
-            'project_title' => $input['project_title'],
+            'project_title' => isset($input['project_title']) ? $input['project_title'] : "",
             'unique_key' => $input['unique_key'],
             'is_dar_dialogue' => $input['is_dar_dialogue'],
-            'is_dar_review' => $input['is_dar_review'],
+            'is_dar_status' => $input['is_dar_status'],
             'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
             'is_general_enquiry' => $input['is_general_enquiry'],
             'enabled' => $input['enabled'],
@@ -151,18 +151,15 @@ class EnquiriesManagementController
                     continue;
                 }
 
-                // In case for multiple users to notify, loop again for actual details.
-                foreach ($u as $arr) {
-                    $to = [
-                        'to' => [
-                            'email' => $arr['user']['email'],
-                            'name' => $arr['user']['firstname'] . ' ' . $arr['user']['lastname'],
-                        ],
-                    ];
+                $to = [
+                    'to' => [
+                        'email' => $u['user']['email'],
+                        'name' => $u['user']['firstname'] . ' ' . $u['user']['lastname'],
+                    ],
+                ];
 
-                    $from = 'devreply+' . $threadDetail['thread']['unique_key'] . '@healthdatagateway.org';
-                    $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
-                }
+                $from = 'devreply+' . $threadDetail['thread']['unique_key'] . '@healthdatagateway.org';
+                $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
             }
 
             unset(
