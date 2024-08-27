@@ -73,6 +73,10 @@ class RunPostMigrations extends Command
                 'arguments' => [],
             ], // dataset linkage
             [
+                'command' => 'app:upload-images-post-migration-process',
+                'arguments' => [],
+            ], // uploaded images
+            [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'datasets',
