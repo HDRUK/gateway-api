@@ -64,13 +64,11 @@ class UploadImagesPostMigrationProcess extends Command
                 $upload->save();
 
                 $collection = Collection::where('mongo_id', '=', $pID)->first();
-
-                if ($collection) {
-                    $collection::update([
-                        'image_link' => $fileLoc
-                    ]);
+                if ($collection){
+                    $collection->image_link = $fileLoc;
                     $collection->save();
                 }
+                
 
                 echo 'completed post-process of migration for uploaded image ' . $upload->id . PHP_EOL;
 
