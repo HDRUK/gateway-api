@@ -77,10 +77,21 @@ class ElasticClientControllerService
             );
         } catch (\Exception $e) {
             // General exception handling for any other unexpected errors
+
+            // Attempt to capture headers even if the response is null
+            $headers = [];
+
+            // Check if the exception is a cURL timeout
+            if (strpos($e->getMessage(), 'cURL error 28') !== false) {
+                $info = $this->makeRequest()->getCurlOptions(); // Retrieve the cURL info
+                $headers = isset($info['CURLINFO_HEADER_OUT']) ? $info['CURLINFO_HEADER_OUT'] : [];
+            }
+
+
             \Log::error('An unexpected error occurred', [
                 'url' => $url,
-                'params' => $params,
                 'error' => $e->getMessage(),
+                'headers' => $headers,
             ]);
 
         }
