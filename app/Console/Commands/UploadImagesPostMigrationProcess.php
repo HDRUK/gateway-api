@@ -16,7 +16,7 @@ class ImagesPostMigrationProcess extends Command
      *
      * @var string
      */
-    protected $signature = 'app:images-post-migration-process';
+    protected $signature = 'app:upload-images-post-migration-process';
 
     /**
      * The file of migration mappings translated to CSV array
