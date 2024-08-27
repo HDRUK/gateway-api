@@ -19,11 +19,11 @@ class OpenIdController extends Controller
         'code',
         'none',
         'id_token',
-        'token',
-        'id_token token',
+        'access_token',
+        'id_token access_token',
         'code id_token',
-        'code token',
-        'code id_token token',
+        'code access_token',
+        'code id_token access_token',
     ];
     protected $grant_types_supported = [
         'implicit',
