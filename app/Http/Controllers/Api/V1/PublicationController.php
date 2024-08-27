@@ -901,7 +901,12 @@ class PublicationController extends Controller
 
             if (!$checking) {
                 $this->addPublicationHasDatasetVersion($publicationId, $dataset, $datasetVersionId);
-                $this->reindexElastic($dataset['id']);
+                //note: Calum 27/08/2024
+                // - not sure why this was trying to reindex a dataset here!
+                // - this is not checking if the dataset is active or not!
+                // - commenting out for now, because i dont think the dataset should be reindexed like this..
+                // - think ok to preserve a link between a non-indexed dataset and an indexed publication
+                //$this->reindexElastic($dataset['id']);
             }
         }
     }
