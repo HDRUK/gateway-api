@@ -19,6 +19,7 @@ class ElasticClientControllerService
         $this->baseUrl = config('database.connections.elasticsearch.host');
         $this->username = config('services.elasticclient.user');
         $this->password = config('services.elasticclient.password');
+        $this->timeout = config('services.elasticclient.timeout');
         $this->verifySSL = config('services.elasticclient.verify_ssl');
     }
 
@@ -30,7 +31,8 @@ class ElasticClientControllerService
     protected function makeRequest()
     {
         $request = Http::withHeaders(['Content-Type' => 'application/json'])
-                   ->withOptions(['verify' => $this->verifySSL]);
+                   ->withOptions(['verify' => $this->verifySSL])
+                   ->timeout($this->timeout);
 
         if (!empty($this->username) && !empty($this->password)) {
             $request->withBasicAuth($this->username, $this->password);
