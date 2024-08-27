@@ -88,7 +88,7 @@ class ReindexEntities extends Command
 
         $minIndex = $this->minIndex;
         $maxIndex = $this->maxIndex;
-        $datasetIds = Dataset::where("status", Dataset::STATUS_ACTIVE)
+        $datasetIds = Dataset::select("id")->where("status", Dataset::STATUS_ACTIVE)
             ->pluck('id')->toArray();
 
         if (isset($minIndex) && isset($maxIndex)) {
