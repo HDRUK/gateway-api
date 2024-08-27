@@ -49,8 +49,7 @@ class UploadImagesPostMigrationProcess extends Command
                 $fileLoc = $csv['file_loc'];
                 $newFileName = $csv['New File Name'];
                 
-
-                if ($action == 'null') {
+                if ($action === 'null') {
                     $fileLoc = null
                 }
 
@@ -72,8 +71,6 @@ class UploadImagesPostMigrationProcess extends Command
                     ]);
                     $collection->save()
                 }
-               
-
 
                 echo 'completed post-process of migration for uploaded image ' . $upload->id . PHP_EOL;
 
