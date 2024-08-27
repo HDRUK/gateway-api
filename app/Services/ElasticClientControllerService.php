@@ -31,10 +31,9 @@ class ElasticClientControllerService
      */
     protected function makeRequest()
     {
-        echo "using $this->timeout \n";
         $request = Http::withHeaders(['Content-Type' => 'application/json'])
                    ->withOptions(['verify' => $this->verifySSL])
-                   ->timeout($this->timeout);
+                   ->connectTimeout($this->timeout);
 
         if (!empty($this->username) && !empty($this->password)) {
             $request->withBasicAuth($this->username, $this->password);
