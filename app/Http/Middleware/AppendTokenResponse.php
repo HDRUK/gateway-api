@@ -18,18 +18,18 @@ class AppendTokenResponse
     public function handle(Request $request, Closure $next): Response
     {
 
-        $response =  $next($request);
-        \Log::info(json_encode($response));
+        // $response =  $next($request);
+        // \Log::info(json_encode($response));
 
-        if ($response->headers->get('Content-Type') === 'application/json') {
-            $content = json_decode($response->getContent(), true);
-            if (array_key_exists('access_token', $content)) {
-                $content['id_token'] = $content['access_token'];
-                $response->setContent(json_encode($content));
-            }
-        }
+        // if ($response->headers->get('Content-Type') === 'application/json') {
+        //     $content = json_decode($response->getContent(), true);
+        //     if (array_key_exists('access_token', $content)) {
+        //         $content['id_token'] = $content['access_token'];
+        //         $response->setContent(json_encode($content));
+        //     }
+        // }
 
-        // return $next($request);
-        return $response;
+        // return $response;
+        return $next($request);
     }
 }

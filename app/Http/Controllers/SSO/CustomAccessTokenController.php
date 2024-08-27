@@ -8,18 +8,38 @@ use Psr\Http\Message\ServerRequestInterface;
 use Laravel\Passport\Exceptions\OAuthServerException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Laravel\Passport\Http\Controllers\AccessTokenController;
+use DB;
 
 class CustomAccessTokenController extends AccessTokenController
 {
-    public function customIssueToken(ServerRequestInterface $request)
+    public function issueToken(ServerRequestInterface $request)
     {
-        $tokenResponse = parent::issueToken($request);
-        $token = $tokenResponse->getContent();
-        $tokenInfo = json_decode($token, true);
-        $tokenInfo['id_token'] = $token['access_token'];
+        $response = parent::issueToken($request);
+        $content = json_decode($response->getContent(), true);
 
-        return $tokenInfo;
+        if (isset($content['access_token'])) {
+            $token = DB::table('oauth_access_tokens')
+                ->where('id', $content['access_token'])
+                ->first();
+
+            if ($token && $token->id_token) {
+                $content['id_token'] = $token->id_token;
+                $response->setContent(json_encode($content));
+            }
+        }
+
+        return $response;
     }
+
+    // public function customIssueToken(ServerRequestInterface $request)
+    // {
+    //     $tokenResponse = parent::issueToken($request);
+    //     $token = $tokenResponse->getContent();
+    //     $tokenInfo = json_decode($token, true);
+    //     $tokenInfo['id_token'] = $token['access_token'];
+
+    //     return $tokenInfo;
+    // }
 
     // public function customIssueToken(ServerRequestInterface $request)
     // {
