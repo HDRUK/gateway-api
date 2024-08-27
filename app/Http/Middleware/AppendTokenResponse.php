@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class AppendTokenResponse
 {
@@ -13,18 +15,18 @@ class AppendTokenResponse
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
 
         $response =  $next($request);
 
-        $content = json_decode($response->content(), true);
+        $content = json_decode($response->getContent(), true);
 
         if (!empty($content['access_token'])) {
 
             $content['id_token'] = $content['access_token'];
 
-            $response->setContent($content);
+            $response->setContent(json_encode($content));
 
         }
 
