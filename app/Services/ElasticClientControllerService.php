@@ -13,6 +13,7 @@ class ElasticClientControllerService
     protected $password;
     protected $verifySSL;
 
+
     public function __construct()
     {
         $this->baseUrl = config('database.connections.elasticsearch.host');

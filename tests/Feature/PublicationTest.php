@@ -545,6 +545,9 @@ class PublicationTest extends TestCase
      */
     public function test_soft_delete_and_unarchive_publication_with_success(): void
     {
+        ECC::shouldReceive("deleteDocument")
+            ->times(1);
+
         $countBefore = Publication::count();
 
         $response = $this->json('DELETE', self::TEST_URL . '/1', [], $this->header);

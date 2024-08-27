@@ -856,6 +856,8 @@ class DurController extends Controller
             $currentDur = Dur::where('id', $id)->first();
             if($currentDur->status === Dur::STATUS_ACTIVE) {
                 $this->indexElasticDur($id);
+            } else {
+                $this->deleteDurFromElastic((int) $id);
             }
 
             Auditor::log([
@@ -1249,6 +1251,8 @@ class DurController extends Controller
             $dur->status = Dur::STATUS_ARCHIVED;
             $dur->save();
 
+            $this->deleteDurFromElastic($id);
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
@@ -1612,7 +1616,9 @@ class DurController extends Controller
 
             if (!$checking) {
                 $this->addDurHasDatasetVersion($durId, $dataset, $datasetVersionId, $userId);
-                $this->reindexElastic($dataset['id']);
+                // Note 27/08/2024 Calum
+                // - see other comments - shouldnt be messing with reindexing here!!!
+                //$this->reindexElastic($dataset['id']);
             }
         }
     }

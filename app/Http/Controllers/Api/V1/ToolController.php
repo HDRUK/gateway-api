@@ -487,6 +487,8 @@ class ToolController extends Controller
             $collections = array_key_exists('collections', $input) ? $input['collections'] : [];
             $this->checkCollections($toolId, $collections, (int)$jwtUser['id']);
 
+
+
             $currentTool = Tool::where('id', $toolId)->first();
             if($currentTool->status === Tool::STATUS_ACTIVE) {
                 $this->indexElasticTools((int) $toolId);
@@ -663,9 +665,14 @@ class ToolController extends Controller
 
             $currentTool = Tool::where('id', $id)->first();
             if ($currentTool->status === Tool::STATUS_ACTIVE) {
-                if ($request['enabled']) {
+                if ($request['enabled']) { //note Calum - this is crazy inconsistent
                     $this->indexElasticTools((int) $id);
+                } else {
+                    //note Calum - adding this to be safe
+                    $this->deleteToolFromElastic((int) $id);
                 }
+            } else {
+                $this->deleteToolFromElastic((int) $id);
             }
 
             Auditor::log([

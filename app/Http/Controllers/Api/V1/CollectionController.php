@@ -678,7 +678,7 @@ class CollectionController extends Controller
             if($currentCollection->status === Collection::STATUS_ACTIVE) {
                 $this->indexElasticCollections((int) $id);
             } else {
-                $this->deleteFromElastic((int) $id, 'collection');
+                $this->deleteCollectionFromElastic((int) $id);
             }
 
             Auditor::log([
@@ -985,6 +985,8 @@ class CollectionController extends Controller
                 CollectionHasPublication::where(['collection_id' => $id])->delete();
                 Collection::where(['id' => $id])->update(['status' => Collection::STATUS_ARCHIVED]);
                 Collection::where(['id' => $id])->delete();
+
+                $this->deleteCollectionFromElastic($id);
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],

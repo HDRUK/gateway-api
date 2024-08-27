@@ -84,7 +84,7 @@ trait IndexElastic
             ];
 
             $params = [
-                'index' => 'dataset',
+                'index' => ECC::ELASTIC_NAME_DATASET,
                 'id' => $datasetMatch->id,
                 'body' => $toIndex,
                 'headers' => 'application/json'
@@ -222,7 +222,7 @@ trait IndexElastic
                 'dataProviderColl' => $dataProviderColl
             ];
             $params = [
-                'index' => 'collection',
+                'index' => ECC::ELASTIC_NAME_COLLECTION,
                 'id' => $collectionId,
                 'body' => $toIndex,
                 'headers' => 'application/json'
@@ -277,7 +277,7 @@ trait IndexElastic
                 'geographicLocation' => $locations,
             ];
             $params = [
-                'index' => 'dataprovidercoll',
+                'index' => ECC::ELASTIC_NAME_DATAPROVIDERCOLL,
                 'id' => $id,
                 'body' => $toIndex,
                 'headers' => 'application/json'
@@ -361,7 +361,7 @@ trait IndexElastic
             ];
 
             $params = [
-                'index' => 'datauseregister',
+                'index' => ECC::ELASTIC_NAME_DUR,
                 'id' => $id,
                 'body' => $toIndex,
                 'headers' => 'application/json'
@@ -420,7 +420,7 @@ trait IndexElastic
                 'datasetLinkTypes' => $datasetLinkTypes,
             ];
             $params = [
-                'index' => 'publication',
+                'index' => ECC::ELASTIC_NAME_PUBLICATION,
                 'id' => $id,
                 'body' => $toIndex,
                 'headers' => 'application/json'
@@ -541,7 +541,7 @@ trait IndexElastic
             ];
 
             $params = [
-                'index' => 'tool',
+                'index' => ECC::ELASTIC_NAME_TOOL,
                 'id' => $toolId,
                 'body' => $toIndex,
                 'headers' => 'application/json'
@@ -586,6 +586,35 @@ trait IndexElastic
         }
     }
 
+    public function deleteDurFromElastic(string $id)
+    {
+        $this->deleteFromElastic($id, ECC::ELASTIC_NAME_DUR);
+    }
+
+    public function deleteCollectionFromElastic(string $id)
+    {
+        $this->deleteFromElastic($id, ECC::ELASTIC_NAME_COLLECTION);
+    }
+
+    public function deletePublicationFromElastic(string $id)
+    {
+        $this->deleteFromElastic($id, ECC::ELASTIC_NAME_PUBLICATION);
+    }
+
+    public function deleteToolFromElastic(string $id)
+    {
+        $this->deleteFromElastic($id, ECC::ELASTIC_NAME_TOOL);
+    }
+
+    public function deleteDatasetFromElastic(string $id)
+    {
+        $this->deleteFromElastic($id, ECC::ELASTIC_NAME_DATASET);
+    }
+
+    public function deleteDataProviderCollFromElastic(string $id)
+    {
+        $this->deleteFromElastic($id, ECC::ELASTIC_NAME_DATAPROVIDERCOLL);
+    }
 
     public function getMaterialTypes(array $metadata): array|null
     {
