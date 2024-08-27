@@ -11,6 +11,7 @@ class ElasticClientControllerService
     protected $baseUrl;
     protected $username;
     protected $password;
+    protected $timeout;
     protected $verifySSL;
 
 
@@ -30,6 +31,7 @@ class ElasticClientControllerService
      */
     protected function makeRequest()
     {
+        echo "using $this->timeout \n";
         $request = Http::withHeaders(['Content-Type' => 'application/json'])
                    ->withOptions(['verify' => $this->verifySSL])
                    ->timeout($this->timeout);
