@@ -19,9 +19,11 @@ class AppendTokenResponse
     {
 
         $response =  $next($request);
+        \Log::info($response);
 
         if ($response->headers->get('Content-Type') === 'application/json') {
             $content = json_decode($response->getContent(), true);
+            \Log::info($content);
             if (array_key_exists('access_token', $content)) {
                 $content['id_token'] = $content['access_token'];
                 $response->setContent(json_encode($content));
