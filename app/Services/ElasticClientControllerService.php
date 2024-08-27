@@ -5,6 +5,7 @@ namespace App\Services;
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\RequestException;
 
 class ElasticClientControllerService
 {
@@ -30,12 +31,19 @@ class ElasticClientControllerService
     public function indexDocument(array $params)
     {
         $url = $this->baseUrl . '/' . $params['index'] . '/_doc/' . $params['id'];
-        $response = Http::withBasicAuth($this->username, $this->password)
-            ->withHeaders(['Content-Type' => 'application/json'])
-            ->withOptions(['verify' => $this->verifySSL])
-            ->post($url, $params['body']);
+        try {
+            $response = Http::withBasicAuth($this->username, $this->password)
+                ->withHeaders(['Content-Type' => 'application/json'])
+                ->withOptions(['verify' => $this->verifySSL])
+                ->post($url, $params['body']);
 
-        return $response;
+            $response->throw();
+
+            return $response;
+
+        } catch (RequestException $e) {
+            throw new \Exception('Failed to index document: ' . $e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     /**

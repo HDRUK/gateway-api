@@ -23,7 +23,7 @@ class ReindexEntities extends Command
      * @var string
      */
 
-    protected $signature = 'app:reindex-entities {entity?} {sleep=0} {minIndex?} {maxIndex?} {--term-extraction}';
+    protected $signature = 'app:reindex-entities {entity?} {sleep=0} {minIndex?} {maxIndex?} {--term-extraction}  {--fresh}';
 
     /**
      * The console command description.
@@ -81,8 +81,10 @@ class ReindexEntities extends Command
         $beforeCount = ECC::countDocuments('dataset');
         echo "Before reindexing there were $beforeCount datasets indexed \n";
 
-        $nDeleted = ECC::deleteAllDocuments('dataset');
-        echo "Deleted $nDeleted documents from the index \n";
+        if($this->option('fresh')) {
+            $nDeleted = ECC::deleteAllDocuments('dataset');
+            echo "Deleted $nDeleted documents from the index \n";
+        }
 
         $minIndex = $this->minIndex;
         $maxIndex = $this->maxIndex;
