@@ -6,6 +6,8 @@ use Exception;
 
 use App\Models\Upload;
 
+use App\Models\Collection;
+
 use Illuminate\Console\Command;
 
 
@@ -48,8 +50,8 @@ class UploadImagesPostMigrationProcess extends Command
                 $newFileName = $csv['New File Name'];
                 
 
-                if ($action === 'null') {
-                    $fileLoc = null;
+                if ($action == 'null') {
+                    $fileLoc = null
                 }
 
                 $upload = Upload::updateOrCreate([
@@ -61,6 +63,17 @@ class UploadImagesPostMigrationProcess extends Command
                 ]);
 
                 $upload->save();
+
+                $collection = Collection::where('mongo_id', '=', $pID)->first();
+
+                if ($collection) {
+                    $collection::update([
+                        'image_link' => $fileLoc
+                    ]);
+                    $collection->save()
+                }
+               
+
 
                 echo 'completed post-process of migration for uploaded image ' . $upload->id . PHP_EOL;
 
