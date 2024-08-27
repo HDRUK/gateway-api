@@ -34,8 +34,15 @@ trait CustomClaimsAccessTokenTrait
             "*",
             env('APP_URL') . "/*",
         ];
+        // $realmAccess = [
+        //     "roles" => $rquestroles,
+        // ];
         $realmAccess = [
-            "roles" => $rquestroles,
+            "roles" => [
+                "default-roles-rquest-206",
+                "offline_access",
+                "uma_authorization"
+            ],
         ];
         $resourceAccess = [
             "account" => [
@@ -72,6 +79,7 @@ trait CustomClaimsAccessTokenTrait
             // ->withClaim('rquestroles', $rquestroles)
             ->withClaim('realm_access', $realmAccess)
             ->withClaim('resource_access', $resourceAccess)
+            ->withClaim('scope', "openid profile email")
             ->withHeader('kid', env('JWT_KID', 'jwtkidnotfound'))
             ->getToken($this->jwtConfiguration->signer(), $this->jwtConfiguration->signingKey());
     }
