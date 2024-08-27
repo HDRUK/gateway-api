@@ -58,7 +58,25 @@ class ElasticClientControllerService
             $response->throw();
             return $response;
         } catch (RequestException $e) {
-            throw new \Exception('Failed to index document: ' . $e->getMessage(), $e->getCode(), $e);
+
+            $response = $e->response; // Get the response object from the exception
+            $headers = $response ? $response->headers() : [];
+
+            // Optionally, log the headers for debugging
+            \Log::error('Failed to index document', [
+                'url' => $url,
+                'params' => $params,
+                'headers' => $headers,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw new \Exception(
+                'Failed to index document: ' . $e->getMessage() . " " . json_encode($headers),
+                $e->getCode(),
+                $e
+            );
+
+
         }
     }
 
