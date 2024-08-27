@@ -79,7 +79,7 @@ class ElasticClientControllerService
      * Deletes all documents in a specific Elasticsearch index.
      *
      * @param string $index
-     * @return \Illuminate\Http\Client\Response
+     * @return int
      */
     public function deleteAllDocuments(string $index)
     {
