@@ -4,18 +4,26 @@ namespace App\Http\Middleware;
 
 use Config;
 
-use SebastianBergmann\Timer\Timer;
-use SebastianBergmann\Timer\ResourceUsageFormatter;
-
 use Closure;
 use Illuminate\Http\Request;
+
+use Illuminate\Http\Response;
 use Illuminate\Http\JsonResponse;
+use SebastianBergmann\Timer\Timer;
+use Illuminate\Http\RedirectResponse;
+use SebastianBergmann\Timer\ResourceUsageFormatter;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ProfileRequest
 {
-    public function handle(Request $request, Closure $next): JsonResponse|StreamedResponse
+    public function handle(Request $request, Closure $next): JsonResponse|StreamedResponse|RedirectResponse|Response|BinaryFileResponse
     {
+        // "App\\Http\\Middleware\\ProfileRequest::handle(): Return value must be of type 
+        // Illuminate\\Http\\JsonResponse|
+        // Symfony\\Component\\HttpFoundation\\StreamedResponse|
+        // Illuminate\\Http\\RedirectResponse|
+        // Illuminate\\Http\\Response|Symfony\\Component\\HttpFoundation\\BinaryFileResponse, Symfony\\Component\\HttpFoundation\\Response returned"
         if (Config::get('profiling.profiler_active')) {
             // Create our profiler
             $timer = new Timer();
