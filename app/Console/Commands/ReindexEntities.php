@@ -12,6 +12,8 @@ use App\Jobs\TermExtraction;
 use App\Http\Traits\IndexElastic;
 use Illuminate\Console\Command;
 
+use ElasticClientController as ECC;
+
 class ReindexEntities extends Command
 {
     use IndexElastic;
@@ -76,6 +78,12 @@ class ReindexEntities extends Command
 
     private function datasets()
     {
+        $beforeCount = ECC::countDocuments('dataset');
+        echo "Before reindexing there were $beforeCount datasets indexed \n";
+
+        $nDeleted = ECC::deleteAllDocuments('dataset');
+        echo "Deleted $nDeleted documents from the index \n";
+
         $minIndex = $this->minIndex;
         $maxIndex = $this->maxIndex;
         $datasetIds = Dataset::where("status", Dataset::STATUS_ACTIVE)
@@ -108,6 +116,12 @@ class ReindexEntities extends Command
             $progressbar->advance();
         }
         $progressbar->finish();
+
+        //sleep for 5 seconds and count again..
+        usleep(5 * 1000 * 1000);
+        $afterCount = ECC::countDocuments('dataset');
+        echo "\nAfter reindexing there were $afterCount datasets indexed \n";
+
     }
 
     private function tools()
