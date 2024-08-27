@@ -1020,7 +1020,6 @@ trait MockExternalApis
         MMC::shouldReceive("validateDataModelType")->andReturn(true);
         MMC::makePartial();
 
-
         $this->dataset_store = [];
 
         Http::fake([

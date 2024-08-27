@@ -43,6 +43,7 @@ class PublicationTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
+        ECC::spy();
 
         $this->seed([
             MinimalUserSeeder::class,
