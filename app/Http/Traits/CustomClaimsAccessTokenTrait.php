@@ -8,6 +8,7 @@ use App\Models\CohortRequest;
 use App\Models\CohortRequestHasPermission;
 use App\Models\Permission;
 use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;
+use Log;
 
 trait CustomClaimsAccessTokenTrait
 {
@@ -56,6 +57,7 @@ trait CustomClaimsAccessTokenTrait
         // $sessionState = (string)session()->getId();
         $sessionState = "ae038c99-8244-4d8e-a85d-e8648fb9dbcd";
         $identifiedBy = $this->getIdentifier();
+        Log::info($this->jwtConfiguration->signer());
 
         return $this->jwtConfiguration->builder()
             ->permittedFor($this->getClient()->getIdentifier())
