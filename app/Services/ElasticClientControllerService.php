@@ -29,9 +29,14 @@ class ElasticClientControllerService
      */
     protected function makeRequest()
     {
-        return Http::withBasicAuth($this->username, $this->password)
-            ->withHeaders(['Content-Type' => 'application/json'])
-            ->withOptions(['verify' => $this->verifySSL]);
+        $request = Http::withHeaders(['Content-Type' => 'application/json'])
+                   ->withOptions(['verify' => $this->verifySSL]);
+
+        if (!empty($this->username) && !empty($this->password)) {
+            $request->withBasicAuth($this->username, $this->password);
+        }
+
+        return $request;
     }
 
     /**
