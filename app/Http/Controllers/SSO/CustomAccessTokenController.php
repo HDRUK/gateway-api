@@ -7,17 +7,27 @@ use App\Models\User;
 use Psr\Http\Message\ServerRequestInterface;
 use Laravel\Passport\Exceptions\OAuthServerException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Laravel\Passport\Http\Controllers\AccessTokenController as AuthController;
+use Laravel\Passport\Http\Controllers\AccessTokenController;
 
-class CustomAccessTokenController extends AuthController
+class CustomAccessTokenController extends AccessTokenController
 {
     public function customIssueToken(ServerRequestInterface $request)
     {
-        // $data = json_decode(parent::issueToken($request)->content(), true);
-        $data = json_decode($request->getBody()->getContents(), true);
-        \Log::info('data :: ' . json_encode($data));
-        \Log::info('session :: ' . json_encode(session()->all()));
+        $tokenResponse = parent::issueToken($request);
+        $token = $tokenResponse->getContent();
+        $tokenInfo = json_decode($token, true);
+        $tokenInfo->put('id_token', $token['access_token']);
+
+        return $tokenInfo;
     }
+
+    // public function customIssueToken(ServerRequestInterface $request)
+    // {
+    //     // $data = json_decode(parent::issueToken($request)->content(), true);
+    //     $data = json_decode($request->getBody()->getContents(), true);
+    //     \Log::info('data :: ' . json_encode($data));
+    //     \Log::info('session :: ' . json_encode(session()->all()));
+    // }
 
     // public function customIssueToken(ServerRequestInterface $request)
     // {
