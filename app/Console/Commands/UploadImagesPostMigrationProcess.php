@@ -48,27 +48,38 @@ class UploadImagesPostMigrationProcess extends Command
                 $action = $csv['action'];
                 $fileLoc = $csv['file_loc'];
                 $newFileName = $csv['New File Name'];
+                $entityId = null;
+                $entityType = null;
                 
                 if ($action === 'null') {
                     $fileLoc = null;
                 }
 
+                // Find a collection
+
+                $collection = Collection::where('mongo_id', '=', $pID)->first();
+
+                if ($collection){
+                    // If a collection exists, then update the image link to the file location
+
+                    $collection->image_link = $fileLoc;
+                    $collection->save();
+
+                    // Override the null entity variables with the collection data
+                    $entityId = $collection->id;
+                    $entityType = 'collections';
+                }
+
                 $upload = Upload::updateOrCreate([
-                'id' => (int) $pID,
                 'filename' => $newFileName,
                 'file_location' => $fileLoc,
+                'entity_type' => $entityType,
+                'entity_id' => $entityId,
                 'user_id' => 1,
                 'status' => 'PROCESSED'
                 ]);
 
                 $upload->save();
-
-                $collection = Collection::where('mongo_id', '=', $pID)->first();
-                if ($collection){
-                    $collection->image_link = $fileLoc;
-                    $collection->save();
-                }
-                
 
                 echo 'completed post-process of migration for uploaded image ' . $upload->id . PHP_EOL;
 
