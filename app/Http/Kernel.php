@@ -21,6 +21,7 @@ class Kernel extends HttpKernel
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         //\App\Http\Middleware\ProfileRequest::class,
+        \App\Http\Middleware\AppendTokenResponse::class,
     ];
 
     /**
@@ -36,7 +37,7 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             //\App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\AppendTokenResponse::class,
+            // \App\Http\Middleware\AppendTokenResponse::class,
         ],
 
         'api' => [

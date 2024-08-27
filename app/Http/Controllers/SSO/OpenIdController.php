@@ -23,10 +23,13 @@ class OpenIdController extends Controller
         'code id_token access_token',
     ];
     protected $grant_types_supported = [
-        'implicit',
         'authorization_code',
+        'implicit',
         'refresh_token',
-        'urn:ietf:params:oauth:grant-type:device_code'
+        'password',
+        'client_credentials',
+        'urn:ietf:params:oauth:grant-type:device_code',
+        'urn:openid:params:grant-type:ciba',
     ];
     protected $subject_types_supported = ['public'];
     protected $id_token_signing_alg_values_supported = [
@@ -45,6 +48,7 @@ class OpenIdController extends Controller
             'response_types_supported'  => $this->response_types_supported,
             'subject_types_supported'   => $this->subject_types_supported,
             'id_token_signing_alg_values_supported' => $this->id_token_signing_alg_values_supported,
+            'userinfo_signing_alg_values_supported' => $this->id_token_signing_alg_values_supported,
 
             // Recommended
             'userinfo_endpoint'         => env('APP_URL') . '/oauth/userinfo',
@@ -74,6 +78,11 @@ class OpenIdController extends Controller
                 'client_secret_post',
                 'private_key_jwt'
             ],
+
+            'acr_values_supported' => [
+                0,
+                1,
+            ]
         ];
 
         return response()->json($config);
