@@ -69,6 +69,7 @@ trait CustomClaimsAccessTokenTrait
             ->withClaim('typ', "Bearer")
             ->withClaim('azp', "rquest")
             ->withClaim('session_state', $sessionState)
+            ->withClaim('sid', $sessionState)
             ->withClaim('allowed-origins', $allowedOrigins)
             ->withClaim('email_verified', true)
             ->withClaim('email', $user->email)
