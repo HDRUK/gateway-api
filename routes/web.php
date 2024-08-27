@@ -18,7 +18,7 @@ use App\Http\Controllers\SSO\CustomAuthorizationController;
 */
 
 Route::get('/oauth/authorize', [CustomAuthorizationController::class, 'customAuthorize']);
-// Route::post('/oauth/token', [CustomAccessTokenController::class, 'customIssueToken']);
+Route::post('/oauth/token', [CustomAccessTokenController::class, 'customIssueToken']);
 
 Route::get('/oauth/.well-known/jwks', [JwksController::class, 'getJwks']);
 Route::get('/oauth/.well-known/openid-configuration', [OpenIdController::class, 'getOpenIdConfiguration']);
