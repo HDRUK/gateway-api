@@ -39,9 +39,6 @@ class UploadImagesPostMigrationProcess extends Command
     {
         $this->readMigrationFile(storage_path() . '/migration_files/collection_images.csv');
 
-        $superUserID = 1
-        $status = 'PROCESSED'
-
         // Traverse the CSV data and update migrations accordingly
         foreach ($this->csvData as $csv) {
             try {
@@ -58,8 +55,8 @@ class UploadImagesPostMigrationProcess extends Command
                 'id' => (int) $pID,
                 'filename' => $newFileName,
                 'file_location' => $fileLoc,
-                'user_id' => $superUserID,
-                'status' => $status
+                'user_id' => 1,
+                'status' => 'PROCESSED'
                 ]);
 
                 $upload->save();
