@@ -476,6 +476,7 @@ class DataProviderCollController extends Controller
             $dpc->name = $input['name'];
             $dpc->img_url = $input['img_url'];
             $dpc->summary = $input['summary'];
+
             $dpc->save();
 
             if (isset($input['team_ids']) && !empty($input['team_ids'])) {
@@ -667,6 +668,8 @@ class DataProviderCollController extends Controller
 
             DataProviderCollHasTeam::where(['data_provider_coll_id' => $id])->delete();
             DataProviderColl::where(['id' => $id])->delete();
+
+            $this->deleteDataProviderCollFromElastic($id);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

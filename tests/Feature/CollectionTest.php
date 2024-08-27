@@ -467,6 +467,9 @@ class CollectionTest extends TestCase
      */
     public function test_soft_delete_and_unarchive_collection_with_success(): void
     {
+        ECC::shouldReceive("deleteDocument")
+            ->times(1);
+
         $countBefore = Collection::count();
         $countTrashedBefore = Collection::onlyTrashed()->count();
         // create new collection

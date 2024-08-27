@@ -38,6 +38,8 @@ use Database\Seeders\DurHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 
+use ElasticClientController as ECC;
+
 class DurTest extends TestCase
 {
     use RefreshDatabase;
@@ -272,7 +274,11 @@ class DurTest extends TestCase
         $teamCountDraftBefore = array_key_exists('DRAFT', $responseCount['data']) ? $responseCount['data']['DRAFT'] : 0;
 
         $countBefore = Dur::count();
-        $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
+
+
+        ECC::shouldReceive("indexDocument")
+            ->times(1);
+
         $mockData = [
             'datasets' => $this->generateDatasets(),
             'publications' => $this->generatePublications(),
@@ -305,8 +311,7 @@ class DurTest extends TestCase
             Dur::where('id', $dur_index)->first()['sector_id'],
             Sector::where('name', 'Academia')->first()['id']
         );
-        $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
-        $this->assertTrue($elasticCountAfter > $elasticCountBefore);
+
 
         /*
         * compare the counts per status to before the ACTIVE one was added
@@ -333,6 +338,9 @@ class DurTest extends TestCase
      */
     public function test_update_dur_with_success(): void
     {
+        ECC::shouldReceive("indexDocument")
+            ->times(2);
+
         // create dur
         $userId = (int) User::all()->random()->id;
         $teamId = (int) Team::all()->random()->id;
@@ -379,6 +387,7 @@ class DurTest extends TestCase
             'non_gateway_datasets' => ['External Dataset 01','External Dataset 02', 'External Dataset 03'],
             'latest_approval_date' => '2017-09-12T01:00:00',
             'organisation_sector' => 'Commercial',
+            'status' => 'ACTIVE',
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -395,6 +404,84 @@ class DurTest extends TestCase
             Sector::where('name', 'Industry')->first()['id']
         );
     }
+
+    /**
+     * Create and Update Dur with success
+     *
+     * @return void
+     */
+    public function test_update_make_draft_dur_with_success(): void
+    {
+        ECC::shouldReceive("indexDocument")
+            ->times(1);
+
+        ECC::shouldReceive("deleteDocument")
+            ->times(1);
+
+        // create dur
+        $userId = (int) User::all()->random()->id;
+        $teamId = (int) Team::all()->random()->id;
+        $countBefore = Dur::count();
+        $mockData = [
+            'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
+            'keywords' => $this->generateKeywords(),
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+            'latest_approval_date' => '2017-09-12T01:00:00',
+            'organisation_sector' => 'academia',
+            'status' => 'ACTIVE',
+        ];
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            $mockData,
+            $this->header
+        );
+        $response->assertStatus(201);
+        $durId = (int) $response['data'];
+
+        $countAfter = Dur::count();
+        $countNewRow = $countAfter - $countBefore;
+
+        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+
+        // Check that the sector has been correctly mapped.
+        $dur_index = $response->json()['data'];
+        $this->assertEquals(
+            Dur::where('id', $dur_index)->first()['sector_id'],
+            Sector::where('name', 'Academia')->first()['id']
+        );
+        // update
+        $mockDataUpdate = [
+            'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
+            'keywords' => $this->generateKeywords(),
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'non_gateway_datasets' => ['External Dataset 01','External Dataset 02', 'External Dataset 03'],
+            'latest_approval_date' => '2017-09-12T01:00:00',
+            'organisation_sector' => 'Commercial',
+            'status' => 'DRAFT',
+        ];
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $durId,
+            $mockDataUpdate,
+            $this->header
+        );
+        $responseUpdate->assertStatus(200);
+
+        // Check that the sector has been correctly mapped.
+        $dur_index = $response->json()['data'];
+        $this->assertEquals(
+            Dur::where('id', $dur_index)->first()['sector_id'],
+            Sector::where('name', 'Industry')->first()['id']
+        );
+    }
+
 
     /**
      * Create and Update and Edit Dur with success
@@ -514,6 +601,10 @@ class DurTest extends TestCase
         $countNewRow = $countAfter - $countBefore;
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+
+        ECC::shouldReceive("deleteDocument")
+            ->times(1);
+
 
         // delete
         $responseDelete = $this->json(

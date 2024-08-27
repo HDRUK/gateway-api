@@ -1012,7 +1012,7 @@ class DatasetController extends Controller
 
         try {
             MMC::deleteDataset($id);
-            $this->deleteFromElastic($id, 'dataset');
+            $this->deleteDatasetFromElastic($id);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
