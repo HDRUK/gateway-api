@@ -30,28 +30,49 @@ trait CustomClaimsAccessTokenTrait
             'id' => $this->getUserIdentifier(),
         ])->first();
 
-        $ga4ghVisaV1 = [
-            'type' => 'AffiliationAndRole',
-            'asserted' => $user->created_at,
-            'value' => 'no.organization',
-            'source' => env('GATEWAY_URL'), // temp
+        $allowedOrigins = [
+            "*",
+            env('APP_URL') . "/*",
         ];
+        $realmAccess = [
+            "roles" => $rquestroles,
+        ];
+        $resourceAccess = [
+            "account" => [
+                "roles" => [
+                    "manage-account",
+                    "manage-account-links",
+                    "view-profile"
+                ]
+            ]
+        ];
+        // $sessionState = (string)session()->getId();
+        $sessionState = "ae038c99-8244-4d8e-a85d-e8648fb9dbcd";
+        $identifiedBy = $this->getIdentifier();
 
         return $this->jwtConfiguration->builder()
             ->permittedFor($this->getClient()->getIdentifier())
-            ->identifiedBy($this->getIdentifier())
+            ->identifiedBy($identifiedBy)
             ->issuedAt(new \DateTimeImmutable())
-            ->issuedBy(env('GATEWAY_URL'))
+            // ->issuedBy(env('GATEWAY_URL'))
+            ->issuedBy(env('APP_URL'))
             ->canOnlyBeUsedAfter(new \DateTimeImmutable())
             ->expiresAt($this->getExpiryDateTime())
             ->relatedTo((string)$this->getUserIdentifier())
-            ->withClaim('scopes', $this->getScopes())
+            ->withClaim('typ', "Bearer")
+            ->withClaim('azp', "rquest")
+            ->withClaim('session_state', $sessionState)
+            ->withClaim('allowed-origins', $allowedOrigins)
+            ->withClaim('email_verified', true)
             ->withClaim('email', $user->email)
             ->withClaim('preferred_username', $user->name)
-            ->withClaim('fullname', $user->lastname . ' ' . $user->firstname)
-            ->withClaim('firstname', $user->firstname)
-            ->withClaim('lastname', $user->lastname)
-            ->withClaim('rquestroles', $rquestroles)
+            ->withClaim('name', $user->lastname . ' ' . $user->firstname)
+            ->withClaim('given_name', $user->firstname)
+            ->withClaim('family_name', $user->lastname)
+            // ->withClaim('rquestroles', $rquestroles)
+            ->withClaim('realm_access', $realmAccess)
+            ->withClaim('resource_access', $resourceAccess)
+            ->withHeader('kid', env('JWT_KID', 'jwtkidnotfound'))
             ->getToken($this->jwtConfiguration->signer(), $this->jwtConfiguration->signingKey());
     }
 

@@ -51,10 +51,16 @@ class OpenIdController extends Controller
             'scopes_supported'          => $this->scopes_supported,
             'grant_types_supported'     => $this->grant_types_supported,
             'claims_supported'          => [
-                'openid',
-                'email',
-                'profile',
-                'rquestroles',
+                "aud",
+                "sub",
+                "iss",
+                "auth_time",
+                "name",
+                "given_name",
+                "family_name",
+                "preferred_username",
+                "email",
+                "acr",
             ],
 
             // logme out
