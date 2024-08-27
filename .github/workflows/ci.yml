@@ -48,7 +48,7 @@ jobs:
   
     - name: Run unit tests
       id: unittests
-      run: "php artisan test --filter test_edit_dur_with_success"
+      run: "php artisan test"
 
     - name: Run code sniffer
       id: codesniffer
