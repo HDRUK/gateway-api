@@ -155,8 +155,7 @@ trait IndexElastic
                 'headers' => 'application/json'
             ];
 
-            $client = ECC::getElasticClient();
-            $client->index($params);
+            ECC::indexDocument($params);
 
         } catch (Exception $e) {
             \Log::error('Error reindexing ElasticSearch', [
@@ -229,8 +228,7 @@ trait IndexElastic
                 'headers' => 'application/json'
             ];
 
-            $client = ECC::getElasticClient();
-            $client->index($params);
+            ECC::indexDocument($params);
 
         } catch (Exception $e) {
             Auditor::log([
@@ -285,8 +283,7 @@ trait IndexElastic
                 'headers' => 'application/json'
             ];
 
-            $client = ECC::getElasticClient();
-            $client->index($params);
+            ECC::indexDocument($params);
 
         } catch (Exception $e) {
             Auditor::log([
@@ -370,8 +367,7 @@ trait IndexElastic
                 'headers' => 'application/json'
             ];
 
-            $client = ECC::getElasticClient();
-            $response = $client->index($params);
+            ECC::indexDocument($params);
 
         } catch (Exception $e) {
             Auditor::log([
@@ -430,8 +426,7 @@ trait IndexElastic
                 'headers' => 'application/json'
             ];
 
-            $client = ECC::getElasticClient();
-            $client->index($params);
+            ECC::indexDocument($params);
 
         } catch (Exception $e) {
             Auditor::log([
@@ -551,8 +546,7 @@ trait IndexElastic
                 'headers' => 'application/json'
             ];
 
-            $client = ECC::getElasticClient();
-            $client->index($params);
+            ECC::indexDocument($params);
 
         } catch (Exception $e) {
             Auditor::log([
@@ -584,8 +578,7 @@ trait IndexElastic
                 'headers' => 'application/json'
             ];
 
-            $client = ECC::getElasticClient();
-            $response = $client->delete($params);
+            ECC::deleteDocument($params);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
