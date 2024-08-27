@@ -9,7 +9,7 @@ use App\Models\Upload;
 use Illuminate\Console\Command;
 
 
-class ImagesPostMigrationProcess extends Command
+class UploadImagesPostMigrationProcess extends Command
 {
     /**
      * The name and signature of the console command.
