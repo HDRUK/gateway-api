@@ -17,16 +17,14 @@ class AppendTokenResponse
      */
     public function handle(Request $request, Closure $next): Response
     {
-
         $response = $next($request);
+        $currentUrl = $request->url();
 
-        if ($request->is('oauth/token') && $response->status() === 200) {
+        if (strpos($currentUrl, 'oauth/token') !== false) {
             $content = json_decode($response->getContent(), true);
-            
-            if (isset($content['access_token'])) {
-                $content['id_token'] = $content['access_token'];
-                $response->setContent(json_encode($content));
-            }
+            $content['id_token'] = $content['access_token'];
+
+            return response()->json($content, $response->getStatusCode(), $response->headers->all());
         }
 
         return $response;

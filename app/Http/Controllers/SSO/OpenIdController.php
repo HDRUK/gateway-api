@@ -9,11 +9,8 @@ class OpenIdController extends Controller
 {
     protected $scopes_supported = [
         'openid',
-        'offline_access',
         'email',
         'profile',
-        'rquestroles',
-        'ga4gh_passport_v1'
     ];
     protected $response_types_supported = [
         'code',
