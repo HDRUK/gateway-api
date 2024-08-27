@@ -476,7 +476,6 @@ class DataProviderCollController extends Controller
             $dpc->name = $input['name'];
             $dpc->img_url = $input['img_url'];
             $dpc->summary = $input['summary'];
-
             $dpc->save();
 
             if (isset($input['team_ids']) && !empty($input['team_ids'])) {

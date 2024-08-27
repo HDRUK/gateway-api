@@ -487,8 +487,6 @@ class ToolController extends Controller
             $collections = array_key_exists('collections', $input) ? $input['collections'] : [];
             $this->checkCollections($toolId, $collections, (int)$jwtUser['id']);
 
-
-
             $currentTool = Tool::where('id', $toolId)->first();
             if($currentTool->status === Tool::STATUS_ACTIVE) {
                 $this->indexElasticTools((int) $toolId);
