@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use App\Models\Publication;
 use App\Models\Team;
 use App\Models\Dur;
@@ -74,37 +73,14 @@ class ReindexEntities extends Command
         }
     }
 
-    private function checkAndCleanMaterialType($id)
-    {
-
-        $datasetVersion = DatasetVersion::where([
-            'id' => $id,
-        ])->first();
-
-        $metadata = $datasetVersion->metadata;
-
-        if (array_key_exists('tissuesSampleCollection', $metadata['metadata'])) {
-            if (!is_null($metadata['metadata']['tissuesSampleCollection'])) {
-                $tissues = $metadata['metadata']['tissuesSampleCollection'];
-
-                // Check if $tissues is set to [[]] and set it to [] if so
-                if ($tissues === [[]]) {
-                    $metadata['metadata']['tissuesSampleCollection'] = [];
-                    \Log::info("Found bad data (datasetId=" . $id . ") and cleaned it!");
-
-                    DatasetVersion::where('id', $datasetVersion->id)->update([
-                        'metadata' => json_encode(json_encode($metadata)),
-                    ]);
-                }
-            }
-        }
-    }
 
     private function datasets()
     {
         $minIndex = $this->minIndex;
         $maxIndex = $this->maxIndex;
-        $datasetIds = Dataset::pluck('id')->toArray();
+        $datasetIds = Dataset::where("status", Dataset::STATUS_ACTIVE)
+            ->pluck('id')->toArray();
+
         if (isset($minIndex) && isset($maxIndex)) {
             $datasetIds = array_slice($datasetIds, $minIndex, $maxIndex - $minIndex + 1);
         } elseif (isset($minIndex)) {
@@ -117,17 +93,14 @@ class ReindexEntities extends Command
 
         $progressbar = $this->output->createProgressBar(count($datasetIds));
         foreach ($datasetIds as $id) {
-            $this->checkAndCleanMaterialType($id);
             if ($termExtraction) {
                 $dataset = Dataset::where('id', $id)->first();
-                if ($dataset->status === Dataset::STATUS_ACTIVE) {
-                    $latestMetadata = $dataset->latestMetadata()->first();
-                    TermExtraction::dispatch(
-                        $id,
-                        $dataset->lastMetadataVersionNumber()->version,
-                        base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6))
-                    );
-                }
+                $latestMetadata = $dataset->latestMetadata()->first();
+                TermExtraction::dispatch(
+                    $id,
+                    $dataset->lastMetadataVersionNumber()->version,
+                    base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6))
+                );
             } else {
                 $this->reindexElastic($id);
             }

@@ -50,6 +50,10 @@ trait IndexElastic
             $datasetMatch = Dataset::where('id', $datasetId)
                 ->firstOrFail();
 
+            if (DatasetVersion::where('dataset_id', $datasetId)->count() === 0) {
+                throw new \Exception("Error: DatasetVersion is missing for dataset ID=$datasetId.");
+            }
+
             $metadata = $datasetMatch->latestVersion()->metadata;
 
             // inject relationships via Local functions
@@ -66,16 +70,16 @@ trait IndexElastic
                 'publisherName' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.publisher.name', 'metadata.summary.publisher.publisherName'], ''),
                 'startDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.startDate'], null),
                 'endDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.endDate'], Carbon::now()->addYears(180)),
-                'dataType' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], ''),
+                'dataType' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], '')),
                 'containsTissue' => $containsTissue,
                 'sampleAvailability' => $materialTypes,
-                'conformsTo' => explode(',', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
+                'conformsTo' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
                 'hasTechnicalMetadata' => (bool) count($this->getValueByPossibleKeys($metadata, ['metadata.structuralMetadata'], [])),
                 'named_entities' =>  array_map(fn ($entity) => $entity['name'], $datasetMatch->allNamedEntities),
                 'collectionName' => array_map(fn ($collection) => $collection['name'], $datasetMatch->allCollections),
                 'dataUseTitles' => array_map(fn ($dur) => $dur['project_title'], $datasetMatch->allDurs),
                 'geographicLocation' => array_map(fn ($spatialCoverage) => $spatialCoverage['region'], $datasetMatch->allSpatialCoverages),
-                'accessService' => $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.access.accessServiceCategory'], ''),
+                'accessService' => $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.access.accessServiceCategory'], null),
                 'dataProviderColl' => DataProviderColl::whereIn('id', DataProviderCollHasTeam::where('team_id', $datasetMatch->team_id)->pluck('data_provider_coll_id'))->pluck('name')->all(),
             ];
 
