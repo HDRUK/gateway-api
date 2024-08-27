@@ -71,11 +71,17 @@ class ElasticClientControllerService
             ]);
 
             throw new \Exception(
-                'Failed to index document: ' . $e->getMessage() . " " . json_encode($headers),
+                'Failed to index document: ' . $e->getMessage() . " headers=" . json_encode($headers),
                 $e->getCode(),
                 $e
             );
-
+        } catch (\Exception $e) {
+            // General exception handling for any other unexpected errors
+            \Log::error('An unexpected error occurred', [
+                'url' => $url,
+                'params' => $params,
+                'error' => $e->getMessage(),
+            ]);
 
         }
     }
