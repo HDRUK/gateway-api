@@ -12,8 +12,6 @@ use Database\Seeders\SectorSeeder;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use MetadataManagementController as MMC;
-use ElasticClientController as ECC;
-use Elastic\Elasticsearch\Response\Elasticsearch;
 
 trait MockExternalApis
 {
@@ -102,9 +100,7 @@ trait MockExternalApis
         // Fake the HTTP request
         Http::fake([
             $indexDocumentUrlPattern => function ($request) {
-                return Http::response('Document created', 200, [
-                    Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME,
-                ]);
+                return Http::response('Document created', 200, ['application/json']);
             },
         ]);
 
@@ -114,9 +110,7 @@ trait MockExternalApis
         // Fake the HTTP request
         Http::fake([
             $deleteDocumentsUrlPattern => function ($request) {
-                return Http::response('Document deleted', 200, [
-                    Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME,
-                ]);
+                return Http::response('Document deleted', 200, ['application/json']);
             },
         ]);
 
@@ -1026,7 +1020,6 @@ trait MockExternalApis
         MMC::shouldReceive("validateDataModelType")->andReturn(true);
         MMC::makePartial();
 
-        ECC::makePartial();
 
         $this->dataset_store = [];
 

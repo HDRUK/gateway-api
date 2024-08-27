@@ -21,6 +21,8 @@ use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use ElasticClientController as ECC;
+
 class PublicationTest extends TestCase
 {
     use RefreshDatabase;
@@ -64,6 +66,7 @@ class PublicationTest extends TestCase
      */
     public function test_get_all_publications_with_success(): void
     {
+        ECC::shouldReceive("indexDocument")->times(0);
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
         $response->assertJsonStructure([
@@ -108,6 +111,7 @@ class PublicationTest extends TestCase
      */
     public function test_get_publication_by_id_with_success(): void
     {
+        ECC::shouldReceive("indexDocument")->times(0);
         $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
 
         $response->assertJsonStructure([
@@ -138,8 +142,7 @@ class PublicationTest extends TestCase
      */
     public function test_create_publication_with_success(): void
     {
-        $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
-
+        ECC::shouldReceive("indexDocument")->once();
         $response = $this->json(
             'POST',
             self::TEST_URL,
@@ -175,8 +178,6 @@ class PublicationTest extends TestCase
         $this->assertNotNull($relation);
         $this->assertEquals($relation['link_type'], "USING");
 
-        $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
-        $this->assertTrue($elasticCountAfter > $elasticCountBefore);
     }
 
     /**
@@ -186,6 +187,7 @@ class PublicationTest extends TestCase
      */
     public function test_create_publication_without_success(): void
     {
+        ECC::shouldReceive("indexDocument")->times(0);
         $response = $this->json(
             'POST',
             self::TEST_URL,
@@ -222,8 +224,14 @@ class PublicationTest extends TestCase
      *
      * @return void
      */
-    public function test_update_publication_with_success(): void
+    public function test_update_active_publication_with_success(): void
     {
+        ECC::shouldReceive("indexDocument")
+            ->times(2);
+
+        ECC::shouldReceive('deleteDocument')
+            ->times(0);
+
         $countBefore = Publication::all()->count();
         $response = $this->json(
             'POST',
@@ -279,6 +287,7 @@ class PublicationTest extends TestCase
                         'link_type' => 'USING',
                     ],
                 ],
+                'status' => 'ACTIVE'
             ],
             $this->header,
         );
@@ -291,6 +300,69 @@ class PublicationTest extends TestCase
 
         $content = $responseUpdate->decodeResponseJson()['data'];
         $this->assertEquals($content['paper_title'], 'Not A Test Paper Title');
+    }
+
+    public function test_can_change_active_publication_with_success(): void
+    {
+        ECC::shouldReceive("indexDocument")
+            ->times(1);
+
+        ECC::shouldReceive('deleteDocument')
+            ->times(1);
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'paper_title' => 'Test Paper Title',
+                'authors' => 'Einstein, Albert, Yankovich, Al',
+                'year_of_publication' => '2013',
+                'paper_doi' => '10.1000/182',
+                'publication_type' => 'Paper and such',
+                'journal_name' => 'Something Journal-y here',
+                'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html',
+                'datasets' => [
+                    0 => [
+                        'id' => 1,
+                        'link_type' => 'ABOUT',
+                    ],
+                ],
+                'tools' => $this->generateTools(),
+                'status' => 'ACTIVE'
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(201);
+
+        $publicationId = (int)$response['data'];
+
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $publicationId,
+            [
+                'paper_title' => 'Not A Test Paper Title',
+                'authors' => 'Einstein, Albert, Yankovich, Al',
+                'year_of_publication' => '2022',
+                'paper_doi' => '10.1000/182',
+                'publication_type' => 'Paper and such',
+                'journal_name' => 'Something Journal-y here',
+                'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html',
+                'datasets' => [
+                    0 => [
+                        'id' => 1,
+                        'link_type' => 'USING',
+                    ],
+                ],
+                'status' => 'DRAFT'
+            ],
+            $this->header,
+        );
+
+        $responseUpdate->assertStatus(200);
+
     }
 
     public function test_can_count_with_success(): void
