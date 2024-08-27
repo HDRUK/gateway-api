@@ -51,8 +51,7 @@ trait IndexElastic
                 ->firstOrFail();
 
             if (DatasetVersion::where('dataset_id', $datasetId)->count() === 0) {
-                echo "--> Error!! somehow datasetversion is missing for $datasetId !!";
-                return;
+                throw new \Exception("Error: DatasetVersion is missing for dataset ID=$datasetId.");
             }
 
             $metadata = $datasetMatch->latestVersion()->metadata;
