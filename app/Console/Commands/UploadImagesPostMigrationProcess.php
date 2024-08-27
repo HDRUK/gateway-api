@@ -48,9 +48,10 @@ class UploadImagesPostMigrationProcess extends Command
                 $newFileName = $csv['New File Name'];
                 
 
-                if ($action == 'null') {
-                    $fileLoc = NULL
+                if ($action === 'null') {
+                    $fileLoc = null;
                 }
+
                 $upload = Upload::updateOrCreate([
                 'id' => (int) $pID,
                 'filename' => $newFileName,
