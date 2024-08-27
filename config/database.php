@@ -118,9 +118,7 @@ return [
 
         'elasticsearch' => [
             'driver' => 'elasticsearch',
-            'hosts' => [
-                env('ELASTIC_SERVICE_URL')
-            ],
+            'host' => env('ELASTIC_SERVICE_URL')
         ],
 
     ],

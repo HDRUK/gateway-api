@@ -86,8 +86,7 @@ trait IndexElastic
                 'headers' => 'application/json'
             ];
 
-            $client = ECC::getElasticClient();
-            $client->index($params);
+            ECC::indexDocument($params);
 
         } catch (Exception $e) {
             \Log::error('Error reindexing ElasticSearch', [
