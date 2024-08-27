@@ -1574,7 +1574,7 @@ class SearchController extends Controller
      *
      * @return array
      */
-    private function sortSearchResult(array $resultArray, string $sortField, string $sortDirection): array
+    private function sortSearchResult(array &$resultArray, string $sortField, string $sortDirection): array
     {
         if ($sortField === 'score') {
             $resultArraySorted = $sortDirection === 'desc' ? $resultArray : array_reverse($resultArray);

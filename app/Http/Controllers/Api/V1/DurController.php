@@ -547,7 +547,7 @@ class DurController extends Controller
                 throw new NotFoundException("Team Id not found in request.");
             }
 
-            if (array_key_exists('organisation_sector', $array)) {
+            if (isset($array['organisation_sector'])) {
                 $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
             }
 
