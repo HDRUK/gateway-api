@@ -49,7 +49,6 @@ class AppServiceProvider extends ServiceProvider
             'openid' => 'openid',
             'email' => 'email',
             'profile' => 'profile',
-            'rquestroles' => 'rquestroles',
         ]);
 
         Passport::useAccessTokenEntity(CustomAccessToken::class);

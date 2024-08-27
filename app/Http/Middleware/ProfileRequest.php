@@ -24,35 +24,35 @@ class ProfileRequest
         // Symfony\\Component\\HttpFoundation\\StreamedResponse|
         // Illuminate\\Http\\RedirectResponse|
         // Illuminate\\Http\\Response|Symfony\\Component\\HttpFoundation\\BinaryFileResponse, Symfony\\Component\\HttpFoundation\\Response returned"
-        if (Config::get('profiling.profiler_active')) {
-            // Create our profiler
-            $timer = new Timer();
-            $timer->start();
+        // if (Config::get('profiling.profiler_active')) {
+        //     // Create our profiler
+        //     $timer = new Timer();
+        //     $timer->start();
 
-            // Process the request
-            $response = $next($request);
+        //     // Process the request
+        //     $response = $next($request);
 
-            if ($response instanceof JsonResponse) {
-                // Stop our profiler
-                $duration = (new ResourceUsageFormatter())->resourceUsage($timer->stop());
-                $parts = explode('\\', $request->route()->getAction()['controller']);
-                $className = $parts[count($parts) - 1];
+        //     if ($response instanceof JsonResponse) {
+        //         // Stop our profiler
+        //         $duration = (new ResourceUsageFormatter())->resourceUsage($timer->stop());
+        //         $parts = explode('\\', $request->route()->getAction()['controller']);
+        //         $className = $parts[count($parts) - 1];
 
-                $resourceUsed = [
-                    'explicitOperation' => $className,
-                    'operationResource' => $duration,
-                ];
+        //         $resourceUsed = [
+        //             'explicitOperation' => $className,
+        //             'operationResource' => $duration,
+        //         ];
 
-                $response->setData($response->getData(true) + [
-                    '_profiler' => $resourceUsed,
-                ]);
-            } else {
-                return $next($request);
-            }
+        //         $response->setData($response->getData(true) + [
+        //             '_profiler' => $resourceUsed,
+        //         ]);
+        //     } else {
+        //         return $next($request);
+        //     }
 
-            // Return response with profiling appended to payload
-            return $response;
-        }
+        //     // Return response with profiling appended to payload
+        //     return $response;
+        // }
 
         return $next($request);
     }
