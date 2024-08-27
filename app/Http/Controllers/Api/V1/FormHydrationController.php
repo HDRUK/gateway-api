@@ -205,7 +205,7 @@ class FormHydrationController extends Controller
         return [
             'Jurisdiction' => ['UK'],
             'Language' => ['en'],
-            'Biological sample availability' => ['None/not Available']
+            'Biological sample availability' => ['None/not available']
         ];
     }
 
