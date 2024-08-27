@@ -22,12 +22,9 @@ class AppendTokenResponse
 
         $content = json_decode($response->getContent(), true);
 
-        if (!empty($content['access_token'])) {
-
+        if (array_key_exists('access_token', $content)) {
             $content['id_token'] = $content['access_token'];
-
             $response->setContent(json_encode($content));
-
         }
 
         return $response;
