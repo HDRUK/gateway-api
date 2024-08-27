@@ -16,7 +16,7 @@ class CustomAccessTokenController extends AccessTokenController
         $tokenResponse = parent::issueToken($request);
         $token = $tokenResponse->getContent();
         $tokenInfo = json_decode($token, true);
-        $tokenInfo->put('id_token', $token['access_token']);
+        $tokenInfo['id_token'] = $token['access_token'];
 
         return $tokenInfo;
     }
