@@ -3,9 +3,11 @@
 use Laravel\Passport\Passport;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SSO\JwksController;
+use App\Http\Middleware\AppendTokenResponse;
 use App\Http\Controllers\SSO\OpenIdController;
 use App\Http\Controllers\SSO\CustomAccessTokenController;
 use App\Http\Controllers\SSO\CustomAuthorizationController;
+use Laravel\Passport\Http\Controllers\AccessTokenController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +22,7 @@ use App\Http\Controllers\SSO\CustomAuthorizationController;
 
 Route::get('/oauth/authorize', [CustomAuthorizationController::class, 'customAuthorize']);
 // Route::post('/oauth/token', [CustomAccessTokenController::class, 'customIssueToken']);
+Route::post('/oauth/token', [AccessTokenController::class, 'issueToken'])->middleware(AppendTokenResponse::class);
 
 Route::get('/oauth/.well-known/jwks', [JwksController::class, 'getJwks']);
 Route::get('/oauth/.well-known/openid-configuration', [OpenIdController::class, 'getOpenIdConfiguration']);
