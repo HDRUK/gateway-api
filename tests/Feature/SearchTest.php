@@ -647,6 +647,7 @@ class SearchTest extends TestCase
             $mockData,
             $this->header
         );
+        $response->dump();
         $response->assertStatus(200);
 
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/dur", ["query" => "term"], ['Accept' => 'application/json']);
