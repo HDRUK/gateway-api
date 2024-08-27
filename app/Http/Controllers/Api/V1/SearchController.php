@@ -199,6 +199,8 @@ class SearchController extends Controller
                         $datasetsArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model);
                         $datasetsArray[$i]['team']['id'] = $model['team']['id'];
                         $datasetsArray[$i]['team']['is_question_bank'] = $model['team']['is_question_bank'];
+                        $datasetsArray[$i]['team']['name'] = $model['team']['name'];
+                        $datasetsArray[$i]['team']['member_of'] = $model['team']['member_of'];
                         $foundFlag = true;
                     }
                 }
@@ -838,12 +840,14 @@ class SearchController extends Controller
                 $foundFlag = false;
                 foreach ($durModels as $model) {
                     if ((int)$dur['_id'] === $model['id']) {
+                        $datasetTitles = $this->durDatasetTitles($model);
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
                         $durArray[$i]['projectTitle'] = $model['project_title'];
                         $durArray[$i]['organisationName'] = $model['organisation_name'];
                         $durArray[$i]['team'] = $model['team'];
                         $durArray[$i]['mongoObjectId'] = $model['mongo_object_id']; // remove
-                        $durArray[$i]['datasetTitles'] = $this->durDatasetTitles($model);
+                        $durArray[$i]['datasetTitles'] = array_column($datasetTitles, 'title');
+                        $durArray[$i]['datasetIds'] = array_column($datasetTitles, 'id');
                         $durArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $durArray[$i]['toolNames'] = $this->durToolNames($model['id']);
                         $foundFlag = true;
@@ -1549,9 +1553,15 @@ class SearchController extends Controller
                 ->first()
                 ->latestVersion()
                 ->metadata;
-            $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+            $datasetTitles[] = [
+                'title' => $metadata['metadata']['summary']['shortTitle'],
+                'id' => $d['id']
+            ];
         }
-        usort($datasetTitles, 'strcasecmp');
+        usort($datasetTitles, function ($a, $b) {
+            return strcasecmp($a['title'], $b['title']);
+        });
+
         return $datasetTitles;
     }
 
@@ -1564,7 +1574,7 @@ class SearchController extends Controller
      *
      * @return array
      */
-    private function sortSearchResult(array $resultArray, string $sortField, string $sortDirection): array
+    private function sortSearchResult(array &$resultArray, string $sortField, string $sortDirection): array
     {
         if ($sortField === 'score') {
             $resultArraySorted = $sortDirection === 'desc' ? $resultArray : array_reverse($resultArray);

@@ -49,14 +49,6 @@ class RunPostMigrations extends Command
                 'arguments' => [],
             ], // seed dataproviders
             [
-                'command' => 'app:physical-sample-post-migration',
-                'arguments' => [],
-            ], // datasets
-            [
-                'command' => 'app:datasets-post-migration',
-                'arguments' => [],
-            ], // datasets
-            [
                 'command' => 'app:update-eu-licenses',
                 'arguments' => [],
             ], // add licenses before post-migrating tools? - not working!!!!
