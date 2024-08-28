@@ -26,7 +26,7 @@ class JwksController extends Controller
 
         $keys = [
             'kty' => 'RSA',
-            'alg' => 'RS512',
+            'alg' => 'RS256',
             'use' => 'sig',
             // 'n2' => rtrim(str_replace(['+', '/'], ['-', '_'], base64_encode($details['rsa']['n'])), '='),
             // 'e2' => rtrim(str_replace(['+', '/'], ['-', '_'], base64_encode($details['rsa']['e'])), '='),
