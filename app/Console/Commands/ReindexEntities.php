@@ -23,8 +23,14 @@ class ReindexEntities extends Command
      * @var string
      */
 
-    protected $signature = 'app:reindex-entities {entity?} {sleep=0} {minIndex?} {maxIndex?} {chunkSize=10} {--term-extraction}  {--fresh}';
-
+    protected $signature = 'app:reindex-entities 
+                            {entity?} 
+                            {--sleep=0} 
+                            {--minIndex=} 
+                            {--maxIndex=} 
+                            {--chunkSize=10} 
+                            {--term-extraction} 
+                            {--fresh}';
     /**
      * The console command description.
      *
@@ -60,6 +66,19 @@ class ReindexEntities extends Command
      */
     protected $chunkSize = null;
 
+    /**
+     * Specific index to end run
+     *
+     * @var boolean
+     */
+    protected $termExtraction = false;
+
+    /**
+     * Specific index to end run
+     *
+     * @var boolean
+     */
+    protected $fresh = false;
 
     /**
      * Execute the console command.
@@ -67,15 +86,16 @@ class ReindexEntities extends Command
     public function handle()
     {
 
-        $sleep = $this->argument("sleep");
+        $entity = $this->argument('entity');
+        $sleep = $this->option("sleep");
         $this->sleepTimeInMicroseconds = floatval($sleep) * 1000 * 1000;
         echo 'Sleeping between each reindex by ' .  $this->sleepTimeInMicroseconds . "\n";
 
-        $entity = $this->argument('entity');
-
-        $this->minIndex = is_null($this->argument('minIndex')) ? null : (int) $this->argument('minIndex');
-        $this->maxIndex = is_null($this->argument('maxIndex')) ? null : (int) $this->argument('maxIndex');
-        $this->chunkSize = (int) $this->argument('chunkSize');
+        $this->minIndex = $this->option('minIndex');
+        $this->maxIndex = $this->option('maxIndex');
+        $this->chunkSize = $this->option('chunkSize');
+        $this->termExtraction = $this->option('term-extraction');
+        $this->fresh = $this->option('fresh');
 
         if ($entity && method_exists($this, $entity)) {
             $this->$entity();
@@ -90,7 +110,7 @@ class ReindexEntities extends Command
         $beforeCount = ECC::countDocuments('dataset');
         echo "Before reindexing there were $beforeCount datasets indexed \n";
 
-        if($this->option('fresh')) {
+        if($this->fresh) {
             $nDeleted = ECC::deleteAllDocuments('dataset');
             echo "Deleted $nDeleted documents from the index \n";
         }
@@ -108,20 +128,10 @@ class ReindexEntities extends Command
             $datasetIds = array_slice($datasetIds, 0, $maxIndex + 1);
         }
 
-        $termExtraction = $this->option('term-extraction'); // Initialize $termExtraction based on the command option
-
         $progressbar = $this->output->createProgressBar(count($datasetIds));
 
-        $chunks = array_chunk($datasetIds, $this->chunkSize);
-        foreach ($chunks as $ids) {
-            $this->reindexElasticBulk($ids);
-            usleep($this->sleepTimeInMicroseconds);
-            $progressbar->advance(count($ids));
-        }
-
-        /*
-        foreach ($datasetIds as $id) {
-            if ($termExtraction) {
+        if($this->termExtraction) {
+            foreach ($datasetIds as $id) {
                 $dataset = Dataset::where('id', $id)->first();
                 $latestMetadata = $dataset->latestMetadata()->first();
                 TermExtraction::dispatch(
@@ -129,13 +139,15 @@ class ReindexEntities extends Command
                     $dataset->lastMetadataVersionNumber()->version,
                     base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6))
                 );
-            } else {
-                $this->reindexElastic($id);
             }
-            usleep($this->sleepTimeInMicroseconds);
-            $progressbar->advance();
+        } else {
+            $chunks = array_chunk($datasetIds, $this->chunkSize);
+            foreach ($chunks as $ids) {
+                $this->reindexElasticBulk($ids);
+                $progressbar->advance(count($ids));
+                usleep($this->sleepTimeInMicroseconds);
+            }
         }
-        */
 
 
         $progressbar->finish();
