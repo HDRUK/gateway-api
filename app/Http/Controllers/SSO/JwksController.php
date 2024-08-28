@@ -26,12 +26,14 @@ class JwksController extends Controller
 
         $keys = [
             'kty' => 'RSA',
-            'alg' => 'RS256',
+            'alg' => 'RS512',
             'use' => 'sig',
-            'n2' => rtrim(str_replace(['+', '/'], ['-', '_'], base64_encode($details['rsa']['n'])), '='),
-            'e2' => rtrim(str_replace(['+', '/'], ['-', '_'], base64_encode($details['rsa']['e'])), '='),
-            'n' => rtrim(strtr(base64_encode($details['rsa']['n']), '+/', '-_'), '='),
-            'e' => rtrim(strtr(base64_encode($details['rsa']['e']), '+/', '-_'), '='),
+            // 'n2' => rtrim(str_replace(['+', '/'], ['-', '_'], base64_encode($details['rsa']['n'])), '='),
+            // 'e2' => rtrim(str_replace(['+', '/'], ['-', '_'], base64_encode($details['rsa']['e'])), '='),
+            // 'n' => rtrim(strtr(base64_encode($details['rsa']['n']), '+/', '-_'), '='),
+            // 'e' => rtrim(strtr(base64_encode($details['rsa']['e']), '+/', '-_'), '='),
+            'n'   => strtr(rtrim(base64_encode($details['rsa']['n']), '='), '+/', '-_'),
+            'e'   => strtr(rtrim(base64_encode($details['rsa']['e']), '='), '+/', '-_'),
             'kid' => env('JWT_KID', 'jwtkidnotfound'),
         ];
 
