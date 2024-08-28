@@ -31,7 +31,10 @@ class ElasticClientControllerService
      */
     protected function makeRequest()
     {
-        $request = Http::withHeaders(['Content-Type' => 'application/json'])
+        $request = Http::withHeaders([
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json'
+                    ])
                    ->withOptions(
                        [
                         'verify' => $this->verifySSL,
@@ -99,6 +102,68 @@ class ElasticClientControllerService
 
         }
     }
+
+    /**
+     * Makes an HTTP POST request to index a document in Elasticsearch
+     *
+     * @param array $params
+     * @return \Illuminate\Http\Client\Response
+     */
+    public function indexBulk(array $paramsArray)
+    {
+        $url = $this->baseUrl . '/_bulk';
+        $bulkData = '';
+
+        // Construct the bulk request payload
+        foreach ($paramsArray as $params) {
+            $actionAndMetadata = json_encode([
+                'index' => [
+                    '_index' => $params['index'],
+                    '_id'    => $params['id']
+                ]
+            ]);
+            $document = json_encode($params['body']);
+
+            // Each action/metadata line must be followed by the document data line
+            $bulkData .= $actionAndMetadata . "\r\n" . $document . "\r\n";
+        }
+
+        try {
+            $response = $this->makeRequest()
+                ->withBody($bulkData, 'application/x-ndjson')
+                ->post($url);
+
+            $response->throw();
+            return $response;
+        } catch (RequestException $e) {
+
+            \Log::error('Failed to index document', [
+                'url' => $url,
+                'bulkData' => $bulkData,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw new \Exception(
+                'Failed to index document: ' . $e->getMessage(),
+                $e->getCode(),
+                $e
+            );
+        } catch (\Exception $e) {
+            // General exception handling for any other unexpected errors
+            \Log::error('An unexpected error occurred', [
+                'url' => $url,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw new \Exception(
+                'Failed to index document: ' . $e->getMessage(),
+                $e->getCode(),
+                $e
+            );
+
+        }
+    }
+
 
     /**
      * Makes an HTTP DELETE request to delete a document in Elasticsearch.

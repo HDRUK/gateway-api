@@ -23,7 +23,7 @@ class ReindexEntities extends Command
      * @var string
      */
 
-    protected $signature = 'app:reindex-entities {entity?} {sleep=0} {minIndex?} {maxIndex?} {--term-extraction}  {--fresh}';
+    protected $signature = 'app:reindex-entities {entity?} {sleep=0} {minIndex?} {maxIndex?} {chunkSize=10} {--term-extraction}  {--fresh}';
 
     /**
      * The console command description.
@@ -54,6 +54,14 @@ class ReindexEntities extends Command
     protected $maxIndex = null;
 
     /**
+     * Specific index to end run
+     *
+     * @var int|null
+     */
+    protected $chunkSize = null;
+
+
+    /**
      * Execute the console command.
      */
     public function handle()
@@ -67,6 +75,7 @@ class ReindexEntities extends Command
 
         $this->minIndex = is_null($this->argument('minIndex')) ? null : (int) $this->argument('minIndex');
         $this->maxIndex = is_null($this->argument('maxIndex')) ? null : (int) $this->argument('maxIndex');
+        $this->chunkSize = (int) $this->argument('chunkSize');
 
         if ($entity && method_exists($this, $entity)) {
             $this->$entity();
@@ -103,17 +112,14 @@ class ReindexEntities extends Command
 
         $progressbar = $this->output->createProgressBar(count($datasetIds));
 
-
-        /*$chunkSize = 1;
-        $chunks = array_chunk($datasetIds, $chunkSize);
-        echo "chunked \n";
+        $chunks = array_chunk($datasetIds, $this->chunkSize);
         foreach ($chunks as $ids) {
             $this->reindexElasticBulk($ids);
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance(count($ids));
-        }*/
+        }
 
-
+        /*
         foreach ($datasetIds as $id) {
             if ($termExtraction) {
                 $dataset = Dataset::where('id', $id)->first();
@@ -129,7 +135,7 @@ class ReindexEntities extends Command
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
-
+        */
 
 
         $progressbar->finish();

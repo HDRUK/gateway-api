@@ -93,7 +93,6 @@ trait IndexElastic
             if($returnParams) {
                 return $params;
             }
-
             ECC::indexDocument($params);
 
         } catch (Exception $e) {
@@ -118,9 +117,9 @@ trait IndexElastic
         $count = count($datasetIds);
         $bulkParams = [];
         foreach ($datasetIds as $datasetId) {
-            //$bulkParams[] =
-            $this->reindexElastic($datasetId, false);
+            $bulkParams[] = $this->reindexElastic($datasetId, true);
         }
+        ECC::indexBulk($bulkParams);
     }
 
     /**
