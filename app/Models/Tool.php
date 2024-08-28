@@ -43,6 +43,7 @@ class Tool extends Model
         'name',
         'url',
         'description',
+        'results_insights',
         'license',
         'tech_stack',
         'category_id',
