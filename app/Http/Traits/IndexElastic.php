@@ -114,12 +114,13 @@ trait IndexElastic
 
     public function reindexElasticBulk(array $datasetIds): void
     {
-        $count = count($datasetIds);
         $bulkParams = [];
         foreach ($datasetIds as $datasetId) {
             $bulkParams[] = $this->reindexElastic($datasetId, true);
         }
         ECC::indexBulk($bulkParams);
+        unset($bulkParams);
+        unset($datasetIds);
     }
 
     /**
