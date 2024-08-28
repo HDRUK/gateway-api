@@ -113,17 +113,6 @@ trait IndexElastic
         }
     }
 
-    public function reindexElasticBulk(array $datasetIds): void
-    {
-        $bulkParams = [];
-        foreach ($datasetIds as $datasetId) {
-            $bulkParams[] = $this->reindexElastic($datasetId, true);
-        }
-        ECC::indexBulk($bulkParams);
-        unset($bulkParams);
-        unset($datasetIds);
-    }
-
     /**
      * Calls a re-indexing of Elastic search when a data procider id is given.
      *
@@ -318,7 +307,7 @@ trait IndexElastic
      *
      * @return void
      */
-    public function indexElasticDur(string $id): void
+    public function indexElasticDur(string $id, bool $returnParams = false)
     {
         try {
 
@@ -382,6 +371,10 @@ trait IndexElastic
                 'headers' => 'application/json'
             ];
 
+            if($returnParams) {
+                return $params;
+            }
+
             ECC::indexDocument($params);
 
         } catch (Exception $e) {
@@ -402,7 +395,7 @@ trait IndexElastic
      *
      * @return void
      */
-    public function indexElasticPublication(string $id): void
+    public function indexElasticPublication(string $id, bool $returnParams = false)
     {
         try {
             $pubMatch = Publication::where(['id' => $id])->first();
@@ -440,6 +433,9 @@ trait IndexElastic
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
+            if($returnParams) {
+                return $params;
+            }
 
             ECC::indexDocument($params);
 
@@ -460,7 +456,7 @@ trait IndexElastic
      * @param integer $toolId
      * @return void
      */
-    public function indexElasticTools(int $toolId): void
+    public function indexElasticTools(int $toolId, bool $returnParams = false)
     {
         try {
             $tool = Tool::where('id', $toolId)
@@ -561,6 +557,11 @@ trait IndexElastic
                 'headers' => 'application/json'
             ];
 
+            if($returnParams) {
+                return $params;
+            }
+            echo "no treturn \n";
+
             ECC::indexDocument($params);
 
         } catch (Exception $e) {
@@ -572,6 +573,18 @@ trait IndexElastic
 
             throw new Exception($e->getMessage());
         }
+    }
+
+
+    public function reindexElasticBulk(array $ids, callable $indexer): void
+    {
+        $bulkParams = [];
+        foreach ($ids as $id) {
+            $bulkParams[] = $indexer($id, true);
+        }
+        ECC::indexBulk($bulkParams);
+        unset($bulkParams);
+        unset($datasetIds);
     }
 
     /**
