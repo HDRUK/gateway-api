@@ -102,6 +102,18 @@ class ReindexEntities extends Command
         $termExtraction = $this->option('term-extraction'); // Initialize $termExtraction based on the command option
 
         $progressbar = $this->output->createProgressBar(count($datasetIds));
+
+
+        /*$chunkSize = 1;
+        $chunks = array_chunk($datasetIds, $chunkSize);
+        echo "chunked \n";
+        foreach ($chunks as $ids) {
+            $this->reindexElasticBulk($ids);
+            usleep($this->sleepTimeInMicroseconds);
+            $progressbar->advance(count($ids));
+        }*/
+
+
         foreach ($datasetIds as $id) {
             if ($termExtraction) {
                 $dataset = Dataset::where('id', $id)->first();
@@ -117,6 +129,9 @@ class ReindexEntities extends Command
             usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance();
         }
+
+
+
         $progressbar->finish();
 
         //sleep for 5 seconds and count again..

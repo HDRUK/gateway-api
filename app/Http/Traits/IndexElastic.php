@@ -44,7 +44,7 @@ trait IndexElastic
      *
      * @return void
      */
-    public function reindexElastic(string $datasetId): void
+    public function reindexElastic(string $datasetId, bool $returnParams = false)
     {
         try {
             $datasetMatch = Dataset::where('id', $datasetId)
@@ -90,6 +90,10 @@ trait IndexElastic
                 'headers' => 'application/json'
             ];
 
+            if($returnParams) {
+                return $params;
+            }
+
             ECC::indexDocument($params);
 
         } catch (Exception $e) {
@@ -106,6 +110,16 @@ trait IndexElastic
             ]);
 
             throw new Exception($e->getMessage());
+        }
+    }
+
+    public function reindexElasticBulk(array $datasetIds): void
+    {
+        $count = count($datasetIds);
+        $bulkParams = [];
+        foreach ($datasetIds as $datasetId) {
+            //$bulkParams[] =
+            $this->reindexElastic($datasetId, false);
         }
     }
 
