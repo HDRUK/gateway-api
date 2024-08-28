@@ -143,7 +143,7 @@ class ReindexEntities extends Command
         } else {
             $chunks = array_chunk($datasetIds, $this->chunkSize);
             foreach ($chunks as $ids) {
-                $this->reindexElasticBulk($ids);
+                $this->reindexElasticBulk($ids, [$this, 'reindexElastic']);
                 $progressbar->advance(count($ids));
                 usleep($this->sleepTimeInMicroseconds);
             }
@@ -161,31 +161,45 @@ class ReindexEntities extends Command
 
     private function tools()
     {
-        $toolIds = Tool::pluck('id');
+        $toolIds = Tool::where("status", Tool::STATUS_ACTIVE)
+            ->select("id")
+            ->pluck('id')
+            ->toArray();
+
         $progressbar = $this->output->createProgressBar(count($toolIds));
-        foreach ($toolIds as $id) {
-            $this->indexElasticTools($id);
+        $chunks = array_chunk($toolIds, $this->chunkSize);
+        foreach ($chunks as $ids) {
+            $this->reindexElasticBulk($ids, [$this, 'indexElasticTools']);
+            $progressbar->advance(count($ids));
             usleep($this->sleepTimeInMicroseconds);
-            $progressbar->advance();
         }
+
         $progressbar->finish();
     }
 
     private function publications()
     {
-        $pubicationIds = Publication::pluck('id');
+        $pubicationIds = Publication::where("status", Publication::STATUS_ACTIVE)
+            ->select("id")
+            ->pluck('id')
+            ->toArray();
+
         $progressbar = $this->output->createProgressBar(count($pubicationIds));
-        foreach ($pubicationIds as $id) {
-            $this->indexElasticPublication($id);
+        $chunks = array_chunk($pubicationIds, $this->chunkSize);
+        foreach ($chunks as $ids) {
+            $this->reindexElasticBulk($ids, [$this, 'indexElasticPublication']);
+            $progressbar->advance(count($ids));
             usleep($this->sleepTimeInMicroseconds);
-            $progressbar->advance();
         }
         $progressbar->finish();
     }
 
     private function durs()
     {
-        $durIds = Dur::pluck('id');
+        $durIds = Dur::where("status", Publication::STATUS_ACTIVE)
+            ->select("id")
+            ->pluck('id')
+            ->toArray();
         $progressbar = $this->output->createProgressBar(count($durIds));
         foreach ($durIds as $id) {
             $this->indexElasticDur($id);
