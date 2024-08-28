@@ -81,6 +81,8 @@ RUN composer install \
 RUN php artisan l5-swagger:generate
 
 # Generate private and public keys
+# ssh-keygen -t rsa -b 4096 -m PEM -E SHA512 -f storage/oauth-private.key -N ""
+# openssl rsa -in storage/oauth-private.key -pubout -outform PEM -out storage/oauth-public.key
 # RUN php artisan passport:keys
 
 # Add symbolic link for public file storage
