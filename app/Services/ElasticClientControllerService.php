@@ -32,7 +32,16 @@ class ElasticClientControllerService
     protected function makeRequest()
     {
         $request = Http::withHeaders(['Content-Type' => 'application/json'])
-                   ->withOptions(['verify' => $this->verifySSL])
+                   ->withOptions(
+                       [
+                        'verify' => $this->verifySSL,
+                        'timeout' => $this->timeout,
+                        'retry' => [
+                            'max_retries' => 10,
+                            'retry_on_timeout' => true,
+                        ]
+                    ]
+                   )
                    ->connectTimeout($this->timeout);
 
         if (!empty($this->username) && !empty($this->password)) {
