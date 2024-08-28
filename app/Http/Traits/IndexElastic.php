@@ -91,6 +91,7 @@ trait IndexElastic
             ];
 
             if($returnParams) {
+                unset($metadata);
                 return $params;
             }
             ECC::indexDocument($params);
