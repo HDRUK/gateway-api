@@ -668,6 +668,8 @@ class DataProviderCollController extends Controller
             DataProviderCollHasTeam::where(['data_provider_coll_id' => $id])->delete();
             DataProviderColl::where(['id' => $id])->delete();
 
+            $this->deleteDataProviderCollFromElastic($id);
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',

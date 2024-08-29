@@ -47,6 +47,8 @@ use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use ElasticClientController as ECC;
+
 class ToolTest extends TestCase
 {
     use RefreshDatabase;
@@ -200,6 +202,9 @@ class ToolTest extends TestCase
      */
     public function test_add_new_tool_with_success(): void
     {
+        ECC::shouldReceive("indexDocument")
+            ->times(1);
+
         $licenseId = License::where('valid_until', null)->get()->random()->id ?? null;
         $this->assertNotNull($licenseId, 'No valid license ID found');
 
@@ -226,6 +231,7 @@ class ToolTest extends TestCase
             "durs" => [],
             "collections" => $this->generateCollections(),
             "any_dataset" => false,
+            "status" => "ACTIVE"
         ];
 
         $response = $this->json(
@@ -613,6 +619,14 @@ class ToolTest extends TestCase
      */
     public function test_update_tool_with_success(): void
     {
+
+        ECC::shouldReceive("indexDocument")
+            ->times(1);
+
+        ECC::shouldReceive("deleteDocument")
+            ->times(1);
+
+
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         // insert
         $mockDataIns = array(
@@ -634,6 +648,7 @@ class ToolTest extends TestCase
             "durs" => [],
             "collections" => $this->generateCollections(),
             "any_dataset" => false,
+            "status" => "ACTIVE"
         );
         $responseIns = $this->json(
             'POST',
@@ -691,6 +706,7 @@ class ToolTest extends TestCase
             "durs" => [1, 2],
             "collections" => $generatedCollections,
             "any_dataset" => false,
+            "status" => "DRAFT"
         );
 
         $responseUpdate = $this->json(

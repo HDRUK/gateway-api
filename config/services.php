@@ -75,6 +75,7 @@ return [
         'verify_ssl' => env('ELASTICSEARCH_VERIFY_SSL', false),
         'user' => env('ELASTICSEARCH_USER'),
         'password' => env('ELASTICSEARCH_PASS'),
+        'timeout' => env('ELASTICSEARCH_TIMEOUT', 10),
     ],
 
     'hubspot' => [

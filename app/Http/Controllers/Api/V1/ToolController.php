@@ -605,7 +605,7 @@ class ToolController extends Controller
             $initTool = Tool::withTrashed()->where('id', $id)->first();
 
             if ($initTool['status'] === Tool::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
-                throw new Exception('Cannot update current putoolblication! Status already "ARCHIVED"');
+                throw new Exception('Cannot update current tool! Status already "ARCHIVED"');
             }
 
             $arrayKeys = [
@@ -663,9 +663,14 @@ class ToolController extends Controller
 
             $currentTool = Tool::where('id', $id)->first();
             if ($currentTool->status === Tool::STATUS_ACTIVE) {
-                if ($request['enabled']) {
+                if ($request['enabled']) { //note Calum - this is crazy inconsistent
                     $this->indexElasticTools((int) $id);
+                } else {
+                    //note Calum - adding this to be safe
+                    $this->deleteToolFromElastic((int) $id);
                 }
+            } else {
+                $this->deleteToolFromElastic((int) $id);
             }
 
             Auditor::log([

@@ -616,7 +616,6 @@ class DatasetController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-
             throw new Exception($e->getMessage());
         }
     }
@@ -699,7 +698,7 @@ class DatasetController extends Controller
             $payload['extra'] = [
                 "id" => $id,
                 "pid" => $currentPid,
-                "datasetType" => "Healthdata",
+                "datasetType" => "Health and disease",
                 "publisherId" => $team['pid'],
                 "publisherName" => $team['name']
             ];
@@ -1012,7 +1011,7 @@ class DatasetController extends Controller
 
         try {
             MMC::deleteDataset($id);
-            $this->deleteFromElastic($id, 'dataset');
+            $this->deleteDatasetFromElastic($id);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
