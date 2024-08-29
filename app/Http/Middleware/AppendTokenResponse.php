@@ -17,6 +17,7 @@ class AppendTokenResponse
      */
     public function handle(Request $request, Closure $next): Response
     {
+        \Log::info('middleware AppendTokenResponse request->all() :: ' . json_encode($request->all()));
         $response = $next($request);
         $currentUrl = $request->url();
 
