@@ -87,25 +87,19 @@ class LibraryController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            // var_dump('section 1');
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            // var_dump('section 2');
+
             $libraries = Library::where('user_id', $jwtUser['id'])
                 ->with(['dataset.team']);
-            // var_dump('section 3');
+
 
             $libraries = $libraries->paginate($perPage);
 
-            // var_dump('section 4');
-            // var_dump($libraries->getCollection());
             $transformedLibraries = $libraries->getCollection()->map(function ($library) {
-                // var_dump('section 5');
                 $dataset = $library->dataset;
-                // var_dump('$dataset');
-                // var_dump($dataset);
                 $team = $dataset->team;
 
                 // Using dynamic attributes to avoid undefined property error
@@ -122,7 +116,7 @@ class LibraryController extends Controller
                 unset($library->dataset);
                 return $library;
             });
-            // var_dump('section 6');
+
             $paginatedTransformedLibraries = new \Illuminate\Pagination\LengthAwarePaginator(
                 $transformedLibraries,
                 $libraries->total(),
@@ -130,7 +124,7 @@ class LibraryController extends Controller
                 $libraries->currentPage(),
                 ['path' => $request->url(), 'query' => $request->query()]
             );
-            // var_dump('section 7');
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
