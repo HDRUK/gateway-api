@@ -102,6 +102,7 @@ trait IndexElastic
                 return $params;
             }
             ECC::indexDocument($params);
+            return null;
 
         } catch (Exception $e) {
             \Log::error('Error reindexing ElasticSearch', [
@@ -171,6 +172,7 @@ trait IndexElastic
             }
 
             ECC::indexDocument($params);
+            return null;
 
         } catch (Exception $e) {
             \Log::error('Error reindexing ElasticSearch', [
@@ -247,8 +249,8 @@ trait IndexElastic
             if($returnParams) {
                 return $params;
             }
-
             ECC::indexDocument($params);
+            return null;
 
         } catch (Exception $e) {
             Auditor::log([
@@ -393,6 +395,7 @@ trait IndexElastic
             }
 
             ECC::indexDocument($params);
+            return null;
 
         } catch (Exception $e) {
             Auditor::log([
@@ -456,6 +459,7 @@ trait IndexElastic
             }
 
             ECC::indexDocument($params);
+            return null;
 
         } catch (Exception $e) {
             Auditor::log([
@@ -582,6 +586,7 @@ trait IndexElastic
             }
 
             ECC::indexDocument($params);
+            return null;
 
         } catch (Exception $e) {
             Auditor::log([
