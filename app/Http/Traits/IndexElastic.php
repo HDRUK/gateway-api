@@ -45,11 +45,17 @@ trait IndexElastic
      *
      * @return void|array
      */
-    public function reindexElastic(string $datasetId, bool $returnParams = false)
+    public function reindexElastic(string $datasetId, bool $returnParams = false, bool $activeCheck = true)
     {
         try {
             $datasetMatch = Dataset::where('id', $datasetId)
                 ->firstOrFail();
+
+            if($activeCheck) {
+                if($datasetMatch->status === Dataset::STATUS_ACTIVE) {
+                    return null;
+                }
+            }
 
             if (DatasetVersion::where('dataset_id', $datasetId)->count() === 0) {
                 throw new \Exception("Error: DatasetVersion is missing for dataset ID=$datasetId.");
