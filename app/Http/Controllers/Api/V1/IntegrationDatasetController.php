@@ -18,6 +18,7 @@ use MetadataManagementController as MMC;
 
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\IntegrationOverride;
+use App\Http\Traits\MetadataOnboard;
 
 use App\Http\Controllers\Controller;
 
@@ -35,6 +36,7 @@ class IntegrationDatasetController extends Controller
 {
     use IndexElastic;
     use IntegrationOverride;
+    use MetadataOnboard;
 
     /**
      * @OA\Get(
@@ -521,12 +523,19 @@ class IntegrationDatasetController extends Controller
 
 
                 $publisher = null;
+
+                if (count($input['metadata']['metadata']['required']['revisions'])) {
+                    $revisions = $input['metadata']['metadata']['required']['revisions'];
+                } else {
+                    $revisions = [['version' => $this->formatVersion(1)]];
+                }
+
                 $required = [
                         'gatewayId' => strval($dataset->id), //note: do we really want this in the GWDM?
                         'gatewayPid' => $dataset->pid,
                         'issued' => $dataset->created,
                         'modified' => $dataset->updated,
-                        'revisions' => []
+                        'revisions' => $revisions
                     ];
 
                 // -------------------------------------------------------------------
