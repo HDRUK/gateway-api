@@ -476,7 +476,7 @@ class IntegrationDatasetController extends Controller
             $payload['extra'] = [
                 'id' => 'placeholder',
                 'pid' => 'placeholder',
-                'datasetType' => 'Healthdata',
+                'datasetType' => 'Health and disease',
                 'publisherId' => $team['pid'],
                 'publisherName' => $team['name']
             ];

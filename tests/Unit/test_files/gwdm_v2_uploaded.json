@@ -60,21 +60,20 @@
         "temporal": {
             "endDate": "2022-04-30",
             "startDate": "2020-03-31",
-            "timeLag": "NOT APPLICABLE",
-            "accrualPeriodicity": "DAILY",
+            "timeLag": "Not applicable",
+            "accrualPeriodicity": "Daily",
             "distributionReleaseDate": "2020-11-27"
         }
     },
     "accessibility": {
         "access": {
-            "deliveryLeadTime": "OTHER",
+            "deliveryLeadTime": "Other",
             "jurisdiction": "GB-ENG",
             "dataController": "HDR UK",
             "dataProcessor": "HDR UK",
             "accessRights": "https://raw.githubusercontent.com/HDRUK/papers/master/LICENSE",
             "accessService": "https://github.com/HDRUK/papers",
             "accessRequestCost": "Free",
-            "accessMode": "New project",
             "accessServiceCategory": "TRE"
         },
         "usage": {
