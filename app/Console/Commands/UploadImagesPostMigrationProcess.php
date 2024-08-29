@@ -10,7 +10,6 @@ use App\Models\Collection;
 
 use Illuminate\Console\Command;
 
-
 class UploadImagesPostMigrationProcess extends Command
 {
     /**
@@ -50,7 +49,7 @@ class UploadImagesPostMigrationProcess extends Command
                 $newFileName = $csv['New File Name'];
                 $entityId = null;
                 $entityType = null;
-                
+
                 if ($action === 'null') {
                     $fileLoc = null;
                 }
@@ -59,7 +58,7 @@ class UploadImagesPostMigrationProcess extends Command
 
                 $collection = Collection::where('mongo_id', '=', $pID)->first();
 
-                if ($collection){
+                if ($collection) {
                     // If a collection exists, then update the image link to the file location
 
                     $collection->image_link = $fileLoc;
