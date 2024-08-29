@@ -54,8 +54,8 @@ class CustomAuthorizationController extends Controller
     ) {
         if ($request->has('nonce')) {
             \Log::info(json_encode($request->query('nonce')));
-            session()->put('nonce', $request->query('nonce'));
-            session()->save();
+            \Request::session()->put('nonce', $request->query('nonce'));
+            \Log::info('session all - auth :: ' . json_encode(\Request::session()->all()));
         }
 
         // $userId = session('cr_uid');
