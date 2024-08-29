@@ -91,9 +91,9 @@ class ReindexEntities extends Command
         $this->sleepTimeInMicroseconds = floatval($sleep) * 1000 * 1000;
         echo 'Sleeping between each reindex by ' .  $this->sleepTimeInMicroseconds . "\n";
 
-        $this->minIndex = $this->option('minIndex');
-        $this->maxIndex = $this->option('maxIndex');
-        $this->chunkSize = $this->option('chunkSize');
+        $this->minIndex = (int) $this->option('minIndex');
+        $this->maxIndex = (int) $this->option('maxIndex');
+        $this->chunkSize = (int) $this->option('chunkSize');
         $this->termExtraction = $this->option('term-extraction');
         $this->fresh = $this->option('fresh');
 
@@ -143,8 +143,6 @@ class ReindexEntities extends Command
         } else {
             $this->bulkProcess($datasetIds, 'reindexElastic');
         }
-
-
 
         //sleep for 5 seconds and count again..
         usleep(5 * 1000 * 1000);
@@ -204,8 +202,8 @@ class ReindexEntities extends Command
 
     private function bulkProcess(array $ids, string $indexerName)
     {
-        $progressbar = $this->output->createProgressBar(count($teamIds));
-        $chunks = array_chunk($teamIds, $this->chunkSize);
+        $progressbar = $this->output->createProgressBar(count($ids));
+        $chunks = array_chunk($ids, $this->chunkSize);
         foreach ($chunks as $ids) {
             $this->reindexElasticBulk($ids, [$this, $indexerName]);
             $progressbar->advance(count($ids));

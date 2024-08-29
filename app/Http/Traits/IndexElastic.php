@@ -41,8 +41,9 @@ trait IndexElastic
      * Calls a re-indexing of Elastic search when a dataset is created, updated or added to a collection.
      *
      * @param string $datasetId The dataset id from the DB.
+     * @param bool $returnParams Optional flag to return parameters.
      *
-     * @return void
+     * @return void|array
      */
     public function reindexElastic(string $datasetId, bool $returnParams = false)
     {
@@ -117,10 +118,11 @@ trait IndexElastic
      * Calls a re-indexing of Elastic search when a data procider id is given.
      *
      * @param string $teamId The team id from the DB.
+     * @param bool $returnParams Optional flag to return parameters.
      *
-     * @return void
+     * @return void|array
      */
-    public function reindexElasticDataProvider(string $teamId): void
+    public function reindexElasticDataProvider(string $teamId, bool $returnParams = false)
     {
         try {
             $datasets = Dataset::where('team_id', $teamId)->get();
@@ -158,6 +160,9 @@ trait IndexElastic
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
+            if($returnParams) {
+                return $params;
+            }
 
             ECC::indexDocument($params);
 
@@ -175,9 +180,10 @@ trait IndexElastic
      * Insert collection document into elastic index
      *
      * @param integer $collectionId
-     * @return void
+     * @param bool $returnParams Optional flag to return parameters.
+     * @return void|array
      */
-    public function indexElasticCollections(int $collectionId): void
+    public function indexElasticCollections(int $collectionId, bool $returnParams = false)
     {
         $collection = Collection::with(['team', 'keywords'])->where('id', $collectionId)->first();
         $datasets = $collection->allDatasets  ?? [];
@@ -304,8 +310,9 @@ trait IndexElastic
      * Calls a re-indexing of Elastic search when a data use is created or updated
      *
      * @param string $id The dur id from the DB
+     * @param bool $returnParams Optional flag to return parameters.
      *
-     * @return void
+     * @return void|array
      */
     public function indexElasticDur(string $id, bool $returnParams = false)
     {
@@ -392,8 +399,9 @@ trait IndexElastic
      * Calls a re-indexing of Elastic search when a publication is created or updated
      *
      * @param string $id The publication id from the DB
+     * @param bool $returnParams Optional flag to return parameters.
      *
-     * @return void
+     * @return void|array
      */
     public function indexElasticPublication(string $id, bool $returnParams = false)
     {
@@ -454,7 +462,8 @@ trait IndexElastic
      * Insert tool document into elastic index
      *
      * @param integer $toolId
-     * @return void
+     * @param bool $returnParams Optional flag to return parameters.
+     * @return void|array
      */
     public function indexElasticTools(int $toolId, bool $returnParams = false)
     {
@@ -561,7 +570,6 @@ trait IndexElastic
             if($returnParams) {
                 return $params;
             }
-            echo "no treturn \n";
 
             ECC::indexDocument($params);
 
@@ -576,7 +584,13 @@ trait IndexElastic
         }
     }
 
-
+    /**
+     * Reindex in bulk
+     *
+     * @param array $ids
+     * @param callable $indexer Name of single index to call to get parameters
+     * @return void
+     */
     public function reindexElasticBulk(array $ids, callable $indexer): void
     {
         $bulkParams = [];
@@ -585,7 +599,6 @@ trait IndexElastic
         }
         ECC::indexBulk($bulkParams);
         unset($bulkParams);
-        unset($datasetIds);
     }
 
     /**
