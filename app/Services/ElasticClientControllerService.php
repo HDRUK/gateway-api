@@ -11,8 +11,8 @@ class ElasticClientControllerService
     protected $baseUrl;
     protected $username;
     protected $password;
-    protected $timeout;
-    protected $verifySSL;
+    protected $timeout = 10;
+    protected $verifySSL = false;
 
 
     public function __construct()
@@ -20,8 +20,8 @@ class ElasticClientControllerService
         $this->baseUrl = config('database.connections.elasticsearch.host');
         $this->username = config('services.elasticclient.user');
         $this->password = config('services.elasticclient.password');
-        $this->timeout = config('services.elasticclient.timeout');
-        $this->verifySSL = config('services.elasticclient.verify_ssl');
+        $this->timeout = config('services.elasticclient.timeout', 10);
+        $this->verifySSL = config('services.elasticclient.verify_ssl', false);
     }
 
     /**

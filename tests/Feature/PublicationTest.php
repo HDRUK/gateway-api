@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\Tool;
+use App\Models\Dataset;
 use App\Models\Publication;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
@@ -143,7 +144,29 @@ class PublicationTest extends TestCase
      */
     public function test_create_publication_with_success(): void
     {
-        ECC::shouldReceive("indexDocument")->once();
+        $datasetId = 1;
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_PUBLICATION;
+                    }
+                )
+            )
+            ->times(1);
+
+        //if the linked dataset is active then this will also be reindexed
+        $isActiveDataset = Dataset::findOrFail($datasetId)->status === Dataset::STATUS_ACTIVE;
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
+                    }
+                )
+            )
+            ->times($isActiveDataset ? 1 : 0);
+
         $response = $this->json(
             'POST',
             self::TEST_URL,
@@ -158,7 +181,7 @@ class PublicationTest extends TestCase
                 'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html',
                 'datasets' => [
                     0 => [
-                        'id' => 1,
+                        'id' => $datasetId,
                         'link_type' => 'USING',
                     ],
                 ],
@@ -227,15 +250,17 @@ class PublicationTest extends TestCase
      */
     public function test_update_active_publication_with_success(): void
     {
-        //called 3 times
-        // - 1st when publication is created
-        // - 2nd when publication is created, dataset is updated
-        // - 3rd when publicaiton is changed
-        ECC::shouldReceive("indexDocument")
-            ->times(3);
 
-        ECC::shouldReceive('deleteDocument')
-            ->times(0);
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_PUBLICATION;
+                    }
+                )
+            )
+            ->times(1);
+
 
         $countBefore = Publication::all()->count();
         $response = $this->json(
@@ -274,10 +299,24 @@ class PublicationTest extends TestCase
 
         $publicationId = (int)$response['data'];
 
-        /* $responseUpdate = $this->json(
-             'PUT',
-             self::TEST_URL . '/' . $publicationId,
-             [
+        //should reindex again
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_PUBLICATION;
+                    }
+                )
+            )
+            ->times(1);
+        //should not try to delete
+        ECC::shouldReceive('deleteDocument')
+                  ->times(0);
+
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $publicationId,
+            [
                  'paper_title' => 'Not A Test Paper Title',
                  'authors' => 'Einstein, Albert, Yankovich, Al',
                  'year_of_publication' => '2022',
@@ -294,17 +333,17 @@ class PublicationTest extends TestCase
                  ],
                  'status' => 'ACTIVE'
              ],
-             $this->header,
-         );
+            $this->header,
+        );
 
-         $responseUpdate->assertStatus(200);
-         $responseUpdate->assertJsonStructure([
-             'message',
-             'data'
-         ]);
+        $responseUpdate->assertStatus(200);
+        $responseUpdate->assertJsonStructure([
+            'message',
+            'data'
+        ]);
 
-         $content = $responseUpdate->decodeResponseJson()['data'];
-         $this->assertEquals($content['paper_title'], 'Not A Test Paper Title');*/
+        $content = $responseUpdate->decodeResponseJson()['data'];
+        $this->assertEquals($content['paper_title'], 'Not A Test Paper Title');
     }
 
     public function test_can_change_active_publication_with_success(): void
