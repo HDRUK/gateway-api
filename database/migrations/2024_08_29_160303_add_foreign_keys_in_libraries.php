@@ -15,6 +15,9 @@ class AddForeignKeysInLibraries extends Migration
     {
         Schema::table('libraries', function (Blueprint $table) {
             $table->renameColumn('user_id', 'old_user_id');
+        });
+
+        Schema::table('libraries', function (Blueprint $table) {
             $table->renameColumn('dataset_id', 'old_dataset_id');
         });
 
@@ -31,9 +34,12 @@ class AddForeignKeysInLibraries extends Migration
         });
 
         Schema::table('libraries', function (Blueprint $table) {
-            $table->dropColumn(['old_user_id', 'old_dataset_id']);
+            $table->dropColumn(['old_user_id']);
         });
 
+        Schema::table('libraries', function (Blueprint $table) {
+            $table->dropColumn(['old_dataset_id']);
+        });
     }
 
     /**
@@ -56,12 +62,18 @@ class AddForeignKeysInLibraries extends Migration
         Schema::table('libraries', function (Blueprint $table) {
             $table->dropForeign(['dataset_id']);
             $table->dropColumn(['dataset_id']);
+        });
+
+        Schema::table('libraries', function (Blueprint $table) {
             $table->dropForeign(['user_id']);
             $table->dropColumn(['user_id']);
         });
 
         Schema::table('libraries', function (Blueprint $table) {
             $table->renameColumn('old_dataset_id', 'dataset_id');
+        });
+
+        Schema::table('libraries', function (Blueprint $table) {
             $table->renameColumn('old_user_id', 'user_id');
         });
     }
