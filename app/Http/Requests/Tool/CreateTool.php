@@ -37,6 +37,10 @@ class CreateTool extends BaseFormRequest
                 'nullable',
                 'string',
             ],
+            'results_insights' => [
+                'nullable',
+                'string',
+            ],
             'license' => [
                 'nullable',
                 'int',
