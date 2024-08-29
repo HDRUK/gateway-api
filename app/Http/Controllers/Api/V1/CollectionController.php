@@ -1088,10 +1088,7 @@ class CollectionController extends Controller
 
             if (!$checking) {
                 $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId);
-                //note: Calum 27/08/2024
-                // - why is this reindexing!?
-                // - as with publications this should be on active datasets, turning off for now
-                //$this->reindexElastic($dataset['id']);
+                $this->reindexElastic($dataset['id']);
             }
         }
     }
