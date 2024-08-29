@@ -54,10 +54,10 @@ class MakeCollectionsActive extends Command
             }
 
             $publicFlag = (int) $csv['Publicflag'];
-            if ($publicFlag !== 1) {
+            if ($publicFlag === 1) {
                 $match->update(['status' => Collection::STATUS_ACTIVE]);
             } else {
-                $match->update(['status' => Collection::STATUS_ACTIVE]);
+                $match->update(['status' => Collection::STATUS_DRAFT]);
             }
             $progressbar->advance();
         }
