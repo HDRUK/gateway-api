@@ -1616,9 +1616,7 @@ class DurController extends Controller
 
             if (!$checking) {
                 $this->addDurHasDatasetVersion($durId, $dataset, $datasetVersionId, $userId);
-                // Note 27/08/2024 Calum
-                // - see other comments - shouldnt be messing with reindexing here!!!
-                //$this->reindexElastic($dataset['id']);
+                $this->reindexElastic($dataset['id']);
             }
         }
     }

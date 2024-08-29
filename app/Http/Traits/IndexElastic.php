@@ -52,7 +52,7 @@ trait IndexElastic
                 ->firstOrFail();
 
             if($activeCheck) {
-                if($datasetMatch->status === Dataset::STATUS_ACTIVE) {
+                if($datasetMatch->status !== Dataset::STATUS_ACTIVE) {
                     return null;
                 }
             }
