@@ -174,7 +174,30 @@ class CollectionTest extends TestCase
     {
 
         ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
+                    }
+                )
+            )
             ->times(1);
+
+        $datasets = $this->generateDatasets();
+        $nActive = Dataset::whereIn("id", array_column($datasets, 'id'))
+            ->where('status', Dataset::STATUS_ACTIVE)
+            ->count();
+
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
+                    }
+                )
+            )
+            ->times($nActive);
+
 
         $countBefore = Collection::count();
         $mockData = [
@@ -184,7 +207,7 @@ class CollectionTest extends TestCase
             "enabled" => true,
             "public" => true,
             "counter" => 123,
-            "datasets" => $this->generateDatasets(),
+            "datasets" => $datasets,
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
@@ -211,9 +234,30 @@ class CollectionTest extends TestCase
     {
 
         ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
+                    }
+                )
+            )
             ->times(0);
 
-        $countBefore = Collection::count();
+        $datasets = $this->generateDatasets();
+        $nActive = Dataset::whereIn("id", array_column($datasets, 'id'))
+            ->where('status', Dataset::STATUS_ACTIVE)
+            ->count();
+
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
+                    }
+                )
+            )
+            ->times($nActive);
+
         $mockData = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
@@ -221,7 +265,7 @@ class CollectionTest extends TestCase
             "enabled" => true,
             "public" => true,
             "counter" => 123,
-            "datasets" => $this->generateDatasets(),
+            "datasets" => $datasets,
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
@@ -235,7 +279,6 @@ class CollectionTest extends TestCase
             $mockData,
             $this->header
         );
-
         $response->assertStatus(201);
 
     }
@@ -247,8 +290,19 @@ class CollectionTest extends TestCase
      */
     public function test_update_collection_with_success(): void
     {
+
+        $datasets = $this->generateDatasets();
         ECC::shouldReceive("indexDocument")
-            ->times(2);
+        ->with(
+            \Mockery::on(
+                function ($params) {
+                    return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
+                }
+            )
+        )
+        ->times(2);
+
+        ECC::shouldIgnoreMissing(); //ignore index on datasets
 
         // create new collection
         $mockDataIns = [
@@ -258,7 +312,7 @@ class CollectionTest extends TestCase
             "enabled" => true,
             "public" => true,
             "counter" => 123,
-            "datasets" => $this->generateDatasets(),
+            "datasets" => $datasets,
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
@@ -283,7 +337,7 @@ class CollectionTest extends TestCase
             "enabled" => true,
             "public" => true,
             "counter" => 1,
-            "datasets" => $this->generateDatasets(),
+            "datasets" => $datasets,
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
@@ -312,11 +366,20 @@ class CollectionTest extends TestCase
      */
     public function test_update_collection_to_draft_with_success(): void
     {
+
         ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
+                    }
+                )
+            )
             ->times(1);
 
-        ECC::shouldReceive("deleteDocument")
-            ->times(1);
+        ECC::shouldReceive("deleteDocument")->once();
+
+        ECC::shouldIgnoreMissing(); //ignore index on datasets
 
         // create new collection
         $mockDataIns = [
@@ -470,6 +533,9 @@ class CollectionTest extends TestCase
         ECC::shouldReceive("deleteDocument")
             ->times(1);
 
+        //dont bother checking any indexing here upon creation
+        ECC::shouldIgnoreMissing();
+
         $countBefore = Collection::count();
         $countTrashedBefore = Collection::onlyTrashed()->count();
         // create new collection
@@ -492,7 +558,6 @@ class CollectionTest extends TestCase
             $mockDataIn,
             $this->header
         );
-
         $responseIn->assertStatus(201);
         $idIn = (int) $responseIn['data'];
 
