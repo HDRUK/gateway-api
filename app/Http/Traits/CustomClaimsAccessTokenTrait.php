@@ -22,6 +22,7 @@ trait CustomClaimsAccessTokenTrait
     private function convertToJWT()
     {
         // https://github.com/HDRUK/gateway-api/blob/2f0f2df3d94a75b8a1a4920a64cd0c6a2267c2d3/src/resources/utilities/ga4gh.utils.js#L10
+        \Log::info('session all :: ' . json_encode(\Request::session()->all()));
 
         $this->initJwtConfiguration();
 
@@ -69,7 +70,7 @@ trait CustomClaimsAccessTokenTrait
             ->relatedTo((string)$this->getUserIdentifier())
             ->withClaim('typ', "Bearer")
             // ->withClaim('auth_time', 0)
-            ->withClaim('at_hash', session()->has('nonce') ? session('nonce') : 'no_nonce' )
+            ->withClaim('at_hash', \Request::session()->has('nonce') ? \Request::session()->get('nonce') : 'no_nonce' )
             ->withClaim('session_state', $sessionState)
             ->withClaim('sid', $sessionState)
             ->withClaim('allowed-origins', $allowedOrigins)
