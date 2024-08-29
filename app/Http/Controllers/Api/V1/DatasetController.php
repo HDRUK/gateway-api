@@ -604,32 +604,18 @@ class DatasetController extends Controller
                     'version' => $metadataResult['version_id'],
                 ], 201);
             } else {
-
-                Log::error('EXCEPTION ', [
-                    'title' => $input['metadata']['metadata']['summary']['title'],
-                    'description' => 'failed to translate'
-                ]);
-
-
                 return response()->json([
                     'message' => 'metadata is in an unknown format and cannot be processed',
                     'details' => $metadataResult['response'],
                 ], 400);
             }
         } catch (Exception $e) {
-
-            Log::error('EXCEPTION ', [
-                'title' => $input['metadata']['metadata']['summary']['title'],
-                'description' => $e->getMessage(),
-            ]);
-
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-
             throw new Exception($e->getMessage());
         }
     }

@@ -106,7 +106,7 @@ class ElasticClientControllerService
     /**
      * Makes an HTTP POST request to index a document in Elasticsearch
      *
-     * @param array $params
+     * @param array $paramsArray
      * @return \Illuminate\Http\Client\Response
      */
     public function indexBulk(array $paramsArray)
