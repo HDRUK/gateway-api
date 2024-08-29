@@ -60,15 +60,17 @@ class FormHydrationTest extends TestCase
         $response = $this->get('api/v1/form_hydration/schema');
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
          ->assertJsonStructure([
-                'data' => [
-                'identifier' => [
-                    'required',
-                    'title',
-                    'description',
-                    'examples',
-                    'is_list',
-                    'is_optional',
-                    'types'
+            'data' => [
+                'schema_fields' => [
+                    0 => [
+                        'required',
+                        'title',
+                        'description',
+                        'examples',
+                        'is_list',
+                        'is_optional',
+                        'types'
+                    ]
                 ]
             ]
         ]);
@@ -79,15 +81,17 @@ class FormHydrationTest extends TestCase
         $response = $this->get('api/v1/form_hydration/schema?model=HDRUK');
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
          ->assertJsonStructure([
-                'data' => [
-                'identifier' => [
-                    'required',
-                    'title',
-                    'description',
-                    'examples',
-                    'is_list',
-                    'is_optional',
-                    'types'
+            'data' => [
+                'schema_fields' => [
+                    0 => [
+                        'required',
+                        'title',
+                        'description',
+                        'examples',
+                        'is_list',
+                        'is_optional',
+                        'types'
+                    ]
                 ]
             ]
         ]);
@@ -95,15 +99,17 @@ class FormHydrationTest extends TestCase
         $responseOldVersion = $this->get('api/v1/form_hydration/schema?model=HDRUK&version=2.1.2');
         $responseOldVersion->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
          ->assertJsonStructure([
-                'data' => [
-                'identifier' => [
-                    'required',
-                    'title',
-                    'description',
-                    'examples',
-                    'is_list',
-                    'is_optional',
-                    'types'
+            'data' => [
+                'schema_fields' => [
+                    0 => [
+                        'required',
+                        'title',
+                        'description',
+                        'examples',
+                        'is_list',
+                        'is_optional',
+                        'types'
+                    ]
                 ]
             ]
         ]);

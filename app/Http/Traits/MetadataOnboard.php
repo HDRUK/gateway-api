@@ -43,7 +43,7 @@ trait MetadataOnboard
         $payload['extra'] = [
             'id' => 'placeholder',
             'pid' => 'placeholder',
-            'datasetType' => 'Healthdata',
+            'datasetType' => 'Health and disease',
             'publisherId' => $team['pid'],
             'publisherName' => $team['name']
         ];
@@ -219,7 +219,7 @@ trait MetadataOnboard
         $tens = floor(($version % 100) / 10);
         $units = $version % 10;
 
-        $formattedVersion = '{$hundreds}.{$tens}.{$units}';
+        $formattedVersion = "{$hundreds}.{$tens}.{$units}";
 
         return $formattedVersion;
     }

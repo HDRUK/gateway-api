@@ -605,7 +605,7 @@ class ToolController extends Controller
             $initTool = Tool::withTrashed()->where('id', $id)->first();
 
             if ($initTool['status'] === Tool::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
-                throw new Exception('Cannot update current putoolblication! Status already "ARCHIVED"');
+                throw new Exception('Cannot update current tool! Status already "ARCHIVED"');
             }
 
             $arrayKeys = [
