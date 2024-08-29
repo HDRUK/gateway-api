@@ -128,9 +128,8 @@ class ReindexEntities extends Command
             $datasetIds = array_slice($datasetIds, 0, $maxIndex + 1);
         }
 
-        $progressbar = $this->output->createProgressBar(count($datasetIds));
-
         if($this->termExtraction) {
+            $progressbar = $this->output->createProgressBar(count($datasetIds));
             foreach ($datasetIds as $id) {
                 $dataset = Dataset::where('id', $id)->first();
                 $latestMetadata = $dataset->latestMetadata()->first();
@@ -140,17 +139,12 @@ class ReindexEntities extends Command
                     base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6))
                 );
             }
+            $progressbar->finish();
         } else {
-            $chunks = array_chunk($datasetIds, $this->chunkSize);
-            foreach ($chunks as $ids) {
-                $this->reindexElasticBulk($ids, [$this, 'reindexElastic']);
-                $progressbar->advance(count($ids));
-                usleep($this->sleepTimeInMicroseconds);
-            }
+            $this->bulkProcess($datasetIds, 'reindexElastic');
         }
 
 
-        $progressbar->finish();
 
         //sleep for 5 seconds and count again..
         usleep(5 * 1000 * 1000);
@@ -166,32 +160,17 @@ class ReindexEntities extends Command
             ->pluck('id')
             ->toArray();
 
-        $progressbar = $this->output->createProgressBar(count($toolIds));
-        $chunks = array_chunk($toolIds, $this->chunkSize);
-        foreach ($chunks as $ids) {
-            $this->reindexElasticBulk($ids, [$this, 'indexElasticTools']);
-            $progressbar->advance(count($ids));
-            usleep($this->sleepTimeInMicroseconds);
-        }
-
-        $progressbar->finish();
+        $this->bulkProcess($toolIds, 'indexElasticTools');
     }
 
     private function publications()
     {
-        $pubicationIds = Publication::where("status", Publication::STATUS_ACTIVE)
+        $publicationIds = Publication::where("status", Publication::STATUS_ACTIVE)
             ->select("id")
             ->pluck('id')
             ->toArray();
 
-        $progressbar = $this->output->createProgressBar(count($pubicationIds));
-        $chunks = array_chunk($pubicationIds, $this->chunkSize);
-        foreach ($chunks as $ids) {
-            $this->reindexElasticBulk($ids, [$this, 'indexElasticPublication']);
-            $progressbar->advance(count($ids));
-            usleep($this->sleepTimeInMicroseconds);
-        }
-        $progressbar->finish();
+        $this->bulkProcess($publicationIds, 'indexElasticPublication');
     }
 
     private function durs()
@@ -200,37 +179,36 @@ class ReindexEntities extends Command
             ->select("id")
             ->pluck('id')
             ->toArray();
-        $progressbar = $this->output->createProgressBar(count($durIds));
-        foreach ($durIds as $id) {
-            $this->indexElasticDur($id);
-            usleep($this->sleepTimeInMicroseconds);
-            $progressbar->advance();
-        }
-        $progressbar->finish();
+
+        $this->bulkProcess($durIds, 'indexElasticDur');
     }
 
     private function collections()
     {
-        $collectionIds = Collection::pluck('id');
-        $progressbar = $this->output->createProgressBar(count($collectionIds));
-        foreach ($collectionIds as $id) {
-            $this->indexElasticCollections($id);
-            usleep($this->sleepTimeInMicroseconds);
-            $progressbar->advance();
-        }
-        $progressbar->finish();
+        $collectionIds = Collection::where("status", Publication::STATUS_ACTIVE)
+            ->select("id")
+            ->pluck('id')
+            ->toArray();
+
+        $this->bulkProcess($collectionIds, 'indexElasticCollections');
     }
 
     private function dataProviders()
     {
         $providerIds = array_unique(Dataset::pluck('team_id')->toArray());
-        $progressbar = $this->output->createProgressBar(count($providerIds));
-        foreach ($providerIds as $id) {
-            $team = Team::find($id);
-            if ($team) {
-                $this->reindexElasticDataProvider($team->id);
-            }
-            $progressbar->advance();
+        $teamIds = Team::whereIn('id', $providerIds)->select('id')
+            ->pluck('id')->toArray();
+
+        $this->bulkProcess($teamIds, 'reindexElasticDataProvider');
+    }
+
+    private function bulkProcess(array $ids, string $indexerName)
+    {
+        $progressbar = $this->output->createProgressBar(count($teamIds));
+        $chunks = array_chunk($teamIds, $this->chunkSize);
+        foreach ($chunks as $ids) {
+            $this->reindexElasticBulk($ids, [$this, $indexerName]);
+            $progressbar->advance(count($ids));
             usleep($this->sleepTimeInMicroseconds);
         }
         $progressbar->finish();
