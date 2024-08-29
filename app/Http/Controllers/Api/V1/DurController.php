@@ -856,6 +856,8 @@ class DurController extends Controller
             $currentDur = Dur::where('id', $id)->first();
             if($currentDur->status === Dur::STATUS_ACTIVE) {
                 $this->indexElasticDur($id);
+            } else {
+                $this->deleteDurFromElastic((int) $id);
             }
 
             Auditor::log([
@@ -1248,6 +1250,8 @@ class DurController extends Controller
             $dur->deleted_at = Carbon::now();
             $dur->status = Dur::STATUS_ARCHIVED;
             $dur->save();
+
+            $this->deleteDurFromElastic($id);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

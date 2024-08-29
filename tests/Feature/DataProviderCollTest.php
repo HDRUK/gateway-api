@@ -33,6 +33,8 @@ use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionHasPublicationSeeder;
 
+use ElasticClientController as ECC;
+
 class DataProviderCollTest extends TestCase
 {
     use RefreshDatabase;
@@ -195,7 +197,10 @@ class DataProviderCollTest extends TestCase
 
     public function test_create_data_provider_coll_with_success(): void
     {
-        $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
+
+        ECC::shouldReceive("indexDocument")
+            ->times(1);
+
         $payload = [
             'enabled' => true,
             'name' => 'Loki Data Provider',
@@ -227,13 +232,13 @@ class DataProviderCollTest extends TestCase
         $this->assertNotNull($relations);
         $this->assertEquals(count($relations), 3);
 
-        $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
-        $this->assertTrue($elasticCountAfter > $elasticCountBefore);
     }
 
     public function test_update_data_provider_with_success(): void
     {
-        $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
+        ECC::shouldReceive("indexDocument")
+            ->times(2);
+
         $payload = [
             'enabled' => true,
             'name' => 'Loki Data Provider',
@@ -275,12 +280,17 @@ class DataProviderCollTest extends TestCase
 
         $this->assertEquals($content['name'], 'Loki Updated Data Provider');
 
-        $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
-        $this->assertTrue($elasticCountAfter > $elasticCountBefore);
+
     }
+
 
     public function test_delete_data_provider_coll_with_success(): void
     {
+        ECC::shouldReceive("indexDocument")
+            ->times(1);
+        ECC::shouldReceive("deleteDocument")
+            ->times(1);
+
         $payload = [
             'enabled' => true,
             'name' => 'Loki Data Provider',

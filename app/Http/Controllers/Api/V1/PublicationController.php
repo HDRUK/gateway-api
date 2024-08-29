@@ -843,7 +843,7 @@ class PublicationController extends Controller
                 $publication->status = Publication::STATUS_ARCHIVED;
                 $publication->save();
 
-                $this->deleteFromElastic($id, 'publication');
+                $this->deletePublicationFromElastic($id);
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
