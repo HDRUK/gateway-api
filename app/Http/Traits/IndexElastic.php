@@ -548,6 +548,7 @@ trait IndexElastic
                 'tags' => $tags,
                 'datasetTitles' => $datasetTitles,
                 'dataProviderColl' => $dataProviderColl,
+                'resultsInsights' => $tool['results_insights']
             ];
 
             $params = [

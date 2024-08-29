@@ -117,6 +117,7 @@ class ToolTest extends TestCase
                     'name',
                     'url',
                     'description',
+                    'results_insights',
                     'license',
                     'tech_stack',
                     'category_id',
@@ -168,6 +169,7 @@ class ToolTest extends TestCase
                 'name',
                 'url',
                 'description',
+                'results_insights',
                 'license',
                 'tech_stack',
                 'category_id',
@@ -214,6 +216,7 @@ class ToolTest extends TestCase
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+            'results_insights' => "asfhiasfh aoshfa ",
             "license" => $licenseId,
             "tech_stack" => "Cumque molestias excepturi quam at.",
             "category_id" => 1,
@@ -391,6 +394,7 @@ class ToolTest extends TestCase
                 'name' => 'Tool A',
                 'url' => 'http://example.com/toolA',
                 'description' => 'Test Tool A Description',
+                'results_insights' => 'mazing insights',
                 'license' => 1,
                 'tech_stack' => 'Tech Stack A',
                 'category_id' => 1,
@@ -420,6 +424,7 @@ class ToolTest extends TestCase
                 'name' => 'Tool B',
                 'url' => 'http://example.com/toolB',
                 'description' => 'Test Tool B Description',
+                'results_insights' => 'other insights',
                 'license' => 1,
                 'tech_stack' => 'Tech Stack B',
                 'category_id' => 1,
@@ -449,6 +454,7 @@ class ToolTest extends TestCase
                 'name' => 'Tool C',
                 'url' => 'http://example.com/toolC',
                 'description' => 'Test Tool C Description',
+                'results_insights' => 'insights',
                 'license' => 1,
                 'tech_stack' => 'Tech Stack C',
                 'category_id' => 1,
@@ -628,6 +634,7 @@ class ToolTest extends TestCase
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+            'results_insights' => 'insights',
             "license" => $licenseId,
             "tech_stack" => "Cumque molestias excepturi quam at.",
             "category_id" => 1,
@@ -675,6 +682,7 @@ class ToolTest extends TestCase
             "name" => "Ea fuga ab aperiam nihil quis.",
             "url" => "http://dach.com/odio-facilis-ex-culpa",
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
+            'results_insights' => 'insights',
             "license" => $licenseId,
             "tech_stack" => "Dolor accusamus rerum numquam et.",
             "category_id" => 1,
@@ -717,6 +725,7 @@ class ToolTest extends TestCase
         $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
         $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
         $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
+        $this->assertEquals($responseUpdate['data']['results_insights'], $mockDataUpdate['results_insights']);
         $this->assertEquals($responseUpdate['data']['license']['id'], $mockDataUpdate['license']);
         $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
         $this->assertEquals($responseUpdate['data']['category_id'], $mockDataUpdate['category_id']);
