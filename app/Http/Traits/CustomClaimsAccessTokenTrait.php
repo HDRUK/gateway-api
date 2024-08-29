@@ -69,7 +69,7 @@ trait CustomClaimsAccessTokenTrait
             ->relatedTo((string)$this->getUserIdentifier())
             ->withClaim('typ', "Bearer")
             // ->withClaim('auth_time', 0)
-            ->withClaim('session_state', $sessionState)
+            ->withClaim('at_hash', session()->has('nonce') ? session('nonce') : 'no_nonce' )
             ->withClaim('session_state', $sessionState)
             ->withClaim('sid', $sessionState)
             ->withClaim('allowed-origins', $allowedOrigins)

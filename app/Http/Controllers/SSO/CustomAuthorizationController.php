@@ -52,6 +52,10 @@ class CustomAuthorizationController extends Controller
         Request $request,
         ClientRepository $clients,
     ) {
+        if ($request->has('nonce')) {
+            session(['nonce' => $request->input('nonce')]);
+        }
+
         // $userId = session('cr_uid');
 
         // mock user id for with we need:
