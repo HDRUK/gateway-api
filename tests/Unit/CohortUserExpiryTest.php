@@ -4,18 +4,16 @@ namespace Tests\Unit;
 
 use Tests\TestCase;
 
-use App\Jobs\SendEmailJob;
 use App\Models\Permission;
 use App\Models\CohortRequest;
 use Illuminate\Support\Carbon;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Mail;
 
-use Illuminate\Support\Facades\Queue;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use App\Models\CohortRequestHasPermission;
-use Database\Seeders\EmailTemplatesSeeder;
+use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CohortUserExpiryTest extends TestCase
@@ -32,7 +30,7 @@ class CohortUserExpiryTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             PermissionSeeder::class,
-            EmailTemplatesSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
     }
 

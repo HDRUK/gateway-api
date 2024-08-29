@@ -55,7 +55,7 @@ class CreateActivityLog extends BaseFormRequest
                 'sometimes',
                 'nullable',
                 'string',
-            ], 
+            ],
         ];
     }
 }

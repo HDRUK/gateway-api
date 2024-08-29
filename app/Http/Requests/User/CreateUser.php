@@ -15,16 +15,16 @@ class CreateUser extends BaseFormRequest
     {
         return [
             'firstname' => [
-                'required', 
+                'required',
                 'string',
             ],
             'lastname' => [
-                'required', 
+                'required',
                 'string',
             ],
             'email' => [
-                'required', 
-                'string', 
+                'required',
+                'string',
                 'email',
                 'unique:users,email',
             ],
@@ -38,28 +38,36 @@ class CreateUser extends BaseFormRequest
                 'in:primary,secondary',
             ],
             'password' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'sector_id' => [
-                'required', 
+                'required',
                 'integer',
                 'exists:sectors,id',
             ],
             'organisation' => [
-                'nullable', 
+                'nullable',
+                'string',
+            ],
+            'provider' => [
+                'nullable',
+                'string',
+            ],
+            'providerid' => [
+                'nullable',
                 'string',
             ],
             'bio' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'domain' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'link' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'orcid' => [
@@ -67,11 +75,11 @@ class CreateUser extends BaseFormRequest
                 'string',
             ],
             'contact_feedback' => [
-                'required', 
+                'required',
                 'boolean',
             ],
             'contact_news' => [
-                'required', 
+                'required',
                 'boolean',
             ],
             'mongo_id' => [

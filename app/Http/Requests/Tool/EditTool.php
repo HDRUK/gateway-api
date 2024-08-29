@@ -40,12 +40,13 @@ class EditTool extends BaseFormRequest
                 'string',
             ],
             'description' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'license' => [
                 'nullable',
-                'string',
+                'int',
+                'exists:licenses,id',
             ],
             'tech_stack' => [
                 'nullable',
@@ -69,33 +70,81 @@ class EditTool extends BaseFormRequest
                 'boolean',
             ],
             'programming_language' => [
-                'nullable', 
+                'nullable',
                 'array',
             ],
             'programming_language.*' => [
                 'integer',
             ],
             'programming_package' => [
-                'nullable', 
+                'nullable',
                 'array',
             ],
             'programming_package.*' => [
                 'integer',
             ],
             'type_category' => [
-                'nullable', 
+                'nullable',
                 'array',
             ],
             'type_category.*' => [
                 'integer',
             ],
             'associated_authors' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'contact_address' => [
-                'nullable', 
+                'nullable',
                 'string',
+            ],
+            'publications.*.id'  => [
+                'integer',
+                'exists:publications,id',
+            ],
+            'publications.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'publications.*.user_id'  => [
+                'integer',
+                'exists:users,id',
+            ],
+            'publications.*.reason'  => [
+                'nullable',
+                'string',
+            ],
+            'collections.*.id'  => [
+                'integer',
+                'exists:collections,id',
+            ],
+            'collections.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'durs.*.id'  => [
+                'integer',
+                'exists:dur,id',
+            ],
+            'durs.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'dataset.*.id'  => [
+                'integer',
+                'exists:datasets,id',
+            ],
+            'dataset.*.link_type'  => [
+                'string',
+            ],
+            'any_dataset' => [
+                'nullable',
+                'boolean',
+            ],
+            'status' => [
+                'sometimes',
+                'string',
+                'in:ACTIVE,ARCHIVED,DRAFT',
             ],
         ];
     }

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\SavedSearch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -21,7 +20,7 @@ class Filter extends Model
 
     /**
      * Table associated with this model
-     * 
+     *
      * @var string
      */
     protected $table = 'filters';
@@ -35,7 +34,7 @@ class Filter extends Model
 
     /**
      * Indicates if this model is timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = true;
@@ -43,7 +42,7 @@ class Filter extends Model
     /**
      * Represents the filter type this filter is linked
      * to
-     * 
+     *
      * @var string
      */
     private $type = '';
@@ -51,14 +50,14 @@ class Filter extends Model
     /**
      * Represents the filter key this filter is linked
      * to
-     * 
+     *
      * @var string
      */
     private $keys = '';
 
     /**
      * Indicates whether this model is enabled or disabled
-     * 
+     *
      * @var bool
      */
     private $enabled = false;

@@ -24,7 +24,7 @@ class UpdateFilter extends BaseFormRequest
                 'required',
                 'string',
                 function ($attribute, $value, $fail) {
-                    $type = ['dataset', 'collection', 'tool', 'course', 'project', 'paper', 'dataUseRegister'];
+                    $type = \Config::get('filters.types');
 
                     if (!in_array($value, $type)) {
                         $fail('The selected value is invalid.');

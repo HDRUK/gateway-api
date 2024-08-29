@@ -1,0 +1,214 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\Dataset;
+use App\Models\Publication;
+use App\Models\Team;
+use App\Models\Dur;
+use App\Models\Tool;
+use App\Models\Collection;
+use App\Jobs\TermExtraction;
+use App\Http\Traits\IndexElastic;
+use Illuminate\Console\Command;
+
+use ElasticClientController as ECC;
+
+class ReindexEntities extends Command
+{
+    use IndexElastic;
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+
+    protected $signature = 'app:reindex-entities 
+                            {entity?} 
+                            {--sleep=0} 
+                            {--minIndex=} 
+                            {--maxIndex=} 
+                            {--chunkSize=10} 
+                            {--term-extraction} 
+                            {--fresh}';
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'CLI command to reindex all entities';
+
+    /**
+     * The sleep time in microseconds.
+     *
+     * @var float
+     */
+    protected $sleepTimeInMicroseconds = 0;
+
+    /**
+     * Specific index to start run from
+     *
+     * @var int|null
+     */
+    protected $minIndex = null;
+
+    /**
+     * Specific index to end run
+     *
+     * @var int|null
+     */
+    protected $maxIndex = null;
+
+    /**
+     * Specific index to end run
+     *
+     * @var int|null
+     */
+    protected $chunkSize = null;
+
+    /**
+     * Specific index to end run
+     *
+     * @var boolean
+     */
+    protected $termExtraction = false;
+
+    /**
+     * Specific index to end run
+     *
+     * @var boolean
+     */
+    protected $fresh = false;
+
+    /**
+     * Execute the console command.
+     */
+    public function handle()
+    {
+
+        $entity = $this->argument('entity');
+        $sleep = $this->option("sleep");
+        $this->sleepTimeInMicroseconds = floatval($sleep) * 1000 * 1000;
+        echo 'Sleeping between each reindex by ' .  $this->sleepTimeInMicroseconds . "\n";
+
+        $this->minIndex = (int) $this->option('minIndex');
+        $this->maxIndex = (int) $this->option('maxIndex');
+        $this->chunkSize = (int) $this->option('chunkSize');
+        $this->termExtraction = $this->option('term-extraction');
+        $this->fresh = $this->option('fresh');
+
+        if ($entity && method_exists($this, $entity)) {
+            $this->$entity();
+        } else {
+            $this->error('Please provide a valid entity to reindex.');
+        }
+    }
+
+
+    private function datasets()
+    {
+        $beforeCount = ECC::countDocuments('dataset');
+        echo "Before reindexing there were $beforeCount datasets indexed \n";
+
+        if($this->fresh) {
+            $nDeleted = ECC::deleteAllDocuments('dataset');
+            echo "Deleted $nDeleted documents from the index \n";
+        }
+
+        $minIndex = $this->minIndex;
+        $maxIndex = $this->maxIndex;
+        $datasetIds = Dataset::select("id")->where("status", Dataset::STATUS_ACTIVE)
+            ->pluck('id')->toArray();
+
+        if (isset($minIndex) && isset($maxIndex)) {
+            $datasetIds = array_slice($datasetIds, $minIndex, $maxIndex - $minIndex + 1);
+        } elseif (isset($minIndex)) {
+            $datasetIds = array_slice($datasetIds, $minIndex);
+        } elseif (isset($maxIndex)) {
+            $datasetIds = array_slice($datasetIds, 0, $maxIndex + 1);
+        }
+
+        if($this->termExtraction) {
+            $progressbar = $this->output->createProgressBar(count($datasetIds));
+            foreach ($datasetIds as $id) {
+                $dataset = Dataset::where('id', $id)->first();
+                $latestMetadata = $dataset->latestMetadata()->first();
+                TermExtraction::dispatch(
+                    $id,
+                    $dataset->lastMetadataVersionNumber()->version,
+                    base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6))
+                );
+            }
+            $progressbar->finish();
+        } else {
+            $this->bulkProcess($datasetIds, 'reindexElastic');
+        }
+
+        //sleep for 5 seconds and count again..
+        usleep(5 * 1000 * 1000);
+        $afterCount = ECC::countDocuments('dataset');
+        echo "\nAfter reindexing there were $afterCount datasets indexed \n";
+
+    }
+
+    private function tools()
+    {
+        $toolIds = Tool::where("status", Tool::STATUS_ACTIVE)
+            ->select("id")
+            ->pluck('id')
+            ->toArray();
+
+        $this->bulkProcess($toolIds, 'indexElasticTools');
+    }
+
+    private function publications()
+    {
+        $publicationIds = Publication::where("status", Publication::STATUS_ACTIVE)
+            ->select("id")
+            ->pluck('id')
+            ->toArray();
+
+        $this->bulkProcess($publicationIds, 'indexElasticPublication');
+    }
+
+    private function durs()
+    {
+        $durIds = Dur::where("status", Publication::STATUS_ACTIVE)
+            ->select("id")
+            ->pluck('id')
+            ->toArray();
+
+        $this->bulkProcess($durIds, 'indexElasticDur');
+    }
+
+    private function collections()
+    {
+        $collectionIds = Collection::where("status", Publication::STATUS_ACTIVE)
+            ->select("id")
+            ->pluck('id')
+            ->toArray();
+
+        $this->bulkProcess($collectionIds, 'indexElasticCollections');
+    }
+
+    private function dataProviders()
+    {
+        $providerIds = array_unique(Dataset::pluck('team_id')->toArray());
+        $teamIds = Team::whereIn('id', $providerIds)->select('id')
+            ->pluck('id')->toArray();
+
+        $this->bulkProcess($teamIds, 'reindexElasticDataProvider');
+    }
+
+    private function bulkProcess(array $ids, string $indexerName)
+    {
+        $progressbar = $this->output->createProgressBar(count($ids));
+        $chunks = array_chunk($ids, $this->chunkSize);
+        foreach ($chunks as $ids) {
+            $this->reindexElasticBulk($ids, [$this, $indexerName]);
+            $progressbar->advance(count($ids));
+            usleep($this->sleepTimeInMicroseconds);
+        }
+        $progressbar->finish();
+    }
+}

@@ -21,7 +21,7 @@ use App\Http\Requests\ActivityLogUserType\UpdateActivityLogUserType;
 class ActivityLogUserTypeController extends Controller
 {
     use RequestTransformation;
-    
+
     /**
      * @OA\Get(
      *      path="/api/v1/activity_log_user_types",
@@ -56,9 +56,9 @@ class ActivityLogUserTypeController extends Controller
             $activityLogUserTypes = ActivityLogUserType::paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Activity Log User Type get all",
             ]);
 
@@ -121,9 +121,9 @@ class ActivityLogUserTypeController extends Controller
             if ($activityLogUserType) {
 
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'action_type' => 'GET',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Activity Log User Type get " . $id,
                 ]);
 
@@ -132,7 +132,7 @@ class ActivityLogUserTypeController extends Controller
                     'data' => $activityLogUserType,
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
-    
+
             throw new NotFoundException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -181,9 +181,9 @@ class ActivityLogUserTypeController extends Controller
             $activityLogUserType = ActivityLogUserType::create($request->post());
             if ($activityLogUserType) {
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'action_type' => 'CREATE',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Activity Log User Type " . $activityLogUserType->id . " created",
                 ]);
 
@@ -192,7 +192,7 @@ class ActivityLogUserTypeController extends Controller
                     'data' => $activityLogUserType->id,
                 ], Config::get('statuscodes.STATUS_CREATED.code'));
             }
-    
+
             throw new InternalServerErrorException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -264,12 +264,12 @@ class ActivityLogUserTypeController extends Controller
             $activityLogUserType = ActivityLogUserType::findOrFail($id);
             $body = $request->post();
             $activityLogUserType->name = $body['name'];
-    
+
             if ($activityLogUserType->save()) {
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'action_type' => 'UPDATE',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Activity Log User Type " . $id . " updated",
                 ]);
 
@@ -280,7 +280,7 @@ class ActivityLogUserTypeController extends Controller
             } else {
                 throw new InternalServerErrorException();
             }
-    
+
             throw new NotFoundException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -361,9 +361,9 @@ class ActivityLogUserTypeController extends Controller
             ActivityLogUserType::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Activity Log User Type " . $id . " updated",
             ]);
 
@@ -428,18 +428,18 @@ class ActivityLogUserTypeController extends Controller
             if ($activityLogUserType) {
                 if ($activityLogUserType->delete()) {
                     Auditor::log([
-                        'user_id' => $jwtUser['id'],
+                        'user_id' => (int) $jwtUser['id'],
                         'action_type' => 'DELETE',
-                        'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
                         'description' => "Activity Log User Type " . $id . " deleted",
                     ]);
 
-                    
+
                     return response()->json([
                         'message' => Config::get('statuscodes.STATUS_OK.message'),
                     ], Config::get('statuscodes.STATUS_OK.code'));
                 }
-    
+
                 throw new InternalServerErrorException();
             }
         } catch (Exception $e) {

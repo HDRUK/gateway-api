@@ -21,7 +21,7 @@ use App\Exceptions\ResourceAlreadyExistsException;
 class KeywordController extends Controller
 {
     use RequestTransformation;
-    
+
     public function __construct()
     {
         //
@@ -80,16 +80,23 @@ class KeywordController extends Controller
             $keywords = Keyword::where('enabled', 1)->paginate((int) $perPage, ['*'], 'page');
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Keywords get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Keywords get all',
             ]);
 
             return response()->json(
                 $keywords,
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -145,10 +152,10 @@ class KeywordController extends Controller
             $keyword = Keyword::where(['id' => $id])->get();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Keywords get " . $id,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Keywords get ' . $id,
             ]);
 
             return response()->json([
@@ -156,6 +163,13 @@ class KeywordController extends Controller
                 'data' => $keyword,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -218,12 +232,12 @@ class KeywordController extends Controller
                 ]);
 
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'CREATE',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Keywords " . $keyword->id . " created",
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Keywords ' . $keyword->id . ' created',
                 ]);
-    
+
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                     'data' => $keyword->id,
@@ -232,6 +246,13 @@ class KeywordController extends Controller
 
             throw new ResourceAlreadyExistsException();
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -306,10 +327,10 @@ class KeywordController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Keywords " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Keywords ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -317,6 +338,13 @@ class KeywordController extends Controller
                 'data' => Keyword::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -394,10 +422,10 @@ class KeywordController extends Controller
             Keyword::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Keywords " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Keywords ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -405,6 +433,12 @@ class KeywordController extends Controller
                 'data' => Keyword::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
             throw new Exception($e->getMessage());
         }
     }
@@ -461,16 +495,23 @@ class KeywordController extends Controller
             CollectionHasKeyword::where('keyword_id', '=', $id)->delete();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Keywords " . $id . " deleted",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Keywords ' . $id . ' deleted',
             ]);
-            
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

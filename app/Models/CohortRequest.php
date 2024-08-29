@@ -13,11 +13,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class CohortRequest extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
 
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'cohort_requests';
@@ -28,10 +31,12 @@ class CohortRequest extends Model
         'cohort_status',
         'request_expire_at',
         'created_at',
+        'accept_declaration', // Add the new field to the fillable array
     ];
 
     protected $casts = [
         'cohort_status' => 'boolean',
+        'accept_declaration' => 'boolean', // Add the new field to the casts array
     ];
 
     public function user(): BelongsTo
@@ -108,7 +113,7 @@ class CohortRequest extends Model
                 foreach ($values as $value) {
                     $query->orWhere('organisation', 'LIKE', '%' . $value . '%');
                 }
-            });        
+            });
         });
     }
 

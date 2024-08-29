@@ -6,26 +6,22 @@ use Config;
 use Http\Mock\Client;
 use Nyholm\Psr7\Response;
 
-use Tests\Traits\Authorization;
 
 use Database\Seeders\SectorSeeder;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use Elastic\Elasticsearch\ClientBuilder;
-use MetadataManagementController AS MMC;
-use Elastic\Elasticsearch\Response\Elasticsearch;
+use MetadataManagementController as MMC;
 
 trait MockExternalApis
 {
-
     use Authorization;
     private $dataset = null;
     private $datasetUpdate = null;
     protected $header = [];
 
     // Changed visibility. Private functions in shared trait is frowned upon
-    public function getFakeDataset()
+    public function getMetadataV1p0()
     {
         $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min.json', 0, null);
         $json = json_decode($jsonFile, true);
@@ -34,7 +30,7 @@ trait MockExternalApis
     }
 
 
-    public function getFakeDatasetNew()
+    public function getMetadataV1p1()
     {
         $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1p1_dataset_min.json', 0, null);
         $json = json_decode($jsonFile, true);
@@ -43,14 +39,38 @@ trait MockExternalApis
     }
 
     // Changed visibility. Private functions in shared trait is frowned upon
-    public function getFakeUpdateDataset()
+    public function getMetadataV2p0()
     {
-        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min_update.json', 0, null);
+        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v2p0_dataset_min.json', 0, null);
         $json = json_decode($jsonFile, true);
 
         return $json;
     }
-    
+
+    public function getMetadata()
+    {
+        $version = Config::get('metadata.GWDM.version');
+        switch (true) {
+            case version_compare($version, "1.0", "<="):
+                return $this->getMetadataV1p0();
+
+            case version_compare($version, "1.2", "<="):
+                #note: v1.1 and v1.2 were not that different so can use this example metadata
+                return $this->getMetadataV1p1();
+
+            case version_compare($version, "2.0", "<="):
+                return $this->getMetadataV2p0();
+        }
+    }
+
+    public function getPublicSchema()
+    {
+        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/hdruk_3p0p0_dataset_min.json', 0, null);
+        $json = json_decode($jsonFile, true);
+
+        return $json;
+    }
+
     public function setUp(): void
     {
         parent::setUp();
@@ -58,8 +78,10 @@ trait MockExternalApis
         $this->seed([
             SectorSeeder::class,
         ]);
+
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
+        $this->currentUser = $this->getUserFromJwt($jwt);
         $this->header = [
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $jwt,
@@ -67,41 +89,34 @@ trait MockExternalApis
 
         Mail::fake();
 
-        // Define mock client and fake response for elasticsearch service
-        $mockElastic = new Client();
-
-        $elasticClient = ClientBuilder::create()
-            ->setHttpClient($mockElastic)
-            ->build();
 
         // This is a PSR-7 response
         // Mock two responses, one for creating a dataset, another for deleting
-        $createResponse = new Response(
-            200, 
-            [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
-            'Document created'
-        );
-        $deleteResponse = new Response(
-            200, 
-            [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
-            'Document deleted'
-        );
+        $elasticBaseUrl = Config::get('database.connections.elasticsearch.host');
 
-        // Stack the responses expected in the create/archive/delete dataset test
-        // create -> soft delete/archive -> unarchive -> permanent delete
-        for ($i=0; $i < 100; $i++) {
-            $mockElastic->addResponse($createResponse);
-        }
+        // Define the URL pattern for the index document endpoint
+        $indexDocumentUrlPattern = $elasticBaseUrl . '/*/_doc/*';
 
-        for ($i=0; $i < 100; $i++) {
-            $mockElastic->addResponse($deleteResponse);
-        }
+        // Fake the HTTP request
+        Http::fake([
+            $indexDocumentUrlPattern => function ($request) {
+                return Http::response('Document created', 200, ['application/json']);
+            },
+        ]);
 
-        $this->testElasticClient = $elasticClient;
+
+        $deleteDocumentsUrlPattern = $elasticBaseUrl . '/*/_delete_by_query';
+
+        // Fake the HTTP request
+        Http::fake([
+            $deleteDocumentsUrlPattern => function ($request) {
+                return Http::response('Document deleted', 200, ['application/json']);
+            },
+        ]);
 
         Http::fake([
             env('TED_SERVICE_URL', 'http://localhost:8001') => Http::response(
-                ['id' => 11, 'extracted_terms' => ['test', 'fake']], 
+                ['id' => 11, 'extracted_terms' => ['test', 'fake']],
                 201,
                 ['application/json']
             )
@@ -135,7 +150,7 @@ trait MockExternalApis
                                     'shortTitle' => 'Asthma dataset',
                                     'title' => 'Asthma dataset',
                                     'dataUseTitles' => [],
-                                    'populationSize'=> 1000,
+                                    'populationSize' => 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -158,7 +173,7 @@ trait MockExternalApis
                                     'shortTitle' => 'Another asthma dataset',
                                     'title' => 'Another asthma dataset',
                                     'dataUseTitles' => [],
-                                    'populationSize'=> 1000,
+                                    'populationSize' => 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -181,7 +196,30 @@ trait MockExternalApis
                                     'shortTitle' => 'Third asthma dataset',
                                     'title' => 'Third asthma dataset',
                                     'dataUseTitles' => [],
-                                    'populationSize'=> 1000,
+                                    'populationSize' => 1000,
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'datasets',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 15.0,
+                                '_shard' => '[datasets][0]',
+                                '_source' => [
+                                    'abstract' => '',
+                                    'description' => '',
+                                    'keywords' => '',
+                                    'named_entities' => [],
+                                    'publisherName' => '',
+                                    'shortTitle' => 'Fourth asthma dataset',
+                                    'title' => 'Fourth asthma dataset',
+                                    'dataUseTitles' => [],
+                                    'populationSize' => 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -234,7 +272,7 @@ trait MockExternalApis
                                     'shortTitle' => 'Asthma dataset',
                                     'title' => 'Asthma dataset',
                                     'dataUseTitles' => [],
-                                    'populationSize'=> 1000,
+                                    'populationSize' => 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -257,7 +295,7 @@ trait MockExternalApis
                                     'shortTitle' => 'Another asthma dataset',
                                     'title' => 'Another asthma dataset',
                                     'dataUseTitles' => [],
-                                    'populationSize'=> 1000,
+                                    'populationSize' => 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -280,7 +318,7 @@ trait MockExternalApis
                                     'shortTitle' => 'Third asthma dataset',
                                     'title' => 'Third asthma dataset',
                                     'dataUseTitles' => [],
-                                    'populationSize'=> 1000,
+                                    'populationSize' => 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -379,6 +417,27 @@ trait MockExternalApis
                                     'abstract' => [],
                                     'description' => []
                                 ]
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'tools',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[tools][0]',
+                                '_source' => [
+                                    'category' => 'NLP System',
+                                    'description' => 'Yet another NLP tool',
+                                    'name' => 'D tool',
+                                    'tags' => [
+                                        'nlp',
+                                        'machine learning'
+                                    ]
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
                             ]
                         ]
                     ],
@@ -454,6 +513,24 @@ trait MockExternalApis
                                     'abstract' => [],
                                     'description' => []
                                 ]
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'collections',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[collections][0]',
+                                '_source' => [
+                                    'description' => 'a gateway collection',
+                                    'name' => 'Fourth Collection',
+                                    'keywords' => 'some, useful, keywords',
+                                    'datasetTitles' => ['some', 'dataset', 'titles']
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
                             ]
                         ]
                     ],
@@ -463,7 +540,7 @@ trait MockExternalApis
                 ['application/json']
             )
         ]);
-        
+
         // Mock the search service - data uses
         Http::fake([
             env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur*' => Http::response(
@@ -531,6 +608,29 @@ trait MockExternalApis
                                 '_shard' => '[data_uses][0]',
                                 '_source' => [
                                     'projectTitle' => 'Third Data Use',
+                                    'laySummary' => 'a gateway data use',
+                                    'publicBenefitStatement' => '',
+                                    'technicalSummary' => '',
+                                    'fundersAndSponsors' => '',
+                                    'datasetTitles' => ['some', 'dataset', 'title'],
+                                    'keywords' => ['some', 'useful', 'keywords'],
+                                    'sector' => 'Academia',
+                                    'publisherName' => 'A Publisher',
+                                    'organisationName' => 'An Organisation'
+                                ],
+                                'highlight' => [
+                                    'laySummary' => []
+                                ]
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'data_uses',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[data_uses][0]',
+                                '_source' => [
+                                    'projectTitle' => 'Fourth Data Use',
                                     'laySummary' => 'a gateway data use',
                                     'publicBenefitStatement' => '',
                                     'technicalSummary' => '',
@@ -626,6 +726,26 @@ trait MockExternalApis
                                 'highlight' => [
                                     'laySummary' => []
                                 ]
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'data_uses',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[data_uses][0]',
+                                '_source' => [
+                                    'title' => 'Fourth Publication',
+                                    'journalName' => 'A Journal',
+                                    'abstract' => '',
+                                    'authors' => '',
+                                    'publicationDate' => '',
+                                    'datasetTitles' => ['some', 'dataset', 'title'],
+                                    'publicationType' => ['article', 'comment', 'letter'],
+                                ],
+                                'highlight' => [
+                                    'laySummary' => []
+                                ]
                             ]
                         ]
                     ],
@@ -668,7 +788,7 @@ trait MockExternalApis
                                 'journalInfo' => [
                                     'journal' => [
                                         'title' => 'Journal of Health'
-                                    ]  
+                                    ]
                                 ],
                                 'pubYear' => '2020',
                                 'abstractText' => 'A longer description of the paper',
@@ -724,6 +844,110 @@ trait MockExternalApis
             )
         ]);
 
+        Http::fake([
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi' => Http::response(
+                [
+                "hitCount" => 1,
+                "resultList" => [
+                    "result" => [
+                        0 => [
+                            "id" => "PPR885146",
+                            "doi" => "10.3310/abcde",
+                            "title" => "DOI test publication",
+                            "authorString" => "",
+                            "journalInfo" => null,
+                            "pubYear" => "2024",
+                            "abstractText" => ""
+                        ]
+                    ]
+                ]
+            ],
+                200,
+                ['application/json']
+            )
+        ]);
+
+        // Mock the search service - data providers
+        Http::fake([
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_providers*' => Http::response(
+                [
+                    'took' => 1000,
+                    'timed_out' => false,
+                    '_shards' => [],
+                    'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
+                        'hits' => [
+                            0 => [
+                                '_explanation' => [],
+                                '_id' => '1',
+                                '_index' => 'dataprovider',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 20.0,
+                                '_shard' => '[dataprovider][0]',
+                                '_source' => [
+                                    'name' => 'One Provider',
+                                    'datasetTitles' => ['some', 'dataset', 'titles'],
+                                    'geographicLocations' => ['Scotland', 'Wales'],
+                                    'dataType' => ['Healthdata']
+                                ],
+                                'highlight' => null,
+                            ],
+                            1 => [
+                                '_explanation' => [],
+                                '_id' => '2',
+                                '_index' => 'dataprovider',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 18.0,
+                                '_shard' => '[dataprovider][0]',
+                                '_source' => [
+                                    'name' => 'Another Provider',
+                                    'datasetTitles' => ['some', 'dataset', 'titles'],
+                                    'geographicLocations' => ['Scotland', 'Wales'],
+                                    'dataType' => ['Healthdata']
+                                ],
+                                'highlight' => null,
+                            ],
+                            2 => [
+                                '_explanation' => [],
+                                '_id' => '3',
+                                '_index' => 'dataprovider',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[dataprovider][0]',
+                                '_source' => [
+                                    'name' => 'Third Provider',
+                                    'datasetTitles' => ['some', 'dataset', 'titles'],
+                                    'geographicLocations' => ['Scotland', 'Wales'],
+                                    'dataType' => ['Healthdata']
+                                ],
+                                'highlight' => null,
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'dataprovider',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[dataprovider][0]',
+                                '_source' => [
+                                    'name' => 'Fourth Provider',
+                                    'datasetTitles' => ['some', 'dataset', 'titles'],
+                                    'geographicLocations' => ['Scotland', 'Wales'],
+                                    'dataType' => ['Healthdata']
+                                ],
+                                'highlight' => null,
+                            ]
+                        ]
+                    ],
+                    'aggregations' => []
+                ],
+                200,
+                ['application/json']
+            )
+        ]);
+
         // Mock the search service - filters
         Http::fake([
             env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/filters*' => Http::response(
@@ -772,28 +996,27 @@ trait MockExternalApis
             )
         ]);
 
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        // MMC::shouldReceive("translateDataModelType")
-        //     ->with(json_encode($this->getFakeDataset()), Config::get('metadata.GWDM.name'), Config::get('metadata.GWDM.version'))
-        //     ->andReturnUsing(function(string $metadata){
-        //     return [
-        //         "traser_message" => "",
-        //         "wasTranslated" => true,
-        //         "metadata" => json_decode($metadata,true)["metadata"],
-        //         "statusCode" => "200",
-        //     ];
-        // });
+        Http::fake([
+            env('CLAMAV_API_URL', 'http://clamav:3001') . '*' => Http::response(
+                [
+                    'isInfected' => false,
+                    'file' => '1716469707_test_file.csv',
+                    'viruses' => [],
+                ],
+                200,
+                ['application/json']
+            )
+        ]);
+
         MMC::shouldReceive("translateDataModelType")
-            ->andReturnUsing(function(string $metadata){
-            return [
-                "traser_message" => "",
-                "wasTranslated" => true,
-                "metadata" => json_decode($metadata,true)["metadata"],
-                "statusCode" => "200",
-            ];
-        });
+            ->andReturnUsing(function (string $metadata) {
+                return [
+                    "traser_message" => "",
+                    "wasTranslated" => true,
+                    "metadata" => json_decode($metadata, true)["metadata"],
+                    "statusCode" => "200",
+                ];
+            });
         MMC::shouldReceive("validateDataModelType")->andReturn(true);
         MMC::makePartial();
 
@@ -801,22 +1024,51 @@ trait MockExternalApis
 
         Http::fake([
             env('MJML_RENDER_URL') => Http::response(
-                ["html"=>"<html>content</html>"], 
+                ["html" => "<html>content</html>"],
                 201,
                 ['application/json']
             )
         ]);
 
-         Http::fake([
+        Http::fake([
             env('FMA_SERVICE_URL').'*' => Http::response(
-                ['message'=>'success'], 
+                ['message' => 'success'],
                 200,
                 ['application/json']
             )
         ]);
 
+        Http::fake([
+            // DELETE
+            "http://hub.local/contacts/v1/contact/vid/*" => function ($request) {
+                if ($request->method() === 'DELETE') {
+                    return Http::response([], 200);
+                }
+            },
 
+            // GET (by vid)
+            "http://hub.local/contacts/v1/contact/vid/*/profile" => function ($request) {
+                if ($request->method() === 'GET') {
+                    return Http::response(['vid' => 12345, 'properties' => []], 200);
+                } elseif ($request->method() === 'POST') {
+                    return Http::response([], 204);
+                }
+            },
 
+            // GET (by email)
+            "http://hub.local/contacts/v1/contact/email/*/profile" => function ($request) {
+                if ($request->method() === 'GET') {
+                    return Http::response(['vid' => 12345], 200);
+                }
+            },
+
+            // POST (create contact)
+            'http://hub.local/contacts/v1/contact' => function ($request) {
+                if ($request->method() === 'POST') {
+                    return Http::response(['vid' => 12345], 200);
+                }
+            },
+        ]);
     }
 
     // Count requests made to the elastic mock client
@@ -824,5 +1076,4 @@ trait MockExternalApis
     {
         return count($client->getTransport()->getClient()->getRequests());
     }
-
 }

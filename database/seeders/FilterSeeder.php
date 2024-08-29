@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Filter;
 use Illuminate\Database\Seeder;
+
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class FilterSeeder extends Seeder
@@ -18,6 +19,7 @@ class FilterSeeder extends Seeder
         $this->seed_tools_filters();
         $this->seed_collection_filters();
         $this->seed_publication_filters();
+        $this->seed_data_provider_filters();
     }
 
     public function seed_dataset_filters(): void
@@ -30,13 +32,16 @@ class FilterSeeder extends Seeder
             'dataUseTitles',
             'dateRange',
             'populationSize',
-            'geographicLocation'
+            'geographicLocation',
+            'dataProviderColl',
+            'accessService',
+            'sampleAvailability'
         ];
 
-        $this->seed_filter("dataset",$filters);
+        $this->seed_filter("dataset", $filters);
     }
 
-     public function seed_datauses_filters(): void
+    public function seed_datauses_filters(): void
     {
         $filters = [
             'publisherName',
@@ -44,23 +49,25 @@ class FilterSeeder extends Seeder
             'sector',
             'datasetTitles',
             'latestApprovalDate',
-            'accessType'
+            'accessType',
+            'dataProviderColl'
         ];
 
 
-        $this->seed_filter("dataUseRegister",$filters);
+        $this->seed_filter("dataUseRegister", $filters);
     }
 
     public function seed_tools_filters(): void
     {
         $filters = [
-            'programmingLanguage',
-            'category',
-            'category_id',
-            'license'
+            'programmingLanguages',
+            'license',
+            'dataProviderColl',
+            'datasetTitles',
+            'typeCategory'
         ];
 
-        $this->seed_filter("tool",$filters);
+        $this->seed_filter("tool", $filters);
     }
 
 
@@ -68,10 +75,11 @@ class FilterSeeder extends Seeder
     {
         $filters = [
             'publisherName',
-            'datasetTitles'
+            'datasetTitles',
+            'dataProviderColl'
         ];
 
-        $this->seed_filter("collection",$filters);
+        $this->seed_filter("collection", $filters);
     }
 
     public function seed_publication_filters(): void
@@ -79,22 +87,34 @@ class FilterSeeder extends Seeder
         $filters = [
             'publicationType',
             'publicationDate',
-            'datasetTitles'
+            'datasetTitles',
+            'datasetLinkTypes'
         ];
 
-        $this->seed_filter("paper",$filters);
+        $this->seed_filter("paper", $filters);
+    }
+
+    public function seed_data_provider_filters(): void
+    {
+        $filters = [
+            'datasetTitles',
+            'dataType',
+            'geographicLocation'
+        ];
+
+        $this->seed_filter("dataProvider", $filters);
     }
 
     public function seed_filter(string $type, array $filters): void
     {
-        foreach ($filters as $filter){
+        foreach ($filters as $filter) {
             $checkFilter = Filter::where([
-                'type' => $type, 
+                'type' => $type,
                 'keys' => $filter,
             ])->first();
             if (!$checkFilter) {
                 Filter::create([
-                    'type' => $type, 
+                    'type' => $type,
                     'keys' => $filter,
                     'enabled' => true,
                 ]);

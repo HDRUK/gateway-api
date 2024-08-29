@@ -2,39 +2,44 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 
-use App\Models\Keyword;
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
+use App\Models\Keyword;
 use App\Models\Collection;
 use App\Models\Application;
-use App\Models\CollectionHasDataset;
+use Illuminate\Http\Request;
 use App\Models\CollectionHasDur;
-use App\Models\CollectionHasKeyword;
 use App\Models\CollectionHasTool;
+use Illuminate\Http\JsonResponse;
 
 use App\Http\Controllers\Controller;
+use App\Models\CollectionHasDatasetVersion;
+use App\Models\CollectionHasKeyword;
+use App\Exceptions\NotFoundException;
+use App\Http\Traits\IntegrationOverride;
+use App\Models\CollectionHasPublication;
+
+
+use App\Http\Traits\IndexElastic;
+use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\Collection\GetCollection;
+
 use App\Http\Requests\Collection\EditCollection;
 use App\Http\Requests\Collection\CreateCollection;
+
 use App\Http\Requests\Collection\DeleteCollection;
 use App\Http\Requests\Collection\UpdateCollection;
 
-use App\Exceptions\NotFoundException;
-
-use App\Http\Traits\RequestTransformation;
-use App\Http\Traits\IntegrationOverride;
-
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-
-use MetadataManagementController AS MMC;
-
 class IntegrationCollectionController extends Controller
 {
-    use RequestTransformation, IntegrationOverride, IntegrationOverride;
+    use IndexElastic;
+    use RequestTransformation;
+    use IntegrationOverride;
+    use IntegrationOverride;
 
     /**
      * @OA\Get(
@@ -43,6 +48,14 @@ class IntegrationCollectionController extends Controller
      *    tags={"Integration Collections"},
      *    summary="IntegrationCollectionController@index",
      *    description="Returns a list of collections",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="name",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter collections by name"
+     *    ),
      *    @OA\Response(
      *       response=200,
      *       description="Success",
@@ -66,6 +79,7 @@ class IntegrationCollectionController extends Controller
      *                @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *                @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="team", type="array", example="{}", @OA\Items()),
@@ -88,60 +102,90 @@ class IntegrationCollectionController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $input = $request->all();
+
         try {
-            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
-            $collections = Collection::with([
+            $name = $request->query('name', null);
+
+            $collections = Collection::when($name, function ($query) use ($name) {
+                return $query->where('name', 'LIKE', '%' . $name . '%');
+            })
+            ->with([
                 'keywords',
-                'datasets',
                 'tools',
                 'dur',
-                'userDatasets' => function ($query) {
-                    $query->distinct('id');
-                },
-                'userTools' => function ($query) {
-                    $query->distinct('id');
-                },
-                'applicationDatasets' => function ($query) {
-                    $query->distinct('id');
-                },
-                'applicationTools' => function ($query) {
-                    $query->distinct('id');
-                },
+                'publications',
+                'userDatasets',
+                'userTools',
+                'userPublications',
+                'applicationDatasets',
+                'applicationTools',
+                'applicationPublications',
                 'team',
             ])->paginate((int) $perPage, ['*'], 'page');
 
             $collections->getCollection()->transform(function ($collection) {
                 $userDatasets = $collection->userDatasets;
                 $userTools = $collection->userTools;
-                $users = $userDatasets->merge($userTools)->unique('id');
+                $userPublications = $collection->userPublications;
+                $users = $userDatasets->merge($userTools)->merge($userPublications)->unique('id');
                 $collection->setRelation('users', $users);
 
                 $applicationDatasets = $collection->applicationDatasets;
                 $applicationTools = $collection->applicationTools;
-                $applications = $applicationDatasets->merge($applicationTools)->unique('id');
+                $applicationPublications = $collection->applicationPublications;
+                $applications = $applicationDatasets->merge($applicationTools)->merge($applicationPublications)->unique('id');
                 $collection->setRelation('applications', $applications);
 
+                $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
                 // Remove unwanted relations
-                unset($collection->userDatasets, $collection->userTools, $collection->applicationDatasets, $collection->applicationTools);
+                unset(
+                    $users,
+                    $userTools,
+                    $userDatasets,
+                    $userPublications,
+                    $applications,
+                    $applicationTools,
+                    $applicationDatasets,
+                    $applicationPublications,
+                    $collection->userDatasets,
+                    $collection->userTools,
+                    $collection->userPublications,
+                    $collection->applicationDatasets,
+                    $collection->applicationTools,
+                    $collection->applicationPublications
+                );
 
                 return $collection;
             });
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Collection get all",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Collection get all',
             ]);
-            
+
             return response()->json(
                 $collections
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -188,6 +232,7 @@ class IntegrationCollectionController extends Controller
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
@@ -200,18 +245,21 @@ class IntegrationCollectionController extends Controller
      */
     public function show(GetCollection $request, int $id): JsonResponse
     {
+        $input = $request->all();
+
         try {
-            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $collections = $this->getCollectionById($id);
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Collection get " . $id,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Collection get ' . $id,
             ]);
 
             return response()->json([
@@ -221,6 +269,16 @@ class IntegrationCollectionController extends Controller
 
             throw new NotFoundException();
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -246,6 +304,7 @@ class IntegrationCollectionController extends Controller
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="public", type="boolean", example="true"),
      *          ),
      *       ),
@@ -276,8 +335,9 @@ class IntegrationCollectionController extends Controller
      */
     public function store(CreateCollection $request): JsonResponse
     {
+        $input = $request->all();
+
         try {
-            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $userId = null;
@@ -291,15 +351,15 @@ class IntegrationCollectionController extends Controller
                 $app = Application::where(['id' => $appId])->first();
                 $userId = (int) $app->user_id;
             }
- 
+
             $arrayKeys = [
-                'name', 
-                'description', 
-                'image_link', 
-                'enabled', 
-                'public', 
-                'counter', 
-                'mongo_object_id', 
+                'name',
+                'description',
+                'image_link',
+                'enabled',
+                'public',
+                'counter',
+                'mongo_object_id',
                 'mongo_id',
                 'team_id',
             ];
@@ -307,7 +367,7 @@ class IntegrationCollectionController extends Controller
 
             $collection = Collection::create($array);
             $collectionId = (int) $collection->id;
-            
+
             $array['user_id'] = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
@@ -318,6 +378,9 @@ class IntegrationCollectionController extends Controller
 
             $dur = array_key_exists('dur', $input) ? $input['dur'] : [];
             $this->checkDurs($collectionId, $dur, $array['user_id'], $appId);
+
+            $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
+            $this->checkPublications($collectionId, $publications, $array['user_id'], $appId);
 
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($collectionId, $keywords);
@@ -339,11 +402,13 @@ class IntegrationCollectionController extends Controller
             $this->indexElasticCollections((int)$collectionId);
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Collection " . $collectionId . " created",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Collection ' . $collectionId . ' created',
             ]);
 
             return response()->json([
@@ -351,6 +416,16 @@ class IntegrationCollectionController extends Controller
                 'data' => $collectionId,
             ], 201);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -386,6 +461,7 @@ class IntegrationCollectionController extends Controller
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="public", type="boolean", example="true"),
      *          ),
      *       ),
@@ -419,6 +495,7 @@ class IntegrationCollectionController extends Controller
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
@@ -436,8 +513,9 @@ class IntegrationCollectionController extends Controller
      */
     public function update(UpdateCollection $request, int $id): JsonResponse
     {
+        $input = $request->all();
+
         try {
-            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $userId = null;
@@ -453,13 +531,13 @@ class IntegrationCollectionController extends Controller
             }
 
             $arrayKeys = [
-                'name', 
-                'description', 
-                'image_link', 
-                'enabled', 
-                'public', 
-                'counter', 
-                'mongo_object_id', 
+                'name',
+                'description',
+                'image_link',
+                'enabled',
+                'public',
+                'counter',
+                'mongo_object_id',
                 'mongo_id',
                 'team_id',
             ];
@@ -476,6 +554,9 @@ class IntegrationCollectionController extends Controller
 
             $dur = array_key_exists('dur', $input) ? $input['dur'] : [];
             $this->checkDurs($id, $dur, $array['user_id'], $appId);
+
+            $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
+            $this->checkPublications($id, $publications, $array['user_id'], $appId);
 
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($id, $keywords);
@@ -497,11 +578,13 @@ class IntegrationCollectionController extends Controller
             $this->indexElasticCollections((int)$id);
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Collection " . $id . " updated",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Collection ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -509,6 +592,16 @@ class IntegrationCollectionController extends Controller
                 'data' => $this->getCollectionById($id),
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -544,6 +637,7 @@ class IntegrationCollectionController extends Controller
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="public", type="boolean", example="true"),
      *          ),
      *       ),
@@ -577,6 +671,7 @@ class IntegrationCollectionController extends Controller
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
@@ -594,8 +689,9 @@ class IntegrationCollectionController extends Controller
      */
     public function edit(EditCollection $request, int $id): JsonResponse
     {
+        $input = $request->all();
+
         try {
-            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $userId = null;
@@ -609,13 +705,13 @@ class IntegrationCollectionController extends Controller
             }
 
             $arrayKeys = [
-                'name', 
-                'description', 
-                'image_link', 
-                'enabled', 
-                'public', 
-                'counter', 
-                'mongo_object_id', 
+                'name',
+                'description',
+                'image_link',
+                'enabled',
+                'public',
+                'counter',
+                'mongo_object_id',
                 'mongo_id',
                 'team_id',
             ];
@@ -639,6 +735,11 @@ class IntegrationCollectionController extends Controller
                 $this->checkDurs($id, $dur, $userIdFinal, $appId);
             }
 
+            if (array_key_exists('publications', $input)) {
+                $publications = $input['publications'];
+                $this->checkPublications($id, $publications, $userIdFinal, $appId);
+            }
+
             if (array_key_exists('keywords', $input)) {
                 $keywords = $input['keywords'];
                 $this->checkKeywords($id, $keywords);
@@ -656,11 +757,13 @@ class IntegrationCollectionController extends Controller
             $this->indexElasticCollections((int)$id);
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Collection " . $id . " updated",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Collection ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -668,6 +771,16 @@ class IntegrationCollectionController extends Controller
                 'data' => $this->getCollectionById($id),
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -715,22 +828,25 @@ class IntegrationCollectionController extends Controller
      */
     public function destroy(DeleteCollection $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+        $input = $request->all();
 
-            CollectionHasDataset::where(['collection_id' => $id])->delete();
+        try {
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+            CollectionHasDatasetVersion::where(['collection_id' => $id])->delete();
             CollectionHasTool::where(['collection_id' => $id])->delete();
             CollectionHasDur::where(['collection_id' => $id])->delete();
             CollectionHasKeyword::where(['collection_id' => $id])->delete();
+            CollectionHasPublication::where(['collection_id' => $id])->delete();
             Collection::where(['id' => $id])->delete();
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Collection " . $id . " deleted",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Collection ' . $id . ' deleted',
             ]);
 
             return response()->json([
@@ -738,37 +854,55 @@ class IntegrationCollectionController extends Controller
             ], 200);
 
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
 
-
-    private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null, int $appId = null) 
+    // datasets
+    private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null, int $appId = null)
     {
-        $cols = CollectionHasDataset::where(['collection_id' => $collectionId])->get();
+        $cols = CollectionHasDatasetVersion::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
-            if (!in_array($col->dataset_id, $this->extractInputIdToArray($inDatasets))) {
-                $this->deleteCollectionHasDatasets($collectionId, $col->dataset_id);
+            $dataset_id = DatasetVersion::where("id", $col->dataset_version_id)->first()->dataset_id;
+            if (!in_array($dataset_id, $this->extractInputIdToArray($inDatasets))) {
+                $this->deleteCollectionHasDatasetVersions($collectionId, $col->dataset_version_id);
             }
         }
 
         foreach ($inDatasets as $dataset) {
-            $checking = $this->checkInCollectionHasDatasets($collectionId, (int) $dataset['id']);
+            $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
+            $checking = $this->checkInCollectionHasDatasetVersions($collectionId, $datasetVersionId);
 
             if (!$checking) {
-                $this->addCollectionHasDataset($collectionId, $dataset, $userId, $appId);
+                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId, $appId);
+                $this->reindexElastic($dataset['id']);
             }
-
-            MMC::reindexElastic($dataset['id']);
         }
     }
 
-    private function addCollectionHasDataset(int $collectionId, array $dataset, int $userId = null, int $appId = null)
+    private function addCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, int $userId = null, int $appId = null)
     {
         try {
+
+            $searchArray = [
+                'collection_id' => $collectionId,
+                'dataset_version_id' => $datasetVersionId,
+            ];
+
             $arrCreate = [
                 'collection_id' => $collectionId,
-                'dataset_id' => $dataset['id'],
+                'dataset_version_id' => $datasetVersionId,
+                'deleted_at' => null,
             ];
 
             if (array_key_exists('user_id', $dataset)) {
@@ -790,43 +924,56 @@ class IntegrationCollectionController extends Controller
                 $arrCreate['application_id'] = $appId;
             }
 
-            return CollectionHasDataset::updateOrCreate(
-                $arrCreate,
-                [
-                    'collection_id' => $collectionId,
-                    'dataset_id' => $dataset['id'],
-                ]
-            );
+            return CollectionHasDatasetVersion::withTrashed()->updateOrCreate($searchArray, $arrCreate);
         } catch (Exception $e) {
-            throw new Exception("addCollectionHasDataset :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('addCollectionHasDataset :: ' . $e->getMessage());
         }
     }
 
-    private function checkInCollectionHasDatasets(int $collectionId, int $datasetId)
+    private function checkInCollectionHasDatasetVersions(int $collectionId, int $datasetVersionId)
     {
         try {
-            return CollectionHasDataset::where([
+            return CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
-                'dataset_id' => $datasetId,
+                'dataset_version_id' => $datasetVersionId,
             ])->first();
         } catch (Exception $e) {
-            throw new Exception("checkInCollectionHasDatasets :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('checkInCollectionHasDatasets :: ' . $e->getMessage());
         }
     }
 
-    private function deleteCollectionHasDatasets(int $collectionId, int $datasetId)
+    private function deleteCollectionHasDatasetVersions(int $collectionId, int $datasetVersionId)
     {
         try {
-            return CollectionHasDataset::where([
+            return CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
-                'dataset_id' => $datasetId,
+                'dataset_version_id' => $datasetVersionId,
             ])->delete();
         } catch (Exception $e) {
-            throw new Exception("deleteKeywordDur :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('deleteKeywordDur :: ' . $e->getMessage());
         }
     }
 
-    private function checkTools(int $collectionId, array $inTools, int $userId = null, int $appId = null) 
+    // tools
+    private function checkTools(int $collectionId, array $inTools, int $userId = null, int $appId = null)
     {
         $cols = CollectionHasTool::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
@@ -841,8 +988,6 @@ class IntegrationCollectionController extends Controller
             if (!$checking) {
                 $this->addCollectionHasTool($collectionId, $tool, $userId, $appId);
             }
-
-            // MMC::reindexElastic($tool['id']);
         }
     }
 
@@ -881,7 +1026,13 @@ class IntegrationCollectionController extends Controller
                 ]
             );
         } catch (Exception $e) {
-            throw new Exception("addCollectionHasTool :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('addCollectionHasTool :: ' . $e->getMessage());
         }
     }
 
@@ -893,7 +1044,13 @@ class IntegrationCollectionController extends Controller
                 'tool_id' => $toolId,
             ])->first();
         } catch (Exception $e) {
-            throw new Exception("checkInCollectionHasTools :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('checkInCollectionHasTools :: ' . $e->getMessage());
         }
     }
 
@@ -902,15 +1059,21 @@ class IntegrationCollectionController extends Controller
         try {
             return CollectionHasTool::where([
                 'collection_id' => $collectionId,
-                'tools_id' => $toolId,
+                'tool_id' => $toolId,
             ])->delete();
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception("deleteCollectionHasTools :: " . $e->getMessage());
         }
     }
 
-
-    private function checkDurs(int $collectionId, array $inDurs, int $userId = null, int $appId = null) 
+    // durs
+    private function checkDurs(int $collectionId, array $inDurs, int $userId = null, int $appId = null)
     {
         $cols = CollectionHasDur::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
@@ -931,8 +1094,6 @@ class IntegrationCollectionController extends Controller
             if (!$checking) {
                 $this->addCollectionHasDur($collectionId, $dur, $userId, $appId);
             }
-
-            // MMC::reindexElastic($tool['id']);
         }
     }
 
@@ -971,10 +1132,119 @@ class IntegrationCollectionController extends Controller
                 ]
             );
         } catch (Exception $e) {
-            throw new Exception("addCollectionHasDur :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('addCollectionHasDur :: ' . $e->getMessage());
         }
     }
 
+    // publications
+    private function checkPublications(int $collectionId, array $inPublications, int $userId = null, int $appId = null)
+    {
+        $cols = CollectionHasPublication::where([
+            'collection_id' => $collectionId
+        ])->get();
+        foreach ($cols as $col) {
+            if (!in_array($col->publication_id, $this->extractInputIdToArray($inPublications))) {
+                $this->deleteCollectionHasPublications($collectionId, $col->publication_id);
+            }
+        }
+
+        foreach ($inPublications as $publication) {
+            $checking = $this->checkInCollectionHasPublications($collectionId, (int) $publication['id']);
+
+            if (!$checking) {
+                $this->addCollectionHasPublication($collectionId, $publication, $userId, $appId);
+            }
+        }
+    }
+
+    private function addCollectionHasPublication(int $collectionId, array $publication, int $userId = null, int $appId = null)
+    {
+        try {
+            $arrCreate = [
+                'collection_id' => $collectionId,
+                'publication_id' => $publication['id'],
+            ];
+
+            if (array_key_exists('user_id', $publication)) {
+                $arrCreate['user_id'] = (int) $publication['user_id'];
+            } elseif ($userId) {
+                $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('reason', $publication)) {
+                $arrCreate['reason'] = $publication['reason'];
+            }
+
+            if (array_key_exists('updated_at', $publication)) { // special for migration
+                $arrCreate['created_at'] = $publication['updated_at'];
+                $arrCreate['updated_at'] = $publication['updated_at'];
+            }
+
+            if ($appId) {
+                $arrCreate['application_id'] = $appId;
+            }
+
+            return CollectionHasPublication::updateOrCreate(
+                $arrCreate,
+                [
+                    'collection_id' => $collectionId,
+                    'publication_id' => $publication['id'],
+                ]
+            );
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('addCollectionHasPublication :: ' . $e->getMessage());
+        }
+    }
+
+    private function checkInCollectionHasPublications(int $collectionId, int $publicationId)
+    {
+        try {
+            return CollectionHasPublication::where([
+                'collection_id' => $collectionId,
+                'publication_id' => $publicationId,
+            ])->first();
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('checkInCollectionHasPublications :: ' . $e->getMessage());
+        }
+    }
+
+    private function deleteCollectionHasPublications(int $collectionId, int $publicationId)
+    {
+        try {
+            return CollectionHasPublication::where([
+                'collection_id' => $collectionId,
+                'publication_id' => $publicationId,
+            ])->delete();
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception("deleteCollectionHasPublications :: " . $e->getMessage());
+        }
+    }
+
+    // keywords
     private function checkKeywords(int $collectionId, array $inKeywords)
     {
         $kws = CollectionHasKeyword::where('collection_id', $collectionId)->get();
@@ -988,7 +1258,9 @@ class IntegrationCollectionController extends Controller
                 continue;
             }
 
-            if (in_array($checkKeyword->name, $inKeywords)) continue;
+            if (in_array($checkKeyword->name, $inKeywords)) {
+                continue;
+            }
 
             if (!in_array($checkKeyword->name, $inKeywords)) {
                 $this->deleteCollectionHasKeywords($kwId);
@@ -1009,7 +1281,13 @@ class IntegrationCollectionController extends Controller
                 'keyword_id' => $keywordId,
             ]);
         } catch (Exception $e) {
-            throw new Exception("addKeywordDur :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('addKeywordDur :: ' . $e->getMessage());
         }
     }
 
@@ -1018,25 +1296,33 @@ class IntegrationCollectionController extends Controller
         try {
             return Keyword::updateOrCreate([
                 'name' => $keyword,
-            ],[
+            ], [
                 'name' => $keyword,
                 'enabled' => 1,
             ]);
         } catch (Exception $e) {
-            throw new Exception("createUpdateKeyword :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('createUpdateKeyword :: ' . $e->getMessage());
         }
-    } 
+    }
 
     private function deleteCollectionHasKeywords($keywordId)
     {
         try {
-            return CollectionHasKeyword::where(['keyword_id' => $keywordId])->delete();
+            return CollectionHasKeyword::where([
+                'keyword_id' => $keywordId
+            ])->delete();
         } catch (Exception $e) {
             throw new Exception("deleteKeywordDur :: " . $e->getMessage());
         }
     }
 
-    private function extractInputIdToArray(array $input): Array
+    private function extractInputIdToArray(array $input): array
     {
         $response = [];
         foreach ($input as $value) {
@@ -1046,91 +1332,54 @@ class IntegrationCollectionController extends Controller
         return $response;
     }
 
-        /**
-     * Insert collection document into elastic index
-     *
-     * @param integer $collectionId
-     * @return void
-     */
-    private function indexElasticCollections(int $collectionId): void 
-    {
-        $collection = Collection::with(['team', 'datasets', 'keywords'])->where('id', $collectionId)->first()->toArray();
-        $team = $collection['team'];
-
-        $datasetTitles = array();
-        $datasetAbstracts = array();
-        foreach ($collection['datasets'] as $d) {
-            $metadata = Dataset::where(['id' => $d])
-                ->first()
-                ->latestVersion()
-                ->metadata;
-            $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-            $datasetAbstracts[] = $metadata['metadata']['summary']['abstract'];
-        }
-        
-        $keywords = array();
-        foreach ($collection['keywords'] as $k) {
-            $keywords[] = $k['name'];
-        }
-
-        try {
-            $toIndex = [
-                'publisherName' => isset($team['name']) ? $team['name'] : '',
-                'description' => $collection['description'],
-                'name' => $collection['name'],
-                'datasetTitles' => $datasetTitles,
-                'datasetAbstracts' => $datasetAbstracts,
-                'keywords' => $keywords
-            ];
-            $params = [
-                'index' => 'collection',
-                'id' => $collectionId,
-                'body' => $toIndex,
-                'headers' => 'application/json'
-            ];
-
-            $client = MMC::getElasticClient();
-            $client->index($params);
-
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
-    }
-
     private function getCollectionById(int $collectionId)
     {
         $collection = Collection::where(['id' => $collectionId])
         ->with([
             'keywords',
-            'datasets', 
-            'tools', 
+            'tools',
             'dur',
-            'userDatasets' => function ($query) {
-                $query->distinct('id');
-            }, 
-            'userTools' => function ($query) {
-                $query->distinct('id');
-            }, 
-            'applicationDatasets' => function ($query) {
-                $query->distinct('id');
-            },
-            'applicationTools' => function ($query) {
-                $query->distinct('id');
-            },
+            'publications',
+            'userDatasets',
+            'userTools',
+            'userPublications',
+            'applicationDatasets',
+            'applicationTools',
+            'applicationPublications',
             'team',
         ])->first();
 
+        // Set the datasets attribute with the latest datasets
+        $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
+
         $userDatasets = $collection->userDatasets;
         $userTools = $collection->userTools;
-        $users = $userDatasets->merge($userTools)->unique('id');
+        $userPublications = $collection->userPublications;
+        $users = $userDatasets->merge($userTools)->merge($userPublications)->unique('id');
         $collection->setRelation('users', $users);
 
         $applicationDatasets = $collection->applicationDatasets;
         $applicationTools = $collection->applicationTools;
-        $applications = $applicationDatasets->merge($applicationTools)->unique('id');
+        $applicationPublications = $collection->applicationPublications;
+        $applications = $applicationDatasets->merge($applicationTools)->merge($applicationPublications)->unique('id');
         $collection->setRelation('applications', $applications);
 
-        unset($collection->userDatasets, $collection->userTools, $collection->applicationDatasets, $collection->applicationTools);
+        unset(
+            $users,
+            $userTools,
+            $userDatasets,
+            $userPublications,
+            $applications,
+            $applicationTools,
+            $applicationDatasets,
+            $applicationPublications,
+            $collection->userDatasets,
+            $collection->userTools,
+            $collection->userPublications,
+            $collection->applicationDatasets,
+            $collection->applicationTools,
+            $collection->applicationPublications
+        );
 
         return $collection;
     }

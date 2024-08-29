@@ -13,17 +13,27 @@ use App\Models\Permission;
 use App\Models\Application;
 use Database\Seeders\DurSeeder;
 
+use Database\Seeders\TagSeeder;
+use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
+use Database\Seeders\LicenseSeeder;
+use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
+use Database\Seeders\DurHasToolSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use App\Models\ApplicationHasPermission;
+use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\DurHasPublicationSeeder;
-use Database\Seeders\PublicationHasDatasetSeeder;
+use Database\Seeders\ProgrammingPackageSeeder;
+use Database\Seeders\PublicationHasToolSeeder;
+use Database\Seeders\ProgrammingLanguageSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
+use Database\Seeders\DurHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DurIntegrationTest extends TestCase
@@ -33,7 +43,7 @@ class DurIntegrationTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/integrations/dur';
+    public const TEST_URL = '/api/v1/integrations/dur';
 
     protected $header = [];
 
@@ -48,15 +58,25 @@ class DurIntegrationTest extends TestCase
 
         $this->seed([
             MinimalUserSeeder::class,
+            CategorySeeder::class,
+            ProgrammingLanguageSeeder::class,
+            ProgrammingPackageSeeder::class,
+            LicenseSeeder::class,
+            TagSeeder::class,
+            TypeCategorySeeder::class,
             ApplicationSeeder::class,
             CollectionSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
+            ToolSeeder::class,
             DurSeeder::class,
             PublicationSeeder::class,
-            PublicationHasDatasetSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
+            PublicationHasToolSeeder::class,
             DurHasPublicationSeeder::class,
+            DurHasToolSeeder::class,
+            DurHasDatasetVersionSeeder::class,
         ]);
 
         $this->integration = Application::where('id', 1)->first();
@@ -74,7 +94,7 @@ class DurIntegrationTest extends TestCase
             ApplicationHasPermission::firstOrCreate([
                 'application_id' => $this->integration->id,
                 'permission_id' => $perm->id,
-            ]);            
+            ]);
         }
 
         // Add Integration auth keys to the header generated in commonSetUp
@@ -84,7 +104,7 @@ class DurIntegrationTest extends TestCase
 
     /**
      * Get All DataUseRegisters with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_integration_dur_with_success(): void
@@ -140,11 +160,14 @@ class DurIntegrationTest extends TestCase
                     'created_at',
                     'updated_at',
                     'datasets',
+                    'publications',
+                    'tools',
                     'keywords',
                     'team',
                     'user',
                     'applicant_id',
                     'applications',
+                    'status',
                 ],
             ],
             'current_page',
@@ -165,7 +188,7 @@ class DurIntegrationTest extends TestCase
 
     /**
      * Get DataUseRegister by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_integration_dur_by_id_with_success(): void
@@ -222,6 +245,8 @@ class DurIntegrationTest extends TestCase
                     'team_id',
                     'created_at',
                     'updated_at',
+                    'publications',
+                    'tools',
                     'datasets' => [
                         0 => [
                             'id',
@@ -233,6 +258,7 @@ class DurIntegrationTest extends TestCase
                     'user',
                     'application_id',
                     'applications',
+                    'status',
                 ]
             ]
         ]);
@@ -241,7 +267,7 @@ class DurIntegrationTest extends TestCase
 
     /**
      * Create new DataUseRegister with success
-     * 
+     *
      * @return void
      */
     public function test_add_new_integration_dur_with_success(): void
@@ -257,6 +283,7 @@ class DurIntegrationTest extends TestCase
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
             'organisation_sector' => 'academia',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(
@@ -285,7 +312,7 @@ class DurIntegrationTest extends TestCase
      *
      * @return void
      */
-    public function test_update_integration_dur_with_success(): void 
+    public function test_update_integration_dur_with_success(): void
     {
         // create dur
         $userId = (int) User::all()->random()->id;
@@ -299,6 +326,7 @@ class DurIntegrationTest extends TestCase
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
             'organisation_sector' => 'academia',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(
@@ -318,8 +346,8 @@ class DurIntegrationTest extends TestCase
         // Check that the sector has been correctly mapped.
         $dur_index = $response->json()['data'];
         $this->assertEquals(
-           Dur::where('id', $dur_index)->first()['sector_id'],
-           Sector::where('name', 'Academia')->first()['id']
+            Dur::where('id', $dur_index)->first()['sector_id'],
+            Sector::where('name', 'Academia')->first()['id']
         );
         // update
         $mockDataUpdate = [
@@ -365,6 +393,7 @@ class DurIntegrationTest extends TestCase
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(

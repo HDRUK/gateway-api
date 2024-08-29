@@ -2,40 +2,44 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 
-use App\Models\Dataset;
 use App\Models\Dur;
-use App\Models\Keyword;
-use App\Models\DurHasDataset;
-use App\Models\DurHasKeyword;
+use App\Models\Tool;
 use App\Models\Sector;
+use App\Models\Dataset;
+use App\Models\Keyword;
+use App\Models\DurHasTool;
 use App\Models\Application;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 
+use App\Models\DurHasKeyword;
+use App\Models\DurHasDatasetVersion;
+use App\Models\DatasetVersion;
+use App\Http\Requests\Dur\GetDur;
+use App\Models\DurHasPublication;
+use Illuminate\Http\JsonResponse;
+use App\Http\Requests\Dur\EditDur;
 use App\Http\Controllers\Controller;
 
-use App\Http\Requests\Dur\GetDur;
-use App\Http\Requests\Dur\EditDur;
 use App\Http\Requests\Dur\CreateDur;
 use App\Http\Requests\Dur\DeleteDur;
+
 use App\Http\Requests\Dur\UpdateDur;
 
-use App\Http\Traits\RequestTransformation;
-use App\Http\Traits\IntegrationOverride;
-
 use App\Exceptions\NotFoundException;
-
-use MetadataManagementController AS MMC;
+use App\Http\Traits\IndexElastic;
+use App\Http\Traits\IntegrationOverride;
+use App\Http\Traits\RequestTransformation;
 
 class IntegrationDurController extends Controller
 {
-    use RequestTransformation, IntegrationOverride;
+    use IndexElastic;
+    use RequestTransformation;
+    use IntegrationOverride;
 
     /**
      * @OA\Get(
@@ -44,6 +48,15 @@ class IntegrationDurController extends Controller
      *    tags={"Integration Data Use Registers"},
      *    summary="IntegrationDurController@index",
      *    description="Returns a list of dur",
+     *    @OA\Parameter(
+     *       name="sort",
+     *       in="query",
+     *       description="Sort fields in the format field:direction, e.g., project_title:asc,updated_at:asc",
+     *       required=false,
+     *       @OA\Schema(
+     *           type="project_title:asc,updated_at:asc"
+     *       )
+     *    ),
      *    @OA\Response(
      *       response=200,
      *       description="Success",
@@ -98,11 +111,13 @@ class IntegrationDurController extends Controller
      *                @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *                @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *                @OA\Property(property="team", type="array", example="{}", @OA\Items()),
-     *                @OA\Property(property="application", type="string", example="")
+     *                @OA\Property(property="application", type="string", example=""),
+     *                @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *             ),
      *          ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
@@ -124,13 +139,24 @@ class IntegrationDurController extends Controller
     {
         try {
             $input = $request->all();
+
+            $sort = [];
+            $sortArray = $request->has('sort') ? explode(',', $request->query('sort', '')) : [];
+            foreach ($sortArray as $item) {
+                $tmp = explode(":", $item);
+                $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+            }
+            if (!array_key_exists('updated_at', $sort)) {
+                $sort['updated_at'] = 'desc';
+            }
+
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $perPage = request('perPage', Config::get('constants.per_page'));
             $durs = Dur::where('enabled', 1)
                 ->with([
-                    'datasets',
-                    'publications', 
+                    'publications',
+                    'tools',
                     'keywords',
                     'userDatasets' => function ($query) {
                         $query->distinct('id');
@@ -147,7 +173,13 @@ class IntegrationDurController extends Controller
                     'user',
                     'team',
                     'application',
-                ])->paginate((int) $perPage, ['*'], 'page')
+                ]);
+
+            foreach ($sort as $key => $value) {
+                $durs->orderBy('dur.' . $key, strtoupper($value));
+            }
+
+            $durs = $durs->paginate((int) $perPage, ['*'], 'page')
                 ->through(function ($dur) {
                     if ($dur->datasets) {
                         $dur->datasets = $dur->datasets->map(function ($dataset) {
@@ -166,26 +198,50 @@ class IntegrationDurController extends Controller
 
                 $applicationDatasets = $dur->applicationDatasets;
                 $applicationPublications = $dur->applicationPublications;
+                $dur->setAttribute('datasets', $dur->allDatasets  ?? []);
                 $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
                 $dur->setRelation('applications', $applications);
 
-                unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
+                unset(
+                    $users,
+                    $userDatasets,
+                    $userPublications,
+                    $applications,
+                    $applicationDatasets,
+                    $applicationPublications,
+                    $dur->userDatasets,
+                    $dur->userPublications,
+                    $dur->applicationDatasets,
+                    $dur->applicationPublications
+                );
 
                 return $dur;
             });
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dur Integration get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Dur Integration get all',
             ]);
 
             return response()->json(
                 $durs
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -263,6 +319,7 @@ class IntegrationDurController extends Controller
      *                   @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
@@ -270,6 +327,7 @@ class IntegrationDurController extends Controller
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="application", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="applicantions", type="string", example=""),
+     *                   @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *                ),
      *             ),
      *          ),
@@ -286,11 +344,13 @@ class IntegrationDurController extends Controller
             $dur = $this->getDurById($id);
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dur Integration get " . $id,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Dur Integration get ' . $id,
             ]);
 
             return response()->json([
@@ -298,6 +358,16 @@ class IntegrationDurController extends Controller
                 'data' => [$dur],
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -363,6 +433,7 @@ class IntegrationDurController extends Controller
      *             @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *             @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *             @OA\Property(property="applicant_id", type="string", example=""),
+     *             @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *          ),
      *       ),
      *    ),
@@ -411,7 +482,7 @@ class IntegrationDurController extends Controller
             }
 
             $arrayKeys = [
-                'non_gateway_datasets', 
+                'non_gateway_datasets',
                 'non_gateway_applicants',
                 'funders_and_sponsors',
                 'other_approval_committees',
@@ -451,6 +522,7 @@ class IntegrationDurController extends Controller
                 'mongo_object_id',
                 'mongo_id',
                 'applicant_id',
+                'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             $array['user_id'] = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
@@ -478,6 +550,10 @@ class IntegrationDurController extends Controller
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($durId, $keywords);
 
+            // link/unlink dur with tools
+            $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
+            $this->checkTools($durId, $tools);
+
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
                 Dur::where('id', $durId)->update(['created_at' => $input['created_at']]);
@@ -488,14 +564,19 @@ class IntegrationDurController extends Controller
                 Dur::where('id', $durId)->update(['updated_at' => $input['updated_at']]);
             }
 
-            $this->indexElasticDur($durId);
+            $currentDurStatus = Dur::where('id', $durId)->first();
+            if($currentDurStatus->status === 'ACTIVE') {
+                $this->indexElasticDur($durId);
+            }
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dur Integration " . $durId . " created",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Dur Integration ' . $durId . ' created',
             ]);
 
             return response()->json([
@@ -503,6 +584,16 @@ class IntegrationDurController extends Controller
                 'data' => $durId,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -578,6 +669,7 @@ class IntegrationDurController extends Controller
      *             @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *             @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *             @OA\Property(property="applicant_id", type="string", example=""),
+     *             @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *          ),
      *       ),
      *    ),
@@ -648,6 +740,7 @@ class IntegrationDurController extends Controller
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="application", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="applicant_id", type="string", example=""),
+     *                   @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *              ),
      *        ),
      *    ),
@@ -665,6 +758,7 @@ class IntegrationDurController extends Controller
         try {
             $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+            $initDur = Dur::withTrashed()->where('id', $id)->first();
 
             $userId = null;
             $appId = null;
@@ -716,8 +810,22 @@ class IntegrationDurController extends Controller
                 'mongo_object_id',
                 'mongo_id',
                 'applicant_id',
+                'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
+
+            if ($initDur === 'ARCHIVED' && !array_key_exists('status', $input)) {
+                throw new Exception('Cannot update current data use register! Status already "ARCHIVED"');
+            }
+
+            if ($initDur === 'ARCHIVED' && (array_key_exists('status', $input) && $input['status'] !== 'ARCHIVED')) {
+                Dur::withTrashed()->where('id', $id)->restore();
+                DurHasDatasetVersion::withTrashed()->where('dur_id', $id)->restore();
+                DurHasKeyword::withTrashed()->where('dur_id', $id)->restore();
+                DurHasPublication::withTrashed()->where('dur_id', $id)->restore();
+                DurHasTool::withTrashed()->where('dur_id', $id)->restore();
+            }
+
             $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
             if (array_key_exists('organisation_sector', $array)) {
@@ -730,9 +838,17 @@ class IntegrationDurController extends Controller
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
             $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
 
+            // link/unlink dur with publications
+            $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
+            $this->checkPublications($id, $publications, $userIdFinal, $appId);
+
             // link/unlink dur with keywords
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($id, $keywords);
+
+            // link/unlink dur with tools
+            $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
+            $this->checkTools($id, $tools);
 
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
@@ -744,14 +860,27 @@ class IntegrationDurController extends Controller
                 Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
 
-            $this->indexElasticDur($id);
+            $currentDurStatus = Dur::where('id', $id)->first();
+            if($currentDurStatus->status === 'ACTIVE') {
+                $this->indexElasticDur($id);
+            }
+
+            if ($currentDurStatus->status === 'ARCHIVED') {
+                Dur::where('id', $id)->delete();
+                DurHasDatasetVersion::where('dur_id', $id)->delete();
+                DurHasKeyword::where('dur_id', $id)->delete();
+                DurHasPublication::where('dur_id', $id)->delete();
+                DurHasTool::where('dur_id', $id)->delete();
+            }
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dur Integration " . $id . " updated",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Dur Integration ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -759,6 +888,12 @@ class IntegrationDurController extends Controller
                 'data' => $this->getDurById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -834,6 +969,7 @@ class IntegrationDurController extends Controller
      *             @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *             @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *             @OA\Property(property="applicant_id", type="string", example=""),
+     *             @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *          ),
      *       ),
      *    ),
@@ -904,6 +1040,7 @@ class IntegrationDurController extends Controller
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="application", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="applicant_id", type="string", example=""),
+     *                   @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *              ),
      *        ),
      *    ),
@@ -972,6 +1109,7 @@ class IntegrationDurController extends Controller
                 'mongo_object_id',
                 'mongo_id',
                 'applicant_id',
+                'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
@@ -994,6 +1132,12 @@ class IntegrationDurController extends Controller
                 $this->checkKeywords($id, $keywords);
             }
 
+            // link/unlink dur with tools
+            if (array_key_exists('tools', $input)) {
+                $tools = $input['tools'];
+                $this->checkKeywords($id, $tools);
+            }
+
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
                 Dur::where('id', $id)->update(['created_at' => $input['created_at']]);
@@ -1004,14 +1148,19 @@ class IntegrationDurController extends Controller
                 Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
 
-            $this->indexElasticDur($id);
+            $currentDurStatus = Dur::where('id', $id)->first();
+            if($currentDurStatus->status === 'ACTIVE') {
+                $this->indexElasticDur($id);
+            }
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dur Integration " . $id . " updated",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Dur Integration ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -1019,6 +1168,12 @@ class IntegrationDurController extends Controller
                 'data' => $this->getDurById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -1070,50 +1225,70 @@ class IntegrationDurController extends Controller
             $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
-            DurHasDataset::where(['dur_id' => $id])->delete();
+            DurHasDatasetVersion::where(['dur_id' => $id])->delete();
             DurHasKeyword::where(['dur_id' => $id])->delete();
+            DurHasTool::where(['dur_id' => $id])->delete();
             Dur::where(['id' => $id])->delete();
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dur Integration " . $id . " deleted",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Dur Integration ' . $id . ' deleted',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
 
-    private function checkDatasets(int $durId, array $inDatasets, int $userId = null, int $appId = null) 
+    // datasets
+    private function checkDatasets(int $durId, array $inDatasets, int $userId = null, int $appId = null)
     {
-        $ds = DurHasDataset::where(['dur_id' => $durId])->get();
-        foreach ($ds as $d) {
-            if (!in_array($d->dataset_id, $this->extractInputDatasetIdToArray($inDatasets))) {
-                $this->deleteDurHasDatasets($durId, $d->dataset_id);
+        $durDatasets = DurHasDatasetVersion::where(['dur_id' => $durId])->get();
+        foreach ($durDatasets as $durDataset) {
+            $dataset_id = DatasetVersion::where("id", $durDataset->dataset_version_id)->first()->dataset_id;
+            if (!in_array($dataset_id, $this->extractInputIdToArray($inDatasets))) {
+                $this->deleteDurHasDatasetVersion($durId, $durDataset->dataset_version_id);
             }
         }
 
         foreach ($inDatasets as $dataset) {
-            $checking = $this->checkInDurHasDatasets($durId, (int) $dataset['id']);
+            $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
+            $checking = $this->checkInDurHasDatasetVersion($durId, $datasetVersionId);
 
             if (!$checking) {
-                $this->addDurHasDataset($durId, $dataset, $userId, $appId);
+                $this->addDurHasDatasetVersion($durId, $dataset, $datasetVersionId, $userId, $appId);
+                $this->reindexElastic($dataset['id']);
             }
         }
     }
 
-    private function addDurHasDataset(int $durId, array $dataset, int $userId = null, int $appId = null)
+    private function addDurHasDatasetVersion(int $durId, array $dataset, int $datasetVersionId, int $userId = null, int $appId = null)
     {
         try {
+
+            $searchArray = [
+                'dur_id' => $durId,
+                'dataset_version_id' => $datasetVersionId,
+            ];
+
             $arrCreate = [
                 'dur_id' => $durId,
-                'dataset_id' => $dataset['id'],
+                'dataset_version_id' => $datasetVersionId,
+                'deleted_at' => null,
             ];
 
             if (array_key_exists('user_id', $dataset)) {
@@ -1139,42 +1314,138 @@ class IntegrationDurController extends Controller
                 $arrCreate['application_id'] = $appId;
             }
 
-            return DurHasDataset::updateOrCreate(
+            return DurHasDatasetVersion::withTrashed()->updateOrCreate($searchArray, $arrCreate);
+
+        } catch (Exception $e) {
+            throw new Exception("addDurHasDatasetVersion :: " . $e->getMessage());
+        }
+    }
+
+
+    private function checkInDurHasDatasetVersion(int $durId, int $datasetVersionId)
+    {
+        try {
+            return DurHasDatasetVersion::where([
+                'dur_id' => $durId,
+                'dataset_version_id' => $datasetVersionId,
+            ])->first();
+        } catch (Exception $e) {
+            throw new Exception("checkInDurHasDatasetVersion :: " . $e->getMessage());
+        }
+    }
+    private function deleteDurHasDatasetVersion(int $durId, int $datasetVersionId)
+    {
+        try {
+            return DurHasDatasetVersion::where([
+                'dur_id' => $durId,
+                'dataset_version_id' => $datasetVersionId,
+            ])->delete();
+        } catch (Exception $e) {
+            throw new Exception("deleteDurHasDatasetVersion :: " . $e->getMessage());
+        }
+    }
+
+    // publications
+    private function checkPublications(int $durId, array $inPublications, int $userId = null, int $appId = null)
+    {
+        $pubs = DurHasPublication::where(['publication_id' => $durId])->get();
+        foreach ($pubs as $p) {
+            if (!in_array($p->publication_id, $this->extractInputIdToArray($inPublications))) {
+                $this->deleteDurHasPublications($durId, $p->publication_id);
+            }
+        }
+
+        foreach ($inPublications as $publication) {
+            $checking = $this->checkInDurHasPublications($durId, (int) $publication['id']);
+
+            if (!$checking) {
+                $this->addDurHasPublication($durId, $publication, $userId, $appId);
+            }
+        }
+    }
+
+    private function addDurHasPublication(int $durId, array $publication, int $userId = null, int $appId = null)
+    {
+        try {
+            $arrCreate = [
+                'dur_id' => $durId,
+                'publication_id' => $publication['id'],
+            ];
+
+            if (array_key_exists('user_id', $publication)) {
+                $arrCreate['user_id'] = (int) $publication['user_id'];
+            } elseif ($userId) {
+                $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('reason', $publication)) {
+                $arrCreate['reason'] = $publication['reason'];
+            }
+
+            if (array_key_exists('updated_at', $publication)) { // special for migration
+                $arrCreate['created_at'] = $publication['updated_at'];
+                $arrCreate['updated_at'] = $publication['updated_at'];
+            }
+
+            if ($appId) {
+                $arrCreate['application_id'] = $appId;
+            }
+
+            return DurHasPublication::updateOrCreate(
                 $arrCreate,
                 [
                     'dur_id' => $durId,
-                    'dataset_id' => $dataset['id'],
+                    'publication_id' => $publication['id'],
                 ]
             );
         } catch (Exception $e) {
-            throw new Exception("addDurHasDataset :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('addDurHasPublication :: ' . $e->getMessage());
         }
     }
 
-    private function checkInDurHasDatasets(int $durId, int $datasetId)
+    private function checkInDurHasPublications(int $durId, int $publicationId)
     {
         try {
-            return DurHasDataset::where([
+            return DurHasPublication::where([
                 'dur_id' => $durId,
-                'dataset_id' => $datasetId,
+                'publication_id' => $publicationId,
             ])->first();
         } catch (Exception $e) {
-            throw new Exception("checkInDurHasDatasets :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('checkInDurHasPublications :: ' . $e->getMessage());
         }
     }
 
-    private function deleteDurHasDatasets(int $durId, int $datasetId)
+    private function deleteDurHasPublications(int $durId, int $publicationId)
     {
         try {
-            return DurHasDataset::where([
+            return DurHasPublication::where([
                 'dur_id' => $durId,
-                'dataset_id' => $datasetId,
+                'publication_id' => $publicationId,
             ])->delete();
         } catch (Exception $e) {
-            throw new Exception("deleteKeywordDur :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('deleteDurHasPublications :: ' . $e->getMessage());
         }
     }
 
+    // keywords
     private function checkKeywords(int $durId, array $inKeywords)
     {
         $kws = DurHasKeyword::where('dur_id', $durId)->get();
@@ -1188,7 +1459,9 @@ class IntegrationDurController extends Controller
                 continue;
             }
 
-            if (in_array($checkKeyword->name, $inKeywords)) continue;
+            if (in_array($checkKeyword->name, $inKeywords)) {
+                continue;
+            }
 
             if (!in_array($checkKeyword->name, $inKeywords)) {
                 $this->deleteDurHasKeywords($kwId);
@@ -1209,7 +1482,13 @@ class IntegrationDurController extends Controller
                 'keyword_id' => $keywordId,
             ]);
         } catch (Exception $e) {
-            throw new Exception("addKeywordDur :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('addKeywordDur :: ' . $e->getMessage());
         }
     }
 
@@ -1218,95 +1497,118 @@ class IntegrationDurController extends Controller
         try {
             return Keyword::updateOrCreate([
                 'name' => $keyword,
-            ],[
+            ], [
                 'name' => $keyword,
                 'enabled' => 1,
             ]);
         } catch (Exception $e) {
-            throw new Exception("createUpdateKeyword :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('createUpdateKeyword :: ' . $e->getMessage());
         }
-    } 
+    }
 
     private function deleteDurHasKeywords($keywordId)
     {
         try {
             return DurHasKeyword::where(['keyword_id' => $keywordId])->delete();
         } catch (Exception $e) {
-            throw new Exception("deleteKeywordDur :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('deleteKeywordDur :: ' . $e->getMessage());
         }
     }
 
-    private function extractInputDatasetIdToArray(array $inputDatasets): Array
+    // tools
+    private function checkTools(int $durId, array $inTools)
+    {
+        $tools = DurHasTool::where('dur_id', $durId)->get();
+
+        foreach($tools as $tool) {
+            $toolId = $tool->tool_id;
+            $checkTool = Tool::where('id', $toolId)->first();
+
+            if (!$checkTool) {
+                $this->deleteDurHasTools($durId, $toolId);
+                continue;
+            }
+
+            if (in_array($checkTool->id, $inTools)) {
+                continue;
+            }
+
+            if (!in_array($checkTool->id, $inTools)) {
+                $this->deleteDurHasTools($durId, $toolId);
+            }
+        }
+
+        foreach ($inTools as $inTool) {
+            $this->updateOrCreateDurHasTools($durId, $inTool);
+        }
+    }
+
+    private function updateOrCreateDurHasTools(int $durId, int $toolId)
+    {
+        try {
+            return DurHasTool::firstOrCreate(
+                [
+                'dur_id' => $durId,
+                'tool_id' => $toolId,
+            ],
+                [
+                'dur_id' => $durId,
+                'tool_id' => $toolId,
+            ]
+            );
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('updateOrCreateDurHasTools :: ' . $e->getMessage());
+        }
+    }
+
+    private function deleteDurHasTools(int $dId, int $tId)
+    {
+        try {
+            return DurHasTool::where([
+                'dur_id' => $dId,
+                'tool_id' => $tId,
+            ])->delete();
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('deleteDurHasTools :: ' . $e->getMessage());
+        }
+    }
+    private function extractInputIdToArray(array $input): array
     {
         $response = [];
-        foreach ($inputDatasets as $inputDataset) {
-            $response[] = $inputDataset['id'];
+        foreach ($input as $value) {
+            $response[] = $value['id'];
         }
 
         return $response;
     }
 
     /**
-     * Calls a re-indexing of Elastic search when a data use is created or updated
-     * 
-     * @param string $id The dur id from the DB
-     * 
-     * @return void
-     */
-    public function indexElasticDur(string $id): void
-    {
-        try {
-
-            $durMatch = Dur::where(['id' => $id])
-                ->with(['datasets', 'keywords', 'sector'])
-                ->first()
-                ->toArray();
-
-            $datasetTitles = array();
-            foreach ($durMatch['datasets'] as $d) {
-                $metadata = Dataset::where(['id' => $d])
-                    ->first()
-                    ->latestVersion()
-                    ->metadata;
-                $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-            }
-
-            $keywords = array();
-            foreach ($durMatch['keywords'] as $k) {
-                $keywords[] = $k['name'];
-            }
-
-            $sector = ($durMatch['sector'] != null) ? Sector::where(['id' => $durMatch['sector']])->first()->name : null;
-
-            $toIndex = [
-                'projectTitle' => $durMatch['project_title'],
-                'laySummary' => $durMatch['lay_summary'],
-                'publicBenefitStatement' => $durMatch['public_benefit_statement'],
-                'technicalSummary' => $durMatch['technical_summary'],
-                'fundersAndSponsors' => $durMatch['funders_and_sponsors'],
-                'datasetTitles' => $datasetTitles,
-                'keywords' => $keywords,
-                'sector' => $sector,
-            ];
-
-            $params = [
-                'index' => 'data_uses',
-                'id' => $id,
-                'body' => $toIndex,
-                'headers' => 'application/json'
-            ];
-            
-            $client = MMC::getElasticClient();
-            $response = $client->index($params);
-
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
      * Map the input string to the index of one of the standard mapped sector names.
-     * 
+     *
      * Return null if not found.
      * @return ?int
      */
@@ -1317,15 +1619,15 @@ class IntegrationDurController extends Controller
 
         // Look up mapped sector, with default to null
         $category = Config::get('sectors.' . $sector, null);
-        
+
         return (!is_null($category)) ? $categories->where('name', $category)->first()['id'] : null;
     }
 
     /**
      * Find dataset title associated with a given dataset id.
-     * 
+     *
      * @param int $id The dataset id
-     * 
+     *
      * @return string
      */
     private function getDatasetTitle(int $id): string
@@ -1338,19 +1640,20 @@ class IntegrationDurController extends Controller
         return $title;
     }
 
+    //Get Durs
     private function getDurById(int $durId)
     {
         $dur = Dur::where(['id' => $durId])
             ->with([
                 'keywords',
-                'datasets', 
-                'publications', 
+                'publications',
+                'tools',
                 'userDatasets' => function ($query) {
                     $query->distinct('id');
-                }, 
+                },
                 'userPublications' => function ($query) {
                     $query->distinct('id');
-                }, 
+                },
                 'applicationDatasets' => function ($query) {
                     $query->distinct('id');
                 },
@@ -1371,15 +1674,28 @@ class IntegrationDurController extends Controller
         $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
         $dur->setRelation('applications', $applications);
 
-        unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
+        unset(
+            $users,
+            $userDatasets,
+            $userPublications,
+            $applications,
+            $applicationDatasets,
+            $applicationPublications,
+            $dur->userDatasets,
+            $dur->userPublications,
+            $dur->applicationDatasets,
+            $dur->applicationPublications
+        );
 
-        $dur = $dur->toArray();
+        // Fetch datasets using the accessor
+        $datasets = $dur->allDatasets  ?? [];
 
-        if ($dur && $dur['datasets']) {
-            foreach ($dur['datasets'] as &$dataset) {
-              $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);
-            }
+        foreach ($datasets as &$dataset) {
+            $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);
         }
+
+        // Update the relationship with the modified datasets
+        $dur->setAttribute('datasets', $datasets);
 
         return $dur;
     }

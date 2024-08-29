@@ -12,9 +12,9 @@ class LogoutTest extends TestCase
     use RefreshDatabase;
     use Authorization;
 
-    const USERS_URL = '/api/v1/users';
-    const LOGOUT_URL = '/api/v1/logout';
-    const AUTH_URL = '/api/v1/auth';
+    public const USERS_URL = '/api/v1/users';
+    public const LOGOUT_URL = '/api/v1/logout';
+    public const AUTH_URL = '/api/v1/auth';
 
     protected $header = [];
 
@@ -36,7 +36,7 @@ class LogoutTest extends TestCase
         ];
     }
 
-    // LS - Rmoved for now - as the whole login process is a bit strange and 
+    // LS - Rmoved for now - as the whole login process is a bit strange and
     // needs looking at properly.
     //
     // public function test_create_jwt_with_success(): void
@@ -86,8 +86,8 @@ class LogoutTest extends TestCase
     //         'POST',
     //         self::LOGOUT_URL,
     //         [],
-    //         [ 
-    //             'Accept' => 'application/json', 
+    //         [
+    //             'Accept' => 'application/json',
     //             'Authorization' => 'Bearer ' . $jwt,
     //         ]
     //     );

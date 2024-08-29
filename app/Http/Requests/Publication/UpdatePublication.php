@@ -42,6 +42,10 @@ class UpdatePublication extends BaseFormRequest
                 'string',
                 'max:255',
             ],
+            'publication_type_mk1' => [
+                'string',
+                'max:255',
+            ],
             'journal_name' => [
                 'required',
                 'string',
@@ -56,8 +60,8 @@ class UpdatePublication extends BaseFormRequest
                 'string',
             ],
             'datasets' => [
-                'nullable', 
-                'array', 
+                'nullable',
+                'array',
             ],
             'datasets.*.id'  => [
                 'integer',
@@ -67,10 +71,30 @@ class UpdatePublication extends BaseFormRequest
                 'string',
                 'nullable',
             ],
+            'tools' => [
+                'array',
+            ],
+            'tools.*.id'  => [
+                'integer',
+                'exists:tools,id',
+            ],
+            'tools.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'tools.*.user_id'  => [
+                'integer',
+                'exists:users,id',
+            ],
             'mongo_id' => [
                 'nullable',
                 'string',
-            ],       
+            ],
+            'status' => [
+                'sometimes',
+                'string',
+                'in:ACTIVE,ARCHIVED,DRAFT',
+            ],
         ];
     }
 

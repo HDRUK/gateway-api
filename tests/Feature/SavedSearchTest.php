@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
-use App\Models\SavedSearch;
 use Tests\Traits\Authorization;
 use Database\Seeders\FilterSeeder;
 use Database\Seeders\MinimalUserSeeder;
@@ -15,10 +14,10 @@ class SavedSearchTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
-    
-    private $accessToken = '';    
 
-    public function setUp() :void
+    private $accessToken = '';
+
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -34,8 +33,8 @@ class SavedSearchTest extends TestCase
         ]);
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
-        $content = $response->decodeResponseJson();  
-        $this->accessToken = $content['access_token'];      
+        $content = $response->decodeResponseJson();
+        $this->accessToken = $content['access_token'];
     }
 
     /**
@@ -63,6 +62,7 @@ class SavedSearchTest extends TestCase
                         'enabled',
                         'filters',
                         'user_id',
+                        'sort_order',
                     ],
                 ],
                 'first_page_url',
@@ -75,7 +75,7 @@ class SavedSearchTest extends TestCase
                 'per_page',
                 'prev_page_url',
                 'to',
-                'total',                
+                'total',
             ]);
 
         $content = $response->decodeResponseJson();
@@ -96,7 +96,7 @@ class SavedSearchTest extends TestCase
 
     /**
      * Returns a single saved search
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_list_a_single_saved_search()
@@ -118,7 +118,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
-                'user_id',
+                'sort_order' => 'score:desc',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -135,7 +135,7 @@ class SavedSearchTest extends TestCase
         $response = $this->get('api/v1/saved_searches/' . $content['data'], [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
-        
+
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [
@@ -149,6 +149,7 @@ class SavedSearchTest extends TestCase
                         'enabled',
                         'filters',
                         'user_id',
+                        'sort_order',
                     ]
                 ],
             ]);
@@ -157,7 +158,7 @@ class SavedSearchTest extends TestCase
 
     /**
      * Creates a new saved search
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_create_a_saved_search()
@@ -196,6 +197,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
+                'sort_order' => 'score:desc',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -209,7 +211,8 @@ class SavedSearchTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
@@ -227,7 +230,7 @@ class SavedSearchTest extends TestCase
 
     /**
      * Tests that a saved search record can be updated
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_update_a_saved_search()
@@ -250,6 +253,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
+                'sort_order' => 'score:desc',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -263,7 +267,8 @@ class SavedSearchTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
@@ -285,6 +290,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
+                'sort_order' => 'score:desc',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -304,7 +310,7 @@ class SavedSearchTest extends TestCase
 
     /**
      * Tests that a saved search record can be edited
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_edit_a_saved_search()
@@ -327,6 +333,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
+                'sort_order' => 'score:desc',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -362,6 +369,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
+                'sort_order' => 'score:desc',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -402,7 +410,7 @@ class SavedSearchTest extends TestCase
 
     /**
      * Tests it can delete a saved search
-     * 
+     *
      * @return void
      */
     public function test_it_can_delete_a_saved_search()
@@ -425,6 +433,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
+                'sort_order' => 'score:desc',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -438,11 +447,12 @@ class SavedSearchTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        // delete      
+        // delete
         $response = $this->json(
             'DELETE',
             'api/v1/saved_searches/' . $content['data'],
@@ -456,17 +466,18 @@ class SavedSearchTest extends TestCase
             ->assertJsonStructure([
                 'message',
             ]);
-    
+
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_OK.message')
         );
     }
 
     /**
      * Tests user permissions with a new saved search
-     * 
+     *
      * @return void
      */
     public function test_user_can_create_update_delete_a_saved_search()
@@ -487,6 +498,7 @@ class SavedSearchTest extends TestCase
                 'search_endpoint' => 'datasets',
                 'enabled' => false,
                 'filters' => [],
+                'sort_order' => 'score:desc',
             ],
             $headerNonAdmin,
         );
@@ -498,7 +510,7 @@ class SavedSearchTest extends TestCase
             ]);
         $content = $response->decodeResponseJson();
         $newSearchId = $content['data'];
-        
+
         // test admin can view saved search
         $responseGet = $this->get('api/v1/saved_searches/' . $newSearchId, [
             'Authorization' => 'bearer ' . $this->accessToken,
@@ -514,7 +526,8 @@ class SavedSearchTest extends TestCase
                 'search_term' => 'Some Test Query',
                 'search_endpoint' => 'datasets',
                 'enabled' => true,
-                'filters' => []
+                'filters' => [],
+                'sort_order' => 'score:desc',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,

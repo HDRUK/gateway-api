@@ -51,16 +51,23 @@ class CategoryController extends Controller
             $categories = Category::where('enabled', 1)->paginate($perPage);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Category get all",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Category get all',
             ]);
 
             return response()->json(
                 $categories
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Category get all',
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -116,10 +123,10 @@ class CategoryController extends Controller
             $category = Category::where(['id' => $id,])->get();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Category get " . $id,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Category get ' . $id,
             ]);
 
             return response()->json([
@@ -127,6 +134,13 @@ class CategoryController extends Controller
                 'data' => $category,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -177,10 +191,10 @@ class CategoryController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Category " . $category->id . " created",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Category ' . $category->id . ' created',
             ]);
 
             return response()->json([
@@ -188,6 +202,13 @@ class CategoryController extends Controller
                 'data' => $category->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -262,10 +283,10 @@ class CategoryController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Category " . $id . " updated",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Category ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -273,6 +294,13 @@ class CategoryController extends Controller
                 'data' => Category::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -350,10 +378,10 @@ class CategoryController extends Controller
             Category::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Category " . $id . " updated",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Category ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -361,6 +389,13 @@ class CategoryController extends Controller
                 'data' => Category::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -412,16 +447,16 @@ class CategoryController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-    
+
             $category = Category::findOrFail($id);
             if ($category) {
                 $category->enabled = false;
                 if ($category->save()) {
 
                     Auditor::log([
-                        'user_id' => $jwtUser['id'],
+                        'user_id' => (int) $jwtUser['id'],
                         'action_type' => 'DELETE',
-                        'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
                         'description' => "Category " . $id . " deleted",
                     ]);
 
@@ -429,16 +464,22 @@ class CategoryController extends Controller
                         'message' => Config::get('statuscodes.STATUS_OK.message'),
                     ], Config::get('statuscodes.STATUS_OK.code'));
                 }
-    
+
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
                 ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
             }
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

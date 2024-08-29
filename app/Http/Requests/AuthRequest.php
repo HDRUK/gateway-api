@@ -4,7 +4,6 @@ namespace App\Http\Requests;
 
 use Config;
 use Illuminate\Validation\Rule;
-use App\Http\Requests\BaseFormRequest;
 
 class AuthRequest extends BaseFormRequest
 {
@@ -31,7 +30,7 @@ class AuthRequest extends BaseFormRequest
 
     /**
      * Messages
-     * 
+     *
      * @return array
      */
     public function messages(): array

@@ -2,10 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\User;
-use App\Models\Permission;
-use App\Models\Application;
-use App\Models\Notification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -18,7 +14,10 @@ use Illuminate\Support\Str;
 
 class Team extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
     use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
     /**
@@ -53,6 +52,8 @@ class Team extends Model
         'mongo_object_id',
         'notification_status',
         'is_question_bank',
+        'team_logo',
+        'introduction',
     ];
 
     /**
@@ -68,102 +69,103 @@ class Team extends Model
         'is_admin' => 'boolean',
         'notification_status' => 'boolean',
         'is_question_bank' => 'boolean',
+        'is_provider' => 'boolean',
     ];
 
     /**
      * Table associated with this model
-     * 
+     *
      * @var string
      */
     protected $table = 'teams';
 
     /**
      * Indicates if this model is timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = true;
 
     /**
      * Indicates the name of the team
-     * 
+     *
      * @var string
      */
     private $name = '';
 
     /**
      * Indicates whether this model is enabled or disabled
-     * 
+     *
      * @var bool
      */
     private $enabled = false;
 
     /**
      * Indicates whether the team allows messaging or not
-     * 
+     *
      * @var bool
      */
     private $allows_messaging = false;
 
     /**
      * Indicates whether the team has workflows enabled
-     * 
+     *
      * @var bool
      */
     private $workflow_enabled = false;
 
     /**
      * Indicates whether the team has acces requst management enabled
-     * 
+     *
      * @var bool
      */
     private $access_requests_management = false;
 
     /**
      * Indicates whether the team uses 5 safes
-     * 
+     *
      * @var bool
      */
     private $uses_5_safes = false;
 
     /**
      * Indicates whether the team is an admin
-     * 
+     *
      * @var bool
      */
     private $is_admin = false;
 
     /**
      * Indicates the organisation the team is a member of
-     * 
+     *
      * @var string
      */
     private $member_of = '';
 
     /**
      * Represents the contact point for the team
-     * 
+     *
      * @var string
      */
     private $contact_point = '';
 
     /**
      * Represents the person to last update the application
-     * 
+     *
      * @var string
      */
     private $application_form_updated_by = '';
 
     /**
      * Indicates the datetime when the application was last updated
-     * 
+     *
      * @var string
      */
     private $application_form_updated_on = '';
 
     /**
      * Indicates whether the team uses question bank
-     * 
+     *
      * @var bool
      */
     private $is_question_bank = false;
@@ -171,12 +173,13 @@ class Team extends Model
     /**
      * Represents the migrated data id of a previous record to preserve internal
      * linking
-     * 
+     *
      * @var string
      */
     private $mongo_object_id = '';
 
-    public function getPid(){
+    public function getPid()
+    {
         return $this->attributes['pid'];
     }
 
@@ -194,7 +197,7 @@ class Team extends Model
     public function teamUserRoles(): HasManyThrough
     {
         return $this->hasManyDeep(
-            Role::class,  
+            Role::class,
             [TeamHasUser::class,TeamUserHasRole::class],
             [
                'team_id', // Foreign key on the "TeamHasUser" table.
@@ -206,10 +209,10 @@ class Team extends Model
               'id', // Local key on the "TeamHasUser" table.
               'role_id'  // Local key on the "TeamUserHasRole" table.
             ]
-            )
+        )
             ->withIntermediate(TeamUserHasRole::class)
             ->withIntermediate(TeamHasUser::class)
-            ->join("users","team_has_users.user_id","=","users.id")
+            ->join("users", "team_has_users.user_id", "=", "users.id")
             ->select([
                 "roles.id as role_id",
                 "roles.enabled as role_enabled",

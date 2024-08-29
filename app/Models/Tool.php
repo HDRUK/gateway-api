@@ -2,8 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Tag;
-use App\Models\Category;
+use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -14,35 +13,47 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Tool extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
+    use DatasetFetch;
+
+    public const STATUS_ACTIVE = 'ACTIVE';
+    public const STATUS_DRAFT = 'DRAFT';
+    public const STATUS_ARCHIVED = 'ARCHIVED';
 
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'tools';
 
     /**
      * Indicates if the model should be timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = true;
 
     protected $fillable = [
-        'mongo_object_id', 
-        'mongo_id', 
-        'name', 
-        'url', 
-        'description', 
-        'license', 
-        'tech_stack', 
-        'category_id', 
-        'user_id', 
+        'mongo_object_id',
+        'mongo_id',
+        'name',
+        'url',
+        'description',
+        'results_insights',
+        'license',
+        'tech_stack',
+        'category_id',
+        'user_id',
         'enabled',
-        'associated_authors', 
+        'associated_authors',
         'contact_address',
+        'any_dataset',
+        'status',
+        'team_id',
     ];
 
     /**
@@ -50,20 +61,23 @@ class Tool extends Model
      */
     protected $casts = [
         'enabled' => 'boolean',
+        'any_dataset' => 'boolean',
     ];
 
-    /**
-     * Get the ids associated with the user.
-     */
-    public function user(): BelongsTo
+    // Accessor for all datasets associated with this object
+    public function getAllDatasetsAttribute()
     {
-        return $this->belongsTo(User::class)
-            ->select('firstname', 'lastname');
+        return $this->getDatasetsViaDatasetVersion(
+            DatasetVersionHasTool::class,
+            'tool_id'
+        );
     }
 
-    /**
-     * The tags that belong to the tool.
-     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class)->select(['id', 'firstname', 'lastname']);
+    }
+
     public function tag(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'tool_has_tags');
@@ -74,12 +88,9 @@ class Tool extends Model
         return $this->hasMany(Review::class);
     }
 
-    /**
-     * @mixin BelongsTo
-     */
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class,'category_id', 'id');
+        return $this->belongsTo(Category::class, 'category_id', 'id');
     }
 
     public function team(): BelongsTo
@@ -100,5 +111,38 @@ class Tool extends Model
     public function typeCategory(): BelongsToMany
     {
         return $this->belongsToMany(TypeCategory::class, 'tool_has_type_category');
+    }
+
+    public function publications(): BelongsToMany
+    {
+        return $this->belongsToMany(Publication::class, 'publication_has_tools');
+    }
+
+    public function license(): BelongsTo
+    {
+        return $this->belongsTo(License::class, 'license', 'id');
+    }
+
+    public function durs(): BelongsToMany
+    {
+        return $this->belongsToMany(Dur::class, 'dur_has_tools');
+    }
+
+    public function collections(): BelongsToMany
+    {
+        return $this->belongsToMany(Collection::class, 'collection_has_tools');
+    }
+
+    /**
+     * Retrieve versions associated with this tool
+     */
+    public function versions()
+    {
+        return $this->belongsToMany(DatasetVersion::class, 'dataset_version_has_tool', 'tool_id', 'dataset_version_id');
+    }
+
+    public function datasetVersions()
+    {
+        return $this->hasMany(DatasetVersionHasTool::class, 'tool_id');
     }
 }

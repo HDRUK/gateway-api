@@ -17,11 +17,9 @@ class TypeCategoryFactory extends Factory
     public function definition(): array
     {
         return [
-            return [
-                'name' => fake()->word(),
-                'description' => fake()->text(255),
-                'enabled' => fake()->randomElement([0, 1]),
-            ];
+            'name' => fake()->word(),
+            'description' => fake()->text(255),
+            'enabled' => fake()->randomElement([0, 1]),
         ];
     }
 }

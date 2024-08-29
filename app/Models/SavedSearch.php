@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Filter;
-
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
@@ -13,7 +11,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class SavedSearch extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
 
     protected $fillable = [
         'updated_at',
@@ -23,46 +24,47 @@ class SavedSearch extends Model
         'search_endpoint',
         'enabled',
         'user_id',
+        'sort_order',
     ];
 
     /**
      * Table associated with this model
-     * 
+     *
      * @var string
      */
     protected $table = 'saved_searches';
 
     /**
      * Indicates if this model is timestamped
-     * 
+     *
      * @var bool
      */
     public $timestamps = true;
 
     /**
      * Indicates the name of the saved search
-     * 
+     *
      * @var string
      */
     private $name = '';
 
     /**
      * Indicates the search term of the saved search
-     * 
+     *
      * @var string
      */
     private $search_term = '';
 
     /**
      * Indicates the search endpoint of the saved search
-     * 
+     *
      * @var string
      */
     private $search_endpoint = '';
 
     /**
      * Indicates whether this model is enabled or disabled
-     * 
+     *
      * @var bool
      */
     private $enabled = false;

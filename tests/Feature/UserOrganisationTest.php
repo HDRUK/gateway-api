@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use Hash;
 use App\Models\User;
 use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
@@ -15,7 +14,7 @@ class UserOrganisationTest extends TestCase
     use RefreshDatabase;
     use Authorization;
 
-    const TEST_URL = '/api/v1/users/organisations';
+    public const TEST_URL = '/api/v1/users/organisations';
 
     protected $header = [];
 
@@ -48,7 +47,7 @@ class UserOrganisationTest extends TestCase
 
     /**
      * Get All Orgs with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_user_organisations_with_success(): void
@@ -64,14 +63,15 @@ class UserOrganisationTest extends TestCase
 
     /**
      * Get All Orgs fails with non admin
-     * 
+     *
      * @return void
      */
     public function test_get_all_user_organisations_fails_with_non_admin(): void
     {
         $response = $this->json('GET', self::TEST_URL, [], $this->headerNonAdmin);
 
-        $response->assertJsonStructure([
+        $response->assertJsonStructure(
+            [
                 'message',
                 'details'
             ],
@@ -82,7 +82,7 @@ class UserOrganisationTest extends TestCase
 
     /**
      * Get All Orgs succeeds with cohort admin
-     * 
+     *
      * @return void
      */
     public function test_get_all_user_organisations_success_with_cohort_admin_role(): void

@@ -16,11 +16,11 @@ class AuditLogTest extends TestCase
     use RefreshDatabase;
     use Authorization;
 
-    const TEST_URL = '/api/v1/audit_logs';
+    public const TEST_URL = '/api/v1/audit_logs';
 
     protected $header = [];
 
-    public function setUp() :void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -38,7 +38,7 @@ class AuditLogTest extends TestCase
 
     /**
      * List all AuditLog's
-     * 
+     *
      * @return void
      */
     public function test_list_all_audit_logs()
@@ -62,7 +62,7 @@ class AuditLogTest extends TestCase
                         'user_id',
                         'team_id',
                         'action_type',
-                        'action_service',
+                        'action_name',
                         'description',
                     ],
                 ],
@@ -76,13 +76,13 @@ class AuditLogTest extends TestCase
                 'per_page',
                 'prev_page_url',
                 'to',
-                'total',                
+                'total',
             ]);
     }
 
     /**
      * Tests that an AuditLog can be listed by id
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_list_a_single_audit_log()
@@ -94,7 +94,7 @@ class AuditLogTest extends TestCase
                 'user_id' => 1,
                 'team_id' => 2,
                 'action_type' => 'CREATE',
-                'action_service' => 'Gateway API',
+                'action_name' => 'Gateway API',
                 'description' => 'Test audit log description',
             ],
             $this->header,
@@ -110,7 +110,7 @@ class AuditLogTest extends TestCase
 
         $responseGet = $this->json(
             'GET',
-            self::TEST_URL . '/' . $contentCreate['data'], 
+            self::TEST_URL . '/' . $contentCreate['data'],
             [],
             $this->header,
         );
@@ -125,7 +125,7 @@ class AuditLogTest extends TestCase
                     'user_id',
                     'team_id',
                     'action_type',
-                    'action_service',
+                    'action_name',
                     'description',
                 ],
             ]);
@@ -133,7 +133,7 @@ class AuditLogTest extends TestCase
 
     /**
      * Tests that an AuditLog can be created
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_create_an_audit_log()
@@ -145,7 +145,7 @@ class AuditLogTest extends TestCase
                 'user_id' => 1,
                 'team_id' => 2,
                 'action_type' => 'CREATE',
-                'action_service' => 'Gateway API',
+                'action_name' => 'Gateway API',
                 'description' => 'Test audit log description',
             ],
             $this->header,
@@ -155,17 +155,18 @@ class AuditLogTest extends TestCase
             ->assertJsonStructure([
                 'message',
                 'data',
-            ]);        
-        
+            ]);
+
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
     }
 
     /**
      * Tests that an AuditLog can be edit
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_edit_an_audit_log()
@@ -178,7 +179,7 @@ class AuditLogTest extends TestCase
                 'user_id' => 1,
                 'team_id' => 2,
                 'action_type' => 'CREATE',
-                'action_service' => 'Gateway API',
+                'action_name' => 'Gateway API',
                 'description' => 'Test audit log description',
             ],
             $this->header,
@@ -191,7 +192,7 @@ class AuditLogTest extends TestCase
         ]);
 
         $contentCreate = $responseCreate->decodeResponseJson();
-        $this->assertEquals($contentCreate['message'],Config::get('statuscodes.STATUS_CREATED.message'));
+        $this->assertEquals($contentCreate['message'], Config::get('statuscodes.STATUS_CREATED.message'));
 
         $id = $contentCreate['data'];
 
@@ -201,7 +202,7 @@ class AuditLogTest extends TestCase
             self::TEST_URL . '/' . $id,
             [
                 'action_type' => 'UPDATE',
-                'action_service' => 'Translation Service',
+                'action_name' => 'Translation Service',
                 'description' => 'Test audit log description edit',
             ],
             $this->header,
@@ -209,14 +210,14 @@ class AuditLogTest extends TestCase
         $contentEdit = $responseEdit->decodeResponseJson();
         $this->assertEquals($contentEdit['data']['id'], $id);
         $this->assertEquals($contentEdit['data']['action_type'], 'UPDATE');
-        $this->assertEquals($contentEdit['data']['action_service'], 'Translation Service');
+        $this->assertEquals($contentEdit['data']['action_name'], 'Translation Service');
         $this->assertEquals($contentEdit['data']['description'], 'Test audit log description edit');
         $responseEdit->assertStatus(200);
     }
 
     /**
      * Tests it can update an AuditLog
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_update_an_audit_log()
@@ -230,7 +231,7 @@ class AuditLogTest extends TestCase
                 'user_id' => 1,
                 'team_id' => 2,
                 'action_type' => 'CREATE',
-                'action_service' => 'Gateway API',
+                'action_name' => 'Gateway API',
                 'description' => 'Test audit log description',
             ],
             $this->header,
@@ -240,10 +241,11 @@ class AuditLogTest extends TestCase
             ->assertJsonStructure([
                 'message',
                 'data',
-            ]);        
-        
+            ]);
+
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
@@ -256,21 +258,21 @@ class AuditLogTest extends TestCase
                 'user_id' => 2,
                 'team_id' => 2,
                 'action_type' => 'CREATE',
-                'action_service' => 'Gateway API',
+                'action_name' => 'Gateway API',
                 'description' => 'Updated test audit log description',
             ],
             $this->header,
         );
 
         $content = $response->decodeResponseJson();
-        
+
         $this->assertEquals($content['data']['user_id'], 2);
         $this->assertEquals($content['data']['description'], 'Updated test audit log description');
     }
 
     /**
      * Tests it can delete an activity log
-     * 
+     *
      * @return void
      */
     public function test_it_can_delete_an_activity_log()
@@ -284,7 +286,7 @@ class AuditLogTest extends TestCase
                 'user_id' => 1,
                 'team_id' => 2,
                 'action_type' => 'CREATE',
-                'action_service' => 'Gateway API',
+                'action_name' => 'Gateway API',
                 'description' => 'Test audit log description',
             ],
             $this->header,
@@ -294,10 +296,11 @@ class AuditLogTest extends TestCase
             ->assertJsonStructure([
                 'message',
                 'data',
-            ]);        
-        
+            ]);
+
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
@@ -314,9 +317,10 @@ class AuditLogTest extends TestCase
             ->assertJsonStructure([
                 'message',
             ]);
-        
+
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_OK.message')
         );
     }

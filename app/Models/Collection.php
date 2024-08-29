@@ -2,27 +2,31 @@
 
 namespace App\Models;
 
-use App\Models\Team;
-use App\Models\Tool;
-use App\Models\User;
-use App\Models\Dataset;
-use App\Models\Dur;
-use App\Models\Keyword;
+use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Collection extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
+    use Prunable;
+    use DatasetFetch;
+
+    public const STATUS_ACTIVE = 'ACTIVE';
+    public const STATUS_DRAFT = 'DRAFT';
+    public const STATUS_ARCHIVED = 'ARCHIVED';
 
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'collections';
@@ -40,8 +44,9 @@ class Collection extends Model
         'created_at',
         'updated_at',
         'updated_on',
+        'status',
     ];
-    
+
     protected $casts = [
         'enabled' => 'boolean',
     ];
@@ -51,10 +56,13 @@ class Collection extends Model
         return $this->belongsToMany(Keyword::class, 'collection_has_keywords');
     }
 
-    public function datasets(): BelongsToMany
+    // Accessor for all datasets associated with this object
+    public function getAllDatasetsAttribute()
     {
-        return $this->belongsToMany(Dataset::class, 'collection_has_datasets')
-        ->withPivot('collection_id', 'dataset_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
+        return $this->getDatasetsViaDatasetVersion(
+            CollectionHasDatasetVersion::class,
+            'collection_id'
+        );
     }
 
     public function tools(): BelongsToMany
@@ -69,9 +77,22 @@ class Collection extends Model
         ->withPivot('collection_id', 'dur_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
     }
 
-    public function userDatasets(): BelongsToMany
+    public function publications(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'collection_has_datasets');
+        return $this->belongsToMany(Publication::class, 'collection_has_publications')
+        ->withPivot('collection_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
+    }
+
+    public function userDatasets(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            User::class,
+            CollectionHasDatasetVersion::class,
+            'collection_id', // Foreign key on the CollectionHasDatasetVersion table
+            'id',            // Local key on the Collection table
+            'id',            // Local key on the User table
+            'user_id'        // Foreign key on the CollectionHasDatasetVersion table
+        );
     }
 
     public function userTools(): BelongsToMany
@@ -79,14 +100,31 @@ class Collection extends Model
         return $this->belongsToMany(User::class, 'collection_has_tools');
     }
 
-    public function applicationDatasets(): BelongsToMany
+    public function userPublications(): BelongsToMany
     {
-        return $this->belongsToMany(Application::class, 'collection_has_datasets');
+        return $this->belongsToMany(User::class, 'collection_has_publications');
+    }
+
+    public function applicationDatasets(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Application::class,
+            CollectionHasDatasetVersion::class,
+            'collection_id', // Foreign key on the CollectionHasDatasetVersion table
+            'id',            // Local key on the Collection table
+            'id',            // Local key on the Application table
+            'application_id' // Foreign key on the CollectionHasDatasetVersion table
+        );
     }
 
     public function applicationTools(): BelongsToMany
     {
         return $this->belongsToMany(Application::class, 'collection_has_tools');
+    }
+
+    public function applicationPublications(): BelongsToMany
+    {
+        return $this->belongsToMany(Application::class, 'collection_has_publications');
     }
 
     public function team(): BelongsTo

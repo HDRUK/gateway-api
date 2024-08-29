@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -24,10 +23,50 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tags', function (Blueprint $table) {
-            $table->dropColumn(['deleted_at', 'enabled']);
-            $table->char('description', 255)->nullable();
-            $table->dropIndex('tags_type_unique');
-        });
+        Schema::disableForeignKeyConstraints();
+
+        if (Schema::hasColumn('tags', 'deleted_at')) {
+            Schema::table('tags', function (Blueprint $table) {
+                $table->dropColumn([
+                    'deleted_at',
+                ]);
+            });
+        }
+
+        if (Schema::hasColumn('tags', 'enabled')) {
+            Schema::table('tags', function (Blueprint $table) {
+                $table->dropColumn([
+                    'enabled',
+                ]);
+            });
+        }
+
+        if (Schema::hasColumn('tags', 'description')) {
+            Schema::table('tags', function (Blueprint $table) {
+                $table->dropColumn([
+                    'description',
+                ]);
+            });
+        }
+
+        Schema::disableForeignKeyConstraints();
+
+        $foreignKeys = $this->listTableForeignKeys('filters');
+
+        if(in_array('tags_type_unique', $foreignKeys)) {
+            DB::statement('ALTER TABLE `tags` DROP FOREIGN KEY `tags_type_unique`');
+            DB::statement('ALTER TABLE `tags` DROP KEY `tags_type_unique`');
+        }
+
+        Schema::enableForeignKeyConstraints();
+    }
+
+    public function listTableForeignKeys($table)
+    {
+        $conn = Schema::getConnection()->getDoctrineSchemaManager();
+
+        return array_map(function ($key) {
+            return $key->getName();
+        }, $conn->listTableForeignKeys($table));
     }
 };

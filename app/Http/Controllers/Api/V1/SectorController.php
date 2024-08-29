@@ -52,19 +52,27 @@ class SectorController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $sectors = Sector::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
+            $sectors = Sector::where('enabled', 1)
+                ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Sector get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Sector get all',
             ]);
 
             return response()->json(
                 $sectors
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -120,10 +128,10 @@ class SectorController extends Controller
             $sector = Sector::findOrFail($id);
             if ($sector) {
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'GET',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Sector get " . $id,
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Sector get ' . $id,
                 ]);
 
                 return response()->json([
@@ -131,11 +139,18 @@ class SectorController extends Controller
                     'data' => $sector,
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -186,10 +201,10 @@ class SectorController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Sector " . $sector->id . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Sector ' . $sector->id . ' created',
             ]);
 
             return response()->json([
@@ -197,6 +212,13 @@ class SectorController extends Controller
                 'data' => $sector->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -271,17 +293,24 @@ class SectorController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Sector " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Sector ' . $id . ' updated',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Sector::where('id', $id)->first()
+                'data' => Sector::where('id', $id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -359,17 +388,24 @@ class SectorController extends Controller
             Sector::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Sector " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Sector ' . $id . ' updated',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Sector::where('id', $id)->first()
+                'data' => Sector::where('id', $id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -421,32 +457,39 @@ class SectorController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-    
+
             $sector = Sector::findOrFail($id);
             if ($sector) {
                 $sector->enabled = false;
                 if ($sector->save()) {
                     Auditor::log([
-                        'user_id' => $jwtUser['id'],
+                        'user_id' => (int)$jwtUser['id'],
                         'action_type' => 'DELETE',
-                        'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                        'description' => "Sector " . $id . " deleted",
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => 'Sector ' . $id . ' deleted',
                     ]);
 
                     return response()->json([
                         'message' => Config::get('statuscodes.STATUS_OK.message'),
                     ], Config::get('statuscodes.STATUS_OK.code'));
                 }
-    
+
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
                 ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
             }
-    
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

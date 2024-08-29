@@ -24,7 +24,7 @@ use App\Http\Requests\Application\UpdateApplication;
 class ApplicationController extends Controller
 {
     use RequestTransformation;
-    
+
     public function __construct()
     {
         //
@@ -87,25 +87,26 @@ class ApplicationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $applications = Application::getAll('user_id', $jwtUser)->with(['permissions','team','user','notifications']);
-    
-    
+
+
             $teamId = $request->query('team_id');
             if ($teamId !== null) {
-                $applications = $applications->where('team_id',(int)$teamId);
+                $applications = $applications->where('team_id', (int)$teamId);
             }
-            
+
             if ($request->has('status')) {
                 $applicationStatus = $request->query('status');
                 if ($applicationStatus === "1" || $applicationStatus === "0") {
                     $applications = $applications->where('enabled', (int) $applicationStatus);
                 }
             }
-            
-            $textTerms = $request->query('text',[]);
+
+            $textTerms = $request->query('text', []);
             if ($textTerms !== null) {
                 if (!is_array($textTerms)) {
                     $textTerms = [$textTerms];
@@ -117,24 +118,30 @@ class ApplicationController extends Controller
                     });
                 }
             }
-            
+
             $perPage = request('per_page', Config::get('constants.per_page'));
             $applications = $applications->paginate($perPage, ['*'], 'page');
-    
+
             $applications->getCollection()->each(function ($application) {
                 $application->makeHidden(['client_secret']);
             });
-    
+
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Application get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Application get all',
             ]);
 
             return response()->json(
                 $applications
-            );    
+            );
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -195,7 +202,7 @@ class ApplicationController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Application get " . $id,
             ]);
 
@@ -204,6 +211,12 @@ class ApplicationController extends Controller
                 'data' => $application,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -269,18 +282,19 @@ class ApplicationController extends Controller
      */
     public function store(CreateApplication $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             // While it seems weak, random uses openssl_random_pseudo_bytes under the hood
             // which is cryptographically secure. Increasing the length of the string
             // returned, increases security further still
             $appId = Str::random(40);
             $clientId = Str::random(40);
-            $clientSecret = Hash::make($appId . 
-                ':' . $clientId . 
-                ':' . env('APP_AUTH_PRIVATE_SALT') . 
+            $clientSecret = Hash::make(
+                $appId .
+                ':' . $clientId .
+                ':' . env('APP_AUTH_PRIVATE_SALT') .
                 ':' . env('APP_AUTH_PRIVATE_SALT_2')
             );
 
@@ -310,12 +324,12 @@ class ApplicationController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'target_user_id' => $input['user_id'],
                 'target_team_id' => $input['team_id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Application " . $application->id . " created",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Application ' . $application->id . ' created',
             ]);
 
             return response()->json([
@@ -325,6 +339,15 @@ class ApplicationController extends Controller
                     ->first(),
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'target_user_id' => $input['user_id'],
+                'target_team_id' => $input['team_id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -402,10 +425,10 @@ class ApplicationController extends Controller
      */
     public function update(UpdateApplication $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $array = [
                 'name' => $input['name'],
                 'description' => $input['description'],
@@ -432,12 +455,12 @@ class ApplicationController extends Controller
             $application->makeHidden(['client_secret']);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'target_user_id' => $input['user_id'],
                 'target_team_id' => $input['team_id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Application " . $id . " updated",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Application ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -445,6 +468,15 @@ class ApplicationController extends Controller
                 'data' => $application
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'target_user_id' => $input['user_id'],
+                'target_team_id' => $input['team_id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -523,10 +555,10 @@ class ApplicationController extends Controller
      */
     public function edit(EditApplication $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $arrayKeys = ['name', 'image_link', 'description', 'team_id', 'user_id', 'enabled'];
             $array = $this->checkEditArray($input, $arrayKeys);
 
@@ -544,19 +576,26 @@ class ApplicationController extends Controller
             $application->makeHidden(['client_secret']);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'target_user_id' => $application['user_id'],
                 'target_team_id' => $application['team_id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Application " . $id . " updated",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Application ' . $id . ' updated',
             ]);
- 
+
             return response()->json([
                 'message' => 'success',
                 'data' => $application
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -605,9 +644,10 @@ class ApplicationController extends Controller
      */
     public function destroy(DeleteApplication $request, int $id): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             Application::where('id', $id)->delete();
             ApplicationHasPermission::where('application_id', $id)->delete();
 
@@ -619,16 +659,23 @@ class ApplicationController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Application " . $id . " deleted",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Application ' . $id . ' deleted',
             ]);
 
             return response()->json([
                 'message' => 'success',
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -653,6 +700,12 @@ class ApplicationController extends Controller
 
             return true;
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -691,6 +744,12 @@ class ApplicationController extends Controller
 
             return true;
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

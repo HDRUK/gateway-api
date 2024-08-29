@@ -27,7 +27,6 @@ trait UserTransformation
                 'email' => $user['email'],
                 'secondary_email' => $user['secondary_email'],
                 'preferred_email' => $user['preferred_email'],
-                'providerid' => $user['providerid'],
                 'provider' => $user['provider'],
                 'created_at' => $user['created_at'],
                 'updated_at' => $user['updated_at'],
@@ -44,6 +43,7 @@ trait UserTransformation
                 'mongo_object_id' => $user['mongo_object_id'],
                 'terms' => $user['terms'],
                 'roles' => $user['roles'],
+                'hubspot_id' => $user['hubspot_id'],
             ];
 
             $tmpTeam = [];
@@ -64,7 +64,7 @@ trait UserTransformation
                     'is_question_bank' => $team['is_question_bank'],
                 ];
 
-                $teamHasUserId = (int) $team['pivot']['id'];
+                $teamHasUserId = (int)$team['pivot']['id'];
 
                 $roles = TeamHasUser::where('id', $teamHasUserId)->with('roles')->get()->toArray();
 
@@ -76,6 +76,7 @@ trait UserTransformation
 
                 $tmpTeam[] = $tmp;
                 unset($tmp);
+                unset($roles);
                 unset($tmpPerm);
             }
             $tmpUser['teams'] = $tmpTeam;
@@ -98,6 +99,7 @@ trait UserTransformation
 
             unset($tmpTeam);
             unset($tmpUser);
+            unset($notifications);
             unset($tmpNotification);
         }
 

@@ -16,14 +16,14 @@ class UserHasRole extends Model
 
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'user_has_roles';
 
     /**
      * Indicates if the model should be timestamped or not
-     * 
+     *
      * @var bool
      */
     public $timestamps = false;

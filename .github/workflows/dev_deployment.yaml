@@ -8,10 +8,13 @@ on:
 
 env:
   PROJECT_ID: '${{ secrets.PROJECT_ID }}'
-  GAR_LOCATION: '${{ secrets.GAR_LOCATION }}' 
+  GAR_LOCATION: '${{ secrets.GAR_LOCATION }}'
+  SLACK_WEBHOOK_URL: '${{ secrets.SLACK_WEBHOOK_URL}}'
+  SLACK_CHANNEL: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL }}'
 
 jobs:
   build:
+    name: build
     permissions:
       contents: write
       id-token: write
@@ -20,17 +23,20 @@ jobs:
     environment: dev
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        id: checkout
+        uses: actions/checkout@v4
         with:
           ref: dev
 
       - name: Read VERSION file
         id: getversion
-        run: echo "version=$(cat version.yaml)" >> $GITHUB_OUTPUT
+        run: |
+            sed -n 's/^appVersion:\(.*\)/\1/p' < chart/gateway-api/Chart.yaml > version
+            echo "version=$(sed '/.*\"\(.*\)\".*/ s//\1/g' version)" >> $GITHUB_OUTPUT
 
       - name: Google Auth
         id: auth
-        uses: 'google-github-actions/auth@v0'
+        uses: 'google-github-actions/auth@v2'
         with:
           token_format: 'access_token'
           workload_identity_provider: '${{ secrets.WIF_PROVIDER }}' 
@@ -57,6 +63,7 @@ jobs:
           docker push --all-tags '${{ env.GAR_LOCATION }}'-docker.pkg.dev/'${{ env.PROJECT_ID }}'/'${{ env.GAR_NAME }}'/${{ steps.getversion.outputs.version }}
 
   deploy:
+    name: deploy
     needs: build
     permissions:
       contents: write
@@ -66,13 +73,14 @@ jobs:
     environment: dev
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        id: checkout
+        uses: actions/checkout@v4
         with:
           ref: dev
 
       - name: Google Auth
         id: auth
-        uses: 'google-github-actions/auth@v0'
+        uses: 'google-github-actions/auth@v2'
         with:
           token_format: 'access_token'
           workload_identity_provider: '${{ secrets.WIF_PROVIDER }}' 
@@ -80,7 +88,9 @@ jobs:
 
       - name: Read VERSION file
         id: getversion
-        run: echo "version=$(cat version.yaml)" >> $GITHUB_OUTPUT
+        run: |
+            sed -n 's/^appVersion:\(.*\)/\1/p' < chart/gateway-api/Chart.yaml > version
+            echo "version=$(sed '/.*\"\(.*\)\".*/ s//\1/g' version)" >> $GITHUB_OUTPUT
           
       - name: Deploy to Cloud Run
         uses: actions-hub/gcloud@master
@@ -94,3 +104,13 @@ jobs:
 
         with:
           args: run services update '${{ env.SERVICE_NAME }}' --image='${{ env.GAR_LOCATION }}'-docker.pkg.dev/'${{ env.PROJECT_ID }}'/'${{ env.GAR_NAME }}'/${{ steps.getversion.outputs.version }}:${{ github.sha }} --region='${{ env.SERVICE_REGION }}' --project='${{ env.PROJECT_ID }}' 
+
+      - name: Run Notification
+        id: runnotificationsent
+        uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+          channel: ${{ env.SLACK_CHANNEL }}
+          message: Deploying {{ env.GITHUB_REF_NAME }} branch to DEV ${{ job.status }}
+        if: always()

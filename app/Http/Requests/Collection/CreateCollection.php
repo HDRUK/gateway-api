@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests\Collection;
 
-use App\Models\Keyword;
-use Illuminate\Validation\Rule;
 use App\Http\Requests\BaseFormRequest;
 
 class CreateCollection extends BaseFormRequest
@@ -56,6 +54,25 @@ class CreateCollection extends BaseFormRequest
                 'nullable',
                 'string',
             ],
+            'publications' => [
+                'array',
+            ],
+            'publications.*.id'  => [
+                'integer',
+                'exists:publications,id',
+            ],
+            'publications.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'publications.*.user_id'  => [
+                'integer',
+                'exists:users,id',
+            ],
+            'publications.*.reason'  => [
+                'nullable',
+                'string',
+            ],
             'tools' => [
                 'array',
             ],
@@ -97,7 +114,7 @@ class CreateCollection extends BaseFormRequest
                 'integer',
             ],
             'mongo_object_id' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'created_at' => [
@@ -108,6 +125,10 @@ class CreateCollection extends BaseFormRequest
             ],
             'updated_on' => [
                 'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'status' => [
+                'string',
+                'in:ACTIVE,ARCHIVED,DRAFT',
             ],
         ];
     }

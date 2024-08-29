@@ -8,7 +8,7 @@ use Illuminate\Http\Response;
 class InternalServerErrorException extends Exception
 {
     public function __construct(
-        string $message = "",
+        string $message = '',
         int $code = Response::HTTP_INTERNAL_SERVER_ERROR,
         Exception $previous = null,
     ) {

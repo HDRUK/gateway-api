@@ -198,6 +198,10 @@ return [
         App\Providers\MetadataManagementControllerServiceProvider::class,
         App\Providers\AliasReplyScannerProvider::class,
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
+        App\Providers\EnquiriesManagementControllerServiceProvider::class,
+        App\Providers\CloudLoggerProvider::class,
+        App\Providers\CloudPubSubProvider::class,
+        App\Providers\ElasticClientControllerServiceProvider::class,
     ],
 
     /*
@@ -214,7 +218,11 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         'Auditor' => App\Auditor\AuditorFacade::class,
         'MetadataManagementController' => App\MetadataManagementController\MetadataManagementControllerFacade::class,
-        'AliasReplyScanner' => App\AliasReplyScanner\AliasReplyScannerFacade::class
+        'AliasReplyScanner' => App\AliasReplyScanner\AliasReplyScannerFacade::class,
+        'EnquiriesManagementController' => App\EnquiriesManagementController\EnquiriesManagementControllerFacade::class,
+        'CloudLogger' => App\Facades\CloudLoggerFacade::class,
+        'CloudPubSub' => App\Facades\CloudPubSubFacade::class,
+        'ElasticClientController' => App\Facades\ElasticClientControllerFacade::class,
     ])->toArray(),
 
 ];

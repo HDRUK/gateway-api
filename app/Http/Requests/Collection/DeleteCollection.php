@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Collection;
 
-use App\Models\Collection;
 use App\Http\Requests\BaseFormRequest;
 
 class DeleteCollection extends BaseFormRequest

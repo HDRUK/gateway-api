@@ -2,8 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Publication;
-
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -13,7 +11,7 @@ class PublicationFactory extends Factory
 {
     /**
      * Define the model's default state.
-     * 
+     *
      * @return array<string, mixed>
      */
     public function definition(): array
@@ -23,7 +21,8 @@ class PublicationFactory extends Factory
             'authors' => 'Author One, Author Two, Author Three, Author Four',
             'year_of_publication' => fake()->year(),
             'paper_doi' => '10.1000/182',
-            'publication_type' => fake()->words(4, true),
+            'publication_type' => fake()->words(1, true),
+            'publication_type_mk1' => fake()->words(4, true),
             'journal_name' => fake()->sentence(),
             'abstract' => fake()->paragraph(),
             'url' => fake()->url(),

@@ -6,7 +6,6 @@ use App\Models\EmailTemplate;
 use App\Exceptions\MailSendException;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Address;
@@ -17,21 +16,24 @@ use Illuminate\Support\Facades\Http;
 
 class Email extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
 
     private $template = null;
     private $replacements = [];
     public $subject = '';
+    private $fromAddress = '';
 
     /**
      * Create a new message instance.
      */
-    public function __construct(EmailTemplate $template, array $replacements)
+    public function __construct(EmailTemplate $template, array $replacements, $fromAddress = null)
     {
 
         $this->template = $template;
         $this->replacements = $replacements;
         $this->subject = $this->template['subject'];
+        $this->fromAddress = $fromAddress ?? env('MAIL_FROM_ADDRESS', 'noreply@healthdatagateway.org');
     }
 
     /**
@@ -42,7 +44,7 @@ class Email extends Mailable
         $this->replaceSubjectText();
 
         return new Envelope(
-            from: new Address('noreply@healthdatagateway.org'),
+            from: new Address($this->fromAddress),
             subject: $this->subject,
         );
     }
@@ -69,11 +71,14 @@ class Email extends Mailable
     {
         $this->replaceBodyText();
 
-        $response = Http::withBasicAuth(env('MJML_API_APPLICATION_KEY', ''),
-            env('MJML_API_KEY', ''))
+        $response = Http::withBasicAuth(
+            env('MJML_API_APPLICATION_KEY', ''),
+            env('MJML_API_KEY', '')
+        )
             ->post(env('MJML_RENDER_URL', ''), [
                 'mjml' => $this->template['body'],
             ]);
+
 
         if ($response->successful()) {
             return $response->json()['html'];
@@ -93,7 +98,7 @@ class Email extends Mailable
             foreach ($buttons['replacements'] as $b) {
                 $this->template['body'] = str_replace($b['placeholder'], $b['actual'], $this->template['body']);
             }
-         }
+        }
     }
 
     private function replaceSubjectText(): void

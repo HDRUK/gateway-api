@@ -4,17 +4,16 @@ namespace App\Auditor;
 
 use Config;
 use Exception;
-use App\Models\AuditLog;
-use App\Jobs\SendAuditLogToPubSub;
+use App\Jobs\AuditLogJob;
 use App\Http\Traits\RequestTransformation;
 
-class Auditor {
-
+class Auditor
+{
     use RequestTransformation;
 
     /**
      * Logs an action to the audit trail
-     * 
+     *
      * @param array $log
      * @return bool
      */
@@ -27,23 +26,22 @@ class Auditor {
                 'target_user_id',
                 'target_team_id',
                 'action_type',
-                'action_service',
+                'action_name',
                 'description',
             ];
-    
             $data = $this->checkEditArray($log, $arrayKeys);
+            $data['action_service'] = env('AUDIT_ACTION_SERVICE', 'gateway_api');
+            $data['action_name'] = strtolower($data['action_name']);
+            $data['created_at'] = gettimeofday(true) * 1000000;
 
-            if (Config::get('services.googlepubsub.pubsub_enabled')) {
-                SendAuditLogToPubSub::dispatch($data);
+            if (Config::get('services.googlepubsub.enabled')) {
+                AuditLogJob::dispatchSync($data);
             }
 
-            $audit = AuditLog::create($data);
+            unset($arrayKeys);
+            unset($data);
 
-            if (!$audit) {
-                return false;
-            }
-    
-            return true;        
+            return true;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

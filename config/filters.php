@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Facade;
 
 return [
     /*
@@ -22,20 +21,21 @@ return [
         'project',
         'paper',
         'dataUseRegister',
+        'dataProvider',
     ],
     'dataset_states' => [
-        'active', 
-        'archive', 
-        'draft', 
-        'inReview', 
-        'rejected', 
+        'active',
+        'archive',
+        'draft',
+        'inReview',
+        'rejected',
         'review',
     ],
     'weighted_quality_rating' => [
-        'Bronze', 
-        'Gold', 
-        'Not Rated', 
-        'Platinum', 
+        'Bronze',
+        'Gold',
+        'Not Rated',
+        'Platinum',
         'Silver',
     ],
 ];

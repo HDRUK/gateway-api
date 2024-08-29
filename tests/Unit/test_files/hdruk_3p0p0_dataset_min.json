@@ -1,0 +1,126 @@
+{"metadata":{
+    "identifier": "7d91eb8b-7331-4048-b4e9-13d0980cec8b",
+    "issued": "2020-08-05T14:35:59Z",
+    "modified": "2021-01-28T14:15:46Z",
+    "revisions": [
+        {
+            "version": "1.0.0",
+            "url": "https://d5faf9c6-6c34-46d7-93c4-7706a5436ed9"
+        },
+        {
+            "version": "2.0.0",
+            "url": "https://a7ddefbd-31d9-4703-a738-256e4689f76a"
+        },
+        {
+            "version": "0.0.1",
+            "url": "https://9e798632-442a-427b-8d0e-456f754d28dc"
+        },
+        {
+            "version": "2.1.1",
+            "url": "https://a7ddefbd-31d9-4703-a738-256e4689f76a"
+        }
+    ],
+    "version": "0.0.1",
+    "summary": {
+        "abstract": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations",
+        "contactPoint": "susheel.varma@hdruk.ac.uk",
+        "keywords": ["Preprints,Papers,HDR UK"],
+        "doiName": "10.1093/ije/dyx196",
+        "title": "HDR UK Papers & Preprints",
+        "dataCustodian": {
+            "name": "HEALTH DATA RESEARCH UK",
+            "identifier": "https://placeholder-for-publisher-page/null",
+            "contactPoint": "susheel.varma@hdruk.ac.uk"
+        },
+        "populationSize": 0
+    },
+    "documentation": {
+        "description": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations\n\nThis will include:\n- Papers\n- COVID-19 Papers\n- COVID-19 Preprint",
+        "associatedMedia": null,
+        "inPipeline": null
+    },
+    "coverage": {
+        "pathway": "NOT APPLICABLE",
+        "spatial": "https://www.geonames.org/countries/GB/united-kingdom.html",
+        "followUp": "UNKNOWN",
+        "datasetCompleteness": null,
+        "typicalAgeRangeMin": null,
+        "typicalAgeRangeMax": null,
+        "materialType": ["None/not available"]
+    },
+    "provenance": {
+        "origin": {
+            "purpose": ["Other"],
+            "source": ["Machine generated"],
+            "collectionSource": ["Other"],
+            "datasetType": ["Health and disease"],
+            "datasetSubType": ["Not applicable"],
+            "imageContrast": null
+        },
+        "temporal": {
+            "endDate": "2022-04-30",
+            "startDate": "2020-03-31",
+            "timeLag": "Not applicable",
+            "publishingFrequency": "Daily",
+            "distributionReleaseDate": "2020-11-27"
+        }
+    },
+    "accessibility": {
+        "access": {
+            "deliveryLeadTime": "Other",
+            "jurisdiction": ["GB-ENG"],
+            "dataController": "HDR UK",
+            "dataProcessor": "HDR UK",
+            "accessRights": "https://raw.githubusercontent.com/HDRUK/papers/master/LICENSE",
+            "accessService": "https://github.com/HDRUK/papers",
+            "accessRequestCost": "Free",
+            "accessServiceCategory": null
+        },
+        "usage": {
+            "dataUseLimitation": ["General research use"],
+            "resourceCreator": "HDR UK Science Team",
+            "dataUseRequirements": ["Return to database or resource"]
+        },
+        "formatAndStandards": {
+            "conformsTo": [],
+            "vocabularyEncodingScheme": ["OTHER"],
+            "language": ["en"],
+            "format": ["CSV,JSON"]
+        }
+    },
+    "enrichmentAndLinkage": {
+        "tools": ["https://github.com/HDRUK/papers"],
+        "investigations": ["https://github.com/HDRUK/papers"],
+        "publicationAboutDataset": null,
+        "publicationUsingDataset": null,
+        "derivedFrom": []
+    },
+    "observations": [
+        {
+            "observedNode": "Findings",
+            "measuredValue": 575,
+            "observationDate": "2020-11-27",
+            "measuredProperty": "Count",
+            "disambiguatingDescription": "Number of papers with affiliation and/or acknowledgement to HDR UK"
+        }
+    ],
+    "structuralMetadata": {
+        "tables": [
+            {
+                "name": "table1",
+                "description": "this is table 1",
+                "columns": [
+                    {
+                        "name": "column1",
+                        "description": "this is column1",
+                        "dataType": "String",
+                        "sensitive": false,
+                        "values": null
+                    }
+                ]
+            }
+        ],
+        "syntheticDataWebLink": null
+    }
+}
+}

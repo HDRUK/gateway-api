@@ -4,9 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\EmailTemplate;
 use Tests\TestCase;
-use Database\Seeders\EmailTemplatesSeeder;
+use Database\Seeders\EmailTemplateSeeder;
 use Tests\Traits\Authorization;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EmailTemplateTest extends TestCase
@@ -14,7 +13,7 @@ class EmailTemplateTest extends TestCase
     use RefreshDatabase;
     use Authorization;
 
-    const TEST_URL = '/api/v1/emailtemplates';
+    public const TEST_URL = '/api/v1/emailtemplates';
 
     protected $header = [];
 
@@ -28,7 +27,7 @@ class EmailTemplateTest extends TestCase
         parent::setUp();
 
         $this->seed([
-            EmailTemplatesSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
@@ -40,7 +39,7 @@ class EmailTemplateTest extends TestCase
 
     /**
      * Get All Email Templates with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_email_templates_with_success(): void
@@ -64,7 +63,7 @@ class EmailTemplateTest extends TestCase
 
     /**
      * Get Email Template by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_email_template_by_id_with_success(): void
@@ -90,7 +89,7 @@ class EmailTemplateTest extends TestCase
 
     /**
      * Create new Email Template with success
-     * 
+     *
      * @return void
      */
     public function test_add_new_email_template_with_success(): void
@@ -113,7 +112,7 @@ class EmailTemplateTest extends TestCase
             'message',
             'data',
         ]);
-        
+
         $emailTemplate = EmailTemplate::where('identifier', $body['identifier'])
             ->where('subject', $body['subject'])
             ->where('body', $body['body'])
@@ -125,7 +124,7 @@ class EmailTemplateTest extends TestCase
 
     /**
      * Update Email Template with success
-     * 
+     *
      * @return void
      */
     public function test_update_email_template_with_success(): void
@@ -200,7 +199,7 @@ class EmailTemplateTest extends TestCase
 
     /**
      * Edit Email Template with success
-     * 
+     *
      * @return void
      */
     public function test_edit_email_template_with_success(): void
@@ -274,7 +273,7 @@ class EmailTemplateTest extends TestCase
 
     /**
      * Delete Email Template with success
-     * 
+     *
      * @return void
      */
     public function test_delete_email_template_with_success(): void

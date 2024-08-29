@@ -2,29 +2,37 @@
 
 namespace Tests\Feature;
 
+use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Tool;
 use App\Models\Dataset;
-use App\Models\Dur;
 use App\Models\Keyword;
 use App\Models\Collection;
+use App\Models\Publication;
+use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DurSeeder;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\KeywordSeeder;
+use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\PublicationSeeder;
 use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\CollectionHasToolSeeder;
-use Database\Seeders\CollectionHasDatasetSeeder;
+use Database\Seeders\DurHasDatasetVersionSeeder;
 use Database\Seeders\CollectionHasDurSeeder;
+use Database\Seeders\CollectionHasToolSeeder;
+use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\CollectionHasPublicationSeeder;
+
+use ElasticClientController as ECC;
 
 class CollectionTest extends TestCase
 {
@@ -33,7 +41,7 @@ class CollectionTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/collections';
+    public const TEST_URL = '/api/v1/collections';
 
     protected $header = [];
 
@@ -54,19 +62,24 @@ class CollectionTest extends TestCase
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
             CategorySeeder::class,
+            LicenseSeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
             DurSeeder::class,
+            DurHasDatasetVersionSeeder::class,
             CollectionHasKeywordSeeder::class,
-            CollectionHasDatasetSeeder::class,
+            CollectionHasDatasetVersionSeeder::class,
             CollectionHasToolSeeder::class,
             CollectionHasDurSeeder::class,
+            PublicationSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
+            CollectionHasPublicationSeeder::class,
         ]);
     }
 
     /**
      * Get All Collections with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_collections_with_success(): void
@@ -92,6 +105,7 @@ class CollectionTest extends TestCase
                     'datasets',
                     'tools',
                     'dur',
+                    'publications',
                     'users',
                     'applications',
                     'team',
@@ -115,7 +129,7 @@ class CollectionTest extends TestCase
 
     /**
      * Get Collection by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_collection_by_id_with_success(): void
@@ -142,6 +156,7 @@ class CollectionTest extends TestCase
                 'datasets',
                 'tools',
                 'dur',
+                'publications',
                 'users',
                 'applications',
                 'team',
@@ -152,13 +167,39 @@ class CollectionTest extends TestCase
 
     /**
      * Create new Collection with success
-     * 
+     *
      * @return void
      */
-    public function test_add_new_collection_with_success(): void
+    public function test_add_new_active_collection_with_success(): void
     {
+
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
+                    }
+                )
+            )
+            ->times(1);
+
+        $datasets = $this->generateDatasets();
+        $nActive = Dataset::whereIn("id", array_column($datasets, 'id'))
+            ->where('status', Dataset::STATUS_ACTIVE)
+            ->count();
+
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
+                    }
+                )
+            )
+            ->times($nActive);
+
+
         $countBefore = Collection::count();
-        $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
         $mockData = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
@@ -166,10 +207,12 @@ class CollectionTest extends TestCase
             "enabled" => true,
             "public" => true,
             "counter" => 123,
-            "datasets" => $this->generateDatasets(),
+            "datasets" => $datasets,
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
         ];
 
         $response = $this->json(
@@ -185,8 +228,59 @@ class CollectionTest extends TestCase
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
         $response->assertStatus(201);
 
-        $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
-        $this->assertTrue($elasticCountAfter > $elasticCountBefore);
+    }
+
+    public function test_add_new_draft_collection_with_success(): void
+    {
+
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
+                    }
+                )
+            )
+            ->times(0);
+
+        $datasets = $this->generateDatasets();
+        $nActive = Dataset::whereIn("id", array_column($datasets, 'id'))
+            ->where('status', Dataset::STATUS_ACTIVE)
+            ->count();
+
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
+                    }
+                )
+            )
+            ->times($nActive);
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $datasets,
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "DRAFT"
+        ];
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            $mockData,
+            $this->header
+        );
+        $response->assertStatus(201);
+
     }
 
     /**
@@ -194,8 +288,99 @@ class CollectionTest extends TestCase
      *
      * @return void
      */
-    public function test_update_collection_with_success(): void 
+    public function test_update_collection_with_success(): void
     {
+
+        $datasets = $this->generateDatasets();
+        ECC::shouldReceive("indexDocument")
+        ->with(
+            \Mockery::on(
+                function ($params) {
+                    return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
+                }
+            )
+        )
+        ->times(2);
+
+        ECC::shouldIgnoreMissing(); //ignore index on datasets
+
+        // create new collection
+        $mockDataIns = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $datasets,
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE",
+        ];
+        $responseIns = $this->json(
+            'POST',
+            self::TEST_URL,
+            $mockDataIns,
+            $this->header
+        );
+
+        $responseIns->assertStatus(201);
+        $idIns = (int) $responseIns['data'];
+
+        // update collection
+        $mockDataUpdate = [
+            "name" => "covid update",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
+            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "enabled" => true,
+            "public" => true,
+            "counter" => 1,
+            "datasets" => $datasets,
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
+        ];
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $idIns,
+            $mockDataUpdate,
+            $this->header
+        );
+
+        $responseUpdate->assertStatus(200);
+        $this->assertTrue($mockDataUpdate['name'] === $responseUpdate['data']['name']);
+        $this->assertTrue($mockDataUpdate['description'] === $responseUpdate['data']['description']);
+        $this->assertTrue((bool) $mockDataUpdate['enabled'] === (bool) $responseUpdate['data']['enabled']);
+        $this->assertTrue((bool) $mockDataUpdate['public'] === (bool) $responseUpdate['data']['public']);
+        $this->assertTrue((int) $mockDataUpdate['counter'] === (int) $responseUpdate['data']['counter']);
+    }
+
+    /**
+     * Update Collection with sucess by id
+     *
+     * @return void
+     */
+    public function test_update_collection_to_draft_with_success(): void
+    {
+
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
+                    }
+                )
+            )
+            ->times(1);
+
+        ECC::shouldReceive("deleteDocument")->once();
+
+        ECC::shouldIgnoreMissing(); //ignore index on datasets
+
         // create new collection
         $mockDataIns = [
             "name" => "covid",
@@ -208,6 +393,8 @@ class CollectionTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE",
         ];
         $responseIns = $this->json(
             'POST',
@@ -231,6 +418,8 @@ class CollectionTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "DRAFT"
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -238,13 +427,7 @@ class CollectionTest extends TestCase
             $mockDataUpdate,
             $this->header
         );
-
         $responseUpdate->assertStatus(200);
-        $this->assertTrue($mockDataUpdate['name'] === $responseUpdate['data']['name']);
-        $this->assertTrue($mockDataUpdate['description'] === $responseUpdate['data']['description']);
-        $this->assertTrue((bool) $mockDataUpdate['enabled'] === (bool) $responseUpdate['data']['enabled']);
-        $this->assertTrue((bool) $mockDataUpdate['public'] === (bool) $responseUpdate['data']['public']);
-        $this->assertTrue((int) $mockDataUpdate['counter'] === (int) $responseUpdate['data']['counter']);
     }
 
     /**
@@ -266,6 +449,8 @@ class CollectionTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE",
         ];
         $responseIns = $this->json(
             'POST',
@@ -289,6 +474,7 @@ class CollectionTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "status" => "DRAFT",
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -342,12 +528,18 @@ class CollectionTest extends TestCase
      *
      * @return void
      */
-    public function test_soft_delete_collection_with_success(): void
+    public function test_soft_delete_and_unarchive_collection_with_success(): void
     {
+        ECC::shouldReceive("deleteDocument")
+            ->times(1);
+
+        //dont bother checking any indexing here upon creation
+        ECC::shouldIgnoreMissing();
+
         $countBefore = Collection::count();
         $countTrashedBefore = Collection::onlyTrashed()->count();
         // create new collection
-        $mockDataIns = [
+        $mockDataIn = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
             "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
@@ -358,25 +550,45 @@ class CollectionTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
-        $responseIns = $this->json(
+        $responseIn = $this->json(
             'POST',
             self::TEST_URL,
-            $mockDataIns,
+            $mockDataIn,
+            $this->header
+        );
+        $responseIn->assertStatus(201);
+        $idIn = (int) $responseIn['data'];
+
+        $countAfter = Collection::count();
+        $this->assertEquals($countAfter, $countBefore + 1);
+
+        // delete collection
+        $response = $this->json('DELETE', self::TEST_URL . '/' . $idIn, [], $this->header);
+        $response->assertStatus(200);
+
+        $countAfter = Collection::count();
+        $countTrashedAfter = Collection::onlyTrashed()->count();
+
+        $this->assertEquals($countAfter, $countBefore);
+        $this->assertEquals($countTrashedAfter, 1);
+
+        $response = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $idIn . '?unarchive',
+            ['status' => 'ACTIVE'],
             $this->header
         );
 
-        $responseIns->assertStatus(201);
-        $idIns = (int) $responseIns['data'];
-
-        $countAfter = Collection::count();
-        $this->assertTrue((bool) ($countAfter - $countBefore), 'Response was successfully');
-
-        // delete collection
-        $response = $this->json('DELETE', self::TEST_URL . '/' . $idIns, [], $this->header);
         $response->assertStatus(200);
-        $countTrasherAfter = Collection::onlyTrashed()->count();
-        $this->assertTrue((bool) ($countTrasherAfter - $countTrashedBefore), 'Response was successfully');
+
+        $countTrashedAfterUnarchiving = Collection::onlyTrashed()->count();
+        $countAfterUnarchiving = Collection::count();
+
+        $this->assertEquals($countTrashedAfterUnarchiving, 0);
+        $this->assertTrue($countAfter < $countAfterUnarchiving);
+        $this->assertEquals($countBefore + 1, $countAfterUnarchiving);
     }
 
     private function generateKeywords()
@@ -429,6 +641,21 @@ class CollectionTest extends TestCase
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
             $temp['id'] = Dur::all()->random()->id;
+            $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+            $return[] = $temp;
+        }
+
+        return $return;
+    }
+
+    private function generatePublications()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Publication::all()->random()->id;
             $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
             $return[] = $temp;
         }

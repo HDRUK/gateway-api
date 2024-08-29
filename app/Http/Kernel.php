@@ -20,6 +20,7 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        \App\Http\Middleware\ProfileRequest::class,
     ];
 
     /**
@@ -65,6 +66,7 @@ class Kernel extends HttpKernel
         'jwt.verify' => \App\Http\Middleware\JwtMiddleware::class,
         'sanitize.input' => \App\Http\Middleware\SanitizeMiddleware::class,
         'check.access' => \App\Http\Middleware\CheckAccessMiddleware::class,
+        'check.access.userId' => \App\Http\Middleware\CheckUserIdMatches::class,
         'integration.auth' => \App\Http\Middleware\AuthenticateIntegrationMiddleware::class,
         'check.integration.access' => \App\Http\Middleware\CheckIntegrationAccessMiddleware::class,
     ];

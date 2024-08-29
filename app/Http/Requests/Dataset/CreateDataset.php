@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Dataset;
 
-use App\Models\Dataset;
 use App\Http\Requests\BaseFormRequest;
 
 class CreateDataset extends BaseFormRequest

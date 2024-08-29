@@ -4,10 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
-
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-
 use Tests\Traits\MockExternalApis;
 
 class DatasetVersionSeeder extends Seeder
@@ -19,17 +16,19 @@ class DatasetVersionSeeder extends Seeder
      */
     public function run(): void
     {
-        $ds = Dataset::all();
+        $datasets = Dataset::all();
 
-        $dataToInsert = [];
-        foreach ($ds as $d) {
-            $dataToInsert[] = [
-                'dataset_id' => $d->id,
-                'metadata' => json_encode(json_encode($this->getFakeDataset())),
-                'version' => fake()->unique()->numberBetween(1, 50),
-            ];
+        foreach ($datasets as $dataset) {
+            // Generate a random number of dataset versions for each dataset
+            $numVersions = rand(1, 5);
+
+            for ($version = 1; $version <= $numVersions; $version++) {
+                DatasetVersion::factory()->create([
+                    'dataset_id' => $dataset->id,
+                    'provider_team_id' => $dataset->team_id,
+                    'version' => $version, // Ensure the version increments
+                ]);
+            }
         }
-
-        DatasetVersion::insert($dataToInsert);
     }
 }

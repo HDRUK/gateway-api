@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Hash;
 use Config;
+use Auditor;
 use Exception;
 use App\Models\User;
 use App\Models\UserHasRole;
 use Illuminate\Http\Request;
 use App\Http\Requests\User\GetUser;
-use App\Http\Requests\User\IndexUser;
 use App\Models\UserHasNotification;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\EditUser;
+use App\Http\Traits\HubspotContacts;
 use App\Exceptions\NotFoundException;
+use App\Http\Requests\User\IndexUser;
 use App\Http\Requests\User\CreateUser;
 use App\Http\Requests\User\DeleteUser;
 use App\Http\Requests\User\UpdateUser;
@@ -23,7 +24,9 @@ use App\Http\Traits\RequestTransformation;
 
 class UserController extends Controller
 {
-    use UserTransformation, RequestTransformation;
+    use UserTransformation;
+    use RequestTransformation;
+    use HubspotContacts;
 
     /**
      * @OA\Get(
@@ -62,13 +65,14 @@ class UserController extends Controller
      */
     public function index(IndexUser $request): mixed
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $response = [];
             if (count($jwtUser)) { //should really always be a jwtUser
-                $userIsAdmin = (bool) $jwtUser['is_admin'];
-                if($userIsAdmin){ // if it's the superadmin return a bunch of information
+                $userIsAdmin = (bool)$jwtUser['is_admin'];
+                if($userIsAdmin) { // if it's the superadmin return a bunch of information
                     $users = User::with(
                         'roles',
                         'roles.permissions',
@@ -76,8 +80,8 @@ class UserController extends Controller
                         'notifications'
                     )->get()->toArray();
                     $response = $this->getUsers($users);
-                } else { 
-                    // otherwise, for now, just return the ids and names 
+                } else {
+                    // otherwise, for now, just return the ids and names
                     // (filtered if appropriate)
                     if ($request->has('filterNames')) {
                         $chars = $request->query('filterNames');
@@ -87,23 +91,31 @@ class UserController extends Controller
                             ->toArray();
                     } else {
                         $response = User::select(
-                            'id','name'
+                            'id',
+                            'name'
                         )->get()->toArray();
                     }
                 }
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "User get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'User get all',
             ]);
 
             return response()->json([
                 'data' => $response,
-            ], Config::get('statuscodes.STATUS_OK.code'));    
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -165,14 +177,14 @@ class UserController extends Controller
      */
     public function show(GetUser $request, int $id): mixed
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $users = User::where([
                 'id' => $id,
             ])->get();
-    
+
             if ($users->count()) {
                 $userTeam = User::where('id', $id)->with(
                     'roles',
@@ -182,10 +194,10 @@ class UserController extends Controller
                 )->get()->toArray();
 
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'GET',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "User get " . $id,
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'User get ' . $id,
                 ]);
 
                 return response()->json([
@@ -193,11 +205,18 @@ class UserController extends Controller
                     'data' => $this->getUsers($userTeam),
                 ], 200);
             }
-    
+
             return response()->json([
                 'message' => 'not found',
             ], 404);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -250,18 +269,23 @@ class UserController extends Controller
      */
     public function store(CreateUser $request): mixed
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $array = [
                 'name' => $input['firstname'] . " " . $input['lastname'],
                 'firstname' => $input['firstname'],
                 'lastname' => $input['lastname'],
                 'email' => $input['email'],
-                'secondary_email' => array_key_exists('secondary_email', $input) ? $input['secondary_email'] : NULL,
-                'preferred_email' => array_key_exists('preferred_email', $input) ? $input['preferred_email'] : 'primary',
-                'provider' =>  array_key_exists('provider', $input) ? $input['provider'] : Config::get('constants.provider.service'),
+                'secondary_email' => array_key_exists('secondary_email', $input) ?
+                    $input['secondary_email'] : null,
+                'preferred_email' => array_key_exists('preferred_email', $input) ?
+                    $input['preferred_email'] : 'primary',
+                'provider' =>  array_key_exists('provider', $input) ?
+                    $input['provider'] : Config::get('constants.provider.service'),
+                'providerid' => array_key_exists('providerid', $input) ?
+                    $input['providerid'] : null,
                 'password' => Hash::make($input['password']),
                 'sector_id' => $input['sector_id'],
                 'organisation' => $input['organisation'],
@@ -282,25 +306,27 @@ class UserController extends Controller
             // role/permissions outside of a team
 
             $arrayUserNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
-            
+
             $user = User::create($array);
 
             if ($user) {
                 foreach ($arrayUserNotification as $value) {
                     UserHasNotification::updateOrCreate([
-                        'user_id' => (int) $user->id,
-                        'notification_id' => (int) $value,
+                        'user_id' => (int)$user->id,
+                        'notification_id' => (int)$value,
                     ]);
                 }
             } else {
                 throw new NotFoundException();
             }
 
+            $this->updateOrCreateContact($user->id);
+
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "User " . $user->id . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'User ' . $user->id . ' created',
             ]);
 
             return response()->json([
@@ -308,6 +334,13 @@ class UserController extends Controller
                 'data' => $user->id,
             ], 201);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -397,10 +430,10 @@ class UserController extends Controller
      */
     public function update(UpdateUser $request, int $id): mixed
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $user = User::findOrFail($id);
             if ($user) {
                 $array = [
@@ -408,9 +441,12 @@ class UserController extends Controller
                     "firstname" => $input['firstname'],
                     "lastname" => $input['lastname'],
                     "email" => $input['email'],
-                    'secondary_email' => array_key_exists('secondary_email', $input) ? $input['secondary_email'] : NULL,
-                    'preferred_email' => array_key_exists('preferred_email', $input) ? $input['preferred_email'] : 'primary',
+                    'secondary_email' => array_key_exists('secondary_email', $input) ?
+                        $input['secondary_email'] : null,
+                    'preferred_email' => array_key_exists('preferred_email', $input) ?
+                        $input['preferred_email'] : 'primary',
                     'provider' =>  Config::get('constants.provider.service'),
+                    'providerid' => array_key_exists('providerid', $input) ? $input['providerid'] : null,
                     'sector_id' => $input['sector_id'],
                     'organisation' => $input['organisation'],
                     'bio' => $input['bio'],
@@ -418,29 +454,32 @@ class UserController extends Controller
                     'link' => $input['link'],
                     'orcid' => $input['orcid'],
                     'contact_feedback' => $input['contact_feedback'],
-                    'contact_news' => $input['contact_news'],  
-                    'mongo_id' => $input['mongo_id'], 
+                    'contact_news' => $input['contact_news'],
+                    'mongo_id' => $input['mongo_id'],
                     'mongo_object_id' => $input['mongo_object_id'],
-                    'terms' => array_key_exists('terms', $input) ? $input['terms'] : 0,                
+                    'terms' => array_key_exists('terms', $input) ? $input['terms'] : 0,
                 ];
 
-                $arrayUserNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
+                $arrayUserNotification = array_key_exists('notifications', $input) ?
+                    $input['notifications'] : [];
 
                 UserHasNotification::where('user_id', $id)->delete();
                 foreach ($arrayUserNotification as $value) {
                     UserHasNotification::updateOrCreate([
-                        'user_id' => (int) $id,
+                        'user_id' => (int)$id,
                         'notification_id' => (int) $value,
                     ]);
                 }
 
                 $user->update($array);
 
+                $this->updateOrCreateContact($id);
+
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'UPDATE',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "User " . $id . " updated",
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'User ' . $id . ' updated',
                 ]);
 
                 return response()->json([
@@ -453,6 +492,13 @@ class UserController extends Controller
                 'message' => 'not found',
             ], 404);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -542,9 +588,10 @@ class UserController extends Controller
      */
     public function edit(EditUser $request, int $id): mixed
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $arrayKeys = [
                 'firstname',
                 'lastname',
@@ -552,6 +599,7 @@ class UserController extends Controller
                 'secondary_email',
                 'preferred_email',
                 'provider',
+                'providerid',
                 'sector_id',
                 'organisation',
                 'bio',
@@ -561,14 +609,14 @@ class UserController extends Controller
                 'contact_feedback',
                 'contact_news',
                 'mongo_id',
-                'mongo_object_id', 
-                'terms',                
+                'mongo_object_id',
+                'terms',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
             if (array_key_exists('firstname', $input) && array_key_exists('lastname', $input)) {
-                $array['name'] = $input['firstname'] . " " . $input['lastname'];
+                $array['name'] = $input['firstname'] . ' ' . $input['lastname'];
             }
 
             if (array_key_exists('password', $input)) {
@@ -578,20 +626,22 @@ class UserController extends Controller
             User::withTrashed()->where('id', $id)->update($array);
 
             $arrayUserNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
-                
+
             UserHasNotification::where('user_id', $id)->delete();
             foreach ($arrayUserNotification as $value) {
                 UserHasNotification::updateOrCreate([
-                    'user_id' => (int) $id,
-                    'notification_id' => (int) $value,
+                    'user_id' => (int)$id,
+                    'notification_id' => (int)$value,
                 ]);
             }
 
+            $this->updateOrCreateContact($id);
+
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "User " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'User ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -599,6 +649,13 @@ class UserController extends Controller
                 'data' => User::withTrashed()->where('id', $id)->with(['notifications'])->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -654,25 +711,34 @@ class UserController extends Controller
      */
     public function destroy(DeleteUser $request, int $id): mixed
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             UserHasNotification::where('user_id', $id)->delete();
             UserHasRole::where('user_id', $id)->delete();
             User::where('id', $id)->delete();
 
+            $this->updateOrCreateContact($id);
+
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "User " . $id . " deleted",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'User ' . $id . ' deleted',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

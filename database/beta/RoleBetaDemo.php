@@ -6,7 +6,6 @@ use App\Models\Role;
 use App\Models\Permission;
 use Illuminate\Database\Seeder;
 use App\Models\RoleHasPermission;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class RoleBetaDemo extends Seeder
 {

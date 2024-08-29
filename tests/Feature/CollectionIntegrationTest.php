@@ -2,35 +2,40 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\Dataset;
 use App\Models\Dur;
+use Tests\TestCase;
+use App\Models\Tool;
+use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
-use App\Models\Tool;
 
 use App\Models\Permission;
 use App\Models\Application;
-use Database\Seeders\TagSeeder;
+use Database\Seeders\DurSeeder;
 
+use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DurSeeder;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\KeywordSeeder;
+use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\PublicationSeeder;
 use App\Models\ApplicationHasPermission;
+use App\Models\Publication;
 use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\CollectionHasToolSeeder;
-use Database\Seeders\CollectionHasDatasetSeeder;
 use Database\Seeders\CollectionHasDurSeeder;
+use Database\Seeders\CollectionHasToolSeeder;
+use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\CollectionHasPublicationSeeder;
 
 class CollectionIntegrationTest extends TestCase
 {
@@ -40,7 +45,7 @@ class CollectionIntegrationTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/integrations/collections';
+    public const TEST_URL = '/api/v1/integrations/collections';
 
     protected $header = [];
 
@@ -61,13 +66,17 @@ class CollectionIntegrationTest extends TestCase
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
             CategorySeeder::class,
+            LicenseSeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
             DurSeeder::class,
             CollectionHasKeywordSeeder::class,
-            CollectionHasDatasetSeeder::class,
+            CollectionHasDatasetVersionSeeder::class,
             CollectionHasToolSeeder::class,
             CollectionHasDurSeeder::class,
+            PublicationSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
+            CollectionHasPublicationSeeder::class,
         ]);
 
         $this->integration = Application::where('id', 1)->first();
@@ -81,7 +90,7 @@ class CollectionIntegrationTest extends TestCase
 
         foreach ($perms as $perm) {
             // Use firstOrCreate ignoring the return as we only care that missing perms
-            // of the above are added, rather than retrieving existing            
+            // of the above are added, rather than retrieving existing
             ApplicationHasPermission::firstOrCreate([
                 'application_id' => $this->integration->id,
                 'permission_id' => $perm->id,
@@ -95,7 +104,7 @@ class CollectionIntegrationTest extends TestCase
 
     /**
      * Get All Collections with success
-     * 
+     *
      * @return void
      */
     public function test_get_all_integration_collections_with_success(): void
@@ -121,6 +130,7 @@ class CollectionIntegrationTest extends TestCase
                     'datasets',
                     'tools',
                     'dur',
+                    'publications',
                     'users',
                     'applications',
                     'mongo_object_id',
@@ -146,7 +156,7 @@ class CollectionIntegrationTest extends TestCase
 
     /**
      * Get Collection by Id with success
-     * 
+     *
      * @return void
      */
     public function test_get_integration_collection_by_id_with_success(): void
@@ -172,6 +182,7 @@ class CollectionIntegrationTest extends TestCase
                 'datasets',
                 'dur',
                 'keywords',
+                'publications',
                 'users',
                 'applications',
                 'team',
@@ -182,7 +193,7 @@ class CollectionIntegrationTest extends TestCase
 
     /**
      * Create new Collection with success
-     * 
+     *
      * @return void
      */
     public function test_add_new_integration_collection_with_success(): void
@@ -199,6 +210,7 @@ class CollectionIntegrationTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
 
         $response = $this->json(
@@ -220,7 +232,7 @@ class CollectionIntegrationTest extends TestCase
      *
      * @return void
      */
-    public function test_update_integration_collection_with_success(): void 
+    public function test_update_integration_collection_with_success(): void
     {
         // create new collection
         $mockDataIns = [
@@ -234,6 +246,7 @@ class CollectionIntegrationTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -291,7 +304,9 @@ class CollectionIntegrationTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
+
         $responseIns = $this->json(
             'POST',
             self::TEST_URL,
@@ -383,6 +398,7 @@ class CollectionIntegrationTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -454,6 +470,21 @@ class CollectionIntegrationTest extends TestCase
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
             $temp['id'] = Dur::all()->random()->id;
+            $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+            $return[] = $temp;
+        }
+
+        return $return;
+    }
+
+    private function generatePublications()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Publication::all()->random()->id;
             $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
             $return[] = $temp;
         }

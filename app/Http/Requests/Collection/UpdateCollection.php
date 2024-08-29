@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests\Collection;
 
-use App\Models\Keyword;
-use App\Models\Collection;
 use App\Http\Requests\BaseFormRequest;
 
 class UpdateCollection extends BaseFormRequest
@@ -61,6 +59,25 @@ class UpdateCollection extends BaseFormRequest
                 'nullable',
                 'string',
             ],
+            'publications' => [
+                'array',
+            ],
+            'publications.*.id'  => [
+                'integer',
+                'exists:publications,id',
+            ],
+            'publications.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'publications.*.user_id'  => [
+                'integer',
+                'exists:users,id',
+            ],
+            'publications.*.reason'  => [
+                'nullable',
+                'string',
+            ],
             'tools' => [
                 'array',
             ],
@@ -102,7 +119,7 @@ class UpdateCollection extends BaseFormRequest
                 'integer',
             ],
             'mongo_object_id' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'created_at' => [
@@ -113,6 +130,11 @@ class UpdateCollection extends BaseFormRequest
             ],
             'updated_on' => [
                 'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'status' => [
+                'sometimes',
+                'string',
+                'in:ACTIVE,ARCHIVED,DRAFT',
             ],
         ];
     }

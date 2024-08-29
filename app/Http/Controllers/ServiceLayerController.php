@@ -8,11 +8,9 @@ use Exception;
 use App\Models\Federation;
 use App\Models\Dataset;
 
-use App\Http\Controllers\Api\V1\DatasetController;
 
 use Illuminate\Http\Request;
-
-
+use Illuminate\Support\Facades\Http;
 
 class ServiceLayerController extends Controller
 {
@@ -43,14 +41,14 @@ class ServiceLayerController extends Controller
 
     public function getDatasetFromPid(Request $request, string $pid)
     {
-        $dataset = Dataset::with(['versions' => fn($version) => $version->withTrashed()->latest()->first()])
-            ->where('pid', "=", $pid)
+        $dataset = Dataset::with(['versions' => fn ($version) => $version->withTrashed()->latest()->first()])
+            ->where('pid', '=', $pid)
             ->first();
 
         $response = [
-            "pid" => $dataset->pid,
-            "version" => $dataset->versions[0]->version,
-            "metadata" => $dataset->versions[0]->metadata['metadata'],
+            'pid' => $dataset->pid,
+            'version' => $dataset->versions[0]->version,
+            'metadata' => $dataset->versions[0]->metadata['metadata'],
         ];
 
         return response()->json($response);
@@ -60,41 +58,45 @@ class ServiceLayerController extends Controller
     {
         //$datasets = Dataset::with(['versions' => fn($version) => $version->withTrashed()->latest()->first()])
         $datasets = Dataset::with('versions')
-                    ->when($request->has('team_id'), 
-                            function ($query) use ($request) {
-                                return $query->where("team_id","=",$request->query('team_id'));
-                            })
-                    ->when($request->has('create_origin'), 
-                            function ($query) use ($request) {
-                                return $query->where("create_origin","=",$request->query('create_origin'));
-                            })
+                    ->when(
+                        $request->has('team_id'),
+                        function ($query) use ($request) {
+                            return $query->where('team_id', '=', $request->query('team_id'));
+                        }
+                    )
+                    ->when(
+                        $request->has('create_origin'),
+                        function ($query) use ($request) {
+                            return $query->where('create_origin', '=', $request->query('create_origin'));
+                        }
+                    )
                     ->get();
 
         $response = array();
-        foreach ($datasets as $dataset){
-            if(count($dataset->versions)==0){
+        foreach ($datasets as $dataset) {
+            if(count($dataset->versions) == 0) {
                 continue;
             }
 
             $metadataVersions = [];
-            foreach($dataset->versions as $version){
+            foreach($dataset->versions as $version) {
                 $gwdmVersion = $version->metadata['gwdmVersion'];
-                if(version_compare($gwdmVersion,"1.0",">")){
+                if(version_compare($gwdmVersion, '1.0', '>')) {
                     $metadata = $version->metadata['metadata'];
                     $metadataVersions[] = $metadata['required']['version'];
                 }
             }
 
             $response[$dataset->pid] = [
-                "versions" => $metadataVersions,
+                'versions' => $metadataVersions,
             ];
 
             if ($request->has('onlyVersions')) {
-                if($request->boolean('onlyVersions')){
+                if($request->boolean('onlyVersions')) {
                     continue;
                 }
             }
-            $response[$dataset->pid]["metadata"] = $dataset->versions[0]->metadata['metadata'];
+            $response[$dataset->pid]['metadata'] = $dataset->versions[0]->metadata['metadata'];
 
         }
 
@@ -117,4 +119,70 @@ class ServiceLayerController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    public function darq(Request $request)
+    {
+        return $this->forwardRequest(
+            $request,
+            env("DARQ_SERVICE"),
+            "api/services/darq/"
+        );
+    }
+
+    public function daras(Request $request)
+    {
+        return $this->forwardRequest(
+            $request,
+            env('DARAS_SERVICE'),
+            'api/services/daras/'
+        );
+    }
+
+    public function traser(Request $request)
+    {
+        return $this->forwardRequest(
+            $request,
+            env("TRASER_SERVICE_URL"),
+            "api/services/traser/"
+        );
+    }
+
+    private function forwardRequest(Request $request, string $baseUrl, string $apiPath)
+    {
+        // Extract the request path
+        $path = $request->path();
+
+        // Build the full URL by appending the request path to the base URL
+        $subPath = substr($path, strpos($path, $apiPath) + strlen($apiPath));
+        $url = $baseUrl . "/" . $subPath;
+        $domain = parse_url($url)['host'];
+
+        $headers = $request->headers->all();
+        unset($headers['host']);
+        unset($headers['cookie']);
+
+        $jwt = $request->input('jwt');
+        $query = $request->query();
+        $content = $request->getContent();
+        unset($query['jwt']);
+        unset($query['jwt_user']);
+
+        // Forward the request to the external API servicet
+        $response = Http::withHeaders($headers)
+            ->withOptions(
+                [
+                    'query' => $query,
+                    'body' => $content,
+                ]
+            )
+            ->withCookies(['jwtToken' => $jwt], $domain)
+            ->send($request->method(), $url);
+
+        $statusCode = $response->status();
+        $responseData = $response->json();
+
+        return response()->json($responseData, $statusCode);
+    }
+
+
 }

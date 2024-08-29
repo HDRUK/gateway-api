@@ -18,9 +18,9 @@ class TeamNotificationTest extends TestCase
 
     protected $header = [];
 
-   
 
-    public function test_create_notification_for_team_with_success() 
+
+    public function test_create_notification_for_team_with_success()
     {
         // create team
         $responseCreateTeam = $this->json(

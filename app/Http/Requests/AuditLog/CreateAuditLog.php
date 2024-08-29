@@ -27,7 +27,7 @@ class CreateAuditLog extends BaseFormRequest
                 'string',
                 'max:50',
             ],
-            'action_service' => [
+            'action_name' => [
                 'required',
                 'string',
                 'max:255',
@@ -42,7 +42,7 @@ class CreateAuditLog extends BaseFormRequest
     /**
      * Provides informational messages based on the invalid request
      * parameters.
-     * 
+     *
      * @return array<string, string>
      */
     public function messages(): array

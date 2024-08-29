@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
-use Carbon\Carbon;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +15,6 @@ use App\Http\Requests\AuditLog\EditAuditLog;
 use App\Http\Requests\AuditLog\CreateAuditLog;
 use App\Http\Requests\AuditLog\DeleteAuditLog;
 use App\Http\Requests\AuditLog\UpdateAuditLog;
-use App\Exceptions\InternalServerErrorException;
 
 class AuditLogController extends Controller
 {
@@ -44,7 +42,7 @@ class AuditLogController extends Controller
      *             @OA\Property(property="user_id", type="integer", example="100"),
      *             @OA\Property(property="team_id", type="integer", example="100"),
      *             @OA\Property(property="action_type", type="string", example="UPDATE"),
-     *             @OA\Property(property="action_service", type="string", example="Gateway API"),
+     *             @OA\Property(property="action_name", type="string", example="Gateway API"),
      *             @OA\Property(property="description", type="string", example="beatae praesentium ut consequatur at ipsam facilis sit neque ut"),
      *          )
      *       ),
@@ -107,7 +105,7 @@ class AuditLogController extends Controller
      *                      @OA\Property(property="user_id", type="integer", example="100"),
      *                      @OA\Property(property="team_id", type="integer", example="100"),
      *                      @OA\Property(property="action_type", type="string", example="UPDATE"),
-     *                      @OA\Property(property="action_service", type="string", example="Gateway API"),
+     *                      @OA\Property(property="action_name", type="string", example="Gateway API"),
      *                      @OA\Property(property="description", type="string", example="beatae praesentium ut consequatur at ipsam facilis sit neque ut"),
      *              )
      *          ),
@@ -120,7 +118,7 @@ class AuditLogController extends Controller
      *          )
      *      )
      * )
-     */    
+     */
     public function show(GetAuditLog $request, int $id): JsonResponse
     {
         try {
@@ -150,11 +148,11 @@ class AuditLogController extends Controller
      *          required=true,
      *          description="Filter definition",
      *          @OA\JsonContent(
-     *              required={"action_service", "description"},
+     *              required={"action_name", "description"},
      *              @OA\Property(property="user_id", type="integer", example="100"),
      *              @OA\Property(property="team_id", type="integer", example="100"),
      *              @OA\Property(property="action_type", type="string", example="UPDATE"),
-     *              @OA\Property(property="action_service", type="string", example="Gateway API"),
+     *              @OA\Property(property="action_name", type="string", example="Gateway API"),
      *              @OA\Property(property="description", type="string", example="beatae praesentium ut consequatur at ipsam facilis sit neque ut"),
      *          ),
      *      ),
@@ -174,7 +172,7 @@ class AuditLogController extends Controller
      *          )
      *      )
      * )
-     */    
+     */
     public function store(CreateAuditLog $request): JsonResponse
     {
         try {
@@ -183,7 +181,7 @@ class AuditLogController extends Controller
                 'user_id',
                 'team_id',
                 'action_type',
-                'action_service',
+                'action_name',
                 'description',
             ];
 
@@ -223,11 +221,11 @@ class AuditLogController extends Controller
      *          required=true,
      *          description="Audit log definition",
      *          @OA\JsonContent(
-     *              required={"action_service", "description"},
+     *              required={"action_name", "description"},
      *              @OA\Property(property="user_id", type="integer", example="100"),
      *              @OA\Property(property="team_id", type="integer", example="100"),
      *              @OA\Property(property="action_type", type="string", example="UPDATE"),
-     *              @OA\Property(property="action_service", type="string", example="Gateway API"),
+     *              @OA\Property(property="action_name", type="string", example="Gateway API"),
      *              @OA\Property(property="description", type="string", example="beatae praesentium ut consequatur at ipsam facilis sit neque ut"),
      *          ),
      *      ),
@@ -250,7 +248,7 @@ class AuditLogController extends Controller
      *                  @OA\Property(property="user_id", type="integer", example="100"),
      *                  @OA\Property(property="team_id", type="integer", example="100"),
      *                  @OA\Property(property="action_type", type="string", example="UPDATE"),
-     *                  @OA\Property(property="action_service", type="string", example="Gateway API"),
+     *                  @OA\Property(property="action_name", type="string", example="Gateway API"),
      *                  @OA\Property(property="description", type="string", example="beatae praesentium ut consequatur at ipsam facilis sit neque ut"),
      *              )
      *          ),
@@ -272,7 +270,7 @@ class AuditLogController extends Controller
                 'user_id',
                 'team_id',
                 'action_type',
-                'action_service',
+                'action_name',
                 'description',
             ];
 
@@ -314,7 +312,7 @@ class AuditLogController extends Controller
      *              @OA\Property(property="user_id", type="integer", example="100"),
      *              @OA\Property(property="team_id", type="integer", example="100"),
      *              @OA\Property(property="action_type", type="string", example="UPDATE"),
-     *              @OA\Property(property="action_service", type="string", example="Gateway API"),
+     *              @OA\Property(property="action_name", type="string", example="Gateway API"),
      *              @OA\Property(property="description", type="string", example="beatae praesentium ut consequatur at ipsam facilis sit neque ut"),
      *          ),
      *      ),
@@ -337,7 +335,7 @@ class AuditLogController extends Controller
      *                  @OA\Property(property="user_id", type="integer", example="100"),
      *                  @OA\Property(property="team_id", type="integer", example="100"),
      *                  @OA\Property(property="action_type", type="string", example="UPDATE"),
-     *                  @OA\Property(property="action_service", type="string", example="Gateway API"),
+     *                  @OA\Property(property="action_name", type="string", example="Gateway API"),
      *                  @OA\Property(property="description", type="string", example="beatae praesentium ut consequatur at ipsam facilis sit neque ut"),
      *              )
      *          ),
@@ -359,7 +357,7 @@ class AuditLogController extends Controller
                 'user_id',
                 'team_id',
                 'action_type',
-                'action_service',
+                'action_name',
                 'description',
             ];
 

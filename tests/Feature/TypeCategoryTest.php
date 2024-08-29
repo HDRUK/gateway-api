@@ -12,9 +12,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class TypeCategoryTest extends TestCase
 {
     use RefreshDatabase;
-    private $accessToken = '';    
+    private $accessToken = '';
 
-    public function setUp() :void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -29,8 +29,8 @@ class TypeCategoryTest extends TestCase
         ]);
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
-        $content = $response->decodeResponseJson();  
-        $this->accessToken = $content['access_token'];      
+        $content = $response->decodeResponseJson();
+        $this->accessToken = $content['access_token'];
     }
 
     /**
@@ -67,14 +67,14 @@ class TypeCategoryTest extends TestCase
                 'per_page',
                 'prev_page_url',
                 'to',
-                'total',                
+                'total',
             ]);
 
     }
 
     /**
      * Returns a single type category
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_list_a_single_type_category()
@@ -102,7 +102,7 @@ class TypeCategoryTest extends TestCase
         $response = $this->get('api/v1/type_categories/' . $content['data'], [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
-        
+
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [
@@ -119,7 +119,7 @@ class TypeCategoryTest extends TestCase
 
     /**
      * Creates a new type category
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_create_a_type_category()
@@ -144,14 +144,15 @@ class TypeCategoryTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
     }
 
     /**
      * Tests that a type category record can be updated
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_update_a_type_category()
@@ -178,11 +179,12 @@ class TypeCategoryTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        // Finally, update the last entered type category to 
+        // Finally, update the last entered type category to
         // prove functionality
         $response = $this->json(
             'PUT',
@@ -210,7 +212,7 @@ class TypeCategoryTest extends TestCase
 
     /**
      * Tests that a type category record can be edited
-     * 
+     *
      * @return void
      */
     public function test_the_application_can_edit_a_type_category()
@@ -264,7 +266,7 @@ class TypeCategoryTest extends TestCase
 
     /**
      * Tests it can delete a type category
-     * 
+     *
      * @return void
      */
     public function test_it_can_delete_a_type_category()
@@ -291,12 +293,13 @@ class TypeCategoryTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        // Finally, update the last entered type category to 
-        // prove functionality        
+        // Finally, update the last entered type category to
+        // prove functionality
         $response = $this->json(
             'DELETE',
             'api/v1/type_categories/' . $content['data'],
@@ -310,10 +313,11 @@ class TypeCategoryTest extends TestCase
             ->assertJsonStructure([
                 'message',
             ]);
-    
+
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
+        $this->assertEquals(
+            $content['message'],
             Config::get('statuscodes.STATUS_OK.message')
         );
     }

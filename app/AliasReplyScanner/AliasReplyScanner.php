@@ -2,35 +2,39 @@
 
 namespace App\AliasReplyScanner;
 
-use App\Models\EnquiryMessages;
+use Exception;
+use CloudLogger;
+use App\Models\Team;
+use App\Models\User;
+use App\Jobs\SendEmailJob;
+
+use App\Models\EmailTemplate;
 use App\Models\EnquiryThread;
 
-use App\Models\Team;
-
-use App\Exceptions\AliasReplyScannerException;
-use Exception;
-
-use App\Jobs\SendEmailJob;
-use App\Models\EmailTemplate;
-
+use App\Models\EnquiryMessage;
 use Webklex\PHPIMAP\ClientManager;
 
-class AliasReplyScanner {
+use EnquiriesManagementController as EMC;
 
-    public function getImapClient() {
+class AliasReplyScanner
+{
+    public function getImapClient()
+    {
         $cm = new ClientManager($options = []);
         $client = $cm->make(config('mail.mailers.ars.imap'));
         $client->connect();
         return $client;
     }
 
-    public function getNewMessages(){
+    public function getNewMessages()
+    {
         $client = $this->getImapClient();
         $inbox = $client->getFolder(config('mail.mailers.ars.inbox'));
         return $inbox->messages()->all()->get();
     }
 
-    public function getNewMessagesSafe(){
+    public function getNewMessagesSafe()
+    {
         $messages = $this->getNewMessages();
         return $messages->filter(function ($msg) {
             $body = $this->getSanitisedBody($msg);
@@ -38,19 +42,21 @@ class AliasReplyScanner {
         });
     }
 
-    public function getSanitisedBody($message){
+    public function getSanitisedBody($message)
+    {
         $body = $message->getHTMLBody();
         $sanitized = strip_tags($body);
         return $sanitized;
     }
-    public function checkBodyIsSensible($text){
+    public function checkBodyIsSensible($text)
+    {
         // Remove punctuation and special characters
         $text = preg_replace('/[^a-zA-Z0-9\s]/', '', $text);
 
         // Tokenize the text into words
         $words = str_word_count($text, 1);
 
-        if(count($words)==0){
+        if(count($words) == 0) {
             return false;
         }
 
@@ -79,11 +85,11 @@ class AliasReplyScanner {
     }
 
     public function getThread($alias)
-    {         
-        return EnquiryThread::where("unique_key",$alias)->first();
+    {
+        return EnquiryThread::where("unique_key", $alias)->first();
     }
 
-    public function scrapeAndStoreContent($message,$threadId)
+    public function scrapeAndStoreContent($message, $threadId)
     {
         $body = $this->getSanitisedBody($message);
         $from = $message->getFrom();
@@ -94,96 +100,145 @@ class AliasReplyScanner {
             $email = substr($from, $pos1 + 1, $pos2 - $pos1 - 1);
         }
 
-        $enquiryMessage = EnquiryMessages::create([
+        $enquiryMessage = EnquiryMessage::create([
             "from" => $email,
             "message_body" => $body,
             "thread_id" => $threadId,
         ]);
 
-        $this->notifyDarManagesOfNewMessage($enquiryMessage->id);
+        $this->notifyDarManagesOfNewMessage($threadId);
+
+        unset($body);
+        unset($from);
 
         return $enquiryMessage;
     }
-    public function deleteMessage($message){
+
+    public function deleteMessage($message)
+    {
         return $message->delete($expunge = true);
     }
 
-
-    public function notifyDarManagesOfNewMessage($enquiryMessageId)
+    public function notifyDarManagesOfNewMessage($threadId)
     {
-        $darManagers = $this->getDarManagersFromEnquiryMessage($enquiryMessageId);
-        //email each dar manager that a new message has been received
-        /*  
+        $usersToNotify = [];
 
-        Note Calum 22/01/2024:
-        - this type of functionality needs to be moved to a seperate place/service
-           to avoid spamming DAR managers whenever a new enquiry message is created
-        - needs to be designed how this notification process will be 
+        $enquiryThread = EnquiryThread::where([
+            'id' => $threadId,
+        ])->first();
 
-        $sentEmails = array();
-        foreach ($darManagers as $darManager){
-      
-            $userEmail = $darManager['user_preferred_email'] === 'secondary' ? $darManager['user_secondary_email'] : $darManager['user_email'];
-            $userName = $darManager['user_name'];
-      
-            $to = [
-                'to' => [
-                    'email' => $userEmail,
-                    'name' => $userName,
+        $uniqueKey = $enquiryThread->unique_key;
+
+        $enquiryThreads = EnquiryThread::where([
+            'unique_key' => $uniqueKey
+        ])->get();
+
+        foreach ($enquiryThreads as $eqTh) {
+            $usersToNotify[] = EMC::determineDARManagersFromTeamId($eqTh->team_id, $eqTh->id);
+        }
+
+        if (empty($usersToNotify)) {
+            CloudLogger::write([
+                'action_type' => 'NOTIFY',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' .
+                    $threadId,
+            ]);
+
+            return;
+        }
+
+        $enquiryMessage = EnquiryMessage::where([
+            'thread_id' => $threadId,
+        ])->latest()->first();
+
+        $team = Team::where([
+            'id' => $enquiryThread->team_id,
+        ])->first();
+
+        $user = User::where([
+            'id' => $enquiryThread->user_id,
+        ])->first();
+
+        $payload = [
+            'thread' => [
+                'user_id' => $enquiryThread->user_id,
+                'team_id' => $enquiryThread->team_id,
+                'project_title' => $enquiryThread->project_title,
+                'unique_key' => $uniqueKey, // Not random, but should be unique
+            ],
+            'message' => [
+                'from' => $enquiryMessage->from,
+                'message_body' => [
+                    '[[TEAM_NAME]]' => $team->name,
+                    '[[USER_FIRST_NAME]]' => $user->firstname,
+                    '[[USER_LAST_NAME]]' => $user->lastname,
+                    '[[USER_ORGANISATION]]' => $user->organisation,
+                    '[[PROJECT_TITLE]]' => $enquiryThread->project_title,
+                    '[[CURRENT_YEAR]]' => date('Y'),
                 ],
-            ];
-            
-            $replacements = [
-                '[[DAR_MANAGER_FIRSTNAME]]' => $darManager['user_firstname'],
-                '[[ORIGINAL_MESSAGE_BODY]]' => $enquiryMessage->message_body,
-                '[[ORIGINAL_MESSAGE_SENDER]]' => $enquiryMessage->from,
-            ];
+            ],
+        ];
 
-            //$this->info( json_encode($replacements, JSON_PRETTY_PRINT));
+        $messageBody = $enquiryMessage->message_body;
+        $lines = preg_split('/\r\n|\r|\n/', $messageBody);
+        $cleanedText = implode("\n", array_filter($lines));
+        $body = trim(str_replace('P {margin-top:0;margin-bottom:0;}', '', str_replace(["\r\n", "\n"], "<br/>", $cleanedText)));
+        $this->sendEmail('dar.notifymessage', $payload, $usersToNotify, $enquiryThread->user_id, $body);
 
-            // Note Calum 17/01/2024:
-            //    - to be implemented once email design is done 
-            // $template = EmailTemplate::where('identifier', '=', '.....')->first();
-            // SendEmailJob::dispatch($to, $template, $replacements);
-            $sentEmails[] = $userEmail;
-        }
-        return $sentEmails;
-        */
-
+        unset(
+            $payload,
+            $messageBody,
+            $lines,
+            $cleanedText,
+            $body,
+            $enquiryMessage,
+            $enquiryThread,
+            $enquiryThreads,
+            $team,
+            $user,
+            $usersToNotify,
+        );
     }
 
-    public function getDarManagersFromEnquiryMessage($enquiryMessageId)
+    public function sendEmail(string $ident, array $threadDetail, array $usersToNotify, int $userId, string $replyMessage): void
     {
-        $teamId = null;
-        $team = null;
-        $darManagers = null;
+        $something = null;
 
-        //get the message linked to the original thread
-        $enquiryMessage = EnquiryMessages::with("thread")
-                            ->where("id",$enquiryMessageId)
-                            ->first();
-        
-        //find the team from the thread the message belongs to
-        try{
-            $teamId = $enquiryMessage->thread->team_id;
-        }catch (Exception $e) {
-            throw new AliasReplyScannerException("Could not retrieve a team from the found enquiry thread.");
+        try {
+            $template = EmailTemplate::where('identifier', $ident)->first();
+            $replacements = [
+                '[[CURRENT_YEAR]]' => $threadDetail['message']['message_body']['[[CURRENT_YEAR]]'],
+                '[[DAR_NOTIFY_MESSAGE]]' => $replyMessage,
+            ];
+
+            // TODO Add unique key to URL button. Future scope.
+            foreach ($usersToNotify as $u) {
+                if ($u === null) {
+                    continue;
+                }
+
+                // In case for multiple users to notify, loop again for actual details.
+                foreach ($u as $arr) {
+                    $to = [
+                        'to' => [
+                            'email' => $arr['user']['email'],
+                            'name' => $arr['user']['firstname'] . ' ' . $arr['user']['lastname'],
+                        ],
+                    ];
+
+                    $from = 'devreply+' . $threadDetail['thread']['unique_key'] . '@healthdatagateway.org';
+                    $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
+                }
+            }
+            unset(
+                $template,
+                $replacements,
+                $from,
+                $something,
+            );
+        } catch (Exception $e) {
+            CloudLogger::write('ERROR reply email enquiry thread :: ' . json_encode($e->getMessage()));
         }
-
-        try{
-            $team = Team::with("teamUserRoles")
-                    ->where("id",$teamId)
-                    ->first();
-
-            //from the team find all DAR managers 
-            $darManagers = $team->teamUserRoles
-                        ->where("role_name","custodian.dar.manager")
-                        ->where("enabled",true);
-
-        }catch (Exception $e) {
-            throw new AliasReplyScannerException("Could not retrieve the team (".$teamId.") and teamUserRoles");
-        }
-        return $darManagers;
     }
-
 }

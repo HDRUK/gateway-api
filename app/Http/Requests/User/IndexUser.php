@@ -32,6 +32,3 @@ class IndexUser extends BaseFormRequest
         $this->merge(['filterNames' => $this->query('filterNames')]);
     }
 }
-
-
-

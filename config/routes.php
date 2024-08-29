@@ -12,7 +12,7 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'register',
+        'name' => 'api.v1.auth.register',
         'method' => 'post',
         'path' => '/auth',
         'methodController' => 'AuthController@checkAuthorization',
@@ -30,7 +30,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin',
+            'provider' => 'google|azure|linkedin|openathens',
         ],
     ],
     [
@@ -41,7 +41,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin',
+            'provider' => 'google|azure|linkedin|openathens',
         ],
     ],
 
@@ -369,6 +369,17 @@ return [
     ],
     [
         'name' => 'teams',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/summary',
+        'methodController' => 'TeamController@showSummary',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'teams',
         'method' => 'post',
         'path' => '/teams',
         'methodController' => 'TeamController@store',
@@ -429,6 +440,15 @@ return [
         'method' => 'get',
         'path' => '/tools',
         'methodController' => 'ToolController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'tools-count-field',
+        'method' => 'get',
+        'path' => '/tools/count/{field}',
+        'methodController' => 'ToolController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [],
@@ -524,7 +544,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
-            'check.integration.access:permissions,tools.read',            
+            'check.integration.access:permissions,tools.read',
             'sanitize.input',
         ],
         'constraint' => [
@@ -970,7 +990,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdruk.superadmin',
+            'check.access.userId',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1004,6 +1024,47 @@ return [
         'constraint' => [
             'id' => '[0-9]+',
         ],
+    ],
+
+    // users & roles
+    [
+        'name' => 'users.roles.post',
+        'method' => 'post',
+        'path' => '/users/{userId}/roles',
+        'methodController' => 'UserRoleController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'users.roles.patch',
+        'method' => 'patch',
+        'path' => '/users/{userId}/roles',
+        'methodController' => 'UserRoleController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'users.roles.delete',
+        'method' => 'delete',
+        'path' => '/users/{userId}/roles',
+        'methodController' => 'UserRoleController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
     ],
 
     // notifications
@@ -1254,6 +1315,15 @@ return [
         'method' => 'get',
         'path' => '/collections',
         'methodController' => 'CollectionController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'count_unique_fields_collections',
+        'method' => 'get',
+        'path' => '/collections/count/{field}',
+        'methodController' => 'CollectionController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [],
@@ -1858,7 +1928,7 @@ return [
             'check.access:permissions,team-members.update',
         ],
         'constraint' => [
-            'teamId' => '[0-9]+', 
+            'teamId' => '[0-9]+',
             'userId' => '[0-9]+',
         ],
     ],
@@ -2011,11 +2081,20 @@ return [
         'path' => '/datasets/export',
         'methodController' => 'DatasetController@export',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-        ],
+        'middleware' => [],
         'constraint' => [],
     ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/datasets/export/mock',
+        'methodController' => 'DatasetController@exportMock',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+
+
     // datasets integrations
     [
         'name' => 'datasets.integrations',
@@ -2126,7 +2205,7 @@ return [
             'teamId' => '[0-9]+',
         ],
     ],
-    
+
     // team.federation
     [
         'name' => 'team.federation',
@@ -2243,6 +2322,17 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'cohort_requests_access',
+        'method' => 'get',
+        'path' => '/cohort_requests/access',
+        'methodController' => 'CohortRequestController@checkAccess',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
         'name' => 'cohort_requests',
         'method' => 'get',
         'path' => '/cohort_requests/{id}',
@@ -2308,6 +2398,34 @@ return [
         ],
         'constraint' => [],
     ],
+    [
+        'name' => 'cohort_requests',
+        'method' => 'post',
+        'path' => '/cohort_requests/{id}/admin',
+        'methodController' => 'CohortRequestController@assignAdminPermission',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'cohort_requests',
+        'method' => 'delete',
+        'path' => '/cohort_requests/{id}/admin',
+        'methodController' => 'CohortRequestController@removeAdminPermission',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 
     // search
     [
@@ -2360,6 +2478,33 @@ return [
         'method' => 'post',
         'path' => '/search/publications',
         'methodController' => 'SearchController@publications',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'search.doiSearch',
+        'method' => 'post',
+        'path' => '/search/doi',
+        'methodController' => 'SearchController@doiSearch',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'search.data_provider_colls',
+        'method' => 'post',
+        'path' => '/search/data_provider_colls',
+        'methodController' => 'SearchController@dataProviderColls',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'search.data_providers',
+        'method' => 'post',
+        'path' => '/search/data_providers',
+        'methodController' => 'SearchController@dataProviders',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [],
@@ -2603,10 +2748,28 @@ return [
 
     // data use registers
     [
+        'name' => 'dur.export',
+        'method' => 'get',
+        'path' => '/dur/export',
+        'methodController' => 'DurController@export',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
         'name' => 'dur.get',
         'method' => 'get',
         'path' => '/dur',
         'methodController' => 'DurController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dur.count-field',
+        'method' => 'get',
+        'path' => '/dur/count/{field}',
+        'methodController' => 'DurController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [],
@@ -2678,6 +2841,27 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'dur.post.upload',
+        'method' => 'post',
+        'path' => '/dur/upload',
+        'methodController' => 'DurController@upload',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dur.get.template',
+        'method' => 'get',
+        'path' => '/dur/template',
+        'methodController' => 'DurController@exportTemplate',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+
 
     // organisations
     [
@@ -2689,13 +2873,22 @@ return [
         'middleware' => ['jwt.verify'],
         'constraint' => [],
     ],
-    
+
     // publications
     [
         'name' => 'publications.index',
         'method' => 'get',
         'path' => 'publications',
         'methodController' => 'PublicationController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'publications-count-field',
+        'method' => 'get',
+        'path' => '/publications/count/{field}',
+        'methodController' => 'PublicationController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [],
@@ -3005,5 +3198,338 @@ return [
             'id' => '[0-9]+',
         ],
     ],
-    
+
+    // DataProviders
+    [
+        'name' => 'data_provider_colls',
+        'method' => 'get',
+        'path' => '/data_provider_colls',
+        'methodController' => 'DataProviderCollController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'data_provider_colls',
+        'method' => 'get',
+        'path' => '/data_provider_colls/{id}',
+        'methodController' => 'DataProviderCollController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data_provider_colls_summary',
+        'method' => 'get',
+        'path' => '/data_provider_colls/{id}/summary',
+        'methodController' => 'DataProviderCollController@showSummary',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data_provider_colls',
+        'method' => 'post',
+        'path' => '/data_provider_colls',
+        'methodController' => 'DataProviderCollController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'data_provider_colls',
+        'method' => 'put',
+        'path' => '/data_provider_colls/{id}',
+        'methodController' => 'DataProviderCollController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data_provider_colls',
+        'method' => 'patch',
+        'path' => '/data_provider_colls/{id}',
+        'methodController' => 'DataProviderCollController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data_provider_colls',
+        'method' => 'delete',
+        'path' => '/data_provider_colls/{id}',
+        'methodController' => 'DataProviderCollController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
+    // Form hydration - metadata onboarding
+    [
+        'name' => 'form_hydration',
+        'method' => 'get',
+        'path' => '/form_hydration',
+        'methodController' => 'FormHydrationController@onboardingFormHydration',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+
+    // licences
+    [
+        'name' => 'licences',
+        'method' => 'get',
+        'path' => '/licenses',
+        'methodController' => 'LicenseController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'licences',
+        'method' => 'get',
+        'path' => '/licenses/{id}',
+        'methodController' => 'LicenseController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'licenses',
+        'method' => 'post',
+        'path' => '/licenses',
+        'methodController' => 'LicenseController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'licences',
+        'method' => 'put',
+        'path' => '/licenses/{id}',
+        'methodController' => 'LicenseController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'licenses',
+        'method' => 'patch',
+        'path' => '/licenses/{id}',
+        'methodController' => 'LicenseController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'licenses',
+        'method' => 'delete',
+        'path' => '/licenses/{id}',
+        'methodController' => 'LicenseController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
+    // uploads
+    [
+        'name' => 'uploads',
+        'method' => 'post',
+        'path' => '/files',
+        'methodController' => 'UploadController@upload',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'uploads',
+        'method' => 'get',
+        'path' => '/files/{id}',
+        'methodController' => 'UploadController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'uploads',
+        'method' => 'get',
+        'path' => '/files/processed/{id}',
+        'methodController' => 'UploadController@content',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+
+    // libraries
+    [
+        'name' => 'libraries',
+        'method' => 'get',
+        'path' => '/libraries',
+        'methodController' => 'LibraryController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'libraries',
+        'method' => 'get',
+        'path' => '/libraries/{id}',
+        'methodController' => 'LibraryController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'libraries',
+        'method' => 'post',
+        'path' => '/libraries',
+        'methodController' => 'LibraryController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'libraries',
+        'method' => 'put',
+        'path' => '/libraries/{id}',
+        'methodController' => 'LibraryController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'libraries',
+        'method' => 'patch',
+        'path' => '/libraries/{id}',
+        'methodController' => 'LibraryController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'libraries',
+        'method' => 'delete',
+        'path' => '/libraries/{id}',
+        'methodController' => 'LibraryController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    // Enquiry Threads
+    [
+        'name' => 'enquiry_threads',
+        'method' => 'get',
+        'path' => '/enquiry_threads',
+        'methodController' => 'EnquiryThreadController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'enquiry_threads',
+        'method' => 'get',
+        'path' => '/enquiry_threads/{id}',
+        'methodController' => 'EnquiryThreadController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'enquiry_threads',
+        'method' => 'post',
+        'path' => '/enquiry_threads',
+        'methodController' => 'EnquiryThreadController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
 ];

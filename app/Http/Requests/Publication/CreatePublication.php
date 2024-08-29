@@ -33,7 +33,10 @@ class CreatePublication extends BaseFormRequest
                 'max:255',
             ],
             'publication_type' => [
-                'required',
+                'string',
+                'max:255',
+            ],
+            'publication_type_mk1' => [
                 'string',
                 'max:255',
             ],
@@ -51,8 +54,8 @@ class CreatePublication extends BaseFormRequest
                 'string',
             ],
             'datasets' => [
-                'nullable', 
-                'array', 
+                'nullable',
+                'array',
             ],
             'datasets.*.id'  => [
                 'integer',
@@ -62,9 +65,28 @@ class CreatePublication extends BaseFormRequest
                 'string',
                 'nullable',
             ],
+            'tools' => [
+                'array',
+            ],
+            'tools.*.id'  => [
+                'integer',
+                'exists:tools,id',
+            ],
+            'tools.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'tools.*.user_id'  => [
+                'integer',
+                'exists:users,id',
+            ],
             'mongo_id' => [
                 'nullable',
                 'string',
+            ],
+            'status' => [
+                'string',
+                'in:ACTIVE,ARCHIVED,DRAFT',
             ],
         ];
     }

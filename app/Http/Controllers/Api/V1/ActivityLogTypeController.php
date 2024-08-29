@@ -21,7 +21,7 @@ use App\Http\Requests\ActivityLogType\UpdateActivityLogType;
 class ActivityLogTypeController extends Controller
 {
     use RequestTransformation;
-    
+
     /**
      * @OA\Get(
      *      path="/api/v1/activity_log_types",
@@ -56,9 +56,9 @@ class ActivityLogTypeController extends Controller
             $activityLogTypes = ActivityLogType::paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Activty Log Type get all",
             ]);
 
@@ -124,11 +124,11 @@ class ActivityLogTypeController extends Controller
                     'data' => $activityLogType,
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
-    
+
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Activty Log Type get " . $id,
             ]);
 
@@ -181,9 +181,9 @@ class ActivityLogTypeController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Activty Log Type " . $activityLogType->id . " created",
             ]);
 
@@ -263,9 +263,9 @@ class ActivityLogTypeController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Activty Log Type " . $id . " updated",
             ]);
 
@@ -347,9 +347,9 @@ class ActivityLogTypeController extends Controller
             ActivityLogType::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Activty Log Type " . $id . " updated",
             ]);
 
@@ -415,9 +415,9 @@ class ActivityLogTypeController extends Controller
                 if ($activityLogType->delete()) {
 
                     Auditor::log([
-                        'user_id' => $jwtUser['id'],
+                        'user_id' => (int) $jwtUser['id'],
                         'action_type' => 'DELETE',
-                        'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
                         'description' => "Activty Log Type " . $activityLogType->id . " deleted",
                     ]);
 
@@ -425,10 +425,10 @@ class ActivityLogTypeController extends Controller
                         'message' => Config::get('statuscodes.STATUS_OK.message'),
                     ], Config::get('statuscodes.STATUS_OK.code'));
                 }
-    
+
                 throw new InternalServerErrorException();
             }
-    
+
             throw new NotFoundException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());

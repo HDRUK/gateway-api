@@ -193,7 +193,7 @@ class UpdateDur extends FormRequest
                 'string',
             ],
             'mongo_object_id' => [
-                'nullable', 
+                'nullable',
                 'string',
             ],
             'mongo_id' => [
@@ -240,11 +240,22 @@ class UpdateDur extends FormRequest
                 'nullable',
                 'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
             ],
+            'tools' => [
+                'array',
+            ],
+            'tools.*' => [
+                'integer',
+                'distinct',
+            ],
             'created_at' => [
                 'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
             ],
             'updated_at' => [
                 'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'status' => [
+                'string',
+                'in:ACTIVE,ARCHIVED,DRAFT',
             ],
         ];
     }

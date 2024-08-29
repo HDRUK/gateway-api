@@ -3,11 +3,6 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Database\Seeders\TeamSeeder;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
-use Database\Seeders\UserSeeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class MinimalUserSeeder extends Seeder
 {
@@ -20,7 +15,8 @@ class MinimalUserSeeder extends Seeder
         $this->call([
             TeamSeeder::class,
             PermissionSeeder::class,
-            RoleSeeder::class, 
+            RoleSeeder::class,
+            UserAdminsSeeder::class,
             UserSeeder::class,
         ]);
     }

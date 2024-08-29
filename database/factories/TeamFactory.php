@@ -36,6 +36,9 @@ class TeamFactory extends Factory
             'application_form_updated_on' => fake()->dateTime(),
             'mongo_object_id' => null,
             'is_question_bank' => fake()->boolean(),
+            'is_provider' => fake()->boolean(),
+            'team_logo' => fake()->imageUrl(),
+            'url' => fake()->imageUrl(),
         ];
     }
 }

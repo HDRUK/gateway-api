@@ -1,13 +1,10 @@
 <?php
 
-use MetadataManagementController AS MMC;
-
-use App\Http\Controllers\FilterController;
-use App\Http\Controllers\ServiceLayerController;
-use App\Http\Controllers\Api\V1\DatasetController;
-
 use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\SSO\CustomAuthorizationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,25 +38,14 @@ Route::get('/email', function (Request $reqest) {
     ]);
 });
 
-Route::get('/services/federations', [ServiceLayerController::class, 'getActiveFederationApplications']);
-Route::patch('/services/federations/{id}', [ServiceLayerController::class, 'setFederationInvalidRunState']);
-Route::post('/services/federations', [DatasetController::class, 'store']);
-Route::put('/services/federations/update/{pid}', [DatasetController::class, 'updateByPid']);
-Route::delete('/services/federations/delete/{pid}', [DatasetController::class, 'destroyByPid']);
-Route::get('/services/datasets', [ServiceLayerController::class, 'getDatasets']);
-Route::get('/services/datasets/{pid}', [ServiceLayerController::class, 'getDatasetFromPid']);
-Route::post('/services/audit', [ServiceLayerController::class, 'audit']);
 
-Route::get('/services/traser', function(Request $request) {
-    MMC::validateDataModelType(
-        json_encode($request->all()), 
-        Config::get('metadata.GWDM.name'),
-        Config::get('metadata.GWDM.version')
-    );
-});
+# bcplatform
+Route::get('/sso/authorize', [CustomAuthorizationController::class, 'customAuthorize']);
+
+
 
 // stop all all other routes
-Route::any('{path}', function() {
+Route::any('{path}', function () {
     $response = [
         'message' => 'Resource not found',
     ];

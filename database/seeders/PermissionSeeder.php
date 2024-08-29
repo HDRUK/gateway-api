@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Permission;
 use Illuminate\Database\Seeder;
+
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class PermissionSeeder extends Seeder
@@ -123,6 +124,11 @@ class PermissionSeeder extends Seeder
                 'cohort.read',
                 'cohort.update',
                 'cohort.delete',
+
+                'question-bank.create',
+                'question-bank.read',
+                'question-bank.update',
+                'question-bank.delete',
             ],
             'cohort' => [
                 'GENERAL_ACCESS',

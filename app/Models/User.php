@@ -2,13 +2,9 @@
 
 namespace App\Models;
 
-use App\Http\Enums\UserPreferredEmail;
-use App\Models\Team;
-use App\Models\Tool;
-use App\Models\Role;
 // use Laravel\Sanctum\HasApiTokens;
-use App\Models\Application;
 use App\Http\Traits\WithJwtUser;
+use Laravel\Passport\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -19,8 +15,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory;
+    use Notifiable;
+    use SoftDeletes;
     use WithJwtUser;
+    use HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -36,6 +35,7 @@ class User extends Authenticatable
         'preferred_email',
         'password',
         'provider',
+        'providerid',
         'sector_id',
         'organisation',
         'bio',
@@ -56,7 +56,7 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token', 'providerid',
     ];
 
     /**
@@ -68,6 +68,30 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'terms' => 'boolean',
     ];
+
+    protected $appends = ['rquestroles'];
+
+    public function getRquestrolesAttribute()
+    {
+        $id = $this->id;
+
+        $cohortRequest = CohortRequest::where([
+            'user_id' => $id,
+            'request_status' => 'APPROVED',
+        ])->first();
+
+        if (!$cohortRequest) {
+            return [];
+        }
+
+        $cohortRequestRoleIds = CohortRequestHasPermission::where([
+            'cohort_request_id' => $cohortRequest->id
+        ])->pluck('permission_id')->toArray();
+
+        $cohortRequestRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
+
+        return $cohortRequestRoles;
+    }
 
     /**
      * Get the tool that owns the user
@@ -81,8 +105,8 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Team::class, 'team_has_users')
             ->withPivot('team_id', 'id')
-            ->orderBy('team_has_users.team_id');  
-    }    
+            ->orderBy('team_has_users.team_id');
+    }
 
     public function notifications(): BelongsToMany
     {
@@ -93,7 +117,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Review::class);
     }
-    
+
     public function applications(): HasMany
     {
         return $this->hasMany(Application::class);
@@ -108,5 +132,5 @@ class User extends Authenticatable
     {
         return $this->hasMany(CohortRequest::class);
     }
-    
+
 }
