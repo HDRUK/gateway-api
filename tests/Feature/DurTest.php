@@ -275,9 +275,17 @@ class DurTest extends TestCase
 
         $countBefore = Dur::count();
 
-
         ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_DUR;
+                    }
+                )
+            )
             ->times(1);
+
+        ECC::shouldIgnoreMissing(); //ignore index on datasets
 
         $mockData = [
             'datasets' => $this->generateDatasets(),
@@ -339,7 +347,16 @@ class DurTest extends TestCase
     public function test_update_dur_with_success(): void
     {
         ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_DUR;
+                    }
+                )
+            )
             ->times(2);
+
+        ECC::shouldIgnoreMissing(); //ignore index on datasets
 
         // create dur
         $userId = (int) User::all()->random()->id;
@@ -413,10 +430,19 @@ class DurTest extends TestCase
     public function test_update_make_draft_dur_with_success(): void
     {
         ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_DUR;
+                    }
+                )
+            )
             ->times(1);
 
         ECC::shouldReceive("deleteDocument")
             ->times(1);
+
+        ECC::shouldIgnoreMissing(); //ignore index on datasets
 
         // create dur
         $userId = (int) User::all()->random()->id;

@@ -313,6 +313,8 @@ class PublicationTest extends TestCase
         ECC::shouldReceive('deleteDocument')
                   ->times(0);
 
+        ECC::shouldIgnoreMissing(); //ignore index on datasets
+
         $responseUpdate = $this->json(
             'PUT',
             self::TEST_URL . '/' . $publicationId,
@@ -348,11 +350,20 @@ class PublicationTest extends TestCase
 
     public function test_can_change_active_publication_with_success(): void
     {
-        ECC::shouldReceive("indexDocument")
+        ECC::shouldReceive('indexDocument')
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_PUBLICATION;
+                    }
+                )
+            )
             ->times(1);
 
         ECC::shouldReceive('deleteDocument')
             ->times(1);
+
+        ECC::shouldIgnoreMissing(); //ignore index on datasets
 
         $response = $this->json(
             'POST',

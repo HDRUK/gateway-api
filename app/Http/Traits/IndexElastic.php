@@ -43,9 +43,9 @@ trait IndexElastic
      * @param string $datasetId The dataset id from the DB.
      * @param bool $returnParams Optional flag to return parameters.
      *
-     * @return void|array
+     * @return null|array
      */
-    public function reindexElastic(string $datasetId, bool $returnParams = false, bool $activeCheck = true)
+    public function reindexElastic(string $datasetId, bool $returnParams = false, bool $activeCheck = true): null|array
     {
         try {
             $datasetMatch = Dataset::where('id', $datasetId)
@@ -126,9 +126,9 @@ trait IndexElastic
      * @param string $teamId The team id from the DB.
      * @param bool $returnParams Optional flag to return parameters.
      *
-     * @return void|array
+     * @return null|array
      */
-    public function reindexElasticDataProvider(string $teamId, bool $returnParams = false)
+    public function reindexElasticDataProvider(string $teamId, bool $returnParams = false): null|array
     {
         try {
             $datasets = Dataset::where('team_id', $teamId)->get();
@@ -187,9 +187,9 @@ trait IndexElastic
      *
      * @param integer $collectionId
      * @param bool $returnParams Optional flag to return parameters.
-     * @return void|array
+     * @return null|array
      */
-    public function indexElasticCollections(int $collectionId, bool $returnParams = false)
+    public function indexElasticCollections(int $collectionId, bool $returnParams = false): null|array
     {
         $collection = Collection::with(['team', 'keywords'])->where('id', $collectionId)->first();
         $datasets = $collection->allDatasets  ?? [];
@@ -243,6 +243,10 @@ trait IndexElastic
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
+
+            if($returnParams) {
+                return $params;
+            }
 
             ECC::indexDocument($params);
 
@@ -318,9 +322,9 @@ trait IndexElastic
      * @param string $id The dur id from the DB
      * @param bool $returnParams Optional flag to return parameters.
      *
-     * @return void|array
+     * @return null|array
      */
-    public function indexElasticDur(string $id, bool $returnParams = false)
+    public function indexElasticDur(string $id, bool $returnParams = false): null|array
     {
         try {
 
@@ -407,9 +411,9 @@ trait IndexElastic
      * @param string $id The publication id from the DB
      * @param bool $returnParams Optional flag to return parameters.
      *
-     * @return void|array
+     * @return null|array
      */
-    public function indexElasticPublication(string $id, bool $returnParams = false)
+    public function indexElasticPublication(string $id, bool $returnParams = false): null|array
     {
         try {
             $pubMatch = Publication::where(['id' => $id])->first();
@@ -469,9 +473,9 @@ trait IndexElastic
      *
      * @param integer $toolId
      * @param bool $returnParams Optional flag to return parameters.
-     * @return void|array
+     * @return null|array
      */
-    public function indexElasticTools(int $toolId, bool $returnParams = false)
+    public function indexElasticTools(int $toolId, bool $returnParams = false): null|array
     {
         try {
             $tool = Tool::where('id', $toolId)
