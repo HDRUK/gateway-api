@@ -228,10 +228,12 @@ class SearchController extends Controller
                 return Excel::download(new DatasetTableExport($datasetsArray), 'datasets.csv');
             }
 
-            $datasetsArraySorted = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
+            $datasetsArray = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $datasetsArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $datasetsArray, $perPage);
+            unset($datasetsArray);
+
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
@@ -527,7 +529,7 @@ class SearchController extends Controller
                 }
             }
 
-            $toolsArraySorted = $this->sortSearchResult($toolsArray, $sortField, $sortDirection);
+            $toolsArray = $this->sortSearchResult($toolsArray, $sortField, $sortDirection);
 
             if ($download) {
                 Auditor::log([
@@ -535,11 +537,13 @@ class SearchController extends Controller
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Search tools export data - list',
                 ]);
-                return Excel::download(new ToolListExport($toolsArraySorted), 'tools.csv');
+                return Excel::download(new ToolListExport($toolsArray), 'tools.csv');
             }
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $toolsArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $toolsArray, $perPage);
+            unset($toolsArray);
+
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
@@ -687,10 +691,12 @@ class SearchController extends Controller
                 }
             }
 
-            $collectionArraySorted = $this->sortSearchResult($collectionArray, $sortField, $sortDirection);
+            $collectionArray = $this->sortSearchResult($collectionArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $collectionArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $collectionArray, $perPage);
+            unset($collectionArray);
+
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
@@ -869,10 +875,12 @@ class SearchController extends Controller
                 return Excel::download(new DataUseExport($durArray), 'dur.csv');
             }
 
-            $durArraySorted = $this->sortSearchResult($durArray, $sortField, $sortDirection);
+            $durArray = $this->sortSearchResult($durArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $durArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $durArray, $perPage);
+            unset($durArray);
+
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
@@ -1107,10 +1115,12 @@ class SearchController extends Controller
                 return Excel::download(new PublicationExport($pubArray), 'publications.csv');
             }
 
-            $pubArraySorted = $this->sortSearchResult($pubArray, $sortField, $sortDirection);
+            $pubArray = $this->sortSearchResult($pubArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $pubArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $pubArray, $perPage);
+            unset($pubArray);
+
             $aggs = collect([
                 'aggregations' => isset($response['aggregations']) ? $response['aggregations'] : [],
                 'elastic_total' => $totalResults,
@@ -1352,10 +1362,12 @@ class SearchController extends Controller
                 return Excel::download(new DataProviderCollExport($dataProviderCollArray), 'dataProviderColl.csv');
             }
 
-            $dataProviderCollArraySorted = $this->sortSearchResult($dataProviderCollArray, $sortField, $sortDirection);
+            $dataProviderCollArray = $this->sortSearchResult($dataProviderCollArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $dataProviderCollArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $dataProviderCollArray, $perPage);
+            unset($dataProviderCollArray);
+
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
@@ -1508,10 +1520,12 @@ class SearchController extends Controller
                 return Excel::download(new DataProviderExport($dataProviderArray), 'dataProvider.csv');
             }
 
-            $dataProviderArraySorted = $this->sortSearchResult($dataProviderArray, $sortField, $sortDirection);
+            $dataProviderArray = $this->sortSearchResult($dataProviderArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $dataProviderArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $dataProviderArray, $perPage);
+            unset($dataProviderArray);
+
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
@@ -1574,7 +1588,7 @@ class SearchController extends Controller
      *
      * @return array
      */
-    private function sortSearchResult(array &$resultArray, string $sortField, string $sortDirection): array
+    private function sortSearchResult(array $resultArray, string $sortField, string $sortDirection): array
     {
         if ($sortField === 'score') {
             $resultArraySorted = $sortDirection === 'desc' ? $resultArray : array_reverse($resultArray);
