@@ -524,11 +524,12 @@ class IntegrationDatasetController extends Controller
 
                 $publisher = null;
 
-                if (count($input['metadata']['metadata']['required']['revisions'])) {
-                    $revisions = $input['metadata']['metadata']['required']['revisions'];
-                } else {
-                    $revisions = [['version' => $this->formatVersion(1)]];
-                }
+                $revisions = [
+                    [
+                        "url" => env('GATEWAY_URL') . '/dataset' .'/' . $dataset->id . '?version=1.0.0',
+                        'version' => $this->formatVersion(1)
+                    ]
+                ];
 
                 $required = [
                         'gatewayId' => strval($dataset->id), //note: do we really want this in the GWDM?
@@ -751,8 +752,8 @@ class IntegrationDatasetController extends Controller
                 // Determine the last version of metadata
                 $lastVersionNumber = $currDataset->lastMetadataVersionNumber()->version;
 
-                $currentVersionCode = $this->getVersion($lastVersionNumber + 1);
-                $lastVersionCode = $this->getVersion($lastVersionNumber);
+                $currentVersionCode = $this->formatVersion($lastVersionNumber + 1);
+                $lastVersionCode = $this->formatVersion($lastVersionNumber);
 
                 $lastMetadata = $currDataset->lastMetadata();
 
@@ -769,8 +770,8 @@ class IntegrationDatasetController extends Controller
                 //       - url set with a placeholder right now, should be revised before production
                 //       - https://hdruk.atlassian.net/browse/GAT-3392
                 $input['metadata']['metadata']['required']['revisions'][] = [
-                    'url' => 'https://placeholder.blah/' . $currentPid . '?version=' . $lastVersionCode,
-                    'version' => $lastVersionCode
+                    "url" => env('GATEWAY_URL') . '/dataset' .'/' . $id . '?version=' . $currentVersionCode,
+                    'version' => $currentVersionCode
                 ];
 
                 $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
