@@ -107,26 +107,17 @@ class ReindexEntities extends Command
 
     private function datasets()
     {
-        $beforeCount = ECC::countDocuments('dataset');
+        $beforeCount = ECC::countDocuments(ECC::ELASTIC_NAME_DATASET);
         echo "Before reindexing there were $beforeCount datasets indexed \n";
 
         if($this->fresh) {
-            $nDeleted = ECC::deleteAllDocuments('dataset');
+            $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_DATASET);
             echo "Deleted $nDeleted documents from the index \n";
         }
 
-        $minIndex = $this->minIndex;
-        $maxIndex = $this->maxIndex;
         $datasetIds = Dataset::select("id")->where("status", Dataset::STATUS_ACTIVE)
             ->pluck('id')->toArray();
-
-        if (isset($minIndex) && isset($maxIndex)) {
-            $datasetIds = array_slice($datasetIds, $minIndex, $maxIndex - $minIndex + 1);
-        } elseif (isset($minIndex)) {
-            $datasetIds = array_slice($datasetIds, $minIndex);
-        } elseif (isset($maxIndex)) {
-            $datasetIds = array_slice($datasetIds, 0, $maxIndex + 1);
-        }
+        $this->sliceIds($datasetIds);
 
         if($this->termExtraction) {
             $progressbar = $this->output->createProgressBar(count($datasetIds));
@@ -146,49 +137,88 @@ class ReindexEntities extends Command
 
         //sleep for 5 seconds and count again..
         usleep(5 * 1000 * 1000);
-        $afterCount = ECC::countDocuments('dataset');
+        $afterCount = ECC::countDocuments(ECC::ELASTIC_NAME_DATASET);
         echo "\nAfter reindexing there were $afterCount datasets indexed \n";
 
     }
 
     private function tools()
     {
+        if ($this->fresh) {
+            $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_TOOL);
+            echo "---> Deleted $nDeleted documents from the index \n";
+        }
+
+        $nTotal = Tool::count();
         $toolIds = Tool::where("status", Tool::STATUS_ACTIVE)
             ->select("id")
             ->pluck('id')
             ->toArray();
-
+        $this->sliceIds($toolIds);
         $this->bulkProcess($toolIds, 'indexElasticTools');
+
+        $nIndexed = ECC::countDocuments(ECC::ELASTIC_NAME_DUR);
+        echo "--->  ($nIndexed/$nTotal) Documents indexed ! \n";
     }
 
     private function publications()
     {
+        if ($this->fresh) {
+            $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_PUBLICATION);
+            echo "---> Deleted $nDeleted documents from the index \n";
+        }
+        $nTotal = Publication::count();
         $publicationIds = Publication::where("status", Publication::STATUS_ACTIVE)
             ->select("id")
             ->pluck('id')
             ->toArray();
+        $this->sliceIds($publicationIds);
 
         $this->bulkProcess($publicationIds, 'indexElasticPublication');
+
+        $nIndexed = ECC::countDocuments(ECC::ELASTIC_NAME_PUBLICATION);
+        echo "--->  ($nIndexed/$nTotal) Documents indexed ! \n";
     }
 
     private function durs()
     {
+        if ($this->fresh) {
+            $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_DUR);
+            echo "---> Deleted $nDeleted documents from the index \n";
+        }
+
+        $nTotal = Dur::count();
         $durIds = Dur::where("status", Publication::STATUS_ACTIVE)
             ->select("id")
             ->pluck('id')
             ->toArray();
+        $this->sliceIds($durIds);
 
         $this->bulkProcess($durIds, 'indexElasticDur');
+
+        $nIndexed = ECC::countDocuments(ECC::ELASTIC_NAME_DUR);
+        echo "--->  ($nIndexed/$nTotal) Documents indexed ! \n";
     }
 
     private function collections()
     {
-        $collectionIds = Collection::where("status", Publication::STATUS_ACTIVE)
+        if ($this->fresh) {
+            $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_COLLECTION);
+            echo "---> Deleted $nDeleted documents from the index \n";
+        }
+
+        $nTotal = Collection::count();
+        $collectionIds = Collection::where("status", Collection::STATUS_ACTIVE)
             ->select("id")
             ->pluck('id')
             ->toArray();
+        $this->sliceIds($collectionIds);
 
         $this->bulkProcess($collectionIds, 'indexElasticCollections');
+
+        $nIndexed = ECC::countDocuments(ECC::ELASTIC_NAME_COLLECTION);
+        echo "--->  ($nIndexed/$nTotal) Documents indexed ! \n";
+
     }
 
     private function dataProviders()
@@ -210,5 +240,19 @@ class ReindexEntities extends Command
             usleep($this->sleepTimeInMicroseconds);
         }
         $progressbar->finish();
+    }
+
+    public function sliceIds(array &$ids): void
+    {
+        $minIndex = $this->minIndex;
+        $maxIndex = $this->maxIndex;
+
+        if (isset($minIndex) && isset($maxIndex)) {
+            $ids = array_slice($ids, $minIndex, $maxIndex - $minIndex + 1);
+        } elseif (isset($minIndex)) {
+            $ids = array_slice($ids, $minIndex);
+        } elseif (isset($maxIndex)) {
+            $ids = array_slice($ids, 0, $maxIndex + 1);
+        }
     }
 }
