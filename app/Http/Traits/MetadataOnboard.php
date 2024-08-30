@@ -86,12 +86,12 @@ trait MetadataOnboard
             ]);
 
             $publisher = null;
-
-            if (count($input['metadata']['metadata']['required']['revisions'])) {
-                $revisions = $input['metadata']['metadata']['required']['revisions'];
-            } else {
-                $revisions = [['version' => $this->formatVersion(1)]];
-            }
+            $revisions = [
+                [
+                    "url" => env('GATEWAY_URL') . '/dataset' .'/' . $dataset->id . '?version=1.0.0',
+                    'version' => $this->formatVersion(1)
+                ]
+            ];
 
             $required = [
                     'gatewayId' => strval($dataset->id), //note: do we really want this in the GWDM?
