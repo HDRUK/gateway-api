@@ -71,7 +71,7 @@ class UploadImagesPostMigrationProcess extends Command
                 }
 
                 if ($fileLoc === null) {
-                    echo 'skipping as' . $pID . ' has null file_loc 'PHP_EOL;
+                    echo 'skipping as' . $pID . ' has null file_loc ' . PHP_EOL;
                     $csv->next();
                 }
 
