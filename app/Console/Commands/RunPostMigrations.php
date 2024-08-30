@@ -69,6 +69,10 @@ class RunPostMigrations extends Command
                 'arguments' => [],
             ], // uploaded images
             [
+                'command' => 'app:make-collections-active',
+                'arguments' => [],
+            ], // set collections to be active
+            [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'datasets',
