@@ -67,6 +67,12 @@ class UploadImagesPostMigrationProcess extends Command
                     // Override the null entity variables with the collection data
                     $entityId = $collection->id;
                     $entityType = 'collections';
+                    echo 'updated collection for image ' . $pID . PHP_EOL;
+                }
+
+                if ($fileLoc === null) {
+                    echo 'skipping as' . $pID . ' has null file_loc ' . PHP_EOL;
+                    $csv->next();
                 }
 
                 $upload = Upload::updateOrCreate([
