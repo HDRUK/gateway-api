@@ -6,6 +6,7 @@ use Exception;
 use App\Exceptions\MMCException;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use App\Models\Library;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 
@@ -166,6 +167,8 @@ class MetadataManagementController
                 $metadata->deleted_at = Carbon::now();
                 $metadata->save();
             }
+
+            Library::where(['dataset_id' => $id])->delete();
 
             unset(
                 $dataset
