@@ -1,13 +1,13 @@
 <?php
 
-namespace Database\Helpers;
+namespace Database\Migrations\Traits;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class DatabaseHelpers
+trait HelperFunctions
 {
-    public static function updateForeignKeysWithCascade(string $tableName, array $foreignKeys)
+    private function updateForeignKeysWithCascade(string $tableName, array $foreignKeys)
     {
         Schema::table($tableName, function (Blueprint $table) use ($foreignKeys) {
             // Drop existing foreign keys to replace them with cascade versions
@@ -25,7 +25,7 @@ class DatabaseHelpers
         });
     }
 
-    public static function removeCascadeFromForeignKeys(string $tableName, array $foreignKeys)
+    private function removeCascadeFromForeignKeys(string $tableName, array $foreignKeys)
     {
         Schema::table($tableName, function (Blueprint $table) use ($foreignKeys) {
             // Drop existing foreign keys with cascade
