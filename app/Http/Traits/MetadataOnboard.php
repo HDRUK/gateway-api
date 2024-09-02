@@ -86,11 +86,12 @@ trait MetadataOnboard
             ]);
 
             $publisher = null;
-            if (isset($input['metadata']['metadata']['required']['revisions'])) {
-                $revisions = $input['metadata']['metadata']['required']['revisions'];
-            } else {
-                $revisions = [['version' => $this->getVersion(1)]];
-            }
+            $revisions = [
+                [
+                    "url" => env('GATEWAY_URL') . '/dataset' .'/' . $dataset->id . '?version=1.0.0',
+                    'version' => $this->formatVersion(1)
+                ]
+            ];
 
             $required = [
                     'gatewayId' => strval($dataset->id), //note: do we really want this in the GWDM?
@@ -124,7 +125,7 @@ trait MetadataOnboard
                     'publisherName' => $team['name'],
                 ];
             } else {
-                $version = $this->getVersion(1);
+                $version = $this->formatVersion(1);
                 if(array_key_exists('version', $input['metadata']['metadata']['required'])) {
                     $version = $input['metadata']['metadata']['required']['version'];
                 }
@@ -227,6 +228,12 @@ trait MetadataOnboard
 
         $formattedVersion = "{$hundreds}.{$tens}.{$units}";
 
+        return $formattedVersion;
+    }
+
+    public function formatVersion(int $version)
+    {
+        $formattedVersion = "{$version}.0.0";
         return $formattedVersion;
     }
 }
