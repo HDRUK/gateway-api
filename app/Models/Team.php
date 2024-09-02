@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Support\Str;
 
 class Team extends Model
 {
@@ -20,19 +22,37 @@ class Team extends Model
     use Prunable;
     use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
-    /**
-     * The "booting" method of the model.
-     *
-     * @return void
-     */
     protected static function boot()
     {
         parent::boot();
 
-        //create a pid for this team
         static::creating(function ($model) {
             $model->pid = (string) Str::uuid();
+
+            $model->validateFields();
         });
+
+        static::updating(function ($model) {
+            $model->validateFields();
+        });
+    }
+
+    /**
+     * Validate fields.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    protected function validateFields()
+    {
+        $regexPattern = '#^' . preg_quote(env('MEDIA_URL', 'http://media.url') . '/teams/', '#') . '[a-zA-Z0-9_\-]+\.(jpg|jpeg|png|gif|bmp|webp)$#';
+
+        $validator = Validator::make($this->attributes, [
+            'team_logo' => ['nullable', 'url', 'regex:' . $regexPattern],
+        ]);
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
     }
 
     protected $fillable = [
