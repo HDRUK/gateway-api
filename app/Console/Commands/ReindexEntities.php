@@ -117,7 +117,10 @@ class ReindexEntities extends Command
 
         $datasetIds = Dataset::select("id")->where("status", Dataset::STATUS_ACTIVE)
             ->pluck('id')->toArray();
+
+        echo $datasetIds->count() . " \n";
         $this->sliceIds($datasetIds);
+        echo $datasetIds->count() . " \n";
 
         if($this->termExtraction) {
             $progressbar = $this->output->createProgressBar(count($datasetIds));
