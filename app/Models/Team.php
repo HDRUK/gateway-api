@@ -47,7 +47,7 @@ class Team extends Model
         $regexPattern = '#^' . preg_quote(env('MEDIA_URL', 'http://media.url') . '/teams/', '#') . '[a-zA-Z0-9_\-]+\.(jpg|jpeg|png|gif|bmp|webp)$#';
 
         $validator = Validator::make($this->attributes, [
-            'team_logo' => ['nullable', 'url', 'regex:' . $regexPattern],
+            'team_logo' => ['nullable', 'string', 'url', 'regex:' . $regexPattern],
         ]);
 
         if ($validator->fails()) {
