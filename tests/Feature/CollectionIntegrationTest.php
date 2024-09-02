@@ -348,7 +348,7 @@ class CollectionIntegrationTest extends TestCase
         $mockDataEdit1 = [
             "name" => "covid edit",
             "description" => "Nam dictum urna quis euismod lacinia.",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
         ];
         $responseEdit1 = $this->json(
             'PATCH',
