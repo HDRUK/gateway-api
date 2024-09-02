@@ -163,14 +163,12 @@ trait MetadataOnboard
 
             return [
                 'translated' => true,
-                'submitted_payload' => json_encode($payload),
                 'dataset_id' => $dataset->id,
                 'version_id' => $version->id,
             ];
         } else {
             return [
                 'translated' => false,
-                'submitted_payload' => json_encode($payload),
                 'response' => $traserResponse,
             ];
         }
