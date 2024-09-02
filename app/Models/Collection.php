@@ -76,7 +76,7 @@ class Collection extends Model
         $regexPattern = '#^' . preg_quote(env('MEDIA_URL') . '/collections/', '#') . '[a-zA-Z0-9_\-]+\.(jpg|jpeg|png|gif|bmp|webp)$#';
 
         $validator = Validator::make($this->attributes, [
-            'image_link' => ['nullable', 'url', 'regex:' . $regexPattern],
+            'image_link' => ['nullable', 'string', 'url', 'regex:' . $regexPattern],
         ]);
 
         if ($validator->fails()) {
