@@ -12,7 +12,7 @@ class ElasticClientControllerFacade extends Facade
     public const ELASTIC_NAME_PUBLICATION         = 'publication';
     public const ELASTIC_NAME_COLLECTION          = 'collection';
     public const ELASTIC_NAME_DUR                 = 'datauseregister';
-    public const ELASTIC_NAME_DATAPROVIDERCOLL    = 'dataprovidercoll';
+    public const ELASTIC_NAME_DATAPROVIDER        = 'dataprovider';
 
     public static function getFacadeAccessor(): string
     {
