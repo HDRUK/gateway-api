@@ -47,7 +47,7 @@ class MakeCollectionsActive extends Command
             $match = Collection::where("name", $collectionName);
             $count = $match->count();
             if (!$count) {
-                throw new \Exception("Not found --> '$collectionName'");
+                echo "ERROR --> Not found --> '$collectionName'";
             } elseif ($count > 1) {
                 $found = $match->select("name")->get();
                 echo "WARNING--> Duplicate collections found json_encode($found) \n";
