@@ -750,14 +750,14 @@ class DatasetController extends Controller
                 if ($currDataset->status !== Dataset::STATUS_DRAFT) {
                     $versionNumber = $versionNumber + 1;
                 }
-                $versionCode = $this->getVersion($versionNumber);
+                $versionCode = $this->formatVersion($versionNumber);
                 $lastMetadata = $currDataset->lastMetadata();
 
                 //update the GWDM modified date and version
                 $gwdmMetadata['required']['modified'] = $updateTime;
                 if(version_compare(Config::get('metadata.GWDM.version'), '1.0', '>')) {
                     if(version_compare($lastMetadata['gwdmVersion'], '1.0', '>')) {
-                        $versionCode = $lastMetadata['metadata']['required']['version'];
+                        $gwdmMetadata['required']['version'] = $versionCode;
                     }
                 }
 
@@ -766,10 +766,9 @@ class DatasetController extends Controller
                 //       - url set with a placeholder right now, should be revised before production
                 //       - https://hdruk.atlassian.net/browse/GAT-3392
                 $gwdmMetadata['required']['revisions'][] = [
-                    "url" => "https://placeholder.blah/" . $currentPid . '?version=' . $versionCode,
+                    "url" => env('GATEWAY_URL') . '/dataset' .'/' . $id . '?version=' . $versionCode,
                     "version" => $versionCode
                 ];
-
             }
 
             $metadataSaveObject = [
@@ -783,7 +782,7 @@ class DatasetController extends Controller
                 DatasetVersion::create([
                     'dataset_id' => $currDataset->id,
                     'metadata' => json_encode($metadataSaveObject),
-                    'version' => ($versionNumber),
+                    'version' => $versionNumber,
                 ]);
             } else {
                 // Update the existing version
