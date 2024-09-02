@@ -5,10 +5,12 @@ namespace App\Models;
 use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
@@ -50,6 +52,37 @@ class Collection extends Model
     protected $casts = [
         'enabled' => 'boolean',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->validateFields();
+        });
+
+        static::updating(function ($model) {
+            $model->validateFields();
+        });
+    }
+
+    /**
+     * Validate fields.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    protected function validateFields()
+    {
+        $regexPattern = '#^' . preg_quote(env('MEDIA_URL') . '/collections/', '#') . '[a-zA-Z0-9_\-]+\.(jpg|jpeg|png|gif|bmp|webp)$#';
+
+        $validator = Validator::make($this->attributes, [
+            'image_link' => ['nullable', 'url', 'regex:' . $regexPattern],
+        ]);
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+    }
 
     public function keywords(): BelongsToMany
     {

@@ -52,7 +52,7 @@ return new class () extends Migration {
 
         $this->updateForeignKeysWithCascade('collection_has_dataset_version', [
             'collection_id' => ['references' => 'id', 'on' => 'collections'],
-            'dataset_version_id' => ['references' => 'id', 'on' => 'datasets'],
+            'dataset_version_id' => ['references' => 'id', 'on' => 'dataset_versions'],
             'user_id' => ['references' => 'id', 'on' => 'users'],
             'application_id' => ['references' => 'id', 'on' => 'applications'],
         ]);
@@ -122,7 +122,7 @@ return new class () extends Migration {
 
         $this->removeCascadeFromForeignKeys('collection_has_dataset_version', [
             'collection_id' => ['references' => 'id', 'on' => 'collections'],
-            'dataset_version_id' => ['references' => 'id', 'on' => 'datasets'],
+            'dataset_version_id' => ['references' => 'id', 'on' => 'dataset_versions'],
             'user_id' => ['references' => 'id', 'on' => 'users'],
             'application_id' => ['references' => 'id', 'on' => 'applications'],
         ]);
