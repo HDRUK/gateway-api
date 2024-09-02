@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use Config;
 use App\Http\Enums\TeamMemberOf;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -37,7 +38,7 @@ class TeamFactory extends Factory
             'mongo_object_id' => null,
             'is_question_bank' => fake()->boolean(),
             'is_provider' => fake()->boolean(),
-            'team_logo' => env('MEDIA_URL', 'http://media.url') . '/teams/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            'team_logo' => Config::get('services.media.base_url') . '/teams/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             'url' => fake()->imageUrl(),
         ];
     }

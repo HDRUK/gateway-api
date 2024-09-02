@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Config;
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Tool;
@@ -202,7 +203,7 @@ class CollectionIntegrationTest extends TestCase
         $mockData = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => env('MEDIA_URL', 'http://media.url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 123,
@@ -238,7 +239,7 @@ class CollectionIntegrationTest extends TestCase
         $mockDataIns = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => env('MEDIA_URL', 'http://media.url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 123,
@@ -262,7 +263,7 @@ class CollectionIntegrationTest extends TestCase
         $mockDataUpdate = [
             "name" => "covid update",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
-            "image_link" => env('MEDIA_URL', 'http://media.url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 123,
@@ -296,7 +297,7 @@ class CollectionIntegrationTest extends TestCase
         $mockDataIns = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => env('MEDIA_URL', 'http://media.url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 123,
@@ -321,7 +322,7 @@ class CollectionIntegrationTest extends TestCase
         $mockDataUpdate = [
             "name" => "covid update",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
-            "image_link" => env('MEDIA_URL', 'http://media.url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 123,
@@ -390,7 +391,7 @@ class CollectionIntegrationTest extends TestCase
         $mockDataIns = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => env('MEDIA_URL', 'http://media.url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 123,

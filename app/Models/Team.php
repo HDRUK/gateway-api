@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Config;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -44,7 +45,7 @@ class Team extends Model
      */
     protected function validateFields()
     {
-        $regexPattern = '#^' . preg_quote(env('MEDIA_URL', 'http://media.url') . '/teams/', '#') . '[a-zA-Z0-9_\-]+\.(jpg|jpeg|png|gif|bmp|webp)$#';
+        $regexPattern = '#^' . preg_quote(Config::get('services.media.base_url') . '/teams/', '#') . '[a-zA-Z0-9_\-]+\.(jpg|jpeg|png|gif|bmp|webp)$#';
 
         $validator = Validator::make($this->attributes, [
             'team_logo' => ['nullable', 'string', 'url', 'regex:' . $regexPattern],
