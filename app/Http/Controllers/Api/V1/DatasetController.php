@@ -605,7 +605,8 @@ class DatasetController extends Controller
                 ], 201);
             } else {
                 return response()->json([
-                    'message' => 'metadata is in an unknown format and cannot be processed',
+                    #'message3' => 'storing of metadata is in an unknown format and cannot be processed.. \n \n ' . json_encode($metadataResult['response']),
+                    'message' => $metadataResult['submitted_payload'],
                     'details' => $metadataResult['response'],
                 ], 400);
             }
@@ -616,6 +617,7 @@ class DatasetController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -698,7 +700,7 @@ class DatasetController extends Controller
             $payload['extra'] = [
                 "id" => $id,
                 "pid" => $currentPid,
-                "datasetType" => "Health and disease",
+                "datasetType" => "Healthdata",
                 "publisherId" => $team['pid'],
                 "publisherName" => $team['name']
             ];
@@ -1011,7 +1013,7 @@ class DatasetController extends Controller
 
         try {
             MMC::deleteDataset($id);
-            $this->deleteDatasetFromElastic($id);
+            $this->deleteFromElastic($id, 'dataset');
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
