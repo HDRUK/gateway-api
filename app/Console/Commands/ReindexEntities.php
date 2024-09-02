@@ -91,8 +91,9 @@ class ReindexEntities extends Command
         $this->sleepTimeInMicroseconds = floatval($sleep) * 1000 * 1000;
         echo 'Sleeping between each reindex by ' .  $this->sleepTimeInMicroseconds . "\n";
 
-        $this->minIndex = (int) $this->option('minIndex');
-        $this->maxIndex = (int) $this->option('maxIndex');
+        $this->minIndex = $this->option('minIndex');
+        $this->maxIndex = $this->option('maxIndex');
+
         $this->chunkSize = (int) $this->option('chunkSize');
         $this->termExtraction = $this->option('term-extraction');
         $this->fresh = $this->option('fresh');
@@ -118,9 +119,7 @@ class ReindexEntities extends Command
         $datasetIds = Dataset::select("id")->where("status", Dataset::STATUS_ACTIVE)
             ->pluck('id')->toArray();
 
-        echo count($datasetIds) . " \n";
         $this->sliceIds($datasetIds);
-        echo count($datasetIds) . " \n";
 
         if($this->termExtraction) {
             $progressbar = $this->output->createProgressBar(count($datasetIds));
