@@ -764,7 +764,7 @@ class DatasetController extends Controller
                 //       - url set with a placeholder right now, should be revised before production
                 //       - https://hdruk.atlassian.net/browse/GAT-3392
                 $gwdmMetadata['required']['revisions'][] = [
-                    "url" => "https://placeholder.blah/" . $currentPid . '?version=' . $versionCode,
+                    "url" => env('GATEWAY_URL') . '/dataset' .'/' . $id . '?version=' . $versionCode,
                     "version" => $versionCode
                 ];
 
