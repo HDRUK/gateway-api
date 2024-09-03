@@ -53,12 +53,6 @@ class CustomAuthorizationController extends Controller
         Request $request,
         ClientRepository $clients,
     ) {
-        if ($request->has('nonce')) {
-            \Log::info('session all - auth1 :: ' .json_encode($request->query('nonce')));
-            \Request::session()->put('nonce', $request->query('nonce'));
-            \Log::info('session all - auth2 :: ' . json_encode(\Request::session()->all()));
-        }
-
         // $userId = session('cr_uid');
 
         // mock user id for with we need:

@@ -75,7 +75,7 @@ trait CustomClaimsAccessTokenTrait
             ->relatedTo((string)$this->getUserIdentifier())
             ->withClaim('typ', "Bearer")
             // ->withClaim('auth_time', 0)
-            ->withClaim('nonce', \Request::session()->has('nonce') ? \Request::session()->get('nonce') : 'no_nonce' )
+            ->withClaim('nonce', $oauthUsers ? $oauthUsers->nonce : 'test' )
             ->withClaim('at_hash', $sessionState)
             ->withClaim('session_state', $sessionState)
             ->withClaim('sid', $sessionState)
@@ -90,7 +90,6 @@ trait CustomClaimsAccessTokenTrait
             ->withClaim('realm_access', $realmAccess)
             ->withClaim('resource_access', $resourceAccess)
             ->withClaim('scope', "openid profile email")
-            ->withClaim('nonce', $oauthUsers->nonce)
             ->withHeader('kid', env('JWT_KID', 'jwtkidnotfound'))
             ->getToken($this->jwtConfiguration->signer(), $this->jwtConfiguration->signingKey());
     }
