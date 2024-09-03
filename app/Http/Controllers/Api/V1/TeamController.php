@@ -334,6 +334,15 @@ class TeamController extends Controller
                 $user = $this->checkEditArray($user, $arrayKeys);
                 $tool['user'] = $user;
             }
+
+            $collections = Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', $this->collections)->get()->toArray();
+            $collections = array_map(function($collection) {
+                if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
+                    $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
+                }
+                return $collection;
+            }, $collections);
+            
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => [
@@ -346,7 +355,7 @@ class TeamController extends Controller
                     'tools' => $tools->toArray(),
                     // TODO: need to add in `link_type` from publication_has_dataset table.
                     'publications' => Publication::select('id', 'paper_title', 'authors', 'url')->whereIn('id', $this->publications)->get()->toArray(),
-                    'collections' => Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', $this->collections)->get()->toArray(),
+                    'collections' => $collections,
                 ],
             ]);
         } catch (Exception $e) {

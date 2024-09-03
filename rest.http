@@ -1528,7 +1528,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get collection by id
-GET {{baseUrl}}/api/{{apiVersion}}/collections/1 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/collections/6 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
