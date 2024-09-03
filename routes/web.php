@@ -7,6 +7,8 @@ use App\Http\Middleware\AppendTokenResponse;
 use App\Http\Controllers\SSO\OpenIdController;
 use App\Http\Controllers\SSO\CustomAuthorizationController;
 use Laravel\Passport\Http\Controllers\AccessTokenController;
+use Illuminate\Support\Facades\Auth;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -30,7 +32,12 @@ Route::get('/oauth/.well-known/openid-configuration', [OpenIdController::class, 
 Route::get('/.well-known/openid-configuration', [OpenIdController::class, 'getOpenIdConfiguration']);
 
 Route::middleware('auth:api')->get('/oauth/userinfo', function (Request $request) {
-    \Log::info('/oauth/userinfo :: ' . json_encode($request));
+    // \Log::info('/oauth/userinfo :: ' . json_encode($request));
+
+    $user = Auth::user();
+
+    \Log::info('userinfo :: ' . json_encode($user));
+
     return $request->user();
 });
 
