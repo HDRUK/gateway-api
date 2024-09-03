@@ -60,9 +60,13 @@ trait CustomClaimsAccessTokenTrait
         $sessionState = "ae038c99-8244-4d8e-a85d-e8648fb9dbcd";
         $identifiedBy = $this->getIdentifier();
 
+        \Log::info('CustomClaimsAccessTokenTrait - identifiedBy :: ' . $this->getIdentifier());
+
         $oauthUsers = OauthUser::where([
             'user_id' => $this->getIdentifier(),
         ])->first();
+
+        \Log::info('CustomClaimsAccessTokenTrait - oauthUsers :: ' . json_encode($oauthUsers));
 
         return $this->jwtConfiguration->builder()
             ->permittedFor($this->getClient()->getIdentifier())
