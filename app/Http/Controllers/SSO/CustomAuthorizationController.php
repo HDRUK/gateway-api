@@ -10,6 +10,7 @@ use Laravel\Passport\Passport;
 use App\Models\User as UserModel;
 use Laravel\Passport\Bridge\User;
 use App\Http\Controllers\Controller;
+use App\Models\OauthUser;
 use Laravel\Passport\ClientRepository;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
@@ -65,6 +66,13 @@ class CustomAuthorizationController extends Controller
         $cohortRequests = CohortRequest::where(['request_status' => 'APPROVED'])->first();
         $userId = $cohortRequests->user_id;
         // end mock user id
+
+        // this is only temporary - it needs to be there when the flow starts in the backend
+        OauthUser::where('user_id', $userId)->delete();
+        OauthUser::create([
+            'user_id' => $userId,
+            'nonce' => $request->query('nonce'),
+        ]);
 
         return $this->withErrorHandling(function () use ($psrRequest, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);

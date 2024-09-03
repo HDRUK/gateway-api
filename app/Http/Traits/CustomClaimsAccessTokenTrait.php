@@ -6,6 +6,7 @@ use App\Models\User;
 use Lcobucci\JWT\Token;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasPermission;
+use App\Models\OauthUser;
 use App\Models\Permission;
 use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;
 use Log;
@@ -59,6 +60,10 @@ trait CustomClaimsAccessTokenTrait
         $sessionState = "ae038c99-8244-4d8e-a85d-e8648fb9dbcd";
         $identifiedBy = $this->getIdentifier();
 
+        $oauthUsers = OauthUser::where([
+            'user_id' => $this->getClient()->getIdentifier(),
+        ])->first();
+
         return $this->jwtConfiguration->builder()
             ->permittedFor($this->getClient()->getIdentifier())
             ->identifiedBy($identifiedBy)
@@ -85,6 +90,7 @@ trait CustomClaimsAccessTokenTrait
             ->withClaim('realm_access', $realmAccess)
             ->withClaim('resource_access', $resourceAccess)
             ->withClaim('scope', "openid profile email")
+            ->withClaim('nonce', $oauthUsers->nonce)
             ->withHeader('kid', env('JWT_KID', 'jwtkidnotfound'))
             ->getToken($this->jwtConfiguration->signer(), $this->jwtConfiguration->signingKey());
     }
