@@ -185,6 +185,14 @@ class CollectionController extends Controller
             ->paginate((int) $perPage, ['*'], 'page');
 
             $collections->getCollection()->transform(function ($collection) {
+                if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
+                    $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
+                }
+            
+                return $collection;
+            });
+
+            $collections->getCollection()->transform(function ($collection) {
                 $userDatasets = $collection->userDatasets;
                 $userTools = $collection->userTools;
                 $userPublications = $collection->userPublications;
@@ -1031,6 +1039,12 @@ class CollectionController extends Controller
         ->withTrashed()
         ->where(['id' => $collectionId])
         ->first();
+
+        if ($collection) {
+            if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
+                $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
+            }
+        }
 
         // Set the datasets attribute with the latest datasets
         $collection->setAttribute('datasets', $collection->allDatasets  ?? []);

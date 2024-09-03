@@ -1500,7 +1500,7 @@ class SearchController extends Controller
                     if ((int)$dp['_id'] === $model['id']) {
                         $dataProviderArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $dataProviderArray[$i]['name'] = $model['name'];
-                        $dataProviderArray[$i]['team_logo'] = $model['team_logo'];
+                        $dataProviderArray[$i]['team_logo'] = (is_null($model['team_logo']) || strlen(trim($model['team_logo'])) === 0) ? '' : (filter_var($model['team_logo'], FILTER_VALIDATE_URL) ? $model['team_logo'] : Config::get('services.media.base_url') . $model['team_logo']);
                         $foundFlag = true;
                         break;
                     }

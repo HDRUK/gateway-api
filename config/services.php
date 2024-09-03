@@ -86,5 +86,9 @@ return [
 
     'rquest' => [
         'init_url' => env('RQUEST_INIT_URL', 'http://rquest.local'),
+    ],
+
+    'media' => [
+        'base_url' => env('MEDIA_URL', 'http://media.local'),
     ]
 ];

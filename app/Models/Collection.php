@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use Config;
 use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
@@ -50,6 +53,48 @@ class Collection extends Model
     protected $casts = [
         'enabled' => 'boolean',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->validateFields();
+        });
+
+        static::updating(function ($model) {
+            $model->validateFields();
+        });
+    }
+
+    /**
+     * Validate fields.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    protected function validateFields()
+    {
+        $mediaUrl = Config::get('services.media.base_url');
+        $escapedMediaUrl = preg_quote($mediaUrl, '/');
+        $allowedExtensions = 'jpeg|jpg|png|gif|bmp|webp';
+        $customPattern = "/^(" . $escapedMediaUrl . ")?\/collections\/[a-zA-Z0-9_-]+\.(?:$allowedExtensions)$/";
+
+        $validator = Validator::make($this->attributes, [
+            'image_link' => [
+                'nullable', 
+                'string',
+                function ($attribute, $value, $fail) use ($customPattern) {
+                    if ($value && !filter_var($value, FILTER_VALIDATE_URL) && !preg_match($customPattern, $value)) {
+                        $fail('The ' . $attribute . ' must be a valid URL or match the required format.');
+                    }
+                },
+            ],
+        ]);
+    
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+    }
 
     public function keywords(): BelongsToMany
     {
