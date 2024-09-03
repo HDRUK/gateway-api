@@ -600,6 +600,7 @@ class TeamController extends Controller
                 'is_provider',
                 'url',
                 'introduction',
+                'team_logo',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -746,6 +747,7 @@ class TeamController extends Controller
                 'is_provider',
                 'url',
                 'introduction',
+                'team_logo',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
