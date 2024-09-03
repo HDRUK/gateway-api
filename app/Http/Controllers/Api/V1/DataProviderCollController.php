@@ -359,13 +359,18 @@ class DataProviderCollController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $dpc = DataProviderColl::create([
+            $array = [
                 'enabled' => $input['enabled'],
                 'name' => $input['name'],
                 'img_url' => $input['img_url'],
                 'summary' => $input['summary'],
                 'url' => array_key_exists('url', $input) ? $input['url'] : null,
-            ]);
+            ];
+            if (isset($input['url'])) {
+                $array['url'] = $input['url'];
+            }
+
+            $dpc = DataProviderColl::create($array);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
