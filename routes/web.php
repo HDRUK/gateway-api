@@ -30,6 +30,7 @@ Route::get('/oauth/.well-known/openid-configuration', [OpenIdController::class, 
 Route::get('/.well-known/openid-configuration', [OpenIdController::class, 'getOpenIdConfiguration']);
 
 Route::middleware('auth:api')->get('/oauth/userinfo', function (Request $request) {
+    \Log::info('/oauth/userinfo :: ' . json_encode($request));
     return $request->user();
 });
 
