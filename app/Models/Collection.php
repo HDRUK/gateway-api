@@ -80,7 +80,7 @@ class Collection extends Model
         $customPattern = "/^(" . $escapedMediaUrl . ")?\/collections\/[a-zA-Z0-9_-]+\.(?:$allowedExtensions)$/";
 
         $validator = Validator::make($this->attributes, [
-            'team_logo' => [
+            'image_link' => [
                 'nullable', 
                 'string',
                 function ($attribute, $value, $fail) use ($customPattern) {
