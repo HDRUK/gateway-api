@@ -61,7 +61,7 @@ trait CustomClaimsAccessTokenTrait
         $identifiedBy = $this->getIdentifier();
 
         $oauthUsers = OauthUser::where([
-            'user_id' => $this->getClient()->getIdentifier(),
+            'user_id' => $this->getIdentifier(),
         ])->first();
 
         return $this->jwtConfiguration->builder()
