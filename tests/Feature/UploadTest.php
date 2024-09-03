@@ -426,7 +426,7 @@ class UploadTest extends TestCase
 
         $team = Team::findOrFail($teamId);
 
-        $this->assertTrue(str_contains($team->team_logo, 'team_logo.jpg'));
+        $this->assertTrue(str_contains($team->team_logo, 'team_logo.jpeg'));
 
         // restore null logo to team we used
         $team->update(['team_logo' => null]);

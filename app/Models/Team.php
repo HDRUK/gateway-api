@@ -45,12 +45,23 @@ class Team extends Model
      */
     protected function validateFields()
     {
-        $regexPattern = '#^' . preg_quote(Config::get('services.media.base_url') . '/teams/', '#') . '[a-zA-Z0-9_\-]+\.(jpg|jpeg|png|gif|bmp|webp)$#';
+        $mediaUrl = Config::get('services.media.base_url');
+        $escapedMediaUrl = preg_quote($mediaUrl, '/');
+        $allowedExtensions = 'jpeg|jpg|png|gif|bmp|webp';
+        $customPattern = "/^(" . $escapedMediaUrl . ")?\/teams\/[a-zA-Z0-9_-]+\.(?:$allowedExtensions)$/";
 
         $validator = Validator::make($this->attributes, [
-            'team_logo' => ['nullable', 'string', 'url', 'regex:' . $regexPattern],
+            'team_logo' => [
+                'nullable', 
+                'string',
+                function ($attribute, $value, $fail) use ($customPattern) {
+                    if ($value && !filter_var($value, FILTER_VALIDATE_URL) && !preg_match($customPattern, $value)) {
+                        $fail('The ' . $attribute . ' must be a valid URL or match the required format.');
+                    }
+                },
+            ],
         ]);
-
+    
         if ($validator->fails()) {
             throw new ValidationException($validator);
         }
