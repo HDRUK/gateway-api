@@ -61,9 +61,10 @@ trait CustomClaimsAccessTokenTrait
         $identifiedBy = $this->getIdentifier();
 
         \Log::info('CustomClaimsAccessTokenTrait - identifiedBy :: ' . $this->getIdentifier());
+        \Log::info('CustomClaimsAccessTokenTrait - getUserIdentifier :: ' . $this->getUserIdentifier());
 
         $oauthUsers = OauthUser::where([
-            'user_id' => $this->getIdentifier(),
+            'user_id' => $this->getUserIdentifier(),
         ])->first();
 
         \Log::info('CustomClaimsAccessTokenTrait - oauthUsers :: ' . json_encode($oauthUsers));
