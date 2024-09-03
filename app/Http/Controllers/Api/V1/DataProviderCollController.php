@@ -194,6 +194,7 @@ class DataProviderCollController extends Controller
      *                  @OA\Property(property="id", type="integer", example=1),
      *                  @OA\Property(property="name", type="string", example="Name"),
      *                  @OA\Property(property="img_url", type="string", example="http://placeholder"),
+     *                  @OA\Property(property="url", type="string", example="http://placeholder.url"),
      *                  @OA\Property(property="summary", type="string", example="Summary"),
      *                  @OA\Property(property="datasets", type="array", example="{}", @OA\Items()),
      *                  @OA\Property(property="durs", type="array", example="{}", @OA\Items()),
@@ -357,6 +358,7 @@ class DataProviderCollController extends Controller
                 'name' => $input['name'],
                 'img_url' => $input['img_url'],
                 'summary' => $input['summary'],
+                'url' => array_key_exists('url', $input) ? $input['url'] : null,
             ]);
 
             Auditor::log([
@@ -476,6 +478,7 @@ class DataProviderCollController extends Controller
             $dpc->name = $input['name'];
             $dpc->img_url = $input['img_url'];
             $dpc->summary = $input['summary'];
+            $dpc->url = (isset($input['url']) ? $input['url'] : $dpc->url);
             $dpc->save();
 
             if (isset($input['team_ids']) && !empty($input['team_ids'])) {
@@ -585,6 +588,8 @@ class DataProviderCollController extends Controller
             $dpc->name = (isset($input['name']) ? $input['name'] : $dpc->name);
             $dpc->img_url = (isset($input['img_url']) ? $input['img_url'] : $dpc->img_url);
             $dpc->summary = (isset($input['summary']) ? $input['summary'] : $dpc->summary);
+            $dpc->url = (isset($input['url']) ? $input['url'] : $dpc->url);
+
             $dpc->save();
 
             if (isset($input['team_ids']) && !empty($input['team_ids'])) {
