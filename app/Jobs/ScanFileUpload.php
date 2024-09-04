@@ -94,7 +94,6 @@ class ScanFileUpload implements ShouldQueue
 
         CloudLogger::write('Malware scan initiated');
 
-
         $response = Http::connectTimeout(60)->post(
             env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file',
             [
