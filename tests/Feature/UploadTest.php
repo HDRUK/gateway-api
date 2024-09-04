@@ -390,7 +390,8 @@ class UploadTest extends TestCase
     public function test_team_logo_from_upload_with_success(): void
     {
         $teamId = Team::all()->random()->id;
-        $file = UploadedFile::fake()->image('team_logo.jpg', 600, 300);
+        $file = UploadedFile::fake()->image('team_logo.jpeg', 600, 300);
+
         // post file to files endpoint
         $response = $this->json(
             'POST',
@@ -400,7 +401,6 @@ class UploadTest extends TestCase
             ],
             [
                 'Accept' => 'application/json',
-                'Content-Type' => 'multipart/form-data',
                 'Authorization' => $this->header['Authorization']
             ]
         );
@@ -426,7 +426,7 @@ class UploadTest extends TestCase
 
         $team = Team::findOrFail($teamId);
 
-        $this->assertTrue(str_contains($team->team_logo, 'team_logo.jpg'));
+        $this->assertTrue(str_contains($team->team_logo, 'team_logo.jpeg'));
 
         // restore null logo to team we used
         $team->update(['team_logo' => null]);

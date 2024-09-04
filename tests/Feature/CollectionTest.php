@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Config;
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Tool;
@@ -203,7 +204,7 @@ class CollectionTest extends TestCase
         $mockData = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 123,
@@ -261,7 +262,7 @@ class CollectionTest extends TestCase
         $mockData = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 123,
@@ -308,7 +309,7 @@ class CollectionTest extends TestCase
         $mockDataIns = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 123,
@@ -333,7 +334,7 @@ class CollectionTest extends TestCase
         $mockDataUpdate = [
             "name" => "covid update",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 1,
@@ -385,7 +386,7 @@ class CollectionTest extends TestCase
         $mockDataIns = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 123,
@@ -410,7 +411,7 @@ class CollectionTest extends TestCase
         $mockDataUpdate = [
             "name" => "covid update",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 1,
@@ -441,7 +442,7 @@ class CollectionTest extends TestCase
         $mockDataIns = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 123,
@@ -466,7 +467,7 @@ class CollectionTest extends TestCase
         $mockDataUpdate = [
             "name" => "covid update",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 1,
@@ -493,7 +494,7 @@ class CollectionTest extends TestCase
         $mockDataEdit1 = [
             "name" => "covid edit",
             "description" => "Nam dictum urna quis euismod lacinia.",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
         ];
         $responseEdit1 = $this->json(
             'PATCH',
@@ -542,7 +543,7 @@ class CollectionTest extends TestCase
         $mockDataIn = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 123,

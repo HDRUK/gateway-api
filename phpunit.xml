@@ -25,6 +25,7 @@
     <env name="TELESCOPE_ENABLED" value="false"/>
     <env name="GOOGLE_CLOUD_LOGGING_ENABLED" value="false"/>
     <env name="GOOGLE_CLOUD_PUBSUB_ENABLED" value="false"/>
+    <env name="MEDIA_URL" value="http://media.url"/>
   </php>
   <source>
     <include>
