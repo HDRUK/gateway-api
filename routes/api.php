@@ -1,10 +1,9 @@
 <?php
 
 use Illuminate\Http\Request;
-
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\SSO\CustomAuthorizationController;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +19,13 @@ use App\Http\Controllers\SSO\CustomAuthorizationController;
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
+
+Route::middleware('auth:api')->get('/userinfo', function (Request $request) {
+    $user = Auth::user();
+
+    \Log::info('userinfo :: ' . json_encode($user));
+    return $request->user();
+});
 
 Route::get('/status', function (Request $request) {
     return response()->json(['message' => 'OK'])
