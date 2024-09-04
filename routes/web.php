@@ -45,6 +45,7 @@ Route::get('/.well-known/openid-configuration', [OpenIdController::class, 'getOp
 // });
 
 Route::middleware('auth:api')->get('/oauth/logmeout', function (Request $request) {
+    \Log::info('logmeout - request :: ' . json_encode($request));
     $user = $request->user();
     $accessToken = $user->token();
 
