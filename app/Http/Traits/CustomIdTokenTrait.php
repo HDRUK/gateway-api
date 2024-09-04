@@ -29,6 +29,8 @@ trait CustomIdTokenTrait
         // Extract claims
         $claims = $token->claims()->all();
         \Log::info('claims :: ' . json_encode($claims));
+        $headers = $token->headers()->all();
+        \Log::info('headers :: ' . json_encode($claims));
 
         // Generate new token with similar claims
         $now = new \DateTimeImmutable();

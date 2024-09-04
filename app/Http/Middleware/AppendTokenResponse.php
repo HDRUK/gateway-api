@@ -20,13 +20,15 @@ class AppendTokenResponse
      */
     public function handle(Request $request, Closure $next): Response
     {
-        \Log::info('middleware AppendTokenResponse request->all() :: ' . json_encode($request->all()));
         $response = $next($request);
         $currentUrl = $request->url();
 
         if (strpos($currentUrl, 'oauth/token') !== false) {
             $content = json_decode($response->getContent(), true);
             $content['id_token'] = $content['access_token'];
+            
+            \Log::info('middleware AppendTokenResponse access_token :: ' . json_encode($content['access_token']));
+
             $content['custom_id_token'] = $this->generateIdToken($content['access_token']);
 
             return response()->json($content, $response->getStatusCode(), $response->headers->all());

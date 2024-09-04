@@ -69,7 +69,7 @@ class OpenIdController extends Controller
             ],
 
             // logme out
-            'revocation_endpoint'       => env('APP_URL') . '/oauth/logmeout',
+            'revocation_endpoint'       => env('APP_URL') . '/api/oauth/logmeout',
 
             'token_endpoint_auth_methods_supported' => [
                 'none',

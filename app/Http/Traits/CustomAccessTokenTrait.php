@@ -23,8 +23,6 @@ trait CustomAccessTokenTrait
     private function convertToJWT()
     {
         // https://github.com/HDRUK/gateway-api/blob/2f0f2df3d94a75b8a1a4920a64cd0c6a2267c2d3/src/resources/utilities/ga4gh.utils.js#L10
-        \Log::info('session all convertToJWT :: ' . json_encode(\Request::session()->all()));
-
         $this->initJwtConfiguration();
 
         $rquestroles = $this->getRquestroles($this->getUserIdentifier());
@@ -60,14 +58,9 @@ trait CustomAccessTokenTrait
         $sessionState = "ae038c99-8244-4d8e-a85d-e8648fb9dbcd";
         $identifiedBy = $this->getIdentifier();
 
-        \Log::info('CustomClaimsAccessTokenTrait - identifiedBy :: ' . $this->getIdentifier());
-        \Log::info('CustomClaimsAccessTokenTrait - getUserIdentifier :: ' . $this->getUserIdentifier());
-
         $oauthUsers = OauthUser::where([
             'user_id' => $this->getUserIdentifier(),
         ])->first();
-
-        \Log::info('CustomClaimsAccessTokenTrait - oauthUsers :: ' . json_encode($oauthUsers));
 
         return $this->jwtConfiguration->builder()
             ->permittedFor($this->getClient()->getIdentifier())

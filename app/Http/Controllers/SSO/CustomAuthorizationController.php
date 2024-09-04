@@ -68,9 +68,6 @@ class CustomAuthorizationController extends Controller
             'nonce' => $request->query('nonce'),
         ]);
 
-        \Log::info('customAuthorize - user id :: ' . $userId);
-        \Log::info('customAuthorize - nonce :: ' . $request->query('nonce'));
-
         return $this->withErrorHandling(function () use ($psrRequest, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
             return $this->approveRequest($authRequest, $userId);
