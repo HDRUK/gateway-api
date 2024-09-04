@@ -1,13 +1,14 @@
 <?php
 
 use Laravel\Passport\Passport;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SSO\JwksController;
 use App\Http\Middleware\AppendTokenResponse;
 use App\Http\Controllers\SSO\OpenIdController;
+use App\Http\Controllers\SSO\CustomUserController;
 use App\Http\Controllers\SSO\CustomAuthorizationController;
 use Laravel\Passport\Http\Controllers\AccessTokenController;
-use Illuminate\Support\Facades\Auth;
 
 
 /*
@@ -31,15 +32,17 @@ Route::get('/oauth/.well-known/jwks', [JwksController::class, 'getJwks']);
 Route::get('/oauth/.well-known/openid-configuration', [OpenIdController::class, 'getOpenIdConfiguration']);
 Route::get('/.well-known/openid-configuration', [OpenIdController::class, 'getOpenIdConfiguration']);
 
-Route::middleware('auth:api')->get('/oauth/userinfo', function (Request $request) {
-    // \Log::info('/oauth/userinfo :: ' . json_encode($request));
+Route::post('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middleware('auth:api');
 
-    $user = Auth::user();
+// Route::middleware('auth:api')->get('/oauth/userinfo', function (Request $request) {
+//     // \Log::info('/oauth/userinfo :: ' . json_encode($request));
 
-    \Log::info('userinfo web :: ' . json_encode($user));
+//     $user = Auth::user();
 
-    return $request->user();
-});
+//     \Log::info('userinfo web :: ' . json_encode($user));
+
+//     return $request->user();
+// });
 
 Route::middleware('auth:api')->get('/oauth/logmeout', function (Request $request) {
     $user = $request->user();
