@@ -59,7 +59,7 @@ class ReindexEntities extends Command
     protected $maxIndex = null;
 
     /**
-     * Specific index to end run
+     * Specific the chunk size
      *
      * @var int|null
      */
@@ -73,7 +73,7 @@ class ReindexEntities extends Command
     protected $termExtraction = false;
 
     /**
-     * Specific index to end run
+     * Run fresh
      *
      * @var boolean
      */
@@ -87,7 +87,6 @@ class ReindexEntities extends Command
 
         $entity = $this->argument('entity');
         $sleep = $this->option("sleep");
-
         $this->sleepTimeInMicroseconds = floatval($sleep) * 1000 * 1000;
         echo 'Sleeping between each reindex by ' .  $this->sleepTimeInMicroseconds . "\n";
 
@@ -109,7 +108,6 @@ class ReindexEntities extends Command
     {
         $beforeCount = ECC::countDocuments(ECC::ELASTIC_NAME_DATASET);
         echo "Before reindexing there were $beforeCount datasets indexed \n";
-
 
         if ($this->fresh) {
             $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_DATASET);
