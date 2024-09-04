@@ -60,21 +60,21 @@ class ReindexEntities extends Command
     protected $maxIndex = null;
 
     /**
-     * Specific the chunk size
+     * Specific index to end run
      *
      * @var int|null
      */
     protected $chunkSize = null;
 
     /**
-     * Should term extraction be re run
+     * Specific index to end run
      *
      * @var boolean
      */
     protected $termExtraction = false;
 
     /**
-     * Run fresh
+     * Specific index to end run
      *
      * @var boolean
      */
