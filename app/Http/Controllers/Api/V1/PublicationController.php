@@ -380,7 +380,7 @@ class PublicationController extends Controller
                     $input['publication_type_mk1'] : '',
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
-                'url' => $input['url'],
+                'url' => array_key_exists('url', $input) ? $input['url'] : null,
                 'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
                 'owner_id' => (int)$jwtUser['id'],
                 'status' => $request['status'],
@@ -530,7 +530,7 @@ class PublicationController extends Controller
                     $input['publication_type_mk1'] : '',
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
-                'url' => $input['url'],
+                'url' => array_key_exists('url', $input) ? $input['url'] : null,
                 'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
                 'status' => array_key_exists('status', $input) ? $input['status'] : Publication::STATUS_DRAFT,
             ]);
