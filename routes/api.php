@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SSO\CustomUserController;
 use App\Http\Controllers\SSO\CustomAuthorizationController;
 
 /*
@@ -18,6 +19,8 @@ use App\Http\Controllers\SSO\CustomAuthorizationController;
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
+
+Route::post('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middleware('auth:api');
 
 Route::get('/status', function (Request $request) {
     return response()->json(['message' => 'OK'])

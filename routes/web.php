@@ -32,7 +32,7 @@ Route::get('/oauth/.well-known/jwks', [JwksController::class, 'getJwks']);
 Route::get('/oauth/.well-known/openid-configuration', [OpenIdController::class, 'getOpenIdConfiguration']);
 Route::get('/.well-known/openid-configuration', [OpenIdController::class, 'getOpenIdConfiguration']);
 
-Route::post('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middleware('auth:api');
+// Route::post('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middleware('auth:api');
 
 // Route::middleware('auth:api')->get('/oauth/userinfo', function (Request $request) {
 //     // \Log::info('/oauth/userinfo :: ' . json_encode($request));

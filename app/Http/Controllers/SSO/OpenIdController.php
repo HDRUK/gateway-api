@@ -51,7 +51,7 @@ class OpenIdController extends Controller
             'userinfo_signing_alg_values_supported' => $this->id_token_signing_alg_values_supported,
 
             // Recommended
-            'userinfo_endpoint'         => env('APP_URL') . '/oauth/userinfo',
+            'userinfo_endpoint'         => env('APP_URL') . '/api/oauth/userinfo',
             'registration_endpoint'     => '',
             'scopes_supported'          => $this->scopes_supported,
             'grant_types_supported'     => $this->grant_types_supported,
