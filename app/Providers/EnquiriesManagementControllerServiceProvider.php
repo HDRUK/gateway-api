@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\EnquiriesManagementController\EnquiriesManagementController;
-
 use Illuminate\Support\ServiceProvider;
 
 class EnquiriesManagementControllerServiceProvider extends ServiceProvider

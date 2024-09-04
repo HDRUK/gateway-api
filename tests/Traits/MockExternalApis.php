@@ -5,10 +5,7 @@ namespace Tests\Traits;
 use Config;
 use Http\Mock\Client;
 use Nyholm\Psr7\Response;
-
-
 use Database\Seeders\SectorSeeder;
-
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use MetadataManagementController as MMC;

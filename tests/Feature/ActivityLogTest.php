@@ -3,13 +3,11 @@
 namespace Tests\Feature;
 
 use Config;
-
 use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ActivityLogTypeSeeder;
 use Database\Seeders\ActivityLogUserTypeSeeder;
 use Database\Seeders\ActivityLogSeeder;
-
 use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

@@ -576,7 +576,7 @@ class DatasetTest extends TestCase
 
 
 
-        if(env('TED_ENABLED')) {
+        if (env('TED_ENABLED')) {
             $this->assertNotEmpty($respArrayActive['data']['named_entities']);
         };
         $this->assertArrayHasKey(

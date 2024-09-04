@@ -72,7 +72,7 @@ class UserController extends Controller
             $response = [];
             if (count($jwtUser)) { //should really always be a jwtUser
                 $userIsAdmin = (bool)$jwtUser['is_admin'];
-                if($userIsAdmin) { // if it's the superadmin return a bunch of information
+                if ($userIsAdmin) { // if it's the superadmin return a bunch of information
                     $users = User::with(
                         'roles',
                         'roles.permissions',

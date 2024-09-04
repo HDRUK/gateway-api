@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
@@ -13,15 +12,11 @@ use App\Jobs\TermExtraction;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\MetadataOnboard;
-
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
-
-
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
-
 use Illuminate\Support\Facades\Storage;
 use MetadataManagementController as MMC;
 use App\Http\Requests\Dataset\GetDataset;
@@ -742,7 +737,7 @@ class DatasetController extends Controller
 
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
-            if($request['status'] === Dataset::STATUS_ACTIVE) {
+            if ($request['status'] === Dataset::STATUS_ACTIVE) {
                 // Determine the last version of metadata
 
                 if ($currDataset->status !== Dataset::STATUS_DRAFT) {
@@ -753,8 +748,8 @@ class DatasetController extends Controller
 
                 //update the GWDM modified date and version
                 $gwdmMetadata['required']['modified'] = $updateTime;
-                if(version_compare(Config::get('metadata.GWDM.version'), '1.0', '>')) {
-                    if(version_compare($lastMetadata['gwdmVersion'], '1.0', '>')) {
+                if (version_compare(Config::get('metadata.GWDM.version'), '1.0', '>')) {
+                    if (version_compare($lastMetadata['gwdmVersion'], '1.0', '>')) {
                         $gwdmMetadata['required']['version'] = $versionCode;
                     }
                 }
@@ -793,7 +788,7 @@ class DatasetController extends Controller
             }
 
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
-            if($request['status'] === Dataset::STATUS_ACTIVE) {
+            if ($request['status'] === Dataset::STATUS_ACTIVE) {
                 TermExtraction::dispatch(
                     $currDataset->id,
                     $versionNumber,
@@ -1135,7 +1130,7 @@ class DatasetController extends Controller
                     $metadata = $rowDetails['metadata']['metadata'];
 
                     $publisherName = $metadata['metadata']['summary']['publisher'];
-                    if(version_compare(Config::get('metadata.GWDM.version'), "1.1", "<")) {
+                    if (version_compare(Config::get('metadata.GWDM.version'), "1.1", "<")) {
                         $publisherName = $publisherName['publisherName'];
                     } else {
                         $publisherName = $publisherName['name'];

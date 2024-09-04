@@ -32,7 +32,6 @@ use Database\Seeders\CollectionHasKeywordSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionHasPublicationSeeder;
-
 use ElasticClientController as ECC;
 
 class CollectionTest extends TestCase

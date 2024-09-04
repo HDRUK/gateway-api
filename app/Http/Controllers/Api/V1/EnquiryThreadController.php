@@ -5,17 +5,13 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-
 use EnquiriesManagementController as EMC;
-
 use App\Models\User;
 use App\Models\Team;
 use App\Models\Dataset;
 use App\Models\EnquiryThread;
-
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-
 use App\Http\Controllers\Controller;
 
 class EnquiryThreadController extends Controller

@@ -4,15 +4,12 @@ namespace App\Http\Traits;
 
 use Config;
 use Exception;
-
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
 use App\Jobs\TermExtraction;
-
 use Illuminate\Support\Str;
-
 use MetadataManagementController as MMC;
 
 trait MetadataOnboard
@@ -119,14 +116,14 @@ trait MetadataOnboard
             //            - publisher.publisherId --> publisher.gatewayId
             //            - publisher.publisherName --> publisher.name
             // -------------------------------------------------------------------
-            if(version_compare(Config::get('metadata.GWDM.version'), '1.1', '<')) {
+            if (version_compare(Config::get('metadata.GWDM.version'), '1.1', '<')) {
                 $publisher = [
                     'publisherId' => $team['pid'],
                     'publisherName' => $team['name'],
                 ];
             } else {
                 $version = $this->formatVersion(1);
-                if(array_key_exists('version', $input['metadata']['metadata']['required'])) {
+                if (array_key_exists('version', $input['metadata']['metadata']['required'])) {
                     $version = $input['metadata']['metadata']['required']['version'];
                 }
                 $required['version'] = $version;
@@ -152,7 +149,7 @@ trait MetadataOnboard
             $this->mapCoverage($input['metadata'], $version);
 
             // Dispatch term extraction to a subprocess if the dataset is marked as active
-            if($input['status'] === Dataset::STATUS_ACTIVE) {
+            if ($input['status'] === Dataset::STATUS_ACTIVE) {
                 TermExtraction::dispatch(
                     $dataset->id,
                     '1',
@@ -216,7 +213,7 @@ trait MetadataOnboard
 
     public function getVersion(int $version)
     {
-        if($version > 999) {
+        if ($version > 999) {
             throw new Exception('too many versions');
         }
 

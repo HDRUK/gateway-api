@@ -83,7 +83,7 @@ class SocialLoginController extends Controller
     public function login(Request $request, string $provider): mixed
     {
         $redirectUrl = env('GATEWAY_URL');
-        if($request->has("redirect")) {
+        if ($request->has("redirect")) {
             $redirectUrl = $redirectUrl . $request->query('redirect');
         }
 

@@ -18,7 +18,6 @@ use App\Models\DurHasTool;
 use App\Models\Publication;
 use App\Models\PublicationHasDatasetVersion;
 use App\Models\TypeCategory;
-
 use Illuminate\Http\Request;
 use App\Exports\DataUseExport;
 use App\Models\DatasetVersionHasTool;
@@ -26,7 +25,6 @@ use App\Models\DatasetVersion;
 use App\Exports\ToolListExport;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
-
 use App\Exports\DatasetListExport;
 use App\Exports\PublicationExport;
 use App\Models\ProgrammingPackage;

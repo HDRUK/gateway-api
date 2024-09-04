@@ -21,7 +21,6 @@ use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-
 use ElasticClientController as ECC;
 
 class PublicationTest extends TestCase

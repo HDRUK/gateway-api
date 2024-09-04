@@ -3,17 +3,12 @@
 namespace Tests\Feature;
 
 use Config;
-
 use Tests\TestCase;
-
 use App\Models\Application;
-
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ApplicationSeeder;
-
 use Tests\Traits\Authorization;
 use App\Http\Traits\IntegrationOverride;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ApplicationTest extends TestCase

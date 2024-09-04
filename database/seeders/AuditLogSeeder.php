@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\AuditLog;
-
 use Illuminate\Database\Seeder;
 
 class AuditLogSeeder extends Seeder

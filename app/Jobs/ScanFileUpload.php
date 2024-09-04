@@ -6,28 +6,22 @@ use Auditor;
 use CloudLogger;
 use Config;
 use Exception;
-
 use App\Models\Collection;
 use App\Models\Dataset;
 use App\Models\Team;
 use App\Models\Upload;
 use App\Imports\ImportDur;
 use App\Imports\ImportStructuralMetadata;
-
 use App\Http\Traits\MetadataOnboard;
-
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
-
 use Maatwebsite\Excel\Facades\Excel;
 
 class ScanFileUpload implements ShouldQueue

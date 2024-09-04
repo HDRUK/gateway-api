@@ -3,17 +3,13 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Database\Seeders\TeamSeeder;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
-
 use Database\Seeders\DatasetSeeder;
-
 use Database\Seeders\KeywordSeeder;
-
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
@@ -32,7 +28,6 @@ use Database\Seeders\CollectionHasKeywordSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionHasPublicationSeeder;
-
 use ElasticClientController as ECC;
 
 class DataProviderCollTest extends TestCase

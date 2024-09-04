@@ -188,7 +188,7 @@ class CollectionController extends Controller
                 if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
                     $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
                 }
-            
+
                 return $collection;
             });
 
@@ -510,7 +510,7 @@ class CollectionController extends Controller
             }
 
             $currentCollection = Collection::where('id', $collectionId)->first();
-            if($currentCollection->status === Collection::STATUS_ACTIVE) {
+            if ($currentCollection->status === Collection::STATUS_ACTIVE) {
                 $this->indexElasticCollections((int) $collectionId);
             }
 
@@ -683,7 +683,7 @@ class CollectionController extends Controller
             }
 
             $currentCollection = Collection::where('id', $id)->first();
-            if($currentCollection->status === Collection::STATUS_ACTIVE) {
+            if ($currentCollection->status === Collection::STATUS_ACTIVE) {
                 $this->indexElasticCollections((int) $id);
             } else {
                 $this->deleteCollectionFromElastic((int) $id);
@@ -1451,7 +1451,7 @@ class CollectionController extends Controller
     {
         $kws = CollectionHasKeyword::where('collection_id', $collectionId)->get();
 
-        foreach($kws as $kw) {
+        foreach ($kws as $kw) {
             $kwId = $kw->keyword_id;
             $checkKeyword = Keyword::where('id', $kwId)->first();
 
