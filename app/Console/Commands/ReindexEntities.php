@@ -11,7 +11,6 @@ use App\Models\Collection;
 use App\Jobs\TermExtraction;
 use App\Http\Traits\IndexElastic;
 use Illuminate\Console\Command;
-
 use ElasticClientController as ECC;
 
 class ReindexEntities extends Command
@@ -67,7 +66,7 @@ class ReindexEntities extends Command
     protected $chunkSize = null;
 
     /**
-     * Specific index to end run
+     * Should term extraction be re run
      *
      * @var boolean
      */
@@ -88,6 +87,7 @@ class ReindexEntities extends Command
 
         $entity = $this->argument('entity');
         $sleep = $this->option("sleep");
+
         $this->sleepTimeInMicroseconds = floatval($sleep) * 1000 * 1000;
         echo 'Sleeping between each reindex by ' .  $this->sleepTimeInMicroseconds . "\n";
 
@@ -110,35 +110,31 @@ class ReindexEntities extends Command
         $beforeCount = ECC::countDocuments(ECC::ELASTIC_NAME_DATASET);
         echo "Before reindexing there were $beforeCount datasets indexed \n";
 
-        if($this->fresh) {
+
+        if ($this->fresh) {
             $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_DATASET);
             echo "Deleted $nDeleted documents from the index \n";
         }
 
-        $datasetIds = Dataset::select("id")->where("status", Dataset::STATUS_ACTIVE)
-            ->pluck('id')->toArray();
-        $this->sliceIds($datasetIds);
+        $nTotal = Dataset::count();
 
-        if($this->termExtraction) {
-            $progressbar = $this->output->createProgressBar(count($datasetIds));
-            foreach ($datasetIds as $id) {
-                $dataset = Dataset::where('id', $id)->first();
-                $latestMetadata = $dataset->latestMetadata()->first();
-                TermExtraction::dispatch(
-                    $id,
-                    $dataset->lastMetadataVersionNumber()->version,
-                    base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6))
-                );
-            }
-            $progressbar->finish();
+        $datasetIds = Dataset::where("status", Dataset::STATUS_ACTIVE)
+            ->select("id")
+            ->pluck('id')
+            ->toArray();
+
+        if ($this->termExtraction) {
+            $this->termReExtraction($datasetIds);
         } else {
+            $this->sliceIds($datasetIds);
             $this->bulkProcess($datasetIds, 'reindexElastic');
         }
 
         //sleep for 5 seconds and count again..
         usleep(5 * 1000 * 1000);
-        $afterCount = ECC::countDocuments(ECC::ELASTIC_NAME_DATASET);
-        echo "\nAfter reindexing there were $afterCount datasets indexed \n";
+        $nIndexed = ECC::countDocuments(ECC::ELASTIC_NAME_DATASET);
+        echo "--->  ($nIndexed/$nTotal) Documents indexed ! \n";
+        echo "\nAfter reindexing there were $nIndexed datasets indexed \n";
 
     }
 
@@ -238,6 +234,28 @@ class ReindexEntities extends Command
             $this->reindexElasticBulk($ids, [$this, $indexerName]);
             $progressbar->advance(count($ids));
             usleep($this->sleepTimeInMicroseconds);
+        }
+        $progressbar->finish();
+    }
+
+    private function termReExtraction(array $ids)
+    {
+        $progressbar = $this->output->createProgressBar(count($ids));
+
+        echo "Running term extraction \n";
+
+        foreach ($ids as $id) {
+            $dataset = Dataset::where('id', $id)->first();
+            $latestMetadata = $dataset->latestMetadata()->first();
+            $versionNumber = $dataset->lastMetadataVersionNumber()->version;
+            $elasticIndexing = true;
+
+            TermExtraction::dispatch(
+                $id,
+                $versionNumber,
+                base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6)),
+                $elasticIndexing
+            );
         }
         $progressbar->finish();
     }
