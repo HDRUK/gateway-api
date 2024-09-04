@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Auth;
 Route::middleware('auth:api')->get('/userinfo', function (Request $request) {
     $user = Auth::user();
 
-    \Log::info('userinfo :: ' . json_encode($user));
+    \Log::info('userinfo api :: ' . json_encode($user));
     return $request->user();
 });
 

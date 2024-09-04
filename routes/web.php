@@ -36,7 +36,7 @@ Route::middleware('auth:api')->get('/oauth/userinfo', function (Request $request
 
     $user = Auth::user();
 
-    \Log::info('userinfo :: ' . json_encode($user));
+    \Log::info('userinfo web :: ' . json_encode($user));
 
     return $request->user();
 });
