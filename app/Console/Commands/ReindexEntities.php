@@ -242,6 +242,8 @@ class ReindexEntities extends Command
     {
         $progressbar = $this->output->createProgressBar(count($ids));
 
+        echo "Running term extraction \n";
+
         foreach ($ids as $id) {
             $dataset = Dataset::where('id', $id)->first();
             $latestMetadata = $dataset->latestMetadata()->first();
