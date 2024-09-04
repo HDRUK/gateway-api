@@ -34,8 +34,6 @@ class AppServiceProvider extends ServiceProvider
                 \Log::warning("SQL query: " . $sql, ['time' => $query->time]);
             });
         }
-
-        // Passport::ignoreRoutes();
     }
 
     /**

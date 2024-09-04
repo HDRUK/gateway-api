@@ -11,7 +11,7 @@ use App\Models\Permission;
 use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;
 use Log;
 
-trait CustomClaimsAccessTokenTrait
+trait CustomAccessTokenTrait
 {
     use AccessTokenTrait;
 
