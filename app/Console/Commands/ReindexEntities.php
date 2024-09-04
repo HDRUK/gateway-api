@@ -110,7 +110,7 @@ class ReindexEntities extends Command
         $beforeCount = ECC::countDocuments(ECC::ELASTIC_NAME_DATASET);
         echo "Before reindexing there were $beforeCount datasets indexed \n";
 
-        if ($this->fresh){
+        if($this->fresh) {
             $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_DATASET);
             echo "Deleted $nDeleted documents from the index \n";
         }
