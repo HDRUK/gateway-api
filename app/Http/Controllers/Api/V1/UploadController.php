@@ -80,7 +80,7 @@ class UploadController extends Controller
                 'filename' => $file->getClientOriginalName(),
                 'file_location' => $filePath,
                 'user_id' => (int)$jwtUser['id'],
-                'status' => 'PENDING'
+                'status' => 'PROCESSED'
             ]);
 
             // spawn scan job
