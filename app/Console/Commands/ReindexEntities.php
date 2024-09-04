@@ -115,12 +115,8 @@ class ReindexEntities extends Command
             echo "Deleted $nDeleted documents from the index \n";
         }
 
-        $nTotal = Dataset::count();
-
-        $datasetIds = Dataset::where("status", Dataset::STATUS_ACTIVE)
-            ->select("id")
-            ->pluck('id')
-            ->toArray();
+        $datasetIds = Dataset::select("id")->where("status", Dataset::STATUS_ACTIVE)
+            ->pluck('id')->toArray();
 
         if ($this->termExtraction) {
             $this->termReExtraction($datasetIds);
@@ -131,9 +127,8 @@ class ReindexEntities extends Command
 
         //sleep for 5 seconds and count again..
         usleep(5 * 1000 * 1000);
-        $nIndexed = ECC::countDocuments(ECC::ELASTIC_NAME_DATASET);
-        echo "--->  ($nIndexed/$nTotal) Documents indexed ! \n";
-        echo "\nAfter reindexing there were $nIndexed datasets indexed \n";
+        $afterCount = ECC::countDocuments(ECC::ELASTIC_NAME_DATASET);
+        echo "\nAfter reindexing there were $afterCount datasets indexed \n";
 
     }
 
