@@ -11,6 +11,7 @@ use App\Models\Collection;
 use App\Jobs\TermExtraction;
 use App\Http\Traits\IndexElastic;
 use Illuminate\Console\Command;
+
 use ElasticClientController as ECC;
 
 class ReindexEntities extends Command
