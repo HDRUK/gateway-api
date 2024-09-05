@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SSO\CustomUserController;
+use App\Http\Controllers\SSO\CustomLogoutController;
 use App\Http\Controllers\SSO\CustomAuthorizationController;
 
 /*
@@ -20,7 +21,6 @@ use App\Http\Controllers\SSO\CustomAuthorizationController;
 //     return $request->user();
 // });
 
-Route::get('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middleware('auth:api');
 
 Route::get('/status', function (Request $request) {
     return response()->json(['message' => 'OK'])
@@ -43,25 +43,29 @@ Route::get('/email', function (Request $reqest) {
 # bcplatform
 Route::get('/sso/authorize', [CustomAuthorizationController::class, 'customAuthorize']);
 
-Route::middleware('auth:api')->get('/oauth/logmeout', function (Request $request) {
-    \Log::info('logmeout - request :: ' . json_encode($request));
-    $user = $request->user();
-    $accessToken = $user->token();
+Route::get('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middleware('auth:api');
 
-    DB::table('oauth_refresh_tokens')->where('access_token_id', $accessToken->id)->delete();
-    $accessToken->delete();
+Route::get('/oauth/logmeout', [CustomLogoutController::class, 'logOut'])->middleware('auth:api');
 
-    $cookies = [
-        Cookie::make('token', 'test'),
-    ];
+// Route::middleware('auth:api')->get('/oauth/logmeout', function (Request $request) {
+//     \Log::info('logmeout - request :: ' . json_encode($request));
+//     $user = $request->user();
+//     $accessToken = $user->token();
 
-    $redirectUrl = env('GATEWAY_URL');
-    return redirect()->away($redirectUrl)->withCookies($cookies);
+//     DB::table('oauth_refresh_tokens')->where('access_token_id', $accessToken->id)->delete();
+//     $accessToken->delete();
 
-    // return response()->json([
-    //     'message' => 'Revoked',
-    // ]);
-});
+//     $cookies = [
+//         Cookie::make('token', 'test'),
+//     ];
+
+//     $redirectUrl = env('GATEWAY_URL');
+//     return redirect()->away($redirectUrl)->withCookies($cookies);
+
+//     // return response()->json([
+//     //     'message' => 'Revoked',
+//     // ]);
+// });
 
 // stop all all other routes
 Route::any('{path}', function () {

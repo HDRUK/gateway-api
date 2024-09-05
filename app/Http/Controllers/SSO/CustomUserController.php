@@ -23,7 +23,7 @@ class CustomUserController extends Controller
             $user = Auth::user();
 
             \Log::info('CustomUserController userInfo :: ' . json_encode($user));
-            \Log::info('CustomUserController userInfo :: ' . json_encode($request->user()));
+            \Log::info('CustomUserController userInfo request :: ' . json_encode($request->user()));
     
             return response()->json([
                 'id' => $user->id,
