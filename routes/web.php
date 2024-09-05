@@ -44,19 +44,6 @@ Route::get('/.well-known/openid-configuration', [OpenIdController::class, 'getOp
 //     return $request->user();
 // });
 
-Route::middleware('auth:api')->get('/oauth/logmeout', function (Request $request) {
-    \Log::info('logmeout - request :: ' . json_encode($request));
-    $user = $request->user();
-    $accessToken = $user->token();
-
-    DB::table('oauth_refresh_tokens')->where('access_token_id', $accessToken->id)->delete();
-    $accessToken->delete();
-
-    return response()->json([
-        'message' => 'Revoked',
-    ]);
-});
-
 // stop all all other routes
 Route::any('{path}', function () {
     $response = [
