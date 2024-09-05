@@ -40,7 +40,8 @@ class CustomLogoutController extends Controller
         
             $redirectUrl = env('GATEWAY_URL');
             // return redirect()->away($redirectUrl)->withCookies($cookies);
-            return redirect()->away($redirectUrl);
+            // return redirect()->away($redirectUrl);
+            return redirect()->to($redirectUrl);
         } catch (Exception $e) {
             throw new Exception($e);
         }

@@ -47,26 +47,6 @@ Route::get('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middle
 
 Route::get('/oauth/logmeout', [CustomLogoutController::class, 'logOut'])->middleware('auth:api');
 
-// Route::middleware('auth:api')->get('/oauth/logmeout', function (Request $request) {
-//     \Log::info('logmeout - request :: ' . json_encode($request));
-//     $user = $request->user();
-//     $accessToken = $user->token();
-
-//     DB::table('oauth_refresh_tokens')->where('access_token_id', $accessToken->id)->delete();
-//     $accessToken->delete();
-
-//     $cookies = [
-//         Cookie::make('token', 'test'),
-//     ];
-
-//     $redirectUrl = env('GATEWAY_URL');
-//     return redirect()->away($redirectUrl)->withCookies($cookies);
-
-//     // return response()->json([
-//     //     'message' => 'Revoked',
-//     // ]);
-// });
-
 // stop all all other routes
 Route::any('{path}', function () {
     $response = [
