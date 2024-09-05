@@ -22,18 +22,17 @@ class CustomLogoutController extends Controller
     {
         try {
             $user = Auth::user();
-
             \Log::info('CustomLogoutController userInfo :: ' . json_encode($user));
-            \Log::info('CustomLogoutController userInfo request :: ' . json_encode($request->user()));
 
             $user = $request->user();
-            $accessToken = $user->token();
+            \Log::info('CustomLogoutController userInfo request :: ' . json_encode($request->user()));
 
+            $accessToken = $user->token();
             \Log::info('CustomLogoutController accessToken request :: ' . json_encode($accessToken));
         
-            \DB::table('oauth_refresh_tokens')->where('access_token_id', $accessToken->id)->delete();
+            // \DB::table('oauth_refresh_tokens')->where('access_token_id', $accessToken->id)->delete();
 
-            $accessToken->delete();
+            // $accessToken->delete();
         
             $cookies = [
                 Cookie::make('token', 'test'),
