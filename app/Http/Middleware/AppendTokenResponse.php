@@ -25,13 +25,9 @@ class AppendTokenResponse
 
         if (strpos($currentUrl, 'oauth/token') !== false) {
             $content = json_decode($response->getContent(), true);
-            $content['id_token'] = $content['access_token'];
-            
-            \Log::info('middleware AppendTokenResponse access_token :: ' . json_encode($content['access_token']));
+            // $content['id_token'] = $content['access_token'];
 
-            $content['custom_id_token'] = $this->generateIdToken($content['access_token']);
-
-            \Log::info('middleware AppendTokenResponse custom_id_token :: ' . json_encode($content['custom_id_token']));
+            $content['id_token'] = $this->generateIdToken($content['access_token']);
 
             \Log::info('middleware AppendTokenResponse content :: ' . json_encode($content));
 
