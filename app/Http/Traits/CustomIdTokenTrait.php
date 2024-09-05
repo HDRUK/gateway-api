@@ -44,6 +44,7 @@ trait CustomIdTokenTrait
                            ->withClaim('sid', $claims['session_state'])
                            ->withClaim('nonce', $claims['nonce'])
                            ->withClaim('typ', 'ID')
+                           ->withClaim('azh', 'rquest')
                            ->withClaim('auth_time', 0)
                            ->withClaim('email_verified', true)
                            ->withClaim('email', $claims['email'])
