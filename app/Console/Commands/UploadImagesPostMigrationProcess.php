@@ -39,7 +39,6 @@ class UploadImagesPostMigrationProcess extends Command
     public function handle()
     {
         $this->readMigrationFile(storage_path() . '/migration_files/collection_images.csv');
-
         // Traverse the CSV data and update migrations accordingly
         foreach ($this->csvData as $csv) {
             try {
@@ -71,8 +70,8 @@ class UploadImagesPostMigrationProcess extends Command
                 }
 
                 if ($fileLoc === null) {
-                    echo 'skipping as' . $pID . ' has null file_loc ' . PHP_EOL;
-                    $csv->next();
+                    echo 'skipping as ' . $pID . ' has null file_loc ' . PHP_EOL;
+                    continue;
                 }
 
                 $upload = Upload::updateOrCreate([
