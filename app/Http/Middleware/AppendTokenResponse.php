@@ -33,6 +33,8 @@ class AppendTokenResponse
 
             \Log::info('middleware AppendTokenResponse custom_id_token :: ' . json_encode($content['custom_id_token']));
 
+            \Log::info('middleware AppendTokenResponse content :: ' . json_encode($content));
+
             return response()->json($content, $response->getStatusCode(), $response->headers->all());
         }
 
