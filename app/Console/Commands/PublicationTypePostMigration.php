@@ -47,6 +47,11 @@ class PublicationTypePostMigration extends Command
             $paperName = $csv['paper_title'];
             $publicationType = $csv['paper_type_GW2'];
 
+            if ($publicationType === '') {
+                echo 'publication type for ' . $paperName . " is blank defaulting to Research article\n";
+                $publicationType = 'Research article';
+            }
+
             // Find Publication associated to this row
             $publications = Publication::where('paper_doi', $paperDOI)->get();
             if (!$publications) {
