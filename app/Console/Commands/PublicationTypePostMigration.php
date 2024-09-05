@@ -48,8 +48,8 @@ class PublicationTypePostMigration extends Command
             $publicationType = $csv['paper_type_GW2'];
 
             if ($publicationType === '') {
-                echo 'publication type for ' . $paperName . " is blank defaulting to Research article\n";
-                $publicationType = 'Research article';
+                echo 'publication type for ' . $paperName . " is blank defaulting to Research articles\n";
+                $publicationType = 'Research articles';
             }
 
             // Find Publication associated to this row
