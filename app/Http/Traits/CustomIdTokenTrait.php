@@ -37,7 +37,7 @@ trait CustomIdTokenTrait
         $newToken = $config->builder()
                            ->issuedAt($now)
                            ->expiresAt($now->modify('+15 days'))
-                           ->permittedFor($claims['aud'])
+                           ->permittedFor($claims['aud'][0])
                            ->identifiedBy($claims['jti'])
                            ->issuedBy(env('APP_URL'))
                            ->relatedTo($claims['sub'])
