@@ -50,8 +50,11 @@ trait CustomIdTokenTrait
                            ->withClaim('email', $claims['email'])
                            ->withClaim('name', $claims['name'])
                            ->withClaim('preferred_username', $claims['preferred_username'])
+                           ->withClaim('firstname', $claims['given_name'])
+                           ->withClaim('lastname', $claims['family_name'])
                            ->withClaim('given_name', $claims['given_name'])
                            ->withClaim('family_name', $claims['family_name'])
+                           ->withClaim('rquestroles', ['GENERAL_ACCESS', 'SYSTEM_ADMIN'])
                            ->withHeader('kid', env('JWT_KID', 'jwtkidnotfound'))
                            ->getToken($config->signer(), $config->signingKey());
 

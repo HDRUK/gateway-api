@@ -29,10 +29,12 @@ class CustomUserController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'preferred_username' => $user->name,
+                'firstname' => $user->firstname,
+                'lastname' => $user->family_name,
                 'given_name' => $user->firstname,
                 'family_name' => $user->family_name,
                 'email' => $user->email,
-                'rquestroles' => $user->rquestroles, // no idea if is ok
+                'rquestroles' => ['GENERAL_ACCESS', 'SYSTEM_ADMIN'], // no idea if is ok
             ]);
         } catch (Exception $e) {
             throw new Exception($e);

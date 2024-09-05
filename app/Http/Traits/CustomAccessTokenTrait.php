@@ -84,10 +84,13 @@ trait CustomAccessTokenTrait
             ->withClaim('name', $user->lastname . ' ' . $user->firstname)
             ->withClaim('given_name', $user->firstname)
             ->withClaim('family_name', $user->lastname)
+            ->withClaim('firstname', $user->firstname)
+            ->withClaim('lastname', $user->lastname)
             // ->withClaim('rquestroles', $rquestroles)
             ->withClaim('realm_access', $realmAccess)
             ->withClaim('resource_access', $resourceAccess)
             ->withClaim('scope', "openid profile email")
+            ->withClaim('rquestroles', ['GENERAL_ACCESS', 'SYSTEM_ADMIN'])
             ->withHeader('kid', env('JWT_KID', 'jwtkidnotfound'))
             ->getToken($this->jwtConfiguration->signer(), $this->jwtConfiguration->signingKey());
     }
