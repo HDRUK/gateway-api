@@ -41,7 +41,7 @@ Route::get('/email', function (Request $reqest) {
 
 
 # bcplatform
-Route::get('/sso/authorize', [CustomAuthorizationController::class, 'customAuthorize']);
+// Route::get('/sso/authorize', [CustomAuthorizationController::class, 'customAuthorize']);
 
 Route::get('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middleware('auth:api');
 

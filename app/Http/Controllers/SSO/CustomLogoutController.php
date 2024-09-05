@@ -27,8 +27,8 @@ class CustomLogoutController extends Controller
             $user = $request->user();
             \Log::info('CustomLogoutController userInfo request :: ' . json_encode($request->user()));
 
-            $accessToken = $user->token();
-            \Log::info('CustomLogoutController accessToken request :: ' . json_encode($accessToken));
+            // $accessToken = $user->token();
+            // \Log::info('CustomLogoutController accessToken request :: ' . json_encode($accessToken));
         
             // \DB::table('oauth_refresh_tokens')->where('access_token_id', $accessToken->id)->delete();
 
@@ -39,7 +39,8 @@ class CustomLogoutController extends Controller
             ];
         
             $redirectUrl = env('GATEWAY_URL');
-            return redirect()->away($redirectUrl)->withCookies($cookies);
+            // return redirect()->away($redirectUrl)->withCookies($cookies);
+            return redirect()->away($redirectUrl);
         } catch (Exception $e) {
             throw new Exception($e);
         }
