@@ -438,6 +438,13 @@ trait IndexElastic
             // Split string to array of strings
             $publicationTypes = explode(",", $pubMatch['publication_type']);
 
+            // replace any empty strings with Research articles
+            foreach ($publicationTypes as $i => $value) {
+                if ($value === "") {
+                    $publicationTypes[$i] = 'Research articles';
+                }
+            }
+
             $toIndex = [
                 'title' => $pubMatch['paper_title'],
                 'journalName' => $pubMatch['journal_name'],
