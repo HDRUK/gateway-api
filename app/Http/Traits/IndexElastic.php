@@ -441,8 +441,8 @@ trait IndexElastic
             // replace any empty strings with Research article
             foreach ($publicationTypes as $i => $value) {
                 if ($value === "") {
-                    $publicationTypes[$i] = 'Research article'
-                };
+                    $publicationTypes[$i] = 'Research article';
+                }
             }
 
             $toIndex = [
