@@ -1471,11 +1471,11 @@ class CollectionController extends Controller
 
         foreach ($inKeywords as $keyword) {
             $keywordId = $this->updateOrCreateKeyword($keyword)->id;
-            $this->updateOrCreateDurHasKeywords($collectionId, $keywordId);
+            $this->updateOrCreateCollectionHasKeywords($collectionId, $keywordId);
         }
     }
 
-    private function updateOrCreateDurHasKeywords(int $collectionId, int $keywordId)
+    private function updateOrCreateCollectionHasKeywords(int $collectionId, int $keywordId)
     {
         try {
             return CollectionHasKeyword::updateOrCreate([
@@ -1489,7 +1489,7 @@ class CollectionController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception('updateOrCreateDurHasKeywords :: ' . $e->getMessage());
+            throw new Exception('updateOrCreateCollectionHasKeywords :: ' . $e->getMessage());
         }
     }
 
