@@ -115,13 +115,15 @@ class ReindexEntities extends Command
             echo "Deleted $nDeleted documents from the index \n";
         }
 
-        $datasetIds = Dataset::select("id")->where("status", Dataset::STATUS_ACTIVE)
-            ->pluck('id')->toArray();
+        $datasetIds = Dataset::where("status", Dataset::STATUS_ACTIVE)
+            ->select("id")
+            ->pluck('id')
+            ->toArray();
+        $this->sliceIds($datasetIds);
 
         if ($this->termExtraction) {
-            $this->termReExtraction($datasetIds);
+            $this->rerunTermExtraction($datasetIds);
         } else {
-            $this->sliceIds($datasetIds);
             $this->bulkProcess($datasetIds, 'reindexElastic');
         }
 
@@ -232,7 +234,7 @@ class ReindexEntities extends Command
         $progressbar->finish();
     }
 
-    private function termReExtraction(array $ids)
+    private function rerunTermExtraction(array $ids)
     {
         $progressbar = $this->output->createProgressBar(count($ids));
 
