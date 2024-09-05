@@ -31,6 +31,8 @@ class AppendTokenResponse
 
             $content['custom_id_token'] = $this->generateIdToken($content['access_token']);
 
+            \Log::info('middleware AppendTokenResponse custom_id_token :: ' . json_encode($content['custom_id_token']));
+
             return response()->json($content, $response->getStatusCode(), $response->headers->all());
         }
 
