@@ -91,8 +91,9 @@ class ReindexEntities extends Command
         $this->sleepTimeInMicroseconds = floatval($sleep) * 1000 * 1000;
         echo 'Sleeping between each reindex by ' .  $this->sleepTimeInMicroseconds . "\n";
 
-        $this->minIndex = (int) $this->option('minIndex');
-        $this->maxIndex = (int) $this->option('maxIndex');
+        $this->minIndex = $this->option('minIndex');
+        $this->maxIndex = $this->option('maxIndex');
+
         $this->chunkSize = (int) $this->option('chunkSize');
         $this->termExtraction = $this->option('term-extraction');
         $this->fresh = $this->option('fresh');
@@ -117,6 +118,7 @@ class ReindexEntities extends Command
 
         $datasetIds = Dataset::select("id")->where("status", Dataset::STATUS_ACTIVE)
             ->pluck('id')->toArray();
+
         $this->sliceIds($datasetIds);
 
         if($this->termExtraction) {
@@ -157,7 +159,7 @@ class ReindexEntities extends Command
         $this->sliceIds($toolIds);
         $this->bulkProcess($toolIds, 'indexElasticTools');
 
-        $nIndexed = ECC::countDocuments(ECC::ELASTIC_NAME_DUR);
+        $nIndexed = ECC::countDocuments(ECC::ELASTIC_NAME_TOOL);
         echo "--->  ($nIndexed/$nTotal) Documents indexed ! \n";
     }
 
@@ -224,10 +226,13 @@ class ReindexEntities extends Command
     private function dataProviders()
     {
         $providerIds = array_unique(Dataset::pluck('team_id')->toArray());
+        $nTotal = count($providerIds);
         $teamIds = Team::whereIn('id', $providerIds)->select('id')
             ->pluck('id')->toArray();
 
         $this->bulkProcess($teamIds, 'reindexElasticDataProvider');
+        $nIndexed = ECC::countDocuments(ECC::ELASTIC_NAME_DATAPROVIDER);
+        echo "--->  ($nIndexed/$nTotal) Documents indexed ! \n";
     }
 
     private function bulkProcess(array $ids, string $indexerName)
@@ -240,6 +245,7 @@ class ReindexEntities extends Command
             usleep($this->sleepTimeInMicroseconds);
         }
         $progressbar->finish();
+
     }
 
     public function sliceIds(array &$ids): void
