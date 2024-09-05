@@ -115,22 +115,14 @@ class ReindexEntities extends Command
             echo "Deleted $nDeleted documents from the index \n";
         }
 
-        $datasetIds = Dataset::select("id")->where("status", Dataset::STATUS_ACTIVE)
-            ->pluck('id')->toArray();
+        $datasetIds = Dataset::where("status", Dataset::STATUS_ACTIVE)
+            ->select("id")
+            ->pluck('id')
+            ->toArray();
         $this->sliceIds($datasetIds);
 
-        if($this->termExtraction) {
-            $progressbar = $this->output->createProgressBar(count($datasetIds));
-            foreach ($datasetIds as $id) {
-                $dataset = Dataset::where('id', $id)->first();
-                $latestMetadata = $dataset->latestMetadata()->first();
-                TermExtraction::dispatch(
-                    $id,
-                    $dataset->lastMetadataVersionNumber()->version,
-                    base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6))
-                );
-            }
-            $progressbar->finish();
+        if ($this->termExtraction) {
+            $this->rerunTermExtraction($datasetIds);
         } else {
             $this->bulkProcess($datasetIds, 'reindexElastic');
         }
@@ -238,6 +230,28 @@ class ReindexEntities extends Command
             $this->reindexElasticBulk($ids, [$this, $indexerName]);
             $progressbar->advance(count($ids));
             usleep($this->sleepTimeInMicroseconds);
+        }
+        $progressbar->finish();
+    }
+
+    private function rerunTermExtraction(array $ids)
+    {
+        $progressbar = $this->output->createProgressBar(count($ids));
+
+        echo "Running term extraction \n";
+
+        foreach ($ids as $id) {
+            $dataset = Dataset::where('id', $id)->first();
+            $latestMetadata = $dataset->latestMetadata()->first();
+            $versionNumber = $dataset->lastMetadataVersionNumber()->version;
+            $elasticIndexing = true;
+
+            TermExtraction::dispatch(
+                $id,
+                $versionNumber,
+                base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6)),
+                $elasticIndexing
+            );
         }
         $progressbar->finish();
     }
