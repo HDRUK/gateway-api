@@ -20,7 +20,7 @@ use App\Http\Controllers\SSO\CustomAuthorizationController;
 //     return $request->user();
 // });
 
-Route::post('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middleware('auth:api');
+Route::get('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middleware('auth:api');
 
 Route::get('/status', function (Request $request) {
     return response()->json(['message' => 'OK'])
