@@ -46,7 +46,7 @@ class CustomUserController extends Controller
                 'given_name' => $user->firstname,
                 'family_name' => $user->lastname,
                 'email' => $user->email,
-                'rquestroles' => ['GENERAL_ACCESS'],
+                'rquestroles' => ['GENERAL_ACCESS', 'SYSTEM_ADMIN'],
             ]);
         } catch (Exception $e) {
             throw new Exception($e);
