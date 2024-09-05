@@ -2,6 +2,7 @@
 
 namespace App\Http\Traits;
 
+use Config;
 use App\Models\User;
 use App\Models\TeamHasUser;
 use App\Models\Notification;
@@ -33,7 +34,6 @@ trait TeamTransformation
                 'access_requests_management' => $team['access_requests_management'],
                 'uses_5_safes' => $team['uses_5_safes'],
                 'is_admin' => $team['is_admin'],
-                'team_logo' => $team['team_logo'],
                 'member_of' => $team['member_of'],
                 'contact_point' => $team['contact_point'],
                 'application_form_updated_by' => $team['application_form_updated_by'],
@@ -44,6 +44,7 @@ trait TeamTransformation
                 'is_provider' => $team['is_provider'],
                 'url' => $team['url'],
                 'introduction' => $team['introduction'],
+                'team_logo' => (is_null($team['team_logo']) || strlen(trim($team['team_logo'])) === 0) ? '' : (filter_var($team['team_logo'], FILTER_VALIDATE_URL) ? $team['team_logo'] : Config::get('services.media.base_url') . $team['team_logo']), 
             ];
 
             $tmpUser = [];

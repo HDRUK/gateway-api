@@ -194,6 +194,7 @@ class DataProviderCollController extends Controller
      *                  @OA\Property(property="id", type="integer", example=1),
      *                  @OA\Property(property="name", type="string", example="Name"),
      *                  @OA\Property(property="img_url", type="string", example="http://placeholder"),
+     *                  @OA\Property(property="url", type="string", example="http://placeholder.url"),
      *                  @OA\Property(property="summary", type="string", example="Summary"),
      *                  @OA\Property(property="datasets", type="array", example="{}", @OA\Items()),
      *                  @OA\Property(property="durs", type="array", example="{}", @OA\Items()),
@@ -271,6 +272,12 @@ class DataProviderCollController extends Controller
                 'created_at',
                 'updated_at'
             )->whereIn('id', $this->collections)->get()->toArray();
+            $collections = array_map(function($collection) {
+                if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
+                    $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
+                }
+                return $collection;
+            }, $collections);
 
             $result = [
                 'id' => $dpc->id,
@@ -352,12 +359,18 @@ class DataProviderCollController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $dpc = DataProviderColl::create([
+            $array = [
                 'enabled' => $input['enabled'],
                 'name' => $input['name'],
                 'img_url' => $input['img_url'],
                 'summary' => $input['summary'],
-            ]);
+                'url' => array_key_exists('url', $input) ? $input['url'] : null,
+            ];
+            if (isset($input['url'])) {
+                $array['url'] = $input['url'];
+            }
+
+            $dpc = DataProviderColl::create($array);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -476,6 +489,7 @@ class DataProviderCollController extends Controller
             $dpc->name = $input['name'];
             $dpc->img_url = $input['img_url'];
             $dpc->summary = $input['summary'];
+            $dpc->url = (isset($input['url']) ? $input['url'] : $dpc->url);
             $dpc->save();
 
             if (isset($input['team_ids']) && !empty($input['team_ids'])) {
@@ -585,6 +599,8 @@ class DataProviderCollController extends Controller
             $dpc->name = (isset($input['name']) ? $input['name'] : $dpc->name);
             $dpc->img_url = (isset($input['img_url']) ? $input['img_url'] : $dpc->img_url);
             $dpc->summary = (isset($input['summary']) ? $input['summary'] : $dpc->summary);
+            $dpc->url = (isset($input['url']) ? $input['url'] : $dpc->url);
+
             $dpc->save();
 
             if (isset($input['team_ids']) && !empty($input['team_ids'])) {
