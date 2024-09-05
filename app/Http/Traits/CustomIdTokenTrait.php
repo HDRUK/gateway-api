@@ -36,9 +36,16 @@ trait CustomIdTokenTrait
         $now = new \DateTimeImmutable();
         $newToken = $config->builder()
                            ->issuedAt($now)
-                           ->expiresAt($now->modify('+1 hour'))
+                           ->expiresAt($now->modify('+15 days'))
                            ->permittedFor('rquest')
-                           ->withClaim('typ', 'id')
+                           ->withClaim('typ', 'ID')
+                           ->withClaim('auth_time', 0)
+                           ->withClaim('email_verified', true)
+                           ->withClaim('email', 'email@email.com')
+                           ->withClaim('name', 'name')
+                           ->withClaim('preferred_username', 'preferred username')
+                           ->withClaim('given_name', 'given')
+                           ->withClaim('family_name', 'family')
                            ->getToken($config->signer(), $config->signingKey());
 
         return $newToken->toString();
