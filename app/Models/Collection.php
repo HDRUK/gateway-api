@@ -81,7 +81,7 @@ class Collection extends Model
 
         $validator = Validator::make($this->attributes, [
             'image_link' => [
-                'nullable', 
+                'nullable',
                 'string',
                 function ($attribute, $value, $fail) use ($customPattern) {
                     if ($value && !filter_var($value, FILTER_VALIDATE_URL) && !preg_match($customPattern, $value)) {
@@ -90,7 +90,7 @@ class Collection extends Model
                 },
             ],
         ]);
-    
+
         if ($validator->fails()) {
             throw new ValidationException($validator);
         }

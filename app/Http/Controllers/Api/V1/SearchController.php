@@ -184,31 +184,29 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $datasetsModels = Dataset::with('versions', 'team')->whereIn('id', $matchedIds)->get()->toArray();
             foreach ($datasetsArray as $i => $dataset) {
-                $foundFlag = false;
-                foreach ($datasetsModels as $model) {
-                    if ((int)$dataset['_id'] === $model['id']) {
-                        $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
-                        if (strtolower($viewType) === 'mini') {
-                            $datasetsArray[$i]['metadata'] = $this->trimPayload($model['versions'][0]['metadata'], $model);
-                        } else {
-                            $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
-                        }
-                        $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
-                        $datasetsArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model);
-                        $datasetsArray[$i]['team']['id'] = $model['team']['id'];
-                        $datasetsArray[$i]['team']['is_question_bank'] = $model['team']['is_question_bank'];
-                        $datasetsArray[$i]['team']['name'] = $model['team']['name'];
-                        $datasetsArray[$i]['team']['member_of'] = $model['team']['member_of'];
-                        $foundFlag = true;
-                    }
-                }
-                if (!$foundFlag) {
-                    unset($datasetsArray[$i]);
+                $model = Dataset::with('versions', 'team')->where('id', $dataset['_id'])
+                           ->first()->toArray();
+
+                if(!$model) {
+                    \Log::warning('Elastic found id=' . $datset['_id'] . ' which is not an existing dataset');
                     continue;
                 }
+                //    if ((int)$dataset['_id'] === $model['id']) {
+                $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
+                if (strtolower($viewType) === 'mini') {
+                    $datasetsArray[$i]['metadata'] = $this->trimPayload($model['versions'][0]['metadata'], $model);
+                } else {
+                    $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
+                }
+                $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
+                $datasetsArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model);
+                $datasetsArray[$i]['team']['id'] = $model['team']['id'];
+                $datasetsArray[$i]['team']['is_question_bank'] = $model['team']['is_question_bank'];
+                $datasetsArray[$i]['team']['name'] = $model['team']['name'];
+                $datasetsArray[$i]['team']['member_of'] = $model['team']['member_of'];
             }
+
 
             if ($download && strtolower($downloadType) === 'list') {
                 Auditor::log([
