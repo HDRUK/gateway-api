@@ -91,8 +91,8 @@ class ReindexEntities extends Command
         $this->sleepTimeInMicroseconds = floatval($sleep) * 1000 * 1000;
         echo 'Sleeping between each reindex by ' .  $this->sleepTimeInMicroseconds . "\n";
 
-        $this->minIndex = $this->option('minIndex');
-        $this->maxIndex = $this->option('maxIndex');
+        $this->minIndex = $this->option('minIndex') !== null ? (int) $this->option('minIndex') : null;
+        $this->maxIndex = $this->option('maxIndex') !== null ? (int) $this->option('maxIndex') : null;
 
         $this->chunkSize = (int) $this->option('chunkSize');
         $this->termExtraction = $this->option('term-extraction');
