@@ -42,6 +42,7 @@ trait CustomIdTokenTrait
                            ->issuedBy(env('APP_URL'))
                            ->relatedTo($claims['sub'])
                            ->withClaim('sid', $claims['session_state'])
+                           ->withClaim('nonce', $claims['nonce'])
                            ->withClaim('typ', 'ID')
                            ->withClaim('auth_time', 0)
                            ->withClaim('email_verified', true)
