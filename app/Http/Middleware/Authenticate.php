@@ -19,7 +19,7 @@ class Authenticate extends Middleware
         $currentUrl = $request->url();
         \Log::info('Authenticate :: ' . json_encode($currentUrl));
         
-        if (! $request->expectsJson()) {
+        if (! $request->expectsJson() && strpos($currentUrl, 'logoutme') === false) {
             return route('login');
         }
     }
