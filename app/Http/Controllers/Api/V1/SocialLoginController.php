@@ -107,7 +107,7 @@ class SocialLoginController extends Controller
             ]);
             $a = $oidc->authenticate();
 
-            \Log::info('a: ' . $a ? 'true' : 'false' . PHP_EOL);
+            \Log::info('auth in login: ' . $a ? 'true' : 'false' . PHP_EOL);
 
             $params = [
                 'client_id' => Config::get('services.openathens.client_id'),
@@ -177,31 +177,27 @@ class SocialLoginController extends Controller
                     Config::get('services.openathens.client_id'),
                     Config::get('services.openathens.client_secret')
                 );
+                $oidc->addScope([
+                    'openid',
+                    'profile',
+                    'email'
+                ]);
+                $oidc->setAllowImplicitFlow(true);
+                $oidc->addAuthParam(['response_mode' => 'form_post']);
                 $oidc->providerConfigParam([
                     'authorization_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/auth',
                     'jwks_uri' => env('OPENATHENS_ISSUER_URL') . '/oidc/jwks',
                     'token_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/token',
                     'userinfo_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/userinfo',
                 ]);
-                $oidc->addScope([
-                    'openid',
-                    'profile',
-                    'email'
-                ]);
-
-                $oidc->setVerifyHost(false);
-                $oidc->setVerifyPeer(false);
                 $oidc->setResponseTypes(['code']);
-                $oidc->setAllowImplicitFlow(true);
-                $oidc->addAuthParam(['response_mode' => 'form_post']);
 
                 $b = $oidc->authenticate();
 
-                \Log::info('b: ' . $b ? 'true' : 'false' . PHP_EOL);
+                \Log::info('auth in callback: ' . $b ? 'true' : 'false' . PHP_EOL);
 
                 $oidc->authenticate();
 
-                \Log::info('authenticated again: ' . $a->json() . PHP_EOL);
                 $response = $oidc->requestUserInfo();
 
                 \Log::info('response to requestUserInfo: ' . json_encode($response->json()) . PHP_EOL);
