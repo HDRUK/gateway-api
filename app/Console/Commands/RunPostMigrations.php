@@ -11,7 +11,7 @@ class RunPostMigrations extends Command
      *
      * @var string
      */
-    protected $signature = 'app:run-post-migrations {sleep=1}';
+    protected $signature = 'app:run-post-migrations {sleep=1} {--term-extraction}';
 
     /**
      * The console command description.
@@ -27,7 +27,9 @@ class RunPostMigrations extends Command
      */
     public function handle()
     {
-        $sleep = $this->argument('sleep');
+        $sleep = $this->argument("sleep");
+        $termExtraction = $this->option('term-extraction');
+
         $commands = [
             [
                 'command' => 'app:add-super-admin-to-all-teams',
@@ -41,18 +43,11 @@ class RunPostMigrations extends Command
             ],
             // ['command' => 'app:sync-hubspot-contacts', 'arguments' => []], // What is this?
             //['command' => 'app:data-providers-post-migration', 'arguments' => []], // seed dataproviders
+
             [
                 'command' => 'app:add-data-provider-network',
                 'arguments' => [],
             ], // seed dataproviders
-            [
-                'command' => 'app:physical-sample-post-migration',
-                'arguments' => [],
-            ], // datasets
-            [
-                'command' => 'app:datasets-post-migration',
-                'arguments' => [],
-            ], // datasets
             [
                 'command' => 'app:update-eu-licenses',
                 'arguments' => [],
@@ -70,10 +65,23 @@ class RunPostMigrations extends Command
                 'arguments' => [],
             ], // dataset linkage
             [
+                'command' => 'app:upload-images-post-migration-process',
+                'arguments' => [],
+            ], // uploaded images
+            [
+                'command' => 'app:make-collections-active',
+                'arguments' => [],
+            ], // set collections to be active
+            [
+                'command' => 'app:dataset-linkages',
+                'arguments' => [],
+            ], // add dataset version linkages
+            [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'datasets',
                     'sleep' => $sleep,
+                    '--term-extraction' => $termExtraction
                 ],
             ],
             [

@@ -27,7 +27,6 @@ return new class () extends Migration {
         Schema::disableForeignKeyConstraints();
         DB::table('tools')->update(['license' => null]);
         DB::statement('ALTER TABLE `tools` DROP FOREIGN KEY `tools_license_foreign`');
-        DB::statement('ALTER TABLE `tools` DROP KEY `tools_license_foreign`');
 
         Schema::table('tools', function (Blueprint $table) {
             $table->char('license', 45)->nullable()->change();

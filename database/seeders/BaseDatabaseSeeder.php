@@ -20,7 +20,7 @@ class BaseDatabaseSeeder extends Seeder
             RoleSeeder::class,
             LicenseSeeder::class,
             ActivityLogUserTypeSeeder::class,
-            EmailTemplatesSeeder::class,
+            EmailTemplateSeeder::class,
             FAIRShareCommandSeeder::class,
             KeywordSeeder::class,
             SpatialCoverageSeeder::class,

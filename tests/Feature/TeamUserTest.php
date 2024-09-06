@@ -11,7 +11,7 @@ use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
 use Database\Seeders\SectorSeeder;
 use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\EmailTemplatesSeeder;
+use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use Tests\Traits\MockExternalApis;
@@ -39,7 +39,7 @@ class TeamUserTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             SectorSeeder::class,
-            EmailTemplatesSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
     }
 

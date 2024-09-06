@@ -13,16 +13,14 @@ use App\Models\DatasetVersion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Models\CollectionHasDur;
-use App\Models\DataProviderColl;
 use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Models\CollectionHasDatasetVersion;
 use App\Models\CollectionHasKeyword;
 use App\Exceptions\NotFoundException;
-use App\Models\DataProviderCollHasTeam;
 use App\Models\CollectionHasPublication;
-use MetadataManagementController as MMC;
+use App\Http\Traits\IndexElastic;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\Collection\GetCollection;
 use App\Http\Requests\Collection\EditCollection;
@@ -32,6 +30,7 @@ use App\Http\Requests\Collection\UpdateCollection;
 
 class CollectionController extends Controller
 {
+    use IndexElastic;
     use RequestTransformation;
 
     public function __construct()
@@ -53,6 +52,34 @@ class CollectionController extends Controller
      *       required=false,
      *       @OA\Schema(type="string"),
      *       description="Filter collections by name"
+     *    ),
+     *    @OA\Parameter(
+     *       name="team_id",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="integer"),
+     *       description="Filter collections by team ID"
+     *    ),
+     *    @OA\Parameter(
+     *       name="user_id",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="integer"),
+     *       description="Filter collections by user ID"
+     *    ),
+     *    @OA\Parameter(
+     *       name="title",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter collections by title"
+     *    ),
+     *    @OA\Parameter(
+     *       name="status",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter collections by status (DRAFT, ACTIVE, ARCHIVED)"
      *    ),
      *    @OA\Response(
      *       response=200,
@@ -103,7 +130,11 @@ class CollectionController extends Controller
         try {
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
             $name = $request->query('name', null);
+            $filterTitle = $request->query('title', null);
             $filterStatus = $request->query('status', null);
+
+            $teamId = $request->query('team_id', null);
+            $userId = $request->query('user_id', null);
 
             $sort = $request->query('sort', 'name:desc');
             $tmp = explode(":", $sort);
@@ -142,7 +173,24 @@ class CollectionController extends Controller
                 $sort,
                 fn ($query) => $query->orderBy($sortField, $sortDirection)
             )
+            ->when($teamId, function ($query) use ($teamId) {
+                return $query->where('team_id', '=', $teamId);
+            })
+            /*->when($userId, function ($query) use ($userId) {
+                return $query->where('user_id', '=', $userId);
+            }) // - this isnt in the DB and should be! bug reported */
+            ->when($filterTitle, function ($query) use ($filterTitle) {
+                return $query->where('name', 'like', '%' . $filterTitle . '%');
+            })
             ->paginate((int) $perPage, ['*'], 'page');
+
+            $collections->getCollection()->transform(function ($collection) {
+                if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
+                    $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
+                }
+            
+                return $collection;
+            });
 
             $collections->getCollection()->transform(function ($collection) {
                 $userDatasets = $collection->userDatasets;
@@ -637,6 +685,8 @@ class CollectionController extends Controller
             $currentCollection = Collection::where('id', $id)->first();
             if($currentCollection->status === Collection::STATUS_ACTIVE) {
                 $this->indexElasticCollections((int) $id);
+            } else {
+                $this->deleteCollectionFromElastic((int) $id);
             }
 
             Auditor::log([
@@ -941,7 +991,10 @@ class CollectionController extends Controller
                 CollectionHasDur::where(['collection_id' => $id])->delete();
                 CollectionHasKeyword::where(['collection_id' => $id])->delete();
                 CollectionHasPublication::where(['collection_id' => $id])->delete();
+                Collection::where(['id' => $id])->update(['status' => Collection::STATUS_ARCHIVED]);
                 Collection::where(['id' => $id])->delete();
+
+                $this->deleteCollectionFromElastic($id);
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
@@ -986,6 +1039,12 @@ class CollectionController extends Controller
         ->withTrashed()
         ->where(['id' => $collectionId])
         ->first();
+
+        if ($collection) {
+            if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
+                $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
+            }
+        }
 
         // Set the datasets attribute with the latest datasets
         $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
@@ -1043,7 +1102,7 @@ class CollectionController extends Controller
 
             if (!$checking) {
                 $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId);
-                MMC::reindexElastic($dataset['id']);
+                $this->reindexElastic($dataset['id']);
             }
         }
     }
@@ -1412,11 +1471,11 @@ class CollectionController extends Controller
 
         foreach ($inKeywords as $keyword) {
             $keywordId = $this->updateOrCreateKeyword($keyword)->id;
-            $this->updateOrCreateDurHasKeywords($collectionId, $keywordId);
+            $this->updateOrCreateCollectionHasKeywords($collectionId, $keywordId);
         }
     }
 
-    private function updateOrCreateDurHasKeywords(int $collectionId, int $keywordId)
+    private function updateOrCreateCollectionHasKeywords(int $collectionId, int $keywordId)
     {
         try {
             return CollectionHasKeyword::updateOrCreate([
@@ -1430,7 +1489,7 @@ class CollectionController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception('updateOrCreateDurHasKeywords :: ' . $e->getMessage());
+            throw new Exception('updateOrCreateCollectionHasKeywords :: ' . $e->getMessage());
         }
     }
 
@@ -1477,81 +1536,6 @@ class CollectionController extends Controller
         }
 
         return $response;
-    }
-
-    /**
-     * Insert collection document into elastic index
-     *
-     * @param integer $collectionId
-     * @return void
-     */
-    public function indexElasticCollections(int $collectionId): void
-    {
-        $collection = Collection::with(['team', 'keywords'])->where('id', $collectionId)->first();
-        $datasets = $collection->allDatasets  ?? [];
-
-        $datasetIds = array_map(function ($dataset) {
-            return $dataset['id'];
-        }, $datasets);
-
-        $collection = $collection->toArray();
-        $team = $collection['team'];
-
-        $datasetTitles = array();
-        $datasetAbstracts = array();
-        foreach ($datasetIds as $d) {
-            $metadata = Dataset::where(['id' => $d])
-                ->first()
-                ->latestVersion()
-                ->metadata;
-            $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-            $datasetAbstracts[] = $metadata['metadata']['summary']['abstract'];
-        }
-
-        $keywords = array();
-        foreach ($collection['keywords'] as $k) {
-            $keywords[] = $k['name'];
-        }
-
-        $dataProviderColl = [];
-        if (array_key_exists('team_id', $collection)) {
-            $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $collection['team_id'])
-                ->pluck('data_provider_coll_id')
-                ->all();
-            $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
-                ->pluck('name')
-                ->all();
-        }
-
-        try {
-            $toIndex = [
-                'publisherName' => isset($team['name']) ? $team['name'] : '',
-                'description' => $collection['description'],
-                'name' => $collection['name'],
-                'datasetTitles' => $datasetTitles,
-                'datasetAbstracts' => $datasetAbstracts,
-                'keywords' => $keywords,
-                'dataProviderColl' => $dataProviderColl
-            ];
-            $params = [
-                'index' => 'collection',
-                'id' => $collectionId,
-                'body' => $toIndex,
-                'headers' => 'application/json'
-            ];
-
-            $client = MMC::getElasticClient();
-            $client->index($params);
-
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
     }
 
 }

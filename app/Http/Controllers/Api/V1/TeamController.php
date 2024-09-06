@@ -27,12 +27,13 @@ use App\Exceptions\NotFoundException;
 use App\Http\Requests\Team\CreateTeam;
 use App\Http\Requests\Team\DeleteTeam;
 use App\Http\Requests\Team\UpdateTeam;
+use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\RequestTransformation;
-use MetadataManagementController as MMC;
 
 class TeamController extends Controller
 {
+    use GetValueByPossibleKeys;
     use TeamTransformation;
     use RequestTransformation;
 
@@ -333,6 +334,15 @@ class TeamController extends Controller
                 $user = $this->checkEditArray($user, $arrayKeys);
                 $tool['user'] = $user;
             }
+
+            $collections = Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', $this->collections)->get()->toArray();
+            $collections = array_map(function($collection) {
+                if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
+                    $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
+                }
+                return $collection;
+            }, $collections);
+            
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => [
@@ -345,7 +355,7 @@ class TeamController extends Controller
                     'tools' => $tools->toArray(),
                     // TODO: need to add in `link_type` from publication_has_dataset table.
                     'publications' => Publication::select('id', 'paper_title', 'authors', 'url')->whereIn('id', $this->publications)->get()->toArray(),
-                    'collections' => Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', $this->collections)->get()->toArray(),
+                    'collections' => $collections,
                 ],
             ]);
         } catch (Exception $e) {
@@ -599,6 +609,7 @@ class TeamController extends Controller
                 'is_provider',
                 'url',
                 'introduction',
+                'team_logo',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -745,6 +756,7 @@ class TeamController extends Controller
                 'is_provider',
                 'url',
                 'introduction',
+                'team_logo',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -931,9 +943,9 @@ class TeamController extends Controller
 
         $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
 
-        $title = MMC::getValueByPossibleKeys($metadataSummary, ['title'], '');
-        $populationSize = MMC::getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
-        $datasetType = MMC::getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
+        $title = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
+        $populationSize = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
+        $datasetType = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
 
         $this->datasets[] = [
             'id' => $dataset->id,

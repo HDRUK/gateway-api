@@ -6,22 +6,16 @@ use Config;
 use Auditor;
 use Exception;
 use App\Exceptions\NotFoundException;
-use App\Models\Tag;
 use App\Models\Tool;
 use App\Models\Dataset;
 use App\Models\License;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Models\Application;
-use App\Models\TypeCategory;
 use App\Models\DatasetVersion;
-use App\Models\DataProviderColl;
-use App\Models\ProgrammingPackage;
 use App\Models\PublicationHasTool;
-use App\Models\ProgrammingLanguage;
 use App\Models\ToolHasTypeCategory;
 use App\Models\DatasetVersionHasTool;
-use App\Models\DataProviderCollHasTeam;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
 use App\Models\CollectionHasTool;
@@ -36,12 +30,12 @@ use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
 
-use MetadataManagementController as MMC;
-
+use App\Http\Traits\IndexElastic;
 use App\Http\Traits\RequestTransformation;
 
 class ToolController extends Controller
 {
+    use IndexElastic;
     use RequestTransformation;
 
     /**
@@ -383,6 +377,7 @@ class ToolController extends Controller
      *             @OA\Property( property="name", type="string", example="Similique sapiente est vero eum." ),
      *             @OA\Property( property="url", type="string", example="http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim" ),
      *             @OA\Property( property="description", type="string", example="Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel." ),
+     *             @OA\Property( property="results_insights", type="string", example="Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel." ),
      *             @OA\Property( property="license", type="integer", example="1" ),
      *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
      *             @OA\Property( property="category_id", type="integer", example=1 ),
@@ -450,6 +445,7 @@ class ToolController extends Controller
                 'name',
                 'url',
                 'description',
+                'results_insights',
                 'license',
                 'tech_stack',
                 'category_id',
@@ -609,7 +605,7 @@ class ToolController extends Controller
             $initTool = Tool::withTrashed()->where('id', $id)->first();
 
             if ($initTool['status'] === Tool::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
-                throw new Exception('Cannot update current putoolblication! Status already "ARCHIVED"');
+                throw new Exception('Cannot update current tool! Status already "ARCHIVED"');
             }
 
             $arrayKeys = [
@@ -667,9 +663,14 @@ class ToolController extends Controller
 
             $currentTool = Tool::where('id', $id)->first();
             if ($currentTool->status === Tool::STATUS_ACTIVE) {
-                if ($request['enabled']) {
+                if ($request['enabled']) { //note Calum - this is crazy inconsistent
                     $this->indexElasticTools((int) $id);
+                } else {
+                    //note Calum - adding this to be safe
+                    $this->deleteToolFromElastic((int) $id);
                 }
+            } else {
+                $this->deleteToolFromElastic((int) $id);
             }
 
             Auditor::log([
@@ -1427,124 +1428,4 @@ class ToolController extends Controller
         return $response;
     }
 
-    /**
-     * Insert tool document into elastic index
-     *
-     * @param integer $toolId
-     * @return void
-     */
-    public function indexElasticTools(int $toolId): void
-    {
-        try {
-            $tool = Tool::where('id', $toolId)
-                ->with([
-                    'programmingLanguages',
-                    'programmingPackages',
-                    'tag',
-                    'category',
-                    'typeCategory',
-                    'license',
-                ])
-                ->first();
-
-            $license = License::where('id', $tool['license'])->first();
-
-            $typeCategoriesIDs = ToolHasTypeCategory::where('tool_id', $toolId)
-                ->pluck('type_category_id')
-                ->all();
-
-            $typeCategories = TypeCategory::where('id', $typeCategoriesIDs)
-                ->pluck('name')
-                ->all();
-
-            $programmingLanguagesIDs = ToolHasProgrammingLanguage::where('tool_id', $toolId)
-                ->pluck('programming_language_id')
-                ->all();
-
-            $programmingLanguages = ProgrammingLanguage::where('id', $programmingLanguagesIDs)
-                ->pluck('name')
-                ->all();
-
-            $programmingPackagesIDs = ToolHasProgrammingPackage::where('tool_id', $toolId)
-                ->pluck('programming_package_id')
-                ->all();
-
-            $programmingPackages = ProgrammingPackage::where('id', $programmingPackagesIDs)
-                ->pluck('name')
-                ->all();
-
-            $tagIDs = ToolHasTag::where('tool_id', $toolId)
-                ->pluck('tag_id')
-                ->all();
-
-            $tags = Tag::where('id', $tagIDs)
-                ->pluck('description')
-                ->all();
-
-            $datasetVersionIDs = DatasetVersionHasTool::where('tool_id', $toolId)
-                ->pluck('dataset_version_id')
-                ->all();
-
-            $datasetIDs = DatasetVersion::whereIn('dataset_version_id', $datasetVersionIDs)
-                ->pluck('dataset_id')
-                ->all();
-
-            $datasets = Dataset::whereIn('id', $datasetIDs)
-                ->with('versions')
-                ->get();
-
-            $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $tool['team_id'])
-                ->pluck('data_provider_coll_id')
-                ->all();
-
-            $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
-                ->pluck('name')
-                ->all();
-
-            $datasetTitles = array();
-            if ($tool->any_dataset) {
-                $datasetTitles[] = '_Can be used with any dataset';
-            } else {
-                foreach ($datasets as $dataset) {
-                    $dataset_version = $dataset['versions'][0];
-                    $datasetTitles[] = $dataset_version['metadata']['metadata']['summary']['shortTitle'];
-                }
-                usort($datasetTitles, 'strcasecmp');
-            }
-
-            $toIndex = [
-                'name' => $tool['name'],
-                'description' => $tool['description'],
-                'license' => $license ? $license['label'] : null,
-                'techStack' => $tool['tech_stack'],
-                'category' => $tool['category']['name'],
-                'typeCategory' => $typeCategories,
-                'associatedAuthors' => $tool['associated_authors'],
-                'programmingLanguages' => $programmingLanguages,
-                'programmingPackages' => $programmingPackages,
-                'tags' => $tags,
-                'datasetTitles' => $datasetTitles,
-                'dataProviderColl' => $dataProviderColl,
-            ];
-
-            $params = [
-                'index' => 'tool',
-                'id' => $toolId,
-                'body' => $toIndex,
-                'headers' => 'application/json'
-            ];
-
-            $client = MMC::getElasticClient();
-            $client->index($params);
-
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
 }

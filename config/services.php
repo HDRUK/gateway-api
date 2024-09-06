@@ -71,6 +71,13 @@ return [
         'enabled' => env('GOOGLE_CLOUD_LOGGING_ENABLED'. false),
     ],
 
+    'elasticclient' => [
+        'verify_ssl' => env('ELASTICSEARCH_VERIFY_SSL', false),
+        'user' => env('ELASTICSEARCH_USER'),
+        'password' => env('ELASTICSEARCH_PASS'),
+        'timeout' => env('ELASTICSEARCH_TIMEOUT', 10),
+    ],
+
     'hubspot' => [
         'enabled' => env('HUBSPOT_ENABLED', false),
         'base_url' => env('HUBSPOT_BASE_URL', 'http://hub.local'),
@@ -79,5 +86,9 @@ return [
 
     'rquest' => [
         'init_url' => env('RQUEST_INIT_URL', 'http://rquest.local'),
+    ],
+
+    'media' => [
+        'base_url' => env('MEDIA_URL', 'http://media.local'),
     ]
 ];

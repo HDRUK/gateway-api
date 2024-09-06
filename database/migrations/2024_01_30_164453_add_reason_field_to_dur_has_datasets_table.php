@@ -20,8 +20,10 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        Schema::table('dur_has_datasets', function (Blueprint $table) {
-            $table->dropColumn('reason');
-        });
+        if (Schema::hasTable('dur_has_datasets')) {
+            Schema::table('dur_has_datasets', function (Blueprint $table) {
+                $table->dropColumn('reason');
+            });
+        }
     }
 };

@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\EmailTemplate;
 use Tests\TestCase;
-use Database\Seeders\EmailTemplatesSeeder;
+use Database\Seeders\EmailTemplateSeeder;
 use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -27,7 +27,7 @@ class EmailTemplateTest extends TestCase
         parent::setUp();
 
         $this->seed([
-            EmailTemplatesSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();

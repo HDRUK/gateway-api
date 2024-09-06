@@ -6,7 +6,7 @@ use App\Mail\Email;
 use App\Models\EmailTemplate;
 
 use Tests\TestCase;
-use Database\Seeders\EmailTemplatesSeeder;
+use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 
@@ -19,7 +19,7 @@ class EmailServiceTest extends TestCase
         parent::setUp();
 
         $this->seed([
-            EmailTemplatesSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
     }
 

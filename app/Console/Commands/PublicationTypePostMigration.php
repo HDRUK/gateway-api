@@ -2,12 +2,13 @@
 
 namespace App\Console\Commands;
 
-use App\Http\Controllers\Api\V1\PublicationController;
 use App\Models\Publication;
 use Illuminate\Console\Command;
+use App\Http\Traits\IndexElastic;
 
 class PublicationTypePostMigration extends Command
 {
+    use IndexElastic;
     /**
      * The name and signature of the console command.
      *
@@ -38,7 +39,6 @@ class PublicationTypePostMigration extends Command
         $reindex = $this->argument('reindex');
         $reindexEnabled = $reindex !== null;
 
-        $publicationController = new PublicationController();
         $progressbar = $this->output->createProgressBar(count($this->csvData));
         $progressbar->start();
 
@@ -46,6 +46,11 @@ class PublicationTypePostMigration extends Command
             $paperDOI = $csv['paper_doi'];
             $paperName = $csv['paper_title'];
             $publicationType = $csv['paper_type_GW2'];
+
+            if ($publicationType === '') {
+                echo 'publication type for ' . $paperName . " is blank defaulting to Research articles\n";
+                $publicationType = 'Research articles';
+            }
 
             // Find Publication associated to this row
             $publications = Publication::where('paper_doi', $paperDOI)->get();
@@ -70,7 +75,7 @@ class PublicationTypePostMigration extends Command
                 echo 'Updated or created record with id ' . $publication->id . ', doi ' . $paperDOI . ', with publication type ' . $publicationType . "\n";
 
                 if ($reindexEnabled) {
-                    $publicationController->indexElasticPublication($publication->id);
+                    $this->indexElasticPublication($publication->id);
                     sleep(1);
                 }
             }

@@ -62,6 +62,7 @@ class TeamTest extends TestCase
                         'access_requests_management',
                         'uses_5_safes',
                         'is_admin',
+                        'team_logo',
                         'member_of',
                         'contact_point',
                         'application_form_updated_by',
@@ -151,7 +152,27 @@ class TeamTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'message',
-                'data',
+                'data' => [
+                    'id',
+                    'name',
+                    'enabled',
+                    'allows_messaging',
+                    'workflow_enabled',
+                    'access_requests_management',
+                    'uses_5_safes',
+                    'is_admin',
+                    'team_logo',
+                    'member_of',
+                    'contact_point',
+                    'application_form_updated_by',
+                    'application_form_updated_on',
+                    'users',
+                    'notifications',
+                    'is_question_bank',
+                    'is_provider',
+                    'url',
+                    'introduction',
+                ],
             ]);
 
         $this->assertEquals($content['data']['notifications'][0]['notification_type'], 'applicationSubmitted');
@@ -173,6 +194,34 @@ class TeamTest extends TestCase
         ->assertJsonStructure([
             'message',
         ]);
+    }
+
+    /**
+     * Show summary of a team.
+     *
+     * @return void
+     */
+    public function test_the_application_can_show_team_summary()
+    {
+        $id = Team::where(['enabled' => 1])->first()->id;
+        $response = $this->get('api/v1/teams/' . $id . '/summary', [
+            'Authorization' => 'bearer ' . $this->accessToken,
+        ]);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'is_provider',
+                    'introduction',
+                    'datasets',
+                    'durs',
+                    'tools',
+                    'publications',
+                    'collections',
+                ],
+            ]);
     }
 
     /**

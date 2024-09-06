@@ -11,9 +11,7 @@ use Database\Seeders\SectorSeeder;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use Elastic\Elasticsearch\ClientBuilder;
 use MetadataManagementController as MMC;
-use Elastic\Elasticsearch\Response\Elasticsearch;
 
 trait MockExternalApis
 {
@@ -65,6 +63,14 @@ trait MockExternalApis
         }
     }
 
+    public function getPublicSchema()
+    {
+        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/hdruk_3p0p0_dataset_min.json', 0, null);
+        $json = json_decode($jsonFile, true);
+
+        return $json;
+    }
+
     public function setUp(): void
     {
         parent::setUp();
@@ -75,6 +81,7 @@ trait MockExternalApis
 
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
+        $this->currentUser = $this->getUserFromJwt($jwt);
         $this->header = [
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $jwt,
@@ -82,37 +89,30 @@ trait MockExternalApis
 
         Mail::fake();
 
-        // Define mock client and fake response for elasticsearch service
-        $mockElastic = new Client();
-
-        $elasticClient = ClientBuilder::create()
-            ->setHttpClient($mockElastic)
-            ->build();
 
         // This is a PSR-7 response
         // Mock two responses, one for creating a dataset, another for deleting
-        $createResponse = new Response(
-            200,
-            [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
-            'Document created'
-        );
-        $deleteResponse = new Response(
-            200,
-            [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
-            'Document deleted'
-        );
+        $elasticBaseUrl = Config::get('database.connections.elasticsearch.host');
 
-        // Stack the responses expected in the create/archive/delete dataset test
-        // create -> soft delete/archive -> unarchive -> permanent delete
-        for ($i = 0; $i < 100; $i++) {
-            $mockElastic->addResponse($createResponse);
-        }
+        // Define the URL pattern for the index document endpoint
+        $indexDocumentUrlPattern = $elasticBaseUrl . '/*/_doc/*';
 
-        for ($i = 0; $i < 100; $i++) {
-            $mockElastic->addResponse($deleteResponse);
-        }
+        // Fake the HTTP request
+        Http::fake([
+            $indexDocumentUrlPattern => function ($request) {
+                return Http::response('Document created', 200, ['application/json']);
+            },
+        ]);
 
-        $this->testElasticClient = $elasticClient;
+
+        $deleteDocumentsUrlPattern = $elasticBaseUrl . '/*/_delete_by_query';
+
+        // Fake the HTTP request
+        Http::fake([
+            $deleteDocumentsUrlPattern => function ($request) {
+                return Http::response('Document deleted', 200, ['application/json']);
+            },
+        ]);
 
         Http::fake([
             env('TED_SERVICE_URL', 'http://localhost:8001') => Http::response(
@@ -1008,9 +1008,6 @@ trait MockExternalApis
             )
         ]);
 
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
         MMC::shouldReceive("translateDataModelType")
             ->andReturnUsing(function (string $metadata) {
                 return [

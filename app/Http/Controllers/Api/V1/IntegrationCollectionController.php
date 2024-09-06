@@ -23,8 +23,8 @@ use App\Exceptions\NotFoundException;
 use App\Http\Traits\IntegrationOverride;
 use App\Models\CollectionHasPublication;
 
-use MetadataManagementController as MMC;
 
+use App\Http\Traits\IndexElastic;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\Collection\GetCollection;
 
@@ -36,6 +36,7 @@ use App\Http\Requests\Collection\UpdateCollection;
 
 class IntegrationCollectionController extends Controller
 {
+    use IndexElastic;
     use RequestTransformation;
     use IntegrationOverride;
     use IntegrationOverride;
@@ -884,7 +885,7 @@ class IntegrationCollectionController extends Controller
 
             if (!$checking) {
                 $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId, $appId);
-                MMC::reindexElastic($dataset['id']);
+                $this->reindexElastic($dataset['id']);
             }
         }
     }
@@ -1268,11 +1269,11 @@ class IntegrationCollectionController extends Controller
 
         foreach ($inKeywords as $keyword) {
             $keywordId = $this->updateOrCreateKeyword($keyword)->id;
-            $this->updateOrCreateDurHasKeywords($collectionId, $keywordId);
+            $this->updateOrCreateCollectionHasKeywords($collectionId, $keywordId);
         }
     }
 
-    private function updateOrCreateDurHasKeywords(int $collectionId, int $keywordId)
+    private function updateOrCreateCollectionHasKeywords(int $collectionId, int $keywordId)
     {
         try {
             return CollectionHasKeyword::updateOrCreate([
@@ -1286,7 +1287,7 @@ class IntegrationCollectionController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception('addKeywordDur :: ' . $e->getMessage());
+            throw new Exception('updateOrCreateCollectionHasKeywords :: ' . $e->getMessage());
         }
     }
 
@@ -1306,7 +1307,7 @@ class IntegrationCollectionController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception('createUpdateKeyword :: ' . $e->getMessage());
+            throw new Exception('updateOrCreateKeyword :: ' . $e->getMessage());
         }
     }
 
@@ -1317,7 +1318,7 @@ class IntegrationCollectionController extends Controller
                 'keyword_id' => $keywordId
             ])->delete();
         } catch (Exception $e) {
-            throw new Exception("deleteKeywordDur :: " . $e->getMessage());
+            throw new Exception("deleteCollectionHasKeywords :: " . $e->getMessage());
         }
     }
 
@@ -1329,73 +1330,6 @@ class IntegrationCollectionController extends Controller
         }
 
         return $response;
-    }
-
-    /**
-     * Insert collection document into elastic index
-     *
-     * @param integer $collectionId
-     * @return void
-     */
-    private function indexElasticCollections(int $collectionId): void
-    {
-        $collection = Collection::with([
-            'team',
-            'keywords'
-        ])->where('id', $collectionId)->first();
-        $datasets = $collection->allDatasets  ?? [];
-
-        $datasetIds = array_map(function ($dataset) {
-            return $dataset['id'];
-        }, $datasets);
-
-        $collection = $collection->toArray();
-        $team = $collection['team'];
-
-        $datasetTitles = array();
-        $datasetAbstracts = array();
-        foreach ($datasetIds as $d) {
-            $metadata = Dataset::where(['id' => $d])
-                ->first()
-                ->latestVersion()
-                ->metadata;
-            $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-            $datasetAbstracts[] = $metadata['metadata']['summary']['abstract'];
-        }
-
-        $keywords = array();
-        foreach ($collection['keywords'] as $k) {
-            $keywords[] = $k['name'];
-        }
-
-        try {
-            $toIndex = [
-                'publisherName' => isset($team['name']) ? $team['name'] : '',
-                'description' => $collection['description'],
-                'name' => $collection['name'],
-                'datasetTitles' => $datasetTitles,
-                'datasetAbstracts' => $datasetAbstracts,
-                'keywords' => $keywords
-            ];
-            $params = [
-                'index' => 'collection',
-                'id' => $collectionId,
-                'body' => $toIndex,
-                'headers' => 'application/json'
-            ];
-
-            $client = MMC::getElasticClient();
-            $client->index($params);
-
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
     }
 
     private function getCollectionById(int $collectionId)

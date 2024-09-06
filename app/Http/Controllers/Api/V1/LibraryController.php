@@ -6,6 +6,7 @@ use Config;
 use Auditor;
 use Exception;
 use App\Models\Library;
+use App\Models\Dataset;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -56,7 +57,7 @@ class LibraryController extends Controller
      *                      @OA\Property(property="user_id", type="integer", example="123"),
      *                      @OA\Property(property="dataset_id", type="string", example="dataset12345"),
      *                      @OA\Property(property="dataset_status", type="string", example="ACTIVE"),
-     *                      @OA\Property(property="data_provider_id", type="string", example="PID12345"),
+     *                      @OA\Property(property="data_provider_id", type="string", example="123"),
      *                      @OA\Property(property="data_provider_dar_status", type="boolean", example=false),
      *                      @OA\Property(property="data_provider_name", type="string", example="Team Name")
      *                  )
@@ -88,29 +89,28 @@ class LibraryController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            $jwtUserIsAdmin = $jwtUser['is_admin'];
 
             $perPage = request('perPage', Config::get('constants.per_page'));
 
-            if ($jwtUserIsAdmin) {
-                $libraries = Library::with(['dataset.team']);
-            } else {
-                $libraries = Library::where('user_id', $jwtUser['id'])
-                    ->with(['dataset.team']);
-            }
+            $libraries = Library::where('user_id', $jwtUser['id'])
+                ->with(['dataset.team']);
+
 
             $libraries = $libraries->paginate($perPage);
 
             $transformedLibraries = $libraries->getCollection()->map(function ($library) {
                 $dataset = $library->dataset;
-                $team = $dataset->team->first();
+                $team = $dataset->team;
 
                 // Using dynamic attributes to avoid undefined property error
                 $library->setAttribute('dataset_id', (int)$dataset->id);
+                $library->setAttribute('dataset_name', $dataset->versions[0]->metadata['metadata']['summary']['shortTitle']);
                 $library->setAttribute('dataset_status', $dataset->status);
-                $library->setAttribute('data_provider_id', $team->pid);
+                $library->setAttribute('data_provider_id', $team->id);
                 $library->setAttribute('data_provider_dar_status', $team->uses_5_safes);
                 $library->setAttribute('data_provider_name', $team->name);
+                $library->setAttribute('data_provider_dar_enabled', $team->is_question_bank);
+                $library->setAttribute('data_provider_member_of', $team->member_of);
 
 
                 unset($library->dataset);
@@ -207,22 +207,25 @@ class LibraryController extends Controller
 
             // Fetch the library with dataset and team
             $library = Library::with(['dataset.team'])
-                        ->where('id', $id)
-                        ->firstOrFail();
+                ->where('id', $id)
+                ->firstOrFail();
 
             if (!$jwtUserIsAdmin && $library['user_id'] != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to view this library');
             }
 
             $dataset = $library->dataset->first();
-            $team = $dataset->team->first();
+            $team = $dataset->team;
 
             // Using dynamic attributes to avoid undefined property error
             $library->setAttribute('dataset_id', (int)$dataset->datasetid);
             $library->setAttribute('dataset_status', $dataset->status);
-            $library->setAttribute('data_provider_id', $team->pid);
+            $library->setAttribute('data_provider_id', $team->id);
             $library->setAttribute('data_provider_dar_status', $team->uses_5_safes);
             $library->setAttribute('data_provider_name', $team->name);
+            $library->setAttribute('dataset_name', $dataset->versions[0]->metadata['metadata']['summary']['shortTitle']);
+            $library->setAttribute('data_provider_dar_enabled', $team->is_question_bank);
+            $library->setAttribute('data_provider_member_of', $team->member_of);
 
             unset($library->dataset);
 
@@ -300,10 +303,11 @@ class LibraryController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $library = Library::create([
+            $library = Library::updateOrCreate([
                 'user_id' => (int)$jwtUser['id'],
-                'dataset_id' => $input['dataset_id']
-            ]);
+                'dataset_id' => $input['dataset_id'],
+                'deleted_at' => null,
+            ], []);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -610,5 +614,4 @@ class LibraryController extends Controller
             throw new Exception($e->getMessage());
         }
     }
-
 }

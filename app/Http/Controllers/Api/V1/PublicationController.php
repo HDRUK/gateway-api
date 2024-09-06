@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Auditor;
 use Config;
 use Exception;
-use MetadataManagementController as MMC;
 
 use App\Exceptions\NotFoundException;
 use App\Models\Dataset;
@@ -26,10 +25,12 @@ use App\Http\Requests\Publication\CreatePublication;
 use App\Http\Requests\Publication\DeletePublication;
 use App\Http\Requests\Publication\UpdatePublication;
 
+use App\Http\Traits\IndexElastic;
 use App\Http\Traits\RequestTransformation;
 
 class PublicationController extends Controller
 {
+    use IndexElastic;
     use RequestTransformation;
 
     /**
@@ -379,7 +380,7 @@ class PublicationController extends Controller
                     $input['publication_type_mk1'] : '',
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
-                'url' => $input['url'],
+                'url' => array_key_exists('url', $input) ? $input['url'] : null,
                 'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
                 'owner_id' => (int)$jwtUser['id'],
                 'status' => $request['status'],
@@ -396,7 +397,7 @@ class PublicationController extends Controller
             if($currentPublication->status === Publication::STATUS_ACTIVE) {
                 $this->indexElasticPublication($publicationId);
             } else {
-                MMC::deleteFromElastic($publicationId, 'publication');
+                $this->deleteFromElastic($publicationId, 'publication');
             }
 
             Auditor::log([
@@ -529,7 +530,7 @@ class PublicationController extends Controller
                     $input['publication_type_mk1'] : '',
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
-                'url' => $input['url'],
+                'url' => array_key_exists('url', $input) ? $input['url'] : null,
                 'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
                 'status' => array_key_exists('status', $input) ? $input['status'] : Publication::STATUS_DRAFT,
             ]);
@@ -544,7 +545,7 @@ class PublicationController extends Controller
             if($currentPublication->status === Publication::STATUS_ACTIVE) {
                 $this->indexElasticPublication((int) $id);
             } else {
-                MMC::deleteFromElastic($id, 'publication');
+                $this->deleteFromElastic($id, 'publication');
             }
 
             Auditor::log([
@@ -748,7 +749,7 @@ class PublicationController extends Controller
                     // Index the updated publication in Elasticsearch
                     $this->indexElasticPublication((int) $id);
                 } else {
-                    MMC::deleteFromElastic($id, 'publication');
+                    $this->deleteFromElastic($id, 'publication');
                 }
 
                 Auditor::log([
@@ -842,7 +843,7 @@ class PublicationController extends Controller
                 $publication->status = Publication::STATUS_ARCHIVED;
                 $publication->save();
 
-                MMC::deleteFromElastic($id, 'publication');
+                $this->deletePublicationFromElastic($id);
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
@@ -869,65 +870,6 @@ class PublicationController extends Controller
         }
     }
 
-    /**
-     * Calls a re-indexing of Elastic search when a publication is created or updated
-     *
-     * @param string $id The publication id from the DB
-     *
-     * @return void
-     */
-    public function indexElasticPublication(string $id): void
-    {
-        try {
-            $pubMatch = Publication::where(['id' => $id])->first();
-            $datasets = $pubMatch->allDatasets;
-
-            $datasetTitles = [];
-            $datasetLinkTypes = [];
-            foreach ($datasets as $dataset) {
-                $metadata = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->metadata;
-                $latestVersionID = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->id;
-                $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-                $linkType = PublicationHasDatasetVersion::where([
-                    ['publication_id', '=', (int)$id],
-                    ['dataset_version_id', '=', (int)$latestVersionID]
-                ])->first()->link_type ?? 'UNKNOWN';
-                $datasetLinkTypes[] = $linkType;
-            }
-
-            // Split string to array of strings
-            $publicationTypes = explode(",", $pubMatch['publication_type']);
-
-            $toIndex = [
-                'title' => $pubMatch['paper_title'],
-                'journalName' => $pubMatch['journal_name'],
-                'abstract' => $pubMatch['abstract'],
-                'authors' => $pubMatch['authors'],
-                'publicationDate' => $pubMatch['year_of_publication'],
-                'datasetTitles' => $datasetTitles,
-                'publicationType' => $publicationTypes,
-                'datasetLinkTypes' => $datasetLinkTypes,
-            ];
-            $params = [
-                'index' => 'publication',
-                'id' => $id,
-                'body' => $toIndex,
-                'headers' => 'application/json'
-            ];
-
-            $client = MMC::getElasticClient();
-            $client->index($params);
-
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
     private function getPublicationById(int $publicationId)
     {
 
@@ -959,7 +901,7 @@ class PublicationController extends Controller
 
             if (!$checking) {
                 $this->addPublicationHasDatasetVersion($publicationId, $dataset, $datasetVersionId);
-                MMC::reindexElastic($dataset['id']);
+                $this->reindexElastic($dataset['id']);
             }
         }
     }

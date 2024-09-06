@@ -445,6 +445,15 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'tools-count-field',
+        'method' => 'get',
+        'path' => '/tools/count/{field}',
+        'methodController' => 'ToolController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
         'name' => 'tools',
         'method' => 'get',
         'path' => '/tools/{id}',
@@ -1311,6 +1320,15 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'count_unique_fields_collections',
+        'method' => 'get',
+        'path' => '/collections/count/{field}',
+        'methodController' => 'CollectionController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
         'name' => 'collections',
         'method' => 'get',
         'path' => '/collections/{id}',
@@ -2063,9 +2081,7 @@ return [
         'path' => '/datasets/export',
         'methodController' => 'DatasetController@export',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-        ],
+        'middleware' => [],
         'constraint' => [],
     ],
     [

@@ -99,9 +99,9 @@ class BetaData extends Command
                     '--class' => 'Database\Beta\UserBetaDemo',
                 ]);
 
-                $this->info('Running seed EmailTemplatesSeeder');
+                $this->info('Running seed EmailTemplateSeeder');
                 Artisan::call('db:seed', [
-                    '--class' => 'Database\Seeders\EmailTemplatesSeeder',
+                    '--class' => 'Database\Seeders\EmailTemplateSeeder',
                 ]);
 
                 $this->info('Running seed SpatialCoverageSeeder');

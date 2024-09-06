@@ -43,6 +43,7 @@ class Tool extends Model
         'name',
         'url',
         'description',
+        'results_insights',
         'license',
         'tech_stack',
         'category_id',
@@ -52,6 +53,7 @@ class Tool extends Model
         'contact_address',
         'any_dataset',
         'status',
+        'team_id',
     ];
 
     /**

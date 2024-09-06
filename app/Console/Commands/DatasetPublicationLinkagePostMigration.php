@@ -2,15 +2,16 @@
 
 namespace App\Console\Commands;
 
-use App\Http\Controllers\Api\V1\PublicationController;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Publication;
 use App\Models\PublicationHasDatasetVersion;
+use App\Http\Traits\IndexElastic;
 use Illuminate\Console\Command;
 
 class DatasetPublicationLinkagePostMigration extends Command
 {
+    use IndexElastic;
     /**
      * The name and signature of the console command.
      *
@@ -41,7 +42,6 @@ class DatasetPublicationLinkagePostMigration extends Command
         $reindex = $this->argument('reindex');
         $reindexEnabled = $reindex !== null;
 
-        $publicationController = new PublicationController();
         $progressbar = $this->output->createProgressBar(count($this->csvData));
         $progressbar->start();
 
@@ -98,7 +98,7 @@ class DatasetPublicationLinkagePostMigration extends Command
             echo 'Updated or created record with publication_id ' . $publicationId . ', dataset_version_id ' . $datasetVersionId . ', and link type ' . $linkType . "\n";
 
             if ($reindexEnabled) {
-                $publicationController->indexElasticPublication($publicationId);
+                $this->indexElasticPublication($publicationId);
                 sleep(1);
             }
 

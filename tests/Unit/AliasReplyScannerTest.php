@@ -22,7 +22,7 @@ use Database\Seeders\PermissionSeeder;
 
 use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\EnquiryThreadSeeder;
-use Database\Seeders\EmailTemplatesSeeder;
+use Database\Seeders\EmailTemplateSeeder;
 use Database\Seeders\EnquiryMessageSeeder;
 use Database\Seeders\TeamUserHasRoleSeeder;
 
@@ -56,7 +56,7 @@ class AliasReplyScannerTest extends TestCase
             TeamUserHasRoleSeeder::class,
             EnquiryThreadSeeder::class,
             EnquiryMessageSeeder::class,
-            EmailTemplatesSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
 
         $unique_key = EnquiryThread::get()->first()->unique_key;
@@ -114,6 +114,8 @@ class AliasReplyScannerTest extends TestCase
             'is_dar_dialogue',
             'is_dar_status',
             'enabled',
+            'is_general_enquiry',
+            'is_feasibility_enquiry',
         ]);
 
         $this->assertEquals($response->id, $thread->id);

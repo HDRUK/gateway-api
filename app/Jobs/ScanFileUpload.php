@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Imagick\Driver;
+use Intervention\Image\Drivers\Gd\Driver;
 
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -94,7 +94,7 @@ class ScanFileUpload implements ShouldQueue
 
         CloudLogger::write('Malware scan initiated');
 
-        $response = Http::post(
+        $response = Http::connectTimeout(60)->post(
             env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file',
             [
                 'file' => $filePath,

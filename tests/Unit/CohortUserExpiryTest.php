@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Mail;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use App\Models\CohortRequestHasPermission;
-use Database\Seeders\EmailTemplatesSeeder;
+use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CohortUserExpiryTest extends TestCase
@@ -30,7 +30,7 @@ class CohortUserExpiryTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             PermissionSeeder::class,
-            EmailTemplatesSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
     }
 
