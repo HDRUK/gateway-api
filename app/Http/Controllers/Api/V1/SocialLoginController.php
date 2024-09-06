@@ -105,7 +105,9 @@ class SocialLoginController extends Controller
                 'token_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/token',
                 'userinfo_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/userinfo',
             ]);
-            $oidc->authenticate();
+            $a = $oidc->authenticate();
+
+            \Log::info('a: ' . $a ? 'true' : 'false' . PHP_EOL);
 
             $params = [
                 'client_id' => Config::get('services.openathens.client_id'),
@@ -193,10 +195,9 @@ class SocialLoginController extends Controller
                 $oidc->setAllowImplicitFlow(true);
                 $oidc->addAuthParam(['response_mode' => 'form_post']);
 
-                $a = $oidc->authenticate();
+                $b = $oidc->authenticate();
 
-                \Log::info('a: ' . $a . PHP_EOL);
-                \Log::info('a: ' . $a->json() . PHP_EOL);
+                \Log::info('b: ' . $b ? 'true' : 'false' . PHP_EOL);
 
                 $oidc->authenticate();
 
