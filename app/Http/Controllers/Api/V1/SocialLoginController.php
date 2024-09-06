@@ -99,6 +99,12 @@ class SocialLoginController extends Controller
             $oidc->setAllowImplicitFlow(true);
             $oidc->addAuthParam(array('response_mode' => 'form_post'));
             $oidc->setRedirectUrl(Config::get('services.openathens.redirect'));
+            $oidc->providerConfigParam([
+                'authorization_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/auth',
+                'jwks_uri' => env('OPENATHENS_ISSUER_URL') . '/oidc/jwks',
+                'token_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/token',
+                'userinfo_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/userinfo',
+            ]);
             $oidc->authenticate();
 
             $params = [
@@ -189,8 +195,12 @@ class SocialLoginController extends Controller
 
                 $a = $oidc->authenticate();
 
-                \Log::info('a : ' . $a . PHP_EOL);
+                \Log::info('a: ' . $a . PHP_EOL);
+                \Log::info('a: ' . $a->json() . PHP_EOL);
 
+                $oidc->authenticate();
+
+                \Log::info('authenticated again: ' . $a->json() . PHP_EOL);
                 $response = $oidc->requestUserInfo();
 
                 \Log::info('response to requestUserInfo: ' . json_encode($response->json()) . PHP_EOL);
