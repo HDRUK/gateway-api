@@ -1009,8 +1009,14 @@ class DatasetController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
+            $dataset = Dataset::where('id', "=", $id)->first();
+            $deleteFromElastic = ($dataset->status !== 'DRAFT' && $dataset->status !== 'ARCHIVED')
+
             MMC::deleteDataset($id);
-            $this->deleteDatasetFromElastic($id);
+
+            if ($deleteFromElastic) {
+                $this->deleteDatasetFromElastic($id);
+            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
