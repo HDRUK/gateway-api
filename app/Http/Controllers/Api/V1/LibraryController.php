@@ -303,10 +303,11 @@ class LibraryController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $library = Library::create([
+            $library = Library::updateOrCreate([
                 'user_id' => (int)$jwtUser['id'],
-                'dataset_id' => $input['dataset_id']
-            ]);
+                'dataset_id' => $input['dataset_id'],
+                'deleted_at' => null,
+            ], []);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
