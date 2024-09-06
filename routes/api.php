@@ -56,3 +56,4 @@ Route::any('{path}', function () {
     return response()->json($response)
         ->setStatusCode(404);
 });
+
