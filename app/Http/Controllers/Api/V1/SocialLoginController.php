@@ -107,7 +107,7 @@ class SocialLoginController extends Controller
             ]);
             $a = $oidc->authenticate();
 
-            \Log::info('auth in login: ' . $a ? 'true' : 'false' . PHP_EOL);
+            \Log::info('auth in login: ' . $a . PHP_EOL);
 
             $params = [
                 'client_id' => Config::get('services.openathens.client_id'),
@@ -194,7 +194,7 @@ class SocialLoginController extends Controller
 
                 $b = $oidc->authenticate();
 
-                \Log::info('auth in callback: ' . $b ? 'true' : 'false' . PHP_EOL);
+                \Log::info('auth in callback: ' . $b . PHP_EOL);
 
                 $oidc->authenticate();
 
