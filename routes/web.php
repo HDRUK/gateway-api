@@ -23,7 +23,7 @@ use Laravel\Passport\Http\Controllers\AccessTokenController;
 */
 
 Route::get('/oauth/authorize', [CustomAuthorizationController::class, 'customAuthorize']);
-// Route::post('/oauth/token', [AccessTokenController::class, 'issueToken'])->middleware(AppendTokenResponse::class);
+Route::post('/oauth/token', [AccessTokenController::class, 'issueToken'])->middleware(AppendTokenResponse::class);
 // Route::post('/oauth/token', [AccessTokenController::class, 'issueToken']);
 
 Route::get('/oauth/.well-known/jwks', [JwksController::class, 'getJwks']);
