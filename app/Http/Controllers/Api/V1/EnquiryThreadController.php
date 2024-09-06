@@ -294,7 +294,7 @@ class EnquiryThreadController extends Controller
 
                 // Spawn email notifications to all DAR managers for this team
                 if ($input['is_feasibility_enquiry'] == true) {
-                    EMC::sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser);
+                    EMC::sendEmail('feasibilityenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
                 } elseif ($input['is_general_enquiry'] == true) {
                     EMC::sendEmail('generalenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
                 }
