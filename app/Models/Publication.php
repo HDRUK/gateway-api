@@ -49,7 +49,7 @@ class Publication extends Model
     public function getAllDatasetsAttribute()
     {
         return $this->getDatasetsViaDatasetVersion(
-            PublicationHasDatasetVersion::class,
+            new PublicationHasDatasetVersion,
             'publication_id'
         );
     }

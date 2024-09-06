@@ -68,7 +68,7 @@ class Tool extends Model
     public function getAllDatasetsAttribute()
     {
         return $this->getDatasetsViaDatasetVersion(
-            DatasetVersionHasTool::class,
+            new DatasetVersionHasTool,
             'tool_id'
         );
     }
