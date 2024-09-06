@@ -73,6 +73,10 @@ class RunPostMigrations extends Command
                 'arguments' => [],
             ], // set collections to be active
             [
+                'command' => 'app:dataset-linkages',
+                'arguments' => [],
+            ], // add dataset version linkages
+            [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'datasets',
