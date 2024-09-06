@@ -160,7 +160,7 @@ class FormHydrationController extends Controller
         $defaultValues = array();
         $defaultValues['identifier'] = $team['id'];
         $defaultValues['Name of data provider'] = $team['name'];
-        $defaultValues['Organisation Logo'] = $team['team_logo'];
+        $defaultValues['Organisation Logo'] = (is_null($team['team_logo']) || strlen(trim($team['team_logo'])) === 0) ? '' : (filter_var($team['team_logo'], FILTER_VALIDATE_URL) ? $team['team_logo'] : Config::get('services.media.base_url') . $team['team_logo']);
         $defaultValues['Organisation Description'] = $team['name'];
         $defaultValues['contact point'] = $team['contact_point'];
         $defaultValues['Organisation Membership'] = $team['memberOf'];
@@ -191,10 +191,10 @@ class FormHydrationController extends Controller
             'metadata.metadata.accessibility.access.deliveryLeadTime',
             $datasets
         );
-        $defaultValues['Format'] = $this->mostCommonValue(
+        $defaultValues['Format'] = [$this->mostCommonValue(
             'metadata.metadata.accessibility.formatAndStandards.format',
             $datasets
-        );
+        )];
 
         $defaultValues = array_merge($defaultValues, $this->generalDefaults());
         return $defaultValues;
@@ -203,9 +203,9 @@ class FormHydrationController extends Controller
     private function generalDefaults(): array
     {
         return [
-            'Jurisdiction' => 'UK',
-            'Language' => 'en',
-            'Biological sample availability' => 'None/not Available'
+            'Jurisdiction' => ['UK'],
+            'Language' => ['en'],
+            'Biological sample availability' => ['None/not available']
         ];
     }
 

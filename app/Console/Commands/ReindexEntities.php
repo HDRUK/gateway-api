@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use App\Models\Publication;
 use App\Models\Team;
 use App\Models\Dur;
@@ -12,6 +11,8 @@ use App\Models\Collection;
 use App\Jobs\TermExtraction;
 use App\Http\Traits\IndexElastic;
 use Illuminate\Console\Command;
+
+use ElasticClientController as ECC;
 
 class ReindexEntities extends Command
 {
@@ -22,8 +23,14 @@ class ReindexEntities extends Command
      * @var string
      */
 
-    protected $signature = 'app:reindex-entities {entity?} {sleep=0} {minIndex?} {maxIndex?} {--term-extraction}';
-
+    protected $signature = 'app:reindex-entities 
+                            {entity?} 
+                            {--sleep=0} 
+                            {--minIndex=} 
+                            {--maxIndex=} 
+                            {--chunkSize=10} 
+                            {--term-extraction} 
+                            {--fresh}';
     /**
      * The console command description.
      *
@@ -53,19 +60,43 @@ class ReindexEntities extends Command
     protected $maxIndex = null;
 
     /**
+     * Specific index to end run
+     *
+     * @var int|null
+     */
+    protected $chunkSize = null;
+
+    /**
+     * Specific index to end run
+     *
+     * @var boolean
+     */
+    protected $termExtraction = false;
+
+    /**
+     * Specific index to end run
+     *
+     * @var boolean
+     */
+    protected $fresh = false;
+
+    /**
      * Execute the console command.
      */
     public function handle()
     {
 
-        $sleep = $this->argument("sleep");
+        $entity = $this->argument('entity');
+        $sleep = $this->option("sleep");
         $this->sleepTimeInMicroseconds = floatval($sleep) * 1000 * 1000;
         echo 'Sleeping between each reindex by ' .  $this->sleepTimeInMicroseconds . "\n";
 
-        $entity = $this->argument('entity');
+        $this->minIndex = $this->option('minIndex') !== null ? (int) $this->option('minIndex') : null;
+        $this->maxIndex = $this->option('maxIndex') !== null ? (int) $this->option('maxIndex') : null;
 
-        $this->minIndex = is_null($this->argument('minIndex')) ? null : (int) $this->argument('minIndex');
-        $this->maxIndex = is_null($this->argument('maxIndex')) ? null : (int) $this->argument('maxIndex');
+        $this->chunkSize = (int) $this->option('chunkSize');
+        $this->termExtraction = $this->option('term-extraction');
+        $this->fresh = $this->option('fresh');
 
         if ($entity && method_exists($this, $entity)) {
             $this->$entity();
@@ -74,129 +105,174 @@ class ReindexEntities extends Command
         }
     }
 
-    private function checkAndCleanMaterialType($id)
-    {
-
-        $datasetVersion = DatasetVersion::where([
-            'id' => $id,
-        ])->first();
-
-        $metadata = $datasetVersion->metadata;
-
-        if (array_key_exists('tissuesSampleCollection', $metadata['metadata'])) {
-            if (!is_null($metadata['metadata']['tissuesSampleCollection'])) {
-                $tissues = $metadata['metadata']['tissuesSampleCollection'];
-
-                // Check if $tissues is set to [[]] and set it to [] if so
-                if ($tissues === [[]]) {
-                    $metadata['metadata']['tissuesSampleCollection'] = [];
-                    \Log::info("Found bad data (datasetId=" . $id . ") and cleaned it!");
-
-                    DatasetVersion::where('id', $datasetVersion->id)->update([
-                        'metadata' => json_encode(json_encode($metadata)),
-                    ]);
-                }
-            }
-        }
-    }
 
     private function datasets()
     {
-        $minIndex = $this->minIndex;
-        $maxIndex = $this->maxIndex;
-        $datasetIds = Dataset::pluck('id')->toArray();
-        if (isset($minIndex) && isset($maxIndex)) {
-            $datasetIds = array_slice($datasetIds, $minIndex, $maxIndex - $minIndex + 1);
-        } elseif (isset($minIndex)) {
-            $datasetIds = array_slice($datasetIds, $minIndex);
-        } elseif (isset($maxIndex)) {
-            $datasetIds = array_slice($datasetIds, 0, $maxIndex + 1);
+        $beforeCount = ECC::countDocuments(ECC::ELASTIC_NAME_DATASET);
+        echo "Before reindexing there were $beforeCount datasets indexed \n";
+
+        if($this->fresh) {
+            $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_DATASET);
+            echo "Deleted $nDeleted documents from the index \n";
         }
 
-        $termExtraction = $this->option('term-extraction'); // Initialize $termExtraction based on the command option
+        $datasetIds = Dataset::where("status", Dataset::STATUS_ACTIVE)
+            ->select("id")
+            ->pluck('id')
+            ->toArray();
+      
+        $this->sliceIds($datasetIds);
 
-        $progressbar = $this->output->createProgressBar(count($datasetIds));
-        foreach ($datasetIds as $id) {
-            $this->checkAndCleanMaterialType($id);
-            if ($termExtraction) {
-                $dataset = Dataset::where('id', $id)->first();
-                if ($dataset->status === Dataset::STATUS_ACTIVE) {
-                    $latestMetadata = $dataset->latestMetadata()->first();
-                    TermExtraction::dispatch(
-                        $id,
-                        $dataset->lastMetadataVersionNumber()->version,
-                        base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6))
-                    );
-                }
-            } else {
-                $this->reindexElastic($id);
-            }
-            usleep($this->sleepTimeInMicroseconds);
-            $progressbar->advance();
+        if ($this->termExtraction) {
+            $this->rerunTermExtraction($datasetIds);
+        } else {
+            $this->bulkProcess($datasetIds, 'reindexElastic');
         }
-        $progressbar->finish();
+
+        //sleep for 5 seconds and count again..
+        usleep(5 * 1000 * 1000);
+        $afterCount = ECC::countDocuments(ECC::ELASTIC_NAME_DATASET);
+        echo "\nAfter reindexing there were $afterCount datasets indexed \n";
+
     }
 
     private function tools()
     {
-        $toolIds = Tool::pluck('id');
-        $progressbar = $this->output->createProgressBar(count($toolIds));
-        foreach ($toolIds as $id) {
-            $this->indexElasticTools($id);
-            usleep($this->sleepTimeInMicroseconds);
-            $progressbar->advance();
+        if ($this->fresh) {
+            $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_TOOL);
+            echo "---> Deleted $nDeleted documents from the index \n";
         }
-        $progressbar->finish();
+
+        $nTotal = Tool::count();
+        $toolIds = Tool::where("status", Tool::STATUS_ACTIVE)
+            ->select("id")
+            ->pluck('id')
+            ->toArray();
+        $this->sliceIds($toolIds);
+        $this->bulkProcess($toolIds, 'indexElasticTools');
+
+        $nIndexed = ECC::countDocuments(ECC::ELASTIC_NAME_TOOL);
+        echo "--->  ($nIndexed/$nTotal) Documents indexed ! \n";
     }
 
     private function publications()
     {
-        $pubicationIds = Publication::pluck('id');
-        $progressbar = $this->output->createProgressBar(count($pubicationIds));
-        foreach ($pubicationIds as $id) {
-            $this->indexElasticPublication($id);
-            usleep($this->sleepTimeInMicroseconds);
-            $progressbar->advance();
+        if ($this->fresh) {
+            $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_PUBLICATION);
+            echo "---> Deleted $nDeleted documents from the index \n";
         }
-        $progressbar->finish();
+        $nTotal = Publication::count();
+        $publicationIds = Publication::where("status", Publication::STATUS_ACTIVE)
+            ->select("id")
+            ->pluck('id')
+            ->toArray();
+        $this->sliceIds($publicationIds);
+
+        $this->bulkProcess($publicationIds, 'indexElasticPublication');
+
+        $nIndexed = ECC::countDocuments(ECC::ELASTIC_NAME_PUBLICATION);
+        echo "--->  ($nIndexed/$nTotal) Documents indexed ! \n";
     }
 
     private function durs()
     {
-        $durIds = Dur::pluck('id');
-        $progressbar = $this->output->createProgressBar(count($durIds));
-        foreach ($durIds as $id) {
-            $this->indexElasticDur($id);
-            usleep($this->sleepTimeInMicroseconds);
-            $progressbar->advance();
+        if ($this->fresh) {
+            $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_DUR);
+            echo "---> Deleted $nDeleted documents from the index \n";
         }
-        $progressbar->finish();
+
+        $nTotal = Dur::count();
+        $durIds = Dur::where("status", Publication::STATUS_ACTIVE)
+            ->select("id")
+            ->pluck('id')
+            ->toArray();
+        $this->sliceIds($durIds);
+
+        $this->bulkProcess($durIds, 'indexElasticDur');
+
+        $nIndexed = ECC::countDocuments(ECC::ELASTIC_NAME_DUR);
+        echo "--->  ($nIndexed/$nTotal) Documents indexed ! \n";
     }
 
     private function collections()
     {
-        $collectionIds = Collection::pluck('id');
-        $progressbar = $this->output->createProgressBar(count($collectionIds));
-        foreach ($collectionIds as $id) {
-            $this->indexElasticCollections($id);
-            usleep($this->sleepTimeInMicroseconds);
-            $progressbar->advance();
+        if ($this->fresh) {
+            $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_COLLECTION);
+            echo "---> Deleted $nDeleted documents from the index \n";
         }
-        $progressbar->finish();
+
+        $nTotal = Collection::count();
+        $collectionIds = Collection::where("status", Collection::STATUS_ACTIVE)
+            ->select("id")
+            ->pluck('id')
+            ->toArray();
+        $this->sliceIds($collectionIds);
+
+        $this->bulkProcess($collectionIds, 'indexElasticCollections');
+
+        $nIndexed = ECC::countDocuments(ECC::ELASTIC_NAME_COLLECTION);
+        echo "--->  ($nIndexed/$nTotal) Documents indexed ! \n";
+
     }
 
     private function dataProviders()
     {
         $providerIds = array_unique(Dataset::pluck('team_id')->toArray());
-        $progressbar = $this->output->createProgressBar(count($providerIds));
-        foreach ($providerIds as $id) {
-            $team = Team::find($id);
-            if ($team) {
-                $this->reindexElasticDataProvider($team->id);
-            }
-            $progressbar->advance();
+        $nTotal = count($providerIds);
+        $teamIds = Team::whereIn('id', $providerIds)->select('id')
+            ->pluck('id')->toArray();
+
+        $this->bulkProcess($teamIds, 'reindexElasticDataProvider');
+        $nIndexed = ECC::countDocuments(ECC::ELASTIC_NAME_DATAPROVIDER);
+        echo "--->  ($nIndexed/$nTotal) Documents indexed ! \n";
+    }
+
+    private function bulkProcess(array $ids, string $indexerName)
+    {
+        $progressbar = $this->output->createProgressBar(count($ids));
+        $chunks = array_chunk($ids, $this->chunkSize);
+        foreach ($chunks as $ids) {
+            $this->reindexElasticBulk($ids, [$this, $indexerName]);
+            $progressbar->advance(count($ids));
             usleep($this->sleepTimeInMicroseconds);
         }
         $progressbar->finish();
+
+    }
+
+    private function rerunTermExtraction(array $ids)
+    {
+        $progressbar = $this->output->createProgressBar(count($ids));
+
+        echo "Running term extraction \n";
+
+        foreach ($ids as $id) {
+            $dataset = Dataset::where('id', $id)->first();
+            $latestMetadata = $dataset->latestMetadata()->first();
+            $versionNumber = $dataset->lastMetadataVersionNumber()->version;
+            $elasticIndexing = true;
+
+            TermExtraction::dispatch(
+                $id,
+                $versionNumber,
+                base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6)),
+                $elasticIndexing
+            );
+        }
+        $progressbar->finish();
+    }
+
+    public function sliceIds(array &$ids): void
+    {
+        $minIndex = $this->minIndex;
+        $maxIndex = $this->maxIndex;
+
+        if (isset($minIndex) && isset($maxIndex)) {
+            $ids = array_slice($ids, $minIndex, $maxIndex - $minIndex + 1);
+        } elseif (isset($minIndex)) {
+            $ids = array_slice($ids, $minIndex);
+        } elseif (isset($maxIndex)) {
+            $ids = array_slice($ids, 0, $maxIndex + 1);
+        }
     }
 }

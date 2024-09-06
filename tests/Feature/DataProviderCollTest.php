@@ -17,6 +17,7 @@ use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
+use App\Models\DataProviderColl;
 use App\Models\DataProviderCollHasTeam;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
@@ -31,6 +32,8 @@ use Database\Seeders\CollectionHasKeywordSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionHasPublicationSeeder;
+
+use ElasticClientController as ECC;
 
 class DataProviderCollTest extends TestCase
 {
@@ -155,9 +158,49 @@ class DataProviderCollTest extends TestCase
         ]);
     }
 
+    public function test_data_provider_collection_summary()
+    {
+        $id = DataProviderColl::where(['enabled' => 1])->first()->id;
+        $response = $this->get('api/v1/data_provider_colls/' . $id . '/summary', [], $this->header);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'img_url',
+                    'summary',
+                    'enabled',
+                    'teams_counts' => [
+                        0 => [
+                            'name',
+                            'datasets_count',
+                            'tools_count',
+                            'durs_count',
+                            'publications_count',
+                            'collections_count'
+                        ]
+                    ],
+                    'datasets_total',
+                    'datasets',
+                    'durs_total',
+                    'durs',
+                    'tools_total',
+                    'tools',
+                    'publications_total',
+                    'publications',
+                    'collections_total',
+                    'collections',
+                ],
+            ]);
+    }
+
     public function test_create_data_provider_coll_with_success(): void
     {
-        $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
+
+        ECC::shouldReceive("indexDocument")
+            ->times(1);
+
         $payload = [
             'enabled' => true,
             'name' => 'Loki Data Provider',
@@ -189,13 +232,13 @@ class DataProviderCollTest extends TestCase
         $this->assertNotNull($relations);
         $this->assertEquals(count($relations), 3);
 
-        $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
-        $this->assertTrue($elasticCountAfter > $elasticCountBefore);
     }
 
     public function test_update_data_provider_with_success(): void
     {
-        $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
+        ECC::shouldReceive("indexDocument")
+            ->times(2);
+
         $payload = [
             'enabled' => true,
             'name' => 'Loki Data Provider',
@@ -237,12 +280,17 @@ class DataProviderCollTest extends TestCase
 
         $this->assertEquals($content['name'], 'Loki Updated Data Provider');
 
-        $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
-        $this->assertTrue($elasticCountAfter > $elasticCountBefore);
+
     }
+
 
     public function test_delete_data_provider_coll_with_success(): void
     {
+        ECC::shouldReceive("indexDocument")
+            ->times(1);
+        ECC::shouldReceive("deleteDocument")
+            ->times(1);
+
         $payload = [
             'enabled' => true,
             'name' => 'Loki Data Provider',

@@ -1,0 +1,1910 @@
+﻿Name,Name,Description,Publicflag,Firstname,Lastname,Email,Migrate to the enhanced Gateway,Action (PY),Updates
+100k Synthetic Brains (DDPM),100k Synthetic Brains (DDPM),"The Synthetic Brain Project is focused on building deep learning models that can synthesize high-resolution morphologically-correct 3D MRI images of human brains.
+ 
+These models and datasets will help scientists pave the way toward better federated-learning setups, more robust models under limited data, safer AI, and improved anomaly detection.
+ 
+The AI models were developed by King’s and NVIDIA scientists and engineers as part of The London Medical Imaging & AI Centre for Value-Based Healthcare research funded by UK Research and Innovation and a Wellcome Flagship Programme (in collaboration with University College London).  The dataset is composed of over 100,000 T1w 1mm isotropic synthetic brains of different gender, ages, ventricular sizes and size to head ratios.
+ 
+The code and models will soon be made available as open-source upon publication. Two twin-datasets are being released, utilising two state-of-the-art generative models, one using demonising diffusion probabilistic models (DDPM), and another using transformers. This specific dataset has been generated using DDPMs. The 100k samples have been generated using a uniformly sampled conditioning vector across ages, sexes, and brain size. 
+ 
+To find out more, contact Jorge Cardoso:  m.jorge.cardoso@kcl.ac.uk",0,M. Jorge,Cardoso,m.jorge.cardoso@kcl.ac.uk,,To be contacted,Email sent out on 03/07/2024
+3re test collection,3re test collection,3re test collection,0,Yokow,Baiden,yokow.baiden@paconsulting.com,,,
+a,a,a,0,ozgur,gezen,ozgurgezen7@gmail.com,,,
+Alleviate,Alleviate,"Chronic pain is a major unmet global public health challenge. It affects around 1 in 5 people, and causes more disability than any other condition, anywhere in the world.
+
+Alleviate is the APDP (Advanced Pain Discovery Platform) Pain Research Data Hub, and aims to transform UK pain datasets to be Findable, Accessible, Interoperable and Reusable (FAIR). 
+
+The Hub is led by the University of Dundee, University of Nottingham, King’s College London, Imperial College London, University of Oxford, University of Bath, and Cambridge Institute for Medical Research.
+
+**[For full details, please visit the Alleviate website](https://alleviate.ac.uk/)**",1,Ben,Crosby,b.l.crosby@bham.ac.uk,Yes,,
+,,,,Chris,Cole,c.cole@dundee.ac.uk,,,
+,,,,Christopher,Hall,christopher.hall@nhs.scot,,,
+,,,,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,,,
+,,,,Gordon,Milligan,gmilligan001@dundee.ac.uk,,,
+,,,,Ruth,Milne,ruth.milne@hdruk.ac.uk,,,
+,,,,Susan,Long,s.z.long@dundee.ac.uk,,,
+Better Care,Better Care,"**Aim**
+
+Health Data Research UK’s [Better Care programme](https://www.hdruk.ac.uk/how-we-use-health-data/better-care/) aims to improve people’s lives by equipping clinicians and patients in the UK with the best possible data-based information to make decisions about their care.
+
+Our vision is that by 2030, patients across the UK will benefit from healthcare decisions informed by large scale data and advanced analytics to identify what will work best for them.
+
+**Our approach**
+
+We support the development of learning healthcare systems that integrate clinical practice, large scale data and advanced analytics in a cycle of continuous improvement by:
+
+- Systematically gathering real-world data about patients’ treatment, experience and outcomes within the setting of routine care
+- Collating and providing access to large scale data in a format that is analysis-ready
+- Using advanced analytics to derive generalisable evidence and provide critical insights into healthcare delivery
+- Developing data-driven tools that make these insights actionable by clinicians and patients when they are making decisions about their care
+- Implementing tools to support personalised decision making by clinicians and patients at the point of care
+- Gathering data to manage the quality, safety and efficiency of care delivery, underpin research, and generate new insights that can continuously improve decision-making by clinicians and patients
+- Our focus is on answering the research questions necessary to achieve these goals and seeking solutions that can be implemented at scale across the health and care system.
+
+This collection will feature projects and outputs from the Better Care Programme.",1,Alice,Turnbull,alice.turnbull@hdruk.ac.uk,Yes,,
+BHF Data Science Centre,BHF Data Science Centre,"The BHF Data Science Centre is a partnership between Health Data Research UK and the British Heart Foundation. We work closely with patients, the public, NHS organisations, researchers, and clinicians to promote the safe and ethical use of data for research into the causes, prevention and treatment of all diseases of the heart and circulation.",,BHF,Data Science Centre,bhfdsc@hdruk.ac.uk,,,
+,,,,Lydia,Martin,Lydia.Martin@hdruk.ac.uk,,,
+Big Data for Complex Disease ,Big Data for Complex Disease ,"The Big Data for Complex Disease Driver programme will harness whole population, national linked health data to improve the prevention, diagnosis and treatment of cardiovascular disease, cancer, and other complex diseases
+
+Cancer and cardiovascular diseases (CVD) are the two leading causes of death in the UK and around the world. Despite substantial advances in the prevention, diagnosis and treatment of these two major groups of diseases, their impact on public health has continued to rise as the world’s population ages. Addressing this requires approaches that recognise and exploit the power of whole, large population-scale health-relevant data to catalyse health data science and its translation to improved patient care.
+
+The Big Data for Complex Disease (BDCD) Driver Programme will address challenges that focus on deploying whole population, national linked health data.",0,Aisha,Agbaje,aisha.agbaje@hdruk.ac.uk,Yes,,
+,,,,Lara,Edwards,lara.edwards@hdruk.ac.uk,,,
+Bladder and Prostate Cancer,Bladder and Prostate Cancer,"This collection brings together resources listed on the Innovation Gateway covering bladder and prostate related cancers.
+
+",1,Ruth,Milne,ruth.milne@hdruk.ac.uk,Yes,,
+"Bowel, Colorectal, Pancreatic, and Renal Cancer ","Bowel, Colorectal, Pancreatic, and Renal Cancer ","This collection brings together resources listed on the Innovation Gateway related to bowel, colorectal, pancreatic, renal and other gastro related cancers.",1,Ruth,Milne,ruth.milne@hdruk.ac.uk,Yes,,
+Breast Cancer,Breast Cancer,"This collection brings together resources listed on the Innovation Gateway related to breast cancer.
+
+",1,Ruth,Milne,ruth.milne@hdruk.ac.uk,Yes,,
+BREATHE: Respiratory Health,BREATHE: Respiratory Health,"BREATHE facilitates the safe and responsible use of respiratory health data at scale, sparking research and innovation for the benefit of UK patients.  
+
+BREATHE is a collaboration between patients and publics, UK Universities, third sector, Government organisations and industry from across the UK and globally. The Hub is led by The University of Edinburgh, Imperial College London, University of Leicester, Nottingham University Hospitals NHS Trust, Queen Mary University of London and Swansea University.
+
+At BREATHE, we want to improve respiratory health by changing the way the NHS, researchers, industry and charities use data. We are doing this by:
+
+•	Bringing together useful respiratory datasets, so they can be easily discovered by researchers and innovators.
+
+•	Curating and improving these datasets, providing access to the highest quality data.
+
+•	Providing services and expertise to drive the use of health data in ground-breaking research and innovation.
+
+•	Working in partnership with patients and the public to promote the responsible use of health data for patient benefit, protecting privacy at all stages.
+
+Website link: https://breathedatahub.com/ ",1,BREATHE,HDRUK,breathehdruk@gmail.com,Yes,,
+,,,,Chris,Orton,c.orton@swansea.ac.uk,,,
+,,,,Reece,Labrom,reece.labrom@swansea.ac.uk,,,
+Cardiovascular disease (CVD)-COVID-UK / COVID-IMPACT,Cardiovascular disease (CVD)-COVID-UK / COVID-IMPACT,"CVD-COVID-UK, co-ordinated by the British Heart Foundation (BHF) Data Science Centre, is one of the NIHR-BHF Cardiovascular Partnership’s National Flagship Projects.
+
+It aims to understand the relationship between COVID-19 and cardiovascular diseases such as heart attack, heart failure, stroke, and blood clots in the lungs through analyses of de-identified, pseudonymised, linked, nationally collated health datasets across the four nations of the UK.
+
+The consortium has over 380 members across more than 50 institutions including data custodians, data scientists with methodological and analytical expertise and clinicians, all of whom have signed up to an agreed set of principles with an inclusive, open and transparent ethos.
+
+Approved researchers access data within secure trusted research environments (TREs) provided by NHS England in England, the National Data Safe Haven in Scotland, the SAIL Databank in Wales and the Honest Broker Service in Northern Ireland.
+
+Linkable datasets include those from primary and secondary care, COVID lab tests and vaccinations, deaths, critical care, prescribing/dispensing, cardiovascular and stroke audits, maternity services and mental health.
+
+Building on the success of CVD-COVID-UK, the BHF Data Science Centre has now gained ethical and regulatory approval to broaden the scope of the programme to all COVID-related research (in NHS England’s TRE for England only).  This is known as COVID-IMPACT and it helps to support research projects from the wider community.
+
+More detail about CVD-COVID-UK / COVID-IMPACT, including a dashboard of datasets currently available in each nation’s TRE, can be found at: https://bhfdatasciencecentre.org/areas/cvd-covid-uk-covid-impact/ ",1,BHF,Data Science Centre,bhfdsc@hdruk.ac.uk,Yes,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+Cervical and Ovarian Cancer,Cervical and Ovarian Cancer,"This collection brings together resources listed on the Innovation Gateway related to cervical and ovarian cancer.
+",1,Vicky,Hellon,vicky.hellon@hdruk.ac.uk,Yes,,
+Child Development and Health,Child Development and Health,"This collection brings together resources listed on the Innovation Gateway related to child development and health and also paediatric/neonatal resources.
+
+",,Vicky,Hellon,vicky.hellon@hdruk.ac.uk,,,
+Clinical Practice Research Datalink (CPRD) ,Clinical Practice Research Datalink (CPRD) ,"Clinical Practice Research Datalink (CPRD) is a real-world research service supporting retrospective and prospective public health and clinical studies. CPRD research data services are delivered by the Medicines and Healthcare products Regulatory Agency with support from the National Institute for Health and Care Research (NIHR), as part of the Department of Health and Social Care.
+
+CPRD collects anonymised patient data from a network of GP practices across the UK. Primary care data are linked to a range of other health related data to provide a longitudinal, representative UK population health dataset. The data encompass 60 million patients, including 18 million currently registered patients.
+
+For more than 30 years, research using CPRD data and services has informed clinical guidance and best practice, resulting in over 3,000 peer-reviewed publications investigating drug safety, use of medicines, effectiveness of health policy, health care delivery and disease risk factors.",1,Ruth,Milne,ruth.milne@hdruk.ac.uk,Yes,,
+,,,,Susan,Hodgson,susan.hodgson@mhra.gov.uk,,,
+Clinical trials infrastructure & support - Therapeutics and Vaccines,Clinical trials infrastructure & support - Therapeutics and Vaccines,"Trials: Developing new treatments for Covid-19, and understanding:
+ - How treatments work, 
+ - Who they work best in 
+ - When they are most effective in the course of disease
+
+This study aims to enhance existing infrastructure to help deliver clinical trials at the right scale. This aims to help achieve robust results (e.g. large enough sample size, etc) and return results in a faster timeframe. The infrastructure will help support a platform for studies to determine which existing and novel therapeutics are effective against Covid-19
+
+National core study",1,Alice,Turnbull,alice.turnbull@hdruk.ac.uk,Yes,,
+,,,,David,Seymour,david.seymour@hdruk.ac.uk,,,
+,,,,Lara,Edwards,ledwards.info@gmail.com,,,
+,,,,Sophie,Morris,sophie.morris@hdruk.ac.uk,,,
+CO-CONNECT,CO-CONNECT,"CO-CONNECT Project (https://co-connect.ac.uk/):
+
+The current COVID-19 pandemic has caused hundreds of thousands of deaths, severely strained health systems and damaged economies across the world. At this time there is limited evidence that people who have recovered from COVID-19 and have antibodies are protected from a second infection and if so, how long that lasts. Understanding who is immune is vital to protect vulnerable individuals, to safely scale back population-based interventions and for managing disease transmission.  
+
+The data which can help us to answer these key questions have been collected across the UK by a range of research groups and within routine clinical primary and secondary care settings. As this is a new disease the standards for antibody data capture are in their infancy so some of the details needed to answer the key questions are not being captured systematically. The fragmented landscape of data means that it can be challenging for public health groups and researchers to find and access the high-quality data they need at pace.  
+
+CO-CONNECT will:  
+
+- Provide a mechanism, via the HDR Gateway, to allow researchers to find what relevant datasets reside where and under what access conditions 
+- Configure an infrastructure which enables trustworthy, fast, de-identified, secure analysis of data from across multiple organisations  
+- Standardise antibody data collection across the UK  
+- Align with the National Core Studies programme 
+- Answer key questions about immunity to COVID-19 and the implications for patient outcomes. 
+
+Website: https://co-connect.ac.uk/
+",,Emily,Jefferson,erjefferson@dundee.ac.uk,,,
+,,,,Esmond,Urwin,esmond.urwin@nottingham.ac.uk,,,
+,,,,Gordon,Milligan,gmilligan001@dundee.ac.uk,,,
+,,,,Philip R,Quinlan,philip.quinlan@nottingham.ac.uk,,,
+,,,,Scott,Horban,shorban001@dundee.ac.uk,,,
+,,,,Shameema,Stalin,sstalin001@dundee.ac.uk,,,
+Cohort Discovery ,Cohort Discovery ,"Cohort Discovery is a Gateway feature that allows users to carry out a more specific search and assessment on a subset of datasets listed in the Gateway, without having access to the underlying data.
+
+Users can specify defined characteristics relevant to their proposed analysis (e.g. patients that don’t smoke aged between 18-30 and who live in England) through the Cohort Discovery user interface. This requirement is then sent as a query to multiple pseudonymised datasets, with results returned in the form of a numerical count of individuals that meet those criteria.
+
+Undertaking Cohort Discovery before requesting access to the relevant data improves research productivity, by avoiding requests for data not suitable for the research need and by improving the specificity of future data access requests where a cohort of sufficient size is identified.
+
+This collection shows you the datasets that are currently onboarded onto Cohort Discovery. Further datasets will be added over the coming months. 
+
+Find out how to access the Cohort Discovery Tool [here.](https://www.healthdatagateway.org/about/cohort-discovery)",1,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,Yes,,
+,,,,Neil,Postlethwaite,Neil.Postlethwaite@hdruk.ac.uk,,,
+,,,,Ruth,Milne,ruth.milne@hdruk.ac.uk,,,
+Courses for accessing Trusted Research Environments,Courses for accessing Trusted Research Environments,"This Collection brings together the information governance courses available that may support a request to be an approved user within a Trusted Research Environment. 
+
+All TREs are guided by the 5 safes principles, which includes 'safe people'. This is the concept that people working in TREs have the necessary skills and competencies to work with data and understanding of information governance and privacy.
+
+Different courses may be taken and accepted by different TREs as evidence of information governance and confidentially. This collection allows users to search for the different courses, understand how to access them, and check which TREs they are applicable to. 
+
+Once a user is approved to work in a TRE they will need to make a separate project request to access data, which will be assessed separately. ",1,James,Pickett,james.pickett@owkin.com,Yes,,
+,,,,Lara,Edwards,ledwards.info@gmail.com,,,
+,,,,Sophie,Morris,sophie.morris@hdruk.ac.uk,,,
+COVID-19,COVID-19,"As the national institute for health data science, the Health Data Research UK (HDR UK) community is actively championing the use of health data to address the global COVID-19 challenge. Institute members across our sites and hubs are contributing to this global challenge by forging partnerships with government, NHS, industry and academia. Teams are working on risk factors, genomics, clinical trials, care pathways and surveillance to help, for example, identifying which treatments and which clinical practices have the best outcomes for patients with COVID-19. These activities require access to and linkage of health data and we can build on our existing expertise and emerging capabilities to support this. You can learn more about our COVID-19 work here - https://www.hdruk.ac.uk/covid-19. 
+
+This collection will feature resources and outputs addressing the COVID-19 challenge.
+
+
+
+
+",1,Aisha,Agbaje,aisha.agbaje@hdruk.ac.uk,Yes,,
+,,,,Alice,Turnbull,alice.turnbull@hdruk.ac.uk,,,
+,,,,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,,,
+,,,,Kabir,Khan,Kabir.Khan@hdruk.ac.uk,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Rhoswyn,Walker,rhoswyn.walker@hdruk.ac.uk,,,
+,,,,Susheel,Varma,susheel.varma@hdruk.ac.uk,,,
+COVID-19 Longitudinal Health & Wellbeing National Core Study,COVID-19 Longitudinal Health & Wellbeing National Core Study,"The aim of the COVID-19 Longitudinal Health & Wellbeing National Core Study is to quantify the health and social impacts of the pandemic understand underlying mechanisms and identify at risk groups.  To achieve this we have established a consortium of UK population representative longitudinal studies spanning the full age range. These data will be analysed in conjunction with key population datasets to look at the following core questions:
+
+1. What are the mental health consequences of C-19 infection, and of viral suppression measures? How do these differ by key demographics, socioeconomic status and by prior mental health status?
+2. What are the risks, determinants and expressions of the physical health consequences of long-Covid?
+3. What are the disruptions to health care services (primary and secondary), and what are the health consequences of these disruptions?  How do they vary by geography, demographics and socioeconomic status?
+4. What are the risks of re-infection?
+5. How do measures of historical health & physiology impact risk of C-19 infection and its consequences?  
+6. How do we best identify cases in population studies, triangulating symptoms, antigen and antibody testing?  How do antibody profiles differ by case status (e.g. those with and without symptoms), how do antibody profiles vary over time? What are the health determinants of such variability?
+7. What are the long term socioeconomic consequences of viral suppression measures?  How do these in turn impact on health and on health care utilisation?
+",1,Aisha,Agbaje,aisha.agbaje@hdruk.ac.uk,Yes,,
+COVID-19 Vaccines Research,COVID-19 Vaccines Research,This collection features COVID-19 vaccine datasets and related resources that are listed on the Gateway. ,0,James,Pickett,james.pickett@owkin.com,,To be contacted,Email sent out on 03/07/2024
+,,,,Vicky,Hellon,vicky.hellon@hdruk.ac.uk,,,
+Critical and Emergency Care,Critical and Emergency Care,"This collection brings together resources listed on the Innovation Gateway related to critical, emergency and intensive care.
+
+",1,Ping,Yu,ping.yu@hdruk.ac.uk,Yes,,
+,,,,Vicky,Hellon,vicky.hellon@hdruk.ac.uk,,,
+Data & Connectivity ,Data & Connectivity ,"The Data and Connectivity NCS, led jointly by Health Data Research UK and Office for National Statistics, is bringing together key data assets, research infrastructure and organisations from across Scotland, Wales, England and Northern Ireland to organise medical, biological and social science data on an unprecedented scale. 
+
+Through the Health Data Research Innovation Gateway and the UK’s national Trusted Research Environments (TREs) this vital data is being made available to researchers for analysis, ethically and safely in line with the Five Safes best practice principles, to accelerate COVID-19 research.  
+
+As datasets are onboarded and their metadata made available, they will feature in this collection.  Projects, papers, tools and people associated with the Data & Connectivity NCS will also be added. In December 2020 HDRUK and ONS funded 12 research projects as part of a rapid funding call to use and enhance the NCS datasets and infrastructure.
+
+Providers of Trusted Research Environments are: NHS Digital, Office for National Statistics, University of Swansea (SAIL Databank), University of Edinburgh in partnership with Public Health Scotland and Scottish Government, and Health & Social Care Northern Ireland Honest Broker Service. 
+",1,Aisha,Agbaje,aisha.agbaje@hdruk.ac.uk,Yes,,
+,,,,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,,,
+,,,,David,Seymour,david.seymour@hdruk.ac.uk,,,
+,,,,James,Pickett,james.pickett@owkin.com,,,
+,,,,Kabir,Khan,Kabir.Khan@hdruk.ac.uk,,,
+,,,,Lara,Edwards,ledwards.info@gmail.com,,,
+,,,,Matthew,Thakur,thakurmatthew@gmail.com,,,
+,,,,Paola,Quattroni,pquattronihdruk@gmail.com,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Sophie,Morris,sophie.morris@hdruk.ac.uk,,,
+,,,,Susheel,Varma,susheel.varma@hdruk.ac.uk,,,
+Data Cleaning/Profiling Tools,Data Cleaning/Profiling Tools,"Improving the quality of healthcare data for research use is a priority activity. Data profiling software tools can assist this process by evaluating data sets across a range of quality dimensions. A wide range of freely available software with data profiling capabilities is available but healthcare organizations often have limited data engineering capability and expertise. We aimed to evaluate freely available data profiling software tools using healthcare data.
+
+28 freely available data profiling tools were evaluated for their capabilities based on publicly available information and data sheets. Based on this assessment nine tools were selected for further detailed evaluation using a synthetic data set of 1000 patients and associated health data in a common health data model, and the tools scored based on their functionality with this data set.",,Ben,Gordon,ben.gordon@hdruk.ac.uk,,,
+,,,,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,,,
+,,,,Jake,Barrett,Jake.Barrett@hdruk.ac.uk,,,
+,,,,Susheel,Varma,susheel.varma@hdruk.ac.uk,,,
+DATA-CAN: Cancer,DATA-CAN: Cancer,"DATA-CAN is a UK-wide partnership that aims to unlock the power of health data to improve cancer care. 
+
+One in two people will get cancer during their lifetime. Every year, almost 400,000 new cases are diagnosed in the UK and cancer costs the NHS £7 billion annually. Research has shown that using health data more effectively can help to drive the development of new cancer treatments, therapies and diagnostic services and improve cancer survival rates. 
+
+Health data collected by the NHS and other organisations is not always quick and easy for researchers to find, access and analyse. DATA-CAN works in partnership with data custodians in universities, charities, industry and NHS organisations to make high quality health data more accessible for cancer researchers, clinicians and other health professionals. The aim is to make it easier to conduct research into new treatments, identify opportunities for earlier diagnosis, give patients faster access to clinical trials and create new investment in UK healthcare. 
+
+Website link: https://www.data-can.org.uk/",1,DATA-CAN,Gateway,datacan.gateway@gmail.com,Yes,,
+DataLoch,DataLoch,"DataLoch is a secure, pioneering data service that has been developed by multiple organisations to enable improvements in health and social care.",1,Jennifer,Daub,jennifer.daub@ed.ac.uk,Yes,,
+,,,,Kathy,Harrison,kathy.harrison@ed.ac.uk,,,
+DATAMIND - The Hub for Mental Health Informatics Research Development,DATAMIND - The Hub for Mental Health Informatics Research Development,"[DATAMIND](https://datamind.org.uk/) is the Health Data Research Hub for Mental Health funded by the Medical Research Council (MRC).
+ 
+Our Mental Health Data Research Hub makes the most of the UK’s rich mental health data and enables coordinated research, with the aim of improving people’s lives. The Hub transforms mental health research in the UK by providing a central, integrated data infrastructure with <b>findable, accessible, interoperable, and reusable (FAIR)<b> mental health data sets. This means data from diverse sources, underpinned by expertise and innovation, by principles of responsible use, and by public participation, for use across universities, the NHS, the charitable sector, policymakers, and industry.
+ 
+In partnership with the charity [MQ: Transforming Mental Health](https://www.mqmentalhealth.org/home/), the hub supports the development of the public’s involvement in mental health research to ensure that valuable contributions are included from those with lived experience. The hub also collaborates with MQ to build capacity and strengthen expertise in this increasingly important area of research through data science conferences and early career researcher (ECR) skills development workshops.
+ 
+The Hub infrastructure is located at four lead sites covering the four UK nations. We index and curate data across participating organisations for research, development, and innovation. The Hub continuously catalogues relevant UK data rich in mental health information, including from gene studies, routine care, volunteer cohorts, and trials (often through the [Catalogue of Mental Health Measures](https://www.cataloguementalhealth.ac.uk/)), as well as novel data from schools and charities. It allows researchers to discover and use them through the HDR UK Innovation Gateway.
+ 
+[Patients and the public](https://datamind.org.uk/patients-and-public/) are also crucial to DATAMIND, ensuring the project aligns with real-life mental health challenges. [The Super Research Advisory Group (SRAG)](https://datamind.org.uk/patients-and-public/the-super-research-advisory-group/) promotes inclusive decision-making, guided by those directly affected by mental health issues.
+",1,Christopher,Roberts,chrisroberts394@gmail.com,Yes,,
+,,,,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,,,
+,,,,Lily,Strange,lily.strange@kcl.ac.uk,,,
+,,,,Louise ,Arseneault,louise.arseneault@kcl.ac.uk,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Ruth,Milne,ruth.milne@hdruk.ac.uk,,,
+Datasets from across the charity sector,Datasets from across the charity sector,"The contribution of charitable organisations to the UK's health and life sciences sector is essential. In 2021, medical research charities spent £1.55bn on research, including funding for 20,000 researchers’ salaries and over 1000 clinical trials (source: AMRC Research Expenditure Report 2022). 
+
+This Collection explores some of the datasets our charity partners, including Parkinson's UK and the Cystic Fibrosis Trust have made available on the Gateway. ",1,Ruth,Milne,ruth.milne@hdruk.ac.uk,Yes,,
+David's own ideas,David's own ideas,Collection of things I have looked at.,0,David,Seymour,david.seymour@hdruk.ac.uk,,To be contacted,Email sent out on 03/07/2024
+DEMISTIFI,DEMISTIFI,"DEfining MechanIsms Shared across mulTI-organ FIbrosis to prevent the development of long-term multi-morbidity (DEMISTIFI-Multi Morbidity) Consortium.
+
+Scarring of the internal organs occurs in many common diseases, including diabetes (scarring in the pancreas), hypertension (blood vessels), chronic kidney disease (kidney), cirrhosis (liver) and idiopathic pulmonary fibrosis (lungs). Within the consortium we have full spectrum of single organ fibrosis, including lung (n=1150), liver (n=1930), pancreas (n=1480), small bowel (n=1193), kidney (n=1700), as well as brain, bone marrow, and diabetes cohorts.
+The aim of our research is to identify patterns of scarring in different organs, which we have termed Fibrotic Multi-Morbidity (FMM), and to understand how and why the scarring gets worse. We will use new technology such as Magnetic Resonance Imaging (MRI) to measure the amount of scarring in different organs to generate a Total Body Fibrosis Score. 
+In this way, we hope to be able to stop scarring from destroying the organ in which it is found and prevent it spreading to other organs by using a single treatment for scarring. Ultimately, by understanding the causes of scarring and reasons that worsen the scarring we will prevent the long-term problems that occur when people get scarring in multiple organs in the body.",1,Armando,Mendez Villalon,armando.mendez@nottingham.ac.uk,Yes,,
+Digital Health Alliance Project University of Nottingham & the Nottingham University Hospital Trust,Digital Health Alliance Project University of Nottingham & the Nottingham University Hospital Trust,"The Digital Health Alliance Project is a current collaboration between the University of Nottingham & the Nottingham University Hospital Trust and the HDR UK team. The project will assess the ease of using the HDR Platform (Gateway) and Tools to enable consistent and simplified approaches to sharing digital health related data across both the university and the hospital trust. 
+
+The tools that are being evaluated and adopted include the:
+
+Accessing and using the HDRUK Gateway platform
+https://www.healthdatagateway.org/about/innovators-and-researchers
+
+Understanding the role of the HDRUK Alliance
+https://ukhealthdata.org/
+
+Accessing Datasets through adopting the Data Access Request processes (DAR)
+https://www.healthdatagateway.org/about/data-access-request-process
+
+
+Employing the 5Safes Model (as per ONS guidance) as part of the DAR Process
+https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/
+
+
+The Cohort Discovery tool to allow users to search multiple datasets for specified  cohorts (specific groups of patients)
+https://www.healthdatagateway.org/about/cohort-discovery
+
+
+& Data Utility wizard which will improve search accuracy across the datasets on the Gateway
+ https://www.healthdatagateway.org/about/data-utility-wizard
+
+Nottingham University Hospital Trust & University of Nottinghams' Podcasts:
+Virtual discussion with HDRUK & Nottingham University Hospital Trust on use of data in research projects:
+https://youtu.be/eyWtFdxKi1U
+
+Keeping patient data safe: 
+https://anchor.fm/nottmresearch/episodes/Keeping-patient-data-safe-in-our-new-BioResource-e1f6hd6/a-a7gsbbc
+
+Health data and research: 
+https://anchor.fm/nottmresearch/episodes/Health--data--and-research-e1com7t/a-a77csrt
+
+The COVID-19 database: 
+https://anchor.fm/nottmresearch/episodes/Big-data-in-Covid-19-e1bq8tg/a-a73v5f7
+
+COVID-10 App data: 
+https://anchor.fm/nottmresearch/episodes/What-can-the-Covid-19-Zoe-app-tell-us-about-future-variants-e1gtond
+
+
+
+
+",0,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,,,
+,,,,Francois,Arvin-Berod,francois.arvin-berod@nuh.nhs.uk,,,
+,,,,Philip R,Quinlan,philip.quinlan@nottingham.ac.uk,,,
+,,,,Sam,Rising,Sam.Rising@nottingham.ac.uk,,,
+Discover-NOW: Real World Evidence,Discover-NOW: Real World Evidence,"Discover-NOW, led by [Imperial College Health Partners](https://imperialcollegehealthpartners.com/), is the Health Data Research Hub for Real World Evidence. Discover-NOW brings together NHS organisations, globally recognised academic, industry, technology, research and charity partners as well as patients and the public and aims to revolutionise the way health data is used responsibly for research into treating and preventing disease.
+
+The Discover-NOW Hub provides a gateway to one of the largest deidentified linked health and care datasets in Europe (2.5 million people), Discover-NOW can connect you to a Real World Evidence validation ecosystem through a Trusted Research Environment which has been co-designed with citizens.
+
+The Discover data is the NWL de-identified dataset – linked coded primary care, secondary, acute, mental health, community health and social care record for patients who live and are registered with a GP in North West London, with new data feeds frequently being acquired.
+
+Discover-NOW supports clinicians, researchers and scientists to:
+
+*    Recruit patients to studies
+*    Develop new treatments
+*    Manage and prevent health conditions
+*    Test and evaluate innovations
+
+The Hub also offers leading regulation ready and GDPR compliant tools, technologies and expertise to support Real World Evidence health research and improvements. These include a high-performance analytics environment, methods including machine learning, a feasibility and research recruitment tool, as well as a consent to contact register of more than 6,000 people.
+
+[Visit the Discover-Now website](https://imperialcollegehealthpartners.com/)",1,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,Yes,,
+,,,,Discover,NOW,discovernowhub@gmail.com,,,
+,,,,Piri,Siva,piriyanthi22@gmail.com,,,
+,,,,Ruth,Milne,ruth.milne@hdruk.ac.uk,,,
+,,,,Taryn,Aspeling,Taryn.Aspeling@imperialcollegehealthpartners.com,,,
+East Midlands Secure Data Environment (SDE): Part of the NHS Research SDE Network,East Midlands Secure Data Environment (SDE): Part of the NHS Research SDE Network,"The East Midlands region has a population of 5.1 million and the SDE covers 5 ICBs: 
+
+•	Derby and Derbyshire 
+
+•	Leicester, Leicestershire and Rutland
+
+•	Lincolnshire 
+
+•	Northamptonshire 
+
+•	Nottingham and Nottinghamshire 
+
+Data resources will be added to this collection over time. If you have any questions about the East Midlands SDE, please contact data.research@nhs.net
+",1,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,Yes,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Rick,Fell,rickfell@nhs.net,,,
+East of England Secure Data Environment (SDE): Part of the NHS Research SDE Network,East of England Secure Data Environment (SDE): Part of the NHS Research SDE Network,"The East of England region has a population of 7 million and the SDE covers 6 ICBs: 
+
+•	Bedfordshire, Luton and Milton Keynes
+
+•	Cambridgeshire and Peterborough 
+
+•	Hertfordshire and West Essex 
+
+•	Mid and South Essex 
+
+•	Norfolk and Waveney 
+
+•	Suffolk and North East Essex 
+
+Data resources will be added into this collection over time. If you have any questions about the East of England SDE, please contact Magali.Ruffier@healthinnovationeast.co.uk",1,Amy,Selby,Amy.Selby@HealthInnovationEast.co.uk,Yes,,
+,,,,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,,,
+,,,,Magali,Ruffier,magali.ruffier@healthinnovationeast.co.uk,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Rick,Fell,rickfell@nhs.net,,,
+Epidemiology and Surveillance,Epidemiology and Surveillance,"Mortality & risk stratification: Do particular groups (age, sex, socioeconomic status, occupation, geographical location, care setting, co-morbidities and ethnicity) have an increased risk of infection? And/or do they have an increased risk of severe outcomes? And what are the excess deaths compared with the previous 5 years?
+
+National core study",1,Aisha,Agbaje,aisha.agbaje@hdruk.ac.uk,Yes,,
+,,,,Alice,Turnbull,alice.turnbull@hdruk.ac.uk,,,
+,,,,Lara,Edwards,ledwards.info@gmail.com,,,
+,,,,Melissa,Lewis-Brown,melissa.lewis-brown@hdruk.ac.uk,,,
+,,,,Sophie,Morris,sophie.morris@hdruk.ac.uk,,,
+General Cancer and Cancer Registeries,General Cancer and Cancer Registeries,"This collection brings together resources listed on the Innovation Gateway that are general cancer registries or cover more than one type of cancer.
+
+",1,Ping,Yu,ping.yu@hdruk.ac.uk,Yes,,
+,,,,Ruth,Milne,ruth.milne@hdruk.ac.uk,,,
+South West Secure Data Environment (SDE): Part of the NHS Research SDE Network,South West Secure Data Environment (SDE): Part of the NHS Research SDE Network,"The Great Western region has a population of 5.2million and the SDE covers 6 ICBs, 28 Trusts and 483 GPs. The ICBs in the region are:
+ 
+•	Bristol, North Somerset and South Gloucestershire
+
+•	Bath and North East Somerset, Swindon and Wiltshire
+
+•	Cornwall and Isles of Scilly 
+
+•	Devon 
+
+•	Gloucestershire 
+
+•	Somerset 
+
+Data resources will be added to this collection over time. If you have any questions about the Great Western SDE, please contact data.research@nhs.net",1,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,Yes,,
+,,,,Katie,Gordon,katie.gordon4@nhs.net,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Rachel,Denholm,r.denholm@bristol.ac.uk,,,
+,,,,Rick,Fell,rickfell@nhs.net,,,
+Gut Reaction: Inflammatory Bowel Disease,Gut Reaction: Inflammatory Bowel Disease,"Gut Reaction is the Health Data Research Hub for Inflammatory Bowel Disease (IBD). IBD includes Crohn’s disease and ulcerative colitis.
+
+Together, these conditions affect around 500,000 people in the UK. They cause recurring abdominal symptoms, which need long-term treatment and often major surgery. As as result, IBD can significantly affect the lives of those who live with it.
+
+Gut Reaction aims to build on the high-quality health data in the NIHR IBD BioResource by combining it with ‘real-world’ data from participating NHS hospitals, audit and Patient Reported Outcomes Measures (PROMs) from the IBD Registry and genomic data from the UK IBD Genetics Consortium. This will allow researchers to use the pooled data to support important research into IBD.
+
+Gut Reaction is working with hospitals, industry and, most importantly, patients to create a unique, secure data resource for scientists in order to speed research for people living with IBD.
+
+Gut Reaction will create the world’s largest virtual repository of data from people with IBD. It will contain information from more than 34,000 IBD patients who have consented to participate in the NIHR BioResource, including over 7,000 patients for whom detailed hospital records are also held; with similar numbers of participants (who are not necessarily the same people) in both the IBD Registry and the UK IBD Genetics Consortium.  Researchers can search the metadata on available data sets and apply for access to the subsets of data to support their research.
+
+Through Gut Reaction’s partner organisations AIMES - who provide secure infrastructure - and Privitar - who provide Privacy Enhancing Technologies - researchers can apply to access robustly de-identified data in a trusted location.
+
+Together, this will enable approved researchers to rapidly identify, access and analyse high-quality IBD data, thereby driving discovery and innovation.
+
+Through the NIHR BioResource, it is also possible to access samples to accompany the data, and to invite people with IBD to take part in clinical studies and trials that might be suitable for them.
+
+Website link: https://gut-reaction.org/",1,Carolyn,Brechin,cbrechin@gmail.com,Yes,,
+,,,,Charlie,Clarke,charlie.clarke@eahsn.org,,,
+,,,,Gut,Reaction,gutreaction.pmo@gmail.com,,,
+,,,,Neil,Walker,neil.walker@bioresource.nihr.ac.uk,,,
+,,,,,,neilmwalker24@gmail.com,,,
+HDR UK and Gateway Digital Resources ,HDR UK and Gateway Digital Resources ,"In this Collection, please find a set of free to use and downloadable infographics that help explain some of the Gateway's key functionalities in an easy to understand format, including the Cohort Discovery Tool, the Data Access Request process and the Data Use Register. Plus, additional resources about some of the other services and programmes available at HDR UK. ",1,Ruth,Milne,ruth.milne@hdruk.ac.uk,Yes,,
+HDR UK Multi-omics Consortium ,HDR UK Multi-omics Consortium ,"Genetics has transformed our understanding of how variation in DNA can influence risk of developing conditions, such as cancer and heart disease. Studies that can combine this genetic information with other blood-based factors – including proteins, metabolites and lipids – and health records, have the potential to provide more direct insight into disease aetiology and prediction. A key challenge so far, however, has been accessing this information at sufficient scale.
+
+The development of a National Multi-omics Consortium aims to address this challenge by bringing together information on participants from multiple studies to enhance scientific power, breadth, and robustness. The Consortium is one of the major initiatives within HDRUK’s Understanding the Causes of Disease programme, led by HDR UK Researcher Dr Adam Butterworth. It will bring together existing and unique data assets, maximising their value within an open and collaborative national team. 
+
+From it's conception, the Consortium was designed to include nine longitudinal UK population cohorts within the HDR UK network, comprising over 750,000 participants:
+- AIRWAVE Health Monitoring
+- COMPARE Study
+- EPIC-Norfolk
+- The Fenland Study
+- Generation Scotland
+- GoDARTS
+- INTERVAL Study 
+- UCLEB Consortium
+- UK Biobank
+
+Additional cohorts have since joined, including:
+- ALSPAC
+- Born in Bradford
+- EXCEED
+- Viking Genes (including both Viking & Orcades studies)
+
+More info can be found [here](https://www.hdruk.ac.uk/projects/a-national-multi-omics-consortium-to-inform-disease-aetiology-and-prediction/). This collection will feature datasets, projects and outputs from the HDR UK Multi-omics Consortium.
+",1,Amy,Lafont,asg55@cam.ac.uk,Yes,,
+HDR UK Multimorbidity Implementation Platform,HDR UK Multimorbidity Implementation Platform,"The UK Academy of Medical Sciences defines multimorbidity as the co-existence of two or more long-term conditions. Multimorbidity is common in the UK and the health service is having to treat greater numbers of patients with more than one disease or condition.  We aim to find out more about what diseases and conditions are found together, how they develop as people age and also which cause the most problems for people and the health service.
+
+We have worked with researchers across all four nations in the UK to utilise 6 different datasets which hold anonymised information on over 10 million people to explore multimorbidity in the UK at a scale never done before. We have developed a framework which holds 20 years of longitudinal data for all patients aged 25 or over on 1st January 2000, including linked hospital (not all sites), primary care (not all sites),  prescribing, disease registry and demographic records.
+
+We have performed a systematic review to explore variations in the measurement of multimorbidity and also worked with clinicians, researchers and the public to define how best they think we should measure multimorbidity and which are the important conditions to examine.  We have also worked with a UK wide patient and public panel to get their input to the project but also to explore how best to involve patients and the public in health data science research.
+
+We have supported HDR UK strategy by developing the ability to use data at scale across UK for research with a distributed team of health data scientists and would plan for this work to inform other HDR UK activities.  The consolidated datasets are listed below:
+•	CALIBER Multimorbidity Cohort
+•	Discovery Multimorbidity Cohort
+•	Leicester, Leicestershire & Rutland Multimorbidity Cohort
+•	Northern Ireland Multimorbidity Cohort
+•	Scottish Multimorbidity Cohort
+•	Wales Multimorbidity Cohort
+
+The work has been developed by researchers at the following institutions:
+MRC Biostatistics Unit, University of Cambridge
+Queen Mary University of London
+Queens University Belfast
+Swansea University
+University College London
+University of Aberdeen
+University of Birmingham
+University of Edinburgh
+University of Leicester
+University of Oxford
+University of St Andrews
+University of Warwick
+
+This collection will feature datasets, projects and outputs from the HDR UK Multimorbidity Implementation Platform.
+",1,Ashley,Akbari,a.akbari@swansea.ac.uk,Yes,,
+,,,,Colin,McCowan,cm434@st-andrews.ac.uk,,,
+,,,,Ronan,Lyons,r.a.lyons@swansea.ac.uk,,,
+,,,,Spiros,Denaxas,s.denaxas@ucl.ac.uk,,,
+HDR UK National Text Analytics Project,HDR UK National Text Analytics Project,"When you visit your doctor or attend hospital, information collected about you, including your symptoms, tests, investigations, diagnosis, and treatments, is entered on computers as electronic health records (EHRs). This information could help us learn how to tailor treatments more accurately for individual patients and to offer better and safer healthcare.
+
+The challenge
+
+The challenge we face is that most of the information held within these records is in written form – sometimes referred to as unstructured text – which is difficult to use in research: for example, ‘the patient feels very tired and breathless, is losing weight, and says her heart is beating very fast’. We need to develop special computerised tools to process these words to ensure we have a full picture of all patient symptoms, experiences and diagnoses to use in research for patient benefit.
+
+The solution
+
+We will establish a natural language processing (NLP) research community that will address the complexity of clinical text through development of shared tools and standards with inbuilt patient confidence and engagement, supporting joint working across industry, academia and the NHS. The community will be open and inclusive, and develop capability for UK-wide NLP research at scale whilst providing clear ‘quick-wins’ through exemplar projects, shared material and datasets for training and implementation, with the ultimate aim of integrating with other health data analytics. The project will lay the foundations for a sustainable model for collaborative working, thus attracting funding for next 4 years and beyond.
+
+Impact and outcomes
+
+There is much value in the unstructured portion of the EHR, often in the form of rich narrative, which is currently unused, yet important for understanding health interactions that are either not recorded in, or are less obvious from, the structured data (e.g. multimorbidity, cancer diagnosis). The subtleties of the patient journey and characteristics are often stored in the free-text component and clinicians therefore find it a more user-friendly format.
+
+Building on existing successful partner-led programmes, and drawing the wider community together, this project will enable a major shift in the UK’s ability for research-ready, actionable, real-time and large-scale EHRs. Shared tools will be made available across the NHS, creating richer, more useful clinical information to improve healthcare. The integration of NLP derived phenotypes (digital descriptions of health characteristics) from EHRs with other rich records (e.g. educational and social information) and other modalities including imaging, mobile health and genomics will help generate a more complete picture of the patient and their health. Example projects will focus on areas of stroke, lung cancer and serious mental illness.
+
+Better use of unstructured text will help streamline matching of patients to clinical trials and stratification of patients for disease classification, outcome prediction, patient trajectories across the life-course, adverse drug reactions, and identify drug-repurposing opportunities.
+
+Resources
+
+The HDR UK Text implementation project has a GitHub repository containing a curated list of applications and datasets developed and shared by the Health Data Research (HDR) UK Text community. The repository is located here: https://github.com/hdruk-text",0,HDR UK,Text Analytics,hdruktext@gmail.com,,,
+HDRUK North,HDRUK North,"The HDRUK Northern Better Care Partnership brings together world-class universities, digitally-enabled NHS institutions and academic health science systems. It serves over 16 million people in the North where the rates of poverty, morbidity, premature mortality and poorer clinical outcomes are higher than in other regions.
+
+The Partnership will initially focus on three projects towards better care for elderly people living with frailty. Each project will employ extensive, available data and advanced analytical techniques to gain actionable insights for optimising delivery of care. They will use early findings to expand the research and implementation, firstly across other Northern cities, in collaboration with the Northern Health Science Alliance and the four Academic Health Science Networks, and subsequently UK-wide.",,Monica,Jones,m.c.m.jones@leeds.ac.uk,,,
+HDRUK text analytics,HDRUK text analytics,The collection for HDRUK text analytics resources.,,André,Bittar,andre.bittar@kcl.ac.uk,,,
+Health Research from Home,Health Research from Home,"The aim of this collection is to bring together, strengthen and advance the interdisciplinary community necessary for success in conducting health research from home: the use of smartphones and wearables for population health research. ",0,Richard,Dobson,richarddobson@gmail.com,,To be contacted,Email sent out on 03/07/2024
+,,,,Will,Dixon,will.dixon@manchester.ac.uk,,,
+"HIC - Health Informatics Centre, University of Dundee","HIC - Health Informatics Centre, University of Dundee","HIC supports high impact research through the collection and management of population based data.  
+
+At HIC, we believe in the power of Health Data Research to shape positive and meaningful changes in health care outcomes for us all.
+
+Established over 15 years ago, we have built up a wealth of experience with expert teams in secure data management, governance, data engineering, research Infrastructure, software, and business support to deliver and enhance our services.
+
+For 12 years we have operated as a Trusted Research Environment (TRE or ‘Safe Haven’ in Scottish terms) for the Scottish Government and NHS Tayside and NHS Fife Health Board Regions delivering secure, research managed ‘access to’ data under robust governance control. 
+
+The network of five Safe Havens operating in Scotland is accredited by the Scottish government and each Safe Haven adheres to the Scottish Safe Haven Charter. There are four regional Safe Havens and one national Safe Haven. The Health Informatics Centre (HIC) at the University of Dundee is one of the four regional Safe Havens covers the Tayside and Fife regions.
+
+Our information security management system is accredited to ISO27001.
+
+https://www.dundee.ac.uk/hic/",1,Christopher,Hall,christopher.hall@nhs.scot,Yes,,
+,,,,Gordon,Milligan,gmilligan001@dundee.ac.uk,,,
+,,,,Jenny,Johnston,j.johnston@dundee.ac.uk,,,
+,,,,Magalie,Guignard-Duff,mguignardduff@dundee.ac.uk,,,
+,,,,Sindy,Donaldson-buist,s.x.donaldsonbuist@dundee.ac.uk,,,
+HIV-PiNS,HIV-PiNS,"HIV-associated sensory neuropathy (HIV-SN) is a frequent complication of HIV infection and a major
+source of morbidity. A cross-sectional deep profiling study examining HIV-SN was conducted in people
+living with HIV in a high resource setting using a battery of measures which included the following:
+parameters of pain and sensory symptoms (7 day pain diary, Neuropathic Pain Symptom Inventory [NPSI]
+and Brief Pain Inventory [BPI]), sensory innervation (structured neurological examination, quantitative
+sensory testing [QST] and intraepidermal nerve fibre density [IENFD]), psychological state (Pain Anxiety
+Symptoms Scale-20 [PASS-20], Depression Anxiety and Positive Outlook Scale [DAPOS], and Pain Catastrophizing
+Scale [PCS], insomnia (Insomnia Severity Index [ISI]), and quality of life (Short Form (36)
+Health Survey [SF-36]). The diagnostic utility of the Brief Peripheral Neuropathy Screen (BPNS), Utah
+Early Neuropathy Scale (UENS), and Toronto Clinical Scoring System (TCSS) were evaluated. Thirty-six
+healthy volunteers and 66 HIV infected participants were recruited. A novel triumvirate case definition
+for HIV-SN was used that required 2 out of 3 of the following: 2 or more abnormal QST findings, reduced
+IENFD, and signs of a peripheral neuropathy on a structured neurological examination. Of those with HIV,
+42% fulfilled the case definition for HIV-SN (n = 28), of whom 75% (n = 21) reported pain. The most frequent
+QST abnormalities in HIV-SN were loss of function in mechanical and vibration detection. Structured
+clinical examination was superior to QST or IENFD in HIV-SN diagnosis. HIV-SN participants had
+higher plasma triglyceride, concentrations depression, anxiety and catastrophizing scores, and prevalence
+of insomnia than HIV participants without HIV-SN.",0,Andrew ,Rice,a.rice@imperial.ac.uk,,To be contacted,Email sent out on 03/07/2024
+HSC Northern Ireland Honest Broker Service TRE,HSC Northern Ireland Honest Broker Service TRE,"The Honest Broker Service is the Trusted Research Environment for Health and Social Care Northern Ireland and is hosted
+within the HSC Regional Business Services Organisation (BSO). 
+The HBS provides approved researchers with access to linked, de-identified health data via a safe setting. 
+Data is either accessed via attendance at the Safe Haven in BSO’s headquarters in Belfast or remotely via the UK Secure e-Research Platform (UK SeRP).
+The service provides secure project areas where researchers can collaborate, link data, share code and results within their same approved research project. Researchers attending the safe haven or accessing data remotely via the HDRNI UK SeRP have access to a range of analytical tools. 
+
+The Honest Broker Service does not provide identifiable data for consented studies or trials.
+
+Active Users: 25 | Active Projects: 30
+
+Please note a charge may apply for setting up project and data extraction, £475+VAT per day. 
+
+---
+
+### SAFE People - Login & Access  
+
+• All users must provide a CV: Evidence of research career via CV, belong to recognised Institution and completed Safe Researcher  training.  
+
+✓ Login:  Physical Setting: User account provisioned and maintained by HSC IT /  HDRNI SeRP:  Self-registration, login to Virtual Desktop Infrastructure (VDI) via SSO and 2FA
+
+✓ Minimum Requirement: No minimum requirement
+
+✓ International Access: International access allowed
+
+---
+
+### SAFE Settings - Compute & Services
+
+Physical Setting:
+
+✗ On-Premise Environment
+
+✓ Standard Desktop Workstation Minimum Core Dell Optiplex 3060  
+
+✗ No Ability to modify OS
+
+✗ No Managed Data analytics capabilities
+
+✗ No federated queries
+
+✗ No federated analytics
+
+HDRNI SeRP:
+
+✓ Hybrid Cloud Environment
+
+✓ Windows 7 (extended support), Windows 10, Server 2019, Debian and Ubuntu
+
+✓ Options for Windows 10 VDI - 4C/16GB – 8C/32GB – 16C/128GB -128C/1.5TB (Limited), SSD/Flash Array, Linux VDI, Linux Clusters – Bespoke or K8S, SLURM, SPARK, Jupyter GPU are available in Jupyter and SLURMHPC through SLURM Virtualisation through VMware or Openstack Storage through IBM all flash SAN's, Dell traditional SAN's to Redhat CEPH 1.6PB 3 Tiered storage - block, ISCSI, object Database provide IBM DB2 cluster, MS SQL Server Cluster, Postgres, Elastic search, SPARK SQL, Redis, MYSQL
+
+✓ Ability to modify OS on request depending on governance.
+
+✓ Managed Data analytics capabilities: K8s, Airflow, Spark, SLURM, Jupyter
+
+✗ No federated queries (WIP – PoC developed as part of previous projects)
+
+✗ No federated analytics (WIP – Pock developed as part of previous projects)
+
+---
+
+### SAFE Settings - Security Certifications and Measures
+
+Physical Setting:
+
+✓ Security Certifications: Formed as part BSO. ISO 27001 is a target. BSO is registered with ICO – Z1715830 and processes personal data according to its Privacy policy
+
+✓ Security Measures: Physical presence needed and supervised at all times
+
+✓ No VM direct access  
+
+✓ No VM access control (no USB, copy/paste, internet access whitelisted or internal mirrors)  
+
+HDRNI SeRP:
+
+✓ Security Certifications: ISO 27001, NHS Toolkit, DEA Accreditations
+
+✓ Security Measures: Everything needed to gain ISO, 2FA, multi vender firewalls, DES. Account lock, SEIM (logging), Audit, Review Process, Monitoring etc
+
+✓ No VM direct access, Access only through VDI only
+
+✓ No VM access control (no USB, copy/paste, internet access whitelisted or internal mirrors)
+
+---
+
+### SAFE Settings - Software access  
+Physical Setting:
+
+✓ Default software: Excel, SPSS, STATA and R  
+
+✓ Code/library import: Code can be imported by email to HBS staff  
+
+✗ No Collaboration Software
+
+HDRNI SeRP:
+
+✓ Default software: Office, R, Python, Conda, SPSS, STATA, SAS, Jupter Notebook, eclipse, VS Code, DB tooling
+
+✓ Code/library import: Whitelisted package libraries for R, Python Conda, SAS, STATA, SPSS. Extra packages can be added by technical team on request. AV/Malware, SEIM and N/W monitoring
+
+✓ Collaboration Software: Git, Wiki, Confluence, Shared File Store, Shared DB
+
+---
+
+### SAFE Data - Data Access Mechanisms
+
+✓ Data Provisioning: Scoped and minimized dataset provisioned  
+
+✓ Receive Data: Ability to receive data on a project by project basis 
+
+- Linked Data: ✓ With appropriate Data Access Agreements transfer via encrypted pen drive  
+
+- Sensitive Data: ✓ Some datasets with sensitive data are held centrally in an un-linkable manner  
+
+- Open Data: ✓ Email or file exchange and HBS staff transfer to HSCNI network available
+
+✓ Record Linkage: Linkage done via - Health and care number, Name, DOB, Postcode
+
+✓ Reduce re-identification risk by: pseudonymization, minimizing dataset, encryption and encryption of linkage keys, small number output suppression
+
+---
+
+### SAFE Outputs - Data Output/export  
+
+✓ Aggregate level graphs and tables. Source code developed within the environment
+
+✗ Export plans: No
+
+✓ Data transmit to other SAFE Settings: Partnership with ADRNI and NILS 
+
+✓ Statistical disclosure control process in place",1,Aisha,Agbaje,aisha.agbaje@hdruk.ac.uk,Yes,,
+,,,,Alan,Harbinson,alan.harbinson@hscni.net,,,
+,,,,Kabir,Khan,Kabir.Khan@hdruk.ac.uk,,,
+,,,,Naomi,Mill,Naomi.Mill@hscni.net,,,
+,,,,Sophie,Morris,sophie.morris@hdruk.ac.uk,,,
+IAM PROD TEST 0106 11.07,IAM PROD TEST 0106 11.07,Testing adding a new collection,0,Charlotte,Weaver,Charlotte.Weaver@hdruk.ac.uk,,,
+Immunity,Immunity,"Susceptibility & immunity: Which population groups are not susceptible? And why? How do we know who is immune? How long will immunity last? And how reliable is the testing? 
+
+National core study",1,Aisha,Agbaje,aisha.agbaje@hdruk.ac.uk,Yes,,
+,,,,Claire,Potter,c.potter@bham.ac.uk,,,
+,,,,Lara,Edwards,ledwards.info@gmail.com,,,
+,,,,Sophie,Morris,sophie.morris@hdruk.ac.uk,,,
+Inflammation and Immunity ,Inflammation and Immunity ,"The inflammation and Immunity Driver programme aims to better understand the fundamental mechanisms of inflammation and immunity to deliver key insights and improve patient care for those affected by inflammation-mediated diseases.
+
+This programme explores inflammation and immunity as a general underpinning mechanisms, initially focusing on highly prevalent respiratory and allergic diseases. These conditions can be exacerbated by acute inflammatory episodes due to viral infections and environmental factors such as pollution, tobacco, pollen, weather and more",0,Aisha,Agbaje,aisha.agbaje@hdruk.ac.uk,Yes,,
+,,,,Lara,Edwards,ledwards.info@gmail.com,,,
+INSIGHT: Eye Health,INSIGHT: Eye Health,"INSIGHT is a first-of-its kind resource that allows researchers to access routinely collected, anonymised, high-dimensional imaging datasets related to eye disease. Our prospective ocular database includes large-scale collections of patient-centred data, ophthalmic imaging, electrodiagnostics, visual fields and other clinical data captured in geographical format.
+
+INSIGHT enables research and innovation in eye disease and wider health through the use of anonymised data. We are pioneering the science of ‘oculomics’, which explores insights into systemic disease through ophthalmic biomarkers.
+
+Visit the INSIGHT website to find out more: https://www.insight.hdrhub.org/",1,Amy,Smith,amy.smith@insight.hdrhub.org,Yes,,
+,,,,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,,,
+,,,,Jacob,Hinks,Jacob.Hinks@uhb.nhs.uk,,,
+,,,,James,Curwen,j.curwen@ucl.ac.uk,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Steve,Perks,stephen.perks@uhb.nhs.uk,,,
+International COVID-19 Data Alliance (ICODA) datasets,International COVID-19 Data Alliance (ICODA) datasets,"This collection contains the metadata for the datasets used as part of the [International COVID-19 Data Alliance (ICODA)](https://icoda-research.org/) initiative, along with contacts and access routes for re-use requests. 
+
+Convened by Health Data Research UK, the national institute for health data in the UK, ICODA was an open and inclusive global collaboration of leading life science, philanthropic and research organisations that came together to harness the power of health data to respond to the COVID-19 pandemic.
+
+The ICODA programme ran from July 2020 until October 2022 and together with our partners and researchers, we sought to develop a trustworthy approach to overcome the challenges of accessing and harnessing the power of data.  You can see some of the fantastic results of the programme in our [driver projects](https://icoda-research.org/research/driver-projects/) and [publications pages](https://icoda-research.org/research/publications/).",1,Matthew,Retford,matthew.retford@hdruk.ac.uk,Yes,,
+"Kent, Medway and Sussex Secure Data Environment (SDE): Part of the NHS Research SDE Network","Kent, Medway and Sussex Secure Data Environment (SDE): Part of the NHS Research SDE Network","The Kent, Medway and Sussex region has a population of 3.8m and the SDE covers 2 ICBs: 
+
+•	Kent and Medway
+
+•	Sussex 
+
+Data resources will be added to this collection over time. If you have any questions about the Kent, Medway and Sussex SDE, please contact scwcsu.kmssde@nhs.net.",1,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,Yes,,
+,,,,Liam,Gooderham,ljgooderham@gmail.com,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Rick,Fell,rickfell@nhs.net,,,
+Key Datasets,Key Datasets,"Collection of key datasets that may be used within research - equivalent datasets across Scotland, England and Wales",0,Sarah,Lessels,sarah.lessels@hdruk.ac.uk,,To be contacted,Email sent out on 03/07/2024
+Leukaemia and Lymphoma,Leukaemia and Lymphoma,"This collection brings together resources listed on the Innovation Gateway related to leukaemia and lymphoma.
+
+",1,Ruth,Milne,ruth.milne@hdruk.ac.uk,Yes,,
+London Secure Data Environment (SDE): Part of the NHS Research SDE Network,London Secure Data Environment (SDE): Part of the NHS Research SDE Network,"The London region has a population of 10.6m and the SDE covers 5 ICBs, 34 Trusts and 1400 GPs. The ICBs covered by the region are: 
+
+•	North Central London 
+
+•	North East London 
+
+•	North West London 
+
+•	South East London 
+
+•	South West London 
+
+If you have any questions about the London SDE, please contact data.research@nhs.net
+",1,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,Yes,,
+,,,,Piri,Siva,piriyanthi22@gmail.com,,,
+,,,,Rick,Fell,rickfell@nhs.net,,,
+,,,,Taryn,Aspeling,Taryn.Aspeling@imperialcollegehealthpartners.com,,,
+Longitudinal Population Studies ,Longitudinal Population Studies ,"There are over 2 million people in the UK who are part of one of around 50 longitudinal population study (LPS) in the UK, which can include cohorts, panel studies and linked biobanks. These individuals have consented to regularly provide data, complete surveys, clinical investigations or samples (such as blood, saliva, DNA) sometimes over many decades. 
+
+Longitudinal population studies are an extremely valuable resource for researchers, who can use the findings to understand how biological, social, economic and environmental factors can interplay to create different outcomes and inequalities in different groups of people. 
+
+",0,James,Pickett,james.pickett@owkin.com,,To be contacted,Email sent out on 03/07/2024
+Lung Cancer,Lung Cancer,This is my lung cancer collection for a potential project.,0,Stephen,Lavenberg,Stephen.Lavenberg@hdruk.ac.uk,,,
+Medicines during Pregnancy,Medicines during Pregnancy,"This Collection brings together sources within the Innovation Gateway containing data on medication exposure during pregnancy and/or relevant outcomes. 
+
+Included is a report from the Human Medicines Expert Working Group on Optimising Data on Medicines used During Pregnancy. The report sites many of the data assets included within this Collection. 
+
+The Expert Working Group was set up to to identify ways to improve data collection and access to information relevant to research on medicines used during pregnancy and breastfeeding. The Group advises on the following:
+
+- Better capturing and linking of existing data on adverse outcomes of pregnancy
+- Other ways to capture relevant information on exposure to all medicines during pregnancy
+- Improving access to all relevant data on medicines taken during pregnancy to enable studies to be conducted to support pharmacovigilance
+- Improving the analytic design of studies examining drug safety in pregnancy
+- To make recommendations
+- This report outlines their findings and recommendations.",1,Caroline,Cake,caroline.cake@hdruk.ac.uk,Yes,,
+,,,,Neena,Modi,n.modi@imperial.ac.uk,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+Medicines in Acute and Chronic Care,Medicines in Acute and Chronic Care,"The Medicines in Acute and Chronic Care Driver programme aims to understand and transform the use of medicines for patients of all ages, especially those with complex care needs caused by multiple long-term conditions.
+
+Medicines are fundamental in maintaining human health. However, adverse drug reactions are increasingly common, especially as the world’s population ages. There is also an unacceptably high rate of medicines related errors, fuelled by the complexity of guidelines and the expanding array of potential therapies.
+
+The Medicines in Acute and Chronic Care Programme will tackle the most critical health challenges associated with medicines, in the UK and oversees.",0,Aisha,Agbaje,aisha.agbaje@hdruk.ac.uk,Yes,,
+,,,,Lara,Edwards,lara.edwards@hdruk.ac.uk,,,
+Mental Health,Mental Health,"This Collection brings together Gateway resources on mental health, including datasets, tools, publications and data uses. 
+
+**Data Saves Lives: Mental Health** 
+
+The UK is home to some of the best mental health data in the world, and there is enormous potential to use this data to accelerate progress in care and address the longstanding disadvantages faced by people with mental health conditions.
+
+**Data-driven better mental health for all** 
+
+The HDR UK community is leading the way to harness the UK’s data by creating an ecosystem for secure, inclusive and anonymised data research, and supporting cutting-edge mental health data science to improve the lives of people with mental health. Importantly, we’re doing this in partnership with people with lived experiences of mental health conditions, to ensure we’re acting in the best interests of the people who will benefit from this work. 
+
+For **[World Mental Health Day](https://www.who.int/campaigns/world-mental-health-day/2022)**, HDR UK launched a campaign focussed on the important role that data has in reducing mental health care inequalities - hear from our community, explore events to celebrate better mental health for all, explore tools and resources that support mental health data research, and meet our mental health experts. 
+
+**[Access the Data Saves Lives: Mental Health campaign here](https://www.hdruk.ac.uk/helping-with-health-data/data-saves-lives-mental-health/)**",1,Ping,Yu,ping.yu@hdruk.ac.uk,Yes,,
+,,,,Ruth,Milne,ruth.milne@hdruk.ac.uk,,,
+MIREDA,MIREDA,"The Mother & Infant Research Electronic Data Analysis (MIREDA) partnership aims to improve maternal and infant health, particularly among disadvantaged groups, by developing new resources and tools for research using routinely collected data. Using the OMOP Common Data Model (CDM) to harmonise cohorts' data, the partnership brings together Born in Bradford, Born in South London, Born in Scotland, Born in Wales, and MuM-PreDiCT (CPRD) to create a dynamic UK-wide Electronic Birth Cohort.
+
+https://ncphwr.org.uk/portfolio/mireda/ ",1,Armando,Mendez Villalon,armando.mendez@nottingham.ac.uk,Yes,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Sinead,Brophy,s.brophy@swansea.ac.uk,,,
+Molecules to Health Records,Molecules to Health Records,"The Molecules to Health Records Driver programme will bring together information on genomics, other molecular traits, and electronic health records at scale to gain new insights into the underlying causes and biology of diseases.
+
+The UK is in the unique position of having lifelong electronic health records (EHRs) for a population of over 65 million people through the NHS. Combined with the rapid advancement of genomic medicine and diagnosis, this presents an enormous opportunity to unite these sources and answer challenging questions about many different diseases.
+
+The Molecules to Health Records programme aims to achieve the integration of biology, biomedicine and population health sciences.",0,Aisha,Agbaje,aisha.agbaje@hdruk.ac.uk,Yes,,
+,,,,Lara,Edwards,ledwards.info@gmail.com,,,
+"MRC National Survey of Health and Development (NSHD, 1946 British birth cohort study)","MRC National Survey of Health and Development (NSHD, 1946 British birth cohort study)","The Medical Research Council (MRC) National Survey of Health and Development (NSHD) is the oldest and longest running of the British birth cohort studies; it is a nationally representative sample (N=5,362) of men and women born in England, Scotland or Wales in March 1946.
+
+From an initial maternity survey of 13,687 of all births recorded in England, Scotland and Wales during one week of March, 1946, a socially stratified sample of 5,362 singleton babies born to married parents was selected for follow-up. This sample comprises the NSHD cohort and participants have been studied 25 times.
+
+Today, with study members in their seventies, the NSHD is a leading source of evidence on the long-term biological and social processes of ageing and how ageing is affected by factors acting across the whole of life.
+
+The participants have been followed up in the course of 25 data collections. Regular interviews with the mothers were conducted by health visitors, with additional assessments by school doctors and teachers. In adult life, research nurses conducted home visits at ages 26,36,43,53 and 69, a detailed clinic visit took place between ages 60-64, as well as clinical sub studies focusing on the heart and brain (Insight46). At the latest home visit at age 69, the participation rate was 80% (N=2149). In addition to regular postal questionnaires throughout life, there have been annual questionnaires to women (47-54 years) to capture the menopause transition and 3 waves of a COVID-19 questionnaires, conducted in collaborations with CLS.
+
+During childhood, the main aim of the NSHD was to investigate how the environment at home and at school affected physical and mental development and educational attainment. During adulthood, the main aim has been to investigate how childhood development and lifetime social circumstances and lifestyle affected adult health and function and how these change with age. Now that participants have reached their seventies, the NSHD has developed into a life course study of ageing.",1,Andrew,Wong,andrew.wong@ucl.ac.uk,Yes,,
+My test collection,My test collection,Something test,0,Branwen,Snelling,branwen.snelling@hdruk.ac.uk,,,
+n,n,n,0,ozgur,gezen,ozgurgezen7@gmail.com,,To be contacted,Email sent out on 03/07/2024
+National Datasets - Cardiovascular/Diabetes Reasearch,National Datasets - Cardiovascular/Diabetes Reasearch,"To help searching, the datasets below are a small subset that have been identified & reviewed as possible for use within Cardiovascular research and clinical trials, these datasets are secondary care data.",0,Sarah,Lessels,sarah.lessels@hdruk.ac.uk,,To be contacted,Email sent out on 03/07/2024
+National Phenomics Resources,National Phenomics Resources,Collection of resources related to the National Phenomics Resource,,Spiros,Denaxas,s.denaxas@ucl.ac.uk,,,
+,,,,Susheel,Varma,susheel.varma@hdruk.ac.uk,,,
+Neonatal Data Visualisations,Neonatal Data Visualisations,"This tool provides insights into the neonatal health data contained within the National Neonatal Research Database (NNRD). The tools are aimed at parents, clinical teams, researchers and health service managers.
+
+To access our NNRD Interrogation tools, please click here: https://www.imperial.ac.uk/neonatal-data-analysis-unit/neonatal-data-analysis-unit/neonatal-data-visualisations/",1,Neena,Modi,n.modi@imperial.ac.uk,Yes,,
+,,,,Ricardo,Ribas,r.ribas@imperial.ac.uk,,,
+NHS DigiTrials: Clinical Trials,NHS DigiTrials: Clinical Trials,"NHS DigiTrials provides safe, authorised access to patient data to help trials reach and benefit as many people as possible. 
+It is made up of 4 services that support clinical trials.
+
+Feasibility: Finds suitable participants
+Speeds up planning by seeing if there are enough potential people available in England for a clinical trial without identifying individuals.
+
+Recruitment: Recruits the right participants
+Uses patient information to identify people who might be suitable for a certain trial - and contacts them to see if they would like to take part.
+
+Communications: Keeps participants informed
+Keeps trial volunteers, who have consented to receive this information, updated about the progress and results of their trial.
+
+Outcomes: Shows long-term impact
+Provides routinely collected patient information to show the long-term impact of treatments and demonstrate that they are safe and effective.
+
+We use a cost recovery model to calculate the charge to assess all NHS DigiTrials services. 
+
+SAFE People - Login & Access
+✓ Applicant Organisations accredited via Data Security and Protection Toolkit (DSPT)
+✓ Data Access by Applicant Organisation restricted by Data Sharing Agreement (DSA)
+✓ Applicant Organisation responsible for accrediting end users operating under a DSA
+✓ End User Access Agreement defines acceptable/expected behaviours
+✓ Login: Browser based login using 2FA
+✓ Worldwide Data Sharing: There are potential restrictions on sharing outside of the current GDPR Adequacy Agreement. Please contact the NHS DigiTrials team with any specific queries.
+
+SAFE Settings - Compute & Services
+✓ Data hosted securely on NHSE-managed Amazon Web Services (AWS) accounts
+
+SAFE Settings - Security Certifications and Measures
+✓ Automated scanning & benchmarking against Centre for Internet Security guidelines
+✓ Static code analysis integrated into build pipelines
+✓ Infrastructure monitored 24/7 by NHSE Cyber Security Operations Centre (CSOC)
+✓ Dedicated cyber security allocated to support delivery team
+✓ Penetration Testing conducted after every significant architectural change
+✓ Independent Threat Modelling exercise conducted
+✓ Developers with access to production environment are subject to security vetting
+
+SAFE Settings - Software access
+✓ Direct access to provisioned data only possible via Databricks platform.
+✓ All queries executed via Databricks recorded & auditable
+✓ Code packages/libraries made available in the environment are subject to review / approval process
+
+SAFE Data - Data Access Mechanisms
+✓ Data minimised and provisioned in accordance with the approved Data Sharing Agreement (DSA)
+✓ Data only accessible from DSA-specific analysis environment; data cannot be transferred between analysis environments
+✓ Identifiable fields pseudonymised in accordance with the DSA. 
+✓  Unique pseudo key used for each DSA (a given value will be represented  differently in each agreement)
+✓  Fields containing sensitive data removed from data asset prior to data provisioning process
+
+SAFE Outputs - Data Output/export
+✓ Transfer data securely using Secure Electronic File Transfer (SEFT). More information can be found on Secure Electronic File Transfer (SEFT) user's quick help guide - NHS Digital
+✓ Statistical disclosure control process in place
+",1,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,Yes,,
+,,,,Jo,White,joanne.white32@nhs.net,,,
+,,,,NHS,DigiTrials,nhs.digitrials@gmail.com,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+NHS England Secure Data Environment: Part of the NHS Research SDE Network,NHS England Secure Data Environment: Part of the NHS Research SDE Network,"The NHS England Secure Data Environment (SDE) is a secure data and research analysis platform. It gives approved researchers with approved projects secure access to NHS healthcare data for healthcare analysis. All patient information in the SDE is pseudonymised.
+It is part of the NHS Research SDE Network across England.
+
+To access the NHS England Secure Data Environment a valid Data Sharing Agreement is required. Start the process using our Data Access Request Service here: https://digital.nhs.uk/services/data-access-request-service-dars/process 
+
+Cost to access: Yes. We use a cost recovery model to calculate the charge to assess the NHS England SDE, which can be viewed here: https://digital.nhs.uk/services/secure-data-environment-service 
+
+---
+
+### SAFE People - Login & Access
+✓ Applicant Organisations accredited via DSPT"" (suggest expanding acronym)
+
+✓  Data Access by Applicant Organisation restricted by Data Sharing Agreement (DSA)
+
+✓ Applicant Organisation responsible for accrediting end users operating under a DSA
+
+✓ End User Access Agreement defines acceptable/expected behaviours
+
+✓ Login: Browser based login using 2FA
+
+✓ International Access: At a technology-level yes. There are direction sharing agreement restrictions on the use of (some) data
+
+---
+
+### SAFE Settings - Compute & Services
+✓ Data hosted securely on NHSE-managed Amazon Web Services (AWS) accounts
+
+✓ Dedicated analysis environment provisioned specifically for each Data Sharing Agreement (DSA)
+
+✓ Users operating in one analysis environment have no access to other environments or the public internet
+
+---
+
+### SAFE Settings - Security Certifications and Measures
+✓ Automated scanning & benchmarking against Centre for Internet Security guidelines
+
+✓ Static code analysis integrated into build pipelines
+
+✓ Infrastructure monitored 24/7 by NHSE Cyber Security Operations Centre (CSOC)
+
+✓ Dedicated cyber security allocated to support delivery team
+
+✓ Penetration Testing conducted after every significant architectural change
+
+✓ Independent Threat Modelling exercise conducted
+
+✓ Developers with access to production environment are subject to security vetting
+
+---
+
+### SAFE Settings - Software access
+✓ Direct access to provisioned data only possible via Databricks platform.
+
+✓ All queries executed via Databricks recorded & auditable in Immuta (access control & auditing component/product)
+
+✓ Code packages/libraries made available in the environment are subject to review / approval process
+
+---
+
+### SAFE Data - Data Access Mechanisms
+✓ Data minimised and provisioned in accordance with the approved Data Sharing Agreement (DSA)
+
+✓ Data only accessible from DSA-specific analysis environment; data cannot be transferred between analysis environments
+
+✓ Identifiable fields pseudonymised in accordance with the DSA. 
+
+✓  Unique pseudo key used for each DSA (a given value will be represented  differently in each agreement)
+
+✓  Fields containing sensitive data removed from data asset prior to data provisioning process
+
+---
+
+### SAFE Outputs - Data Output/export
+✓ SDE service allows research (with small number suppression) results to be safely exported. This is via an escrow function manned by NHS England employees who examine the artefacts prior to release to the user – based upon an approved, principles-based disclosure control output policy. Patient / row level data cannot be exported.
+
+✓ Export plans: NHSE are currently exploring a range of safe data outputs types and welcome the opportunity of brining NCS projects into this exploration. We anticipate being able to allow user’s code to be exported in the future.
+
+✓ Data transmit to other SAFE Settings: We do not provide this service at present. However, ad-hoc requests can be considered via a Service Request
+
+✓ Statistical disclosure control process in place",1,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,Yes,,
+,,,,Jo,White,joanne.white32@nhs.net,,,
+NIHR Nottingham Biomedical Research Centre,NIHR Nottingham Biomedical Research Centre,"The Nottingham Biomedical Research Centre is a new five-year programme of translational research here in Nottingham (2022-2027).
+
+Who we are: 
+We are a partnership primarily between the University of Nottingham (UoN) and Nottingham University Hospitals NHS Trust (NUH). We bring our world class scientists, clinicians and research professionals together to work collaboratively to deliver tomorrow's world-class healthcare across eight research themes.
+
+Our heritage: 
+We first launched the NIHR Nottingham Biomedical Research Centre in April 2017. Since our launch, we have added to scientific knowledge by publishing 2342 papers, helped build the research community of the future by supporting 383 trainees and leveraged £182m of external funding.
+
+Our role: 
+We develop new treatments for diseases that affect millions of people in the UK and world-wide. We take discoveries from scientists in Nottingham, and other world-leading universities, and develop them into new drugs and medical technologies. 
+
+Our research is focused on health problems where there is the greatest international, national, and local need, where our research teams are internationally renowned, and where Nottingham has significant investment in place specifcially:
+- Sir Peter Mansfield Imaging Centre (SPMIC)
+-  £100M BioDiscovery Institute at UoN. 
+
+Working with industry: 
+Our research is also about improving prosperity by working with industry. Our mission is to grow our partnerships with the regional industry economy by working with the Midlands Academic Health Science Network, the Midlands Health Alliance, the new National Rehabilitation Centre (opening 2024) and the Medical Technologies Innovation Facility (MTIF) hosted by Nottingham Trent University.
+
+Inclusive research in Nottingham: 
+We believe that the quality, value and impact of our research can only be realised through by strong public and patient involvement and engagement. Our research involves communities who are at greatest risk from the diseases we study, and our aim is to reduce health inequalities. The life expectancy in Nottinghamshire is below average, with people in the most deprived areas having a life expectancy 14 years lower than other areas. There are also big differences in access to healthcare and an increased number of patients with mental health, respiratory and liver diseases.
+
+We have are developing a dedicated programme for increasing the diversity of people who contribute to and take part in our research, as well as ensuring that our BRC is directly linked to our communities. We are working to remove the barriers to taking part in research for both the people who work in our Centre and for those who support and take part in our research.",1,Esmond,Urwin,esmond.urwin@nottingham.ac.uk,Yes,,
+,,,,Philip,Quinlan,philip.quinlan@nottingham.ac.uk,,,
+North East and North Cumbria Secure Data Environment (SDE): Part of the NHS Research SDE Network,North East and North Cumbria Secure Data Environment (SDE): Part of the NHS Research SDE Network,"The North East and North Cumbria region has a population of 3.2m and the SDE covers 1 ICB, North East and North Cumbria ICB, along with 10 Trusts and 73 GPs.  
+
+Information about datasets available via the SDE will be coming soon. 
+
+Data resources will be added to this collection over time. If you have any questions about the North East and North Cumbria SDE, please contact mark.walsh@ahsn-nenc.org.uk
+
+",1,Chris,Taylor,c.m.b.taylor@nhs.net,Yes,,
+,,,,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Rick,Fell,rickfell@nhs.net,,,
+North West Secure Data Environment (SDE): Part of the NHS Research SDE Network,North West Secure Data Environment (SDE): Part of the NHS Research SDE Network,"The North West region has a population of 7.3m and the SDE covers 3 ICBS: 
+
+•	Cheshire and Merseyside
+
+•	Greater Manchester 
+
+•	Lancashire and South Cumbria 
+
+Data resources will be added to this collection over time. If you have any questions about the North West SDE, please contact data.research@nhs.net
+",1,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,Yes,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Rick,Fell,rickfell@nhs.net,,,
+ONS Secure Research Service,ONS Secure Research Service,"The Secure Research Service (SRS) operates within the Five Safes Framework, which is a set of principles that safeguard access to the sensitive data that are available for use by appropriately trained and accredited members of the research community. SRS is an accredited data processor under the Digital Economy Act 2017 (the Act). What this means is that the SRS does not own the data that is made available through the service and data owners are separately identified in the Act. Whenever the SRS acquires data that is to be made available to the research community, an agreement is signed with the data owners that specifies the conditions under which data can be accessed and any restrictions that may be placed on individual datasets. As part of this process, data owners typically wish to know information about how Five Safes will apply to their dataset.
+
+Active Users: 2000 | Active Projects: 900
+
+Pricing: Centrally funded - no charge at the point of access.
+
+---
+
+### SAFE People - Login & Access  
+
+• Accredited Researcher Status Required - Training, Public record, Sign Declaration, Research project Accreditation
+
+✓ Login: Citrix workspaces – encrypted tunnels and unique account logon
+
+✗ Minimum Requirement: [Assured Organizational Connectivity](https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme#assured-organisational-connectivity-to-the-secure-research-service) or willingness to travel to ONS offices.
+
+✗ International Access: Not in general. Exceptions may be possible.
+
+---
+
+### SAFE Settings - Compute & Services
+
+✓ Private Cloud
+
+✓ 6 Citrix servers in farm provide computing power. 96GB mem 32 cores per server. Additional SQL servers are also available for the manipulation of relational data.
+
+✗ No ability to modify OS
+
+✗ Managed Data analytics capabilities: None provided
+
+✗ No federated queries
+
+✗ No federated analytics
+
+---
+
+### SAFE Settings - Security Certifications and Measures
+
+✓ Security Certifications: ISO27001 and DEA Accredited
+
+✓ Security Measures: Dedicated Security Team. ObserveIT monitors all screen and keyboard activity. Splunk used to monitor events captured to GPG 13 DTER standard
+
+✓ No VM direct access  
+
+✓ No VM access control (no USB, copy/paste, internet access whitelisted or internal mirrors)  
+
+---
+
+### SAFE Settings - Software access  
+
+✓ Default software: Office, SAS, SPSS, STATA, R, Python
+
+✓ Code/library import: Governance process where 2 people check code
+
+✗ Collaboration Software: No
+
+---
+
+### SAFE Data - Data Access Mechanisms
+
+✓ Data Provisioning: Minimized read-only links within project spaces to research-ready datasets
+
+✓ Reduce re-identification risk by: SRS output checking procedures available on request. No internet access
+
+✓ Receive Data: Via Transfer Services - MoveIT and ONS AWS S3 Storage
+
+- ✓ Linked Data: Manual Linkage via transfer services
+
+- ✓ Sensitive Data: Ingest procedures exist which are checked by ONS staff
+
+- ✓ Open Data: Via Transfer Services - MoveIT and ONS AWS S3 Storage
+
+✓ Record Linkage: Not as service, but this can be carried out by ONS staff prior to ingestion
+
+---
+
+### SAFE Outputs - Data Output/export  
+
+✓ Aggregate level graphs and tables. Aggregate level graphs and tables, individual level, anonymized data, Weights and code for a trained AI algorithm, Source code developed with the environment
+
+✓ Export plans: None Specified
+
+✓ Data transmit to other SAFE Settings: Via Transfer Services
+
+✓ Statistical disclosure control process in place",1,Aisha,Agbaje,aisha.agbaje@hdruk.ac.uk,Yes,,
+,,,,Alice,Cameron,acameron101@hotmail.co.uk,,,
+,,,,,,Alice.Cameron@ons.gov.uk,,,
+,,,,Kabir,Khan,Kabir.Khan@hdruk.ac.uk,,,
+,,,,Sophie,Morris,sophie.morris@hdruk.ac.uk,,,
+OpenSAFELY,OpenSAFELY,"OpenSAFELY is a secure, transparent, open-source software platform for analysis of electronic health records data. All platform activity is publicly logged. All code for data management and analysis is shared, under open licenses and by default, for scientific review and efficient re-use. 
+OpenSAFELY is a set of best practices encoded as software. It can be deployed to create a Trusted Research Environment (TRE) alongside appropriate database, compute, governance, and administrative elements
+
+
+Active Users: 100 | Active Projects: 75
+
+---
+
+### SAFE People - Login & Access  
+
+User accounts are provisioned following an exhaustive, online, per-project approval process. ONS Safe Researcher Training is requested of all users. 
+
+✓ Login: 
+
+✗ Minimum requirement: No.
+
+✗ International access: Yes     
+
+---
+
+### SAFE Settings - Security Certifications and Measures
+
+✓ Security certifications: Held in either a Tier 3 data centre, accredited to NHS Digital standards for centrally hosted clinical systems (ISO 27001 standard and IG Toolkit version 2) or a virtual private cloud environment certified to Cyber Essentials Plus,  ISO 9001; ISO 27001 global certification; ISO 27017; ISO 27018., IOS 270001 Certification
+
+✓ Security measures: A. The secure environment for level 3 and 4 is accessed via the EHR vendor's existing protocols. There are processes for locking down individual accounts or all accounts. All job execution can be terminated with a single command in an emergency.
+B. All source data for implementations in OpenSAFELY-TPP and OpenSAFELY-EMIS is stored by TPP or EMIS and backed up according to their standard operating procedures. 
+C. Users are prevented from directly interacting with patient-level data; all data management and analysis code is logged; there is double review of released outputs.     
+
+✓ Secured operating system: Hybrid: Data may be held in those environments on premise (as with OpenSAFELY-TPP) or cloud (as with OpenSAFELY-EMIS) . OpenSAFELY infrastructure operates on public cloud.
+
+✓ VM direct access: SSH Access is limited by design, to enforce our security principles. RDP/VNC access is provided to authorised users
+
+✓ VM access controls: Identical measures to those employed to access the environment overall.
+
+---
+
+### SAFE Settings - Software access  
+
+✓ Default software: R, Python, and Stata: https://docs.opensafely.org/actions-scripts/#execution-environments 
+
+✓ Code/library import: Users may request the addition of R, Python, or Stata packages to the appropriate docker images, which may be fulfilled by OpenSAFELY staff following review.
+
+✓ Collaboration software: Users develop code on GitHub from which it is submitted for execution in an OpenSAFELY environment. Code collaboration is managed via the OpenSAFELY GitHub organisation. Collaboration on outputs is managed via group-level permissions on the ""Job Server"", where reviewed outputs are published.
+
+✗ No software installation by users is permitted.
+
+---
+
+### SAFE Data - Data Access Mechanisms
+
+✓ Data Provisioning: The datasets are not provisioned into an interactive remote desktop environment, or similar. Users define their own data management pipeline for curating raw EHR and similar data into a one-row-per-patient dataset using OpenSAFELY data curation tools.
+
+✓ Receive Data: New datasets are routinely received and linked following whatever secure mechanisms are supported by other settings, for example MESH or SFTP
+
+- Linked Data: ✓ On request, and following a feasibility study, we work with the third party to understand the data schema, and with the data processor to link and ingest the data regularly into their underlying database. We provide access to this data by extending our fully-documented data API.""  
+
+✓ Record Linkage: Usually deterministic exact matching via cryptographic hash of NHS number between primary care EHRs and supplementary data sets; or similar approaches for organisations or geographical areas.
+
+✓ Reduce re-identification risk by: Data is pseudonymised at source by the data processor; analysts develop curation and analysis code using randomly generated dummy data before submitting it to be executed against real data inside a secure environment; all code is logged in full and shared in public at the point of results dissemination or sooner; statistical disclosure controls are applied.
+
+---
+
+### SAFE Outputs - Data Output/export  
+
+✓ Tabular data, plain text, HTML, PDF, vector and raster images.
+
+✗ Export plans: No
+
+✓ Data transmit to other SAFE Settings: Raw data cannot be transferred to other Safe Settings, however, aggregate data can be transferred on request.
+
+✓ All outputs are independently checked by two members of staff, using the framework developed and used by ONS and others. We are developing automated output checking tools for some disclosure control tasks.
+",1,Aisha,Agbaje,aisha.agbaje@hdruk.ac.uk,Yes,,
+,,,,Lara,Edwards,ledwards.info@gmail.com,,,
+,,,,Nada,Karrar,nadakarrar@yahoo.co.uk,,,
+ORCHID,ORCHID,"ORCHID is the secure data processing environment for the Oxford-Royal College of GPs Clinical Informatics Digital Hub. [orchid.phc.ox.ac.uk](https://orchid.phc.ox.ac.uk). ORCHID operates within the Five Safes Framework. The environment currently does not have break-down costs in terms of specific technical requirements, rather these are encompassed into any costs presented to applicants at the application stage.
+
+Active Users: 100 | Active Projects: 50
+
+---
+
+### SAFE People - Login & Access  
+
+✓ Accredited Researcher Status Required – Information governance training, data sharing agreements, research project approval
+
+✓ Login: User Registration, VDI over a VPN, Authentication: 2FA
+
+✓ Minimum Requirement: No minimum requirement  
+
+✓ International Access: International access allowed
+
+---
+
+### SAFE Settings - Compute & Services
+
+✓ Private Cloud
+
+✓ Virtual desktops (Windows Server 2019 build 1809, or Ubuntu server 20.04 LTS) with 4 vCPU, 16GB RAM and HDD on a project basis
+
+✓ Further compute environments including an R Studio service (8vCPU’s 32GB RAM) and a STATA MP16 environment (8vCPU’s, 32GB RAM). Additional requirements can be supported as required although these need to be discussed at the application stage of the project.
+
+✓ Users are not able to modify the base VM, however they can request additional software or modules via an approval process.
+
+✗ Managed Data analytics capabilities: No
+
+✗ No federated queries
+
+✗ No federated analytics 
+
+---
+
+### SAFE Settings - Security Certifications and Measures
+
+✓ Security Certifications: NHS DSPT Toolkit 
+
+✓ Security Measures: Manual User Provisioning, University of Oxford or ORCHID VPN, Password rotation, managed data provisioning, No external network access, Secure data ingress/egress
+
+✓ No VM direct access, Access only through VDI only.
+
+✓ No VM access control (no USB, copy/paste disabled, no internet access
+
+---
+
+### SAFE Settings - Software access  
+
+✓ Default software: Word, Excel, SQL Server Enterprise Manager, Notepad++, 7Zip, Rstudio, STAT MP8 v16, Tableau, MS SQL Server 2016, Matlab, SAS, MS Visual Studio 2019, C/C++/C#, Python
+
+✓ Code/library import: Files can be submitted to the web transfer service. 
+
+✓ Collaboration Software: Shared File Store, MS Teams
+
+---
+
+### SAFE Data - Data Access Mechanisms
+
+✓ Data Provisioning: Researchers are able to import data into data analysis software hosted in a secure environment. Read-only access is granted for specific data tables in the database.
+
+✓ Reduce re-identification risk by: Individual training, read-only access control policy, code retention, statistical disclosure control policies
+
+✓ Receive Data: Data can be imported into a secure environment through the web transfer service. All files submitted are validated by ORCHID administrators.
+
+✓ Linked Data: Identifiable data fields are hashed using a salt outside of the secure environment and then imported through a secure file share by the ORCHID administrator. 
+
+- ✓ Sensitive Data: Sensitive data can be imported into the secure environment by the ORCHID administrator and added to a file share within the secure environment or added as tables to the secure database.
+
+- ✓ Open Data: Open data can be transferred into the secure environment using the web transfer tool. 
+
+✗ Record Linkage: No record linkage services
+
+---
+
+### SAFE Outputs - Data Output/export  
+
+✓ Aggregate level graphs and tables, individual level, anonymised data
+
+✓ Other Export plans: No  
+
+✓ Data transmit to other SAFE Settings possible via secure web transfer service which can only be accessed through a VPN 
+
+✓ Statistical Disclosure Control: A member of the ORCHID DBA team manually reviews outputs prior to approving through the web transfer tool.",1,Harshana,Liyanage,harshana.liyanage@phc.ox.ac.uk,Yes,,
+,,,,Mary,Logan,mary.logan@phc.ox.ac.uk,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Richard,Hobbs,richard.hobbs@paconsulting.com,,,
+,,,,Simon,de Lusignan,sdelusignan@gmail.com,,,
+Our Future Health,Our Future Health,"Our Future Health is the UK’s largest ever health research programme. It is designed to enable the discovery and testing of more effective approaches to prevention, earlier detection and treatment of diseases.
+
+The programme is collecting and linking multiple sources of health and health-relevant information, including genetic data, across a cohort of up to 5 million people. It is recruiting participants from all ages, backgrounds and communities to create a cohort that truly reflects the UK population. 
+
+Our Future Health will create a world-leading resource for researchers from universities, charities, the NHS and companies involved in health research to undertake discovery research on early indicators of disease. Researchers will also have the opportunity to re-contact participants on a risk-stratified basis for secondary studies.
+
+Find out more on the Our Future Health website: https://ourfuturehealth.org.uk/",1,Alison,Doherty,alison.doherty@ourfuturehealth.org.uk,Yes,,
+,,,,Amy,Peters,amy.peters@ourfuturehealth.org.uk,,,
+,,,,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,,,
+,,,,Maeve,Groot Bluemink,maeve.grootbluemink@ourfuturehealth.org.uk,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+Outbreak Data Analysis Platform,Outbreak Data Analysis Platform,"Insert an introduction to ODAP for researchers here (not sure if Moni can do this directly or whether you'll need to send to me to upload)
+
+As datasets become available, add them as linked Resources too (moni you can def do this directly using your Gateway login)",0,Jack,Oliver,joliver8@exseed.ed.ac.uk,,To be contacted,"Email sent out on 03/07/2024, incorrect email address"
+,,,,Kat,Webster,kwebste2@ed.ac.uk,,,
+,,,,Lara,Edwards,lara.edwards@hdruk.ac.uk,,,
+,,,,,,ledwards.info@gmail.com,,,
+,,,,Matthew,Thakur,thakurmatthew@gmail.com,,,
+,,,,Moni,Choudhury,Moni.Choudhury@ed.ac.uk,,,
+,,,,Sophie,Morris,sophie.morris@hdruk.ac.uk,,,
+Outbreak Investigation - NCS COVID-19 Transmssion and Environment,Outbreak Investigation - NCS COVID-19 Transmssion and Environment,"We are exploring the existing data landscapes and opportunities for data linkages to support statistical analysis and modelling, in order to understand and monitor SARS-CoV-2 transmission and rates of COVID-19 outbreaks in occupational settings in Great Britain
+
+For investigation of where transmission occurs
+
+Key research questions 
+
+1.	Where, in which settings, SARS-CoV-2 transmission is occurring?
+2.	How can we measure the relative risk of SARS-CoV-2 transmission by setting type and location, so that we can target areas where risk of transmission and risk of outbreak are high?
+3.	How can we measure and monitor the transmissibility of SARS-CoV-2 and its new variants in different settings? 
+4.	How can we identify the type of settings and their characteristics (occupants, behaviours, environment and controls) that can be associated with an increased or decreased risk of SARS-CoV-2 transmission? 
+5.	How can we develop a model to predict the risk of COVID-19 outbreaks in certain settings and locations; and how can we validate and improve the predictive ability of the model? 
+
+Secondary research questions
+
+1.	What is the role of using population denominator (National Population Database) to provide background information on the community, social, services, travel and work-related interactions and contact networks in different settings and geographical locations to enable comparative analysis on the relative risk for transmission by setting, location and time? 
+2.	How can we measure risk of exposure to SARS-CoV-2 in association with the level of contacts and contact patterns and their relative importance in designing population observational studies?  
+3.	How can we measure the impact of early identification and controlling of COVID-19 outbreaks in different settings on controlling the spread of the disease in the community and on overall pandemic mitigation?
+
+For Investigation of how transmission occurs
+
+Key research questions
+ 
+1.	What are the potential transmission routes of SARS-CoV-2 and their relative importance in an outbreak in occupational settings?
+2.	What are the risk factors for SARS-CoV-2 transmission in an outbreak in occupational settings? 
+3.	Are there risk factors in relation to workers, workers’ behaviours, the environment and controls, that could enhance the virus transmission and their relative importance in an outbreak setting?
+4.	Is there evidence of SARS-CoV-2 environmental contamination (on surfaces and in the air) in an outbreak in occupational settings? 
+5.	What is the extent of the contamination and its links to transmission within an outbreak in occupational settings? 
+6.	Is there evidence for the efficacy of infection prevention and control mitigations (singly or in bundles) in preventing COVID-19 transmission or outbreaks in occupational settings? 
+
+Secondary research questions 
+
+1.	How can we measure the efficacy and the relative contribution of a range of mitigations in preventing COVID-19 outbreak in occupational settings? 
+2.	What is the role of vaccination of workers on risk of transmission in occupational settings?
+3.	What are the extent and proportion of asymptomatic infections among workers in occupational outbreak settings?
+4.	What are the roles of asymptomatic and pre-symptomatic transmission in occupational outbreak settings? 
+5.	What proportion of workers who are working in the high SARS-CoV-2 exposure risk occupations and sectors have been vaccinated?
+6.	What is the antibody level among workers working in the high SARS-CoV-2 exposure risk occupations and sectors that remain open during pandemic? 
+7.	Are there any reinfections among the study participants? What is the association between antibody level, vaccination and reinfection? 
+",,Yiqun,Chen,yiqun.chen@hse.gov.uk,,,
+Outpatient Care,Outpatient Care,"This collection brings together resources listed on the Innovation Gateway related to outpatient care.
+",1,Ping,Yu,ping.yu@hdruk.ac.uk,Yes,,
+,,,,Vicky,Hellon,vicky.hellon@hdruk.ac.uk,,,
+PIONEER: Health Data Research Hub for Acute Care,PIONEER: Health Data Research Hub for Acute Care,"PIONEER is the Health Data Research Hub for Acute Care, led by the University of Birmingham and University Hospitals Birmingham NHS Foundation Trust, in partnership with West Midlands Ambulance Service. Acute care is the provision of unplanned medical care; from out of hours primary care, ambulance assessment, emergency medicine, surgery and intensive care. Demand for acute health services are currently unsustainable for our national healthcare resource and this has been particularly highlighted in first wave of the COVID-19 pandemic.  Despite this, there has been less innovation in acute care than in many others health sectors, in part due to siloed information about patients with acute illnesses.   
+
+PIONEER is changing this, by linking patient data from individual healthcare providers to understand, for the first time, the health journeys people undertake when they are suddenly unwell. The PIONEER Hub collects and curates individually linked  acute care data from across the health economy, including primary, secondary, social care, and ambulance data. PIONEER uses this data to:
+
+• provide accurate, real-time data for capacity planning and service innovation,
+
+• support learning healthcare systems including better use of current/novel investigations, treatments and pathways,
+
+• map innovation need. 
+
+Ultimately, PIONEER enables stakeholders to develop, test, and deliver new ways of caring for acutely unwell people, supported with expert patient, health care professional, and compute/analytic services.
+",1,Andrew,Percy,andrew.percy@uhb.nhs.uk,Yes,,
+,,,,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Richard Mark,Bayliss,mark.bayliss@uhb.nhs.uk,,,
+,,,,Ruth,Milne,ruth.milne@hdruk.ac.uk,,,
+,,,,Suzy,Gallier,suzy.gallier%uhb.nhs.uk@gtempaccount.com,,,
+PRD Test,PRD Test,This is a test collection in PRD,0,Yokow,Baiden,yokow.baiden@paconsulting.com,,,
+Pregnancy and Maternal Health,Pregnancy and Maternal Health,"This collection brings together resources listed on the Innovation Gateway related to pregnancy and maternal health.
+
+",1,Ping,Yu,ping.yu@hdruk.ac.uk,Yes,,
+,,,,Vicky,Hellon,vicky.hellon@hdruk.ac.uk,,,
+Prescribing and Pharmacy,Prescribing and Pharmacy,"This collection brings together resources listed on the Innovation Gateway that relate to medicine prescribing/dispensing and pharmacies. 
+",1,Ping,Yu,ping.yu@hdruk.ac.uk,Yes,,
+,,,,Vicky,Hellon,vicky.hellon@hdruk.ac.uk,,,
+Primary Care,Primary Care,"This collection brings together resources listed on the Innovation Gateway related to Primary Care.
+
+",,Vicky,Hellon,vicky.hellon@hdruk.ac.uk,,,
+PROTECT COVID-19 National Core Study on transmission and environment,PROTECT COVID-19 National Core Study on transmission and environment,"This collection supports the [PROTECT COVID-19 National Core Study on transmission and environment](https://gbr01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fsites.manchester.ac.uk%2Fcovid19-national-project%2F&data=04%7C01%7CVicky.Hellon%40hdruk.ac.uk%7C07f29243241043cc4cf208d960943581%7C844cacb1702742639d8a18faa5bf0839%7C1%7C0%7C637647011954409380%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&sdata=1q3z3aU%2FOdBvYhdGhUfPtwq8SPhdj%2FlZSePm3K%2FxJI4%3D&reserved=0)
+
+The PROTECT study is a UK-wide research programme improving our understanding of how SARS-CoV-2 (the virus that causes COVID-19) is transmitted from person to person, and how this varies in different settings and environments. This improved understanding will enable more effective measures to stop transmission, saving lives and getting society back towards ‘normal’.
+
+Led by the Health and Safety Executive’s Chief Scientific Adviser, Professor Andrew Curran, this critical work is being delivered by more than 70 researchers from 16 institutions across the UK. The PROTECT study began in October 2020, as part of the [COVID-19 National Core Studies](https://gbr01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.hdruk.ac.uk%2Fcovid-19%2Fcovid-19-national-core-studies%2F&data=04%7C01%7CVicky.Hellon%40hdruk.ac.uk%7C07f29243241043cc4cf208d960943581%7C844cacb1702742639d8a18faa5bf0839%7C1%7C0%7C637647011954409380%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&sdata=n4%2FD4EiCvuGeVERQLXcEl%2BNMijBb0fbezZ93Jmd%2FF%2BI%3D&reserved=0) programme spearheaded by UK Government Chief Scientific Adviser Sir Patrick Vallance. It is currently funded by HM Treasury until March 2022.
+
+The PROTECT study is made up of six themes that use a complementary variety of research methods and scientific disciplines to address the research questions from different angles – including microbiology, epidemiology, building science, behavioural science and mathematical modelling – and ensure findings are turned into practical tools and advice for policymakers.
+
+Theme 1: includes rapid on-the-ground investigations (known as the COVID-OUT study) of outbreaks in workplaces, as well as comprehensive analyses of outbreak data collected within public health and regulatory information systems. The aim is to identify outbreak causes and common risk factors, a better understanding of which will help prevent and control further outbreaks as the UK unlocks. *Led by Drs Yiqun Chen and Derek Morgan, Health and Safety Executive.*
+
+Theme 2: applying a range of cutting-edge modelling and experimental approaches to address the key research questions of the PROTECT study on how the physical environment and human behaviour affect transmission of the COVID-19 virus, how best to control it, and what it really means to be ‘COVID secure’. *Led by Professor Cath Noakes, University of Leeds.*
+
+Theme 3: conducting targeted studies to improve understanding of specific workplace transmission risks and effective control measures within different industrial sectors, helping to support these sectors to return to more normal operation. The sectors being studied include transport, food manufacturing, retail and hospitality. *Led by Professor Martie van Tongeren, University of Manchester.*
+
+Theme 4: developing a range of tools and methods to better understand transmission of the COVID-19 virus in the environment. These are not only crucial to support the delivery of the other PROTECT research themes, but will also help ensure the legacy impact of the study by enhancing the UK’s capability to study respiratory virus transmission in readiness for any future pandemic. *Led by Allan Bennett, Public Health England.*
+
+Theme 5: conducting experimental infections of both human volunteers and animals with SARS-CoV-2 to examine how they emit and transmit the virus, particularly in the early stages after infection. This will answer key questions such as how big a dose of the virus is needed to infect people, and how long afterwards they are most infectious. The UK is the only country in the world conducting such human volunteer studies for COVID-19. *Led by Professor Wendy Barclay, Imperial College London.*
+
+Theme 6: bringing together all the knowledge and evidence created by the other research themes and making it count; translating it into practical policy advice and tools for government, industry and individuals to reduce transmission of the COVID-19 virus and help get society back closer to normal. *Led by Professor Andrew Curran, Health and Safety Executive.*
+",1,Aisha,Agbaje,aisha.agbaje@hdruk.ac.uk,Yes,,
+PY Test,PY Test,"Damon Test
+
+https://fs.nhs.net/adfs/portal/logo/logo.jpg
+
+
+
+
+",0,Damon,Chow (Test),damonchow2@gmail.com,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+PY_test,PY_test,Test collection,0,Ping,Yu_Test,pingyuning@gmail.com,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+SeRPUK / SAIL Databank,SeRPUK / SAIL Databank,"SAIL (saildatabank.com) operates on SeRPUK (serp.ac.uk) as one of many tenancies. SeRP provides appropriate technology stacks in line with the tenancy requirements to support research projects executed within ownership and governance tenancies. SeRP currently has 26 UK tenancies ranging from smaller research groups, specialist environments (e.g. UKCRIS), bespoke software supporting the research programmes processes and governance models (e.g. DPUK), sharing platforms to well established programmes (e.g. ALSPAC), NHS collaboration space (e.g. NDR), Government sharing (e.g. Welsh Government), none health (e.g. ADR, Family Justice) to the long-established SAIL Databank which is running a large research programme supporting hundreds of users and projects.
+
+Active Users: 530 | Active Projects: 275  
+
+---
+
+### SAFE People - Login & Access  
+
+• All users must provide a CV: Evidence of research career via CV, belong to recognised Institution and completed data safe research training or equivalent.  
+
+✓ Login: Self-registration, login to Virtual Desktop Infrastructure (VDI) via SSO and 2FA  
+
+✓ Minimum Requirement: No minimum requirement  
+
+✓ International Access: International access allowed
+
+---
+
+### SAFE Settings - Compute & Services
+
+✓ Hybrid Cloud Environment
+
+✓ Windows 7 (extended support), Windows 10, Server 2019, Debian and Ubuntu. 
+
+✓ Options for Windows 10 VDI - 4C/16GB – 8C/32GB – 16C/128GB  -128C/1.5TB (Limited), SSD/Flash Array, Linux VDI, Linux Clusters – Bespoke or K8S, SLURM, SPARK, Jupyter GPU are available in Jupyter and SLURMHPC through SLURM Virtualisation through VMware or Openstack Storage through IBM all flash SAN's, Dell traditional SAN's to Redhat CEPH 1.6PB 3 Tiered storage - block, ISCSI, object Database provide IBM DB2 cluster, MS SQL Server Cluster, Postgres, Elastic search, SPARK SQL, Redis, MYSQL  
+
+✓ Ability to modify OS on request depending on governance.  
+
+✓ Managed Data analytics capabilities: K8s, Airflow, Spark, SLURM, Jupyter  
+
+✗ No federated queries (WIP – PoC developed as part of previous projects)  
+
+✗ No federated analytics (WIP – Pock developed as part of previous projects)  
+
+---
+
+### SAFE Settings - Security Certifications and Measures
+
+✓ Security Certifications: ISO 27001, NHS Toolkit, DEA Accreditations  
+
+✓ Security Measures: Everything needed to gain ISO, 2FA, multi vender firewalls, DES. Account lock, SEIM (logging), Audit, Review Process, Monitoring etc.  
+
+✓ No VM direct access, Access only through VDI only.
+
+✓ No VM access control (no USB, copy/paste, internet access whitelisted or internal mirrors)  
+
+---
+
+### SAFE Settings - Software access  
+
+✓ Default software: Office, R, Python, Conda, SPSS, STATA, SAS, Jupter Notebook, eclipse, VS Code, DB tooling  
+
+✓ Code/library import: Whitelisted package libraries for R, Python Conda, SAS, STATA, SPSS. Extra packages can be added by technical team on request. AV/Malware, SEIM and N/W monitoring  
+
+✓ Collaboration Software: Git, Wiki, Confluence, Shared File Store, Shared DB  
+
+---
+
+### SAFE Data - Data Access Mechanisms
+
+✓ ✓ Data Provisioning: Scoped and minimized data provided as tables in a RDBMS with access to a filestore, git etc.  
+
+✓ Reduce re-identification risk by: pseudonymization, minimizing dataset, encryption and encryption of linkage keys, small number output suppression
+
+✓ Receive Data: Ability to receive data on-demand  
+
+- ✓ Linked Data: External data linked via data linkage mechanism  
+
+- ✓ Sensitive Data: Some datasets with sensitive data are held centrally in an un-linkable manner  
+
+- ✓ Open Data: Large collection of open data available  
+
+✓ Record Linkage: Deterministic, probabilistic linkage via 3rd party (can be customised depending on requirements)
+
+---
+
+### SAFE Outputs - Data Output/export  
+
+✓ Individual level data can be exported. everything must go through human review and conform to the governance model in place. No disclosure is permitted from SAIL. Code and Methods can be exported.  
+
+✓ Export plans: Same as above, so long as approved or approvable against a governance model then aggregate, individual data - EHR, images, genomics, etc can be taken out.  
+
+✓ Data transmit to other SAFE Settings: we currently provide data feeds to Biobank for Welsh participants we also provide onward sharing of the JoinZoe Covid mobile app data to Scotland and NHS Digital.  
+
+✓ Statistical disclosure control process in place",0,Aisha,Agbaje,aisha.agbaje@hdruk.ac.uk,Yes,,
+QResearch,QResearch,"QResearch is a large anonymised database of GP records from over 35 million patients with longitudinal data tracking back over 30 years. It is used for high quality ethical medical research, The database is linked to mortality, cancer registration, hospital data.
+
+Active Users: 40 | Active Projects: 39
+
+Usage Charge: Yes, though a more refined cost model is currently under development
+
+---
+
+### SAFE People - Login & Access  
+
+✗ Limited to academic researchers from UK Universities
+
+✓ Login: User Registration, VDI over a VPN, Authentication: 2FA
+
+✗ Minimum Requirement: Accessing systems must run a currently supported Operating System with latest security patches set to auto-install. The system is audited before access is granted. Yes, access is via VPNs controlled by QResearch. 
+
+✓ International Access: Handled on a case by case basis
+
+---
+
+### SAFE Settings - Compute & Services
+
+✓On-Premise
+
+✓ Virtual desktops - Windows Server DataCentre Edition
+
+✓ Standard: Dedicated: 16GB RAM, 4 Logical Xeon Gold Processors, 200 GB HDDMax: Dedicated 512GB RAM, 72 Logical Xeon Gold Processors, 2TB HDD + Tesla V100 GPU
+
+✓ Users are able to purchase additional compute capacity
+
+✗ Managed Data analytics capabilities: No
+
+✗ No federated queries - PoC developed as part of previous projects
+
+✗ No federated analytics - PoC developed as part of previous projects
+
+---
+
+### SAFE Settings - Security Certifications and Measures
+
+✓ Security Certifications: [NHS DSPT Toolkit](https://www.dsptoolkit.nhs.uk/OrganisationSearch/EE133863-MSD-NDPCHS)
+
+✓ Security Measures: Prevention of unauthorised access, and 2FA ensures user identity. VPN with MAC locks to workstation ensures workstation identity (and compliance). Data Loss Data resides on drive arrays with redundancy, multiple disk failures can be tolerated. Sophos Endpoint Agent runs on all VMs.
+
+✓ No VM direct access, Access only through VDI via QResearch VPN and approved workstations only. Strong Password policy enforced. Account lockout after 3 failed attempts. 2FA required for login.
+
+---
+
+### SAFE Settings - Software access  
+
+✓ Default software: MS Office, STATA, R, Python. STATA requires individual or site license
+
+✓ Code/library import: Users cannot import their own code/ software. Users can request changes to their environment, this might include the addition of their own libraries or 3rd party libraries. Each change is reviewed by QResearch, and if approved actioned by a QResearch administrator
+
+✓ Collaboration Software: Internal Git repository
+
+---
+
+### SAFE Data - Data Access Mechanisms
+
+✓ Data Provisioning: Researchers are provided with the dataset necessary to answer their question both in terms of the variables/data items received and also the sample size (which is specified in their application form). Datasets are provided on servers held in the secure data centre.
+
+✓ Reduce re-identification risk by: providing a secure local environment, data recipient is a closed community, limited access with a finite number of people with access where further disclosure is prohibited by contracts, data minimisation, purpose limitation ie. data can only be used by the recipient for an agreed set of purposes, training of staff with access to data, personnel background check, checks over ability to bring other data into the environment, restriction of the disclosure of the dataset, prohibition on any attempt at re-identification, encryption, limiting the copying or number of copies of the data, contractural penalties which can be improved, regular risk assessment and internal audits and penetration testing, strong governance structure
+
+✓ Receive Data: Researchers are not able to receive any data securely apart the the datasets agreed in their application and data sharing agreement. The core administrative team receives datasets from relevant data controllers securely via SFTP
+
+✓ Linked Data: Data suppliers such as NHS Digital provide data which has been pseudonymised at source using the openpseudonymiser software with a salted encrypted hash. Data sets are then transferred by SFTP to the core administration team
+
+✓ Record Linkage: QResearch undertakes data linkage where this is needed to meet the scientific aims of the study subject to the necessary governance and controls
+
+---
+
+### SAFE Outputs - Data Output/export  
+
+✓ Aggregate level graphs and tables, Weights and code for a trained AI algorithm, Source code developed with the environment, Software executable developed within the environment
+
+✓ Other Export plans: No  
+
+✓ Data transmit to other SAFE Settings not possible as data sharing agreements do not allow this.
+
+✓ Statistical Disclosure Control: Manual process by trained members of staff",,Julia,Hippisley-Cox,julia.hippisley-cox@phc.ox.ac.uk,,,
+,,"QResearch is a large, anonymised database of GP records from over 35 million patients with longitudinal data tracking back over 30 years & is linked to mortality, cancer registration & hospital data.
+
+Learn more about QResearch including contact information on the [website](https://www.qresearch.org/about/).
+
+Active Users: 45 | Active Projects: 35
+
+---
+
+ ## **SAFE People - Login & Access**
+
+
+✓ Currently only academic researchers from UK universities are eligible to use the TRE where there is a contract of employment, honorary contract or data sharing agreement in place. Researchers sign a set of t&c’s, then complete information governance training. Researchers submit their CV for assessment by the Scientific Committee to ensure that the team have the necessary skills to undertake the research proposed. One of the applicants must be medically qualified.
+
+✓ Login: Remote Desktop over VPN with 2FA. Access via QResearch VPNs. VPN is locked to the user’s device, ensuring that access is only granted to machines that meet the QResearch Workstation Setup Requirements
+
+✓ Min. Requirement: Accessing systems must run a currently supported OS with latest patches set to auto-install. System is audited before access is granted. No min. hardware requirements. Additional security requirements are defined in the latest version of the QResearch Workstation Setup Requirements Document.
+
+✓ International Access: No data leaves the Oxford servers in any situation. Applications to access the TRE internationally are handled on a case-by-case basis in line with the data controller agreements & ethics.
+
+---
+ 
+## **SAFE Settings - Compute & Services**
+
+
+✓ On Premise hosted at an Oxford Data Centre.
+
+✓ Windows Server DataCentre Edition.
+
+✓ Compute hardware configuration: Standard: Dedicated 16GB RAM, 4 Logical Xeon Gold Processors, 200 GB HDD Max: Dedicated 512GB RAM, 72 Logical Xeon Gold Processors, 2TB HDD + Tesla V100 GPU
+
+✓ Ability to modify VMs on request depending on review by QResearch.
+
+✗ No Managed Data analytics capabilities – in development
+
+✗ No federated queries - in development
+
+✗ No federated analytics - in development
+
+---
+
+## **SAFE Settings - Security Certifications & Measures**
+
+
+✓ Security Certifications: NHS Data Security Protection Toolkit 
+
+✓ Security Measures: Everything needed to gain DSPT certification
+
+✓ Each project team has its own VM. These “Project Level” VMs are isolated from each other. Project-specific datasets are put on the VMs by QResearch admins. The project team can share the data inside the project VM only. VMs cannot see or access other project VMs. Some VMs have access to Core data sets via Fileshares, access to these fileshares is via project groups & VMs to prevent a project VM unauthorised access to Core data 
+
+✓ Unauthorised access: 2FA ensures user identity, VPN with MAC locks to device ensures workstation identity (& compliance). Data Loss:  Data resides on redundant, fault tolerant storage. All hardware has next day warranty to replace failed parts. Monthly hardware checks are performed to detect degradation. Automatic checks are setup with Dell to report predicted drive failures. User code is backed up each week, Data is not. (Data can be re-created from source in case of disaster) Misuse by user: Users have minimal privileges, internet access is disabled
+
+---
+
+## **SAFE Settings - Software access**
+
+
+✓ Default software: MS office, STATA, R, Python. STATA requires individual or site license. Sophos Endpoint Agent runs on all VMs to detect & prevent malicious code execution. 
+
+✓ Code/library import: Users cannot import their own code/ software. Users can request changes to their environment, including addition of libraries. Each change is reviewed by QResearch, & if approved, actioned by a QResearch administrator
+
+✓ Collaboration Software: Git
+
+---
+
+## **SAFE Data - Data Access Mechanisms**
+
+
+✓ Data Provisioning: Researchers are provided with the dataset necessary to answer their question both in terms of the variables/data items received & sample size (as specified in their application form). Datasets are provided on servers held in the secure data centre.
+
+✓ Receive Data: Researchers are only able to receive datasets agreed in their application & data sharing agreement. Data suppliers such as NHS Digital provide data that is pseudonymised at source with openpseudonymiser software. This uses a salted, encrypted hash. Datasets are transferred to the core administration team by SFTP
+
+---
+
+## **SAFE Outputs - Data Output/export**
+
+✓ Aggregate level graphs & tables, Weights & code for trained AI algorithms, Source code & binaries developed within the environment 
+
+✗ No export plans (other data types)
+
+✗ Data transmit to other SAFE Settings: Data sharing agreements do not allow this
+
+✓ Statistical disclosure control process in place
+",1,Julia,Hippisley-Cox,julia.hippisley-cox@phc.ox.ac.uk,Yes,,
+RECOVERY Trial,RECOVERY Trial,"This national clinical trial aims to identify treatments that may be beneficial for people hospitalised with suspected or confirmed COVID-19
+
+A range of potential treatments have been suggested for COVID-19 but nobody knows if any of them will turn out to be more effective in helping people recover than the usual standard of hospital care which all patients will receive. The RECOVERY Trial is currently testing some of these suggested treatments: 
+
+* Low-dose Dexamethasone  (now only recruiting children)
+* Azithromycin (a commonly used antibiotic)
+* Tocilizumab (an anti-inflammatory treatment given by injection)
+* Convalescent plasma (collected from donors who have recovered from COVID-19 and contains antibodies against the SARS-CoV-2 virus)
+* REGN-COV2 (a combination of monoclonal antibodies directed against coronavirus)
+* Aspirin (commonly used to thin the blood).  
+
+Data from the trial are regularly reviewed so that any effective treatment can be identified quickly and made available to all patients. Please see our [news page](https://www.recoverytrial.net/news) for results that RECOVERY has already found. The RECOVERY Trial team will constantly review information on new drugs and include promising ones in the trial.  ",,Susheel,Varma,susheel.varma@hdruk.ac.uk,,,
+Scottish National Safe Haven,Scottish National Safe Haven,"The Scottish National Safe Haven is the responsibility of the electronic Data Research and Innovation Service (eDRIS) which is part of Public Health Scotland. Formally the Scottish NSH is operated by EPCC (part of the University of Edinburgh) under contract to eDRIS in governance terms. In practice, it is very much a collaboration between eDRIS, EPCC and National Records of Scotland (who provide de-identification services).
+
+Active users: 350 open researcher accounts  |  Active projects: 200
+
+Pricing: Studies are priced as small, medium or large, and there is an annual fee for compute/disclosure. [Pricing details](https://www.isdscotland.org/Products-and-Services/eDRIS/_docs/2a-eDRIS-pricing-guide.pdf ).
+
+---
+
+### SAFE People - Login & Access  
+
+All users must become an Approved Researcher. They must all demonstrate appropriate Information Governance training and come from an Approved Organisation. They must also read and sign the eDRIS User Agreement.
+
+✓ Login: login to a virtual desktop environment via SSO and 2FA.
+
+✗ Minimum requirement: users access the Scottish NSH from their desktop using a VPN connection via a whitelisted IP address.
+
+✗ International access: if approval is given then this is possible but the same controls will apply as for other users. In practice, collaboration with an existing Approved Organisation is the simplest approach rather than from an organisation outside the UK.
+
+---
+
+### SAFE Settings - Compute & Services
+
+✓ Private Cloud environment accessed over virtual desktop infrastructure (VDI): a “desktop in a browser”.
+
+✓ A wide variety of VMs can be provided and these are sized according to the needs of each project. In general a single VM is provided with a small number of cores.  
+
+✓ Some servers which have two CPUs and 4 GPUs are also available - again these are provided as VMs to users.
+
+✗ No managed data analytics provided.
+
+✗ No federated queries.
+
+✗ No federated analytics.
+
+---
+
+### SAFE Settings - Security Certifications and Measures
+
+✓ Security certifications: governed by eDRIS and approved by NHS Scotland IT Security. ISO27001, ISO9001, Cyber Security Essentials and DEA Accredited Processor
+
+✓ Security measures: regular IT Health checks, whitelisting of IP address, VDI, 2FA and NextGen Firewall. Projects are backed up and archived. System and user activity is logged.
+
+✓ Secured operating system: users have no ability to modify OS.
+
+✓ No VM direct access: access is via VDI only.
+
+✓ VM access controls: no USB, no copy/paste, no Internet access, internal mirrors for software packages.  
+
+---
+
+### SAFE Settings - Software access  
+
+✓ Default software: R, Stata, SAS, SPSS, MS Office.
+
+✓ Code/library import: users may import software code associated with the standard packages above. These code imports use standard managed file transfer mechanisms under eDRIS control, and basic security checks are performed.
+
+✓ Collaboration software: in development; not yet available.
+
+✗ No software installation by users is permitted.
+
+---
+
+### SAFE Data - Data Access Mechanisms
+
+✓ Data provisioning: scoped and minimized linked data provided on a per project basis. See the eDRIS [Data Linkage Process](https://www.isdscotland.org/Products-and-Services/eDRIS/_docs/2b-Indexing-and-Linkage-Process-Diagram.pdf) pages.
+
+✓ Reduce re-identification risk by separation of concerns – EPCC, eDRIS and National Records of Scotland provide a triple lock on re-identification.
+
+✓ Receive data: all data transfer is via managed file transfer (MFT) service [SERV-U](https://www.serv-u.com/) under eDRIS control. All requested datasets are included in initial project applications and are approved for use in combination. No datasets may be added without additional approval. 
+
+- ✓ Linked data: yes, approved datasets only; linkage during project setup via eDRIS.
+
+- ✓ Sensitive data: yes, approved datasets only; users may not import data.
+
+- ✓ Open data: yes, approved datasets only; users may not import data.
+
+✓ Record linkage: linkage performed using study-specific ID numbers derived from encrypted CHI.
+
+---
+
+### SAFE Outputs - Data Output/export  
+
+✓ Aggregate level graphs and tables. In general exported data are aggregate results for inclusion in papers etc. However, since all data egress is subject to disclosure control by eDRIS, a request to eDRIS to export any data type can be made, provided the export would be allowed by the data controller. In practice this means that what can be exported is limited and tightly controlled.
+
+✓ Export plans: none specified.
+
+✓ Data transmit to other SAFE Settings: mechanisms are in place for us to transfer data via MFT to external locations, provided such a transfer is within the terms of the IG approvals for a specific project / data set.
+
+✓ Statistical disclosure control process in place.
+
+",1,Aisha,Agbaje,aisha.agbaje@hdruk.ac.uk,Yes,,
+,,,,Kabir,Khan,Kabir.Khan@hdruk.ac.uk,,,
+,,,,Rob,Baxter,r.baxter@epcc.ed.ac.uk,,,
+,,,,Sophie,Morris,sophie.morris@hdruk.ac.uk,,,
+Social and Environmental Determinants of Health,Social and Environmental Determinants of Health,"The Social and Environmental Determinants of Health Driver programme will establish national infrastructure and methods to link localised social and environmental health-related data to existing, longitudinal administrative records from healthcare services, surveys, and recruited cohorts.
+
+Our current and future health is strongly influenced by our social and physical environments. Changes in family structure, work patterns, income, housing, and environmental exposures are linked to persisting health inequalities. Understanding how these factors affect people’s health creates an opportunity for evidence-based interventions.
+
+It will enhance the UK’s capabilities to tackle health inequalities by generating powerful, linked data resources to guide policy, public health and services. ",0,Aisha,Agbaje,aisha.agbaje@hdruk.ac.uk,Yes,,
+,,,,Chris,Orton,c.orton@swansea.ac.uk,,,
+,,,,Kabir,Khan,Kabir.Khan@hdruk.ac.uk,,,
+,,,,Reece,Labrom,reece.labrom@swansea.ac.uk,,,
+,,,,simon,thompson,simonellwoodthompson@googlemail.com,,,
+,,,,Sophie,Morris,sophie.morris@hdruk.ac.uk,,,
+,,,,Susheel,Varma,susheel.varma@hdruk.ac.uk,,,
+South East Scotland Cancer Database,South East Scotland Cancer Database,"The South East Scotland Cancer Database (SESCD) was established in 2019. It is based on the Legacy South East Scotland Oncology Database which was created in 1974 and maintained by the Edinburgh Cancer Centre. The data was originally extracted from casenotes and entered onto paper forms in coded form. The SESCD database is now maintained in real-time by the Edinburgh Cancer Centre on behalf of the regional cancer service covering NHS Lothian, NHS Fife, NHS Dumfries and Galloway and NHS Borders. It contains a broad spectrum of data items across various stages of the cancer patient journey including diagnosis, treatment, follow-up and recurrence. ",0,Nicola,Symmers,nicola.symmers@ed.ac.uk,,To be contacted,Email sent out on 03/07/2024
+,,,,Lara,Edwards,ledwards.info@gmail.com,,,
+Test,Test,Test,0,Caroline,Ibikunle,caroline.ibikunle@paconsulting.com,,,
+Sprint Exemplar Projects,Sprint Exemplar Projects,"In 2019, eleven projects helped to develop proof of concepts for technology, methodology and research services that are informing the design of the Digital Innovation Hub Programme. The projects also provided early user cases that demonstrated the unique approach of the programme focusing on research services and infrastructure across NHS, academia and industry to enable the utilisation of high value linked datasets for UK scale research.
+
+We received more than 40 applications following the call in October 2018.  All applications were assessed by a specially-constituted multidisciplinary panel chaired by Professor Sir Nigel Shadbolt in December 2018.  Through this process led by the Medical Research Council, ten innovations were selected as the Sprint Exemplar Innovation Projects.  Each of these collaborations of industry, academia and the NHS will deliver their projects during 2019 and are being funded through the UK Research and Innovation Industrial Strategy Challenge Fund (ISCF) investment. One additional Exemplar project was later added.
+
+These exciting projects supported the Digital Innovation Hub Programme in several ways:
+
+- Generated early momentum and engagement during the design phase
+- Provided information about current market and idea generation
+- Shared early lessons with the wider programme
+- Started to build the community. The participants delivered more than their projects – they helped to shape the future of health data science in the UK
+
+Under the projects tab, you can find the initial outlines of their planned work. ",,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,,,
+Surgery,Surgery,"This collection brings together resources listed on the Innovation Gateway related to surgeries.
+
+",1,Vicky,Hellon,vicky.hellon@hdruk.ac.uk,Yes,,
+test,test,collection for testing,0,Roderic,Comyn,roderic.comyn@hdruk.ac.uk,,,
+Test Collection,Test Collection,This is a test,0,Georgia,Andrews,georgia.andrews@kcl.ac.uk,,,
+Test Collection ,Test Collection ,Test collection ,0,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,,,
+Test collection,Test collection,Test,,Tanika,P,tanikariapatel@gmail.com,,,
+testing,testing,testing,0,Hdrteamadmin,hdr,hdrteamdmin@gmail.com,,,
+,,,,Lily,Strange,lily.strange@kcl.ac.uk,,,
+,,,,Louise ,Arseneault,louise.arseneault@kcl.ac.uk,,,
+,,,,Roderic,Comyn,roderic.comyn@hdruk.ac.uk,,,
+,,PY test,0,Damon,Chow (Test),damonchow2@gmail.com,,,
+,,,,,Gateway Demo,claragatewaydemos@gmail.com,,,
+test collection jan,test collection jan,test collection jan,,Ciara,Ward,ciara.ward@paconsulting.com,,,
+Test collection SEL,Test collection SEL,"Heading
+======",,Stacey,Lowry,stacey.lowry@paconsulting.com,,,
+,,,,Tanika,Patel,tanika.patel@paconsulting.com,,,
+,,,,,,tanikarpatel@gmail.com,,,
+Test collection test,Test collection test,test description,,Tanika,P,tanikariapatel@gmail.com,,,
+Test test test,Test test test,test,,Stacey,Lowry,stacey.lowry@paconsulting.com,,,
+,,,,Tanika,Patel,tanika.patel@paconsulting.com,,,
+,,test,0,Jag,Kandasamy,dan.nita@hdruk.ac.uk,,,
+,,trhis isergfi sndfogdsnflk gbdsk; fj.,0,Yokow,Baiden,yokow.baiden@paconsulting.com,,,
+Thames Valley and Surrey Secure Data Environment (SDE): Part of the NHS Research SDE Network,Thames Valley and Surrey Secure Data Environment (SDE): Part of the NHS Research SDE Network,"The Thames Valley and Surrey region has a population of 3.9m and the SDE covers 3 ICBs and 88 GPs. The ICBs covered by the region are: 
+
+•	Buckinghamshire, Oxfordshire and Berkshire West 
+
+•	Frimley 
+
+•	Surrey Heartlands 
+
+Data resources will be added to this collection over time. If you have any questions about Thames Valley and Surrey SDE, please contact tvssde@ouh.nhs.uk",1,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,Yes,,
+,,,,Kinga,Varnai (interim),kinga.varnai@ouh.nhs.uk,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Rick,Fell,rickfell@nhs.net,,,
+UK Longitudinal Linkage Collaboration (UK LLC),UK Longitudinal Linkage Collaboration (UK LLC),"UK Longitudinal Linkage Collaboration (UK LLC) is the national Trusted Research Environment (TRE) for longitudinal research. Led by the Universities of Bristol and Edinburgh, in collaboration with UCL, SeRP UK, Swansea University, University of Leicester and St George's, University of London, it is a collaborative endeavour with many of the UK’s most established longitudinal population studies (LPS). UK LLC’s mission is to provide a data linkage resource to its partner LPS and to provide a simple one-application process to UK based researchers applying to access linked longitudinal data. The data in the UK LLC TRE is provided by over 280,000 participants who volunteer to be part of their LPS. The LPS retain control of who can access their participants' linked data and all permissions set by participants remain in place.
+
+For more information please visit: www.ukllc.ac.uk
+
+The LPS collaborating in UK LLC are: 
+Airwave Health Monitoring Study, Avon Longitudinal Study of Parents and Children (ALSPAC), 1970 British Cohort Study (BCS70), Born in Bradford (BIB), English Longitudinal Study of Ageing (ELSA), The European Prospective Investigation into Cancer (EPIC) Norfolk Study, Extended Cohort for E-health, Environment and DNA (EXCEED), The Fenland Study, Generation Scotland, Genetic Links to Anxiety and Depression Study (GLAD), The Millennium Cohort Study (MCS), 1958 National Child Development Study (NCDS), Next Steps, Northern Ireland Cohort for the Longitudinal Study of Ageing (NICOLA), MRC National Survey of Health and Development Cohort/1946 Birth Cohort (NSHD/1946BC), National Institute of Health Research (NIHR) BioResource COVID-19 Psychiatry and Neurological Genetics (COPING) Study, Southall and Brent Revisited (SABRE) (non-linked data only), TRACK-COVID Study, TwinsUK, Twins Early Development Study (TEDS), Understanding Society - the UK Household Longitudinal Study (UKHLS). 
+
+Active Users: 60 | Active Projects: 25
+Pricing: Centrally funded - currently no charge at the point of access.  
+
+---
+
+### SAFE People - Login & Access  
+
+• All applicants must provide a CV detailing evidence of a research career and employment by a recognised UK research organisation
+• All approved users must be an Accredited Researcher under the Digital Economy Act 
+• All approved users must sign a Data User Responsibilities Agreement (DURA) and be covered by a Data Access Agreement (DAA)
+
+✓ Login: Login to Virtual Desktop Infrastructure (VDI) via 2FA  
+
+✓ Minimum Requirement: See requirements detailed above 
+
+✗ International Access: Not permitted
+
+---
+
+### SAFE Settings - Compute & Services
+
+✓ Secure eResearch Platform (SeRP) UK environment
+
+✓ Options for Windows 10 VDI - 4C/16GB – 8C/32GB – 16C/128GB -128C/1.5TB (Limited)
+
+✗ No ability to modify OS
+
+✗ Managed Data analytics capabilities: None provided 
+
+✗ No federated queries
+
+✗ No federated analytics
+
+---
+
+### SAFE Settings - Security Certifications and Measures
+
+✓ Security Certifications: UK LLC is ISO 27001 certified, accredited by UK Statistics Authority as a processor under the DEA and completes the annual NHS Data Security & Protection Toolkit  
+
+✓ Security Measures: UK LLC has developed an Information Security Management System to the exacting standards required by ISO 27001 and DEA, in particular  
+
+✓ No VM direct access; access only through VDI
+
+✓ No VM access control (no USB, copy/paste, internet access whitelisted or internal mirrors)  
+
+---
+
+### SAFE Settings - Software access  
+
+✓ Default software: Office, R, Python, Conda, SPSS, STATA, SAS, Jupyter Notebook, Eclipse, VS Code, DB tooling  
+
+✓ Code/library import: Whitelisted package libraries for R, Python, Conda, SAS, STATA, SPSS. Extra packages can be added on request. AV/Malware, SEIM and N/W monitoring  
+
+✓ Collaboration Software: Git, Wiki, Confluence, shared filestore, shared DB  
+
+---
+
+### SAFE Data - Data Access Mechanisms
+
+✓ Data Provisioning: Scoped and minimised data provided as views in an RDBMS with access to a filestore, git etc.  
+
+✓ Reduce re-identification risk by: pseudonymisation, minimising dataset, encryption and encryption of linkage keys, small number output suppression
+
+✓ Receive Data: Ability to receive data upon special request  
+
+-• ✓ Linked Data: External data linked via data linkage mechanism  
+
+-• ✓ Open Data: A number of core datasets are provisioned to all approved researchers 
+
+✓ Record Linkage: Deterministic, probabilistic linkage via Trusted Third Party 
+
+---
+
+### SAFE Outputs - Data Output/export  
+
+✓ Individual level data cannot be exported; only aggregate level graphs and tables can be exported. All outputs must go through human SDC review. Code and methods can be exported
+
+✓ Export plans: Same as above
+
+✓ Data transmitted to other SAFE Settings: None
+
+✓ Statistical disclosure control process in place",1,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,Yes,,
+,,,,Katharine,Evans,Katharine.Evans@bristol.ac.uk,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Stela,McLachlan,stela.mclachlan@ed.ac.uk,,,
+UK Neonatal Collaborative,UK Neonatal Collaborative,"The UK National Neonatal Collaborative was established in 2012 consisting of all neonatal units that contribute to the National Neonatal Research Database (NNRD). Each neonatal unit has a UK Neonatal Collaborative lead who acts as the point of contact with the Neonatal Data Analysis Unit.
+
+Please visit the following website for more information:
+
+https://www.imperial.ac.uk/neonatal-data-analysis-unit/neonatal-data-analysis-unit/",1,Neena,Modi,n.modi@imperial.ac.uk,Yes,,
+,,,,Ricardo,Ribas,r.ribas@imperial.ac.uk,,,
+Wales COVID-19 Data & Connectivity,Wales COVID-19 Data & Connectivity,Datasets available in Wales TRE related to National Core Studies Sprint 1,,Alice,Turnbull,alice.turnbull@hdruk.ac.uk,,,
+,,,,Caroline,Cake,caroline.cake@hdruk.ac.uk,,,
+,,,,Chris,Orton,c.orton@swansea.ac.uk,,,
+,,,,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,,,
+,,,,David,Seymour,david.seymour@hdruk.ac.uk,,,
+,,,,Paola,Quattroni,pquattronihdruk@gmail.com,,,
+,,,,Peggy,Barthes-Streit,peggy.barthes-streit@hdruk.ac.uk,,,
+,,,,Rhoswyn,Walker,rhoswyn.walker@hdruk.ac.uk,,,
+Welcome to the Gateway!,Welcome to the Gateway!,"Welcome to the Gateway! 
+
+This is the place where you will find all the resources you need to use the Gateway, from short how-to videos showing you how to add do things on the Gateway, to self-guided tour, and background information. 
+
+Let us know if there is anything else you would like to see in this collection. ",1,Gerry,Reilly,gerry.reilly@hdruk.ac.uk,Yes,,
+,,,,Peggy,Barthes-Streit,peggy.barthes-streit@hdruk.ac.uk,,,
+,,,,Susheel,Varma,susheel.varma@hdruk.ac.uk,,,
+,,,,Vicky,Hellon,vicky.hellon@hdruk.ac.uk,,,
+Wessex Secure Data Environment (SDE): Part of the NHS Research SDE Network,Wessex Secure Data Environment (SDE): Part of the NHS Research SDE Network,"The Wessex region has a population of 2.8m and the SDE covers two ICBS and nine Trusts. The ICBs covered by the region are: 
+
+•	Dorset 
+
+•	Hampshire and Isle of Wight
+
+Data resources will be added to this collection over time. If you have any questions about the Wessex SDE, please contact data.research@nhs.net",1,Ashley,Heinson,a.heinson@soton.ac.uk,Yes,,
+,,,,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Rick,Fell,rickfell@nhs.net,,,
+West Midlands Secure Data Environment (SDE): Part of the NHS Research SDE Network,West Midlands Secure Data Environment (SDE): Part of the NHS Research SDE Network,"The West Midlands region has a population of 6.2m and the SDE covers 6 ICBs working with 848 partner organisations. The ICBs covered by the region are:
+ 
+•	Birmingham and Solihull 
+
+•	Black Country 
+
+•	Coventry and Warwickshire 
+
+•	Herefordshire and Worcestershire 
+
+•	Shropshire, Telford and Wrekin 
+
+•	Staffordshire and Stoke-on-Trent
+
+Initially, the West Midlands Secure Data Environment will make available datasets curated by HDR UK Healthcare Data Hubs, INSIGHT and PIONEER, where University Hospitals Birmingham is the data controller. Access to these datasets is governed by their specific ethical approvals in place.
+
+PIONEER is a research data hub focused on making accessible acute healthcare data for any disease or condition. INSIGHT is a single themed research data hub focused on making accessible ophthalmic and oculomic data.
+
+As the WMSDE develops further, its data pipeline will expand and the catalogue of available datasets will be updated.
+
+If you have any questions about the West Midlands SDE, please contact WMSDE@uhb.nhs.uk.
+",1,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,Yes,,
+,,,,Diane,Harrison,diane.harrison14@nhs.net,,,
+,,,,Jacob,Hinks,Jacob.Hinks@uhb.nhs.uk,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Rick,Fell,rickfell@nhs.net,,,
+,,,,Stephen,Perks,stephen.perks@uhbresearch.org,,,
+West of Scotland Safe Haven,West of Scotland Safe Haven,A collection of data sources and linked datasets that are available at the West of Scotland regional Safe Haven node at NHS Greater Glasgow and Clyde.,1,Charlie,Mayor,charlie.mayor@ggc.scot.nhs.uk,Yes,,
+Yorkshire and Humber Secure Data Environment (SDE): Part of the NHS Research SDE Network,Yorkshire and Humber Secure Data Environment (SDE): Part of the NHS Research SDE Network,"The Yorkshire and Humber region has a population of 5.8m and the SDE covers 3 ICBs, 28 Trusts and 770 GPs. The ICBs covered by the region are: 
+
+•	Humber and North Yorkshire 
+
+•	South Yorkshire 
+
+•	West Yorkshire
+
+Data resources will be added into this collection over time. If you have any questions about the Yorkshire & Humber SDE, please contact data.research@nhs.net",1,Amy,Hough,amy.hough@nihr.ac.uk,Yes,,
+,,,,Clara,Fennessy,clara.fennessy@hdruk.ac.uk,,,
+,,,,John,Birkinshaw,john.birkinshaw@nihr.ac.uk,,,
+,,,,Kuldeep,Sohal,kuldeep.sohal@bthft.nhs.uk,,,
+,,,,Ping,Yu,ping.yu@hdruk.ac.uk,,,
+,,,,Rick,Fell,rickfell@nhs.net,,,

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Config;
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Tool;
@@ -31,6 +32,8 @@ use Database\Seeders\CollectionHasKeywordSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionHasPublicationSeeder;
+
+use ElasticClientController as ECC;
 
 class CollectionTest extends TestCase
 {
@@ -168,22 +171,49 @@ class CollectionTest extends TestCase
      *
      * @return void
      */
-    public function test_add_new_collection_with_success(): void
+    public function test_add_new_active_collection_with_success(): void
     {
+
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
+                    }
+                )
+            )
+            ->times(1);
+
+        $datasets = $this->generateDatasets();
+        $nActive = Dataset::whereIn("id", array_column($datasets, 'id'))
+            ->where('status', Dataset::STATUS_ACTIVE)
+            ->count();
+
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
+                    }
+                )
+            )
+            ->times($nActive);
+
+
         $countBefore = Collection::count();
-        $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
         $mockData = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 123,
-            "datasets" => $this->generateDatasets(),
+            "datasets" => $datasets,
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
         ];
 
         $response = $this->json(
@@ -199,8 +229,59 @@ class CollectionTest extends TestCase
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
         $response->assertStatus(201);
 
-        $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
-        $this->assertTrue($elasticCountAfter > $elasticCountBefore);
+    }
+
+    public function test_add_new_draft_collection_with_success(): void
+    {
+
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
+                    }
+                )
+            )
+            ->times(0);
+
+        $datasets = $this->generateDatasets();
+        $nActive = Dataset::whereIn("id", array_column($datasets, 'id'))
+            ->where('status', Dataset::STATUS_ACTIVE)
+            ->count();
+
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
+                    }
+                )
+            )
+            ->times($nActive);
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $datasets,
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "DRAFT"
+        ];
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            $mockData,
+            $this->header
+        );
+        $response->assertStatus(201);
+
     }
 
     /**
@@ -210,15 +291,29 @@ class CollectionTest extends TestCase
      */
     public function test_update_collection_with_success(): void
     {
+
+        $datasets = $this->generateDatasets();
+        ECC::shouldReceive("indexDocument")
+        ->with(
+            \Mockery::on(
+                function ($params) {
+                    return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
+                }
+            )
+        )
+        ->times(2);
+
+        ECC::shouldIgnoreMissing(); //ignore index on datasets
+
         // create new collection
         $mockDataIns = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 123,
-            "datasets" => $this->generateDatasets(),
+            "datasets" => $datasets,
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
@@ -239,15 +334,16 @@ class CollectionTest extends TestCase
         $mockDataUpdate = [
             "name" => "covid update",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 1,
-            "datasets" => $this->generateDatasets(),
+            "datasets" => $datasets,
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -265,17 +361,32 @@ class CollectionTest extends TestCase
     }
 
     /**
-     * Edit Collection with sucess by id
+     * Update Collection with sucess by id
      *
      * @return void
      */
-    public function test_edit_collection_with_success(): void
+    public function test_update_collection_to_draft_with_success(): void
     {
+
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
+                    }
+                )
+            )
+            ->times(1);
+
+        ECC::shouldReceive("deleteDocument")->once();
+
+        ECC::shouldIgnoreMissing(); //ignore index on datasets
+
         // create new collection
         $mockDataIns = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 123,
@@ -300,7 +411,63 @@ class CollectionTest extends TestCase
         $mockDataUpdate = [
             "name" => "covid update",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 1,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "DRAFT"
+        ];
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $idIns,
+            $mockDataUpdate,
+            $this->header
+        );
+        $responseUpdate->assertStatus(200);
+    }
+
+    /**
+     * Edit Collection with sucess by id
+     *
+     * @return void
+     */
+    public function test_edit_collection_with_success(): void
+    {
+        // create new collection
+        $mockDataIns = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE",
+        ];
+        $responseIns = $this->json(
+            'POST',
+            self::TEST_URL,
+            $mockDataIns,
+            $this->header
+        );
+
+        $responseIns->assertStatus(201);
+        $idIns = (int) $responseIns['data'];
+
+        // update collection
+        $mockDataUpdate = [
+            "name" => "covid update",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 1,
@@ -327,7 +494,7 @@ class CollectionTest extends TestCase
         $mockDataEdit1 = [
             "name" => "covid edit",
             "description" => "Nam dictum urna quis euismod lacinia.",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
         ];
         $responseEdit1 = $this->json(
             'PATCH',
@@ -364,13 +531,19 @@ class CollectionTest extends TestCase
      */
     public function test_soft_delete_and_unarchive_collection_with_success(): void
     {
+        ECC::shouldReceive("deleteDocument")
+            ->times(1);
+
+        //dont bother checking any indexing here upon creation
+        ECC::shouldIgnoreMissing();
+
         $countBefore = Collection::count();
         $countTrashedBefore = Collection::onlyTrashed()->count();
         // create new collection
         $mockDataIn = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             "enabled" => true,
             "public" => true,
             "counter" => 123,
@@ -386,7 +559,6 @@ class CollectionTest extends TestCase
             $mockDataIn,
             $this->header
         );
-
         $responseIn->assertStatus(201);
         $idIn = (int) $responseIn['data'];
 

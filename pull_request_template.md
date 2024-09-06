@@ -19,3 +19,4 @@
 - [ ] I have added Swagger annotations for new endpoints (if applicable)
 - [ ] I have added audit logs for new operation logic (if applicable)
 - [ ] I have added new environment variables to the .env.example file (if applicable)
+- [ ] I have added new environment variables to terraform repository (if applicable)
