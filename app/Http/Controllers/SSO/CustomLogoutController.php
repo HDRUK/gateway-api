@@ -18,7 +18,7 @@ class CustomLogoutController extends Controller
         //
     }
 
-    public function logOut(Request $request)
+    public function rquestLogout(Request $request)
     {
         try {
             $user = Auth::user();
@@ -41,9 +41,20 @@ class CustomLogoutController extends Controller
             $redirectUrl = env('GATEWAY_URL');
             // return redirect()->away($redirectUrl)->withCookies($cookies);
             // return redirect()->away($redirectUrl);
-            return redirect()->to($redirectUrl);
+            // return redirect()->to($redirectUrl);
+            return response()->json([
+                'message' => 'Revoked',
+            ]);
         } catch (Exception $e) {
             throw new Exception($e);
         }
     }
+
+    // public function logout(Request $request) 
+    // {
+    //     Auth::guard()->logout();
+    //     $request->session()->flush();
+    //     $azureLogoutUrl = Socialite::driver('azure')->getLogoutUrl(route('login'));
+    //     return redirect($azureLogoutUrl);
+    // }
 }
