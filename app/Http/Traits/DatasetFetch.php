@@ -37,7 +37,7 @@ trait DatasetFetch
 
             // Add extra fields as required for DatasetVersionHasTool case.
             if ($linkageTable == DatasetVersionHasTool::class) {
-                $link_type = DatasetVersionHasTool::where($localTableId, $this->id)->pluck('link_type')->first();
+                $link_type = DatasetVersionHasTool::where($localTableId, $this->id)->select(['link_type'])->first();
                 $dataset->setAttribute('link_type', $link_type);
                 $metadata =$dataset->lastMetadata();
                 $dataset->setAttribute('title', $metadata["metadata"]["summary"]["title"]);
