@@ -187,7 +187,10 @@ class SocialLoginController extends Controller
                 $oidc->setAllowImplicitFlow(true);
                 $oidc->addAuthParam(['response_mode' => 'form_post']);
 
-                $oidc->authenticate();
+                $a = $oidc->authenticate();
+
+                \Log::info('a : ' . $a . PHP_EOL);
+
                 $response = $oidc->requestUserInfo();
 
                 \Log::info('response to requestUserInfo: ' . json_encode($response->json()) . PHP_EOL);
