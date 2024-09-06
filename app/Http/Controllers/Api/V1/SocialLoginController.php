@@ -183,12 +183,14 @@ class SocialLoginController extends Controller
 
                 $oidc->setVerifyHost(false);
                 $oidc->setVerifyPeer(false);
-                $oidc->setResponseTypes(['id_token']);
+                $oidc->setResponseTypes(['code']);
                 $oidc->setAllowImplicitFlow(true);
                 $oidc->addAuthParam(['response_mode' => 'form_post']);
 
                 $oidc->authenticate();
                 $response = $oidc->requestUserInfo();
+
+                \Log::info('response to requestUserInfo: ' . json_encode($response->json()) . PHP_EOL);
                 $socialUser = json_decode(json_encode($response), true);
 
                 $socialUserDetails = $this->openathensResponse($socialUser, $provider);

@@ -690,7 +690,7 @@ trait IndexElastic
         } else {
             $tissues =  Arr::get($metadata, 'metadata.tissuesSampleCollection', null);
             if (!is_null($tissues)) {
-                $materialTypes = array_reduce($tissues, function($return, $item) {
+                $materialTypes = array_reduce($tissues, function ($return, $item) {
                     if ($item['materialType'] !== 'None/not available') {
                         $return[] = $item['materialType'];
                     }

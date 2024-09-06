@@ -46,7 +46,7 @@ class NamedEntities extends Model
     public function getAllDatasetsAttribute()
     {
         return $this->getDatasetsViaDatasetVersion(
-            new DatasetVersionHasNamedEntities,
+            new DatasetVersionHasNamedEntities(),
             'named_entities_id'
         );
     }
