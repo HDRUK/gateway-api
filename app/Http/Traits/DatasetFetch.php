@@ -4,6 +4,7 @@ namespace App\Http\Traits;
 
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use App\Models\DatasetVersionHasTool;
 
 trait DatasetFetch
 {
@@ -33,6 +34,14 @@ trait DatasetFetch
             // Add associated dataset versions to the dataset object
             $dataset->setAttribute('dataset_version_ids', $datasetVersionIds);
             // $dataset->setAttribute('latest_metadata', $metadata); // This can be modified to return metadata
+
+            // Add extra fields as required for DatasetVersionHasTool case.
+            if ($linkageTable instanceof DatasetVersionHasTool) {
+                $link_type = DatasetVersionHasTool::where($localTableId, $this->id)->select(['link_type'])->first();
+                $dataset->setAttribute('link_type', $link_type);
+                $metadata =$dataset->lastMetadata();
+                $dataset->setAttribute('title', $metadata["metadata"]["summary"]["title"]);
+            }
         }
 
         // Return the collection of datasets with injected dataset version IDs
