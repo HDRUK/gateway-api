@@ -41,14 +41,25 @@ trait IndexElastic
      * Calls a re-indexing of Elastic search when a dataset is created, updated or added to a collection.
      *
      * @param string $datasetId The dataset id from the DB.
+     * @param bool $returnParams Optional flag to return parameters.
      *
-     * @return void
+     * @return null|array
      */
-    public function reindexElastic(string $datasetId): void
+    public function reindexElastic(string $datasetId, bool $returnParams = false, bool $activeCheck = true): null|array
     {
         try {
             $datasetMatch = Dataset::where('id', $datasetId)
                 ->firstOrFail();
+
+            if($activeCheck) {
+                if($datasetMatch->status !== Dataset::STATUS_ACTIVE) {
+                    return null;
+                }
+            }
+
+            if (DatasetVersion::where('dataset_id', $datasetId)->count() === 0) {
+                throw new \Exception("Error: DatasetVersion is missing for dataset ID=$datasetId.");
+            }
 
             $metadata = $datasetMatch->latestVersion()->metadata;
 
@@ -66,28 +77,32 @@ trait IndexElastic
                 'publisherName' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.publisher.name', 'metadata.summary.publisher.publisherName'], ''),
                 'startDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.startDate'], null),
                 'endDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.endDate'], Carbon::now()->addYears(180)),
-                'dataType' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], ''),
+                'dataType' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], '')),
                 'containsTissue' => $containsTissue,
                 'sampleAvailability' => $materialTypes,
-                'conformsTo' => explode(',', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
+                'conformsTo' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
                 'hasTechnicalMetadata' => (bool) count($this->getValueByPossibleKeys($metadata, ['metadata.structuralMetadata'], [])),
                 'named_entities' =>  array_map(fn ($entity) => $entity['name'], $datasetMatch->allNamedEntities),
                 'collectionName' => array_map(fn ($collection) => $collection['name'], $datasetMatch->allCollections),
                 'dataUseTitles' => array_map(fn ($dur) => $dur['project_title'], $datasetMatch->allDurs),
                 'geographicLocation' => array_map(fn ($spatialCoverage) => $spatialCoverage['region'], $datasetMatch->allSpatialCoverages),
-                'accessService' => $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.access.accessServiceCategory'], ''),
+                'accessService' => $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.access.accessServiceCategory'], null),
                 'dataProviderColl' => DataProviderColl::whereIn('id', DataProviderCollHasTeam::where('team_id', $datasetMatch->team_id)->pluck('data_provider_coll_id'))->pluck('name')->all(),
             ];
 
             $params = [
-                'index' => 'dataset',
+                'index' => ECC::ELASTIC_NAME_DATASET,
                 'id' => $datasetMatch->id,
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
 
-            $client = ECC::getElasticClient();
-            $client->index($params);
+            if($returnParams) {
+                unset($metadata);
+                return $params;
+            }
+            ECC::indexDocument($params);
+            return null;
 
         } catch (Exception $e) {
             \Log::error('Error reindexing ElasticSearch', [
@@ -110,10 +125,11 @@ trait IndexElastic
      * Calls a re-indexing of Elastic search when a data procider id is given.
      *
      * @param string $teamId The team id from the DB.
+     * @param bool $returnParams Optional flag to return parameters.
      *
-     * @return void
+     * @return null|array
      */
-    public function reindexElasticDataProvider(string $teamId): void
+    public function reindexElasticDataProvider(string $teamId, bool $returnParams = false): null|array
     {
         try {
             $datasets = Dataset::where('team_id', $teamId)->get();
@@ -151,9 +167,12 @@ trait IndexElastic
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
+            if($returnParams) {
+                return $params;
+            }
 
-            $client = ECC::getElasticClient();
-            $client->index($params);
+            ECC::indexDocument($params);
+            return null;
 
         } catch (Exception $e) {
             \Log::error('Error reindexing ElasticSearch', [
@@ -169,9 +188,10 @@ trait IndexElastic
      * Insert collection document into elastic index
      *
      * @param integer $collectionId
-     * @return void
+     * @param bool $returnParams Optional flag to return parameters.
+     * @return null|array
      */
-    public function indexElasticCollections(int $collectionId): void
+    public function indexElasticCollections(int $collectionId, bool $returnParams = false): null|array
     {
         $collection = Collection::with(['team', 'keywords'])->where('id', $collectionId)->first();
         $datasets = $collection->allDatasets  ?? [];
@@ -220,14 +240,17 @@ trait IndexElastic
                 'dataProviderColl' => $dataProviderColl
             ];
             $params = [
-                'index' => 'collection',
+                'index' => ECC::ELASTIC_NAME_COLLECTION,
                 'id' => $collectionId,
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
 
-            $client = ECC::getElasticClient();
-            $client->index($params);
+            if($returnParams) {
+                return $params;
+            }
+            ECC::indexDocument($params);
+            return null;
 
         } catch (Exception $e) {
             Auditor::log([
@@ -276,14 +299,13 @@ trait IndexElastic
                 'geographicLocation' => $locations,
             ];
             $params = [
-                'index' => 'dataprovidercoll',
+                'index' => ECC::ELASTIC_NAME_DATAPROVIDERCOLL,
                 'id' => $id,
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
 
-            $client = ECC::getElasticClient();
-            $client->index($params);
+            ECC::indexDocument($params);
 
         } catch (Exception $e) {
             Auditor::log([
@@ -300,10 +322,11 @@ trait IndexElastic
      * Calls a re-indexing of Elastic search when a data use is created or updated
      *
      * @param string $id The dur id from the DB
+     * @param bool $returnParams Optional flag to return parameters.
      *
-     * @return void
+     * @return null|array
      */
-    public function indexElasticDur(string $id): void
+    public function indexElasticDur(string $id, bool $returnParams = false): null|array
     {
         try {
 
@@ -361,14 +384,18 @@ trait IndexElastic
             ];
 
             $params = [
-                'index' => 'datauseregister',
+                'index' => ECC::ELASTIC_NAME_DUR,
                 'id' => $id,
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
 
-            $client = ECC::getElasticClient();
-            $response = $client->index($params);
+            if($returnParams) {
+                return $params;
+            }
+
+            ECC::indexDocument($params);
+            return null;
 
         } catch (Exception $e) {
             Auditor::log([
@@ -385,10 +412,11 @@ trait IndexElastic
      * Calls a re-indexing of Elastic search when a publication is created or updated
      *
      * @param string $id The publication id from the DB
+     * @param bool $returnParams Optional flag to return parameters.
      *
-     * @return void
+     * @return null|array
      */
-    public function indexElasticPublication(string $id): void
+    public function indexElasticPublication(string $id, bool $returnParams = false): null|array
     {
         try {
             $pubMatch = Publication::where(['id' => $id])->first();
@@ -410,6 +438,13 @@ trait IndexElastic
             // Split string to array of strings
             $publicationTypes = explode(",", $pubMatch['publication_type']);
 
+            // replace any empty strings with Research articles
+            foreach ($publicationTypes as $i => $value) {
+                if ($value === "") {
+                    $publicationTypes[$i] = 'Research articles';
+                }
+            }
+
             $toIndex = [
                 'title' => $pubMatch['paper_title'],
                 'journalName' => $pubMatch['journal_name'],
@@ -421,14 +456,17 @@ trait IndexElastic
                 'datasetLinkTypes' => $datasetLinkTypes,
             ];
             $params = [
-                'index' => 'publication',
+                'index' => ECC::ELASTIC_NAME_PUBLICATION,
                 'id' => $id,
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
+            if($returnParams) {
+                return $params;
+            }
 
-            $client = ECC::getElasticClient();
-            $client->index($params);
+            ECC::indexDocument($params);
+            return null;
 
         } catch (Exception $e) {
             Auditor::log([
@@ -445,9 +483,10 @@ trait IndexElastic
      * Insert tool document into elastic index
      *
      * @param integer $toolId
-     * @return void
+     * @param bool $returnParams Optional flag to return parameters.
+     * @return null|array
      */
-    public function indexElasticTools(int $toolId): void
+    public function indexElasticTools(int $toolId, bool $returnParams = false): null|array
     {
         try {
             $tool = Tool::where('id', $toolId)
@@ -539,17 +578,22 @@ trait IndexElastic
                 'tags' => $tags,
                 'datasetTitles' => $datasetTitles,
                 'dataProviderColl' => $dataProviderColl,
+                'resultsInsights' => $tool['results_insights']
             ];
 
             $params = [
-                'index' => 'tool',
+                'index' => ECC::ELASTIC_NAME_TOOL,
                 'id' => $toolId,
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
 
-            $client = ECC::getElasticClient();
-            $client->index($params);
+            if($returnParams) {
+                return $params;
+            }
+
+            ECC::indexDocument($params);
+            return null;
 
         } catch (Exception $e) {
             Auditor::log([
@@ -560,6 +604,23 @@ trait IndexElastic
 
             throw new Exception($e->getMessage());
         }
+    }
+
+    /**
+     * Reindex in bulk
+     *
+     * @param array $ids
+     * @param callable $indexer Name of single index to call to get parameters
+     * @return void
+     */
+    public function reindexElasticBulk(array $ids, callable $indexer): void
+    {
+        $bulkParams = [];
+        foreach ($ids as $id) {
+            $bulkParams[] = $indexer($id, true);
+        }
+        ECC::indexBulk($bulkParams);
+        unset($bulkParams);
     }
 
     /**
@@ -581,14 +642,42 @@ trait IndexElastic
                 'headers' => 'application/json'
             ];
 
-            $client = ECC::getElasticClient();
-            $response = $client->delete($params);
+            ECC::deleteDocument($params);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
     }
 
+    public function deleteDurFromElastic(string $id)
+    {
+        $this->deleteFromElastic($id, ECC::ELASTIC_NAME_DUR);
+    }
+
+    public function deleteCollectionFromElastic(string $id)
+    {
+        $this->deleteFromElastic($id, ECC::ELASTIC_NAME_COLLECTION);
+    }
+
+    public function deletePublicationFromElastic(string $id)
+    {
+        $this->deleteFromElastic($id, ECC::ELASTIC_NAME_PUBLICATION);
+    }
+
+    public function deleteToolFromElastic(string $id)
+    {
+        $this->deleteFromElastic($id, ECC::ELASTIC_NAME_TOOL);
+    }
+
+    public function deleteDatasetFromElastic(string $id)
+    {
+        $this->deleteFromElastic($id, ECC::ELASTIC_NAME_DATASET);
+    }
+
+    public function deleteDataProviderCollFromElastic(string $id)
+    {
+        $this->deleteFromElastic($id, ECC::ELASTIC_NAME_DATAPROVIDERCOLL);
+    }
 
     public function getMaterialTypes(array $metadata): array|null
     {
@@ -601,9 +690,13 @@ trait IndexElastic
         } else {
             $tissues =  Arr::get($metadata, 'metadata.tissuesSampleCollection', null);
             if (!is_null($tissues)) {
-                $materialTypes = array_map(function ($item) {
-                    return $item['materialType'];
-                }, $tissues);
+                $materialTypes = array_reduce($tissues, function($return, $item) {
+                    if ($item['materialType'] !== 'None/not available') {
+                        $return[] = $item['materialType'];
+                    }
+                    return $return;
+                }, []);
+                $materialTypes = count($materialTypes) === 0 ? null : array_unique($materialTypes);
             }
         }
         return $materialTypes;

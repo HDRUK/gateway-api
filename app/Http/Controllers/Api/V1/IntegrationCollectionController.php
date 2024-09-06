@@ -1269,11 +1269,11 @@ class IntegrationCollectionController extends Controller
 
         foreach ($inKeywords as $keyword) {
             $keywordId = $this->updateOrCreateKeyword($keyword)->id;
-            $this->updateOrCreateDurHasKeywords($collectionId, $keywordId);
+            $this->updateOrCreateCollectionHasKeywords($collectionId, $keywordId);
         }
     }
 
-    private function updateOrCreateDurHasKeywords(int $collectionId, int $keywordId)
+    private function updateOrCreateCollectionHasKeywords(int $collectionId, int $keywordId)
     {
         try {
             return CollectionHasKeyword::updateOrCreate([
@@ -1287,7 +1287,7 @@ class IntegrationCollectionController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception('addKeywordDur :: ' . $e->getMessage());
+            throw new Exception('updateOrCreateCollectionHasKeywords :: ' . $e->getMessage());
         }
     }
 
@@ -1307,7 +1307,7 @@ class IntegrationCollectionController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception('createUpdateKeyword :: ' . $e->getMessage());
+            throw new Exception('updateOrCreateKeyword :: ' . $e->getMessage());
         }
     }
 
@@ -1318,7 +1318,7 @@ class IntegrationCollectionController extends Controller
                 'keyword_id' => $keywordId
             ])->delete();
         } catch (Exception $e) {
-            throw new Exception("deleteKeywordDur :: " . $e->getMessage());
+            throw new Exception("deleteCollectionHasKeywords :: " . $e->getMessage());
         }
     }
 

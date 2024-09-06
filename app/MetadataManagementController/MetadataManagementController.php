@@ -6,6 +6,7 @@ use Exception;
 use App\Exceptions\MMCException;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use App\Models\Library;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 
@@ -167,6 +168,8 @@ class MetadataManagementController
                 $metadata->save();
             }
 
+            Library::where(['dataset_id' => $id])->delete();
+
             unset(
                 $dataset
             );
@@ -175,7 +178,7 @@ class MetadataManagementController
         }
     }
 
-    public function getOnboardingFormHydrated(string $name, string $version, string $dataTypes): array
+    public function getOnboardingFormHydrated(string $name, string $version, ?string $dataTypes): array
     {
         try {
             $queryParams = [

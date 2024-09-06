@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
+use Config;
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Support\Str;
 
 class Team extends Model
 {
@@ -20,19 +23,48 @@ class Team extends Model
     use Prunable;
     use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
-    /**
-     * The "booting" method of the model.
-     *
-     * @return void
-     */
     protected static function boot()
     {
         parent::boot();
 
-        //create a pid for this team
         static::creating(function ($model) {
             $model->pid = (string) Str::uuid();
+
+            $model->validateFields();
         });
+
+        static::updating(function ($model) {
+            $model->validateFields();
+        });
+    }
+
+    /**
+     * Validate fields.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    protected function validateFields()
+    {
+        $mediaUrl = Config::get('services.media.base_url');
+        $escapedMediaUrl = preg_quote($mediaUrl, '/');
+        $allowedExtensions = 'jpeg|jpg|png|gif|bmp|webp';
+        $customPattern = "/^(" . $escapedMediaUrl . ")?\/teams\/[a-zA-Z0-9_-]+\.(?:$allowedExtensions)$/";
+
+        $validator = Validator::make($this->attributes, [
+            'team_logo' => [
+                'nullable', 
+                'string',
+                function ($attribute, $value, $fail) use ($customPattern) {
+                    if ($value && !filter_var($value, FILTER_VALIDATE_URL) && !preg_match($customPattern, $value)) {
+                        $fail('The ' . $attribute . ' must be a valid URL or match the required format.');
+                    }
+                },
+            ],
+        ]);
+    
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
     }
 
     protected $fillable = [

@@ -958,10 +958,10 @@ class Mauro
         //      'data/something/somethingElse/theElementWeWant'
         // equates to:
         //      $obj['data']['something']['somethingElse']['theElementWeWant']
-        $temp = & $obj;
+        $temp = &$obj;
         $tokenPath = explode('/', $route);
         foreach ($tokenPath as $key) {
-            $temp = & $temp[$key];
+            $temp = &$temp[$key];
         }
 
         return $temp;

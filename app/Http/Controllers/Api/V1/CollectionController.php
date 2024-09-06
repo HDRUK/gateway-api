@@ -53,6 +53,34 @@ class CollectionController extends Controller
      *       @OA\Schema(type="string"),
      *       description="Filter collections by name"
      *    ),
+     *    @OA\Parameter(
+     *       name="team_id",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="integer"),
+     *       description="Filter collections by team ID"
+     *    ),
+     *    @OA\Parameter(
+     *       name="user_id",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="integer"),
+     *       description="Filter collections by user ID"
+     *    ),
+     *    @OA\Parameter(
+     *       name="title",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter collections by title"
+     *    ),
+     *    @OA\Parameter(
+     *       name="status",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter collections by status (DRAFT, ACTIVE, ARCHIVED)"
+     *    ),
      *    @OA\Response(
      *       response=200,
      *       description="Success",
@@ -102,7 +130,11 @@ class CollectionController extends Controller
         try {
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
             $name = $request->query('name', null);
+            $filterTitle = $request->query('title', null);
             $filterStatus = $request->query('status', null);
+
+            $teamId = $request->query('team_id', null);
+            $userId = $request->query('user_id', null);
 
             $sort = $request->query('sort', 'name:desc');
             $tmp = explode(":", $sort);
@@ -141,7 +173,24 @@ class CollectionController extends Controller
                 $sort,
                 fn ($query) => $query->orderBy($sortField, $sortDirection)
             )
+            ->when($teamId, function ($query) use ($teamId) {
+                return $query->where('team_id', '=', $teamId);
+            })
+            /*->when($userId, function ($query) use ($userId) {
+                return $query->where('user_id', '=', $userId);
+            }) // - this isnt in the DB and should be! bug reported */
+            ->when($filterTitle, function ($query) use ($filterTitle) {
+                return $query->where('name', 'like', '%' . $filterTitle . '%');
+            })
             ->paginate((int) $perPage, ['*'], 'page');
+
+            $collections->getCollection()->transform(function ($collection) {
+                if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
+                    $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
+                }
+            
+                return $collection;
+            });
 
             $collections->getCollection()->transform(function ($collection) {
                 $userDatasets = $collection->userDatasets;
@@ -636,6 +685,8 @@ class CollectionController extends Controller
             $currentCollection = Collection::where('id', $id)->first();
             if($currentCollection->status === Collection::STATUS_ACTIVE) {
                 $this->indexElasticCollections((int) $id);
+            } else {
+                $this->deleteCollectionFromElastic((int) $id);
             }
 
             Auditor::log([
@@ -940,7 +991,10 @@ class CollectionController extends Controller
                 CollectionHasDur::where(['collection_id' => $id])->delete();
                 CollectionHasKeyword::where(['collection_id' => $id])->delete();
                 CollectionHasPublication::where(['collection_id' => $id])->delete();
+                Collection::where(['id' => $id])->update(['status' => Collection::STATUS_ARCHIVED]);
                 Collection::where(['id' => $id])->delete();
+
+                $this->deleteCollectionFromElastic($id);
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
@@ -985,6 +1039,12 @@ class CollectionController extends Controller
         ->withTrashed()
         ->where(['id' => $collectionId])
         ->first();
+
+        if ($collection) {
+            if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
+                $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
+            }
+        }
 
         // Set the datasets attribute with the latest datasets
         $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
@@ -1411,11 +1471,11 @@ class CollectionController extends Controller
 
         foreach ($inKeywords as $keyword) {
             $keywordId = $this->updateOrCreateKeyword($keyword)->id;
-            $this->updateOrCreateDurHasKeywords($collectionId, $keywordId);
+            $this->updateOrCreateCollectionHasKeywords($collectionId, $keywordId);
         }
     }
 
-    private function updateOrCreateDurHasKeywords(int $collectionId, int $keywordId)
+    private function updateOrCreateCollectionHasKeywords(int $collectionId, int $keywordId)
     {
         try {
             return CollectionHasKeyword::updateOrCreate([
@@ -1429,7 +1489,7 @@ class CollectionController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception('updateOrCreateDurHasKeywords :: ' . $e->getMessage());
+            throw new Exception('updateOrCreateCollectionHasKeywords :: ' . $e->getMessage());
         }
     }
 

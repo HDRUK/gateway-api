@@ -18,6 +18,7 @@ use MetadataManagementController as MMC;
 
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\IntegrationOverride;
+use App\Http\Traits\MetadataOnboard;
 
 use App\Http\Controllers\Controller;
 
@@ -35,6 +36,7 @@ class IntegrationDatasetController extends Controller
 {
     use IndexElastic;
     use IntegrationOverride;
+    use MetadataOnboard;
 
     /**
      * @OA\Get(
@@ -476,7 +478,7 @@ class IntegrationDatasetController extends Controller
             $payload['extra'] = [
                 'id' => 'placeholder',
                 'pid' => 'placeholder',
-                'datasetType' => 'Healthdata',
+                'datasetType' => 'Health and disease',
                 'publisherId' => $team['pid'],
                 'publisherName' => $team['name']
             ];
@@ -521,12 +523,20 @@ class IntegrationDatasetController extends Controller
 
 
                 $publisher = null;
+
+                $revisions = [
+                    [
+                        "url" => env('GATEWAY_URL') . '/dataset' .'/' . $dataset->id . '?version=1.0.0',
+                        'version' => $this->formatVersion(1)
+                    ]
+                ];
+
                 $required = [
                         'gatewayId' => strval($dataset->id), //note: do we really want this in the GWDM?
                         'gatewayPid' => $dataset->pid,
                         'issued' => $dataset->created,
                         'modified' => $dataset->updated,
-                        'revisions' => []
+                        'revisions' => $revisions
                     ];
 
                 // -------------------------------------------------------------------
@@ -742,8 +752,8 @@ class IntegrationDatasetController extends Controller
                 // Determine the last version of metadata
                 $lastVersionNumber = $currDataset->lastMetadataVersionNumber()->version;
 
-                $currentVersionCode = $this->getVersion($lastVersionNumber + 1);
-                $lastVersionCode = $this->getVersion($lastVersionNumber);
+                $currentVersionCode = $this->formatVersion($lastVersionNumber + 1);
+                $lastVersionCode = $this->formatVersion($lastVersionNumber);
 
                 $lastMetadata = $currDataset->lastMetadata();
 
@@ -760,8 +770,8 @@ class IntegrationDatasetController extends Controller
                 //       - url set with a placeholder right now, should be revised before production
                 //       - https://hdruk.atlassian.net/browse/GAT-3392
                 $input['metadata']['metadata']['required']['revisions'][] = [
-                    'url' => 'https://placeholder.blah/' . $currentPid . '?version=' . $lastVersionCode,
-                    'version' => $lastVersionCode
+                    "url" => env('GATEWAY_URL') . '/dataset' .'/' . $id . '?version=' . $currentVersionCode,
+                    'version' => $currentVersionCode
                 ];
 
                 $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');

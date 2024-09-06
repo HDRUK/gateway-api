@@ -184,27 +184,33 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $datasetsModels = Dataset::with('versions')->whereIn('id', $matchedIds)->get()->toArray();
-            foreach ($datasetsArray as $i => $dataset) {
-                $foundFlag = false;
-                foreach ($datasetsModels as $model) {
-                    if ((int)$dataset['_id'] === $model['id']) {
-                        $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
-                        if (strtolower($viewType) === 'mini') {
-                            $datasetsArray[$i]['metadata'] = $this->trimPayload($model['versions'][0]['metadata'], $model);
-                        } else {
-                            $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
-                        }
-                        $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
-                        $datasetsArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model);
-                        $foundFlag = true;
+            foreach ($matchedIds as $i => $matchedId) {
+                $model = Dataset::with('versions', 'team')->where('id', $matchedId)
+                           ->first();
+
+                if(!$model) {
+                    \Log::warning('Elastic found id=' . $matchedId . ' which is not an existing dataset');
+                    if (isset($datasetsArray[$i])) {
+                        unset($datasetsArray[$i]);
                     }
-                }
-                if (!$foundFlag) {
-                    unset($datasetsArray[$i]);
                     continue;
                 }
+                $model = $model->toArray();
+
+                $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
+                if (strtolower($viewType) === 'mini') {
+                    $datasetsArray[$i]['metadata'] = $this->trimPayload($model['versions'][0]['metadata'], $model);
+                } else {
+                    $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
+                }
+                $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
+                $datasetsArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model);
+                $datasetsArray[$i]['team']['id'] = $model['team']['id'];
+                $datasetsArray[$i]['team']['is_question_bank'] = $model['team']['is_question_bank'];
+                $datasetsArray[$i]['team']['name'] = $model['team']['name'];
+                $datasetsArray[$i]['team']['member_of'] = $model['team']['member_of'];
             }
+
 
             if ($download && strtolower($downloadType) === 'list') {
                 Auditor::log([
@@ -224,10 +230,12 @@ class SearchController extends Controller
                 return Excel::download(new DatasetTableExport($datasetsArray), 'datasets.csv');
             }
 
-            $datasetsArraySorted = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
+            $datasetsArray = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $datasetsArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $datasetsArray, $perPage);
+            unset($datasetsArray);
+
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
@@ -523,7 +531,7 @@ class SearchController extends Controller
                 }
             }
 
-            $toolsArraySorted = $this->sortSearchResult($toolsArray, $sortField, $sortDirection);
+            $toolsArray = $this->sortSearchResult($toolsArray, $sortField, $sortDirection);
 
             if ($download) {
                 Auditor::log([
@@ -531,11 +539,13 @@ class SearchController extends Controller
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Search tools export data - list',
                 ]);
-                return Excel::download(new ToolListExport($toolsArraySorted), 'tools.csv');
+                return Excel::download(new ToolListExport($toolsArray), 'tools.csv');
             }
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $toolsArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $toolsArray, $perPage);
+            unset($toolsArray);
+
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
@@ -683,10 +693,12 @@ class SearchController extends Controller
                 }
             }
 
-            $collectionArraySorted = $this->sortSearchResult($collectionArray, $sortField, $sortDirection);
+            $collectionArray = $this->sortSearchResult($collectionArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $collectionArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $collectionArray, $perPage);
+            unset($collectionArray);
+
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
@@ -749,6 +761,16 @@ class SearchController extends Controller
      *              type="string",
      *              enum={"asc", "desc"},
      *              description="Sort direction",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="download",
+     *          in="query",
+     *          description="Download a csv of the results (default: false)",
+     *          example="true",
+     *          @OA\Schema(
+     *              type="boolean",
+     *              example="false",
      *          ),
      *      ),
      *      @OA\Response(
@@ -826,12 +848,14 @@ class SearchController extends Controller
                 $foundFlag = false;
                 foreach ($durModels as $model) {
                     if ((int)$dur['_id'] === $model['id']) {
+                        $datasetTitles = $this->durDatasetTitles($model);
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
                         $durArray[$i]['projectTitle'] = $model['project_title'];
                         $durArray[$i]['organisationName'] = $model['organisation_name'];
                         $durArray[$i]['team'] = $model['team'];
                         $durArray[$i]['mongoObjectId'] = $model['mongo_object_id']; // remove
-                        $durArray[$i]['datasetTitles'] = $this->durDatasetTitles($model);
+                        $durArray[$i]['datasetTitles'] = array_column($datasetTitles, 'title');
+                        $durArray[$i]['datasetIds'] = array_column($datasetTitles, 'id');
                         $durArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $durArray[$i]['toolNames'] = $this->durToolNames($model['id']);
                         $foundFlag = true;
@@ -853,10 +877,12 @@ class SearchController extends Controller
                 return Excel::download(new DataUseExport($durArray), 'dur.csv');
             }
 
-            $durArraySorted = $this->sortSearchResult($durArray, $sortField, $sortDirection);
+            $durArray = $this->sortSearchResult($durArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $durArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $durArray, $perPage);
+            unset($durArray);
+
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
@@ -1091,10 +1117,12 @@ class SearchController extends Controller
                 return Excel::download(new PublicationExport($pubArray), 'publications.csv');
             }
 
-            $pubArraySorted = $this->sortSearchResult($pubArray, $sortField, $sortDirection);
+            $pubArray = $this->sortSearchResult($pubArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $pubArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $pubArray, $perPage);
+            unset($pubArray);
+
             $aggs = collect([
                 'aggregations' => isset($response['aggregations']) ? $response['aggregations'] : [],
                 'elastic_total' => $totalResults,
@@ -1336,10 +1364,12 @@ class SearchController extends Controller
                 return Excel::download(new DataProviderCollExport($dataProviderCollArray), 'dataProviderColl.csv');
             }
 
-            $dataProviderCollArraySorted = $this->sortSearchResult($dataProviderCollArray, $sortField, $sortDirection);
+            $dataProviderCollArray = $this->sortSearchResult($dataProviderCollArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $dataProviderCollArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $dataProviderCollArray, $perPage);
+            unset($dataProviderCollArray);
+
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
@@ -1472,7 +1502,7 @@ class SearchController extends Controller
                     if ((int)$dp['_id'] === $model['id']) {
                         $dataProviderArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $dataProviderArray[$i]['name'] = $model['name'];
-                        $dataProviderArray[$i]['team_logo'] = $model['team_logo'];
+                        $dataProviderArray[$i]['team_logo'] = (is_null($model['team_logo']) || strlen(trim($model['team_logo'])) === 0) ? '' : (filter_var($model['team_logo'], FILTER_VALIDATE_URL) ? $model['team_logo'] : Config::get('services.media.base_url') . $model['team_logo']);
                         $foundFlag = true;
                         break;
                     }
@@ -1492,10 +1522,12 @@ class SearchController extends Controller
                 return Excel::download(new DataProviderExport($dataProviderArray), 'dataProvider.csv');
             }
 
-            $dataProviderArraySorted = $this->sortSearchResult($dataProviderArray, $sortField, $sortDirection);
+            $dataProviderArray = $this->sortSearchResult($dataProviderArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $dataProviderArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $dataProviderArray, $perPage);
+            unset($dataProviderArray);
+
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
@@ -1537,9 +1569,15 @@ class SearchController extends Controller
                 ->first()
                 ->latestVersion()
                 ->metadata;
-            $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+            $datasetTitles[] = [
+                'title' => $metadata['metadata']['summary']['shortTitle'],
+                'id' => $d['id']
+            ];
         }
-        usort($datasetTitles, 'strcasecmp');
+        usort($datasetTitles, function ($a, $b) {
+            return strcasecmp($a['title'], $b['title']);
+        });
+
         return $datasetTitles;
     }
 

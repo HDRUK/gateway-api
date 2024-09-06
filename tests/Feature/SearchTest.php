@@ -113,6 +113,10 @@ class SearchTest extends TestCase
                         'created_at'
                     ],
                     'dataProviderColl',
+                    'team' => [
+                        'id',
+                        'is_question_bank',
+                    ]
                 ],
             ],
             'aggregations',
@@ -204,6 +208,10 @@ class SearchTest extends TestCase
                     'highlight',
                     '_source',
                     'dataProviderColl',
+                    'team' => [
+                        'id',
+                        'is_question_bank',
+                    ]
                 ],
             ],
             'aggregations',

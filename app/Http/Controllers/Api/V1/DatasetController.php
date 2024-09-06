@@ -616,7 +616,6 @@ class DatasetController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-
             throw new Exception($e->getMessage());
         }
     }
@@ -683,7 +682,7 @@ class DatasetController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $elasticIndexing = (isset($input['elastic_indexing']) ? $input['elastic_indexing'] : null);
+            $elasticIndexing = $request->boolean('elastic_indexing', true);
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $teamId = (int)$input['team_id'];
@@ -694,64 +693,69 @@ class DatasetController extends Controller
             $currDataset = Dataset::where('id', $id)->first();
             $currentPid = $currDataset->pid;
 
-            $input['metadata'] = $this->extractMetadata($input['metadata']);
 
-            // Ensure title is present for updating a dataset
-            if (empty($input['metadata']['metadata']['summary']['title'])) {
-                return response()->json([
-                    'message' => 'Title is required to update a dataset',
-                ], 400);
-            }
-
-            $payload = $input['metadata'];
+            $payload = $this->extractMetadata($input['metadata']);
             $payload['extra'] = [
                 "id" => $id,
                 "pid" => $currentPid,
-                "datasetType" => "Healthdata",
+                "datasetType" => "Health and disease",
                 "publisherId" => $team['pid'],
                 "publisherName" => $team['name']
             ];
+
+            $inputSchema = isset($input['metadata']['schemaModel']) ? $input['metadata']['schemaModel'] : null;
+            $inputVersion = isset($input['metadata']['schemaVersion']) ? $input['metadata']['schemaVersion'] : null;
+
+            $submittedMetadata = $input['metadata']['metadata'];
+            $gwdmMetadata = null;
 
             $traserResponse = MMC::translateDataModelType(
                 json_encode($payload),
                 Config::get('metadata.GWDM.name'),
                 Config::get('metadata.GWDM.version'),
-                null,
-                null,
+                $inputSchema, //user can force an input version to avoid traser unknown errors
+                $inputVersion, // as above
                 $request['status'] !== Dataset::STATUS_DRAFT, // Disable input validation if it's a draft
                 $request['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
             );
-
             if ($traserResponse['wasTranslated']) {
-                $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
-                $input['metadata']['metadata'] = $traserResponse['metadata'];
+                //set the gwdm metadata
+                $gwdmMetadata = $traserResponse['metadata'];
+            } else {
+                return response()->json([
+                    'message' => 'metadata is in an unknown format and cannot be processed.',
+                    'details' => $traserResponse,
+                ], 400);
+            }
 
-                // Update the existing dataset parent record with incoming data
-                $updateTime = now();
-                $currDataset->update([
-                    'user_id' => $input['user_id'],
-                    'team_id' => $input['team_id'],
-                    'updated' => $updateTime,
-                    'pid' => $currentPid,
-                    'create_origin' => $input['create_origin'],
-                    'status' => $request['status'],
-                    'is_cohort_discovery' => $isCohortDiscovery,
-                ]);
+            // Update the existing dataset parent record with incoming data
+            $updateTime = now();
+            $currDataset->update([
+                'user_id' => $input['user_id'],
+                'team_id' => $input['team_id'],
+                'updated' => $updateTime,
+                'pid' => $currentPid,
+                'create_origin' => $input['create_origin'],
+                'status' => $request['status'],
+                'is_cohort_discovery' => $isCohortDiscovery,
+            ]);
 
+
+            $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
+            if($request['status'] === Dataset::STATUS_ACTIVE) {
                 // Determine the last version of metadata
-                $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
+
                 if ($currDataset->status !== Dataset::STATUS_DRAFT) {
                     $versionNumber = $versionNumber + 1;
                 }
-                $versionCode = $this->getVersion($versionNumber);
-
+                $versionCode = $this->formatVersion($versionNumber);
                 $lastMetadata = $currDataset->lastMetadata();
 
                 //update the GWDM modified date and version
-                $input['metadata']['metadata']['required']['modified'] = $updateTime;
+                $gwdmMetadata['required']['modified'] = $updateTime;
                 if(version_compare(Config::get('metadata.GWDM.version'), '1.0', '>')) {
                     if(version_compare($lastMetadata['gwdmVersion'], '1.0', '>')) {
-                        $versionCode = $lastMetadata['metadata']['required']['version'];
+                        $gwdmMetadata['required']['version'] = $versionCode;
                     }
                 }
 
@@ -759,60 +763,61 @@ class DatasetController extends Controller
                 // NOTE: Calum 12/1/24
                 //       - url set with a placeholder right now, should be revised before production
                 //       - https://hdruk.atlassian.net/browse/GAT-3392
-                $input['metadata']['metadata']['required']['revisions'][] = [
-                    "url" => "https://placeholder.blah/" . $currentPid . '?version=' . $versionCode,
+                $gwdmMetadata['required']['revisions'][] = [
+                    "url" => env('GATEWAY_URL') . '/dataset' .'/' . $id . '?version=' . $versionCode,
                     "version" => $versionCode
                 ];
-
-                $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
-
-                // Update or create new metadata version based on draft status
-                if ($currDataset->status !== Dataset::STATUS_DRAFT) {
-                    DatasetVersion::create([
-                        'dataset_id' => $currDataset->id,
-                        'metadata' => json_encode($input['metadata']),
-                        'version' => ($versionNumber),
-                    ]);
-                } else {
-                    // Update the existing version
-                    DatasetVersion::where([
-                        'dataset_id' => $currDataset->id,
-                        'version' => $versionNumber,
-                    ])->update([
-                        'metadata' => json_encode($input['metadata']),
-                    ]);
-                }
-
-                // Dispatch term extraction to a subprocess if the dataset moves from draft to active
-                if($request['status'] === Dataset::STATUS_ACTIVE) {
-                    TermExtraction::dispatch(
-                        $currDataset->id,
-                        $versionNumber,
-                        base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
-                        $elasticIndexing
-                    );
-
-                    $this->reindexElastic($currDataset->id);
-                }
-
-                Auditor::log([
-                    'user_id' => $userId,
-                    'team_id' => $teamId,
-                    'action_type' => 'UPDATE',
-                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'Dataset ' . $id . ' with version ' . ($versionNumber + 1) . ' updated',
-                ]);
-
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                    'data' => Dataset::with('versions')->where('id', '=', $currDataset->id)->first(),
-                ], Config::get('statuscodes.STATUS_OK.code'));
-            } else {
-                return response()->json([
-                    'message' => 'metadata is in an unknown format and cannot be processed',
-                    'details' => $traserResponse,
-                ], 400);
             }
+
+            $metadataSaveObject = [
+                'gwdmVersion' =>  Config::get('metadata.GWDM.version'),
+                'metadata' => $gwdmMetadata,
+                'original_metadata' => $submittedMetadata,
+            ];
+
+            // Update or create new metadata version based on draft status
+            if ($currDataset->status !== Dataset::STATUS_DRAFT) {
+                DatasetVersion::create([
+                    'dataset_id' => $currDataset->id,
+                    'metadata' => json_encode($metadataSaveObject),
+                    'version' => $versionNumber,
+                ]);
+            } else {
+                // Update the existing version
+                DatasetVersion::where([
+                    'dataset_id' => $currDataset->id,
+                    'version' => $versionNumber,
+                ])->update([
+                    'metadata' => json_encode($metadataSaveObject),
+                ]);
+            }
+
+            // Dispatch term extraction to a subprocess if the dataset moves from draft to active
+            if($request['status'] === Dataset::STATUS_ACTIVE) {
+                TermExtraction::dispatch(
+                    $currDataset->id,
+                    $versionNumber,
+                    base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
+                    $elasticIndexing
+                );
+            }
+
+            Auditor::log([
+                'user_id' => $userId,
+                'team_id' => $teamId,
+                'action_type' => 'UPDATE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Dataset ' . $id . ' with version ' . ($versionNumber + 1) . ' updated',
+            ]);
+
+            //note Calum 13/08/2024
+            // - ive removed returning the data because i dont know what the hell is going on with
+            //   the show() method and 'withLinks' etc. etc. [see above]
+            // - i think its safe that the PUT method doesnt try to return the updated data
+            // - GET /dataset/{id} should be used to get the latest dataset and metadata
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -1005,7 +1010,7 @@ class DatasetController extends Controller
 
         try {
             MMC::deleteDataset($id);
-            $this->deleteFromElastic($id, 'dataset');
+            $this->deleteDatasetFromElastic($id);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
