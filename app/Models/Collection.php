@@ -105,7 +105,7 @@ class Collection extends Model
     public function getAllDatasetsAttribute()
     {
         return $this->getDatasetsViaDatasetVersion(
-            new CollectionHasDatasetVersion,
+            new CollectionHasDatasetVersion(),
             'collection_id'
         );
     }
