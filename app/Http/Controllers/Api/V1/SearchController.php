@@ -1086,7 +1086,7 @@ class SearchController extends Controller
                 }
             } else {
 
-                $isDoi = ((isset($input['query'])) && ($this->isDoi($input['query']))) ? true : false;
+                $isDoi = ((isset($input['query'])) && ($this->isDoi($input['query'])));
 
                 if ($isDoi) {
                     $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi';
@@ -1744,7 +1744,7 @@ class SearchController extends Controller
 
     private function isDoi(string $query): bool
     {
-        $pattern = '/10.\d{4,9}\/[-._;()\/:A-Z0-9]+$/i';
+        $pattern = '/10.\d{4,9}[-._;()\/:a-zA-Z0-9]+(?=[\s,\/]|$)/i';
         return (bool) preg_match($pattern, $query);
     }
 }
