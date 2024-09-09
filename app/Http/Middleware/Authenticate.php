@@ -3,7 +3,8 @@
 namespace App\Http\Middleware;
 
 use Closure;
-// use Illuminate\Http\Request;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
 
 class Authenticate extends Middleware
@@ -18,8 +19,8 @@ class Authenticate extends Middleware
     {
         $currentUrl = $request->url();
         \Log::info('Authenticate :: ' . json_encode($currentUrl));
-        
-        if (! $request->expectsJson() && strpos($currentUrl, 'logoutme') === false) {
+
+        if (! $request->expectsJson() && strpos($currentUrl, 'oauth/logoutme') === false) {
             return route('login');
         }
     }
