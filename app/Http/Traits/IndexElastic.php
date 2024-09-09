@@ -451,6 +451,7 @@ trait IndexElastic
                 'abstract' => $pubMatch['abstract'],
                 'authors' => $pubMatch['authors'],
                 'publicationDate' => $pubMatch['year_of_publication'],
+                'doi' => $pubMatch['paper_doi'],
                 'datasetTitles' => $datasetTitles,
                 'publicationType' => $publicationTypes,
                 'datasetLinkTypes' => $datasetLinkTypes,

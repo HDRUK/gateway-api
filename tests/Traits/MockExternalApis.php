@@ -857,7 +857,14 @@ trait MockExternalApis
                             "authorString" => "",
                             "journalInfo" => null,
                             "pubYear" => "2024",
-                            "abstractText" => ""
+                            "abstractText" => "",
+                            'fullTextUrlList' => [
+                                'fullTextUrl' => [
+                                    0 => [
+                                        'url' => 'https://doi.org/10.123/abc'
+                                    ]
+                                ]
+                            ]
                         ]
                     ]
                 ]
