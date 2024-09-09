@@ -18,9 +18,6 @@ class Authenticate extends Middleware
     protected function redirectTo($request)
     {
         $currentUrl = $request->url();
-        \Log::info('Authenticate :: ' . $currentUrl);
-        \Log::info('check logoutme 1 :: ' . json_encode(strpos($currentUrl, 'logoutme') === false));
-        \Log::info('check logoutme 2 :: ' . json_encode(strpos($currentUrl, 'logoutme') !== false));
 
         if (! $request->expectsJson() && strpos($currentUrl, 'oauth/logoutme') !== false) {
             return route('login');
