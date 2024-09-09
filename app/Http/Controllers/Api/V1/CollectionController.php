@@ -188,7 +188,7 @@ class CollectionController extends Controller
                 if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
                     $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
                 }
-            
+
                 return $collection;
             });
 
