@@ -27,6 +27,25 @@ class CustomLogoutController extends Controller
             $user = $request->user();
             \Log::info('CustomLogoutController userInfo request :: ' . json_encode($request->user()));
 
+            Auth::guard()->logout();
+            $request->session()->flush();
+        
+            $redirectUrl = env('GATEWAY_URL');
+            return redirect($redirectUrl);
+        } catch (Exception $e) {
+            throw new Exception($e);
+        }
+    }
+
+    public function rquestLogoutOld1(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            \Log::info('CustomLogoutController userInfo :: ' . json_encode($user));
+
+            $user = $request->user();
+            \Log::info('CustomLogoutController userInfo request :: ' . json_encode($request->user()));
+
             // $accessToken = $user->token();
             // \Log::info('CustomLogoutController accessToken request :: ' . json_encode($accessToken));
         
