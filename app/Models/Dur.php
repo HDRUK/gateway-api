@@ -108,7 +108,7 @@ class Dur extends Model
     public function getAllDatasetsAttribute()
     {
         return $this->getDatasetsViaDatasetVersion(
-            new DurHasDatasetVersion,
+            new DurHasDatasetVersion(),
             'dur_id'
         );
     }
