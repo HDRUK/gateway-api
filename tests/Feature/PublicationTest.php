@@ -601,10 +601,32 @@ class PublicationTest extends TestCase
     {
         ECC::shouldReceive("deleteDocument")
             ->times(1);
+        ECC::shouldReceive("indexDocument")->times(1);
+
+        // Create a new publication for this test with ACTIVE status
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'paper_title' => 'Test Paper Title',
+                'authors' => 'Einstein, Albert, Yankovich, Al',
+                'year_of_publication' => '2013',
+                'paper_doi' => '10.1000/182',
+                'publication_type' => 'Paper and such',
+                'journal_name' => 'Something Journal-y here',
+                'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html',
+                'status' => 'ACTIVE'
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(201);
+        $id = $response->decodeResponseJson()['data'];
 
         $countBefore = Publication::count();
 
-        $response = $this->json('DELETE', self::TEST_URL . '/1', [], $this->header);
+        $response = $this->json('DELETE', self::TEST_URL . '/' . $id, [], $this->header);
         $response->assertStatus(200);
 
         $countTrashed = Publication::onlyTrashed()->count();
@@ -613,7 +635,7 @@ class PublicationTest extends TestCase
         $this->assertTrue($countTrashed === 1);
         $this->assertTrue($countAfter < $countBefore);
 
-        $response = $this->json('PATCH', self::TEST_URL . '/1?unarchive', ['status' => 'ACTIVE'], $this->header);
+        $response = $this->json('PATCH', self::TEST_URL . '/' . $id . '?unarchive', ['status' => 'DRAFT'], $this->header);
         $response->assertStatus(200);
 
         $countTrashedAfterUnarchiving = Publication::onlyTrashed()->count();
