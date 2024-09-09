@@ -670,10 +670,11 @@ class PublicationController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $publicationModel = Publication::withTrashed()
+                    ->find($id);
+            $currStatus = $publicationModel->status;
 
             if ($request->has('unarchive')) {
-                $publicationModel = Publication::withTrashed()
-                    ->find($id);
                 if ($request['status'] !== Publication::STATUS_ARCHIVED) {
                     if (in_array($request['status'], [
                         Publication::STATUS_ACTIVE, Publication::STATUS_DRAFT
@@ -695,7 +696,11 @@ class PublicationController extends Controller
                         ]);
                     }
 
-                    $this->indexElasticPublication((int)$id);
+                    if($publicationModel->status === Publication::STATUS_ACTIVE) {
+                        $this->indexElasticPublication($id);
+                    } elseif ($currStatus === Publication::STATUS_ACTIVE) {
+                        $this->deleteFromElastic($id, 'publication');
+                    }
                 }
 
                 return response()->json([
@@ -748,7 +753,7 @@ class PublicationController extends Controller
 
                     // Index the updated publication in Elasticsearch
                     $this->indexElasticPublication((int) $id);
-                } else {
+                } elseif ($currStatus === Publication::STATUS_ACTIVE) {
                     $this->deleteFromElastic($id, 'publication');
                 }
 
@@ -839,11 +844,15 @@ class PublicationController extends Controller
                 DurHasPublication::where(['publication_id' => $id])->delete();
                 CollectionHasPublication::where(['publication_id' => $id])->delete();
 
+                $currStatus = $publication->status;
+
                 $publication->deleted_at = Carbon::now();
                 $publication->status = Publication::STATUS_ARCHIVED;
                 $publication->save();
 
-                $this->deletePublicationFromElastic($id);
+                if ($currStatus === Publication::STATUS_ACTIVE) {
+                    $this->deletePublicationFromElastic($id);
+                }
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
