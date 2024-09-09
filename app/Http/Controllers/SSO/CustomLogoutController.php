@@ -31,7 +31,8 @@ class CustomLogoutController extends Controller
             $request->session()->flush();
         
             $redirectUrl = env('GATEWAY_URL');
-            return redirect($redirectUrl);
+            
+            return redirect()->away($redirectUrl);
         } catch (Exception $e) {
             throw new Exception($e);
         }
