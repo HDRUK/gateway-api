@@ -29,6 +29,7 @@ class CustomLogoutController extends Controller
 
             // Auth::guard()->logout();
             // $request->session()->flush();
+            \Log::info('CustomLogoutController request :: ' . json_encode($request));
         
             $redirectUrl = env('GATEWAY_URL');
             
