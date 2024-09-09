@@ -25,17 +25,10 @@ class CustomUserController extends Controller
             \Log::info('CustomUserController userInfo :: ' . json_encode($user));
             \Log::info('CustomUserController userInfo request :: ' . json_encode($request->user()));
 
-            // return response()->json([
-            //     'id' => $user->id,
-            //     'name' => $user->name,
-            //     'preferred_username' => $user->name,
-            //     'given_name' => $user->firstname,
-            //     'family_name' => $user->lastname,
-            //     'firstname' => $user->firstname,
-            //     'lastname' => $user->family_name,
-            //     'email' => $user->email,
-            //     'rquestroles' => $user->rquestroles, // no idea if is ok
-            // ]);
+            $profile = [
+                $user->firstname,
+                $user->lastname,
+            ];
 
             return response()->json([
                 'id' => $user->id,
@@ -43,6 +36,7 @@ class CustomUserController extends Controller
                 'preferred_username' => $user->name,
                 'firstname' => $user->firstname,
                 'lastname' => $user->lastname,
+                'profile' => $profile,
                 'given_name' => $user->firstname,
                 'family_name' => $user->lastname,
                 'email' => $user->email,

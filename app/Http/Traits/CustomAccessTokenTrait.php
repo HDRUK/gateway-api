@@ -62,6 +62,11 @@ trait CustomAccessTokenTrait
             'user_id' => $this->getUserIdentifier(),
         ])->first();
 
+        $profile = [
+            $user->firstname,
+            $user->lastname,
+        ];
+
         return $this->jwtConfiguration->builder()
             ->permittedFor($this->getClient()->getIdentifier())
             ->identifiedBy($identifiedBy)
@@ -86,6 +91,7 @@ trait CustomAccessTokenTrait
             ->withClaim('family_name', $user->lastname)
             ->withClaim('firstname', $user->firstname)
             ->withClaim('lastname', $user->lastname)
+            ->withClaim('profile', $profile)
             // ->withClaim('rquestroles', $rquestroles)
             ->withClaim('realm_access', $realmAccess)
             ->withClaim('resource_access', $resourceAccess)

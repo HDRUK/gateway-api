@@ -32,6 +32,11 @@ trait CustomIdTokenTrait
         $headers = $token->headers()->all();
         \Log::info('headers :: ' . json_encode($headers));
 
+        $profile = [
+            $claims['family_name'], 
+            $claims['family_name'],
+        ];
+
         // Generate new token with similar claims
         $now = new \DateTimeImmutable();
         $newToken = $config->builder()
@@ -52,6 +57,7 @@ trait CustomIdTokenTrait
                            ->withClaim('preferred_username', $claims['preferred_username'])
                            ->withClaim('firstname', $claims['given_name'])
                            ->withClaim('lastname', $claims['family_name'])
+                           ->withClaim('profile', $profile)
                            ->withClaim('given_name', $claims['given_name'])
                            ->withClaim('family_name', $claims['family_name'])
                            ->withClaim('rquestroles', ['GENERAL_ACCESS', 'SYSTEM_ADMIN'])
