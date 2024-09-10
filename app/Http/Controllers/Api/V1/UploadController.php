@@ -75,6 +75,11 @@ class UploadController extends Controller
                 $fileSystem . '.unscanned'
             );
 
+            // if there is an error, storeAs returns false and does not actually throw...
+            if ($filePath === false){
+                throw $file->getError();
+            }
+
             // write to uploads
             $upload = Upload::create([
                 'filename' => $file->getClientOriginalName(),
