@@ -250,9 +250,6 @@ class RoleSeeder extends Seeder
                     'datasets.update',
 
                     'roles.read',
-
-                    'team-members.update',
-                    'roles.mde.update',
                 ],
             ],
             'custodian.dar.manager' => [
@@ -337,10 +334,6 @@ class RoleSeeder extends Seeder
                     'data-access-applications.status.create',
 
                     'roles.read',
-
-                    'roles.dar-r.update',
-
-                    'team-members.update',
                 ],
             ],
         ];
