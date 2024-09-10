@@ -101,7 +101,8 @@ class ScanFileUpload implements ShouldQueue
                 'storage' => $this->fileSystem,
             ]
         );
-        $isInfected = $response['isInfected'];
+        $responseData = $response->json()
+        $isInfected = $responseData['isInfected'];
 
         CloudLogger::write('Malware scan completed');
 
@@ -109,7 +110,7 @@ class ScanFileUpload implements ShouldQueue
         if ($isInfected) {
             $upload->update([
                 'status' => 'FAILED',
-                'error' => $response['viruses']
+                'error' => $responseData['viruses']
             ]);
             Storage::disk($this->fileSystem . '.unscanned')
                 ->delete($upload->file_location);
