@@ -77,7 +77,7 @@ class UploadController extends Controller
 
             // if there is an error, storeAs returns false and does not actually throw...
             if ($filePath === false){
-                throw $file->getError();
+                throw new Exception($file->getError());
             }
 
             // write to uploads
