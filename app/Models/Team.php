@@ -86,6 +86,7 @@ class Team extends Model
         'is_question_bank',
         'team_logo',
         'introduction',
+        'dar_modal_content',
     ];
 
     /**
