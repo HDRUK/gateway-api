@@ -1,0 +1,1452 @@
+_id,body
+5f8437a3b7dec2a83e8cceba,"Organisations and individuals wanting to access health care data use certain kinds of data to show they meet strict data governance standards by completing our application process.
+
+Before you begin the application process please review the information available on our website - https://www.insight.hdrhub.org/researcher-area - this provides an overview of the data access process and provides the criteria that the Data Trust Advisory Board uses to assess applications.
+
+After reviewing the website we ask that you contact us to discuss your requirements using the ‘Make an enquiry’ messaging function or emailing us at enquiries@insight.hdrhub.org. The submitted data request form will be the basis of the data sharing agreement (DSA) and it's therefore important to have pre-discussions and ensure its completeness prior to submission. Not all enquiries progress to the application stage - it may be that your requirement can be satisfied through existing published data or you may need to discuss your proposal.
+
+## Submitting an application
+Once you are ready to make a formal application, complete the data access request form by clicking the button ‘Request Access’. Please read through the pre-application checklist and confirm that you have read the guidance from the data custodian.
+
+We require you to complete all relevant sections of the request form in full and to attach all relevant supporting information and have signatures embedded into the document where applicable. Please complete the application using the application guidance embedded in the form (click on the '?').
+ 
+Some important elements of an application that often require further discussion include: technical feasibility - whether we can provide what is being requested, the purpose for wanting the data, including what benefits will be yielded for health and social care in the UK. We would encourage you to contact us early to support you with this. The application will be referred back to you if more information is required in any of these areas. You will work closely with our team to capture the necessary detail in your application.
+ 
+Double-check everything before submitting, you will be able to edit your responses after submission, but please speak to the data custodian before making any updates as this could impact the time it takes to review your application.
+ 
+Both you and the data custodian will receive an email with a copy of the information submitted using this form. Once you have submitted, the data custodian will review the form and might still ask for some additional information. 
+ 
+Once accepted by the data custodian we will then begin the internal review process.
+ 
+## Information Governance
+## We need to make sure we only supply sensitive patient level data to organisations that look after it according to Information Governance (IG) requirements, and use it to improve health and care services.
+
+Applicants are asked to demonstrate appropriate Information Governance training before access to data will be granted. Currently, we require you to confirm you have read:
+* The National Data Guardian (NDG) Standards for Healthcare Data
+* The Data Security Standard Overall Guide – (DSP) Toolkit
+* National Data Guardian for Healthcare (CDG) Review: Review of Data Security, Consent and Opt-Out assets
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+And, undertaken appropriate training such as:
+* Data Security and Awareness Level 1 Training Run by e-Learning for Healthcare
+* MRC Regulatory Support Centre: Research Data and Confidentiality e-learning. (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+* MRC’s Research, GDPR and confidentiality - what you really need to know
+* We will accept a certificate of completion for the accompanying quiz accessible here (https://byglearning.co.uk/mrcrsc-lms/course/index.php?categoryid=1).
+* Safe User of Research data Environments (SURE) Training course run by ONS, the UK data service, and the Administrative Data Research Network.
+
+Please note this is not an exhaustive list so if you have undertaken other Information Governance training that covers similar topics to the listed courses you will be asked to provide the course content within your application.
+
+Information governance training must be current. Training must be updated every 3 years and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+
+## Access
+The Data Sharing Agreement is electronically signed by the data custodian. The data, with patient opt-outs upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted. The data are made available through the appropriate Trusted Research Environment.
+
+## Costs of data access
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.
+
+Prior to submitting your application, please also ensure you have approval from the sponsoring organisation who will be named on the licensing agreement.
+"
+6048a783a89bdc3443823333,"**Applying to utilise the National Neonatal Research Database (NNRD & NNRD-AI)**
+
+We have a duty to make sure we only provide access to patient level data to organisations that meet Information Governance requirements, and intend to use the data to improve health and care services and generate public benefit. Organisations and individuals wanting to use the National Neonatal Research Database (NNRD & NNRD-AI) are therefore asked to show they meet data security and information governance standards by completing this application process.
+
+If you are thinking of using the NNRD/NNRD-AI for research or health services audit or evaluations, please read the following information carefully. We, as do most data custodians, operate on a cost recovery model as we have no core funding. Costs are estimated using a transparent model defined by Imperial College London and based on the amount of data requested, the time required to process and administer your request, and a contribution towards maintaining the National Neonatal Research Database. In order to provide a provisional cost, we will also need to know the study sponsor, and the likely funder.
+
+## **Step 1. Starting the Process**
+
+To start the process, contact the NNRD manager at the Neonatal Data Analysis Unit at Imperial College London by clicking the ‘Make an enquiry’ function and providing a brief description of the project and data you require. P**lease ensure you have checked that the NNRD/NNRD-AI contains the data you require by reviewing the data specification.** You will receive a message explaining next steps; if you do not receive a message within 5 days please contact ndau@imperial.ac.uk, directly.
+
+In your enquiry, please be sure to answer the following questions:
+•    Please specify the data items required (using the NNRD/NNRD-AI Data Dictionary)
+•    Do you require any derived items? If so, can you provide the definition/s you would like to use?
+•    How many (complete or part) years of NNRD/NNRD-AI data are required?
+•    Please specify the start date and end date for the period of data required.
+•    From which countries do you require data (England; Wales; Scotland)?
+•    Does your study involve de-identified data, or consented data?
+•    Will you require a single or a multiple data extraction?
+
+## **Step 2. Submitting an application**
+
+If you receive a message asking you to complete the data access request form, click the ‘Request Access’ button. Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance. The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+We require you to complete all sections which are marked mandatory and to upload supporting information and signatures where applicable. Important elements of an application that often require further discussion include:
+
+•    The legal basis under which you are accessing the data
+•    Feasibility: does the NNRD/NNRD-AI contain what you need
+•    The purpose for wanting the data, including what public benefit will be yielded
+
+Please note that even after an application is submitted, the data custodian may still request additional information. Please contact the NNRD manager at the Neonatal Data Analysis Unit if you are uncertain about any aspect of the form.
+
+## **Step 3. NNRD Steering Board Evaluation**
+
+The NNRD Office will evaluate the proposal. The Steering Board is notified of all requests and is formally asked to approve all commercially sponsor studies. The NNRD Office considers proposals at an  early stage to be certain that the research question can be answered using the NNRD or NNRD-AI, and has public benefit.
+
+## **Step 4. Regulatory Approvals**
+
+If the proposal is approved, the applicant is required to obtain all regulatory approvals. Please be advised that:
+•    All research projects involving the NNRD/NNRD-AI require UK National Research Ethics Committee approval
+•    The use of Scottish neonatal data requires additional approval from the Public Benefit and Privacy Panel for Health and Social Care
+•    HRA approval (“R&D approval”) is only required from Chelsea and Westminster NHS Foundation Trust as the host organisation of the NNRD/NNRD-AI and is not required from each NHS Trust contributing data to the study through the NNRD/NNRD-AI
+•    If patient identifiers without patient consent are necessary, the applicant must obtain specific additional approval from the Health Research Authority Confidentiality Advisory Group
+
+## **Step 5. Agreement of Neonatal Units**
+
+Agreement is sought from all neonatal units contributing data to the NNRD/NNRD-AI for all research studies. Neonatal units are notified by the NNRD manager on behalf of the applicant to invite participation and request agreement. In the case of service evaluations, all neonatal units are notified of the request by the lead organisation. These processes ensure that neonatal units are able to i) decline inclusion of data from their neonatal unit if they wish, and ii) are fully informed about national initiatives.
+
+## **Step 6. Data Sharing Agreement**
+
+Once all approvals are received, applicants are asked to sign a Data Sharing Agreement that specifies the purpose for which the data are to be used, confirmation that the costs will be met, and the acknowledgements to be made, including that all contributing Trusts, Networks, Lead Clinicians, and other contributing members of the UK Neonatal Collaborative, as appropriate, are acknowledged in all outputs.
+
+## **Step 7. Data Extraction and Analysis**
+
+Upon receipt of the Data Sharing Agreement, the NNRD team will proceed with data extraction (and analyses if requested) and provide an estimation of the time to completion.
+
+**Additional information**
+We recommend data users undertake an Information Governance accreditation course; e.g.:
+•    Safe Researcher Training course and online assessment; run by ONS, the UK Data Service or the Administrative Data Research UK partners.
+•    MRC Research, GDPR and confidentiality: what you really need to know"
+5f8992a97150a1b050be0712,"# How to request access
+
+Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit.
+
+Before you begin completing the application form, please contact us to discuss your requirements using the ‘Make an enquiry’ messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+When you're ready to proceed with an application click the button ‘Request Access’.
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+# Submitting an application
+
+Once you’re ready to make a formal application, complete the data access request form by clicking the ‘Request Access’ button.
+
+Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance from the data custodian. 
+
+The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable.
+
+Important elements of an application that often require further discussion include:
+
+* the legal basis under which you access the data
+* technical feasibility - whether we can provide what is being requested
+* the purpose for wanting the data, including what public benefits will be yielded (e.g., for health and social care in the UK)
+
+We recommend you work closely with our teams to capture the necessary detail in your application.  The application will be referred back to you if more information is required.
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+# Information Governance
+
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme.
+
+Accreditation requires successful completion of the following course (or course of equivalent status).  
+
+* Safe User of Research data Environments (SURE) Training course – run by ONS, the UK Data Service, the Administrative Data Research Network
+
+The SURE Training will also satisfy the requirements of most custodians of health data that are not covered by DEA.  The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+
+* MRC’s Research, GDPR and confidentiality – what you really need to know
+
+We will accept a certificate of completion for the accompanying quiz accessible here
+
+* MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+
+# Access
+
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+The data are made available through the appropriate Trusted Research Environment.
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Currently access to data for research facilitated by the HBS can only be provided through physical attendance at the Safe Haven in Belfast. However, work is underway to use Swansea University’s “Secure eResearch Platform” (SeRP) as the platform for managing HBS projects going forward. The process of engaging with data controllers around this has commenced and it is planned that in the very near future researchers will be able to access HBS data remotely through this platform.
+
+Please also note that HBS only provides anonymised or pseudonymised data for research purposes. For proposals involving identifiable data please contact the HBS and we will put you in touch with the relevant data controllers. There is no secondary use legislation in Northern Ireland currently so access to identifiable data without consent is not usually possible.
+
+# Costs of data access
+
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.  The costs for National Core Studies projects will be covered separately. 
+
+# Useful resources
+
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+
+Office for National Statistics https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme 
+
+SAIL Databank: https://saildatabank.com/application-process/two-stage-process/ 
+
+Public Health Scotland: https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/
+
+NHS Digital https://digital.nhs.uk/services/data-access-request-service-dars 
+
+Health and Social Care Northern Ireland http://www.hscbusiness.hscni.net/services/2454.htm"
+5f3f98068af2ef61552e1d75,"# How to request access
+
+Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit.
+
+Before you begin completing the application form, please contact us to discuss your requirements using the ‘Make an enquiry’ messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+When you're ready to proceed with an application click the button ‘Request Access’.
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+# Submitting an application
+
+Once you’re ready to make a formal application, complete the data access request form by clicking the ‘Request Access’ button.
+
+Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance from the data custodian. 
+
+The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable.
+
+Important elements of an application that often require further discussion include:
+
+* the legal basis under which you access the data
+* technical feasibility - whether we can provide what is being requested
+* the purpose for wanting the data, including what public benefits will be yielded (e.g., for health and social care in the UK)
+
+We recommend you work closely with our teams to capture the necessary detail in your application.  The application will be referred back to you if more information is required.
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+# Information Governance
+
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme.
+
+Accreditation requires successful completion of the following course (or course of equivalent status).  
+
+* Safe User of Research data Environments (SURE) Training course – run by ONS, the UK Data Service, the Administrative Data Research Network
+
+The SURE Training will also satisfy the requirements of most custodians of health data that are not covered by DEA.  The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+
+* MRC’s Research, GDPR and confidentiality – what you really need to know
+
+We will accept a certificate of completion for the accompanying quiz accessible here
+
+* MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+
+# Access
+
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+The data are made available through the appropriate Trusted Research Environment.
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Currently access to data for research facilitated by the HBS can only be provided through physical attendance at the Safe Haven in Belfast. However, work is underway to use Swansea University’s “Secure eResearch Platform” (SeRP) as the platform for managing HBS projects going forward. The process of engaging with data controllers around this has commenced and it is planned that in the very near future researchers will be able to access HBS data remotely through this platform.
+
+Please also note that HBS only provides anonymised or pseudonymised data for research purposes. For proposals involving identifiable data please contact the HBS and we will put you in touch with the relevant data controllers. There is no secondary use legislation in Northern Ireland currently so access to identifiable data without consent is not usually possible.
+
+# Costs of data access
+
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.  The costs for National Core Studies projects will be covered separately. 
+
+# Useful resources
+
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+
+Office for National Statistics https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme 
+
+SAIL Databank: https://saildatabank.com/application-process/two-stage-process/ 
+
+Public Health Scotland: https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/
+
+NHS Digital https://digital.nhs.uk/services/data-access-request-service-dars 
+
+Health and Social Care Northern Ireland http://www.hscbusiness.hscni.net/services/2454.htm"
+5f89662f7150a1b050be0710,"# How to request access
+Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit.
+
+Before you begin completing the application form, please contact us to discuss your requirements using the ‘Make an enquiry’ messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+When you're ready to proceed with an application click the button ‘Request Access’.
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+
+# Submitting an application
+Once you’re ready to make a formal application, complete the data access request form by clicking the ‘Request Access’ button.
+
+Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance from the data custodian. 
+
+The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable. 
+Important elements of an application that often require further discussion include:
+* the legal basis under which you access the data
+* technical feasibility - whether we can provide what is being requested
+* the purpose for wanting the data, including what public benefit will be yielded (e.g., for health and social care in the UK)
+
+We recommend you work closely with our teams to capture the necessary detail in your application.  The application will be referred back to you if more information is required.
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+# Information Governance
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme.
+
+Accreditation requires successful completion of the following course (or course of equivalent status).  
+
+* Safe Researcher Training course and online assessment – run by ONS, the UK Data Service or the Administrative Data Research UK partners.
+If the researcher has previously undertaken and passed the Safe User of Research data Environments (SURE) training course, then this would also qualify.  
+The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+* MRC’s Research, GDPR and confidentiality – what you really need to know
+We will accept a certificate of completion for the accompanying quiz accessible here
+* MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+ 
+# Access
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+The data are made available through the appropriate Trusted Research Environment.
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Following investment from HDR UK the Honest Broker Service have launched a collaboration with Swansea University who host the SAIL Databank and can now offer remote access to anonymised data for approved projects via a Health and Social Care Northern Ireland tenancy of the UK Secure e-Research Platform (UK SeRP). 
+
+# Costs of data access
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.  The costs for National Core Studies projects will be covered separately. 
+
+# Useful resources
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+Office for National Statistics https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme 
+SAIL Databank: https://saildatabank.com/application-process/two-stage-process/ 
+Public Health Scotland: https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/
+NHS Digital https://digital.nhs.uk/services/data-access-request-service-dars 
+Health and Social Care Northern Ireland http://www.hscbusiness.hscni.net/services/2454.htm"
+5f7b1a2bce9f65e6ed83e7da,"# How to request access
+
+Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+# **_We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit. test_**
+
+Before you begin completing the application form, please contact us to discuss your requirements using the ‘Make an enquiry’ messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+When you're ready to proceed with an application click the button ‘Request Access’.
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+# Submitting an application
+
+Once you’re ready to make a formal application, complete the data access request form by clicking the ‘Request Access’ button.
+
+Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance from the data custodian.
+
+The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable.
+
+Important elements of an application that often require further discussion include:
+
+- the legal basis under which you access the data
+- technical feasibility - whether we can provide what is being requested
+- the purpose for wanting the data, including what public benefits will be yielded (e.g., for health and social care in the UK)
+
+We recommend you work closely with our teams to capture the necessary detail in your application.  The application will be referred back to you if more information is required.
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+# Information Governance
+
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme.
+
+Accreditation requires successful completion of the following course (or course of equivalent status).
+
+- Safe User of Research data Environments (SURE) Training course – run by ONS, the UK Data Service, the Administrative Data Research Network
+
+The SURE Training will also satisfy the requirements of most custodians of health data that are not covered by DEA.  The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+
+- MRC’s Research, GDPR and confidentiality – what you really need to know
+
+We will accept a certificate of completion for the accompanying quiz accessible here
+
+- MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+
+# Access
+
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+The data are made available through the appropriate Trusted Research Environment.
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Currently access to data for research facilitated by the HBS can only be provided through physical attendance at the Safe Haven in Belfast. However, work is underway to use Swansea University’s “Secure eResearch Platform” (SeRP) as the platform for managing HBS projects going forward. The process of engaging with data controllers around this has commenced and it is planned that in the very near future researchers will be able to access HBS data remotely through this platform.
+
+Please also note that HBS only provides anonymised or pseudonymised data for research purposes. For proposals involving identifiable data please contact the HBS and we will put you in touch with the relevant data controllers. There is no secondary use legislation in Northern Ireland currently so access to identifiable data without consent is not usually possible.
+
+# Costs of data access
+
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.  The costs for National Core Studies projects will be covered separately.
+
+# Useful resources
+
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+
+Office for National Statistics https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme
+
+SAIL Databank: https://saildatabank.com/application-process/two-stage-process/
+
+Public Health Scotland: https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/
+
+NHS Digital https://digital.nhs.uk/services/data-access-request-service-dars
+
+Health and Social Care Northern Ireland http://www.hscbusiness.hscni.net/services/2454.htm"
+5fc12be363eaab9e68dae76e,"# How to request access
+
+Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit.
+
+Before you begin completing the application form, please contact us to discuss your requirements using the ‘Make an enquiry’ messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+When you're ready to proceed with an application click the button ‘Request Access’.
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+# Submitting an application
+
+Once you’re ready to make a formal application, complete the data access request form by clicking the ‘Request Access’ button.
+
+Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance from the data custodian. 
+
+The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable.
+
+Important elements of an application that often require further discussion include:
+
+* the legal basis under which you access the data
+* technical feasibility - whether we can provide what is being requested
+* the purpose for wanting the data, including what public benefits will be yielded (e.g., for health and social care in the UK)
+
+We recommend you work closely with our teams to capture the necessary detail in your application.  The application will be referred back to you if more information is required.
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+# Information Governance
+
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme.
+
+Accreditation requires successful completion of the following course (or course of equivalent status).  
+
+* Safe User of Research data Environments (SURE) Training course – run by ONS, the UK Data Service, the Administrative Data Research Network
+
+The SURE Training will also satisfy the requirements of most custodians of health data that are not covered by DEA.  The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+
+* MRC’s Research, GDPR and confidentiality – what you really need to know
+
+We will accept a certificate of completion for the accompanying quiz accessible here
+
+* MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+
+# Access
+
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+The data are made available through the appropriate Trusted Research Environment.
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Currently access to data for research facilitated by the HBS can only be provided through physical attendance at the Safe Haven in Belfast. However, work is underway to use Swansea University’s “Secure eResearch Platform” (SeRP) as the platform for managing HBS projects going forward. The process of engaging with data controllers around this has commenced and it is planned that in the very near future researchers will be able to access HBS data remotely through this platform.
+
+Please also note that HBS only provides anonymised or pseudonymised data for research purposes. For proposals involving identifiable data please contact the HBS and we will put you in touch with the relevant data controllers. There is no secondary use legislation in Northern Ireland currently so access to identifiable data without consent is not usually possible.
+
+# Costs of data access
+
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.  The costs for National Core Studies projects will be covered separately. 
+
+# Useful resources
+
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+
+Office for National Statistics https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme 
+
+SAIL Databank: https://saildatabank.com/application-process/two-stage-process/ 
+
+Public Health Scotland: https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/
+
+NHS Digital https://digital.nhs.uk/services/data-access-request-service-dars 
+
+Health and Social Care Northern Ireland http://www.hscbusiness.hscni.net/services/2454.htm"
+600f270ea006832002953674,"# How to request access
+
+Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit.
+
+Before you begin completing the application form, please contact us to discuss your requirements using the &#39;Make an enquiry&#39; messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+When you&#39;re ready to proceed with an application click the button &#39;Request Access&#39;.
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+**Submitting an application**
+
+Once you&#39;re ready to make a formal application, complete the data access request form by clicking the &#39;Request Access&#39; button.
+
+Please read through the pre-application checklist in the &#39;About this application&#39; page and confirm that you have read the guidance from the data custodian.
+
+The application form is structured following the Five Safe model ([https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/](https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/)). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form. You will find application guidance embedded in the form.
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable.
+
+Important elements of an application that often require further discussion include:
+
+\* the legal basis under which you access the data
+
+\* technical feasibility - whether we can provide what is being requested
+
+\* the purpose for wanting the data, including what public benefit will be yielded (e.g., for health and social care in the UK)
+
+We recommend you work closely with our teams to capture the necessary detail in your application. The application will be referred back to you if more information is required.
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+**Information Governance**
+
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit[https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme](https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme).
+
+Accreditation requires successful completion of the following course (or course of equivalent status).
+
+\* Safe Researcher Training course and online assessment – run by ONS, the UK Data Service or the Administrative Data Research UK partners.
+
+If the researcher has previously undertaken and passed the Safe User of Research data Environments (SURE) training course, then this would also qualify.
+
+The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+
+\* MRC&#39;s Research, GDPR and confidentiality – what you really need to know
+
+We will accept a certificate of completion for the accompanying quiz [accessible here](https://byglearning.co.uk/mrcrsc-lms/course/index.php?categoryid=1)
+
+\* MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+
+**Access**
+
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+The data are made available through the appropriate Trusted Research Environment.
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Currently access to data for research facilitated by the HBS can only be provided through physical attendance at the Safe Haven in Belfast. However, work is underway to use Swansea University&#39;s &quot;Secure eResearch Platform&quot; (SeRP) as the platform for managing HBS projects going forward. The process of engaging with data controllers around this has commenced and it is planned that in the very near future researchers will be able to access HBS data remotely through this platform.
+
+Please also note that HBS only provides anonymised or pseudonymised data for research purposes. For proposals involving identifiable data please contact the HBS and we will put you in touch with the relevant data controllers. There is no secondary use legislation in Northern Ireland currently so access to identifiable data without consent is not usually possible.
+
+**Costs of data access**
+
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase. The costs for National Core Studies projects will be covered separately.
+
+**Useful resources**
+
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+
+Office for National Statistics [https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme](https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme)
+
+SAIL Databank:[https://saildatabank.com/application-process/two-stage-process/](https://saildatabank.com/application-process/two-stage-process/)
+
+Public Health Scotland:[https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/](https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/)
+
+NHS Digital [https://digital.nhs.uk/services/data-access-request-service-dars](https://digital.nhs.uk/services/data-access-request-service-dars)
+
+Health and Social Care Northern Ireland [http://www.hscbusiness.hscni.net/services/2454.htm](http://www.hscbusiness.hscni.net/services/2454.htm)"
+607db9c3e1f9d3704d570cf2,"# How to request access
+Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit.
+
+Before you begin completing the application form, please contact us to discuss your requirements using the ‘Make an enquiry’ messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+When you're ready to proceed with an application click the button ‘Request Access’.
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+
+# Submitting an application
+Once you’re ready to make a formal application, complete the data access request form by clicking the ‘Request Access’ button.
+
+Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance from the data custodian. 
+
+The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable. 
+Important elements of an application that often require further discussion include:
+* the legal basis under which you access the data
+* technical feasibility - whether we can provide what is being requested
+* the purpose for wanting the data, including what public benefit will be yielded (e.g., for health and social care in the UK)
+
+We recommend you work closely with our teams to capture the necessary detail in your application.  The application will be referred back to you if more information is required.
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+# Information Governance
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme.
+
+Accreditation requires successful completion of the following course (or course of equivalent status).  
+
+* Safe Researcher Training course and online assessment – run by ONS, the UK Data Service or the Administrative Data Research UK partners.
+If the researcher has previously undertaken and passed the Safe User of Research data Environments (SURE) training course, then this would also qualify.  
+The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+* MRC’s Research, GDPR and confidentiality – what you really need to know
+We will accept a certificate of completion for the accompanying quiz accessible here
+* MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+ 
+# Access
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+The data are made available through the appropriate Trusted Research Environment.
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Following investment from HDR UK the Honest Broker Service have launched a collaboration with Swansea University who host the SAIL Databank and can now offer remote access to anonymised data for approved projects via a Health and Social Care Northern Ireland tenancy of the UK Secure e-Research Platform (UK SeRP). 
+
+# Costs of data access
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.  The costs for National Core Studies projects will be covered separately. 
+
+# Useful resources
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+Office for National Statistics https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme 
+SAIL Databank: https://saildatabank.com/application-process/two-stage-process/ 
+Public Health Scotland: https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/
+NHS Digital https://digital.nhs.uk/services/data-access-request-service-dars 
+Health and Social Care Northern Ireland http://www.hscbusiness.hscni.net/services/2454.htm"
+607db9c3e1f9d3704d570d06,"Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+
+
+We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit.
+
+
+
+Before you begin completing the application form, please contact us to discuss your requirements using the ‘Make an enquiry’ messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+
+
+When you're ready to proceed with an application click the button ‘Request Access’.
+
+
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+
+
+
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+
+
+## Submitting an application
+
+Once you’re ready to make a formal application, complete the data access request form by clicking the ‘Request Access’ button.
+
+Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance from the data custodian.
+
+
+
+The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable.
+
+
+
+Important elements of an application that often require further discussion include:
+
+* the legal basis under which you access the data
+
+* technical feasibility - whether we can provide what is being requested
+
+* the purpose for wanting the data, including what public benefit will be yielded (e.g., for health and social care in the UK)
+
+
+
+We recommend you work closely with our teams to capture the necessary detail in your application.  The application will be referred back to you if more information is required.
+
+
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+
+
+## Information Governance
+
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme.
+
+Accreditation requires successful completion of the following course (or course of equivalent status).
+
+
+
+* Safe Researcher Training course and online assessment – run by ONS, the UK Data Service or the Administrative Data Research UK partners.
+
+If the researcher has previously undertaken and passed the Safe User of Research data Environments (SURE) training course, then this would also qualify.
+
+The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+
+* MRC’s Research, GDPR and confidentiality – what you really need to know
+
+We will accept a certificate of completion for the accompanying quiz accessible here
+
+* MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+
+
+Please note that this course is not currently available but if you have already completed the training it is still accepted as Approved training.
+
+
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+
+
+
+## Access
+
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+
+
+The data are made available through the appropriate Trusted Research Environment.
+
+
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Currently access to data for research facilitated by the HBS can only be provided through physical attendance at the Safe Haven in Belfast. However, work is underway to use Swansea University’s “Secure eResearch Platform” (SeRP) as the platform for managing HBS projects going forward. The process of engaging with data controllers around this has commenced and it is planned that in the very near future researchers will be able to access HBS data remotely through this platform.
+
+
+
+Please also note that HBS only provides anonymised or pseudonymised data for research purposes. For proposals involving identifiable data please contact the HBS and we will put you in touch with the relevant data controllers. There is no secondary use legislation in Northern Ireland currently so access to identifiable data without consent is not usually possible.
+
+
+
+## Costs of data access
+
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.  The costs for National Core Studies projects will be covered separately.
+
+
+
+## Useful resources
+
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+
+Office for National Statistics https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme
+
+SAIL Databank: https://saildatabank.com/application-process/two-stage-process/
+
+Public Health Scotland: https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/
+
+NHS Digital https://digital.nhs.uk/services/data-access-request-service-dars
+
+Health and Social Care Northern Ireland http://www.hscbusiness.hscni.net/services/2454.htm
+"
+607db9c6e1f9d3704d570d93,"# How to request access
+Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit.
+
+Before you begin completing the application form, please contact us to discuss your requirements using the ‘Make an enquiry’ messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+When you're ready to proceed with an application click the button ‘Request Access’.
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+
+# Submitting an application
+Once you’re ready to make a formal application, complete the data access request form by clicking the ‘Request Access’ button.
+
+Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance from the data custodian. 
+
+The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable. 
+Important elements of an application that often require further discussion include:
+* the legal basis under which you access the data
+* technical feasibility - whether we can provide what is being requested
+* the purpose for wanting the data, including what public benefit will be yielded (e.g., for health and social care in the UK)
+
+We recommend you work closely with our teams to capture the necessary detail in your application.  The application will be referred back to you if more information is required.
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+# Information Governance
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme.
+
+Accreditation requires successful completion of the following course (or course of equivalent status).  
+
+* Safe Researcher Training course and online assessment – run by ONS, the UK Data Service or the Administrative Data Research UK partners.
+If the researcher has previously undertaken and passed the Safe User of Research data Environments (SURE) training course, then this would also qualify.  
+The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+* MRC’s Research, GDPR and confidentiality – what you really need to know
+We will accept a certificate of completion for the accompanying quiz accessible here
+* MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+ 
+# Access
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+The data are made available through the appropriate Trusted Research Environment.
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Following investment from HDR UK the Honest Broker Service have launched a collaboration with Swansea University who host the SAIL Databank and can now offer remote access to anonymised data for approved projects via a Health and Social Care Northern Ireland tenancy of the UK Secure e-Research Platform (UK SeRP). 
+
+# Costs of data access
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.  The costs for National Core Studies projects will be covered separately. 
+
+# Useful resources
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+Office for National Statistics https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme 
+SAIL Databank: https://saildatabank.com/application-process/two-stage-process/ 
+Public Health Scotland: https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/
+NHS Digital https://digital.nhs.uk/services/data-access-request-service-dars 
+Health and Social Care Northern Ireland http://www.hscbusiness.hscni.net/services/2454.htm"
+609bc283781cac1dbab2a385,"# How to request access
+Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit.
+
+Before you begin completing the application form, please contact us to discuss your requirements using the ‘Make an enquiry’ messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+When you're ready to proceed with an application click the button ‘Request Access’.
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+
+# Submitting an application
+Once you’re ready to make a formal application, complete the data access request form by clicking the ‘Request Access’ button.
+
+Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance from the data custodian. 
+
+The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable. 
+Important elements of an application that often require further discussion include:
+* the legal basis under which you access the data
+* technical feasibility - whether we can provide what is being requested
+* the purpose for wanting the data, including what public benefit will be yielded (e.g., for health and social care in the UK)
+
+We recommend you work closely with our teams to capture the necessary detail in your application.  The application will be referred back to you if more information is required.
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+# Information Governance
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme.
+
+Accreditation requires successful completion of the following course (or course of equivalent status).  
+
+* Safe Researcher Training course and online assessment – run by ONS, the UK Data Service or the Administrative Data Research UK partners.
+If the researcher has previously undertaken and passed the Safe User of Research data Environments (SURE) training course, then this would also qualify.  
+The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+* MRC’s Research, GDPR and confidentiality – what you really need to know
+We will accept a certificate of completion for the accompanying quiz accessible here
+* MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+ 
+# Access
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+The data are made available through the appropriate Trusted Research Environment.
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Following investment from HDR UK the Honest Broker Service have launched a collaboration with Swansea University who host the SAIL Databank and can now offer remote access to anonymised data for approved projects via a Health and Social Care Northern Ireland tenancy of the UK Secure e-Research Platform (UK SeRP). 
+
+# Costs of data access
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.  The costs for National Core Studies projects will be covered separately. 
+
+# Useful resources
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+Office for National Statistics https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme 
+SAIL Databank: https://saildatabank.com/application-process/two-stage-process/ 
+Public Health Scotland: https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/
+NHS Digital https://digital.nhs.uk/services/data-access-request-service-dars 
+Health and Social Care Northern Ireland http://www.hscbusiness.hscni.net/services/2454.htm"
+60a6313d7dd392a16e228a94,"# How to request access
+Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit.
+
+Before you begin completing the application form, please contact us to discuss your requirements using the ‘Make an enquiry’ messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+When you're ready to proceed with an application click the button ‘Request Access’.
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+
+# Submitting an application
+Once you’re ready to make a formal application, complete the data access request form by clicking the ‘Request Access’ button.
+
+Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance from the data custodian. 
+
+The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable. 
+Important elements of an application that often require further discussion include:
+* the legal basis under which you access the data
+* technical feasibility - whether we can provide what is being requested
+* the purpose for wanting the data, including what public benefit will be yielded (e.g., for health and social care in the UK)
+
+We recommend you work closely with our teams to capture the necessary detail in your application.  The application will be referred back to you if more information is required.
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+# Information Governance
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme.
+
+Accreditation requires successful completion of the following course (or course of equivalent status).  
+
+* Safe Researcher Training course and online assessment – run by ONS, the UK Data Service or the Administrative Data Research UK partners.
+If the researcher has previously undertaken and passed the Safe User of Research data Environments (SURE) training course, then this would also qualify.  
+The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+* MRC’s Research, GDPR and confidentiality – what you really need to know
+We will accept a certificate of completion for the accompanying quiz accessible here
+* MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+ 
+# Access
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+The data are made available through the appropriate Trusted Research Environment.
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Following investment from HDR UK the Honest Broker Service have launched a collaboration with Swansea University who host the SAIL Databank and can now offer remote access to anonymised data for approved projects via a Health and Social Care Northern Ireland tenancy of the UK Secure e-Research Platform (UK SeRP). 
+
+# Costs of data access
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.  The costs for National Core Studies projects will be covered separately. 
+
+# Useful resources
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+Office for National Statistics https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme 
+SAIL Databank: https://saildatabank.com/application-process/two-stage-process/ 
+Public Health Scotland: https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/
+NHS Digital https://digital.nhs.uk/services/data-access-request-service-dars 
+Health and Social Care Northern Ireland http://www.hscbusiness.hscni.net/services/2454.htm"
+60cb538a7018342af889e974,"# How to request access
+Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit.
+
+Before you begin completing the application form, please contact us to discuss your requirements using the ‘Make an enquiry’ messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+When you're ready to proceed with an application click the button ‘Request Access’.
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+
+# Submitting an application
+Once you’re ready to make a formal application, complete the data access request form by clicking the ‘Request Access’ button.
+
+Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance from the data custodian. 
+
+The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable. 
+Important elements of an application that often require further discussion include:
+* the legal basis under which you access the data
+* technical feasibility - whether we can provide what is being requested
+* the purpose for wanting the data, including what public benefit will be yielded (e.g., for health and social care in the UK)
+
+We recommend you work closely with our teams to capture the necessary detail in your application.  The application will be referred back to you if more information is required.
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+# Information Governance
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme.
+
+Accreditation requires successful completion of the following course (or course of equivalent status).  
+
+* Safe Researcher Training course and online assessment – run by ONS, the UK Data Service or the Administrative Data Research UK partners.
+If the researcher has previously undertaken and passed the Safe User of Research data Environments (SURE) training course, then this would also qualify.  
+The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+* MRC’s Research, GDPR and confidentiality – what you really need to know
+We will accept a certificate of completion for the accompanying quiz accessible here
+* MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+ 
+# Access
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+The data are made available through the appropriate Trusted Research Environment.
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Following investment from HDR UK the Honest Broker Service have launched a collaboration with Swansea University who host the SAIL Databank and can now offer remote access to anonymised data for approved projects via a Health and Social Care Northern Ireland tenancy of the UK Secure e-Research Platform (UK SeRP). 
+
+# Costs of data access
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.  The costs for National Core Studies projects will be covered separately. 
+
+# Useful resources
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+Office for National Statistics https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme 
+SAIL Databank: https://saildatabank.com/application-process/two-stage-process/ 
+Public Health Scotland: https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/
+NHS Digital https://digital.nhs.uk/services/data-access-request-service-dars 
+Health and Social Care Northern Ireland http://www.hscbusiness.hscni.net/services/2454.htm"
+61603974c8c15ee90b768546,"# How to request access
+Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit.
+
+Before you begin completing the application form, please contact us to discuss your requirements using the ‘Make an enquiry’ messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+When you're ready to proceed with an application click the button ‘Request Access’.
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+
+# Submitting an application
+Once you’re ready to make a formal application, complete the data access request form by clicking the ‘Request Access’ button.
+
+Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance from the data custodian. 
+
+The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable. 
+Important elements of an application that often require further discussion include:
+* the legal basis under which you access the data
+* technical feasibility - whether we can provide what is being requested
+* the purpose for wanting the data, including what public benefit will be yielded (e.g., for health and social care in the UK)
+
+We recommend you work closely with our teams to capture the necessary detail in your application.  The application will be referred back to you if more information is required.
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+# Information Governance
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme.
+
+Accreditation requires successful completion of the following course (or course of equivalent status).  
+
+* Safe Researcher Training course and online assessment – run by ONS, the UK Data Service or the Administrative Data Research UK partners.
+If the researcher has previously undertaken and passed the Safe User of Research data Environments (SURE) training course, then this would also qualify.  
+The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+* MRC’s Research, GDPR and confidentiality – what you really need to know
+We will accept a certificate of completion for the accompanying quiz accessible here
+* MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+ 
+# Access
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+The data are made available through the appropriate Trusted Research Environment.
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Following investment from HDR UK the Honest Broker Service have launched a collaboration with Swansea University who host the SAIL Databank and can now offer remote access to anonymised data for approved projects via a Health and Social Care Northern Ireland tenancy of the UK Secure e-Research Platform (UK SeRP). 
+
+# Costs of data access
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.  The costs for National Core Studies projects will be covered separately. 
+
+# Useful resources
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+Office for National Statistics https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme 
+SAIL Databank: https://saildatabank.com/application-process/two-stage-process/ 
+Public Health Scotland: https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/
+NHS Digital https://digital.nhs.uk/services/data-access-request-service-dars 
+Health and Social Care Northern Ireland http://www.hscbusiness.hscni.net/services/2454.htm"
+6214e1ff39af25bbdff24338,"# How to request access
+Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit.
+
+Before you begin completing the application form, please contact us to discuss your requirements using the ‘Make an enquiry’ messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+When you're ready to proceed with an application click the button ‘Request Access’.
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+
+# Submitting an application
+Once you’re ready to make a formal application, complete the data access request form by clicking the ‘Request Access’ button.
+
+Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance from the data custodian. 
+
+The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable. 
+Important elements of an application that often require further discussion include:
+* the legal basis under which you access the data
+* technical feasibility - whether we can provide what is being requested
+* the purpose for wanting the data, including what public benefit will be yielded (e.g., for health and social care in the UK)
+
+We recommend you work closely with our teams to capture the necessary detail in your application.  The application will be referred back to you if more information is required.
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+# Information Governance
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme.
+
+Accreditation requires successful completion of the following course (or course of equivalent status).  
+
+* Safe Researcher Training course and online assessment – run by ONS, the UK Data Service or the Administrative Data Research UK partners.
+If the researcher has previously undertaken and passed the Safe User of Research data Environments (SURE) training course, then this would also qualify.  
+The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+* MRC’s Research, GDPR and confidentiality – what you really need to know
+We will accept a certificate of completion for the accompanying quiz accessible here
+* MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+ 
+# Access
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+The data are made available through the appropriate Trusted Research Environment.
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Following investment from HDR UK the Honest Broker Service have launched a collaboration with Swansea University who host the SAIL Databank and can now offer remote access to anonymised data for approved projects via a Health and Social Care Northern Ireland tenancy of the UK Secure e-Research Platform (UK SeRP). 
+
+# Costs of data access
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.  The costs for National Core Studies projects will be covered separately. 
+
+# Useful resources
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+Office for National Statistics https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme 
+SAIL Databank: https://saildatabank.com/application-process/two-stage-process/ 
+Public Health Scotland: https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/
+NHS Digital https://digital.nhs.uk/services/data-access-request-service-dars 
+Health and Social Care Northern Ireland http://www.hscbusiness.hscni.net/services/2454.htm"
+6229d9ed19d9bc228c5b2b45,"# How to request access
+Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit.
+
+Before you begin completing the application form, please contact us to discuss your requirements using the ‘Make an enquiry’ messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+When you're ready to proceed with an application click the button ‘Request Access’.
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+
+# Submitting an application
+Once you’re ready to make a formal application, complete the data access request form by clicking the ‘Request Access’ button.
+
+Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance from the data custodian. 
+
+The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable. 
+Important elements of an application that often require further discussion include:
+* the legal basis under which you access the data
+* technical feasibility - whether we can provide what is being requested
+* the purpose for wanting the data, including what public benefit will be yielded (e.g., for health and social care in the UK)
+
+We recommend you work closely with our teams to capture the necessary detail in your application.  The application will be referred back to you if more information is required.
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+# Information Governance
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme.
+
+Accreditation requires successful completion of the following course (or course of equivalent status).  
+
+* Safe Researcher Training course and online assessment – run by ONS, the UK Data Service or the Administrative Data Research UK partners.
+If the researcher has previously undertaken and passed the Safe User of Research data Environments (SURE) training course, then this would also qualify.  
+The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+* MRC’s Research, GDPR and confidentiality – what you really need to know
+We will accept a certificate of completion for the accompanying quiz accessible here
+* MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+ 
+# Access
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+The data are made available through the appropriate Trusted Research Environment.
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Following investment from HDR UK the Honest Broker Service have launched a collaboration with Swansea University who host the SAIL Databank and can now offer remote access to anonymised data for approved projects via a Health and Social Care Northern Ireland tenancy of the UK Secure e-Research Platform (UK SeRP). 
+
+# Costs of data access
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.  The costs for National Core Studies projects will be covered separately. 
+
+# Useful resources
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+Office for National Statistics https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme 
+SAIL Databank: https://saildatabank.com/application-process/two-stage-process/ 
+Public Health Scotland: https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/
+NHS Digital https://digital.nhs.uk/services/data-access-request-service-dars 
+Health and Social Care Northern Ireland http://www.hscbusiness.hscni.net/services/2454.htm"
+630793c96d4914bed2157142,"# **Requesting data from Cancer Research Horizons - Data and AI**
+
+Organisations and individuals submitting data access requests must show clear evidence of:
+
+a) public and patient benefit
+
+b) strict data security and information governance standards and
+
+c) suitability of the dataset requested to address the scientific question.
+
+Please read through the data access request form and prepare any relevant materials for your
+application. To note, all individuals wishing to contribute to an application must sign up for their own HDR UK account. If you have any questions or require any further information, please contact Cancer Research Horizons using the ‘Make an enquiry’ messaging function.
+
+**Overview of application process**
+
+1. Once you’re ready to make a formal application,
+complete the data access request form by clicking the ‘Request Access’ button.
+2. The application form follows the Five Safes model ([https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/](https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/)). You will find application guidance embedded in the form (viewed by selectingthe ‘?’ button next to each question). All applicants are **strongly advised to read the guidance associated with questions as specific information may be required for certain datasets.**
+3. Once submitted, your access request will be reviewed by Cancer Research Horizons. **Please note that your access request will also be reviewed by a patient and public panel as well as a data access committee. Both panels will be under CDAs to keep any shared information strictly confidential. If you wish to set up a CDA with Cancer Research Horizons specifically before submitting an application, please use the 'Make an enquiry' messaging function and a member of the team will be in touch to organise this.** 
+4. Successful applicants will be contacted by Cancer Research Horizons to discuss terms of data sharing and licensing agreements. Please note, additional information may be requested as part of these advanced discussions e.g., to assess GDPR requirements where required.
+
+**Approvals needed**
+
+Evidence of data security and information governance experience is critical for sharing of CRH datasets however, CRH does not mandate a specific form of training or accreditation given the variation across countries. As such, multiple types will be considered. Further information can be found in the guidance sections of relevant questions in the application form.
+
+**Cost of access**
+
+Company access to data will be under a commercial contract on payment of a ‘fair value’ (see below), to be determined through negotiations with Cancer Research Horizons.
+
+This will enable the ongoing support for the database curation and any surplus will be shared with the research consortium and sample providers based on their overall contribution to the creation of the database and reinvested into the funding of cancer research."
+630797136d4914bed2157156,"# How to request access
+
+Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+# **_We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit. test_**
+
+Before you begin completing the application form, please contact us to discuss your requirements using the ‘Make an enquiry’ messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+When you're ready to proceed with an application click the button ‘Request Access’.
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+# Submitting an application
+
+Once you’re ready to make a formal application, complete the data access request form by clicking the ‘Request Access’ button.
+
+Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance from the data custodian.
+
+The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable.
+
+Important elements of an application that often require further discussion include:
+
+- the legal basis under which you access the data
+- technical feasibility - whether we can provide what is being requested
+- the purpose for wanting the data, including what public benefits will be yielded (e.g., for health and social care in the UK)
+
+We recommend you work closely with our teams to capture the necessary detail in your application.  The application will be referred back to you if more information is required.
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+# Information Governance
+
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme.
+
+Accreditation requires successful completion of the following course (or course of equivalent status).
+
+- Safe User of Research data Environments (SURE) Training course – run by ONS, the UK Data Service, the Administrative Data Research Network
+
+The SURE Training will also satisfy the requirements of most custodians of health data that are not covered by DEA.  The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+
+- MRC’s Research, GDPR and confidentiality – what you really need to know
+
+We will accept a certificate of completion for the accompanying quiz accessible here
+
+- MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+
+# Access
+
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+The data are made available through the appropriate Trusted Research Environment.
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Currently access to data for research facilitated by the HBS can only be provided through physical attendance at the Safe Haven in Belfast. However, work is underway to use Swansea University’s “Secure eResearch Platform” (SeRP) as the platform for managing HBS projects going forward. The process of engaging with data controllers around this has commenced and it is planned that in the very near future researchers will be able to access HBS data remotely through this platform.
+
+Please also note that HBS only provides anonymised or pseudonymised data for research purposes. For proposals involving identifiable data please contact the HBS and we will put you in touch with the relevant data controllers. There is no secondary use legislation in Northern Ireland currently so access to identifiable data without consent is not usually possible.
+
+# Costs of data access
+
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.  The costs for National Core Studies projects will be covered separately.
+
+# Useful resources
+
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+
+Office for National Statistics https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme
+
+SAIL Databank: https://saildatabank.com/application-process/two-stage-process/
+
+Public Health Scotland: https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/
+
+NHS Digital https://digital.nhs.uk/services/data-access-request-service-dars
+
+Health and Social Care Northern Ireland http://www.hscbusiness.hscni.net/services/2454.htm"
+631f0a5e3d9c601ee3cdc4be,"# How to request access
+
+Organisations and individuals wanting to use certain kinds of data need to show they meet strict data security and information governance standards by completing our application process.
+
+# **_We need to make sure we only provide access to sensitive patient level data to organisations that meet Information Governance (IG) requirements, and use it to improve health and care services and generate public benefit. test_**
+
+Before you begin completing the application form, please contact us to discuss your requirements using the ‘Make an enquiry’ messaging function. Not all enquiries progress to the application stage, for example it may be that your requirement can be satisfied through existing published data.
+
+When you're ready to proceed with an application click the button ‘Request Access’.
+
+Once your data access request application has been approved, de-identified data will be made available in one of the appropriate Trusted Research Environments.
+Please note: if you are requesting data as part of a National Core Study, please contact the data custodian before submitting an application.
+
+# Submitting an application
+
+Once you’re ready to make a formal application, complete the data access request form by clicking the ‘Request Access’ button.
+
+Please read through the pre-application checklist in the ‘About this application’ page and confirm that you have read the guidance from the data custodian.
+
+The application form is structured following the Five Safe model (https://blog.ons.gov.uk/2017/01/27/the-five-safes-data-privacy-at-ons/). Once you start your application you will be presented with five pages (Safe people, Safe projects, Safe data, Safe settings, Safe outputs) and you will be able to scroll through the pages to view the entire form.  You will find application guidance embedded in the form.
+
+We require you to complete all relevant sections and to upload supporting information and signatures where applicable.
+
+Important elements of an application that often require further discussion include:
+
+- the legal basis under which you access the data
+- technical feasibility - whether we can provide what is being requested
+- the purpose for wanting the data, including what public benefits will be yielded (e.g., for health and social care in the UK)
+
+We recommend you work closely with our teams to capture the necessary detail in your application.  The application will be referred back to you if more information is required.
+
+Please note that once an application is submitted, the data custodian might still ask for additional information. For instance, to access data from Public Health Scotland you will need to work with the relevant team to transfer the information over to the Public Benefit and Privacy Panel for review.
+
+# Information Governance
+
+If you are requesting access to data through the Office for National Statistics Secure Research Service or access to administrative data within the scope of the Digital Economy Act (DEA) through other DEA accredited processors, you need to be a DEA accredited researcher. For more information visit https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme.
+
+Accreditation requires successful completion of the following course (or course of equivalent status).
+
+- Safe User of Research data Environments (SURE) Training course – run by ONS, the UK Data Service, the Administrative Data Research Network
+
+The SURE Training will also satisfy the requirements of most custodians of health data that are not covered by DEA.  The following training courses are also widely accepted as evidence of appropriate Information Governance training where this is required before access to data is granted.
+
+- MRC’s Research, GDPR and confidentiality – what you really need to know
+
+We will accept a certificate of completion for the accompanying quiz accessible here
+
+- MRC Regulatory Support Centre: Research Data and Confidentiality e-learning (https://byglearning.com/mrcrsc-lms/course/index.php?categoryid=1)
+
+If you have undertaken other Information Governance training that covers similar topics to the listed courses and wish this to be accepted as evidence, you will be asked to provide the course content with your application.
+
+Information governance training must be current. Training must be updated every 3 years (5 years for DEA accreditation) and if expiry of your training certificate occurs within the time period of your study, you will be required to renew your training.
+
+# Access
+
+The Data Sharing Agreement is electronically signed by the data custodian.
+
+The data, with patient objections upheld as appropriate, is produced, reviewed and signed-off by the data custodian, or the data service access is granted.
+
+The data are made available through the appropriate Trusted Research Environment.
+
+The Honest Broker Service (HBS) is the Trusted Research Environment for Northern Ireland. Currently access to data for research facilitated by the HBS can only be provided through physical attendance at the Safe Haven in Belfast. However, work is underway to use Swansea University’s “Secure eResearch Platform” (SeRP) as the platform for managing HBS projects going forward. The process of engaging with data controllers around this has commenced and it is planned that in the very near future researchers will be able to access HBS data remotely through this platform.
+
+Please also note that HBS only provides anonymised or pseudonymised data for research purposes. For proposals involving identifiable data please contact the HBS and we will put you in touch with the relevant data controllers. There is no secondary use legislation in Northern Ireland currently so access to identifiable data without consent is not usually possible.
+
+# Costs of data access
+
+We operate on a Cost recovery model. We will request payment from you to cover the cost of administering and processing your request. Costs will be discussed during the pre-submission enquiry phase.  The costs for National Core Studies projects will be covered separately.
+
+# Useful resources
+
+Further information about the pre-submission process and information governance review for each data custodian can be found below:
+
+Office for National Statistics https://www.ons.gov.uk/aboutus/whatwedo/statistics/requestingstatistics/approvedresearcherscheme
+
+SAIL Databank: https://saildatabank.com/application-process/two-stage-process/
+
+Public Health Scotland: https://www.isdscotland.org/products-and-services/edris/use-of-the-national-safe-haven/
+
+NHS Digital https://digital.nhs.uk/services/data-access-request-service-dars
+
+Health and Social Care Northern Ireland http://www.hscbusiness.hscni.net/services/2454.htm"
+65411b41bf97d64a3699352a,"# **Data access requests**
+
+Please complete the form and then please send a copy to :
+
+**s.brophy@swansea.ac.uk** AND **m.j.seaborne@swansea.ac.uk** AND **h.e.jones@swansea.ac.uk**
+
+We can then help support your access to the MIREDA dataset
+
+Thank you very much "

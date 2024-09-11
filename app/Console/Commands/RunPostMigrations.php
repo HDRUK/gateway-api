@@ -77,6 +77,10 @@ class RunPostMigrations extends Command
                 'arguments' => [],
             ], // add dataset version linkages
             [
+                'command' => 'app:team-dar-modal-content',
+                'arguments' => [],
+            ], // add team dar modal content
+            [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'datasets',
