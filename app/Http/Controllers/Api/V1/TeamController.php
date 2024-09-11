@@ -296,7 +296,7 @@ class TeamController extends Controller
     {
         try {
             // Get this Team
-            $dp = Team::select('id', 'name', 'is_provider', 'introduction')->where([
+            $dp = Team::select('id', 'name', 'is_provider', 'introduction', 'team_logo')->where([
                 'id' => $id,
                 'enabled' => 1,
             ])->first();
@@ -348,6 +348,7 @@ class TeamController extends Controller
                 'data' => [
                     'id' => $dp->id,
                     'is_provider' => $dp->is_provider,
+                    'team_logo' => $dp->team_logo,
                     'name' => $dp->name,
                     'introduction' => $dp->introduction,
                     'datasets' => $this->datasets,
