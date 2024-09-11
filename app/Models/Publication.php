@@ -42,6 +42,7 @@ class Publication extends Model
         'url',
         'mongo_id',
         'owner_id',
+        'team_id',
         'status',
     ];
 
