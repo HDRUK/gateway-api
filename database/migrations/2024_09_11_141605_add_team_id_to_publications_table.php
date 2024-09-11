@@ -11,7 +11,7 @@ return new class () extends Migration {
     public function up(): void
     {
         Schema::table('publications', function (Blueprint $table) {
-            $table->bigInteger('team_id')->unsigned();
+            $table->bigInteger('team_id')->nullable();
         });
     }
 

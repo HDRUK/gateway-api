@@ -84,6 +84,10 @@ class CreatePublication extends BaseFormRequest
                 'nullable',
                 'string',
             ],
+            'team_id' => [
+                'integer',
+                'exists:teams,id',
+            ],
             'status' => [
                 'string',
                 'in:ACTIVE,ARCHIVED,DRAFT',

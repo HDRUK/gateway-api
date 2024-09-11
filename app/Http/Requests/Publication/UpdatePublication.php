@@ -90,6 +90,10 @@ class UpdatePublication extends BaseFormRequest
                 'nullable',
                 'string',
             ],
+            'team_id' => [
+                'integer',
+                'exists:teams,id',
+            ],
             'status' => [
                 'sometimes',
                 'string',
