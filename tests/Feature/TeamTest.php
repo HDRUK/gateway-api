@@ -217,6 +217,7 @@ class TeamTest extends TestCase
                     'id',
                     'name',
                     'is_provider',
+                    'team_logo',
                     'introduction',
                     'datasets',
                     'durs',
