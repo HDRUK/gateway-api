@@ -61,8 +61,8 @@ class UploadController extends Controller
             $fileSystem = env('SCANNING_FILESYSTEM_DISK', 'local_scan');
             $entityFlag = $request->query('entity_flag', 'none');
             $teamId = $request->query('team_id', null);
-            $inputSchema = $request->query("input_schema", null);
-            $inputVersion = $request->query("input_version", null);
+            $inputSchema = $request->query('input_schema', null);
+            $inputVersion = $request->query('input_version', null);
             $elasticIndexing = $request->boolean('elastic_indexing', true);
             $datasetId = $request->query('dataset_id', null);
             $collectionId = $request->query('collection_id', null);
@@ -74,6 +74,11 @@ class UploadController extends Controller
                 $storedFilename,
                 $fileSystem . '.unscanned'
             );
+
+            // if there is an error, storeAs returns false and does not actually throw...
+            if ($filePath === false) {
+                throw new Exception($file->getError());
+            }
 
             // write to uploads
             $upload = Upload::create([
@@ -158,6 +163,10 @@ class UploadController extends Controller
     {
         try {
             $upload = Upload::findOrFail($id);
+
+            if ($upload['structural_metadata']) {
+                $upload['structural_metadata'] = json_decode($upload['structural_metadata']);
+            }
 
             Auditor::log([
                 'action_type' => 'GET',

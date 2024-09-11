@@ -77,6 +77,10 @@ class RunPostMigrations extends Command
                 'arguments' => [],
             ], // add dataset version linkages
             [
+                'command' => 'app:team-dar-modal-content',
+                'arguments' => [],
+            ], // add team dar modal content
+            [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'datasets',
@@ -119,6 +123,10 @@ class RunPostMigrations extends Command
                     'sleep' => $sleep,
                 ],
             ],
+            [
+                'command' => 'app:data-custodian-network-post-migration',
+                'arguments' => [],
+            ], // update data custodian network with details and relations with teams
         ];
 
         foreach ($commands as $commandInfo) {

@@ -403,6 +403,7 @@ class TeamController extends Controller
      *              @OA\Property(property="is_provider", type="boolean", example="1"),
      *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *              @OA\Property(property="introduction", type="string", example="info about the team"),
+     *              @OA\Property(property="dar_modal_content", type="string", example="dar info"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -543,6 +544,7 @@ class TeamController extends Controller
      *              @OA\Property(property="is_provider", type="boolean", example="1"),
      *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *              @OA\Property(property="introduction", type="string", example="info about the team"),
+     *              @OA\Property(property="dar_modal_content", type="string", example="dar info"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -576,6 +578,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="is_provider", type="boolean", example="1"),
      *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *                  @OA\Property(property="introduction", type="string", example="info about the team"),
+     *                  @OA\Property(property="dar_modal_content", type="string", example="dar info"),
      *              )
      *          ),
      *      ),
@@ -611,6 +614,7 @@ class TeamController extends Controller
                 'url',
                 'introduction',
                 'team_logo',
+                'dar_modal_content',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -690,6 +694,7 @@ class TeamController extends Controller
      *              @OA\Property(property="is_provider", type="boolean", example="1"),
      *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *              @OA\Property(property="introduction", type="string", example="info about the team"),
+     *              @OA\Property(property="dar_modal_content", type="string", example="dar info"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -723,6 +728,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="is_provider", type="boolean", example="1"),
      *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *                  @OA\Property(property="introduction", type="string", example="info about the team"),
+     *                  @OA\Property(property="dar_modal_content", type="string", example="dar info"),
      *              )
      *          ),
      *      ),
@@ -758,6 +764,7 @@ class TeamController extends Controller
                 'url',
                 'introduction',
                 'team_logo',
+                'dar_modal_content',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);

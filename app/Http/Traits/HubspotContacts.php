@@ -36,7 +36,8 @@ trait HubspotContacts
             ($user->contact_feedback) ?? $commPreference[] = UserContactPreference::USER_FEEDBACK->value;
             ($user->contact_news) ?? $commPreference[] = UserContactPreference::USER_NEWS->value;
 
-            $email = trim(strtolower($user->email));
+            $email = ($user->provider === 'open-athens' || $user->preferred_email === 'secondary') ? $user->secondary_email : $user->email;
+            $email = trim(strtolower($email));
 
             $cohortRequest = CohortRequest::where([
                 'user_id' => $user->id,

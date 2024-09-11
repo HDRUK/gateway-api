@@ -8,7 +8,6 @@ use Config;
 use Exception;
 
 use App\Models\Collection;
-use App\Models\Dataset;
 use App\Models\Team;
 use App\Models\Upload;
 use App\Imports\ImportDur;
@@ -94,7 +93,7 @@ class ScanFileUpload implements ShouldQueue
 
         CloudLogger::write('Malware scan initiated');
 
-        $response = Http::connectTimeout(60)->post(
+        $response = Http::timeout(60)->post(
             env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file',
             [
                 'file' => $filePath,
@@ -145,7 +144,7 @@ class ScanFileUpload implements ShouldQueue
                     $this->createDatasetFromFile($loc, $upload);
                     break;
                 case 'structural-metadata-upload':
-                    $this->attachStructuralMetadata($loc, $upload, $this->datasetId);
+                    $this->attachStructuralMetadata($loc, $upload);
                     break;
                 case 'teams-media':
                     $this->uploadTeamMedia($loc, $upload, $this->teamId);
@@ -276,11 +275,10 @@ class ScanFileUpload implements ShouldQueue
         }
     }
 
-    private function attachStructuralMetadata(string $loc, Upload $upload, int $datasetId)
+    private function attachStructuralMetadata(string $loc, Upload $upload)
     {
         try {
             $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
-            $dataset = Dataset::findOrFail($datasetId);
             $import = Excel::toArray(new ImportStructuralMetadata(), $path);
 
             $structuralMetadata = array();
@@ -299,18 +297,12 @@ class ScanFileUpload implements ShouldQueue
                 }
             }
 
-            $version = $dataset->latestVersion();
-            $metadata = $version->metadata;
-            $metadata['metadata']['structuralMetadata'] = $structuralMetadata;
-            $version->update([
-                'metadata' => $metadata
-            ]);
-
+            // Check structural metadata against schema using traser
             $upload->update([
                 'status' => 'PROCESSED',
                 'file_location' => $loc,
-                'entity_type' => 'dataset',
-                'entity_id' => $datasetId
+                'entity_type' => 'structural_metadata',
+                'structural_metadata' => $structuralMetadata
             ]);
             CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
         } catch (Exception $e) {

@@ -73,6 +73,7 @@ class TeamTest extends TestCase
                         'is_provider',
                         'url',
                         'introduction',
+                        'dar_modal_content',
                     ],
                 ],
             ]);
@@ -129,6 +130,7 @@ class TeamTest extends TestCase
                 'users' => [],
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
                 'introduction' => fake()->sentence(),
+                'dar_modal_content' => fake()->sentence(),
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -172,6 +174,7 @@ class TeamTest extends TestCase
                     'is_provider',
                     'url',
                     'introduction',
+                    'dar_modal_content',
                 ],
             ]);
 
@@ -276,6 +279,7 @@ class TeamTest extends TestCase
                 'users' => [],
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
                 'introduction' => fake()->sentence(),
+                'dar_modal_content' => fake()->sentence(),
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -359,6 +363,7 @@ class TeamTest extends TestCase
                 'users' => [],
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
                 'introduction' => fake()->sentence(),
+                'dar_modal_content' => fake()->sentence(),
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -396,6 +401,7 @@ class TeamTest extends TestCase
                 'is_question_bank' => 1,
                 'users' => [],
                 'introduction' => fake()->sentence(),
+                'dar_modal_content' => fake()->sentence(),
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -481,6 +487,7 @@ class TeamTest extends TestCase
                 'users' => [],
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
                 'introduction' => fake()->sentence(),
+                'dar_modal_content' => fake()->sentence(),
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -522,6 +529,7 @@ class TeamTest extends TestCase
                 'is_question_bank' => 0,
                 'users' => [],
                 'introduction' => fake()->sentence(),
+                'dar_modal_content' => fake()->sentence(),
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
