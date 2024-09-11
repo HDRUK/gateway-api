@@ -86,6 +86,7 @@ class EditPublication extends BaseFormRequest
             'team_id' => [
                 'nullable',
                 'integer',
+                'exists:teams,id',
             ],
             'status' => [
                 'sometimes',

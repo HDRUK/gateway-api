@@ -87,6 +87,7 @@ class CreatePublication extends BaseFormRequest
             'team_id' => [
                 'nullable',
                 'integer',
+                'exists:teams,id',
             ],
             'status' => [
                 'string',
