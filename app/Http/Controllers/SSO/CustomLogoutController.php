@@ -15,7 +15,7 @@ class CustomLogoutController extends Controller
      */
     public function __constructor()
     {
-        //
+        ///
     }
 
     public function rquestLogout(Request $request)
