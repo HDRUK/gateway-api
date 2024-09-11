@@ -32,6 +32,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ScanFileUpload implements ShouldQueue
 {
+
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
@@ -94,7 +95,7 @@ class ScanFileUpload implements ShouldQueue
 
         CloudLogger::write('Malware scan initiated');
 
-        $response = Http::connectTimeout(60)->post(
+        $response = Http::timeout(60)->post(
             env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file',
             [
                 'file' => $filePath,
