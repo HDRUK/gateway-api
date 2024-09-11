@@ -11,7 +11,7 @@ return new class () extends Migration {
     public function up(): void
     {
         Schema::table('publications', function (Blueprint $table) {
-            $table->bigInteger('team_id')->nullable()->index();
+            $table->bigInteger('team_id')->unsigned()->nullable()->index();
             $table->foreign('team_id')->references('id')->on('teams')->onDelete('set null');
         });
     }
