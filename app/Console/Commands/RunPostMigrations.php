@@ -123,6 +123,10 @@ class RunPostMigrations extends Command
                     'sleep' => $sleep,
                 ],
             ],
+            [
+                'command' => 'app:data-custodian-network-post-migration',
+                'arguments' => [],
+            ], // update data custodian network with details and relations with teams
         ];
 
         foreach ($commands as $commandInfo) {
