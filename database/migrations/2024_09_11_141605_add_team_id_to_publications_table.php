@@ -11,7 +11,8 @@ return new class () extends Migration {
     public function up(): void
     {
         Schema::table('publications', function (Blueprint $table) {
-            $table->bigInteger('team_id')->nullable();
+            $table->bigInteger('team_id')->nullable()->index();
+            $table->foreign('team_id')->references('id')->on('teams')->onDelete('set null');
         });
     }
 
@@ -21,6 +22,8 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::table('publications', function (Blueprint $table) {
+            $table->dropForeign(['team_id']);
+            $table->dropIndex(['team_id']);
             $table->dropColumn('team_id');
         });
     }
