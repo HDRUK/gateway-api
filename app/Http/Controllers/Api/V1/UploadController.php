@@ -63,6 +63,8 @@ class UploadController extends Controller
             $teamId = $request->query('team_id', null);
             $inputSchema = $request->query('input_schema', null);
             $inputVersion = $request->query('input_version', null);
+            $outputSchema = $request->query('output_schema', null);
+            $outputVersion = $request->query('output_version', null);
             $elasticIndexing = $request->boolean('elastic_indexing', true);
             $datasetId = $request->query('dataset_id', null);
             $collectionId = $request->query('collection_id', null);
@@ -97,6 +99,8 @@ class UploadController extends Controller
                 (int)$teamId,
                 $inputSchema,
                 $inputVersion,
+                $outputSchema,
+                $outputVersion,
                 $elasticIndexing,
                 $datasetId,
                 $collectionId,
