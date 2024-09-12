@@ -94,6 +94,7 @@ class ScanFileUpload implements ShouldQueue
         $url = env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file';
 
         CloudLogger::write('Malware scan initiated');
+        CloudLogger::write('Malware scan CLAMAV_API_URL' . env('CLAMAV_API_URL', 'http://clamav:3001'));
 
         $response = Http::timeout(60)->post(
             env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file',
@@ -102,6 +103,7 @@ class ScanFileUpload implements ShouldQueue
                 'storage' => $this->fileSystem,
             ]
         );
+
         $isInfected = $response['isInfected'];
 
         CloudLogger::write('Malware scan completed');
@@ -185,7 +187,7 @@ class ScanFileUpload implements ShouldQueue
             $import = new ImportDur($data);
 
             CloudLogger::write('Post processing 2');
-            
+
             $scannedFile = Storage::disk($this->fileSystem . '.scanned')->get($path);
 
             CloudLogger::write('Post processing 3');
