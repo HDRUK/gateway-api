@@ -84,29 +84,48 @@ class ScanFileUpload implements ShouldQueue
      */
     public function handle(): void
     {
-        $upload = Upload::findOrFail($this->uploadId);
-        $filePath = $upload->file_location;
 
-        $body = [
-            'file' => (string)$filePath,
-            'storage' => (string)$this->fileSystem
-        ];
-        $url = env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file';
+        try {
 
-        CloudLogger::write('Malware scan initiated');
-        CloudLogger::write('Malware scan CLAMAV_API_URL' . env('CLAMAV_API_URL', 'http://clamav:3001'));
+            $upload = Upload::findOrFail($this->uploadId);
+            $filePath = $upload->file_location;
+    
+            $body = [
+                'file' => (string)$filePath,
+                'storage' => (string)$this->fileSystem
+            ];
+            $url = env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file';
+    
+            CloudLogger::write('Malware scan initiated');
+    
+            $response = Http::timeout(60)->post(
+                env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file',
+                [
+                    'file' => $filePath,
+                    'storage' => $this->fileSystem,
+                ]
+            );
+    
+            $isInfected = $response['isInfected'];
+    
+            CloudLogger::write('Malware scan completed');
+        } catch (Exception $e) {
+            // Record exception in uploads table
+            $upload->update([
+                'status' => 'FAILED',
+                'file_location' => $filePath,
+                'error' => $e->getMessage()
+            ]);
 
-        $response = Http::timeout(60)->post(
-            env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file',
-            [
-                'file' => $filePath,
-                'storage' => $this->fileSystem,
-            ]
-        );
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
 
-        $isInfected = $response['isInfected'];
-
-        CloudLogger::write('Malware scan completed');
+            throw new Exception($e->getMessage());
+        }
+       
 
         // Check if the file is infected
         if ($isInfected) {
@@ -181,27 +200,10 @@ class ScanFileUpload implements ShouldQueue
                 'team_id' => $this->teamId,
             ];
 
-
-            CloudLogger::write('Post processing 1');
-
             $import = new ImportDur($data);
-
-            CloudLogger::write('Post processing 2');
-
-           // $scannedFile = Storage::disk($this->fileSystem . '.scanned')->get($loc);
-
-            CloudLogger::write('Post processing 3');
-
-            //$path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
-
 
             Excel::import($import, $loc, 'gcs.scanned');
 
-
-            // Excel::import($import, $scannedFile, $loc);
-            //Excel::import($import, $scannedFile, \Maatwebsite\Excel\Excel::XLSX);
-
-            CloudLogger::write('Post processing 4');
             $durId = $import->durImport->durId;
 
             $upload->update([
@@ -210,8 +212,6 @@ class ScanFileUpload implements ShouldQueue
                 'entity_type' => 'dur',
                 'entity_id' => $durId
             ]);
-
-            
 
             CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
 
