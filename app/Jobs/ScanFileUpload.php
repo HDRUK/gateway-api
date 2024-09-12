@@ -179,11 +179,13 @@ class ScanFileUpload implements ShouldQueue
             ];
 
             $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
+            $testUnscannedPath = Storage::disk($this->fileSystem . '.unscanned')->path('');
             $testPath = Storage::disk($this->fileSystem . '.scanned')->path('');
             //temp for sanity
             CloudLogger::write('Post processing $loc is ' . $loc);
             CloudLogger::write('Post processing $path is ' . $path);
             CloudLogger::write('Post processing $testPath is ' . $testPath);
+            CloudLogger::write('Post processing $testUnscannedPath is ' . $testUnscannedPath);
             //
 
             $import = new ImportDur($data);
