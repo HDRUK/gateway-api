@@ -157,7 +157,7 @@ class ScanFileUpload implements ShouldQueue
             CloudLogger::write('Uploaded file passed malware scan');
 
             $loc = $upload->file_location;
-            
+
             $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
 
             Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
@@ -207,7 +207,8 @@ class ScanFileUpload implements ShouldQueue
 
             $import = new ImportDur($data);
 
-            Excel::import($import, $loc, 'gcs.scanned');
+            $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
+            Excel::import($import, $path, 'gcs.scanned');
 
             $durId = $import->durImport->durId;
 
