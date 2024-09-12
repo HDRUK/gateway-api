@@ -131,7 +131,7 @@ class ScanFileUpload implements ShouldQueue
             CloudLogger::write('Uploaded file passed malware scan');
 
             $loc = $upload->file_location;
-
+            
             $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
             Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
             Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
@@ -179,11 +179,11 @@ class ScanFileUpload implements ShouldQueue
             ];
 
             $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
-
+            $testPath = Storage::disk($this->fileSystem . '.scanned')->path('');
             //temp for sanity
             CloudLogger::write('Post processing $loc is ' . $loc);
             CloudLogger::write('Post processing $path is ' . $path);
-            
+            CloudLogger::write('Post processing $testPath is ' . $testPath);
             //
 
             $import = new ImportDur($data);
