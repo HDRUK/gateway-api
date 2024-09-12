@@ -187,6 +187,9 @@ class ScanFileUpload implements ShouldQueue
             CloudLogger::write('Post processing $testPath is ' . $testPath);
             CloudLogger::write('Post processing $testUnscannedPath is ' . $testUnscannedPath);
             //
+            $newPath = env('GOOGLE_CLOUD_SCANNED_BUCKET') . '/'. $path;
+
+            CloudLogger::write('Post processing $newPath is ' . $newPath);
 
             $import = new ImportDur($data);
             Excel::import($import, $path);
