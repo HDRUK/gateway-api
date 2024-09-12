@@ -188,12 +188,13 @@ class ScanFileUpload implements ShouldQueue
 
             CloudLogger::write('Post processing 2');
 
-            $scannedFile = Storage::disk($this->fileSystem . '.scanned')->get($loc);
+           // $scannedFile = Storage::disk($this->fileSystem . '.scanned')->get($loc);
 
             CloudLogger::write('Post processing 3aa');
-
+            $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
+            Excel::import($import, $path, \Maatwebsite\Excel\Excel::XLSX);
             // Excel::import($import, $scannedFile, $loc);
-            Excel::import($import, $scannedFile, \Maatwebsite\Excel\Excel::XLSX);
+            //Excel::import($import, $scannedFile, \Maatwebsite\Excel\Excel::XLSX);
 
             CloudLogger::write('Post processing 4');
             $durId = $import->durImport->durId;
