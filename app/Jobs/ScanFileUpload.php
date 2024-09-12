@@ -195,7 +195,7 @@ class ScanFileUpload implements ShouldQueue
             //$path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
 
 
-            Excel::import(new ExampleImport, $loc, 'gcs.scanned');
+            Excel::import($import, $loc, 'gcs.scanned');
 
 
             // Excel::import($import, $scannedFile, $loc);
