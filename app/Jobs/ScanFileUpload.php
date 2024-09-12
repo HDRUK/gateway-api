@@ -183,7 +183,6 @@ class ScanFileUpload implements ShouldQueue
             //temp for sanity
             CloudLogger::write('Post processing $loc is ' . $loc);
             CloudLogger::write('Post processing $path is ' . $path);
-            CloudLogger::write('Post processing $fileSystem is ' . $this->fileSystem . '.scanned');
             
             //
 
