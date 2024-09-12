@@ -430,7 +430,7 @@ class AddLogoTeamPostMigration extends Command
         ];
 
         Team::query()->update([
-            'team_logo' => NULL,
+            'team_logo' => null,
         ]);
 
         foreach ($custodians as $custodian) {

@@ -332,7 +332,7 @@ class ScanFileUpload implements ShouldQueue
                     'status' => 'PROCESSED',
                     'file_location' => $loc,
                     'entity_type' => 'structural_metadata',
-                    'structural_metadata' => $result['metadata'],
+                    'structural_metadata' => $result['metadata']['structuralMetadata'],
                 ]);
                 CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
             } else {
