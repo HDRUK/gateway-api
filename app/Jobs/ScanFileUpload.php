@@ -135,6 +135,9 @@ class ScanFileUpload implements ShouldQueue
             $loc = $upload->file_location;
             
             $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
+
+            CloudLogger::write('Post processing test for content' . $content);
+
             Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
             Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
 
@@ -188,6 +191,7 @@ class ScanFileUpload implements ShouldQueue
             CloudLogger::write('Post processing 2');
 
             $scannedFile = Storage::disk($this->fileSystem . '.scanned')->get($loc);
+            CloudLogger::write('Post processing test for scannedFile' . $scannedFile);
             CloudLogger::write('Post processing 3a');
 
             Excel::import($import, $scannedFile, $loc);
