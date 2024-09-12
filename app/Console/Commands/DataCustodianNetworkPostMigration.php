@@ -90,10 +90,10 @@ class DataCustodianNetworkPostMigration extends Command
                 $dataProvider = DataProviderColl::create($array);
                 $dataProviderId = $dataProvider->id;
                 $this->info('Data Custodian Network ' . $item['name'] . ' created with id :: ' . $dataProviderId);
-                
+
                 foreach ($teams as $teamName) {
                     $team = Team::where(\DB::raw("REPLACE(name, '&ndash;', '-')"), 'LIKE', "%{$teamName}%")->first();
-                    
+
                     if ($team) {
                         DataProviderCollHasTeam::create([
                             'data_provider_coll_id' => $dataProviderId,
