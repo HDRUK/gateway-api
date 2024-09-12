@@ -80,7 +80,7 @@ class Tool extends Model
 
     public function tag(): BelongsToMany
     {
-        return $this->belongsToMany(Tag::class, 'tool_has_tags');
+        return $this->belongsToMany(Tag::class, 'tool_has_tags')->whereNull('tool_has_tags.deleted_at')->withPivot('tool_id', 'tag_id', 'created_at', 'updated_at', 'deleted_at');
     }
 
     public function review()
