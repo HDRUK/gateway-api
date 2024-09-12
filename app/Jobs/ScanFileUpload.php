@@ -48,7 +48,7 @@ class ScanFileUpload implements ShouldQueue
     private ?int $datasetId = null;
     private ?int $collectionId = null;
 
-    public $timeout = 120; // default timeout is 60
+    public $timeout = 180; // default timeout is 60
 
     /**
      * Create a new job instance.
