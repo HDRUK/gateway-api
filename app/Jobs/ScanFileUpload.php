@@ -180,7 +180,6 @@ class ScanFileUpload implements ShouldQueue
                 'team_id' => $this->teamId,
             ];
 
-            $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
 
             CloudLogger::write('Post processing 1');
 
@@ -188,9 +187,8 @@ class ScanFileUpload implements ShouldQueue
 
             CloudLogger::write('Post processing 2');
 
-            $scannedFile = Storage::disk($this->fileSystem . '.scanned')->get($path);
-
-            CloudLogger::write('Post processing 3');
+            $scannedFile = Storage::disk($this->fileSystem . '.scanned')->get($loc);
+            CloudLogger::write('Post processing 3.');
 
             Excel::import($import, $scannedFile);
 
