@@ -179,26 +179,20 @@ class ScanFileUpload implements ShouldQueue
             ];
 
             $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
-            $testUnscannedPath = Storage::disk($this->fileSystem . '.unscanned')->path('');
-            $testPath = Storage::disk($this->fileSystem . '.scanned')->path('');
-            //temp for sanity
-            CloudLogger::write('Post processing $loc is ' . $loc);
-            CloudLogger::write('Post processing $path is ' . $path);
-            CloudLogger::write('Post processing $testPath is ' . $testPath);
-            CloudLogger::write('Post processing $testUnscannedPath is ' . $testUnscannedPath);
-            //
-            $newPath = env('GOOGLE_CLOUD_SCANNED_BUCKET') . '/'. $path;
 
-            CloudLogger::write('Post processingss $newPath is ' . $newPath);
+            CloudLogger::write('Post processing 1');
 
             $import = new ImportDur($data);
 
-
+            CloudLogger::write('Post processing 2');
+            
             $scannedFile = Storage::disk($this->fileSystem . '.scanned')->get($path);
 
-            // path is actually file name
+            CloudLogger::write('Post processing 3');
+
             Excel::import($import, $scannedFile);
 
+            CloudLogger::write('Post processing 4');
             $durId = $import->durImport->durId;
 
             $upload->update([
