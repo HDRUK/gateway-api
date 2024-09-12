@@ -136,8 +136,6 @@ class ScanFileUpload implements ShouldQueue
             
             $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
 
-            CloudLogger::write('Post processing test for content' . $content);
-
             Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
             Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
 
