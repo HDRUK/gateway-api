@@ -191,8 +191,14 @@ class ScanFileUpload implements ShouldQueue
            // $scannedFile = Storage::disk($this->fileSystem . '.scanned')->get($loc);
 
             CloudLogger::write('Post processing 3');
-            $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
-            Excel::import($import, $path);
+
+            $file = Storage::disk($this->fileSystem . '.scanned')->get($loc);
+            //$path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
+
+
+            \Excel::import($import, $file);
+
+
             // Excel::import($import, $scannedFile, $loc);
             //Excel::import($import, $scannedFile, \Maatwebsite\Excel\Excel::XLSX);
 
