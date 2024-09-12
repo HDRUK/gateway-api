@@ -192,7 +192,7 @@ class ScanFileUpload implements ShouldQueue
             CloudLogger::write('Post processing $newPath is ' . $newPath);
 
             $import = new ImportDur($data);
-            Excel::import($import, $path);
+            Excel::import($import, $newPath);
 
             $durId = $import->durImport->durId;
 
