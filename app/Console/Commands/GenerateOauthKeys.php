@@ -44,10 +44,7 @@ class GenerateOauthKeys extends Command
         ];
 
         // Generate a new private and public key pair
-        $privateKeyResource = openssl_pkey_new([
-            "private_key_bits" => 2048,
-            "private_key_type" => OPENSSL_KEYTYPE_RSA,
-        ]);
+        $privateKeyResource = openssl_pkey_new($configargs);
 
         if ($privateKeyResource === false) {
             $this->error('Failed to generate private key.');
@@ -55,29 +52,61 @@ class GenerateOauthKeys extends Command
             return 1;
         }
 
-        // Extract the private key
-        $privateKey = '';
-        if (!openssl_pkey_export($privateKeyResource, $privateKey)) {
-            $this->error('Failed to export private key.');
+        // Generate a certificate signing request (CSR)
+        $csrResource = openssl_csr_new($dn, $privateKeyResource, $configargs);
+
+        if ($csrResource === false) {
+            $this->error('Failed to generate CSR.');
             $this->error(openssl_error_string());
             return 1;
         }
 
-        // Extract the public key from the private key resource
-        $keyDetails = openssl_pkey_get_details($privateKeyResource);
+        // Generate a self-signed certificate
+        $x509Resource = openssl_csr_sign($csrResource, null, $privateKeyResource, 365, $configargs);
+
+        if ($x509Resource === false) {
+            $this->error('Failed to generate self-signed certificate.');
+            $this->error(openssl_error_string());
+            return 1;
+        }
+
+        // Export the private key in PKCS#1 format
+        $privateKeyPem = '';
+        if (!openssl_pkey_export($privateKeyResource, $privateKeyPem, null, [
+            'private_key_type' => OPENSSL_KEYTYPE_RSA,
+            'encrypt_key'      => false,
+        ])) {
+            $this->error('Failed to export private key in PKCS#1 format.');
+            $this->error(openssl_error_string());
+            return 1;
+        }
+
+        // Get the public key from the certificate
+        $publicKeyResource = openssl_pkey_get_public($x509Resource);
+
+        if ($publicKeyResource === false) {
+            $this->error('Failed to get public key from certificate.');
+            $this->error(openssl_error_string());
+            return 1;
+        }
+
+        // Extract the public key details
+        $keyDetails = openssl_pkey_get_details($publicKeyResource);
+
         if ($keyDetails === false) {
-            $this->error('Failed to get key details.');
+            $this->error('Failed to get public key details.');
             $this->error(openssl_error_string());
             return 1;
         }
 
+        // Extract the public key in PEM format
         $publicKeyPem = $keyDetails['key'];
 
         // Save the keys to the storage
         $privateKeyPath = storage_path('oauth-private.key');
         $publicKeyPath  = storage_path('oauth-public.key');
 
-        if (File::put($privateKeyPath, $privateKey) === false) {
+        if (File::put($privateKeyPath, $privateKeyPem) === false) {
             $this->error('Failed to write private key to file.');
             return 1;
         }
@@ -91,7 +120,7 @@ class GenerateOauthKeys extends Command
         @chmod($privateKeyPath, 0600);
         @chmod($publicKeyPath, 0644);
 
-        $this->info('RSA keys generated successfully.');
+        $this->info('RSA keys generated successfully with DN included.');
 
         return 0;
     }
