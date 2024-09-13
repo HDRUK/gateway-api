@@ -57,7 +57,7 @@ class GenerateOauthKeys extends Command
 
         // Extract the private key
         $privateKey = '';
-        if (!openssl_pkey_export($privateKeyResource, $privateKey, null, $configargs)) {
+        if (!openssl_pkey_export($privateKeyResource, $privateKey, "test", $configargs)) {
             $this->error('Failed to export private key.');
             $this->error(openssl_error_string());
             return 1;
