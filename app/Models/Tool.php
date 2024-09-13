@@ -100,7 +100,7 @@ class Tool extends Model
 
     public function programmingLanguages(): BelongsToMany
     {
-        return $this->belongsToMany(ProgrammingLanguage::class, 'tool_has_programming_language');
+        return $this->belongsToMany(ProgrammingLanguage::class, 'tool_has_programming_language')->whereNull('tool_has_programming_language.deleted_at');
     }
 
     public function programmingPackages(): BelongsToMany

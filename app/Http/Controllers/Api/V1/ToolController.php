@@ -1140,10 +1140,13 @@ class ToolController extends Controller
     {
         try {
             foreach ($programmingLanguages as $value) {
-                ToolHasProgrammingLanguage::updateOrCreate([
+                ToolHasProgrammingLanguage::withTrashed()->updateOrCreate(
+                    [
                     'tool_id' => (int)$toolId,
                     'programming_language_id' => (int)$value,
-                ]);
+                    ],
+                    ['deleted_at' => null]
+                );
             }
 
             return true;
