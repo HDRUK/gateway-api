@@ -207,12 +207,7 @@ class ScanFileUpload implements ShouldQueue
 
             $import = new ImportDur($data);
 
-            if (config('app.env') == 'testing') {
-                Excel::import($import, $path);
-            } else {
-                Excel::import($import, $path, 'gcs.scanned');
-            }
-            
+            Excel::import($import, $path, $this->fileSystem . '.scanned');
 
             $durId = $import->durImport->durId;
 
