@@ -84,7 +84,7 @@ RUN php artisan l5-swagger:generate
 # RUN ssh-keygen -t rsa -b 4096 -m PEM -E SHA512 -f storage/oauth-private.key -N ""
 # RUN openssl rsa -in storage/oauth-private.key -pubout -outform PEM -out storage/oauth-public.key
 # RUN php artisan passport:keys
-RUN php artisan app:generate-oauth-keys
+# RUN php artisan app:generate-oauth-keys
 
 # Add symbolic link for public file storage
 RUN php artisan storage:link
