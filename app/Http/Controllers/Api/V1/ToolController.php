@@ -1172,10 +1172,13 @@ class ToolController extends Controller
     {
         try {
             foreach ($programmingPackages as $value) {
-                ToolHasProgrammingPackage::updateOrCreate([
+                ToolHasProgrammingPackage::withTrashed()->updateOrCreate(
+                    [
                     'tool_id' => (int)$toolId,
                     'programming_package_id' => (int)$value,
-                ]);
+                    ],
+                    ['deleted_at' => null]
+                );
             }
 
             return true;
@@ -1201,10 +1204,13 @@ class ToolController extends Controller
     {
         try {
             foreach ($typeCategories as $value) {
-                ToolHasTypeCategory::updateOrCreate([
+                ToolHasTypeCategory::withTrashed()->updateOrCreate(
+                    [
                     'tool_id' => (int)$toolId,
                     'type_category_id' => (int)$value,
-                ]);
+                    ],
+                    ['deleted_at' => null]
+                );
             }
 
             return true;

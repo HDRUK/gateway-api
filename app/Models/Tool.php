@@ -105,12 +105,13 @@ class Tool extends Model
 
     public function programmingPackages(): BelongsToMany
     {
-        return $this->belongsToMany(ProgrammingPackage::class, 'tool_has_programming_package');
+        return $this->belongsToMany(ProgrammingPackage::class, 'tool_has_programming_package')->whereNull('tool_has_programming_package.deleted_at');
     }
 
     public function typeCategory(): BelongsToMany
     {
-        return $this->belongsToMany(TypeCategory::class, 'tool_has_type_category');
+        return $this->belongsToMany(TypeCategory::class, 'tool_has_type_category')->whereNull('tool_has_type_category.deleted_at');
+        ;
     }
 
     public function publications(): BelongsToMany
