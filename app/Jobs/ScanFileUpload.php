@@ -12,8 +12,8 @@ use App\Models\Team;
 use App\Models\Upload;
 use App\Imports\ImportDur;
 use App\Imports\ImportStructuralMetadata;
-
 use App\Http\Traits\MetadataOnboard;
+use MetadataManagementController as MMC;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -44,6 +44,8 @@ class ScanFileUpload implements ShouldQueue
     private ?int $teamId = null;
     private ?string $inputSchema = null;
     private ?string $inputVersion = null;
+    private ?string $outputSchema = null;
+    private ?string $outputVersion = null;
     private bool $elasticIndexing = true;
     private ?int $datasetId = null;
     private ?int $collectionId = null;
@@ -61,6 +63,8 @@ class ScanFileUpload implements ShouldQueue
         ?int $teamId,
         ?string $inputSchema,
         ?string $inputVersion,
+        ?string $outputSchema,
+        ?string $outputVersion,
         bool $elasticIndexing,
         ?int $datasetId,
         ?int $collectionId
@@ -72,6 +76,8 @@ class ScanFileUpload implements ShouldQueue
         $this->teamId = $teamId;
         $this->inputSchema = $inputSchema;
         $this->inputVersion = $inputVersion;
+        $this->outputSchema = $outputSchema;
+        $this->outputVersion = $outputVersion;
         $this->elasticIndexing = $elasticIndexing;
         $this->datasetId = $datasetId;
         $this->collectionId = $collectionId;
@@ -293,20 +299,49 @@ class ScanFileUpload implements ShouldQueue
                             'name' => $row['column_name'],
                             'description' => $row['column_description'],
                             'dataType' => $row['data_type'],
-                            'sensitive' => $row['sensitive'],
+                            'sensitive' => (bool) $row['sensitive'],
                         ])
                     ];
                 }
             }
 
             // Check structural metadata against schema using traser
-            $upload->update([
-                'status' => 'PROCESSED',
-                'file_location' => $loc,
-                'entity_type' => 'structural_metadata',
-                'structural_metadata' => $structuralMetadata
-            ]);
-            CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
+            $metadataInput = [
+                "metadata" => [
+                    "structuralMetadata" => $structuralMetadata
+                ]
+            ];
+            // Default to using the latest GWDM for input and output
+            $inputSchema = $this->inputSchema ? $this->inputSchema : Config::get('metadata.GWDM.name');
+            $inputVersion = $this->inputVersion ? $this->inputVersion : Config::get('metadata.GWDM.version');
+            $outputSchema = $this->outputSchema ? $this->outputSchema : Config::get('metadata.GWDM.name');
+            $outputVersion = $this->outputVersion ? $this->outputVersion : Config::get('metadata.GWDM.version');
+            $result = MMC::translateDataModelType(
+                json_encode($metadataInput),
+                $outputSchema,
+                $outputVersion,
+                $inputSchema,
+                $inputVersion,
+                true,
+                true,
+                "structuralMetadata",
+            );
+
+            if ($result['wasTranslated']) {
+                $upload->update([
+                    'status' => 'PROCESSED',
+                    'file_location' => $loc,
+                    'entity_type' => 'structural_metadata',
+                    'structural_metadata' => $result['metadata']['structuralMetadata'],
+                ]);
+                CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
+            } else {
+                $upload->update([
+                    'status' => 'FAILED',
+                    'file_location' => $loc,
+                    'error' => $result['traser_message'],
+                ]);
+            }
         } catch (Exception $e) {
             // Record exception in uploads table
             $upload->update([
