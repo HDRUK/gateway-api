@@ -41,7 +41,7 @@ class DataUsesTemplateImport implements ToModel, WithStartRow
             'project_id_text' => $row[0],
             'organisation_name' => $row[1],
             'organisation_id' => $row[2],
-            'organisation_sector' => $row[3] ? $this->mapOrganisationSector($row[3]) : null, //  this one
+            'organisation_sector' => $row[3] ? $this->mapOrganisationSector($row[3]) : null,
             'non_gateway_applicants' => explode(",", $row[4]),
             'applicant_id' => $row[5],
             'funders_and_sponsors' => explode(",", $row[6]),
