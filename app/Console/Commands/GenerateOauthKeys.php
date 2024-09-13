@@ -28,7 +28,7 @@ class GenerateOauthKeys extends Command
     {
         $this->info('Generating custom RS256');
 
-        $args = [
+        $configargs = [
             "digest_alg"       => "sha256",
             "private_key_bits" => 2048,
             "private_key_type" => OPENSSL_KEYTYPE_RSA,
@@ -43,43 +43,49 @@ class GenerateOauthKeys extends Command
             "commonName" => "hdruk.ac.uk",
         ];
 
-        // Generate a new private key
-        $privateKeyResource = openssl_pkey_new($args);
+        // Generate a new private and public key pair
+        $privateKeyResource = openssl_pkey_new([
+            "private_key_bits" => 2048,
+            "private_key_type" => OPENSSL_KEYTYPE_RSA,
+        ]);
 
-        if (!$privateKeyResource) {
+        if ($privateKeyResource === false) {
             $this->error('Failed to generate private key.');
+            $this->error(openssl_error_string());
             return 1;
         }
 
-        // Generate a certificate signing request
-        $csr = openssl_csr_new($dn, $privateKeyResource, $args);
-
-        if (!$csr) {
-            $this->error('Failed to generate CSR.');
+        // Extract the private key
+        $privateKey = '';
+        if (!openssl_pkey_export($privateKeyResource, $privateKey, null, $configargs)) {
+            $this->error('Failed to export private key.');
+            $this->error(openssl_error_string());
             return 1;
         }
-
-        // Generate a self-signed certificate valid for 365 days
-        $x509 = openssl_csr_sign($csr, null, $privateKeyResource, 365, $args);
-
-        if (!$x509) {
-            $this->error('Failed to generate self-signed certificate.');
-            return 1;
-        }
-
-        // Export the private key
-        openssl_pkey_export($privateKeyResource, $privateKey);
 
         // Extract the public key from the private key resource
-        $keyDetails  = openssl_pkey_get_details($privateKeyResource);
+        $keyDetails = openssl_pkey_get_details($privateKeyResource);
+        if ($keyDetails === false) {
+            $this->error('Failed to get key details.');
+            $this->error(openssl_error_string());
+            return 1;
+        }
+
         $publicKeyPem = $keyDetails['key'];
 
         // Save the keys to the storage
         $privateKeyPath = storage_path('oauth-private.key');
         $publicKeyPath  = storage_path('oauth-public.key');
 
-        File::put($privateKeyPath, $privateKey);
-        File::put($publicKeyPath, $publicKeyPem);
+        if (File::put($privateKeyPath, $privateKey) === false) {
+            $this->error('Failed to write private key to file.');
+            return 1;
+        }
+
+        if (File::put($publicKeyPath, $publicKeyPem) === false) {
+            $this->error('Failed to write public key to file.');
+            return 1;
+        }
 
         // Set the correct permissions
         @chmod($privateKeyPath, 0600);
