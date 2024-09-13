@@ -26,6 +26,6 @@ class ToolHasProgrammingLanguage extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'tool_id', 'programming_language_id',
+        'tool_id', 'programming_language_id', 'deleted_at'
     ];
 }

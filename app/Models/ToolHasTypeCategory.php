@@ -26,6 +26,6 @@ class ToolHasTypeCategory extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'tool_id', 'type_category_id',
+        'tool_id', 'type_category_id', 'deleted_at',
     ];
 }

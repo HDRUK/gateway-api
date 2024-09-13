@@ -80,7 +80,7 @@ class Tool extends Model
 
     public function tag(): BelongsToMany
     {
-        return $this->belongsToMany(Tag::class, 'tool_has_tags');
+        return $this->belongsToMany(Tag::class, 'tool_has_tags')->whereNull('tool_has_tags.deleted_at')->withPivot('tool_id', 'tag_id', 'created_at', 'updated_at', 'deleted_at');
     }
 
     public function review()
@@ -100,17 +100,18 @@ class Tool extends Model
 
     public function programmingLanguages(): BelongsToMany
     {
-        return $this->belongsToMany(ProgrammingLanguage::class, 'tool_has_programming_language');
+        return $this->belongsToMany(ProgrammingLanguage::class, 'tool_has_programming_language')->whereNull('tool_has_programming_language.deleted_at');
     }
 
     public function programmingPackages(): BelongsToMany
     {
-        return $this->belongsToMany(ProgrammingPackage::class, 'tool_has_programming_package');
+        return $this->belongsToMany(ProgrammingPackage::class, 'tool_has_programming_package')->whereNull('tool_has_programming_package.deleted_at');
     }
 
     public function typeCategory(): BelongsToMany
     {
-        return $this->belongsToMany(TypeCategory::class, 'tool_has_type_category');
+        return $this->belongsToMany(TypeCategory::class, 'tool_has_type_category')->whereNull('tool_has_type_category.deleted_at');
+        ;
     }
 
     public function publications(): BelongsToMany
