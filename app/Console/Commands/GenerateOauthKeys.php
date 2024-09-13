@@ -40,12 +40,9 @@ class GenerateOauthKeys extends Command
         );
 
         // Paths for keys and certificate
-        $privateKeyPath = storage_path('oauth-pri.key');
-        $publicKeyPath = storage_path('oauth-pub.key');
+        $privateKeyPath = storage_path('oauth-private.key');
+        $publicKeyPath = storage_path('oauth-public.key');
         $certificatePath = storage_path('oauth-cert.crt');
-        // $privateKeyPath = storage_path('oauth-private.key');
-        // $publicKeyPath = storage_path('oauth-public.key');
-        // $certificatePath = storage_path('oauth-cert.crt');
 
         // Generate a new private (and public) key pair
         $privateKeyResource = openssl_pkey_new([
