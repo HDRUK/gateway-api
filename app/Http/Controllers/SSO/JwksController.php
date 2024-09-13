@@ -50,34 +50,4 @@ class JwksController extends Controller
             throw new Exception('Failed to create JWK :: ' . $e->getMessage());
         }
     }
-
-    public function getJwksOld(Request $request)
-    {
-        $filePath = storage_path('oauth-public.key');
-        if (!file_exists($filePath)) {
-            throw new Exception('File not found');
-        }
-
-        $path = file_get_contents($filePath);
-        $details = openssl_pkey_get_details(openssl_pkey_get_public($path));
-
-        $keys = [
-            'kty' => 'RSA',
-            'alg' => 'RS256',
-            'use' => 'sig',
-            'n'   => strtr(rtrim(base64_encode($details['rsa']['n']), '='), '+/', '-_'),
-            'e'   => strtr(rtrim(base64_encode($details['rsa']['e']), '='), '+/', '-_'),
-            'kid' => env('JWT_KID', 'jwtkidnotfound'),
-        ];
-
-        $jwks = [
-            'keys' => [
-                $keys
-            ]
-        ];
-
-        return response()->json(
-            $jwks
-        );
-    }
 }
