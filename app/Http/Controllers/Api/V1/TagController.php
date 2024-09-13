@@ -56,7 +56,13 @@ class TagController extends Controller
     {
         $perPage = request('per_page', Config::get('constants.per_page'));
         try {
-            $tags = Tag::where('enabled', 1)->paginate($perPage, ['*'], 'page');
+            $tags = Tag::where('enabled', 1)
+                ->paginate(function ($total) use ($perPage) {
+                    if($perPage == 'all') {
+                        return $total;
+                    }
+                    return $perPage;
+                }, ['*'], 'page');
 
             Auditor::log([
                 'action_type' => 'GET',

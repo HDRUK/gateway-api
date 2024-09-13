@@ -96,7 +96,12 @@ class LibraryController extends Controller
                 ->with(['dataset.team']);
 
 
-            $libraries = $libraries->paginate($perPage);
+            $libraries = $libraries->paginate(function ($total) use ($perPage) {
+                if($perPage == 'all') {
+                    return $total;
+                }
+                return $perPage;
+            }, ['*'], 'page');
 
             $transformedLibraries = $libraries->getCollection()->map(function ($library) {
                 $dataset = $library->dataset;
