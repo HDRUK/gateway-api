@@ -48,7 +48,7 @@ class TypeCategoryController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = request('per_page', Config::get('constants.per_page'));
+        $perPage = (int) request('per_page', Config::get('constants.per_page'));
 
         try {
             $input = $request->all();

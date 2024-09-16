@@ -90,7 +90,7 @@ class LibraryController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $perPage = request('perPage', Config::get('constants.per_page'));
+            $perPage = (int) request('perPage', Config::get('constants.per_page'));
 
             $libraries = Library::where('user_id', $jwtUser['id'])
                 ->with(['dataset.team']);
