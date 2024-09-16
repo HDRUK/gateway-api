@@ -8,13 +8,12 @@ use Config;
 use Exception;
 
 use App\Models\Collection;
-use App\Models\Dataset;
 use App\Models\Team;
 use App\Models\Upload;
 use App\Imports\ImportDur;
 use App\Imports\ImportStructuralMetadata;
-
 use App\Http\Traits\MetadataOnboard;
+use MetadataManagementController as MMC;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -45,9 +44,13 @@ class ScanFileUpload implements ShouldQueue
     private ?int $teamId = null;
     private ?string $inputSchema = null;
     private ?string $inputVersion = null;
+    private ?string $outputSchema = null;
+    private ?string $outputVersion = null;
     private bool $elasticIndexing = true;
     private ?int $datasetId = null;
     private ?int $collectionId = null;
+
+    public $timeout = 180; // default timeout is 60
 
     /**
      * Create a new job instance.
@@ -60,6 +63,8 @@ class ScanFileUpload implements ShouldQueue
         ?int $teamId,
         ?string $inputSchema,
         ?string $inputVersion,
+        ?string $outputSchema,
+        ?string $outputVersion,
         bool $elasticIndexing,
         ?int $datasetId,
         ?int $collectionId
@@ -71,6 +76,8 @@ class ScanFileUpload implements ShouldQueue
         $this->teamId = $teamId;
         $this->inputSchema = $inputSchema;
         $this->inputVersion = $inputVersion;
+        $this->outputSchema = $outputSchema;
+        $this->outputVersion = $outputVersion;
         $this->elasticIndexing = $elasticIndexing;
         $this->datasetId = $datasetId;
         $this->collectionId = $collectionId;
@@ -83,27 +90,53 @@ class ScanFileUpload implements ShouldQueue
      */
     public function handle(): void
     {
-        $upload = Upload::findOrFail($this->uploadId);
-        $filePath = $upload->file_location;
 
-        $body = [
-            'file' => (string)$filePath,
-            'storage' => (string)$this->fileSystem
-        ];
-        $url = env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file';
+        try {
 
-        CloudLogger::write('Malware scan initiated');
+            $upload = Upload::findOrFail($this->uploadId);
+            $filePath = $upload->file_location;
+    
+            $body = [
+                'file' => (string)$filePath,
+                'storage' => (string)$this->fileSystem
+            ];
 
-        $response = Http::connectTimeout(60)->post(
-            env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file',
-            [
-                'file' => $filePath,
-                'storage' => $this->fileSystem,
-            ]
-        );
-        $isInfected = $response['isInfected'];
+            CloudLogger::write('Malware scan initiated');
+    
+            $response = Http::timeout(60)->post(
+                env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file',
+                [
+                    'file' => $filePath,
+                    'storage' => $this->fileSystem,
+                ]
+            );
+            $isError = $response['isError'];
 
-        CloudLogger::write('Malware scan completed');
+            if ($isError === true) {
+                throw new Exception($response['error']);
+            }
+
+            $isInfected = $response['isInfected'];
+            
+    
+            CloudLogger::write('Malware scan completed');
+        } catch (Exception $e) {
+            // Record exception in uploads table
+            $upload->update([
+                'status' => 'FAILED',
+                'file_location' => $filePath,
+                'error' => $e->getMessage()
+            ]);
+
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+       
 
         // Check if the file is infected
         if ($isInfected) {
@@ -130,8 +163,8 @@ class ScanFileUpload implements ShouldQueue
             CloudLogger::write('Uploaded file passed malware scan');
 
             $loc = $upload->file_location;
-
             $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
+
             Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
             Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
 
@@ -145,7 +178,7 @@ class ScanFileUpload implements ShouldQueue
                     $this->createDatasetFromFile($loc, $upload);
                     break;
                 case 'structural-metadata-upload':
-                    $this->attachStructuralMetadata($loc, $upload, $this->datasetId);
+                    $this->attachStructuralMetadata($loc, $upload);
                     break;
                 case 'teams-media':
                     $this->uploadTeamMedia($loc, $upload, $this->teamId);
@@ -179,7 +212,13 @@ class ScanFileUpload implements ShouldQueue
             $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
 
             $import = new ImportDur($data);
-            Excel::import($import, $path);
+
+            if (config('app.env') == 'testing') {
+                Excel::import($import, $path);
+            } else {
+                Excel::import($import, $path, $this->fileSystem . '.scanned');
+            }
+            
 
             $durId = $import->durImport->durId;
 
@@ -276,11 +315,10 @@ class ScanFileUpload implements ShouldQueue
         }
     }
 
-    private function attachStructuralMetadata(string $loc, Upload $upload, int $datasetId)
+    private function attachStructuralMetadata(string $loc, Upload $upload)
     {
         try {
             $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
-            $dataset = Dataset::findOrFail($datasetId);
             $import = Excel::toArray(new ImportStructuralMetadata(), $path);
 
             $structuralMetadata = array();
@@ -293,26 +331,49 @@ class ScanFileUpload implements ShouldQueue
                             'name' => $row['column_name'],
                             'description' => $row['column_description'],
                             'dataType' => $row['data_type'],
-                            'sensitive' => $row['sensitive'],
+                            'sensitive' => (bool) $row['sensitive'],
                         ])
                     ];
                 }
             }
 
-            $version = $dataset->latestVersion();
-            $metadata = $version->metadata;
-            $metadata['metadata']['structuralMetadata'] = $structuralMetadata;
-            $version->update([
-                'metadata' => $metadata
-            ]);
+            // Check structural metadata against schema using traser
+            $metadataInput = [
+                "metadata" => [
+                    "structuralMetadata" => $structuralMetadata
+                ]
+            ];
+            // Default to using the latest GWDM for input and output
+            $inputSchema = $this->inputSchema ? $this->inputSchema : Config::get('metadata.GWDM.name');
+            $inputVersion = $this->inputVersion ? $this->inputVersion : Config::get('metadata.GWDM.version');
+            $outputSchema = $this->outputSchema ? $this->outputSchema : Config::get('metadata.GWDM.name');
+            $outputVersion = $this->outputVersion ? $this->outputVersion : Config::get('metadata.GWDM.version');
+            $result = MMC::translateDataModelType(
+                json_encode($metadataInput),
+                $outputSchema,
+                $outputVersion,
+                $inputSchema,
+                $inputVersion,
+                true,
+                true,
+                "structuralMetadata",
+            );
 
-            $upload->update([
-                'status' => 'PROCESSED',
-                'file_location' => $loc,
-                'entity_type' => 'dataset',
-                'entity_id' => $datasetId
-            ]);
-            CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
+            if ($result['wasTranslated']) {
+                $upload->update([
+                    'status' => 'PROCESSED',
+                    'file_location' => $loc,
+                    'entity_type' => 'structural_metadata',
+                    'structural_metadata' => $result['metadata']['structuralMetadata'],
+                ]);
+                CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
+            } else {
+                $upload->update([
+                    'status' => 'FAILED',
+                    'file_location' => $loc,
+                    'error' => $result['traser_message'],
+                ]);
+            }
         } catch (Exception $e) {
             // Record exception in uploads table
             $upload->update([

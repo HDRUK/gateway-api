@@ -312,8 +312,6 @@ class UploadTest extends TestCase
      */
     public function test_structural_metadata_from_upload_with_success(): void
     {
-        $countBefore = Dataset::count();
-        $dataset = Dataset::all()->random()->id;
         $file = new UploadedFile(
             getcwd() . '/tests/Unit/test_files/StructuralMetadataTemplate.xlsx',
             'StructuralMetadataTemplate.xlsx',
@@ -321,7 +319,7 @@ class UploadTest extends TestCase
         // post file to files endpoint
         $response = $this->json(
             'POST',
-            self::TEST_URL . '?entity_flag=structural-metadata-upload&dataset_id=' . $dataset,
+            self::TEST_URL . '?entity_flag=structural-metadata-upload',
             [
                 'file' => $file
             ],
@@ -345,39 +343,32 @@ class UploadTest extends TestCase
             ]
         ]);
         $response->assertStatus(200);
-        $content = $response->decodeResponseJson();
-        $datasetId = $content['data']['entity_id'];
+        $id = $response->decodeResponseJson()['data']['id'];
 
-        $this->assertEquals($datasetId, $dataset);
+        $response = $this->json('GET', self::TEST_URL . '/' . $id, [], $this->header);
 
-        // Grab the dataset that was just updated
-        $response = $this->json('GET', '/api/v1/datasets' . '/' . $datasetId, [], $this->header);
         $response->assertJsonStructure([
-            'message',
             'data' => [
-                'named_entities',
-                'collections',
-                'publications',
-                'versions',
-                'durs_count',
-                'publications_count',
+                'id',
+                'created_at',
+                'updated_at',
+                'filename',
+                'file_location',
+                'user_id',
+                'status',
+                'structural_metadata',
+                'error'
             ]
         ]);
         $response->assertStatus(200);
 
-        // Get the latest version and check that the structural metadata matches test data
-        $latestVersion = $response->decodeResponseJson()['data']['versions'][0]['metadata'];
+        $content = $response->decodeResponseJson()['data'];
 
-        $this->assertIsArray($latestVersion['metadata']['structuralMetadata']);
+        $this->assertIsArray($content['structural_metadata']);
+        $this->assertEquals($content['structural_metadata'][0]['name'], 'Test Table');
+        $this->assertIsArray($content['structural_metadata'][0]['columns']);
         $this->assertEquals(
-            $latestVersion['metadata']['structuralMetadata'][0]['name'],
-            'Test Table'
-        );
-        $this->assertIsArray(
-            $latestVersion['metadata']['structuralMetadata'][0]['columns']
-        );
-        $this->assertEquals(
-            $latestVersion['metadata']['structuralMetadata'][0]['columns'][0]['name'],
+            $content['structural_metadata'][0]['columns'][0]['name'],
             'Test Column'
         );
     }

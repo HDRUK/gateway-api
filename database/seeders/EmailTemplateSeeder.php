@@ -2436,7 +2436,7 @@ class EmailTemplateSeeder extends Seeder
         ]);
 
         EmailTemplate::create([
-            'identifier' => 'dar.firstmessage',
+            'identifier' => 'feasibilityenquiry.firstmessage',
             'subject' => '[[USER_FIRST_NAME]] [[PROJECT_TITLE]]',
             'body' => '
                 <mjml>
@@ -2481,22 +2481,15 @@ class EmailTemplateSeeder extends Seeder
                         <mj-section background-repeat="no-repeat" background-size="cover" background-position="top center" border="none" direction="ltr"
                             text-align="center" background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" width="100%" padding="0px 0px 0px 0px" >
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0px 30px 0px" >Dataset Access Enquiry received.</mj-text>
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0px 30px 0px" >Feasibility enquiry received.</mj-text>
                             </mj-column>
                         </mj-section>
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[TEAM_NAME]],<br><br>
-                                    You have received a dataset access enquiry from [[USER_FIRST_NAME]], details of which can be found in the thread below. You can respond by using the reply button within your email client.<br><br>
+                                    You have received a feasibility enquiry from [[USER_FIRST_NAME]], details of which can be found in the thread below. You can respond by using the reply button within your email client.<br><br>
                                     Submitted information
                                     <div>[[MESSAGE_BODY]]</div>
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-                        <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
-                            <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                <mj-button align="center" background-color="#00ACCA" color="#ffffff" font-weight="normal" border-radius="4px" padding="10px 25px 10px 25px" inner-padding="10px 25px 10px 25px" line-height="120%" target="_blank" vertical-align="middle" border="none" text-align="center" href="#" >View message on the Gateway</mj-button>
-                                <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" ><br><br>
                                 </mj-text>
                             </mj-column>
                         </mj-section>
@@ -2586,13 +2579,6 @@ class EmailTemplateSeeder extends Seeder
                                     You have received a general enquiry from [[USER_FIRST_NAME]], details of which can be found in the thread below. You can respond by using the reply button within your email client.<br><br>
                                     Submitted information
                                     <div>[[MESSAGE_BODY]]</div>
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-                        <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
-                            <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                <mj-button align="center" background-color="#00ACCA" color="#ffffff" font-weight="normal" border-radius="4px" padding="10px 25px 10px 25px" inner-padding="10px 25px 10px 25px" line-height="120%" target="_blank" vertical-align="middle" border="none" text-align="center" href="#" >View message on the Gateway</mj-button>
-                                <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" ><br><br>
                                 </mj-text>
                             </mj-column>
                         </mj-section>

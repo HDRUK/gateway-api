@@ -857,7 +857,14 @@ trait MockExternalApis
                             "authorString" => "",
                             "journalInfo" => null,
                             "pubYear" => "2024",
-                            "abstractText" => ""
+                            "abstractText" => "",
+                            'fullTextUrlList' => [
+                                'fullTextUrl' => [
+                                    0 => [
+                                        'url' => 'https://doi.org/10.123/abc'
+                                    ]
+                                ]
+                            ]
                         ]
                     ]
                 ]
@@ -999,6 +1006,7 @@ trait MockExternalApis
         Http::fake([
             env('CLAMAV_API_URL', 'http://clamav:3001') . '*' => Http::response(
                 [
+                    'isError' => false,
                     'isInfected' => false,
                     'file' => '1716469707_test_file.csv',
                     'viruses' => [],
