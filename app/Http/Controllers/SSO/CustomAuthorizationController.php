@@ -96,15 +96,14 @@ class CustomAuthorizationController extends Controller
         \Log::info('Request parameters : ' . json_encode($request->all()));
 
         return $this->withErrorHandling(function () use ($psrRequest, $request, $userId) {
-            \Log::info($this->server->validateAuthorizationRequest($psrRequest));
-            $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
-            \Log::info('authRequest :: ' . json_encode($authRequest));
-
             // Additional debugging
             \Log::info('Auth request : ' . json_encode([
                 'grant_type' => $request->input('grant_type'),
                 'client_id' => $request->input('client_id'),
             ]));
+
+            $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
+            \Log::info('authRequest :: ' . json_encode($authRequest));
 
             return $this->approveRequest($authRequest, $userId, $request);
         });
