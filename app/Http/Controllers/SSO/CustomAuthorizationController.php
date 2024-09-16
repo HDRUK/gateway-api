@@ -79,7 +79,9 @@ class CustomAuthorizationController extends Controller
         
         return $this->withErrorHandling(function () use ($psrRequest, $request, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
-            return $this->approveRequest($authRequest, $userId, $request);
+            $approveRequest =  $this->approveRequest($authRequest, $userId, $request);
+            \Log::info('approveRequest :: ' . json_encode($approveRequest));
+            return $approveRequest;
         });
     }
 
