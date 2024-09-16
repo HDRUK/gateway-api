@@ -80,11 +80,20 @@ class RunPostMigrations extends Command
                 'command' => 'app:team-dar-modal-content',
                 'arguments' => [],
             ], // add team dar modal content
+            //[
+            //    'command' => 'app:data-custodian-network-post-migration',
+            //    'arguments' => [],
+            //], // update data custodian network with details and relations with teams
+            [
+                'command' => 'app:data-custodian-network-post-migration',
+                'arguments' => [],
+            ], // update teams.team_logo
             [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'datasets',
-                    'sleep' => $sleep,
+                    '--sleep' => $sleep,
+                    '--chunkSize' => '20',
                     '--term-extraction' => $termExtraction
                 ],
             ],
@@ -92,45 +101,42 @@ class RunPostMigrations extends Command
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'tools',
-                    'sleep' => $sleep,
+                    '--chunkSize' => '50',
+                    '--sleep' => $sleep,
                 ],
             ],
             [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'publications',
-                    'sleep' => $sleep,
+                    '--chunkSize' => '100',
+                    '--sleep' => $sleep,
                 ],
             ],
             [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'durs',
-                    'sleep' => $sleep,
+                    '--chunkSize' => '50',
+                    '--sleep' => $sleep,
                 ],
             ],
             [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'collections',
-                    'sleep' => $sleep,
+                    '--chunkSize' => '20',
+                    '--sleep' => $sleep,
                 ],
             ],
             [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'dataProviders',
-                    'sleep' => $sleep,
+                    '--chunkSize' => '20',
+                    '--sleep' => $sleep,
                 ],
             ],
-            [
-                'command' => 'app:data-custodian-network-post-migration',
-                'arguments' => [],
-            ], // update data custodian network with details and relations with teams
-            [
-                'command' => 'app:data-custodian-network-post-migration',
-                'arguments' => [],
-            ], // update teams.team_logo
         ];
 
         foreach ($commands as $commandInfo) {
