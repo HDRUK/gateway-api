@@ -54,6 +54,8 @@ class CustomAuthorizationController extends Controller
         Request $request,
         ClientRepository $clients,
     ) {
+
+        \Log::info('ServerRequestInterface $psrRequest :: ' . json_encode($psrRequest->getQueryParams()));
         // $userId = session('cr_uid');
 
         // mock user id for with we need:
