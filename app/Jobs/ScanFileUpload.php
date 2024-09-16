@@ -95,14 +95,14 @@ class ScanFileUpload implements ShouldQueue
 
             $upload = Upload::findOrFail($this->uploadId);
             $filePath = $upload->file_location;
-    
+
             $body = [
                 'file' => (string)$filePath,
                 'storage' => (string)$this->fileSystem
             ];
 
             CloudLogger::write('Malware scan initiated');
-    
+
             $response = Http::timeout(60)->post(
                 env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file',
                 [
@@ -117,8 +117,8 @@ class ScanFileUpload implements ShouldQueue
             }
 
             $isInfected = $response['isInfected'];
-            
-    
+
+
             CloudLogger::write('Malware scan completed');
         } catch (Exception $e) {
             // Record exception in uploads table
@@ -136,7 +136,7 @@ class ScanFileUpload implements ShouldQueue
 
             throw new Exception($e->getMessage());
         }
-       
+
 
         // Check if the file is infected
         if ($isInfected) {
@@ -218,7 +218,7 @@ class ScanFileUpload implements ShouldQueue
             } else {
                 Excel::import($import, $path, $this->fileSystem . '.scanned');
             }
-            
+
 
             $durId = $import->durImport->durId;
 
