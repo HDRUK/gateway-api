@@ -20,6 +20,8 @@ use Illuminate\Contracts\Routing\ResponseFactory;
 use Laravel\Passport\Contracts\AuthorizationViewResponse;
 use Laravel\Passport\Http\Controllers\RetrievesAuthRequestFromSession;
 
+use Illuminate\Support\Facades\Auth;
+
 class CustomAuthorizationController extends Controller
 {
     use HandlesOAuthErrors, RetrievesAuthRequestFromSession;
@@ -58,8 +60,14 @@ class CustomAuthorizationController extends Controller
 
         // mock user id for with we need:
         // - cohort_regests.request_status = 'APPROVED'
-        $cohortRequests = CohortRequest::where(['request_status' => 'APPROVED'])->first();
+        // $cohortRequests = CohortRequest::where(['request_status' => 'APPROVED'])->first();
+        $cohortRequests = CohortRequest::where(['user_id' => 3946])->first();
         $userId = $cohortRequests->user_id;
+
+        // auth
+        $user = UserModel::find($userId);
+        Auth::login($user);
+
         // end mock user id
 
         // this is only temporary - it needs to be there when the flow starts in the backend
