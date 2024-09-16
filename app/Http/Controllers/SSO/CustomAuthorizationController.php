@@ -5,7 +5,8 @@ namespace App\Http\Controllers\SSO;
 use CloudLogger;
 use App\Models\OauthUser;
 use Illuminate\Support\Str;
-use Illuminate\Http\Request;
+// use Illuminate\Http\Request;
+use Illuminate\Http\Request as LaravelRequest;
 use App\Models\CohortRequest;
 use Laravel\Passport\Passport;
 use App\Models\User as UserModel;
@@ -53,9 +54,29 @@ class CustomAuthorizationController extends Controller
      */
     public function customAuthorize(
         ServerRequestInterface $psrRequest,
-        Request $request,
         ClientRepository $clients,
     ) {
+        $request = new LaravelRequest(
+            $psrRequest->getQueryParams(),
+            $psrRequest->getParsedBody(),
+            [], // Attributes
+            $psrRequest->getCookieParams(),
+            $psrRequest->getUploadedFiles(),
+            $psrRequest->getServerParams(),
+            $psrRequest->getBody()->__toString()
+        );
+
+        // Set method and headers
+        $request->setMethod($psrRequest->getMethod());
+        foreach ($psrRequest->getHeaders() as $name => $values) {
+            $request->headers->set($name, implode(', ', $values));
+        }
+
+        // Ensure Content-Type is set
+        if (!$request->headers->has('Content-Type')) {
+            $request->headers->set('Content-Type', 'application/x-www-form-urlencoded');
+        }
+        
         // $userId = session('cr_uid');
 
         // mock user id for with we need:
@@ -64,10 +85,6 @@ class CustomAuthorizationController extends Controller
         $cohortRequests = CohortRequest::where(['user_id' => 3946])->first();
         $userId = $cohortRequests->user_id;
 
-        // auth
-        $user = UserModel::find($userId);
-        Auth::login($user);
-
         // this is only temporary - it needs to be there when the flow starts in the backend
         OauthUser::where('user_id', $userId)->delete();
         OauthUser::create([
@@ -75,9 +92,19 @@ class CustomAuthorizationController extends Controller
             'nonce' => $request->query('nonce'),
         ]);
 
-        return $this->withErrorHandling(function () use ($psrRequest, $userId) {
+        // Debugging: Log request parameters
+        \Log::info('Request parameters:', $request->all());
+
+        return $this->withErrorHandling(function () use ($psrRequest, $request, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
-            return $this->approveRequest($authRequest, $userId);
+
+            // Additional debugging
+            \Log::info('Auth request:', [
+                'grant_type' => $request->input('grant_type'),
+                'client_id' => $request->input('client_id'),
+            ]);
+
+            return $this->approveRequest($authRequest, $userId, $request);
         });
     }
 
