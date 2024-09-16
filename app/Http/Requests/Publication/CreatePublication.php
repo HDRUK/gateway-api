@@ -28,7 +28,7 @@ class CreatePublication extends BaseFormRequest
                 'max:4',
             ],
             'paper_doi' => [
-                'required',
+                'nullable',
                 'string',
                 'max:255',
             ],
