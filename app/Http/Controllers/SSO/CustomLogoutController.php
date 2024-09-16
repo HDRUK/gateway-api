@@ -21,10 +21,10 @@ class CustomLogoutController extends Controller
     public function rquestLogout(Request $request)
     {
         try {
-            $user = Auth::user();
-            \Log::info('CustomLogoutController userInfo :: ' . json_encode($user));
+        //     $user = Auth::user();
+        //     \Log::info('CustomLogoutController userInfo :: ' . json_encode($user));
 
-            $user = $request->user();
+            // $user = $request->user();
             \Log::info('CustomLogoutController userInfo request :: ' . json_encode($request->user()));
 
             // Auth::guard()->logout();
