@@ -67,6 +67,11 @@ class OpenIdController extends Controller
                 "preferred_username",
                 "email",
                 "acr",
+                "firstname",
+                "lastname",
+                "rquestroles",
+                "ga4gh_passport_v1",
+                "sid",
             ],
 
             // logme out
