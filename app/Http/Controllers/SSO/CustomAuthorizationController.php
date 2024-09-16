@@ -5,7 +5,7 @@ namespace App\Http\Controllers\SSO;
 use CloudLogger;
 use App\Models\OauthUser;
 use Illuminate\Support\Str;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request as LaravelRequest;
 use App\Models\CohortRequest;
 use Laravel\Passport\Passport;
 use App\Models\User as UserModel;
@@ -19,6 +19,7 @@ use League\OAuth2\Server\AuthorizationServer;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Laravel\Passport\Contracts\AuthorizationViewResponse;
 use Laravel\Passport\Http\Controllers\RetrievesAuthRequestFromSession;
+use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
 
 class CustomAuthorizationController extends Controller
 {
@@ -51,7 +52,7 @@ class CustomAuthorizationController extends Controller
      */
     public function customAuthorize(
         ServerRequestInterface $psrRequest,
-        Request $request,
+        LaravelRequest $request,
         ClientRepository $clients,
     ) {
         // $userId = session('cr_uid');
@@ -69,12 +70,16 @@ class CustomAuthorizationController extends Controller
             'nonce' => $request->query('nonce'),
         ]);
 
-        \Log::info('Request :: ' . json_encode($request->all()));
-        \Log::info('ServerRequestInterface :: ' . json_encode($psrRequest->all()));
+        // Convert PSR-7 request to Symfony request
+        $httpFoundationFactory = new HttpFoundationFactory();
+        $symfonyRequest = $httpFoundationFactory->createRequest($psrRequest);
 
-        return $this->withErrorHandling(function () use ($psrRequest, $userId) {
+        // Convert Symfony request to Laravel request
+        $request = LaravelRequest::createFromBase($symfonyRequest);
+        
+        return $this->withErrorHandling(function () use ($psrRequest, $request, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
-            return $this->approveRequest($authRequest, $userId);
+            return $this->approveRequest($authRequest, $userId, $request);
         });
     }
 
