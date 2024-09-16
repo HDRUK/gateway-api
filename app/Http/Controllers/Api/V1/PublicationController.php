@@ -56,6 +56,13 @@ class PublicationController extends Controller
      *       description="Filter tools by owner id"
      *    ),
      *    @OA\Parameter(
+     *       name="team_id",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="int"),
+     *       description="Filter tools by team id"
+     *    ),
+     *    @OA\Parameter(
      *       name="status",
      *       in="query",
      *       description="Publication status to filter by ('ACTIVE', 'DRAFT', 'ARCHIVED')",
@@ -89,6 +96,7 @@ class PublicationController extends Controller
             $mongoId = $request->query('mongo_id', null);
             $paperTitle = $request->query('paper_title', null);
             $ownerId = $request->query('owner_id', null);
+            $teamId = $request->query('team_id', null);
             $filterStatus = $request->query('status', null);
             $perPage = request('per_page', Config::get('constants.per_page'));
             $withRelated = $request->boolean('with_related', true);
@@ -106,6 +114,9 @@ class PublicationController extends Controller
             })
             ->when($ownerId, function ($query) use ($ownerId) {
                 return $query->where('owner_id', '=', $ownerId);
+            })
+            ->when($teamId, function ($query) use ($teamId) {
+                return $query->where('team_id', '=', $teamId);
             })
             ->when(
                 $filterStatus,
@@ -210,8 +221,11 @@ class PublicationController extends Controller
     {
         try {
             $ownerId = $request->query('owner_id', null);
+            $teamId = $request->query('team_id', null);
             $counts = Publication::when($ownerId, function ($query) use ($ownerId) {
                 return $query->where('owner_id', '=', $ownerId);
+            })->when($teamId, function ($query) use ($teamId) {
+                return $query->where('team_id', '=', $teamId);
             })->withTrashed()
                 ->select($field)
                 ->get()
@@ -392,6 +406,7 @@ class PublicationController extends Controller
                 'abstract' => $input['abstract'],
                 'url' => array_key_exists('url', $input) ? $input['url'] : null,
                 'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
+                'team_id' => array_key_exists('team_id', $input) ? $input['team_id'] : null,
                 'owner_id' => (int)$jwtUser['id'],
                 'status' => $request['status'],
             ]);
@@ -546,6 +561,7 @@ class PublicationController extends Controller
                 'url' => array_key_exists('url', $input) ? $input['url'] : null,
                 'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
                 'status' => array_key_exists('status', $input) ? $input['status'] : Publication::STATUS_DRAFT,
+                'team_id' => array_key_exists('team_id', $input) ? $input['team_id'] : null,
             ]);
 
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
