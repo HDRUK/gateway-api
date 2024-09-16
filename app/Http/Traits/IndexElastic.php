@@ -451,6 +451,7 @@ trait IndexElastic
                 'abstract' => $pubMatch['abstract'],
                 'authors' => $pubMatch['authors'],
                 'publicationDate' => $pubMatch['year_of_publication'],
+                'doi' => $pubMatch['paper_doi'],
                 'datasetTitles' => $datasetTitles,
                 'publicationType' => $publicationTypes,
                 'datasetLinkTypes' => $datasetLinkTypes,
@@ -690,7 +691,7 @@ trait IndexElastic
         } else {
             $tissues =  Arr::get($metadata, 'metadata.tissuesSampleCollection', null);
             if (!is_null($tissues)) {
-                $materialTypes = array_reduce($tissues, function($return, $item) {
+                $materialTypes = array_reduce($tissues, function ($return, $item) {
                     if ($item['materialType'] !== 'None/not available') {
                         $return[] = $item['materialType'];
                     }

@@ -33,6 +33,7 @@ class MetadataManagementController
         string $inputVersion = null,
         bool $validateInput = true,
         bool $validateOutput = true,
+        string $subsection = null,
     ): array {
         try {
 
@@ -43,6 +44,7 @@ class MetadataManagementController
                 'input_version' => $inputVersion,
                 'validate_input' => $validateInput ? '1' : 0 ,
                 'validate_output' => $validateOutput ? '1' : 0 ,
+                'subsection' => $subsection,
             ];
 
             $urlString = env('TRASER_SERVICE_URL', 'http://localhost:8002') . '/translate?' . http_build_query($queryParams);

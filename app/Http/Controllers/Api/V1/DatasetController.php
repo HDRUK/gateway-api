@@ -192,7 +192,13 @@ class DatasetController extends Controller
                 foreach ($matches as $m) {
                     $version = DatasetVersion::where('dataset_id', $m)
                     ->filterTitle($filterTitle)
-                    ->latest('version')->select('dataset_id')->first();
+                    ->latest('version')->select('dataset_id')
+                    ->when(
+                        $request->has('withTrashed') || $filterStatus === 'ARCHIVED',
+                        function ($query) {
+                            return $query->withTrashed();
+                        }
+                    )->first();
 
                     if ($version) {
                         $titleMatches[] = $version->dataset_id;
@@ -1009,8 +1015,14 @@ class DatasetController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
+            $dataset = Dataset::where('id', $id)->first();
+            $deleteFromElastic = ($dataset->status === Dataset::STATUS_ACTIVE);
+
             MMC::deleteDataset($id);
-            $this->deleteDatasetFromElastic($id);
+
+            if ($deleteFromElastic) {
+                $this->deleteDatasetFromElastic($id);
+            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

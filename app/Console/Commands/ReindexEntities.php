@@ -120,7 +120,7 @@ class ReindexEntities extends Command
             ->select("id")
             ->pluck('id')
             ->toArray();
-      
+
         $this->sliceIds($datasetIds);
 
         if ($this->termExtraction) {

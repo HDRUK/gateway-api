@@ -10,8 +10,8 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::table('data_provider_colls', function (Blueprint $table) {
-            $table->string('url', 2048)->nullable();
+        Schema::table('teams', function (Blueprint $table) {
+            $table->text('dar_modal_content')->nullable();
         });
     }
 
@@ -20,8 +20,8 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        Schema::table('data_provider_colls', function (Blueprint $table) {
-            $table->string('url', 2048)->nullable();
+        Schema::table('teams', function (Blueprint $table) {
+            $table->dropColumn('dar_modal_content');
         });
     }
 };

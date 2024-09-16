@@ -52,7 +52,7 @@ class SpatialCoverage extends Model
     public function getAllDatasetsAttribute()
     {
         return $this->getDatasetsViaDatasetVersion(
-            DatasetVersionHasSpatialCoverage::class,
+            new DatasetVersionHasSpatialCoverage(),
             'spatial_coverage_id'
         );
     }

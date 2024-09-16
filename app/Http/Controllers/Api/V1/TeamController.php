@@ -296,7 +296,7 @@ class TeamController extends Controller
     {
         try {
             // Get this Team
-            $dp = Team::select('id', 'name', 'is_provider', 'introduction')->where([
+            $dp = Team::select('id', 'name', 'is_provider', 'introduction', 'team_logo')->where([
                 'id' => $id,
                 'enabled' => 1,
             ])->first();
@@ -336,18 +336,19 @@ class TeamController extends Controller
             }
 
             $collections = Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', $this->collections)->get()->toArray();
-            $collections = array_map(function($collection) {
+            $collections = array_map(function ($collection) {
                 if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
                     $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
                 }
                 return $collection;
             }, $collections);
-            
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => [
                     'id' => $dp->id,
                     'is_provider' => $dp->is_provider,
+                    'team_logo' => $dp->team_logo,
                     'name' => $dp->name,
                     'introduction' => $dp->introduction,
                     'datasets' => $this->datasets,
@@ -402,6 +403,7 @@ class TeamController extends Controller
      *              @OA\Property(property="is_provider", type="boolean", example="1"),
      *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *              @OA\Property(property="introduction", type="string", example="info about the team"),
+     *              @OA\Property(property="dar_modal_content", type="string", example="dar info"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -542,6 +544,7 @@ class TeamController extends Controller
      *              @OA\Property(property="is_provider", type="boolean", example="1"),
      *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *              @OA\Property(property="introduction", type="string", example="info about the team"),
+     *              @OA\Property(property="dar_modal_content", type="string", example="dar info"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -575,6 +578,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="is_provider", type="boolean", example="1"),
      *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *                  @OA\Property(property="introduction", type="string", example="info about the team"),
+     *                  @OA\Property(property="dar_modal_content", type="string", example="dar info"),
      *              )
      *          ),
      *      ),
@@ -610,6 +614,7 @@ class TeamController extends Controller
                 'url',
                 'introduction',
                 'team_logo',
+                'dar_modal_content',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -689,6 +694,7 @@ class TeamController extends Controller
      *              @OA\Property(property="is_provider", type="boolean", example="1"),
      *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *              @OA\Property(property="introduction", type="string", example="info about the team"),
+     *              @OA\Property(property="dar_modal_content", type="string", example="dar info"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -722,6 +728,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="is_provider", type="boolean", example="1"),
      *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *                  @OA\Property(property="introduction", type="string", example="info about the team"),
+     *                  @OA\Property(property="dar_modal_content", type="string", example="dar info"),
      *              )
      *          ),
      *      ),
@@ -757,6 +764,7 @@ class TeamController extends Controller
                 'url',
                 'introduction',
                 'team_logo',
+                'dar_modal_content',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
