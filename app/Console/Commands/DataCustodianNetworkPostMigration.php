@@ -70,6 +70,12 @@ class DataCustodianNetworkPostMigration extends Command
                     'Wessex SDE',
                     'NHS England',
                     'KMS SDE',
+                    'Connected Bradford',
+                    'DISCOVER NOW',
+                    'INSIGHT',
+                    'GUT REACTION',
+                    'North West SDE',
+                    'South West SDE',
                 ],
             ],
         ];
