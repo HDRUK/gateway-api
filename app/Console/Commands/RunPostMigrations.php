@@ -80,12 +80,12 @@ class RunPostMigrations extends Command
                 'command' => 'app:team-dar-modal-content',
                 'arguments' => [],
             ], // add team dar modal content
-            //[
-            //    'command' => 'app:data-custodian-network-post-migration',
-            //    'arguments' => [],
-            //], // update data custodian network with details and relations with teams
             [
                 'command' => 'app:data-custodian-network-post-migration',
+                'arguments' => [],
+            ], // update data custodian network with details and relations with teams
+            [
+                'command' => 'app:add-logo-team-post-migration',
                 'arguments' => [],
             ], // update teams.team_logo
             [
