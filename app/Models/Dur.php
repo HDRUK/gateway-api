@@ -145,7 +145,7 @@ class Dur extends Model
     public function publications(): BelongsToMany
     {
         return $this->belongsToMany(Publication::class, 'dur_has_publications')
-            ->withPivot('dur_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
+            ->withPivot('dur_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at')->whereNull('dur_has_publications.deleted_at');
     }
 
     public function userPublications(): BelongsToMany
