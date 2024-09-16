@@ -198,6 +198,11 @@ class RoleSeeder extends Seeder
                     'collections.delete',
 
                     'question-bank.read',
+
+                    'papers.read',
+                    'papers.create',
+                    'papers.update',
+                    'papers.delete',
                 ],
             ],
             'developer' => [
@@ -230,6 +235,11 @@ class RoleSeeder extends Seeder
 
                     'team-members.create',
                     'team-members.update',
+
+                    'papers.read',
+                    'papers.create',
+                    'papers.update',
+                    'papers.delete',
                 ],
             ],
             'metadata.editor' => [
@@ -240,9 +250,6 @@ class RoleSeeder extends Seeder
                     'datasets.update',
 
                     'roles.read',
-
-                    'team-members.update',
-                    'roles.mde.update',
                 ],
             ],
             'custodian.dar.manager' => [
@@ -300,6 +307,12 @@ class RoleSeeder extends Seeder
                     'tools.create',
                     'tools.update',
                     'tools.delete',
+
+                    'papers.read',
+                    'papers.create',
+                    'papers.update',
+                    'papers.delete',
+
                 ],
             ],
             'dar.reviewer' => [
@@ -321,10 +334,6 @@ class RoleSeeder extends Seeder
                     'data-access-applications.status.create',
 
                     'roles.read',
-
-                    'roles.dar-r.update',
-
-                    'team-members.update',
                 ],
             ],
         ];

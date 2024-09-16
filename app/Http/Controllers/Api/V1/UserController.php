@@ -437,14 +437,10 @@ class UserController extends Controller
             $user = User::findOrFail($id);
             if ($user) {
                 $array = [
-                    "name" => $input['firstname'] . " " . $input['lastname'],
-                    "firstname" => $input['firstname'],
-                    "lastname" => $input['lastname'],
-                    "email" => $input['email'],
-                    'secondary_email' => array_key_exists('secondary_email', $input) ?
-                        $input['secondary_email'] : null,
-                    'preferred_email' => array_key_exists('preferred_email', $input) ?
-                        $input['preferred_email'] : 'primary',
+                    'name' => $input['firstname'] . " " . $input['lastname'],
+                    'firstname' => $input['firstname'],
+                    'lastname' => $input['lastname'],
+                    'email' => $input['email'],
                     'provider' =>  Config::get('constants.provider.service'),
                     'providerid' => array_key_exists('providerid', $input) ? $input['providerid'] : null,
                     'sector_id' => $input['sector_id'],
@@ -459,6 +455,14 @@ class UserController extends Controller
                     'mongo_object_id' => $input['mongo_object_id'],
                     'terms' => array_key_exists('terms', $input) ? $input['terms'] : 0,
                 ];
+
+                if (array_key_exists('secondary_email', $input)) {
+                    $array['secondary_email'] = $user->provider === 'open-athens' ? $user->secondary_email : $input['secondary_email'];
+                }
+
+                if(array_key_exists('preferred_email', $input)) {
+                    $array['preferred_email'] = $user->provider === 'open-athens' ? $user->preferred_email : $input['preferred_email'];
+                }
 
                 $arrayUserNotification = array_key_exists('notifications', $input) ?
                     $input['notifications'] : [];
@@ -592,6 +596,7 @@ class UserController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
+            $user = User::findOrFail($id);
             $arrayKeys = [
                 'firstname',
                 'lastname',
@@ -614,6 +619,14 @@ class UserController extends Controller
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
+
+            if (array_key_exists('secondary_email', $array)) {
+                $array['secondary_email'] = $user->provider === 'open-athens' ? $user->secondary_email : $array['secondary_email'];
+            }
+
+            if (array_key_exists('preferred_email', $array)) {
+                $array['preferred_email'] = $user->provider === 'open-athens' ? $user->preferred_email : $input['preferred_email'];
+            }
 
             if (array_key_exists('firstname', $input) && array_key_exists('lastname', $input)) {
                 $array['name'] = $input['firstname'] . ' ' . $input['lastname'];

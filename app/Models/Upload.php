@@ -16,7 +16,8 @@ class Upload extends Model
         'status',
         'error',
         'entity_type',
-        'entity_id'
+        'entity_id',
+        'structural_metadata',
     ];
 
     /**

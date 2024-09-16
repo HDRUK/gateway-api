@@ -1046,10 +1046,29 @@ class ToolController extends Controller
                 if ($value === 0) {
                     continue;
                 }
-                ToolHasTag::updateOrCreate([
+                // This whole thing could be an updateOrCreate, but Eloquent can't cope with the fact
+                // this model has no single primary key column so we have to go around the houses.
+                $toolHasTag = ToolHasTag::withTrashed()->where(
+                    [
                     'tool_id' => (int)$toolId,
                     'tag_id' => (int)$value,
-                ]);
+                    ]
+                )->first();
+                // undelete if it has been soft-deleted
+                if ($toolHasTag && $toolHasTag->deleted_at != null) {
+                    // We have to use a raw query to undelete because Eloquent can't cope with the fact this model has no single primary key column.
+                    \DB::table('tool_has_tags')
+                    ->where(['tool_id' => (int)$toolId,
+                        'tag_id' => (int)$value])
+                        ->update(['deleted_at' => null]);
+                };
+                // create it if required
+                if (!$toolHasTag) {
+                    ToolHasTag::create([
+                        'tool_id' => (int)$toolId,
+                        'tag_id' => (int)$value,
+                    ]);
+                }
             }
 
             return true;
@@ -1121,10 +1140,13 @@ class ToolController extends Controller
     {
         try {
             foreach ($programmingLanguages as $value) {
-                ToolHasProgrammingLanguage::updateOrCreate([
+                ToolHasProgrammingLanguage::withTrashed()->updateOrCreate(
+                    [
                     'tool_id' => (int)$toolId,
                     'programming_language_id' => (int)$value,
-                ]);
+                    ],
+                    ['deleted_at' => null]
+                );
             }
 
             return true;
@@ -1150,10 +1172,13 @@ class ToolController extends Controller
     {
         try {
             foreach ($programmingPackages as $value) {
-                ToolHasProgrammingPackage::updateOrCreate([
+                ToolHasProgrammingPackage::withTrashed()->updateOrCreate(
+                    [
                     'tool_id' => (int)$toolId,
                     'programming_package_id' => (int)$value,
-                ]);
+                    ],
+                    ['deleted_at' => null]
+                );
             }
 
             return true;
@@ -1179,10 +1204,13 @@ class ToolController extends Controller
     {
         try {
             foreach ($typeCategories as $value) {
-                ToolHasTypeCategory::updateOrCreate([
+                ToolHasTypeCategory::withTrashed()->updateOrCreate(
+                    [
                     'tool_id' => (int)$toolId,
                     'type_category_id' => (int)$value,
-                ]);
+                    ],
+                    ['deleted_at' => null]
+                );
             }
 
             return true;

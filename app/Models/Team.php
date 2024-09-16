@@ -52,7 +52,7 @@ class Team extends Model
 
         $validator = Validator::make($this->attributes, [
             'team_logo' => [
-                'nullable', 
+                'nullable',
                 'string',
                 function ($attribute, $value, $fail) use ($customPattern) {
                     if ($value && !filter_var($value, FILTER_VALIDATE_URL) && !preg_match($customPattern, $value)) {
@@ -61,7 +61,7 @@ class Team extends Model
                 },
             ],
         ]);
-    
+
         if ($validator->fails()) {
             throw new ValidationException($validator);
         }
@@ -86,6 +86,7 @@ class Team extends Model
         'is_question_bank',
         'team_logo',
         'introduction',
+        'dar_modal_content',
     ];
 
     /**

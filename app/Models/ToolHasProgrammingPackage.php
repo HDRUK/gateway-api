@@ -26,6 +26,6 @@ class ToolHasProgrammingPackage extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'tool_id', 'programming_package_id',
+        'tool_id', 'programming_package_id', 'deleted_at',
     ];
 }

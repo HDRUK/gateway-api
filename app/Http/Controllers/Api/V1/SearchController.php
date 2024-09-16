@@ -1086,9 +1086,16 @@ class SearchController extends Controller
                 }
             } else {
 
-                $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search';
-                $input['field'] = ['TITLE', 'ABSTRACT', 'METHODS'];
-                $response = Http::post($urlString, $input);
+                $isDoi = ((isset($input['query'])) && ($this->isDoi($input['query'])));
+
+                if ($isDoi) {
+                    $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi';
+                    $response = Http::post($urlString, $input);
+                } else {
+                    $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search';
+                    $input['field'] = ['TITLE', 'ABSTRACT', 'METHODS'];
+                    $response = Http::post($urlString, $input);
+                }
 
                 $pubArray = $response['resultList']['result'];
                 $totalResults = $response['hitCount'];
@@ -1733,5 +1740,11 @@ class SearchController extends Controller
         $durNames = Dur::whereIn('id', $durIds)->where('status', 'ACTIVE')->pluck('project_title')->all();
 
         return $durNames;
+    }
+
+    private function isDoi(string $query): bool
+    {
+        $pattern = '/10.\d{4,9}[-._;()\/:a-zA-Z0-9]+(?=[\s,\/]|$)/i';
+        return (bool) preg_match($pattern, $query);
     }
 }
