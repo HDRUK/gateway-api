@@ -1704,7 +1704,7 @@ class DurController extends Controller
     // publications
     private function checkPublications(int $durId, array $inPublications, int $userId = null)
     {
-        $pubs = DurHasPublication::where(['publication_id' => $durId])->get();
+        $pubs = DurHasPublication::where(['dur_id' => $durId])->get();
         foreach ($pubs as $p) {
             if (!in_array($p->publication_id, $this->extractInputIdToArray($inPublications))) {
                 $this->deleteDurHasPublications($durId, $p->publication_id);
