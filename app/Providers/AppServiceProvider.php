@@ -45,8 +45,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Passport::tokensCan([
             'openid' => 'openid',
-            'email' => 'email',
             'profile' => 'profile',
+            'email' => 'email',
             'rquestroles' => 'rquestroles',
         ]);
 

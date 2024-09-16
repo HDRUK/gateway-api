@@ -93,16 +93,17 @@ class CustomAuthorizationController extends Controller
         ]);
 
         // Debugging: Log request parameters
-        \Log::info('Request parameters:', $request->all());
+        \Log::info('Request parameters : ' . json_encode($request->all()));
 
         return $this->withErrorHandling(function () use ($psrRequest, $request, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
+            \Log::info('authRequest :: ' . json_encode($authRequest));
 
             // Additional debugging
-            \Log::info('Auth request:', [
+            \Log::info('Auth request : ' . json_encode([
                 'grant_type' => $request->input('grant_type'),
                 'client_id' => $request->input('client_id'),
-            ]);
+            ]));
 
             return $this->approveRequest($authRequest, $userId, $request);
         });
@@ -130,8 +131,14 @@ class CustomAuthorizationController extends Controller
      * @param  Integer  $userId
      * @return \Psr\Http\Message\ResponseInterface
      */
-    private function approveRequest($authRequest, int $userId)
+    private function approveRequest($authRequest, int $userId, LaravelRequest $request)
     {
+        \Log::info('Approving authorization request', [
+            'user_id' => $userId,
+            'client_id' => $authRequest->getClient()->getIdentifier(),
+            'grant_type' => $request->input('grant_type'),
+        ]);
+
         $authRequest->setUser(new User($userId));
 
         $authRequest->setAuthorizationApproved(true);
