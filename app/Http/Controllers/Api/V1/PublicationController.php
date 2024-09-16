@@ -403,6 +403,9 @@ class PublicationController extends Controller
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
             $this->checkTools($publicationId, $tools, (int)$jwtUser['id']);
 
+            $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
+            $this->checkDurs($publicationId, $durs, (int)$jwtUser['id']);
+
             $currentPublication = Publication::where('id', $publicationId)->first();
             if($currentPublication->status === Publication::STATUS_ACTIVE) {
                 $this->indexElasticPublication($publicationId);
@@ -550,6 +553,9 @@ class PublicationController extends Controller
 
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
             $this->checkTools($id, $tools, (int)$jwtUser['id']);
+
+            $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
+            $this->checkDurs($id, $durs, (int)$jwtUser['id']);
 
             $currentPublication = Publication::where('id', $id)->first();
             if($currentPublication->status === Publication::STATUS_ACTIVE) {
@@ -761,6 +767,9 @@ class PublicationController extends Controller
                         $this->checkTools($id, $tools, $jwtUser['id'] ?? null);
                     }
 
+                    $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
+                    $this->checkDurs($id, $durs, (int)$jwtUser['id']);
+
                     // Index the updated publication in Elasticsearch
                     $this->indexElasticPublication((int) $id);
                 } elseif ($originalStatus === Publication::STATUS_ACTIVE) {
@@ -892,7 +901,7 @@ class PublicationController extends Controller
     private function getPublicationById(int $publicationId)
     {
 
-        $publication = Publication::with(['tools'])
+        $publication = Publication::with(['tools', 'durs'])
         ->withTrashed()
         ->where(['id' => $publicationId])
         ->first();
@@ -1055,6 +1064,101 @@ class PublicationController extends Controller
             ]);
 
             throw new Exception('deletePublicationHasTools :: ' . $e->getMessage());
+        }
+    }
+
+    // DURs
+    private function checkDurs(int $publicationId, array $inDurs, int $userId = null)
+    {
+        $durs = DurHasPublication::where(['publication_id' => $publicationId])->get();
+        // var_dump('durs', $durs);
+        foreach ($durs as $d) {
+            // var_dump('dur_id', $d->dur_id);
+            // var_dump('inDurs', $this->extractInputIdToArray($inDurs));
+            if (!in_array($d->dur_id, $this->extractInputIdToArray($inDurs))) {
+                // var_dump('deleteDurHasPublications', $d->dur_id, $publicationId);
+                $this->deleteDurHasPublications($d->dur_id, $publicationId);
+            }
+        }
+
+        foreach ($inDurs as $dur) {
+            $checking = $this->checkInDurHasPublications((int)$dur['id'], $publicationId);
+
+            if (!$checking) {
+                $this->addDurHasPublication($dur, $publicationId, $userId);
+            }
+        }
+    }
+
+    private function addDurHasPublication(array $dur, int $publicationId, int $userId = null)
+    {
+        try {
+            $arrCreate = [
+                'dur_id' => $dur['id'],
+                'publication_id' => $publicationId,
+            ];
+
+            if (array_key_exists('user_id', $dur)) {
+                $arrCreate['user_id'] = (int)$dur['user_id'];
+            } elseif ($userId) {
+                $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('reason', $dur)) {
+                $arrCreate['reason'] = $dur['reason'];
+            }
+
+            return DurHasPublication::updateOrCreate(
+                $arrCreate,
+                [
+                    'dur_id' => $dur['id'],
+                    'publication_id' => $publicationId,
+                ]
+            );
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('addDurHasPublication :: ' . $e->getMessage());
+        }
+    }
+
+    private function checkInDurHasPublications(int $durId, int $publicationId)
+    {
+        try {
+            return DurHasPublication::where([
+                'dur_id' => $durId,
+                'publication_id' => $publicationId,
+            ])->first();
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('checkInDurHasPublications :: ' . $e->getMessage());
+        }
+    }
+
+    private function deleteDurHasPublications(int $durId, int $publicationId)
+    {
+        try {
+            return DurHasPublication::where([
+                'dur_id' => $durId,
+                'publication_id' => $publicationId,
+            ])->delete();
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('deleteDurHasPublications :: ' . $e->getMessage());
         }
     }
 
