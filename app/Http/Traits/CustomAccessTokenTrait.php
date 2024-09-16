@@ -96,7 +96,7 @@ trait CustomAccessTokenTrait
             ->withClaim('realm_access', $realmAccess)
             ->withClaim('resource_access', $resourceAccess)
             ->withClaim('scope', "openid profile email rquestroles")
-            ->withClaim('rquestroles', ['GENERAL_ACCESS', 'SYSTEM_ADMIN'])
+            ->withClaim('rquestroles', $rquestroles)
             ->withHeader('kid', env('JWT_KID', 'jwtkidnotfound'))
             ->getToken($this->jwtConfiguration->signer(), $this->jwtConfiguration->signingKey());
     }

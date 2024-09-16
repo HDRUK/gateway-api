@@ -60,7 +60,7 @@ trait CustomIdTokenTrait
                            ->withClaim('profile', $profile)
                            ->withClaim('given_name', $claims['given_name'])
                            ->withClaim('family_name', $claims['family_name'])
-                           ->withClaim('rquestroles', ['GENERAL_ACCESS', 'SYSTEM_ADMIN'])
+                           ->withClaim('rquestroles', $claims['rquestroles'])
                            ->withHeader('kid', env('JWT_KID', 'jwtkidnotfound'))
                            ->getToken($config->signer(), $config->signingKey());
 

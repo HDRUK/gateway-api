@@ -76,14 +76,6 @@ class CustomAuthorizationController extends Controller
             'nonce' => $request->query('nonce'),
         ]);
 
-        $queryParams = $psrRequest->getQueryParams();
-
-        // Add or modify the 'response_type' parameter
-        $queryParams['response_type'] = 'code'; // Set the desired value
-
-        // Create a new PSR-7 request with the updated query parameters
-        $psrRequest = $psrRequest->withQueryParams($queryParams);
-
         return $this->withErrorHandling(function () use ($psrRequest, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
             return $this->approveRequest($authRequest, $userId);
