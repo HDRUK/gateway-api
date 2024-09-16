@@ -1087,12 +1087,8 @@ class PublicationController extends Controller
     private function checkDurs(int $publicationId, array $inDurs, int $userId = null)
     {
         $durs = DurHasPublication::where(['publication_id' => $publicationId])->get();
-        // var_dump('durs', $durs);
         foreach ($durs as $d) {
-            // var_dump('dur_id', $d->dur_id);
-            // var_dump('inDurs', $this->extractInputIdToArray($inDurs));
             if (!in_array($d->dur_id, $this->extractInputIdToArray($inDurs))) {
-                // var_dump('deleteDurHasPublications', $d->dur_id, $publicationId);
                 $this->deleteDurHasPublications($d->dur_id, $publicationId);
             }
         }
