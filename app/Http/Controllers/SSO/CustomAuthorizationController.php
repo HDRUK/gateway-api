@@ -68,8 +68,6 @@ class CustomAuthorizationController extends Controller
         $user = UserModel::find($userId);
         Auth::login($user);
 
-        // end mock user id
-
         // this is only temporary - it needs to be there when the flow starts in the backend
         OauthUser::where('user_id', $userId)->delete();
         OauthUser::create([
