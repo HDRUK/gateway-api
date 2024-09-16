@@ -56,7 +56,7 @@ class TypeCategoryController extends Controller
 
             $typeCategories = TypeCategory::where('enabled', 1)
                 ->paginate(function ($total) use ($perPage) {
-                    if($perPage == 'all') {
+                    if($perPage === -1) {
                         return $total;
                     }
                     return $perPage;
