@@ -8,13 +8,16 @@ use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\AuditLogSeeder;
 
-use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AuditLogTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public const TEST_URL = '/api/v1/audit_logs';
 
@@ -22,18 +25,12 @@ class AuditLogTest extends TestCase
 
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
             AuditLogSeeder::class,
         ]);
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
     }
 
     /**

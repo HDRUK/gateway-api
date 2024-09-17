@@ -5,14 +5,18 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use Database\Seeders\FeatureSeeder;
-use Tests\Traits\Authorization;
+
+use Tests\Traits\MockExternalApis;
+
 use App\Models\Feature as FeatureModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class FeatureTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public const TEST_URL = '/api/v1/features';
 
@@ -25,17 +29,11 @@ class FeatureTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             FeatureSeeder::class,
         ]);
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
     }
 
     /**

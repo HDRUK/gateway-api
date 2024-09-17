@@ -17,12 +17,14 @@ use Database\Seeders\KeywordSeeder;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 
-use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
 
 class FormHydrationTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     protected $header = [];
 
@@ -33,7 +35,7 @@ class FormHydrationTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
@@ -42,13 +44,6 @@ class FormHydrationTest extends TestCase
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
         ]);
-
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
 
         $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min.json', 0, null);
         $json = json_decode($jsonFile, true);

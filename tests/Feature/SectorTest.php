@@ -7,30 +7,28 @@ use Config;
 use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SectorSeeder;
+
+use Tests\Traits\MockExternalApis;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SectorTest extends TestCase
 {
     use RefreshDatabase;
-    private $accessToken = '';
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
+
+    protected $header = [];
 
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
             SectorSeeder::class,
         ]);
-
-        $response = $this->postJson('api/v1/auth', [
-            'email' => 'developers@hdruk.ac.uk',
-            'password' => 'Watch26Task?',
-        ]);
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-
-        $content = $response->decodeResponseJson();
-        $this->accessToken = $content['access_token'];
     }
 
     /**
@@ -40,9 +38,7 @@ class SectorTest extends TestCase
      */
     public function test_the_application_can_list_sectors()
     {
-        $response = $this->get('api/v1/sectors', [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->get('api/v1/sectors', $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -85,9 +81,7 @@ class SectorTest extends TestCase
                 'name' => 'Test Sector',
                 'enabled' => false,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -97,9 +91,7 @@ class SectorTest extends TestCase
 
         $content = $response->decodeResponseJson();
 
-        $response = $this->get('api/v1/sectors/' . $content['data'], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->get('api/v1/sectors/' . $content['data'], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -128,9 +120,7 @@ class SectorTest extends TestCase
                 'name' => 'Test Sector',
                 'enabled' => false,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -162,9 +152,7 @@ class SectorTest extends TestCase
                 'name' => 'Test Sector',
                 'enabled' => false,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -188,9 +176,7 @@ class SectorTest extends TestCase
                 'name' => 'Updated Test Sector',
                 'enabled' => true,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -219,9 +205,7 @@ class SectorTest extends TestCase
                 'name' => 'Test Sector',
                 'enabled' => false,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -243,9 +227,7 @@ class SectorTest extends TestCase
                 'name' => 'Updated Test Sector',
                 'enabled' => true,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -265,9 +247,7 @@ class SectorTest extends TestCase
             [
                 'name' => 'Updated Test Sector - e1',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseEdit1->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -287,9 +267,7 @@ class SectorTest extends TestCase
                 'name' => 'Updated Test Sector - e2',
                 'enabled' => false,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseEdit2->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -319,9 +297,7 @@ class SectorTest extends TestCase
                 'name' => 'Test Sector',
                 'enabled' => false,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -342,9 +318,7 @@ class SectorTest extends TestCase
             'DELETE',
             'api/v1/sectors/' . $content['data'],
             [],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))

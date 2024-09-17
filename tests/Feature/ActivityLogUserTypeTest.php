@@ -7,31 +7,28 @@ use Config;
 use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ActivityLogUserTypeSeeder;
+
+use Tests\Traits\MockExternalApis;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ActivityLogUserTypeTest extends TestCase
 {
     use RefreshDatabase;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
-    private $accessToken = '';
+    protected $header = [];
 
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
             ActivityLogUserTypeSeeder::class,
         ]);
-
-        $response = $this->postJson('api/v1/auth', [
-            'email' => 'developers@hdruk.ac.uk',
-            'password' => 'Watch26Task?',
-        ]);
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-
-        $content = $response->decodeResponseJson();
-        $this->accessToken = $content['access_token'];
     }
 
     /**
@@ -41,9 +38,7 @@ class ActivityLogUserTypeTest extends TestCase
      */
     public function test_the_application_can_list_activity_log_user_types()
     {
-        $response = $this->get('api/v1/activity_log_user_types', [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->get('api/v1/activity_log_user_types', $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -83,9 +78,7 @@ class ActivityLogUserTypeTest extends TestCase
             [
                 'name' => 'test log user type',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -96,9 +89,7 @@ class ActivityLogUserTypeTest extends TestCase
 
         $content = $response->decodeResponseJson();
 
-        $response = $this->get('api/v1/activity_log_user_types/' . $content['data'], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->get('api/v1/activity_log_user_types/' . $content['data'], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -124,9 +115,7 @@ class ActivityLogUserTypeTest extends TestCase
             [
                 'name' => 'test activity log user type',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -157,9 +146,7 @@ class ActivityLogUserTypeTest extends TestCase
             [
                 'name' => 'test activity log user type',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -182,9 +169,7 @@ class ActivityLogUserTypeTest extends TestCase
             [
                 'name' => 'updated activity log user type'
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $content = $response->decodeResponseJson();
@@ -206,9 +191,7 @@ class ActivityLogUserTypeTest extends TestCase
             [
                 'name' => 'test activity log user type',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -232,9 +215,7 @@ class ActivityLogUserTypeTest extends TestCase
             [
                 'name' => 'updated activity log user type'
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $contentUpdate = $responseUpdate->decodeResponseJson();
@@ -248,9 +229,7 @@ class ActivityLogUserTypeTest extends TestCase
             [
 
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $contentUpdateOne = $responseUpdateOne->decodeResponseJson();
@@ -264,9 +243,7 @@ class ActivityLogUserTypeTest extends TestCase
             [
                 'name' => 'updated activity log user type edit'
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $contentUpdateSec = $responseUpdateSec->decodeResponseJson();
@@ -289,9 +266,7 @@ class ActivityLogUserTypeTest extends TestCase
             [
                 'name' => 'to be deleted',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -312,9 +287,7 @@ class ActivityLogUserTypeTest extends TestCase
             'DELETE',
             'api/v1/activity_log_user_types/' . $content['data'],
             [],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))

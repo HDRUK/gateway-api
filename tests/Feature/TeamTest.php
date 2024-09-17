@@ -18,7 +18,8 @@ class TeamTest extends TestCase
         setUp as commonSetUp;
     }
 
-    private $accessToken = '';
+    protected $header = [];
+
 
     public function setUp(): void
     {
@@ -27,16 +28,6 @@ class TeamTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
         ]);
-
-        $response = $this->postJson('api/v1/auth', [
-            'email' => 'developers@hdruk.ac.uk',
-            'password' => 'Watch26Task?',
-        ]);
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-
-        $content = $response->decodeResponseJson();
-        $this->accessToken = $content['access_token'];
-
     }
 
     /**
@@ -46,9 +37,7 @@ class TeamTest extends TestCase
      */
     public function test_the_application_can_list_teams()
     {
-        $response = $this->get('api/v1/teams', [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->get('api/v1/teams', $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -97,9 +86,7 @@ class TeamTest extends TestCase
                 'enabled' => 1,
                 'email' => 'joe@example.com',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
@@ -132,9 +119,7 @@ class TeamTest extends TestCase
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -146,9 +131,7 @@ class TeamTest extends TestCase
         $content = $response->decodeResponseJson();
         $teamId = $content['data'];
 
-        $response = $this->get('api/v1/teams/' .$teamId, [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->get('api/v1/teams/' .$teamId, $this->header);
         $content = $response->decodeResponseJson();
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -188,9 +171,7 @@ class TeamTest extends TestCase
             'DELETE',
             'api/v1/teams/' . $teamId . '?deletePermanently=true',
             [],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -207,9 +188,7 @@ class TeamTest extends TestCase
     public function test_the_application_can_show_team_summary()
     {
         $id = Team::where(['enabled' => 1])->first()->id;
-        $response = $this->get('api/v1/teams/' . $id . '/summary', [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->get('api/v1/teams/' . $id . '/summary', $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -246,9 +225,7 @@ class TeamTest extends TestCase
                 'enabled' => 1,
                 'email' => 'joe@example.com',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
@@ -281,9 +258,7 @@ class TeamTest extends TestCase
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -300,9 +275,7 @@ class TeamTest extends TestCase
             'DELETE',
             'api/v1/teams/' . $teamId . '?deletePermanently=true',
             [],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -329,9 +302,7 @@ class TeamTest extends TestCase
                 'enabled' => 1,
                 'email' => 'joe@example.com',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
@@ -365,9 +336,7 @@ class TeamTest extends TestCase
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -403,9 +372,7 @@ class TeamTest extends TestCase
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -425,9 +392,7 @@ class TeamTest extends TestCase
             'DELETE',
             'api/v1/teams/' . $teamId . '?deletePermanently=true',
             [],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -454,9 +419,7 @@ class TeamTest extends TestCase
                 'enabled' => 1,
                 'email' => 'joe@example.com',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
@@ -489,9 +452,7 @@ class TeamTest extends TestCase
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -531,9 +492,7 @@ class TeamTest extends TestCase
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -556,9 +515,7 @@ class TeamTest extends TestCase
                 'name' => 'Updated Test Team e1',
                 'allows_messaging' => 0,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseEdit1->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -579,9 +536,7 @@ class TeamTest extends TestCase
             [
                 'enabled' => 0,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseEdit2->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -599,9 +554,7 @@ class TeamTest extends TestCase
             'DELETE',
             'api/v1/teams/' . $id . '?deletePermanently=true',
             [],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -628,9 +581,7 @@ class TeamTest extends TestCase
                 'enabled' => 1,
                 'email' => 'joe@example.com',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
@@ -662,9 +613,7 @@ class TeamTest extends TestCase
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
                 'introduction' => fake()->sentence(),
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -680,9 +629,7 @@ class TeamTest extends TestCase
             'DELETE',
             'api/v1/teams/' . $content['data'] . '?deletePermanently=true',
             [],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
