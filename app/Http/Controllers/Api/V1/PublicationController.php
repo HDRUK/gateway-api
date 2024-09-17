@@ -56,6 +56,13 @@ class PublicationController extends Controller
      *       description="Filter tools by owner id"
      *    ),
      *    @OA\Parameter(
+     *       name="team_id",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="int"),
+     *       description="Filter tools by team id"
+     *    ),
+     *    @OA\Parameter(
      *       name="status",
      *       in="query",
      *       description="Publication status to filter by ('ACTIVE', 'DRAFT', 'ARCHIVED')",
@@ -89,6 +96,7 @@ class PublicationController extends Controller
             $mongoId = $request->query('mongo_id', null);
             $paperTitle = $request->query('paper_title', null);
             $ownerId = $request->query('owner_id', null);
+            $teamId = $request->query('team_id', null);
             $filterStatus = $request->query('status', null);
             $perPage = request('per_page', Config::get('constants.per_page'));
             $withRelated = $request->boolean('with_related', true);
@@ -106,6 +114,9 @@ class PublicationController extends Controller
             })
             ->when($ownerId, function ($query) use ($ownerId) {
                 return $query->where('owner_id', '=', $ownerId);
+            })
+            ->when($teamId, function ($query) use ($teamId) {
+                return $query->where('team_id', '=', $teamId);
             })
             ->when(
                 $filterStatus,
@@ -184,6 +195,16 @@ class PublicationController extends Controller
      *          description="owner id",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="team_id",
+     *       in="query",
+     *       required=false,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -200,8 +221,11 @@ class PublicationController extends Controller
     {
         try {
             $ownerId = $request->query('owner_id', null);
+            $teamId = $request->query('team_id', null);
             $counts = Publication::when($ownerId, function ($query) use ($ownerId) {
                 return $query->where('owner_id', '=', $ownerId);
+            })->when($teamId, function ($query) use ($teamId) {
+                return $query->where('team_id', '=', $teamId);
             })->withTrashed()
                 ->select($field)
                 ->get()
@@ -382,6 +406,7 @@ class PublicationController extends Controller
                 'abstract' => $input['abstract'],
                 'url' => array_key_exists('url', $input) ? $input['url'] : null,
                 'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
+                'team_id' => array_key_exists('team_id', $input) ? $input['team_id'] : null,
                 'owner_id' => (int)$jwtUser['id'],
                 'status' => $request['status'],
             ]);
@@ -392,6 +417,9 @@ class PublicationController extends Controller
 
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
             $this->checkTools($publicationId, $tools, (int)$jwtUser['id']);
+
+            $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
+            $this->checkDurs($publicationId, $durs, (int)$jwtUser['id']);
 
             $currentPublication = Publication::where('id', $publicationId)->first();
             if($currentPublication->status === Publication::STATUS_ACTIVE) {
@@ -533,6 +561,7 @@ class PublicationController extends Controller
                 'url' => array_key_exists('url', $input) ? $input['url'] : null,
                 'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
                 'status' => array_key_exists('status', $input) ? $input['status'] : Publication::STATUS_DRAFT,
+                'team_id' => array_key_exists('team_id', $input) ? $input['team_id'] : null,
             ]);
 
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
@@ -540,6 +569,9 @@ class PublicationController extends Controller
 
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
             $this->checkTools($id, $tools, (int)$jwtUser['id']);
+
+            $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
+            $this->checkDurs($id, $durs, (int)$jwtUser['id']);
 
             $currentPublication = Publication::where('id', $id)->first();
             if($currentPublication->status === Publication::STATUS_ACTIVE) {
@@ -751,6 +783,9 @@ class PublicationController extends Controller
                         $this->checkTools($id, $tools, $jwtUser['id'] ?? null);
                     }
 
+                    $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
+                    $this->checkDurs($id, $durs, (int)$jwtUser['id']);
+
                     // Index the updated publication in Elasticsearch
                     $this->indexElasticPublication((int) $id);
                 } elseif ($originalStatus === Publication::STATUS_ACTIVE) {
@@ -882,7 +917,7 @@ class PublicationController extends Controller
     private function getPublicationById(int $publicationId)
     {
 
-        $publication = Publication::with(['tools'])
+        $publication = Publication::with(['tools', 'durs'])
         ->withTrashed()
         ->where(['id' => $publicationId])
         ->first();
@@ -1045,6 +1080,97 @@ class PublicationController extends Controller
             ]);
 
             throw new Exception('deletePublicationHasTools :: ' . $e->getMessage());
+        }
+    }
+
+    // DURs
+    private function checkDurs(int $publicationId, array $inDurs, int $userId = null)
+    {
+        $durs = DurHasPublication::where(['publication_id' => $publicationId])->get();
+        foreach ($durs as $d) {
+            if (!in_array($d->dur_id, $this->extractInputIdToArray($inDurs))) {
+                $this->deleteDurHasPublications($d->dur_id, $publicationId);
+            }
+        }
+
+        foreach ($inDurs as $dur) {
+            $checking = $this->checkInDurHasPublications((int)$dur['id'], $publicationId);
+
+            if (!$checking) {
+                $this->addDurHasPublication($dur, $publicationId, $userId);
+            }
+        }
+    }
+
+    private function addDurHasPublication(array $dur, int $publicationId, int $userId = null)
+    {
+        try {
+            $arrCreate = [
+                'dur_id' => $dur['id'],
+                'publication_id' => $publicationId,
+            ];
+
+            if (array_key_exists('user_id', $dur)) {
+                $arrCreate['user_id'] = (int)$dur['user_id'];
+            } elseif ($userId) {
+                $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('reason', $dur)) {
+                $arrCreate['reason'] = $dur['reason'];
+            }
+
+            return DurHasPublication::updateOrCreate(
+                $arrCreate,
+                [
+                    'dur_id' => $dur['id'],
+                    'publication_id' => $publicationId,
+                ]
+            );
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('addDurHasPublication :: ' . $e->getMessage());
+        }
+    }
+
+    private function checkInDurHasPublications(int $durId, int $publicationId)
+    {
+        try {
+            return DurHasPublication::where([
+                'dur_id' => $durId,
+                'publication_id' => $publicationId,
+            ])->first();
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('checkInDurHasPublications :: ' . $e->getMessage());
+        }
+    }
+
+    private function deleteDurHasPublications(int $durId, int $publicationId)
+    {
+        try {
+            return DurHasPublication::where([
+                'dur_id' => $durId,
+                'publication_id' => $publicationId,
+            ])->delete();
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('deleteDurHasPublications :: ' . $e->getMessage());
         }
     }
 

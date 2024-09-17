@@ -5,6 +5,7 @@ namespace App\Http\Traits;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasTool;
+use App\Models\PublicationHasDatasetVersion;
 
 trait DatasetFetch
 {
@@ -41,6 +42,9 @@ trait DatasetFetch
                 $dataset->setAttribute('link_type', $link_type['link_type']);
                 $metadata = $dataset->lastMetadata();
                 $dataset->setAttribute('title', $metadata["metadata"]["summary"]["title"]);
+            } elseif ($linkageTable instanceof PublicationHasDatasetVersion) {
+                $link_type = PublicationHasDatasetVersion::where($localTableId, $this->id)->whereIn('dataset_version_id', $datasetVersionIds)->select(['link_type'])->first();
+                $dataset->setAttribute('link_type', $link_type['link_type']);
             }
         }
 
