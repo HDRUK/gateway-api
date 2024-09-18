@@ -96,6 +96,22 @@ class Email extends Mailable
         if (isset($this->template['buttons'])) {
             $buttons = json_decode($this->template['buttons'], true);
             foreach ($buttons['replacements'] as $b) {
+                $containsEnv = strpos($b['actual'], 'env(');
+
+                if ($containsEnv !== false) {
+                    $start = $containsEnv + strlen('env(');
+                    $end = strpos($b['actual'], ')', $start);
+                    $subject = substr($b['actual'], $start, $end - $start);
+
+                    $b['actual'] = str_replace('env(' . $subject . ')', env($subject), $b['actual']);
+                }
+
+                // In case of dynamic values within the 'actual' link we need to replace those
+                // with anything incoming too. Such as TEAM_ID etc.
+                foreach ($this->replacements as $k => $v) {
+                    $b['actual'] = str_replace($k, $v, $b['actual']);
+                }
+
                 $this->template['body'] = str_replace($b['placeholder'], $b['actual'], $this->template['body']);
             }
         }

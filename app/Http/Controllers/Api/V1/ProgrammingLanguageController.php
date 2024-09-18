@@ -48,12 +48,18 @@ class ProgrammingLanguageController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $perPage = (int) request('per_page', Config::get('constants.per_page'));
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $programming_languages = ProgrammingLanguage::where('enabled', 1)
-                ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+                ->paginate(function ($total) use ($perPage) {
+                    if($perPage === -1) {
+                        return $total;
+                    }
+                    return $perPage;
+                }, ['*'], 'page');
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
