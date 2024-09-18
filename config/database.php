@@ -86,6 +86,28 @@ return [
             ],
         ],
 
+        'omop' => [
+            'driver' => 'mysql',
+            'host' => env('DB_OMOP_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('DB_OMOP_PORT', env('DB_PORT', '3306')),
+            'database' => env('DB_OMOP_DATABASE', 'OMOP'),
+            'username' => env('DB_OMOP_USERNAME', env('DB_USERNAME', 'forge')),
+            'password' => env('DB_OMOP_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('DB_OMOP_SOCKET', env('DB_SOCKET', '')),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => [
+                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                PDO::MYSQL_ATTR_SSL_CERT => env('MYSQL_ATTR_SSL_CERT'),
+                PDO::MYSQL_ATTR_SSL_KEY => env('MYSQL_ATTR_SSL_KEY'),
+            ],
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
