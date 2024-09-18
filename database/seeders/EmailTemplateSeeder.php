@@ -157,6 +157,16 @@ class EmailTemplateSeeder extends Seeder
 
             </mj-body>
         </mjml>',
+        'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/team-management"
+                    }
+                ]
+            }
+        '
         ]);
 
         // custodian.team.admin - remove
@@ -231,7 +241,7 @@ class EmailTemplateSeeder extends Seeder
                 </mj-section>
 
             </mj-body>
-        </mjml>',
+        </mjml>'
         ]);
 
         // custodian.dar.manager - assign
@@ -290,8 +300,6 @@ class EmailTemplateSeeder extends Seeder
                                 </li>
                             </ul>
                         </mj-text>
-                        <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View enquiries</mj-button>
-                        <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_2_URL]]">View data access requests</mj-button>
                     </mj-column>
                 </mj-section>
 
@@ -307,22 +315,7 @@ class EmailTemplateSeeder extends Seeder
                 </mj-section>
 
             </mj-body>
-        </mjml>
-          ',
-            'buttons' => '
-                {
-                "replacements": [
-                    {
-                        "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "https://someurl.com/path/to/something"
-                    },
-                    {
-                        "placeholder": "[[BUTTON_2_URL]]",
-                        "actual": "https://someurl2.com/path/to/something"
-                    }
-                    ]
-                }
-          ',
+        </mjml>',
         ]);
 
         // custodian.dar.manager - remove
@@ -454,7 +447,6 @@ class EmailTemplateSeeder extends Seeder
                                 </li>
                                 </ul>
                             </mj-text>
-                            <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View data access requests</mj-button>
                         </mj-column>
                     </mj-section>
 
@@ -613,6 +605,16 @@ class EmailTemplateSeeder extends Seeder
             </mj-body>
         </mjml>
           ',
+          'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                    }
+                ]
+            }
+          '
         ]);
 
         // developer - remove
@@ -752,6 +754,16 @@ class EmailTemplateSeeder extends Seeder
 
             </mj-body>
         </mjml>',
+        'buttons' => '
+        {
+            "replacements": [
+                {
+                    "placeholder": "[[BUTTON_1_URL]]",
+                    "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/datasets"
+                }
+            ]
+        }
+        '
         ]);
 
         // metadata.editor - remove
@@ -895,6 +907,16 @@ class EmailTemplateSeeder extends Seeder
 
                     </mj-body>
                 </mjml>',
+                'buttons' => '
+                {
+                    "replacements": [
+                        {
+                            "placeholder": "[[BUTTON_1_URL]]",
+                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/datasets"
+                        }
+                    ]
+                }
+            '
           ]);
 
         // custodian.metadata.manager - remove
@@ -1389,6 +1411,16 @@ class EmailTemplateSeeder extends Seeder
                     </mj-body>
                 </mjml>
           ',
+          'buttons' => '
+          {
+              "replacements": [
+                  {
+                      "placeholder": "[[COHORT_DISCOVERY_RENEW_URL]]",
+                      "actual": "env(GATEWAY_URL)/en/about/cohort-discovery-request"
+                  }
+              ]
+          }
+        '
         ]);
 
         // Cohort Discovery access will soon expire
@@ -1457,6 +1489,16 @@ class EmailTemplateSeeder extends Seeder
                     </mj-body>
                 </mjml>
             ',
+            'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[COHORT_DISCOVERY_RENEW_URL]]",
+                        "actual": "env(GATEWAY_URL)/en/about/cohort-discovery-request"
+                    }
+                ]
+            }
+          '
         ]);
 
         // Cohort Discovery access approved
@@ -1508,7 +1550,6 @@ class EmailTemplateSeeder extends Seeder
                                     </mj-text>
                                 </mj-text>
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[COHORT_DISCOVERY_ACCESS_URL]]">Access Cohort Discovery</mj-button>
-                                <mj-button css-class="main-section" background-color="#00ACCA" href="[[COHORT_DISCOVERY_USING_URL]]">Using Cohort Discovery</mj-button>
                             </mj-column>
                         </mj-section>
 
@@ -1526,6 +1567,16 @@ class EmailTemplateSeeder extends Seeder
                     </mj-body>
                 </mjml>
             ',
+            'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[COHORT_DISCOVERY_ACCESS_URL]]",
+                        "actual": "env(RQUEST_URL)/bcrquest/cohorts"
+                    }
+                ]
+            }
+            '
         ]);
 
         // Cohort Discovery access rejected
@@ -1837,7 +1888,7 @@ class EmailTemplateSeeder extends Seeder
                             [[API_NAME]] has been created to enable automated integration with the HDR Innovation Gateway.<br></br>
                             To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
                         </mj-text>
-                        <mj-button css-class="main-section" background-color="#00ACCA" href="#">View app integrations</mj-button>
+                        <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                     </mj-column>
                     </mj-section>
                     <mj-section>
@@ -1859,6 +1910,16 @@ class EmailTemplateSeeder extends Seeder
             'identifier' => 'apiintegration.developer.create',
             'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
             'body' => $apiIntegrationDevCreateBody,
+            'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/api-management"
+                    }
+                ]
+            }
+            '
         ]);
 
         // APIintegration - create - team.admin
@@ -1866,6 +1927,16 @@ class EmailTemplateSeeder extends Seeder
             'identifier' => 'apiintegration.team.admin.create',
             'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
             'body' => $apiIntegrationDevCreateBody,
+            'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/api-management"
+                    }
+                ]
+            }
+            '
         ]);
 
         // APIintegration - create - other roles
@@ -2087,7 +2158,7 @@ class EmailTemplateSeeder extends Seeder
                         This is an automated notification that [[DISABLER]] disabled an integration on the HDR Innovation Gateway.<br></br>
                             To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
                     </mj-text>
-                    <mj-button css-class="main-section" background-color="#00ACCA" href="#">View integrations</mj-button>
+                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
                     </mj-column>
                 </mj-section>
                 <mj-section>
@@ -2109,6 +2180,16 @@ class EmailTemplateSeeder extends Seeder
             'identifier' => 'fmaintegration.developer.disable',
             'subject' => $integrationDisabledSubject,
             'body' => $integrationDevDisabledBody,
+            'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                    }
+                ]
+            }
+            '
         ]);
 
         // Integrations - disabled - team.admin
@@ -2116,6 +2197,16 @@ class EmailTemplateSeeder extends Seeder
             'identifier' => 'fmaintegration.team.admin.disable',
             'subject' => $integrationDisabledSubject,
             'body' => $integrationDevDisabledBody,
+            'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                    }
+                ]
+            }
+            '
         ]);
 
         // Integrations - disabled - other roles
@@ -2212,7 +2303,7 @@ class EmailTemplateSeeder extends Seeder
                         This is an automated notification that [[DISABLER]] deleted an integration on the HDR Innovation Gateway. This is not reversible.<br></br>
                         To review or edit integrations, click the link below or visit your account on the Gateway.<br></br>
                     </mj-text>
-                    <mj-button css-class="main-section" background-color="#00ACCA" href="#">View integrations</mj-button>
+                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
                     </mj-column>
                 </mj-section>
                 <mj-section>
@@ -2234,6 +2325,16 @@ class EmailTemplateSeeder extends Seeder
             'identifier' => 'integration.developer.delete',
             'subject' => $integrationDeletedSubject,
             'body' => $integrationDevDeletedBody,
+            'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                    }
+                ]
+            }
+            '
         ]);
 
         // Integrations - deleted - team.admin
@@ -2241,6 +2342,16 @@ class EmailTemplateSeeder extends Seeder
             'identifier' => 'integration.team.admin.delete',
             'subject' => $integrationDeletedSubject,
             'body' => $integrationDevDeletedBody,
+            'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                    }
+                ]
+            }
+            '
         ]);
 
         // Integrations - deleted - other roles
@@ -2337,7 +2448,7 @@ class EmailTemplateSeeder extends Seeder
                         This is an automated notification that on [[DATE_OF_ERROR]]  there was an error during the scheduled cloud run for the [[INTEGRATION_TYPE]] integration. Summary of the synchronisations is below.<br></br>
                         To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
                     </mj-text>
-                    <mj-button css-class="main-section" background-color="#00ACCA" href="#">View integrations</mj-button>
+                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
                     </mj-column>
                 </mj-section>
                 <mj-section>
@@ -2359,6 +2470,16 @@ class EmailTemplateSeeder extends Seeder
             'identifier' => 'integration.developer.error',
             'subject' => $syncErrorSubject,
             'body' => $syncErrorDevBody,
+            'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                    }
+                ]
+            }
+            '
         ]);
 
         // Sync Error - team.admin
@@ -2366,6 +2487,16 @@ class EmailTemplateSeeder extends Seeder
             'identifier' => 'integration.team.admin.error',
             'subject' => $syncErrorSubject,
             'body' => $syncErrorDevBody,
+            'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                    }
+                ]
+            }
+            '
         ]);
 
         // Sync Error - other roles

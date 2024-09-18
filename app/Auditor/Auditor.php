@@ -35,7 +35,7 @@ class Auditor
             $data['created_at'] = gettimeofday(true) * 1000000;
 
             if (Config::get('services.googlepubsub.enabled')) {
-                AuditLogJob::dispatchSync($data);
+                AuditLogJob::dispatch($data);
             }
 
             unset($arrayKeys);
