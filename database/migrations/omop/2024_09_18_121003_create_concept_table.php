@@ -26,8 +26,7 @@ return new class () extends Migration {
             $table->index('concept_id');
             $table->index(['standard_concept', 'vocabulary_id', 'concept_id'], 'sc_voc_con_ix');
 
-            // Full-text index (Note: Only supported in MySQL and MariaDB)
-            //DB::statement('CREATE FULLTEXT INDEX idx_concept_name ON concept (concept_name)');
+            $table->fullText('concept_name');
         });
     }
 
