@@ -32,8 +32,6 @@ class CustomLogoutController extends Controller
             \Log::info('CustomLogoutController request :: ' . json_encode($request));
         
             $redirectUrl = env('GATEWAY_URL');
-            \Log::info('CustomLogoutController $redirectUrl :: ' . json_encode($redirectUrl));
-            
             return redirect()->away($redirectUrl);
         } catch (Exception $e) {
             throw new Exception($e);

@@ -29,6 +29,8 @@ class Cors
         foreach ($headers as $key => $value) {
             $response->headers->add([$key => $value]);
         }
+
+        \Log::info('Cors - $response :: ' . json_encode($response));
         return $response;
     }
 }
