@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class () extends Migration {
     public function up()
     {
-        Schema::connection('omop')->create('concept_ancestor', function (Blueprint $table) {
+        Schema::create('concept_ancestor', function (Blueprint $table) {
             $table->integer('ancestor_concept_id');
             $table->integer('descendant_concept_id');
             $table->integer('min_levels_of_separation');
@@ -27,6 +27,6 @@ return new class () extends Migration {
 
     public function down()
     {
-        Schema::connection('omop')->dropIfExists('concept_ancestor');
+        Schema::dropIfExists('concept_ancestor');
     }
 };

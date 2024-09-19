@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class () extends Migration {
     public function up()
     {
-        Schema::connection('omop')->create('concept_relationship', function (Blueprint $table) {
+        Schema::create('concept_relationship', function (Blueprint $table) {
             $table->integer('concept_id_1');
             $table->integer('concept_id_2');
             $table->string('relationship_id', 20);
@@ -30,6 +30,6 @@ return new class () extends Migration {
 
     public function down()
     {
-        Schema::connection('omop')->dropIfExists('concept_relationship');
+        Schema::dropIfExists('concept_relationship');
     }
 };

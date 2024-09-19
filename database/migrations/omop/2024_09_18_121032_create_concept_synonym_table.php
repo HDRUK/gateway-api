@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class () extends Migration {
     public function up()
     {
-        Schema::connection('omop')->create('concept_synonym', function (Blueprint $table) {
+        Schema::create('concept_synonym', function (Blueprint $table) {
             $table->integer('concept_id');
             $table->string('concept_synonym_name', 1000)->collation('utf8_bin');
             $table->integer('language_concept_id');
@@ -20,13 +20,13 @@ return new class () extends Migration {
 
             // Indexes
             $table->index('concept_id');
-            DB::statement('CREATE FULLTEXT INDEX idx_concept_synonym_name ON concept_synonym (concept_synonym_name)');
+            //DB::statement('CREATE FULLTEXT INDEX idx_concept_synonym_name ON concept_synonym (concept_synonym_name)');
         });
     }
 
     public function down()
     {
-        Schema::connection('omop')->dropIfExists('concept_synonym');
+        Schema::dropIfExists('concept_synonym');
     }
 
 };

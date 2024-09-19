@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class () extends Migration {
     public function up()
     {
-        Schema::connection('omop')->create('standard_concepts', function (Blueprint $table) {
+        Schema::create('standard_concepts', function (Blueprint $table) {
             $table->integer('concept_id')->primary();
             $table->string('concept_name', 500);
             $table->string('domain_id', 20);
@@ -21,16 +21,16 @@ return new class () extends Migration {
 
             // Indexes
             $table->index('concept_id');
-            $table->index(['standard_concept', 'vocabulary_id', 'concept_id']);
+            $table->index(['standard_concept', 'vocabulary_id', 'concept_id'], 'sc_voc_id_concept_index');
 
             // Full-text index
-            DB::statement('CREATE FULLTEXT INDEX idx_sc_concept_name ON standard_concepts (concept_name)');
+            //DB::statement('CREATE FULLTEXT INDEX idx_sc_concept_name ON standard_concepts (concept_name)');
         });
     }
 
     public function down()
     {
-        Schema::connection('omop')->dropIfExists('standard_concepts');
+        Schema::dropIfExists('standard_concepts');
     }
 
 };

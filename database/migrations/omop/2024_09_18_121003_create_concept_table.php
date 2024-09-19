@@ -10,7 +10,7 @@ return new class () extends Migration {
      */
     public function up()
     {
-        Schema::connection('omop')->create('concept', function (Blueprint $table) {
+        Schema::create('concept', function (Blueprint $table) {
             $table->integer('concept_id')->primary();
             $table->string('concept_name', 500);
             $table->string('domain_id', 20);
@@ -24,16 +24,16 @@ return new class () extends Migration {
 
             // Indexes
             $table->index('concept_id');
-            $table->index(['standard_concept', 'vocabulary_id', 'concept_id']);
+            $table->index(['standard_concept', 'vocabulary_id', 'concept_id'], 'sc_voc_con_ix');
 
             // Full-text index (Note: Only supported in MySQL and MariaDB)
-            DB::statement('CREATE FULLTEXT INDEX idx_concept_name ON concept (concept_name)');
+            //DB::statement('CREATE FULLTEXT INDEX idx_concept_name ON concept (concept_name)');
         });
     }
 
     public function down()
     {
-        Schema::connection('omop')->dropIfExists('concept');
+        Schema::dropIfExists('concept');
     }
 
 };
