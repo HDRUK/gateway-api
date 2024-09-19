@@ -97,7 +97,6 @@ trait UserTransformation
                 $response[] = $tmpUser;
             }
 
-            unset($users);
             unset($tmpTeam);
             unset($tmpUser);
             unset($notifications);
