@@ -1069,14 +1069,14 @@ class CohortRequestController extends Controller
      */
     public function checkAccess(Request $request)
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        if (!array_key_exists('id', $jwtUser)) {
+            throw new Exception('Unauthorized');
+        }
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
-            if (!array_key_exists('id', $jwtUser)) {
-                throw new Exception('Unauthorized');
-            }
-
             $userId = (int) $jwtUser['id'];
 
             $checkingCohortRequest = CohortRequest::where([
@@ -1118,7 +1118,7 @@ class CohortRequestController extends Controller
             ]);
 
             $rquestInitUrl = Config::get('services.rquest.init_url');
-            return redirect()->away($rquestInitUrl);
+            return redirect()->away($rquestInitUrl, 301);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
