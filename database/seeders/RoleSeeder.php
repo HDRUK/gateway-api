@@ -217,6 +217,8 @@ class RoleSeeder extends Seeder
                     'integrations.dar',
 
                     'datasets.read',
+
+                    'tools.read',
                 ],
             ],
             'custodian.metadata.manager' => [
@@ -226,6 +228,8 @@ class RoleSeeder extends Seeder
                     'datasets.create',
                     'datasets.update',
                     'datasets.delete',
+
+                    'dur.read',
 
                     'permissions.update',
 
@@ -240,6 +244,13 @@ class RoleSeeder extends Seeder
                     'papers.create',
                     'papers.update',
                     'papers.delete',
+
+                    'tools.read',
+                    'tools.create',
+                    'tools.update',
+                    'tools.delete',
+
+                    //TODO: add something here to give access to DAR.
                 ],
             ],
             'metadata.editor' => [
