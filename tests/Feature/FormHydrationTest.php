@@ -54,6 +54,8 @@ class FormHydrationTest extends TestCase
     {
         $response = $this->get('api/v1/form_hydration/schema');
 
+        var_dump($response->decodeResponseJson());
+
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
          ->assertJsonStructure([
             'data' => [
