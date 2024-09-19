@@ -17,14 +17,12 @@ use Database\Seeders\KeywordSeeder;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 
-use Tests\Traits\MockExternalApis;
+use Test\Traits\Authorization;
 
 class FormHydrationTest extends TestCase
 {
     use RefreshDatabase;
-    use MockExternalApis {
-        setUp as commonSetUp;
-    }
+    use Authorization;
 
     protected $header = [];
 
@@ -35,7 +33,7 @@ class FormHydrationTest extends TestCase
      */
     public function setUp(): void
     {
-        $this->commonSetUp();
+        parent::setUp();
 
         $this->seed([
             MinimalUserSeeder::class,
