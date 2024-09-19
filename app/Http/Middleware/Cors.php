@@ -9,9 +9,6 @@ class Cors
 {
     public function handle(Request $request, Closure $next)
     {
-        \Log::info('Cors - origin :: ' . json_encode($request->headers->get('Origin')));
-        \Log::info('Cors - request headers:', $request->headers->all());
-
         // $headers = [
         //     'Access-Control-Allow-Origin' => env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN'),
         //     'Access-Control-Allow-Credentials' => 'true',
