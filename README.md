@@ -207,3 +207,28 @@ https://gist.github.com/jeffochoa/a162fc4381d69a2d862dafa61cda0798
 ```
 
 
+
+## OMOP database
+
+### Setup
+Point your `.env` to the OMOP db
+```
+DB_OMOP_CONNECTION=mysql
+DB_OMOP_HOST=
+DB_OMOP_PORT=
+DB_OMOP_DATABASE=
+DB_OMOP_USERNAME=
+DB_OMOP_PASSWORD=
+```
+
+### Create Tables
+Create the tables from the omop folder
+```
+kubectl exec -it $(kubectl get pods | awk '/gateway-api/ {print $1}') --  php artisan migrate --database=localomop --path ./database/migrations/omop
+
+```
+
+### Seed tables
+```
+ kubectl exec -it $(kubectl get pods | awk '/gateway-api/ {print $1}') --  php artisan db:seed --class=Database\\Seeders\\Omop\\ConceptSeeder  --database=localomop
+```
