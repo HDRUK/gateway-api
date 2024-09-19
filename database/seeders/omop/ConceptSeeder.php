@@ -4,6 +4,7 @@ namespace Database\Seeders\Omop;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Exception;
 
 class ConceptSeeder extends Seeder
 {
@@ -29,12 +30,24 @@ class ConceptSeeder extends Seeder
         // Enable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
 
-        $nChunk = env('OMOP_SEEDING_NCHUNKS', 1000);
-        $useInFileSQL = filter_var(env('OMOP_SEEDING_USE_INFILE', false), FILTER_VALIDATE_BOOLEAN);
+        $nChunk = env('OMOP_SEEDING_NCHUNKS', 500);
+        $useInFileSQL = filter_var(env('OMOP_SEEDING_USE_INFILE', true), FILTER_VALIDATE_BOOLEAN);
 
         foreach ($this->folders as $folder) {
             $tableName = strtolower($folder);
-            $files = glob(storage_path("migration_files/omop/{$folder}/*.tsv"));
+
+            $folderPath = storage_path("migration_files/omop/{$folder}");
+
+            if (!is_dir($folderPath)) {
+                \Log::error("Can't find {$folderPath} - please download the TSV files and place them in this folder");
+                throw new Exception("Folder not found: {$folderPath}");
+            }
+
+            $files = glob("{$folderPath}/*.tsv");
+
+            if (!$files || count($files) === 0) {
+                throw new Exception("No .tsv files found in folder: {$folderPath}");
+            }
 
             foreach ($files as $file) {
 
