@@ -1101,10 +1101,14 @@ class CohortRequestController extends Controller
             session(['cr_uid' => $userId]);
 
             // delete after implementation
-            CloudLogger::write('cohort request access :: ' . json_encode([
+            \Log::info('cohort request access :: ' . json_encode([
                 'userId' => $userId,
                 'sessionId' => session()->getId()
             ]));
+            // CloudLogger::write('cohort request access :: ' . json_encode([
+            //     'userId' => $userId,
+            //     'sessionId' => session()->getId()
+            // ]));
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
