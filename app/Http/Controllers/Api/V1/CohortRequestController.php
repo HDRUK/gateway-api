@@ -1119,7 +1119,10 @@ class CohortRequestController extends Controller
 
             $rquestInitUrl = Config::get('services.rquest.init_url');
             \Log::info('CohortRequestController checkAccess :: ' . json_encode($rquestInitUrl));
-            return redirect()->away($rquestInitUrl);
+            // return redirect()->away($rquestInitUrl);
+            return response()->json([
+                'redirect_uri' => $rquestInitUrl,
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
