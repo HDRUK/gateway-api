@@ -994,16 +994,16 @@ class CohortRequestController extends Controller
      */
     public function removeAdminPermission(RemoveAdminCohortRequest $request, int $id): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        $permissionName = 'SYSTEM_ADMIN';
+        $perms = Permission::where('name', $permissionName)->first();
+        if (!$perms) {
+            throw new Exception($permissionName  . ' permission not found!');
+        }
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
-            $permissionName = 'SYSTEM_ADMIN';
-            $perms = Permission::where('name', $permissionName)->first();
-            if (!$perms) {
-                throw new Exception($permissionName  . ' permission not found!');
-            }
-
             // remove admin role
             CohortRequestHasPermission::where([
                 'cohort_request_id' => $id,
