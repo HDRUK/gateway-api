@@ -64,12 +64,19 @@ class FormHydrationController extends Controller
         $version = $request->input('version', Config::get('form_hydration.schema.latest_version'));
 
         $url = sprintf(Config::get('form_hydration.schema.url'), $model, $version);
-        dd($url);
+        // dd($url);
 
         $response = Http::get($url);
         if ($response->successful()) {
             $payload = $response->json();
-            return response()->json(["data" => $payload]);
+            return response()->json([
+                'data' => $payload,
+                'metrics' => [
+                    'url' => $url,
+                    'model' => $model,
+                    'version' => $version,
+                ],
+            ]);
         } else {
             return response()->json([
                'message' => 'Failed to retrieve form hydration from ' . $url,
