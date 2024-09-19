@@ -16,6 +16,8 @@ use App\Http\Controllers\JwtController;
 use Laravel\Socialite\Facades\Socialite;
 use Jumbojett\OpenIDConnectClient;
 
+session_start();
+
 class SocialLoginController extends Controller
 {
     /**
@@ -83,30 +85,20 @@ class SocialLoginController extends Controller
     public function login(Request $request, string $provider): mixed
     {
         $redirectUrl = env('GATEWAY_URL');
-        if($request->has("redirect")) {
+        if ($request->has("redirect")) {
             $redirectUrl = $redirectUrl . $request->query('redirect');
         }
 
         session(['redirectUrl' => $redirectUrl]);
 
         if (strtolower($provider) === 'openathens') {
-            $oidc = new OpenIDConnectClient(
-                Config::get('services.openathens.issuer'),
-                Config::get('services.openathens.client_id'),
-                Config::get('services.openathens.client_secret')
-            );
-            $oidc->addScope(array('openid'));
-            $oidc->setAllowImplicitFlow(true);
-            $oidc->addAuthParam(array('response_mode' => 'form_post'));
-            $oidc->setRedirectUrl(Config::get('services.openathens.redirect'));
-            $oidc->authenticate();
 
             $params = [
                 'client_id' => Config::get('services.openathens.client_id'),
-                'client_secret' => Config::get('services.openathens.client_secret'),
                 'redirect_uri' => Config::get('services.openathens.redirect'),
                 'response_type' => 'code',
                 'scope' => 'openid',
+                'state' => bin2hex(random_bytes(16))
             ];
             $oaUrl = env('OPENATHENS_ISSUER_URL') . '/oidc/auth?' . http_build_query($params);
 
@@ -158,6 +150,12 @@ class SocialLoginController extends Controller
     public function callback(Request $request, string $provider): mixed
     {
         $user = null;
+        $input = $request->all();
+        $code = array_key_exists('code', $input) ? $input['code'] : '';
+        $_REQUEST['code'] = $code;
+        $state = array_key_exists('state', $input) ? $input['state'] : '';
+        $_REQUEST['state'] = $state;
+        $_SESSION['openid_connect_state'] = $state;
 
         try {
             if (strtolower($provider) === 'linkedin') {
@@ -175,19 +173,9 @@ class SocialLoginController extends Controller
                     'token_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/token',
                     'userinfo_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/userinfo',
                 ]);
-                $oidc->addScope([
-                    'openid',
-                    'profile',
-                    'email'
-                ]);
-
-                $oidc->setVerifyHost(false);
-                $oidc->setVerifyPeer(false);
-                $oidc->setResponseTypes(['id_token']);
-                $oidc->setAllowImplicitFlow(true);
-                $oidc->addAuthParam(['response_mode' => 'form_post']);
-
+                $oidc->setRedirectUrl(Config::get('services.openathens.redirect'));
                 $oidc->authenticate();
+
                 $response = $oidc->requestUserInfo();
                 $socialUser = json_decode(json_encode($response), true);
 
@@ -234,8 +222,7 @@ class SocialLoginController extends Controller
             $cookies = [
                 Cookie::make('token', $jwt),
             ];
-            $redirectUrl = session('redirectUrl');
-            return redirect()->away($redirectUrl)->withCookies($cookies);
+            return redirect()->away(env('GATEWAY_URL') . '/account/profile')->withCookies($cookies);
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -323,7 +310,7 @@ class SocialLoginController extends Controller
             'firstname' => '',
             'lastname' => '',
             'email' => $data['eduPersonTargetedID'] . $data['eduPersonScopedAffiliation'],
-            'provider' => $provider,
+            'provider' => 'open-athens',
             'password' => Hash::make(json_encode($data)),
         ];
     }
