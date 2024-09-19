@@ -76,8 +76,14 @@ class KeywordController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
-            $keywords = Keyword::where('enabled', 1)->paginate((int) $perPage, ['*'], 'page');
+            $perPage = (int) request('perPage', Config::get('constants.per_page'));
+            $keywords = Keyword::where('enabled', 1)
+                ->paginate(function ($total) use ($perPage) {
+                    if($perPage === -1) {
+                        return $total;
+                    }
+                    return $perPage;
+                }, ['*'], 'page');
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

@@ -33,7 +33,7 @@ class UpdatePublication extends BaseFormRequest
                 'max:4',
             ],
             'paper_doi' => [
-                'required',
+                'nullable',
                 'string',
                 'max:255',
             ],
@@ -89,6 +89,11 @@ class UpdatePublication extends BaseFormRequest
             'mongo_id' => [
                 'nullable',
                 'string',
+            ],
+            'team_id' => [
+                'nullable',
+                'integer',
+                'exists:teams,id',
             ],
             'status' => [
                 'sometimes',

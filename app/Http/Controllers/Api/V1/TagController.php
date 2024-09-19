@@ -54,9 +54,15 @@ class TagController extends Controller
      */
     public function index(): JsonResponse
     {
-        $perPage = request('per_page', Config::get('constants.per_page'));
+        $perPage = (int) request('per_page', Config::get('constants.per_page'));
         try {
-            $tags = Tag::where('enabled', 1)->paginate($perPage, ['*'], 'page');
+            $tags = Tag::where('enabled', 1)
+                ->paginate(function ($total) use ($perPage) {
+                    if($perPage === -1) {
+                        return $total;
+                    }
+                    return $perPage;
+                }, ['*'], 'page');
 
             Auditor::log([
                 'action_type' => 'GET',

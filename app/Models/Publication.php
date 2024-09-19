@@ -42,6 +42,7 @@ class Publication extends Model
         'url',
         'mongo_id',
         'owner_id',
+        'team_id',
         'status',
     ];
 
@@ -68,5 +69,14 @@ class Publication extends Model
     public function tools(): BelongsToMany
     {
         return $this->belongsToMany(Tool::class, 'publication_has_tools');
+    }
+
+    /**
+     * The durs associated to a publication
+     */
+    public function durs(): BelongsToMany
+    {
+        return $this->belongsToMany(Dur::class, 'dur_has_publications')
+            ->withPivot('dur_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at')->whereNull('dur_has_publications.deleted_at');
     }
 }
