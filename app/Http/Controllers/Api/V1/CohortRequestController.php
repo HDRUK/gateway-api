@@ -1118,7 +1118,7 @@ class CohortRequestController extends Controller
             ]);
 
             $rquestInitUrl = Config::get('services.rquest.init_url');
-            return redirect()->away($rquestInitUrl, 301);
+            return redirect()->away($rquestInitUrl);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
