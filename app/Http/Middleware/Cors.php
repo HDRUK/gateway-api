@@ -9,7 +9,7 @@ class Cors
 {
     public function handle(Request $request, Closure $next)
     {
-        $urls = "https://web.dev.hdruk.cloud,https://rquest.dev.hdruk.cloud/rquest/";
+        $urls = "https://web.dev.hdruk.cloud,https://rquest.dev.hdruk.cloud/rquest/,https://rquest.test.healthdatagateway.org/bcrquest/";
         // $allowedOrigins = explode(',', env('CORS_ACCESS_CONTROL_ALLOW_ORIGINS'));
         $allowedOrigins = explode(',', $urls);
 
