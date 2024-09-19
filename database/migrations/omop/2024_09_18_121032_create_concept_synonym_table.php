@@ -20,7 +20,7 @@ return new class () extends Migration {
 
             // Indexes
             $table->index('concept_id');
-            //DB::statement('CREATE FULLTEXT INDEX idx_concept_synonym_name ON concept_synonym (concept_synonym_name)');
+            $table->fullText('concept_synonym_name');
         });
     }
 
