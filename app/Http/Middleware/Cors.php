@@ -16,6 +16,7 @@ class Cors
         $origin = $request->headers->get('Origin');
 
         \Log::info('Cors - $origin :: ' . json_encode($origin));
+        \Log::info('Cors - request headers:', $request->headers->all());
 
         $headers = [
             // 'Access-Control-Allow-Origin' => env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN'),
