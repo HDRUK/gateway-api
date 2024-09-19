@@ -272,8 +272,11 @@ class ToolController extends Controller
     {
         try {
             $teamId = $request->query('team_id', null);
+            $userId = $request->query('user_id', null);
             $counts = Tool::when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
+            })->when($userId, function ($query) use ($userId) {
+                return $query->where('user_id', '=', $userId);
             })->withTrashed()
                 ->select($field)
                 ->get()
