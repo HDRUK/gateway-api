@@ -17,7 +17,7 @@ use Database\Seeders\KeywordSeeder;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 
-use Test\Traits\Authorization;
+use Tests\Traits\Authorization;
 
 class FormHydrationTest extends TestCase
 {
