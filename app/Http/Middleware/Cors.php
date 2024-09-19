@@ -26,8 +26,15 @@ class Cors
             'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization',
         ];
 
-        if ($origin && in_array($origin, $allowedOrigins)) {
+        if ($origin === 'null') {
+            // Option 1: Allow 'null' Origin (not generally recommended)
+            $headers['Access-Control-Allow-Origin'] = 'null';
+        } elseif (in_array($origin, $allowedOrigins)) {
+            // Allow specific origins
             $headers['Access-Control-Allow-Origin'] = $origin;
+        } else {
+            // Optionally, deny the request
+            return response('Forbidden', 403)->withHeaders($headers);
         }
 
         if ($request->getMethod() === 'OPTIONS') {
