@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'paths' => explode(',', env('CORS_PATH', 'api/*,sanctum/csrf-cookie,rquest/*')),
+    'paths' => explode(',', env('CORS_PATH', 'api/*,sanctum/csrf-cookie')),
     'allowed_methods' => explode(',', env('CORS_ALLOWED_METHODS', '*')),
     'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', '*')),
     'allowed_origins_patterns' => explode(',', env('CORS_ALLOWED_ORIGINS_PATTERNS', '*')),
