@@ -5,13 +5,17 @@ namespace Tests\Feature;
 use App\Models\Tag;
 use Tests\TestCase;
 use Database\Seeders\TagSeeder;
-use Tests\Traits\Authorization;
+
+use Tests\Traits\MockExternalApis;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class TagTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public const TEST_URL = '/api/v1/tags';
 
@@ -24,17 +28,11 @@ class TagTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             TagSeeder::class,
         ]);
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
     }
 
     /**

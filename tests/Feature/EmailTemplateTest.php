@@ -5,13 +5,17 @@ namespace Tests\Feature;
 use App\Models\EmailTemplate;
 use Tests\TestCase;
 use Database\Seeders\EmailTemplateSeeder;
-use Tests\Traits\Authorization;
+
+use Tests\Traits\MockExternalApis;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EmailTemplateTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public const TEST_URL = '/api/v1/emailtemplates';
 
@@ -24,17 +28,11 @@ class EmailTemplateTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             EmailTemplateSeeder::class,
         ]);
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
     }
 
     /**

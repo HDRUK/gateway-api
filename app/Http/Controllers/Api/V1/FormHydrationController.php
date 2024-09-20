@@ -68,7 +68,7 @@ class FormHydrationController extends Controller
         $response = Http::get($url);
         if ($response->successful()) {
             $payload = $response->json();
-            return response()->json(["data" => $payload]);
+            return response()->json(['data' => $payload]);
         } else {
             return response()->json([
                'message' => 'Failed to retrieve form hydration from ' . $url,

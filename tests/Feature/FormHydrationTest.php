@@ -43,13 +43,6 @@ class FormHydrationTest extends TestCase
             DatasetVersionSeeder::class,
         ]);
 
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
-
         $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min.json', 0, null);
         $json = json_decode($jsonFile, true);
         $this->metadata = $json;
@@ -58,6 +51,7 @@ class FormHydrationTest extends TestCase
     public function test_form_hydration_schema(): void
     {
         $response = $this->get('api/v1/form_hydration/schema');
+
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
          ->assertJsonStructure([
             'data' => [

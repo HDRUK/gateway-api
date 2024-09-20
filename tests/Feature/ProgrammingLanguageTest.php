@@ -7,30 +7,28 @@ use Config;
 use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
+
+use Tests\Traits\MockExternalApis;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProgrammingLanguageTest extends TestCase
 {
     use RefreshDatabase;
-    private $accessToken = '';
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
+
+    protected $header = [];
 
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
             ProgrammingLanguageSeeder::class,
         ]);
-
-        $response = $this->postJson('api/v1/auth', [
-            'email' => 'developers@hdruk.ac.uk',
-            'password' => 'Watch26Task?',
-        ]);
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-
-        $content = $response->decodeResponseJson();
-        $this->accessToken = $content['access_token'];
     }
 
     /**
@@ -40,9 +38,7 @@ class ProgrammingLanguageTest extends TestCase
      */
     public function test_the_application_can_list_programming_languages()
     {
-        $response = $this->get('api/v1/programming_languages', [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->get('api/v1/programming_languages', $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -85,9 +81,7 @@ class ProgrammingLanguageTest extends TestCase
                 'name' => 'Test Programming Language',
                 'enabled' => false,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -97,9 +91,7 @@ class ProgrammingLanguageTest extends TestCase
 
         $content = $response->decodeResponseJson();
 
-        $response = $this->get('api/v1/programming_languages/' . $content['data'], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->get('api/v1/programming_languages/' . $content['data'], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -128,9 +120,7 @@ class ProgrammingLanguageTest extends TestCase
                 'name' => 'Test Programming Language',
                 'enabled' => false,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -162,9 +152,7 @@ class ProgrammingLanguageTest extends TestCase
                 'name' => 'Test Programming Language',
                 'enabled' => false,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -188,9 +176,7 @@ class ProgrammingLanguageTest extends TestCase
                 'name' => 'Updated Test Programming Language',
                 'enabled' => true,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -219,9 +205,7 @@ class ProgrammingLanguageTest extends TestCase
                 'name' => 'Test Programming Language',
                 'enabled' => false,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -242,9 +226,7 @@ class ProgrammingLanguageTest extends TestCase
             [
                 'name' => 'Edited Test Programming Language',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseEdit1->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -273,9 +255,7 @@ class ProgrammingLanguageTest extends TestCase
                 'name' => 'Test Programming Language',
                 'enabled' => false,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -296,9 +276,7 @@ class ProgrammingLanguageTest extends TestCase
             'DELETE',
             'api/v1/programming_languages/' . $content['data'],
             [],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
