@@ -16,8 +16,6 @@ use App\Http\Controllers\JwtController;
 use Laravel\Socialite\Facades\Socialite;
 use Jumbojett\OpenIDConnectClient;
 
-session_start();
-
 class SocialLoginController extends Controller
 {
     /**
@@ -150,6 +148,9 @@ class SocialLoginController extends Controller
      */
     public function callback(Request $request, string $provider): mixed
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         $user = null;
         $input = $request->all();
         $code = array_key_exists('code', $input) ? $input['code'] : '';
