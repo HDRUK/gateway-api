@@ -92,6 +92,7 @@ class SocialLoginController extends Controller
         session(['redirectUrl' => $redirectUrl]);
 
         if (strtolower($provider) === 'openathens') {
+            $provider = 'open-athens';
 
             $params = [
                 'client_id' => Config::get('services.openathens.client_id'),
@@ -162,6 +163,7 @@ class SocialLoginController extends Controller
                 $provider = 'linkedin-openid';
             }
             if (strtolower($provider) === 'openathens') {
+                $provider = 'open-athens';
                 $oidc = new OpenIDConnectClient(
                     Config::get('services.openathens.issuer'),
                     Config::get('services.openathens.client_id'),
@@ -310,7 +312,7 @@ class SocialLoginController extends Controller
             'firstname' => '',
             'lastname' => '',
             'email' => $data['eduPersonTargetedID'] . $data['eduPersonScopedAffiliation'],
-            'provider' => 'open-athens',
+            'provider' => $provider,
             'password' => Hash::make(json_encode($data)),
         ];
     }
@@ -325,7 +327,7 @@ class SocialLoginController extends Controller
      */
     private function updateUser(User $user, array $data, string $provider): User
     {
-        if ($provider == 'openathens') {
+        if ($provider == 'open-athens') {
             $user->providerid = $data['providerid'];
         } else {
             $user->providerid = $data['providerid'];

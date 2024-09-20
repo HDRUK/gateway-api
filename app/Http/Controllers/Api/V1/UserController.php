@@ -433,7 +433,7 @@ class UserController extends Controller
                     'firstname' => $input['firstname'],
                     'lastname' => $input['lastname'],
                     'email' => $input['email'],
-                    'provider' =>  Config::get('constants.provider.service'),
+                    'provider' =>  $input['provider'],
                     'providerid' => array_key_exists('providerid', $input) ? $input['providerid'] : null,
                     'sector_id' => $input['sector_id'],
                     'organisation' => $input['organisation'],
