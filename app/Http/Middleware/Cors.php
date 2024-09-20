@@ -10,9 +10,8 @@ class Cors
     public function handle(Request $request, Closure $next)
     {
         $headers = [
-            'Access-Control-Allow-Origin' => '*',
-            // 'Access-Control-Allow-Origin' => env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN'),
-            // 'Access-Control-Allow-Credentials' => 'true',
+            'Access-Control-Allow-Origin' => env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN'),
+            'Access-Control-Allow-Credentials' => 'true',
             'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
             'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization',
         ];
