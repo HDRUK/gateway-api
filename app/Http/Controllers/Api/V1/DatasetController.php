@@ -407,6 +407,8 @@ class DatasetController extends Controller
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
 
+            return response()->json($dataset->allPublications);
+
             // Inject attributes via the dataset version table
             // notes Calum 12th August 2024...
             // - This is a mess.. why is `pulibcations_count` returning something different than dataset->allPublications??
@@ -423,6 +425,8 @@ class DatasetController extends Controller
             $dataset->setAttribute('publications', $dataset->allPublications  ?? []);
             $dataset->setAttribute('named_entities', $dataset->allNamedEntities  ?? []);
             $dataset->setAttribute('collections', $dataset->allCollections  ?? []);
+
+
 
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');

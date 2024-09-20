@@ -197,23 +197,33 @@ class Dataset extends Model
         return $this->getRelationsViaDatasetVersion(
             PublicationHasDatasetVersion::class,
             Publication::class,
-            'publication_id'
+            'publication_id',
+            true
         );
     }
 
     /**
      * Helper function to get stuff linked by datasetVersionHasX
      */
-    public function getRelationsViaDatasetVersion($linkageTable, $targetTable, $foreignTableId)
+    public function getRelationsViaDatasetVersion($linkageTable, $targetTable, $foreignTableId, $includeIntermediate = false)
     {
         // Step 1: Get the dataset version IDs
         $versionIds = $this->versions()->pluck('id')->toArray();
 
         // Step 2: Use the version IDs to find all related entityIDs through the linkage table
-        $entityIds = $linkageTable::whereIn('dataset_version_id', $versionIds)
-            ->pluck($foreignTableId)
-            ->unique()
-            ->toArray();
+        $linkageRecords = $linkageTable::whereIn('dataset_version_id', $versionIds)
+            ->when(
+                $includeIntermediate,
+                function ($query) {
+                    return $query->get();
+                },
+                function ($query) use ($foreignTableId) {
+                    return $query->get([$foreignTableId, 'dataset_version_id']);
+                }
+            );
+
+
+        $entityIds = $linkageRecords->pluck($foreignTableId)->unique()->toArray();
 
         // Step 3: Retrieve all entities using the collected entities IDs
         $entities = $targetTable::whereIn('id', $entityIds)->get();
@@ -221,13 +231,18 @@ class Dataset extends Model
         // Iterate through each entity and add associated dataset versions
         foreach ($entities as $entity) {
             // Retrieve dataset version IDs associated with the current entity
-            $datasetVersionIds = $linkageTable::where($foreignTableId, $entity->id)
-                ->whereIn('dataset_version_id', $versionIds)
-                ->pluck('dataset_version_id')
-                ->toArray();
 
-            // Add associated dataset versions to the entity object
-            $entity->setAttribute('dataset_version_ids', $datasetVersionIds);
+            $filteredLinkage = $linkageRecords->where($foreignTableId, $entity->id);
+
+            if($includeIntermediate) {
+                $entity->setAttribute('dataset_versions', $filteredLinkage->toArray());
+            } else {
+                // Extract dataset version IDs and link types associated with the current entity
+                $datasetVersionIds = $filteredLinkage->pluck('dataset_version_id')->toArray();
+                // Add associated dataset versions to the entity object
+                $entity->setAttribute('dataset_version_ids', $datasetVersionIds);
+            }
+
         }
 
         // Return the collection of entities with injected dataset version IDs
