@@ -20,7 +20,9 @@ class Cors
         if ($origin) {
             $headers['Access-Control-Allow-Origin'] = $origin;
             $headers['Access-Control-Allow-Credentials'] = 'true';
-            $headers['Vary'] = 'Origin';
+        } else {
+            $headers['Access-Control-Allow-Origin'] = 'https://api.dev.hdruk.cloud';
+            $headers['Access-Control-Allow-Credentials'] = 'true';
         }
 
         if ($request->getMethod() === 'OPTIONS') {
