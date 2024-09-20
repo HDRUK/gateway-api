@@ -6,13 +6,17 @@ use Config;
 use Tests\TestCase;
 use App\Models\Permission;
 use Database\Seeders\PermissionSeeder;
-use Tests\Traits\Authorization;
+
+use Tests\Traits\MockExternalApis;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class PermissionTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public const TEST_URL = '/api/v1/permissions';
 
@@ -25,17 +29,11 @@ class PermissionTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             PermissionSeeder::class
         ]);
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
     }
 
     /**

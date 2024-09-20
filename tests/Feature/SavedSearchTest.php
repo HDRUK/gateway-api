@@ -4,37 +4,34 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
-use Tests\Traits\Authorization;
 use Database\Seeders\FilterSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SavedSearchSeeder;
+
+use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SavedSearchTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
-    private $accessToken = '';
+    protected $header = [];
 
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             FilterSeeder::class,
             MinimalUserSeeder::class,
             SavedSearchSeeder::class,
         ]);
-
-        $response = $this->postJson('api/v1/auth', [
-            'email' => 'developers@hdruk.ac.uk',
-            'password' => 'Watch26Task?',
-        ]);
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-
-        $content = $response->decodeResponseJson();
-        $this->accessToken = $content['access_token'];
     }
 
     /**
@@ -44,9 +41,7 @@ class SavedSearchTest extends TestCase
      */
     public function test_the_application_can_list_saved_searches()
     {
-        $response = $this->get('api/v1/saved_searches', [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->get('api/v1/saved_searches', $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -82,9 +77,7 @@ class SavedSearchTest extends TestCase
         $numResults = count($content['data']);
 
         // filter by name
-        $response = $this->get('api/v1/saved_searches?name=in', [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->get('api/v1/saved_searches?name=in', $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
@@ -120,9 +113,7 @@ class SavedSearchTest extends TestCase
                 ],
                 'sort_order' => 'score:desc',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -132,9 +123,7 @@ class SavedSearchTest extends TestCase
 
         $content = $response->decodeResponseJson();
 
-        $response = $this->get('api/v1/saved_searches/' . $content['data'], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->get('api/v1/saved_searches/' . $content['data'], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -173,9 +162,7 @@ class SavedSearchTest extends TestCase
                 'keys' => 'purpose',
                 'enabled' => 0,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
         $contentFilter = $responseFilter->decodeResponseJson();
         $filterId = $contentFilter['data'];
@@ -199,9 +186,7 @@ class SavedSearchTest extends TestCase
                 ],
                 'sort_order' => 'score:desc',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -219,9 +204,7 @@ class SavedSearchTest extends TestCase
         // test filter has been linked correctly
         $newSearchId = $content['data'];
 
-        $responseGet = $this->get('api/v1/saved_searches/' . $newSearchId, [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $responseGet = $this->get('api/v1/saved_searches/' . $newSearchId, $this->header);
 
         $content = $responseGet->decodeResponseJson();
         $this->assertArrayHasKey('filters', $content['data'][0]);
@@ -255,9 +238,7 @@ class SavedSearchTest extends TestCase
                 ],
                 'sort_order' => 'score:desc',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -292,9 +273,7 @@ class SavedSearchTest extends TestCase
                 ],
                 'sort_order' => 'score:desc',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -335,9 +314,7 @@ class SavedSearchTest extends TestCase
                 ],
                 'sort_order' => 'score:desc',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -371,9 +348,7 @@ class SavedSearchTest extends TestCase
                 ],
                 'sort_order' => 'score:desc',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -393,9 +368,7 @@ class SavedSearchTest extends TestCase
             [
                 'name' => 'Edited Test Saved Search - patch',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseEdit1->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -435,9 +408,7 @@ class SavedSearchTest extends TestCase
                 ],
                 'sort_order' => 'score:desc',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -457,9 +428,7 @@ class SavedSearchTest extends TestCase
             'DELETE',
             'api/v1/saved_searches/' . $content['data'],
             [],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -512,9 +481,7 @@ class SavedSearchTest extends TestCase
         $newSearchId = $content['data'];
 
         // test admin can view saved search
-        $responseGet = $this->get('api/v1/saved_searches/' . $newSearchId, [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $responseGet = $this->get('api/v1/saved_searches/' . $newSearchId, $this->header);
         $responseGet->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // test admin cannot edit or delete
@@ -529,9 +496,7 @@ class SavedSearchTest extends TestCase
                 'filters' => [],
                 'sort_order' => 'score:desc',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseUpdate->assertJsonStructure([
@@ -543,9 +508,7 @@ class SavedSearchTest extends TestCase
             'DELETE',
             'api/v1/saved_searches/' . $newSearchId,
             [],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseDelete->assertJsonStructure([

@@ -11,7 +11,7 @@ use App\Models\Application;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ApplicationSeeder;
 
-use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
 use App\Http\Traits\IntegrationOverride;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,8 +19,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class ApplicationTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
     use IntegrationOverride;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public const TEST_URL = '/api/v1/applications';
 
@@ -33,19 +35,12 @@ class ApplicationTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
             ApplicationSeeder::class,
         ]);
-
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
     }
 
     public function test_get_all_applications_with_success(): void

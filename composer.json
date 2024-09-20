@@ -106,7 +106,7 @@
             "vendor/bin/phpcs --standard=PSR1 app"
         ],
         "pest": [
-            "php -d memory_limit=512M vendor/bin/pest"
+            "php -d memory_limit=512M vendor/bin/pest --bail --parallel --compact"
         ],
         "lint": [
             "vendor/bin/pint --preset psr12"

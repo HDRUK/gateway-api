@@ -7,9 +7,7 @@ use App\Models\Tool;
 use App\Models\Dataset;
 use App\Models\Publication;
 use Database\Seeders\TagSeeder;
-use Tests\Traits\Authorization;
 use Database\Seeders\ToolSeeder;
-use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\LicenseSeeder;
 use App\Models\PublicationHasDatasetVersion;
@@ -20,6 +18,9 @@ use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
+
+use Tests\Traits\MockExternalApis;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use ElasticClientController as ECC;
@@ -27,7 +28,6 @@ use ElasticClientController as ECC;
 class PublicationTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
     }

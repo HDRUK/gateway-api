@@ -1030,13 +1030,15 @@ trait MockExternalApis
 
         $this->dataset_store = [];
 
-        Http::fake([
-            env('MJML_RENDER_URL') => Http::response(
-                ["html" => "<html>content</html>"],
-                201,
-                ['application/json']
-            )
-        ]);
+        // Removed for now, as the email service test contains its own mock
+        // for mjml.
+        // Http::fake([
+        //     env('MJML_RENDER_URL') => Http::response(
+        //         ["html" => "<html>content</html>"],
+        //         201,
+        //         ['application/json']
+        //     )
+        // ]);
 
         Http::fake([
             env('FMA_SERVICE_URL').'*' => Http::response(

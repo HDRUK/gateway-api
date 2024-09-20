@@ -51,14 +51,12 @@ class DatasetIntegrationTest extends TestCase
     {
         $this->commonSetUp();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            DatasetSeeder::class,
-            SectorSeeder::class,
-            TeamSeeder::class,
-            ApplicationSeeder::class,
-            SpatialCoverageSeeder::class,
-        ]);
+        $this->seed(MinimalUserSeeder::class);
+        $this->seed(DatasetSeeder::class);
+        $this->seed(SectorSeeder::class);
+        $this->seed(TeamSeeder::class);
+        $this->seed(ApplicationSeeder::class);
+        $this->seed(SpatialCoverageSeeder::class);
 
         $this->integration = Application::where('id', 1)->first();
 
