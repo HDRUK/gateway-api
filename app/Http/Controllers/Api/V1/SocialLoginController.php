@@ -148,16 +148,7 @@ class SocialLoginController extends Controller
      */
     public function callback(Request $request, string $provider): mixed
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
         $user = null;
-        $input = $request->all();
-        $code = array_key_exists('code', $input) ? $input['code'] : '';
-        $_REQUEST['code'] = $code;
-        $state = array_key_exists('state', $input) ? $input['state'] : '';
-        $_REQUEST['state'] = $state;
-        $_SESSION['openid_connect_state'] = $state;
 
         try {
             if (strtolower($provider) === 'linkedin') {
@@ -165,6 +156,16 @@ class SocialLoginController extends Controller
             }
             if (strtolower($provider) === 'openathens') {
                 $provider = 'open-athens';
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+                $input = $request->all();
+                $code = array_key_exists('code', $input) ? $input['code'] : '';
+                $_REQUEST['code'] = $code;
+                $state = array_key_exists('state', $input) ? $input['state'] : '';
+                $_REQUEST['state'] = $state;
+                $_SESSION['openid_connect_state'] = $state;
+
                 $oidc = new OpenIDConnectClient(
                     Config::get('services.openathens.issuer'),
                     Config::get('services.openathens.client_id'),
