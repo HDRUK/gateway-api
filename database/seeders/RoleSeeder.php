@@ -240,6 +240,11 @@ class RoleSeeder extends Seeder
                     'papers.create',
                     'papers.update',
                     'papers.delete',
+
+                    'tools.read',
+                    'tools.create',
+                    'tools.update',
+                    'tools.delete',
                 ],
             ],
             'metadata.editor' => [
