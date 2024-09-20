@@ -158,7 +158,7 @@ trait MetadataOnboard
                     '1',
                     base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
                     $elasticIndexing
-                );
+                )->onConnection('redis');
             }
 
             return [

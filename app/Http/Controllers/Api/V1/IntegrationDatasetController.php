@@ -594,7 +594,7 @@ class IntegrationDatasetController extends Controller
                     $dataset->id,
                     '1',
                     base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
-                );
+                )->onConnection('redis');
 
                 Auditor::log([
                     'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?

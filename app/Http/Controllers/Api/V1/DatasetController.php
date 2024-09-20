@@ -805,7 +805,7 @@ class DatasetController extends Controller
                     $versionNumber,
                     base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
                     $elasticIndexing
-                );
+                )->onConnection('redis');
             }
 
             Auditor::log([
