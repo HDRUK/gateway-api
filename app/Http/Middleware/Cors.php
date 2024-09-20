@@ -32,9 +32,6 @@ class Cors
         } elseif (in_array($origin, $allowedOrigins)) {
             // Allow specific origins
             $headers['Access-Control-Allow-Origin'] = $origin;
-        } else {
-            // Optionally, deny the request
-            return response('Forbidden', 403)->withHeaders($headers);
         }
 
         if ($request->getMethod() === 'OPTIONS') {
