@@ -6,7 +6,6 @@ use Config;
 use Tests\TestCase;
 use App\Models\Library;
 use App\Models\User;
-use Tests\Traits\Authorization;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\MinimalUserSeeder;
@@ -16,7 +15,6 @@ use Tests\Traits\MockExternalApis;
 class LibraryTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -31,16 +29,15 @@ class LibraryTest extends TestCase
     {
         $this->commonSetUp();
 
-        $jwt = $this->getAuthorisationJwt();
-        $this->user = $this->getUserFromJwt($jwt);
-
         $this->seed([
             MinimalUserSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
         ]);
-        //seed for this user...
-        Library::factory(10)->create(['user_id' => $this->user['id']]);
+
+        $this->user = User::where('id', 1)->first();
+
+        Library::factory(10)->create(['user_id' => $this->user->id]);
         Library::factory(10)->create(['user_id' => User::all()->random()]);
     }
 
@@ -53,7 +50,6 @@ class LibraryTest extends TestCase
     {
 
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
-
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $response->assertJsonStructure([
@@ -87,7 +83,7 @@ class LibraryTest extends TestCase
             'total',
         ]);
 
-        $userLibrary = Library::where("user_id", $this->user['id'])->pluck("id")->toArray();
+        $userLibrary = Library::where('user_id', $this->user->id)->pluck('id')->toArray();
         $ids = array_map(function ($dataset) {
             return $dataset['id'];
         }, $response['data']);

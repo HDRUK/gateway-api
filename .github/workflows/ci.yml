@@ -48,7 +48,7 @@ jobs:
   
     - name: Run unit tests
       id: unittests
-      run: "php artisan test"
+      run: "composer run pest"
 
     - name: Run code sniffer
       id: codesniffer

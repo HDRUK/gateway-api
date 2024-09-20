@@ -4,21 +4,26 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
-use Tests\Traits\Authorization;
-use Tests\Traits\MockExternalApis;
 use App\Http\Enums\TeamMemberOf;
 use App\Models\TeamHasNotification;
+
+use Tests\Traits\MockExternalApis;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class TeamNotificationTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
-    use MockExternalApis;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     protected $header = [];
 
-
+    public function setUp(): void
+    {
+        $this->commonSetUp();
+    }
 
     public function test_create_notification_for_team_with_success()
     {
