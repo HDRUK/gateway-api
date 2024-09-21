@@ -192,7 +192,7 @@ class DatasetController extends Controller
                 foreach ($matches as $m) {
                     $version = DatasetVersion::where('dataset_id', $m)
                     ->filterTitle($filterTitle)
-                    ->latest('version')->select('dataset_id')
+                    ->select('dataset_id')
                     ->when(
                         $request->has('withTrashed') || $filterStatus === 'ARCHIVED',
                         function ($query) {
