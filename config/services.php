@@ -62,13 +62,13 @@ return [
     'googlepubsub' => [
         'project_id' => env('GOOGLE_CLOUD_PROJECT_ID', 'gcp_pubsub_project_id'),
         'pubsub_topic' => env('GOOGLE_CLOUD_PUBSUB_TOPIC', 'gcp_pubsub_pubsub_topic'),
-        'enabled' => env('GOOGLE_CLOUD_PUBSUB_ENABLED'. false),
+        'enabled' => env('GOOGLE_CLOUD_PUBSUB_ENABLED', false),
     ],
 
     'googlelogging' => [
         'project_id' => env('GOOGLE_CLOUD_LOGGING_PROJECT_ID', 'gcp_pubsub_project_id'),
         'log_name' => env('GOOGLE_CLOUD_LOGGING_NAME', 'gateway-api'),
-        'enabled' => env('GOOGLE_CLOUD_LOGGING_ENABLED'. false),
+        'enabled' => env('GOOGLE_CLOUD_LOGGING_ENABLED', false),
     ],
 
     'elasticclient' => [
