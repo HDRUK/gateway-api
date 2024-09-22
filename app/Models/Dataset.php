@@ -235,7 +235,7 @@ class Dataset extends Model
             $filteredLinkage = $linkageRecords->where($foreignTableId, $entity->id);
 
             if($includeIntermediate) {
-                $entity->setAttribute('dataset_versions', $filteredLinkage->toArray());
+                $entity->setAttribute('dataset_versions', $filteredLinkage->values()->toArray());
             } else {
                 // Extract dataset version IDs and link types associated with the current entity
                 $datasetVersionIds = $filteredLinkage->pluck('dataset_version_id')->toArray();
