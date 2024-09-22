@@ -21,11 +21,11 @@ class CloudLoggerService
 
     public function write($data, $severity = 'INFO')
     {
-        $message = '';
-
-        if (!Config::get('services.googlelogging.enabled')) {
+        if (Config::get('services.googlelogging.enabled') === false) {
             return;
         }
+
+        $message = '';
 
         $message = is_string($data) ? $data : json_encode($data);
 
