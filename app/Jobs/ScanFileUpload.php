@@ -103,14 +103,17 @@ class ScanFileUpload implements ShouldQueue
 
             CloudLogger::write('Malware scan initiated');
 
-            $response = Http::timeout(60)->post(
-                env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file',
-                [
+            $response = Http::withBody(
+                json_encode([
                     'file' => $filePath,
                     'storage' => $this->fileSystem,
-                ]
-            );
-            $isError = $response['isError'];
+                ]),
+                'application/json',
+            )->post(env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file');
+
+            $response = $response->json();
+
+            $isError = isset($response['isError']) ? $response['isError'] : false;
 
             if ($isError === true) {
                 throw new Exception($response['error']);
@@ -118,8 +121,70 @@ class ScanFileUpload implements ShouldQueue
 
             $isInfected = $response['isInfected'];
 
-
             CloudLogger::write('Malware scan completed');
+
+            // Check if the file is infected
+            if ($isInfected) {
+                $upload->update([
+                    'status' => 'FAILED',
+                    'error' => $response['viruses']
+                ]);
+                Storage::disk($this->fileSystem . '.unscanned')
+                    ->delete($upload->file_location);
+
+                CloudLogger::write([
+                    'action_type' => 'SCAN',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => 'Uploaded file failed malware scan',
+                ]);
+
+                Auditor::log([
+                    'action_type' => 'SCAN',
+                    'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Uploaded file failed malware scan',
+                ]);
+            } else {
+
+                CloudLogger::write('Uploaded file passed malware scan');
+
+                $loc = $upload->file_location;
+                $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
+
+                Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
+                Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
+
+                CloudLogger::write('Uploaded file moved to safe scanned storage');
+
+                switch ($this->entityFlag) {
+                    case 'dur-from-upload':
+                        $this->createDurFromFile($loc, $upload);
+                        break;
+                    case 'dataset-from-upload':
+                        $this->createDatasetFromFile($loc, $upload);
+                        break;
+                    case 'structural-metadata-upload':
+                        $this->attachStructuralMetadata($loc, $upload);
+                        break;
+                    case 'teams-media':
+                        $this->uploadTeamMedia($loc, $upload, $this->teamId);
+                        break;
+                    case 'collections-media':
+                        $this->uploadCollectionMedia($loc, $upload, $this->collectionId);
+                        break;
+                }
+
+                CloudLogger::write([
+                    'action_type' => 'SCAN',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => 'Uploaded file passed malware scan and processed',
+                ]);
+
+                Auditor::log([
+                    'action_type' => 'SCAN',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Uploaded file passed malware scan and processed',
+                ]);
+            }
         } catch (Exception $e) {
             // Record exception in uploads table
             $upload->update([
@@ -135,70 +200,6 @@ class ScanFileUpload implements ShouldQueue
             ]);
 
             throw new Exception($e->getMessage());
-        }
-
-
-        // Check if the file is infected
-        if ($isInfected) {
-            $upload->update([
-                'status' => 'FAILED',
-                'error' => $response['viruses']
-            ]);
-            Storage::disk($this->fileSystem . '.unscanned')
-                ->delete($upload->file_location);
-
-            CloudLogger::write([
-                'action_type' => 'SCAN',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'Uploaded file failed malware scan',
-            ]);
-
-            Auditor::log([
-                'action_type' => 'SCAN',
-                'action_service' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Uploaded file failed malware scan',
-            ]);
-        } else {
-
-            CloudLogger::write('Uploaded file passed malware scan');
-
-            $loc = $upload->file_location;
-            $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
-
-            Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
-            Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
-
-            CloudLogger::write('Uploaded file moved to safe scanned storage');
-
-            switch ($this->entityFlag) {
-                case 'dur-from-upload':
-                    $this->createDurFromFile($loc, $upload);
-                    break;
-                case 'dataset-from-upload':
-                    $this->createDatasetFromFile($loc, $upload);
-                    break;
-                case 'structural-metadata-upload':
-                    $this->attachStructuralMetadata($loc, $upload);
-                    break;
-                case 'teams-media':
-                    $this->uploadTeamMedia($loc, $upload, $this->teamId);
-                    break;
-                case 'collections-media':
-                    $this->uploadCollectionMedia($loc, $upload, $this->collectionId);
-                    break;
-            }
-
-            CloudLogger::write([
-                'action_type' => 'SCAN',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'Uploaded file passed malware scan and processed',
-            ]);
-
-            Auditor::log([
-                'action_type' => 'SCAN',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Uploaded file passed malware scan and processed',
-            ]);
         }
     }
 
