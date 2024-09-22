@@ -424,8 +424,6 @@ class DatasetController extends Controller
             $dataset->setAttribute('named_entities', $dataset->allNamedEntities  ?? []);
             $dataset->setAttribute('collections', $dataset->allCollections  ?? []);
 
-
-
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
 
