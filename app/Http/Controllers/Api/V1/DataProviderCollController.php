@@ -723,6 +723,7 @@ class DataProviderCollController extends Controller
 
             $teamsResult[] = array_merge([
                 'name' => $team->name,
+                'id' => $team->id,
             ], $counts);
         }
 
