@@ -85,7 +85,7 @@ class UserController extends Controller
                 } else {
                     if ($request->has('filterNames')) {
                         $chars = $request->query('filterNames');
-                        $users = User::where('name', 'like', '%' . $chars . '%')->paginate($perPage, ['*'], 'page');
+                        $users = User::where('name', 'like', '%' . $chars . '%')->select('id', 'name')->paginate($perPage, ['*'], 'page');
                     } else {
                         $users = User::select('id','name')->paginate($perPage, ['*'], 'page');
                     }
