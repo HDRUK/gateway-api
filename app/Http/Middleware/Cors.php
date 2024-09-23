@@ -9,33 +9,21 @@ class Cors
 {
     public function handle(Request $request, Closure $next)
     {
-        $origin = $request->headers->get('Origin');
-        \Log::info('Cors $origin :: ' . json_encode($origin));
-
         $headers = [
+            'Access-Control-Allow-Origin' => env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN'),
+            'Access-Control-Allow-Credentials' => 'true',
             'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
             'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization',
         ];
 
-        if ($origin) {
-            $headers['Access-Control-Allow-Origin'] = $origin;
-            $headers['Access-Control-Allow-Credentials'] = 'true';
-        } else {
-            $headers['Access-Control-Allow-Origin'] = 'https://api.dev.hdruk.cloud';
-            $headers['Access-Control-Allow-Credentials'] = 'true';
-        }
-
         if ($request->getMethod() === 'OPTIONS') {
-            return response('OK', 200, $headers);
+            return response('OK')->withHeaders($headers);
         }
 
         $response = $next($request);
-
         foreach ($headers as $key => $value) {
-            $response->headers->set($key, $value);
+            $response->headers->add([$key => $value]);
         }
-
-        \Log::info('Cors $response :: ' . json_encode($response));
         return $response;
     }
 }
