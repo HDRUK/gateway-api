@@ -119,6 +119,8 @@ class UploadTest extends TestCase
             ]
         );
 
+        dd($response->decodeResponseJson());
+
         $id = $response->decodeResponseJson()['data']['id'];
 
         $response = $this->json('GET', self::TEST_URL . '/' . $id, [], $this->header);
