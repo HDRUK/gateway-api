@@ -75,7 +75,8 @@ class UserController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $perPage = request('perPage', Config::get('constants.per_page'));
-
+        $users = [];
+        
         try {
             if (count($jwtUser)) {
                 $userIsAdmin = (bool)$jwtUser['is_admin'];
