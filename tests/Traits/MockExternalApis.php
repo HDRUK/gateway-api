@@ -8,7 +8,9 @@ use Nyholm\Psr7\Response;
 
 
 use Database\Seeders\SectorSeeder;
+use App\Jobs\TermExtraction;
 
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use MetadataManagementController as MMC;
@@ -77,6 +79,10 @@ trait MockExternalApis
 
         $this->seed([
             SectorSeeder::class,
+        ]);
+
+        Queue::fake([
+            TermExtraction::class
         ]);
 
         $this->authorisationUser();
