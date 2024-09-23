@@ -174,6 +174,7 @@ class DataProviderCollTest extends TestCase
                     'teams_counts' => [
                         0 => [
                             'name',
+                            'id',
                             'datasets_count',
                             'tools_count',
                             'durs_count',
