@@ -80,7 +80,7 @@ trait MockExternalApis
             SectorSeeder::class,
         ]);
 
-        Queue::fake();
+        Queue::fake('redis');
 
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
