@@ -340,41 +340,46 @@ class ScanFileUpload implements ShouldQueue
 
             // Check structural metadata against schema using traser
             $metadataInput = [
-                "metadata" => [
-                    "structuralMetadata" => $structuralMetadata
+                'metadata' => [
+                    'structuralMetadata' => $structuralMetadata
                 ]
             ];
-            // Default to using the latest GWDM for input and output
-            $inputSchema = $this->inputSchema ? $this->inputSchema : Config::get('metadata.GWDM.name');
-            $inputVersion = $this->inputVersion ? $this->inputVersion : Config::get('metadata.GWDM.version');
-            $outputSchema = $this->outputSchema ? $this->outputSchema : Config::get('metadata.GWDM.name');
-            $outputVersion = $this->outputVersion ? $this->outputVersion : Config::get('metadata.GWDM.version');
-            $result = MMC::translateDataModelType(
-                json_encode($metadataInput),
-                $outputSchema,
-                $outputVersion,
-                $inputSchema,
-                $inputVersion,
-                true,
-                true,
-                "structuralMetadata",
-            );
+            // LS - Traser can't deal with part structural metadata, thus we have to rely on the overall
+            // validation later on. For now, removing this.
+            //
+            // Leaving these commented out for now, to discuss later
 
-            if ($result['wasTranslated']) {
-                $upload->update([
-                    'status' => 'PROCESSED',
-                    'file_location' => $loc,
-                    'entity_type' => 'structural_metadata',
-                    'structural_metadata' => $result['metadata']['structuralMetadata'],
-                ]);
-                CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
-            } else {
-                $upload->update([
-                    'status' => 'FAILED',
-                    'file_location' => $loc,
-                    'error' => $result['traser_message'],
-                ]);
-            }
+            // // Default to using the latest GWDM for input and output
+            // $inputSchema = $this->inputSchema ? $this->inputSchema : Config::get('metadata.GWDM.name');
+            // $inputVersion = $this->inputVersion ? $this->inputVersion : Config::get('metadata.GWDM.version');
+            // $outputSchema = $this->outputSchema ? $this->outputSchema : Config::get('metadata.GWDM.name');
+            // $outputVersion = $this->outputVersion ? $this->outputVersion : Config::get('metadata.GWDM.version');
+            // $result = MMC::translateDataModelType(
+            //     json_encode($metadataInput),
+            //     $outputSchema,
+            //     $outputVersion,
+            //     $inputSchema,
+            //     $inputVersion,
+            //     true,
+            //     true,
+            //     "structuralMetadata",
+            // );
+
+            // if ($result['wasTranslated']) {
+            $upload->update([
+                'status' => 'PROCESSED',
+                'file_location' => $loc,
+                'entity_type' => 'structural_metadata',
+                'structural_metadata' => json_encode($metadataInput['metadata']['structuralMetadata']),
+            ]);
+            CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
+            // } else {
+            //     $upload->update([
+            //         'status' => 'FAILED',
+            //         'file_location' => $loc,
+            //         'error' => $result['traser_message'],
+            //     ]);
+            // }
         } catch (Exception $e) {
             // Record exception in uploads table
             $upload->update([
