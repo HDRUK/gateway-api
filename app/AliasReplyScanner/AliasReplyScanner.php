@@ -129,14 +129,9 @@ class AliasReplyScanner
 
         $uniqueKey = '^' . $enquiryThread->unique_key . '$';
 
-        $databaseDriver = \DB::connection()->getPDO()->getAttribute(PDO::ATTR_DRIVER_NAME);
-
-        var_dump($databaseDriver);
-        // case-insensitive issue
         $enquiryThreads = EnquiryThread::where([
             'unique_key' => $uniqueKey
         ])->get();
-        // $enquiryThreads = EnquiryThread::whereRaw("REGEXP_LIKE(`unique_key`, ?, 'c')", [$uniqueKey])->get();
 
         foreach ($enquiryThreads as $eqTh) {
             $usersToNotify[] = EMC::determineDARManagersFromTeamId($eqTh->team_id, $eqTh->id);
