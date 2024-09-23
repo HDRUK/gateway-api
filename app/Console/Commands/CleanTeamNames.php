@@ -87,6 +87,7 @@ class CleanTeamNames extends Command
         'Nhsx' => 'NHSX',
         'Now' => 'NOW',
         '(nshd)' => '(NSHD)',
+        'Of' => 'of',
         'Pathlake' => 'PathLAKE',
         'Pioneer' => 'PIONEER',
         'Qresearch' => 'QResearch',
