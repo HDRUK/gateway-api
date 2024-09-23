@@ -96,6 +96,8 @@ class DatasetIntegrationTest extends TestCase
         $response = $this->json('POST', self::TEST_URL_DATASET, [
             'metadata' => $this->metadata,
         ], $this->header);
+
+        $response->dump();
         $response->assertStatus(201);
 
         $response = $this->json('GET', self::TEST_URL_DATASET, [], $this->header);
