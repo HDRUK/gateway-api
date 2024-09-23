@@ -99,9 +99,7 @@ class UserController extends Controller
                 'description' => 'User get all',
             ]);
 
-            return response()->json(
-                $users
-            );
+            return response()->json($users, Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
