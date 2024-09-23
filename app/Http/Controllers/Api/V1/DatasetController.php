@@ -401,7 +401,7 @@ class DatasetController extends Controller
             $exportStructuralMetadata = $request->query('export', null);
 
             // Retrieve the dataset with collections, publications, and counts
-            $dataset = Dataset::find($id);
+            $dataset = Dataset::with("team")->find($id);
 
             if (!$dataset) {
                 return response()->json(['message' => 'Dataset not found'], 404);
