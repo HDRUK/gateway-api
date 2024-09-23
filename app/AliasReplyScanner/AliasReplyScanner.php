@@ -127,12 +127,13 @@ class AliasReplyScanner
             'id' => $threadId,
         ])->first();
 
-        $uniqueKey = $enquiryThread->unique_key;
+        $uniqueKey = '^' . $enquiryThread->unique_key . '$';
 
         // case-insensitive issue
-        $enquiryThreads = EnquiryThread::where([
-            'unique_key' => $uniqueKey
-        ])->get();
+        // $enquiryThreads = EnquiryThread::where([
+        //     'unique_key' => $uniqueKey
+        // ])->get();
+        $enquiryThreads = EnquiryThread::whereRaw("REGEXP_LIKE(`unique_key`, ?, 'c')", [$uniqueKey])->get();
 
         foreach ($enquiryThreads as $eqTh) {
             $usersToNotify[] = EMC::determineDARManagersFromTeamId($eqTh->team_id, $eqTh->id);
