@@ -344,6 +344,11 @@ class UploadTest extends TestCase
                 'error'
             ]
         ]);
+
+        $content = $response->decodeResponseJson()['data'];
+        $this->assertEquals($content['status'], 'PROCESSED');
+        $this->assertEquals($content['error'], null);
+
         $response->assertStatus(200);
         $id = $response->decodeResponseJson()['data']['id'];
 
