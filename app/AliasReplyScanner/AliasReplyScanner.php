@@ -131,7 +131,6 @@ class AliasReplyScanner
 
         $enquiryThreads = EnquiryThread::where(\DB::raw('BINARY `unique_key`'), 'LIKE', $uniqueKey)->get();
 
-
         foreach ($enquiryThreads as $eqTh) {
             $usersToNotify[] = EMC::determineDARManagersFromTeamId($eqTh->team_id, $eqTh->id);
         }
