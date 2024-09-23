@@ -8,6 +8,7 @@ use Nyholm\Psr7\Response;
 
 
 use Database\Seeders\SectorSeeder;
+use App\Jobs\TermExtraction;
 
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Http;
@@ -80,7 +81,9 @@ trait MockExternalApis
             SectorSeeder::class,
         ]);
 
-        Queue::fake('redis');
+        Queue::fake([
+            TermExtraction::class
+        ]);
 
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
