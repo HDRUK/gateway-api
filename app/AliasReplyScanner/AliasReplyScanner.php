@@ -127,9 +127,19 @@ class AliasReplyScanner
             'id' => $threadId,
         ])->first();
 
-        $uniqueKey = '%' . $enquiryThread->unique_key . '%';
+        $uniqueKey = $enquiryThread->unique_key;
 
-        $enquiryThreads = EnquiryThread::where(\DB::raw('BINARY `unique_key`'), 'LIKE', $uniqueKey)->get();
+        $driver = \DB::getDriverName();
+
+        if ($driver === 'mysql') {
+            // MySQL: Use BINARY operator
+            $enquiryThreads = EnquiryThread::whereRaw('BINARY `unique_key` LIKE ?', ['%' . $uniqueKey . '%'])->get();
+        } elseif ($driver === 'sqlite') { // for tests in sqlite
+            // SQLite: Use COLLATE BINARY or GLOB
+            $enquiryThreads = EnquiryThread::whereRaw('`unique_key` LIKE ? COLLATE BINARY', ['%' . $uniqueKey . '%'])->get();
+        }
+
+        $enquiryThreads = EnquiryThread::whereRaw('BINARY `unique_key` LIKE ?', [$uniqueKey])->get();
 
         foreach ($enquiryThreads as $eqTh) {
             $usersToNotify[] = EMC::determineDARManagersFromTeamId($eqTh->team_id, $eqTh->id);
