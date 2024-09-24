@@ -393,10 +393,6 @@ class UploadTest extends TestCase
      */
     public function test_team_logo_from_upload_with_success(): void
     {
-        $mockCloudLogger = \Mockery::mock(\App\Services\CloudLoggerService::class);
-        $mockCloudLogger->shouldReceive('write')
-            ->with('test');
-
         $teamId = Team::all()->random()->id;
         $file = UploadedFile::fake()->image('team_logo.jpeg', 600, 300);
 
