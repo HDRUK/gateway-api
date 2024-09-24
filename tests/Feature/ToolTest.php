@@ -135,6 +135,8 @@ class ToolTest extends TestCase
                     'collections',
                     'datasets',
                     'any_dataset',
+                    'category',
+                    'type_category',
                 ]
             ],
             'current_page',
@@ -190,6 +192,7 @@ class ToolTest extends TestCase
                 'collections',
                 'datasets',
                 'any_dataset',
+                'category',
             ]
         ]);
         $response->assertStatus(200);

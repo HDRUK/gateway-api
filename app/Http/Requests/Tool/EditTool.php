@@ -89,6 +89,7 @@ class EditTool extends BaseFormRequest
             ],
             'type_category.*' => [
                 'integer',
+                'exists:categories,id',
             ],
             'associated_authors' => [
                 'nullable',
