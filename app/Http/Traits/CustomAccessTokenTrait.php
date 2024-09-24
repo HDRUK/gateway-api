@@ -109,6 +109,9 @@ trait CustomAccessTokenTrait
         return $this->convertToJWT()->toString();
     }
 
+    /**
+     * get rquest roles from db
+     */
     public function getRquestroles($id)
     {
         $cohortRequest = CohortRequest::where([
