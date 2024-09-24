@@ -27,11 +27,11 @@ class ToolSeeder extends Seeder
 
         $tools = Tool::all();
         foreach ($tools as $tool) {
-            $tyypeCategoryId = TypeCategory::all()->random()->id;
+            $typeCategoryId = TypeCategory::all()->random()->id;
 
             ToolHasTypeCategory::create([
                 'tool_id' => $tool->id,
-                'type_category_id' => $tyypeCategoryId,
+                'type_category_id' => $typeCategoryId,
             ]);
         }
     }
