@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Category;
 use App\Models\Tool;
 use App\Models\ToolHasTypeCategory;
 use App\Models\TypeCategory;
