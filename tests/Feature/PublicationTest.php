@@ -54,9 +54,9 @@ class PublicationTest extends TestCase
             DatasetVersionSeeder::class,
             PublicationHasDatasetVersionSeeder::class,
             LicenseSeeder::class,
+            TypeCategorySeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
-            TypeCategorySeeder::class,
             PublicationHasToolSeeder::class,
         ]);
     }
