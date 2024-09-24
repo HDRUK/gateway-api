@@ -90,11 +90,10 @@ class ScanFileUpload implements ShouldQueue
      */
     public function handle(): void
     {
+        $upload = Upload::findOrFail($this->uploadId);
+        $filePath = $upload->file_location;
 
         try {
-
-            $upload = Upload::findOrFail($this->uploadId);
-            $filePath = $upload->file_location;
 
             $body = [
                 'file' => (string)$filePath,

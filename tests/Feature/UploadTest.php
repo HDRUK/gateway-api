@@ -77,8 +77,6 @@ class UploadTest extends TestCase
             ]
         );
 
-        dd($response);
-
         $response->assertJsonStructure([
             'data' => [
                 'id',
