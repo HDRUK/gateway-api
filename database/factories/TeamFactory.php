@@ -40,6 +40,7 @@ class TeamFactory extends Factory
             'is_provider' => fake()->boolean(),
             'team_logo' => Config::get('services.media.base_url') . '/teams/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
             'url' => fake()->imageUrl(),
+            'service' => 'https://service.local/test',
         ];
     }
 }

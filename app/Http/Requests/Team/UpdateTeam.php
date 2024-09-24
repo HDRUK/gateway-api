@@ -104,6 +104,10 @@ class UpdateTeam extends BaseFormRequest
                 'nullable',
                 'string',
             ],
+            'service' => [
+                'nullable',
+                'url:http,https',
+            ],
         ];
     }
 

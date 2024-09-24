@@ -93,6 +93,7 @@ class DataProviderCollTest extends TestCase
                     'name',
                     'summary',
                     'img_url',
+                    'service',
                     'teams',
                 ],
             ],
@@ -125,6 +126,7 @@ class DataProviderCollTest extends TestCase
                 'enabled',
                 'name',
                 'summary',
+                'service',
                 'img_url',
                 'teams',
             ]
@@ -149,6 +151,7 @@ class DataProviderCollTest extends TestCase
                 'name',
                 'img_url',
                 'summary',
+                'service',
                 'datasets',
                 'durs',
                 'tools',
@@ -170,6 +173,7 @@ class DataProviderCollTest extends TestCase
                     'name',
                     'img_url',
                     'summary',
+                    'service',
                     'enabled',
                     'teams_counts' => [
                         0 => [
@@ -212,6 +216,7 @@ class DataProviderCollTest extends TestCase
                 2,
                 3,
             ],
+            'service' => 'https://service.local/test',
         ];
 
         $response = $this->json(
@@ -250,6 +255,7 @@ class DataProviderCollTest extends TestCase
                 2,
                 3,
             ],
+            'service' => 'https://service.local/test',
         ];
 
         $response = $this->json(
@@ -341,6 +347,7 @@ class DataProviderCollTest extends TestCase
                 2,
                 3,
             ],
+            'service' => 'https://service.local/test',
         ];
 
         $response = $this->json(
