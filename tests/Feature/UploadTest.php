@@ -59,7 +59,10 @@ class UploadTest extends TestCase
      */
     public function test_upload_file_with_success(): void
     {
-        $file = UploadedFile::fake()->create('test_file.csv');
+        $file = new UploadedFile(
+            getcwd() . '/tests/Unit/test_files/test_file.csv',
+            'test_file.csv',
+        );
         // post file to files endpoint
         $response = $this->json(
             'POST',
@@ -96,7 +99,10 @@ class UploadTest extends TestCase
      */
     public function test_show_upload_with_success(): void
     {
-        $file = UploadedFile::fake()->create('test_file.csv');
+        $file = new UploadedFile(
+            getcwd() . '/tests/Unit/test_files/test_file.csv',
+            'test_file.csv',
+        );
         // post file to files endpoint
         $response = $this->json(
             'POST',
@@ -137,7 +143,10 @@ class UploadTest extends TestCase
      */
     public function test_retrieve_file_content_with_success(): void
     {
-        $file = UploadedFile::fake()->create('test_file.csv');
+        $file = new UploadedFile(
+            getcwd() . '/tests/Unit/test_files/test_file.csv',
+            'test_file.csv',
+        );
         // post file to files endpoint
         $response = $this->json(
             'POST',
@@ -342,6 +351,11 @@ class UploadTest extends TestCase
                 'error'
             ]
         ]);
+
+        $content = $response->decodeResponseJson()['data'];
+        $this->assertEquals($content['status'], 'PROCESSED');
+        $this->assertEquals($content['error'], null);
+
         $response->assertStatus(200);
         $id = $response->decodeResponseJson()['data']['id'];
 

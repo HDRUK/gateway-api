@@ -153,9 +153,9 @@ class FormHydrationController extends Controller
         $team = Team::findOrFail($id);
         $datasets = Dataset::where('team_id', $id)->get();
         foreach ($datasets as $dataset) {
-            $version = $dataset->latestVersion();
-            $dataset['metadata'] = $version->metadata;
+            $dataset['metadata'] = $dataset->latestVersion()->metadata;
         }
+
         $datasets = $datasets->toArray();
         $defaultValues = array();
         $defaultValues['identifier'] = $team['id'];
@@ -216,6 +216,7 @@ class FormHydrationController extends Controller
             $v = $this->getValueFromPath($dataset, $path);
             $values[] = is_null($v) ? "" : $this->getValueFromPath($dataset, $path);
         }
+
         $countMap = array_count_values($values);
         arsort($countMap);
         $mostCommon = array_keys($countMap)[0];
