@@ -119,7 +119,6 @@ class UploadTest extends TestCase
             ]
         );
 
-        dd($this->header);
         dd($response);
 
         $id = $response->decodeResponseJson()['data']['id'];
