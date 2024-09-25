@@ -101,7 +101,7 @@ class ScanFileUpload implements ShouldQueue
                 'storage' => (string)$this->fileSystem
             ];
 
-            // CloudLogger::write('Malware scan initiated');
+            CloudLogger::write('Malware scan initiated');
 
             $response = Http::withBody(
                 json_encode([
