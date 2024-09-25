@@ -38,6 +38,7 @@ class DatasetIntegrationTest extends TestCase
     public const TEST_URL_USER = 'api/v1/users';
 
     private $metadata = null;
+    private $integration = null;
 
     protected $header = [];
 

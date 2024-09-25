@@ -18,22 +18,23 @@ use Database\Seeders\DatasetSeeder;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
+use ElasticClientController as ECC;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
+use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\DurHasDatasetVersionSeeder;
 use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
-use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
+use Database\Seeders\DurHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionHasPublicationSeeder;
 
-use ElasticClientController as ECC;
+use Database\Seeders\CollectionHasDatasetVersionSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class CollectionTest extends TestCase
 {
@@ -63,6 +64,7 @@ class CollectionTest extends TestCase
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
             CategorySeeder::class,
+            TypeCategorySeeder::class,
             LicenseSeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
