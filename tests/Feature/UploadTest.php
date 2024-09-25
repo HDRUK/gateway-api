@@ -63,13 +63,6 @@ class UploadTest extends TestCase
             'test_file.csv',
         );
 
-        var_dump([
-            'Accept' => 'application/json',
-            'Content-Type' => 'multipart/form-data',
-            'Authorization' => 'Bearer ' . $this->header['Authorization']
-        ]);
-        exit();
-
         // post file to files endpoint
         $response = $this->json(
             'POST',
