@@ -100,6 +100,10 @@ class CreateTeam extends BaseFormRequest
                 'nullable',
                 'string',
             ],
+            'service' => [
+                'nullable',
+                'url:http,https',
+            ],
         ];
     }
 }

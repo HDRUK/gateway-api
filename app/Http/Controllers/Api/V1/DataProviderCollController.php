@@ -57,6 +57,7 @@ class DataProviderCollController extends Controller
      *                      @OA\Property(property="name", type="string", example="Name"),
      *                      @OA\Property(property="summary", type="string", example="Summary"),
      *                      @OA\Property(property="enabled", type="boolean", example="1")
+     *                      @OA\Property(property="service", type="string", example="https://example"),
      *                  )
      *              )
      *          )
@@ -127,6 +128,7 @@ class DataProviderCollController extends Controller
      *                  @OA\Property(property="name", type="string", example="Name"),
      *                  @OA\Property(property="summary", type="string", example="Summary"),
      *                  @OA\Property(property="enabled", type="boolean", example="1")
+     *                  @OA\Property(property="service", type="string", example="https://example"),
      *              )
      *          ),
      *      ),
@@ -201,6 +203,7 @@ class DataProviderCollController extends Controller
      *                  @OA\Property(property="tools", type="array", example="{}", @OA\Items()),
      *                  @OA\Property(property="publications", type="array", example="{}", @OA\Items()),
      *                  @OA\Property(property="collections", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="service", type="string", example="https://example"),
      *              )
      *          ),
      *      ),
@@ -216,7 +219,7 @@ class DataProviderCollController extends Controller
     public function showSummary(Request $request, int $id): JsonResponse
     {
         try {
-            $dpc = DataProviderColl::select('id', 'name', 'img_url', 'enabled')
+            $dpc = DataProviderColl::select('id', 'name', 'img_url', 'enabled', 'service')
                 ->with('teams')
                 ->where([
                     'id' => $id,
@@ -285,6 +288,7 @@ class DataProviderCollController extends Controller
                 'img_url' => $dpc->img_url,
                 'summary' => $dpc->summary,
                 'enabled' => $dpc->enabled,
+                'service' => $dpc->service,
                 'teams_counts' => $teamsResult,
                 'datasets_total' => count($this->datasets),
                 'datasets' => $this->datasets,
@@ -329,6 +333,7 @@ class DataProviderCollController extends Controller
      *              @OA\Property(property="name", type="string", example="Name"),
      *              @OA\Property(property="summary", type="string", example="Summary"),
      *              @OA\Property(property="enabled", type="boolean", example="true"),
+     *              @OA\Property(property="service", type="string", example="https://example"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
      *                  @OA\Items(
      *                      @OA\Property(type="integer")
@@ -365,6 +370,7 @@ class DataProviderCollController extends Controller
                 'img_url' => $input['img_url'],
                 'summary' => $input['summary'],
                 'url' => array_key_exists('url', $input) ? $input['url'] : null,
+                'service' => array_key_exists('service', $input) ? $input['service'] : null,
             ];
             if (isset($input['url'])) {
                 $array['url'] = $input['url'];
@@ -438,6 +444,7 @@ class DataProviderCollController extends Controller
      *              @OA\Property(property="name", type="string", example="Name"),
      *              @OA\Property(property="summary", type="string", example="Summary"),
      *              @OA\Property(property="enabled", type="string", example="true"),
+     *              @OA\Property(property="service", type="string", example="https://example"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
      *                  @OA\Items(
      *                      @OA\Property(type="integer")
@@ -465,6 +472,7 @@ class DataProviderCollController extends Controller
      *                  @OA\Property(property="name", type="string", example="Name"),
      *                  @OA\Property(property="summary", type="string", example="Summary"),
      *                  @OA\Property(property="enabled", type="boolean", example="1")
+     *                  @OA\Property(property="service", type="string", example="https://example"),
      *              )
      *          ),
      *      ),
@@ -490,6 +498,7 @@ class DataProviderCollController extends Controller
             $dpc->img_url = $input['img_url'];
             $dpc->summary = $input['summary'];
             $dpc->url = (isset($input['url']) ? $input['url'] : $dpc->url);
+            $dpc->service = (isset($input['service']) ? $input['service'] : $dpc->url);
             $dpc->save();
 
             if (isset($input['team_ids']) && !empty($input['team_ids'])) {
@@ -548,6 +557,7 @@ class DataProviderCollController extends Controller
      *              @OA\Property(property="name", type="string", example="Name"),
      *              @OA\Property(property="summary", type="string", example="Summary"),
      *              @OA\Property(property="enabled", type="string", example="true"),
+     *              @OA\Property(property="service", type="string", example="https://example"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
      *                  @OA\Items(
      *                      @OA\Property(type="integer")
@@ -575,6 +585,7 @@ class DataProviderCollController extends Controller
      *                  @OA\Property(property="name", type="string", example="Name"),
      *                  @OA\Property(property="summary", type="string", example="Summary"),
      *                  @OA\Property(property="enabled", type="boolean", example="1")
+     *                  @OA\Property(property="service", type="string", example="https://example"),
      *              )
      *          ),
      *      ),
@@ -600,6 +611,7 @@ class DataProviderCollController extends Controller
             $dpc->img_url = (isset($input['img_url']) ? $input['img_url'] : $dpc->img_url);
             $dpc->summary = (isset($input['summary']) ? $input['summary'] : $dpc->summary);
             $dpc->url = (isset($input['url']) ? $input['url'] : $dpc->url);
+            $dpc->service = (isset($input['service']) ? $input['service'] : $dpc->service);
 
             $dpc->save();
 
