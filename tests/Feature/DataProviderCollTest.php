@@ -6,34 +6,35 @@ use Tests\TestCase;
 
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
+use App\Models\DataProviderColl;
 use Database\Seeders\TeamSeeder;
 use Database\Seeders\ToolSeeder;
+
 use Tests\Traits\MockExternalApis;
 
 use Database\Seeders\DatasetSeeder;
 
 use Database\Seeders\KeywordSeeder;
-
 use Database\Seeders\LicenseSeeder;
+use ElasticClientController as ECC;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
-use App\Models\DataProviderColl;
 use App\Models\DataProviderCollHasTeam;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TeamHasUserSeeder;
+use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\DataProviderCollsSeeder;
-use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionHasPublicationSeeder;
 
-use ElasticClientController as ECC;
+use Database\Seeders\CollectionHasDatasetVersionSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class DataProviderCollTest extends TestCase
 {
@@ -61,6 +62,7 @@ class DataProviderCollTest extends TestCase
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
             CategorySeeder::class,
+            TypeCategorySeeder::class,
             LicenseSeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
