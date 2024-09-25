@@ -25,7 +25,6 @@ use Illuminate\Http\UploadedFile;
 class UploadTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -50,13 +49,6 @@ class UploadTest extends TestCase
             DatasetVersionSeeder::class,
             CollectionSeeder::class,
         ]);
-
-        $this->authorisationUser();
-
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $this->getAuthorisationJwt(),
-        ];
     }
 
     /**
@@ -71,9 +63,9 @@ class UploadTest extends TestCase
             'test_file.csv',
         );
 
-        var_dump($this->header['Authorization']);
+        var_dump($this->header);
         exit();
-        
+
         // post file to files endpoint
         $response = $this->json(
             'POST',
