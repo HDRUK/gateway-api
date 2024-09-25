@@ -101,7 +101,7 @@ class ScanFileUpload implements ShouldQueue
                 'storage' => (string)$this->fileSystem
             ];
 
-            CloudLogger::write('Malware scan initiated');
+            // CloudLogger::write('Malware scan initiated');
 
             $response = Http::withBody(
                 json_encode([
@@ -121,7 +121,7 @@ class ScanFileUpload implements ShouldQueue
 
             $isInfected = $response['isInfected'];
 
-            CloudLogger::write('Malware scan completed');
+            // CloudLogger::write('Malware scan completed');
 
             // Check if the file is infected
             if ($isInfected) {
@@ -132,11 +132,11 @@ class ScanFileUpload implements ShouldQueue
                 Storage::disk($this->fileSystem . '.unscanned')
                     ->delete($upload->file_location);
 
-                CloudLogger::write([
-                    'action_type' => 'SCAN',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => 'Uploaded file failed malware scan',
-                ]);
+                // CloudLogger::write([
+                //     'action_type' => 'SCAN',
+                //     'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                //     'description' => 'Uploaded file failed malware scan',
+                // ]);
 
                 Auditor::log([
                     'action_type' => 'SCAN',
@@ -145,7 +145,7 @@ class ScanFileUpload implements ShouldQueue
                 ]);
             } else {
 
-                CloudLogger::write('Uploaded file passed malware scan');
+                // CloudLogger::write('Uploaded file passed malware scan');
 
                 $loc = $upload->file_location;
                 $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
@@ -153,7 +153,7 @@ class ScanFileUpload implements ShouldQueue
                 Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
                 Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
 
-                CloudLogger::write('Uploaded file moved to safe scanned storage');
+                // CloudLogger::write('Uploaded file moved to safe scanned storage');
 
                 switch ($this->entityFlag) {
                     case 'dur-from-upload':
@@ -173,11 +173,11 @@ class ScanFileUpload implements ShouldQueue
                         break;
                 }
 
-                CloudLogger::write([
-                    'action_type' => 'SCAN',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => 'Uploaded file passed malware scan and processed',
-                ]);
+                // CloudLogger::write([
+                //     'action_type' => 'SCAN',
+                //     'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                //     'description' => 'Uploaded file passed malware scan and processed',
+                // ]);
 
                 Auditor::log([
                     'action_type' => 'SCAN',
