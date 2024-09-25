@@ -59,7 +59,8 @@ class CustomAuthorizationController extends Controller
 
         // mock user id for with we need:
         // - cohort_regests.request_status = 'APPROVED'
-        $cohortRequests = CohortRequest::where(['request_status' => 'APPROVED'])->first();
+        $cohortRequests = CohortRequest::where(['request_status' => 'APPROVED'])
+                            ->first();
         $userId = $cohortRequests->user_id;
         // end mock user id
 
