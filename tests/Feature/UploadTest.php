@@ -77,7 +77,6 @@ class UploadTest extends TestCase
                 'Authorization' => $this->header['Authorization']
             ]
         );
-        dd($response);
 
         $response->assertJsonStructure([
             'data' => [
