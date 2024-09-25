@@ -54,7 +54,7 @@ class UploadController extends Controller
      */
     public function upload(Request $request): JsonResponse
     {
-        // try {
+        try {
             $input = $request->all();
             $file  = $request->file('file');
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -117,15 +117,15 @@ class UploadController extends Controller
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => Upload::where('id', $upload->id)->first()
             ]);
-        // } catch (Exception $e) {
-        //     Auditor::log([
-        //         'action_type' => 'POST',
-        //         'action_name' => class_basename($this) . '@' . __FUNCTION__,
-        //         'description' => $e->getMessage(),
-        //     ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'POST',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
 
-        //     throw new Exception($e->getMessage());
-        // }
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**

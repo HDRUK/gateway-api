@@ -74,7 +74,7 @@ class UploadTest extends TestCase
             [
                 'Accept' => 'application/json',
                 'Content-Type' => 'multipart/form-data',
-                'Authorization' => 'Bearer ' . $this->header['Authorization']
+                'Authorization' => $this->header['Authorization']
             ]
         );
         dd($response);
