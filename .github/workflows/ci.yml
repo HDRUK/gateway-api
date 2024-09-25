@@ -48,7 +48,7 @@ jobs:
 
     - name: Run unit tests
       id: unittests
-      run: "composer run pest
+      run: "composer run pest"
   
     # - name: Run one unit test file
     #   id: unittests
