@@ -31,7 +31,7 @@ class UploadTest extends TestCase
 
     public const TEST_URL = '/api/v1/files';
 
-    protected $header = [];
+    // protected $header = [];
 
     /**
      * Set up the database
