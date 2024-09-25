@@ -91,11 +91,10 @@ class ScanFileUpload implements ShouldQueue
     public function handle(): void
     {
 
-        // try {
+        $upload = Upload::findOrFail($this->uploadId);
+        $filePath = $upload->file_location;
 
-            $upload = Upload::findOrFail($this->uploadId);
-            $filePath = $upload->file_location;
-
+        try {
             $body = [
                 'file' => (string)$filePath,
                 'storage' => (string)$this->fileSystem
@@ -121,7 +120,7 @@ class ScanFileUpload implements ShouldQueue
 
             $isInfected = $response['isInfected'];
 
-            // CloudLogger::write('Malware scan completed');
+            CloudLogger::write('Malware scan completed');
 
             // Check if the file is infected
             if ($isInfected) {
@@ -132,11 +131,11 @@ class ScanFileUpload implements ShouldQueue
                 Storage::disk($this->fileSystem . '.unscanned')
                     ->delete($upload->file_location);
 
-                // CloudLogger::write([
-                //     'action_type' => 'SCAN',
-                //     'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                //     'description' => 'Uploaded file failed malware scan',
-                // ]);
+                CloudLogger::write([
+                    'action_type' => 'SCAN',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => 'Uploaded file failed malware scan',
+                ]);
 
                 Auditor::log([
                     'action_type' => 'SCAN',
@@ -145,7 +144,7 @@ class ScanFileUpload implements ShouldQueue
                 ]);
             } else {
 
-                // CloudLogger::write('Uploaded file passed malware scan');
+                CloudLogger::write('Uploaded file passed malware scan');
 
                 $loc = $upload->file_location;
                 $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
@@ -153,7 +152,7 @@ class ScanFileUpload implements ShouldQueue
                 Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
                 Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
 
-                // CloudLogger::write('Uploaded file moved to safe scanned storage');
+                CloudLogger::write('Uploaded file moved to safe scanned storage');
 
                 switch ($this->entityFlag) {
                     case 'dur-from-upload':
@@ -173,11 +172,11 @@ class ScanFileUpload implements ShouldQueue
                         break;
                 }
 
-                // CloudLogger::write([
-                //     'action_type' => 'SCAN',
-                //     'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                //     'description' => 'Uploaded file passed malware scan and processed',
-                // ]);
+                CloudLogger::write([
+                    'action_type' => 'SCAN',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => 'Uploaded file passed malware scan and processed',
+                ]);
 
                 Auditor::log([
                     'action_type' => 'SCAN',
@@ -185,22 +184,22 @@ class ScanFileUpload implements ShouldQueue
                     'description' => 'Uploaded file passed malware scan and processed',
                 ]);
             }
-        // } catch (Exception $e) {
-        //     // Record exception in uploads table
-        //     $upload->update([
-        //         'status' => 'FAILED',
-        //         'file_location' => $filePath,
-        //         'error' => $e->getMessage()
-        //     ]);
+        } catch (Exception $e) {
+            // Record exception in uploads table
+            $upload->update([
+                'status' => 'FAILED',
+                'file_location' => $filePath,
+                'error' => $e->getMessage()
+            ]);
 
-        //     Auditor::log([
-        //         'action_type' => 'EXCEPTION',
-        //         'action_name' => class_basename($this) . '@' . __FUNCTION__,
-        //         'description' => $e->getMessage(),
-        //     ]);
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
 
-        //     throw new Exception($e->getMessage());
-        // }
+            throw new Exception($e->getMessage());
+        }
     }
 
     private function createDurFromFile(string $loc, Upload $upload): void

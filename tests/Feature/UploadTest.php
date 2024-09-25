@@ -104,7 +104,6 @@ class UploadTest extends TestCase
             getcwd() . '/tests/Unit/test_files/test_file.csv',
             'test_file.csv',
         );
-        // $file = UploadedFile::fake()->create('test_file.csv');
         // post file to files endpoint
         $response = $this->json(
             'POST',
@@ -118,8 +117,6 @@ class UploadTest extends TestCase
                 'Authorization' => $this->header['Authorization']
             ]
         );
-
-        dd($response);
 
         $id = $response->decodeResponseJson()['data']['id'];
 
