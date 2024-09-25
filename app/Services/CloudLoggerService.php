@@ -12,11 +12,8 @@ class CloudLoggerService
 
     public function __construct()
     {
-        $this->logging = new LoggingClient([
-            'projectId' => Config::get('services.googlelogging.project_id'),
-        ]);
-
-        $this->logger = $this->logging->logger(Config::get('services.googlelogging.log_name'));
+        $this->logging = null;
+        $this->logger = null;
     }
 
     public function write($data, $severity = 'INFO')
@@ -24,6 +21,12 @@ class CloudLoggerService
         if (Config::get('services.googlelogging.enabled') === false) {
             return;
         }
+
+        $this->logging = new LoggingClient([
+            'projectId' => Config::get('services.googlelogging.project_id'),
+        ]);
+
+        $this->logger = $this->logging->logger(Config::get('services.googlelogging.log_name'));
 
         $message = '';
 
