@@ -91,7 +91,7 @@ class ScanFileUpload implements ShouldQueue
     public function handle(): void
     {
 
-        try {
+        // try {
 
             $upload = Upload::findOrFail($this->uploadId);
             $filePath = $upload->file_location;
@@ -185,22 +185,22 @@ class ScanFileUpload implements ShouldQueue
                     'description' => 'Uploaded file passed malware scan and processed',
                 ]);
             }
-        } catch (Exception $e) {
-            // Record exception in uploads table
-            $upload->update([
-                'status' => 'FAILED',
-                'file_location' => $filePath,
-                'error' => $e->getMessage()
-            ]);
+        // } catch (Exception $e) {
+        //     // Record exception in uploads table
+        //     $upload->update([
+        //         'status' => 'FAILED',
+        //         'file_location' => $filePath,
+        //         'error' => $e->getMessage()
+        //     ]);
 
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
+        //     Auditor::log([
+        //         'action_type' => 'EXCEPTION',
+        //         'action_name' => class_basename($this) . '@' . __FUNCTION__,
+        //         'description' => $e->getMessage(),
+        //     ]);
 
-            throw new Exception($e->getMessage());
-        }
+        //     throw new Exception($e->getMessage());
+        // }
     }
 
     private function createDurFromFile(string $loc, Upload $upload): void
