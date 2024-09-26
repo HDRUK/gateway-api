@@ -56,7 +56,8 @@ class DataProviderCollController extends Controller
      *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                      @OA\Property(property="name", type="string", example="Name"),
      *                      @OA\Property(property="summary", type="string", example="Summary"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1")
+     *                      @OA\Property(property="enabled", type="boolean", example="1"),
+     *                      @OA\Property(property="service", type="string", example="https://example"),
      *                  )
      *              )
      *          )
@@ -612,6 +613,7 @@ class DataProviderCollController extends Controller
             $dpc->summary = (isset($input['summary']) ? $input['summary'] : $dpc->summary);
             $dpc->url = (isset($input['url']) ? $input['url'] : $dpc->url);
             $dpc->service = (isset($input['service']) ? $input['service'] : $dpc->service);
+
             $dpc->save();
 
             if (isset($input['team_ids']) && !empty($input['team_ids'])) {
