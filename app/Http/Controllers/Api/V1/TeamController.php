@@ -77,6 +77,7 @@ class TeamController extends Controller
      *                    @OA\Property(property="is_provider", type="boolean", example="1"),
      *                    @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *                    @OA\Property(property="introduction", type="string", example="info about the team"),
+     *                    @OA\Property(property="service", type="string", example="https://example"),
      *                ),
      *             ),
      *             @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
@@ -202,6 +203,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="is_provider", type="boolean", example="1"),
      *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *                  @OA\Property(property="introduction", type="string", example="info about the team"),
+     *                  @OA\Property(property="service", type="string", example="https://example"),
      *              )
      *          ),
      *      ),
@@ -406,6 +408,7 @@ class TeamController extends Controller
      *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *              @OA\Property(property="introduction", type="string", example="info about the team"),
      *              @OA\Property(property="dar_modal_content", type="string", example="dar info"),
+     *              @OA\Property(property="service", type="string", example="https://example"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -431,15 +434,15 @@ class TeamController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        try {
-            $arrayTeam = array_filter($input, function ($key) {
-                return $key !== 'notifications' || $key !== 'users';
-            }, ARRAY_FILTER_USE_KEY);
-            $arrayTeamNotification = $input['notifications'];
-            $arrayTeamUsers = $input['users'];
-            $superAdminIds = User::where('is_admin', true)->pluck('id');
-            $team = Team::create($arrayTeam);
+        $arrayTeam = array_filter($input, function ($key) {
+            return $key !== 'notifications' || $key !== 'users';
+        }, ARRAY_FILTER_USE_KEY);
+        $arrayTeamNotification = $input['notifications'];
+        $arrayTeamUsers = $input['users'];
+        $superAdminIds = User::where('is_admin', true)->pluck('id');
+        $team = Team::create($arrayTeam);
 
+        try {
             if ($team) {
                 foreach ($arrayTeamNotification as $value) {
                     TeamHasNotification::updateOrCreate([
@@ -547,6 +550,7 @@ class TeamController extends Controller
      *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *              @OA\Property(property="introduction", type="string", example="info about the team"),
      *              @OA\Property(property="dar_modal_content", type="string", example="dar info"),
+     *              @OA\Property(property="service", type="string", example="https://example"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -581,6 +585,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *                  @OA\Property(property="introduction", type="string", example="info about the team"),
      *                  @OA\Property(property="dar_modal_content", type="string", example="dar info"),
+     *                  @OA\Property(property="service", type="string", example="https://example"),
      *              )
      *          ),
      *      ),
@@ -617,6 +622,7 @@ class TeamController extends Controller
                 'introduction',
                 'team_logo',
                 'dar_modal_content',
+                'service',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -697,6 +703,7 @@ class TeamController extends Controller
      *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *              @OA\Property(property="introduction", type="string", example="info about the team"),
      *              @OA\Property(property="dar_modal_content", type="string", example="dar info"),
+     *              @OA\Property(property="service", type="string", example="https://example"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -731,6 +738,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *                  @OA\Property(property="introduction", type="string", example="info about the team"),
      *                  @OA\Property(property="dar_modal_content", type="string", example="dar info"),
+     *                  @OA\Property(property="service", type="string", example="https://example"),
      *              )
      *          ),
      *      ),
@@ -767,6 +775,7 @@ class TeamController extends Controller
                 'introduction',
                 'team_logo',
                 'dar_modal_content',
+                'service',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);

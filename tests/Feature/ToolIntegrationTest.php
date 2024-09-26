@@ -67,12 +67,12 @@ class ToolIntegrationTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             CategorySeeder::class,
+            TypeCategorySeeder::class,
             ProgrammingLanguageSeeder::class,
             ProgrammingPackageSeeder::class,
             LicenseSeeder::class,
             TagSeeder::class,
             KeywordSeeder::class,
-            TypeCategorySeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
             ToolSeeder::class,

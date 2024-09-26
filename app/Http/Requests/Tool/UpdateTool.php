@@ -92,6 +92,7 @@ class UpdateTool extends BaseFormRequest
             ],
             'type_category.*' => [
                 'integer',
+                'exists:type_categories,id',
             ],
             'associated_authors' => [
                 'nullable',
