@@ -219,7 +219,7 @@ class DataProviderCollController extends Controller
     public function showSummary(Request $request, int $id): JsonResponse
     {
         try {
-            $dpc = DataProviderColl::select('id', 'name', 'img_url', 'enabled', 'service')
+            $dpc = DataProviderColl::select('id', 'name', 'img_url', 'enabled', 'url', 'service')
                 ->with('teams')
                 ->where([
                     'id' => $id,
@@ -288,6 +288,7 @@ class DataProviderCollController extends Controller
                 'img_url' => $dpc->img_url,
                 'summary' => $dpc->summary,
                 'enabled' => $dpc->enabled,
+                'url' => $dpc->url,
                 'service' => $dpc->service,
                 'teams_counts' => $teamsResult,
                 'datasets_total' => count($this->datasets),
