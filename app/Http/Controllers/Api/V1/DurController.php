@@ -1085,8 +1085,7 @@ class DurController extends Controller
                     'data' => $this->getDurById($id),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             } else {
-                $initDur = Dur::withTrashed()
-                ->find($id);
+                $initDur = Dur::withTrashed()->where('id', $id)->first();
 
                 $arrayKeys = [
                     'non_gateway_datasets',
