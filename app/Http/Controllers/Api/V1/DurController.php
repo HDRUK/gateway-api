@@ -771,7 +771,7 @@ class DurController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $initDur = Dur::withTrashed()->where('id', $id)->first();
+            $initDur = $this->getDurById($id);
 
             $arrayKeys = [
                 'non_gateway_datasets',
@@ -1056,8 +1056,7 @@ class DurController extends Controller
 
         try {
             if ($request->has('unarchive')) {
-                $durModel = Dur::withTrashed()
-                    ->find($id);
+                $durModel = $this->getDurById($id);
                 if ($request['status'] !== Dur::STATUS_ARCHIVED) {
                     if (in_array($request['status'], [
                         Dur::STATUS_ACTIVE, Dur::STATUS_DRAFT
