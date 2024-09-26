@@ -63,6 +63,7 @@ class TeamTest extends TestCase
                         'url',
                         'introduction',
                         'dar_modal_content',
+                        'service',
                     ],
                 ],
             ]);
@@ -118,6 +119,7 @@ class TeamTest extends TestCase
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
+                'service' => 'https://service.local/test',
             ],
             $this->header
         );
@@ -158,6 +160,7 @@ class TeamTest extends TestCase
                     'url',
                     'introduction',
                     'dar_modal_content',
+                    'service',
                 ],
             ]);
 
@@ -257,6 +260,7 @@ class TeamTest extends TestCase
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
+                'service' => 'https://service.local/test',
             ],
             $this->header
         );
@@ -335,6 +339,7 @@ class TeamTest extends TestCase
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
+                'service' => 'https://service.local/test',
             ],
             $this->header
         );
@@ -451,6 +456,7 @@ class TeamTest extends TestCase
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
+                'service' => 'https://service.local/test',
             ],
             $this->header
         );

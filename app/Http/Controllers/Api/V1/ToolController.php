@@ -171,6 +171,8 @@ class ToolController extends Controller
                 'publications',
                 'durs',
                 'collections',
+                'category',
+                'typeCategory',
             ])
             ->when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);
@@ -1026,6 +1028,7 @@ class ToolController extends Controller
             'publications',
             'durs',
             'collections',
+            'category',
         ])
         ->withTrashed()
         ->where(['id' => $toolId])

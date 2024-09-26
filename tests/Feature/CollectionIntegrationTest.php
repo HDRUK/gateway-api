@@ -12,14 +12,15 @@ use App\Models\Collection;
 
 use App\Models\Permission;
 use App\Models\Application;
-use Database\Seeders\DurSeeder;
+use App\Models\Publication;
 
+use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\DatasetSeeder;
 // use Illuminate\Foundation\Testing\WithFaker;
+use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
@@ -28,15 +29,15 @@ use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use App\Models\ApplicationHasPermission;
-use App\Models\Publication;
+use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
-use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionHasPublicationSeeder;
+use Database\Seeders\CollectionHasDatasetVersionSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class CollectionIntegrationTest extends TestCase
 {
@@ -67,6 +68,7 @@ class CollectionIntegrationTest extends TestCase
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
             CategorySeeder::class,
+            TypeCategorySeeder::class,
             LicenseSeeder::class,
             ToolSeeder::class,
             TagSeeder::class,

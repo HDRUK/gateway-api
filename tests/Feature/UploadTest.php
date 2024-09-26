@@ -63,6 +63,7 @@ class UploadTest extends TestCase
             getcwd() . '/tests/Unit/test_files/test_file.csv',
             'test_file.csv',
         );
+
         // post file to files endpoint
         $response = $this->json(
             'POST',

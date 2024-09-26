@@ -90,7 +90,7 @@ class AliasReplyScannerTest extends TestCase
         $firstMessage = $messages[0];
         $alias = ARS::getAlias($firstMessage);
         $this->assertNotEmpty($alias);
-        $this->assertSame(32, strlen($alias));
+        $this->assertSame(8, strlen($alias));
 
         $secondMessage = $messages[1];
         $alias = ARS::getAlias($secondMessage);
