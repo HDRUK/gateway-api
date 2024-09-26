@@ -771,7 +771,8 @@ class DurController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $initDur = $this->getDurById($id);
+            $initDur = Dur::withTrashed()
+                ->find($id);
 
             $arrayKeys = [
                 'non_gateway_datasets',
