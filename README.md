@@ -232,3 +232,10 @@ kubectl exec -it $(kubectl get pods | awk '/gateway-api/ {print $1}') --  php ar
 ```
  kubectl exec -it $(kubectl get pods | awk '/gateway-api/ {print $1}') --  php artisan db:seed --class=Database\\Seeders\\Omop\\ConceptSeeder  --database=localomop
 ```
+
+### Authentication problems 
+If the auth process does work and times out, try:
+```
+php artisan key:generate
+php artisan config:cache
+```

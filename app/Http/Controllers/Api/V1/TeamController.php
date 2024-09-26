@@ -275,6 +275,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="id", type="integer", example=1),
      *                  @OA\Property(property="name", type="string", example="Name"),
      *                  @OA\Property(property="introduction", type="string", example="info about the team"),
+     *                  @OA\Property(property="url", type="string", example="http://placeholder"),
      *                  @OA\Property(property="img_url", type="string", example="http://placeholder"),
      *                  @OA\Property(property="summary", type="string", example="Summary"),
      *                  @OA\Property(property="datasets", type="array", example="{}", @OA\Items()),
@@ -298,7 +299,7 @@ class TeamController extends Controller
     {
         try {
             // Get this Team
-            $dp = Team::select('id', 'name', 'is_provider', 'introduction', 'team_logo')->where([
+            $dp = Team::select('id', 'name', 'is_provider', 'introduction', 'url', 'team_logo')->where([
                 'id' => $id,
                 'enabled' => 1,
             ])->first();
@@ -351,6 +352,7 @@ class TeamController extends Controller
                     'id' => $dp->id,
                     'is_provider' => $dp->is_provider,
                     'team_logo' => $dp->team_logo,
+                    'url' => $dp->url,
                     'name' => $dp->name,
                     'introduction' => $dp->introduction,
                     'datasets' => $this->datasets,
