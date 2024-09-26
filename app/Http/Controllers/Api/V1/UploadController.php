@@ -90,6 +90,9 @@ class UploadController extends Controller
                 'status' => 'PENDING'
             ]);
 
+            if ($collectionId === 'undefined') {
+                $collectionId = $upload->id;
+            }
             // spawn scan job
             ScanFileUpload::dispatch(
                 (int)$upload->id,
@@ -103,7 +106,7 @@ class UploadController extends Controller
                 $outputVersion,
                 $elasticIndexing,
                 $datasetId,
-                $collectionId,
+                (int)$collectionId,
             );
 
             // audit log
