@@ -1084,7 +1084,7 @@ class DurController extends Controller
                     'data' => $this->getDurById($id),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             } else {
-                $initDur = $durModel = Dur::withTrashed()
+                $initDur = Dur::withTrashed()
                 ->find($id);
 
                 $arrayKeys = [
