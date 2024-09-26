@@ -558,7 +558,7 @@ class DataProviderCollController extends Controller
      *              @OA\Property(property="name", type="string", example="Name"),
      *              @OA\Property(property="summary", type="string", example="Summary"),
      *              @OA\Property(property="enabled", type="string", example="true"),
-     *      *              @OA\Property(property="service", type="string", example="https://example"),
+     *              @OA\Property(property="service", type="string", example="https://example"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
      *                  @OA\Items(
      *                      @OA\Property(type="integer")
