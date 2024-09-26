@@ -283,7 +283,6 @@ class DataProviderCollController extends Controller
                 'id' => $dpc->id,
                 'name' => $dpc->name,
                 'img_url' => $dpc->img_url,
-                'url' => $dpc->url,
                 'summary' => $dpc->summary,
                 'enabled' => $dpc->enabled,
                 'teams_counts' => $teamsResult,
