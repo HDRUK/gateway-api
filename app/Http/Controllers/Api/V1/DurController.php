@@ -1056,7 +1056,8 @@ class DurController extends Controller
 
         try {
             if ($request->has('unarchive')) {
-                $durModel = $this->getDurById($id);
+                $durModel = Dur::withTrashed()
+                    ->find($id);
                 if ($request['status'] !== Dur::STATUS_ARCHIVED) {
                     if (in_array($request['status'], [
                         Dur::STATUS_ACTIVE, Dur::STATUS_DRAFT
@@ -1083,7 +1084,8 @@ class DurController extends Controller
                     'data' => $this->getDurById($id),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             } else {
-                $initDur = Dur::withTrashed()->where('id', $id)->first();
+                $initDur = $durModel = Dur::withTrashed()
+                ->find($id);
 
                 $arrayKeys = [
                     'non_gateway_datasets',
