@@ -25,7 +25,7 @@ return [
 
     'paths' => explode(',', env('CORS_PATH', 'api/*,sanctum/csrf-cookie,*')),
     'allowed_methods' => ['*'],
-    'allowed_origins' => ['https://web.dev.hdruk.cloud', 'https://rquest.test.healthdatagateway.org'],
+    'allowed_origins' => ['https://web.dev.hdruk.cloud', 'https://rquest.test.healthdatagateway.org', 'null'],
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],
