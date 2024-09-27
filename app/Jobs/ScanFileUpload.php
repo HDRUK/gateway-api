@@ -6,7 +6,7 @@ use Auditor;
 // use CloudLogger;
 use Config;
 use Exception;
-
+use Illuminate\Support\Facades\Log;
 
 use App\Models\Collection;
 use App\Models\Team;
@@ -210,7 +210,10 @@ class ScanFileUpload implements ShouldQueue
                 'user_id' => $this->userId,
                 'team_id' => $this->teamId,
             ];
+            Log::info('Ama see if i make it');
             $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
+            Log::info('path:' . $path);
+
             // CloudLogger::write('Post processing path');
             $import = new ImportDur($data);
             // CloudLogger::write('Post processing import');
@@ -218,11 +221,13 @@ class ScanFileUpload implements ShouldQueue
                 // CloudLogger::write('Post processing I should not be here');
                 Excel::import($import, $path);
             } else {
+                Log::info('I really hope I am here');
                 // CloudLogger::write('Post processing I should be here');
                 Excel::import($import, $path, $this->fileSystem . '.scanned');
+                Log::info('I really hope I am here as well');
             }
 
-
+            Log::info('Did i make it?');
             $durId = $import->durImport->durId;
 
             $upload->update([
