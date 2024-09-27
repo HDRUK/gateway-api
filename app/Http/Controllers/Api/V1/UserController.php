@@ -76,7 +76,7 @@ class UserController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $perPage = request('perPage', Config::get('constants.per_page'));
         $users = [];
-        
+
         try {
             if (count($jwtUser)) {
                 $userIsAdmin = (bool)$jwtUser['is_admin'];
@@ -87,7 +87,7 @@ class UserController extends Controller
                         $chars = $request->query('filterNames');
                         $users = User::where('name', 'like', '%' . $chars . '%')->select('id', 'name')->paginate($perPage, ['*'], 'page');
                     } else {
-                        $users = User::select('id','name')->paginate($perPage, ['*'], 'page');
+                        $users = User::select('id', 'name')->paginate($perPage, ['*'], 'page');
                     }
                 }
             }
