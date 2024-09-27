@@ -44,6 +44,7 @@
         "behat/behat": "^3.14",
         "behat/mink": "^1.11",
         "behat/mink-goutte-driver": "^2.0",
+        "intervention/image": "^3.7",
         "brianium/paratest": "^7.2",
         "fakerphp/faker": "^1.9.1",
         "friends-of-behat/mink-extension": "^2.7",
