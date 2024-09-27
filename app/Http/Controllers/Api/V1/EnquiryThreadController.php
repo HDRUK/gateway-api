@@ -50,11 +50,11 @@ class EnquiryThreadController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            $perPage = request('perPage', Config::get('constants.per_page'));
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $perPage = request('perPage', Config::get('constants.per_page'));
 
+        try {
             $enquiryThreads = EnquiryThread::paginate($perPage);
 
             Auditor::log([
@@ -127,10 +127,10 @@ class EnquiryThreadController extends Controller
      */
     public function show(Request $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $enquiryThread = EnquiryThread::where('id', $id)->get();
 
             Auditor::log([
