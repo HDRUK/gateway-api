@@ -35,9 +35,6 @@ trait CustomAccessTokenTrait
             "*",
             env('APP_URL') . "/*",
         ];
-        // $realmAccess = [
-        //     "roles" => $rquestroles,
-        // ];
         $realmAccess = [
             "roles" => [
                 "default-roles-rquest-206",
