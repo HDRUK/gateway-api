@@ -23,7 +23,7 @@ return [
     // 'max_age' => env('CORS_MAX_AGE', 0),
     // 'supports_credentials' => env('CORS_SUPPORTS_CREDENTIALS', true),
 
-    'paths' => explode(',', env('CORS_PATH', 'api/*,sanctum/csrf-cookie,*')),
+    'paths' => ['api/*', 'sanctum/csrf-cookie', '*'],
     'allowed_methods' => ['*'],
     'allowed_origins' => ['https://web.dev.hdruk.cloud', 'https://rquest.test.healthdatagateway.org', 'null'],
     'allowed_origins_patterns' => [],
