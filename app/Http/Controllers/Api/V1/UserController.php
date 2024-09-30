@@ -449,14 +449,11 @@ class UserController extends Controller
                 ];
 
                 if (array_key_exists('secondary_email', $input)) {
-                    // If user is open athens and does not have a secondary email - update it
-                    // But if user is open athens and has a secondary email - we do not update it
-                    // because it functions as their primary email
-                    if (($user->provider === 'open-athens') && (is_null($user->secondary_email))) {
-                        $array['secondary_email'] = $input['secondary_email'];
-                    } else if ($user->provider === 'open-athens') {
-                        $array['secondary_email'] = $user->secondary_email;
+                    if ($user->provider === 'open-athens') {
+                        // If the user has a secondary email, use it; otherwise, use the input value.
+                        $array['secondary_email'] = is_null($user->secondary_email) ? $input['secondary_email'] : $user->secondary_email;
                     } else {
+                        // For all other providers, use the input value.
                         $array['secondary_email'] = $input['secondary_email'];
                     }
                 }
