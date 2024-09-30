@@ -771,8 +771,7 @@ class DurController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $initDur = Dur::withTrashed()
-                ->find($id);
+            $initDur = Dur::withTrashed()->where('id', $id)->first();
 
             $arrayKeys = [
                 'non_gateway_datasets',
@@ -857,7 +856,7 @@ class DurController extends Controller
             $currentDur = Dur::where('id', $id)->first();
             if($currentDur->status === Dur::STATUS_ACTIVE) {
                 $this->indexElasticDur($id);
-            } else {
+            } elseif($currentDur->status !== Dur::STATUS_DRAFT) {
                 $this->deleteDurFromElastic((int) $id);
             }
 
