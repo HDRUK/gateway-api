@@ -856,7 +856,7 @@ class DurController extends Controller
             $currentDur = Dur::where('id', $id)->first();
             if($currentDur->status === Dur::STATUS_ACTIVE) {
                 $this->indexElasticDur($id);
-            } else {
+            } elseif($initDur->status === Dur::STATUS_ACTIVE) {
                 $this->deleteDurFromElastic((int) $id);
             }
 
