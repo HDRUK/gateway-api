@@ -26,6 +26,7 @@ class EditCollection extends BaseFormRequest
                 'string',
             ],
             'image_link' => [
+                'nullable',
                 'string',
                 'url',
             ],
