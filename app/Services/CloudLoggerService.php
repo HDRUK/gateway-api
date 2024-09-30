@@ -12,20 +12,22 @@ class CloudLoggerService
 
     public function __construct()
     {
-        $this->logging = new LoggingClient([
-            'projectId' => Config::get('services.googlelogging.project_id'),
-        ]);
+        if (Config::get('services.googlelogging.enabled')) {
+            $this->logging = new LoggingClient([
+                'projectId' => Config::get('services.googlelogging.project_id'),
+            ]);
 
-        $this->logger = $this->logging->logger(Config::get('services.googlelogging.log_name'));
+            $this->logger = $this->logging->logger(Config::get('services.googlelogging.log_name'));
+        }
     }
 
     public function write($data, $severity = 'INFO')
     {
-        $message = '';
-
-        if (!Config::get('services.googlelogging.enabled')) {
+        if (!$this->logger) {
             return;
         }
+
+        $message = '';
 
         $message = is_string($data) ? $data : json_encode($data);
 
@@ -39,7 +41,9 @@ class CloudLoggerService
 
     public function clearLogging()
     {
-        $this->logging = null;
-        $this->logger = null;
+        if ($this->logging && $this->logger) {
+            $this->logging = null;
+            $this->logger = null;
+        }
     }
 }

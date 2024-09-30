@@ -68,7 +68,7 @@ class FormHydrationController extends Controller
         $response = Http::get($url);
         if ($response->successful()) {
             $payload = $response->json();
-            return response()->json(["data" => $payload]);
+            return response()->json(['data' => $payload]);
         } else {
             return response()->json([
                'message' => 'Failed to retrieve form hydration from ' . $url,
@@ -153,9 +153,9 @@ class FormHydrationController extends Controller
         $team = Team::findOrFail($id);
         $datasets = Dataset::where('team_id', $id)->get();
         foreach ($datasets as $dataset) {
-            $version = $dataset->latestVersion();
-            $dataset['metadata'] = $version->metadata;
+            $dataset['metadata'] = $dataset->latestVersion()->metadata;
         }
+
         $datasets = $datasets->toArray();
         $defaultValues = array();
         $defaultValues['identifier'] = $team['id'];
@@ -216,6 +216,7 @@ class FormHydrationController extends Controller
             $v = $this->getValueFromPath($dataset, $path);
             $values[] = is_null($v) ? "" : $this->getValueFromPath($dataset, $path);
         }
+
         $countMap = array_count_values($values);
         arsort($countMap);
         $mostCommon = array_keys($countMap)[0];

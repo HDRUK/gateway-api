@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
-use Tests\Traits\Authorization;
+
+use Tests\Traits\MockExternalApis;
+
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,27 +14,22 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class KeywordTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public const TEST_URL = '/api/v1/keywords';
 
-    private $header = [];
+    protected $header = [];
 
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
             KeywordSeeder::class,
         ]);
-
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
     }
 
     /**

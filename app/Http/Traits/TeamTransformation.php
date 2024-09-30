@@ -46,6 +46,7 @@ trait TeamTransformation
                 'introduction' => $team['introduction'],
                 'dar_modal_content' => $team['dar_modal_content'],
                 'team_logo' => (is_null($team['team_logo']) || strlen(trim($team['team_logo'])) === 0) ? '' : (filter_var($team['team_logo'], FILTER_VALIDATE_URL) ? $team['team_logo'] : Config::get('services.media.base_url') . $team['team_logo']),
+                'service' => $team['service'],
             ];
 
             $tmpUser = [];

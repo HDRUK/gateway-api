@@ -8,7 +8,9 @@ use Nyholm\Psr7\Response;
 
 
 use Database\Seeders\SectorSeeder;
+use App\Jobs\TermExtraction;
 
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use MetadataManagementController as MMC;
@@ -77,6 +79,10 @@ trait MockExternalApis
 
         $this->seed([
             SectorSeeder::class,
+        ]);
+
+        Queue::fake([
+            TermExtraction::class
         ]);
 
         $this->authorisationUser();
@@ -1030,13 +1036,15 @@ trait MockExternalApis
 
         $this->dataset_store = [];
 
-        Http::fake([
-            env('MJML_RENDER_URL') => Http::response(
-                ["html" => "<html>content</html>"],
-                201,
-                ['application/json']
-            )
-        ]);
+        // Removed for now, as the email service test contains its own mock
+        // for mjml.
+        // Http::fake([
+        //     env('MJML_RENDER_URL') => Http::response(
+        //         ["html" => "<html>content</html>"],
+        //         201,
+        //         ['application/json']
+        //     )
+        // ]);
 
         Http::fake([
             env('FMA_SERVICE_URL').'*' => Http::response(

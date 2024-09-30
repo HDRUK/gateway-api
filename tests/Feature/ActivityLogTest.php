@@ -10,13 +10,16 @@ use Database\Seeders\ActivityLogTypeSeeder;
 use Database\Seeders\ActivityLogUserTypeSeeder;
 use Database\Seeders\ActivityLogSeeder;
 
-use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ActivityLogTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public const TEST_URL = '/api/v1/users';
 
@@ -24,7 +27,7 @@ class ActivityLogTest extends TestCase
 
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
@@ -32,13 +35,6 @@ class ActivityLogTest extends TestCase
             ActivityLogUserTypeSeeder::class,
             ActivityLogSeeder::class,
         ]);
-
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
     }
 
     /**

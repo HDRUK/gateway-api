@@ -6,14 +6,16 @@ use Tests\TestCase;
 use App\Models\Review;
 use App\Models\License;
 use Database\Seeders\TagSeeder;
-use Tests\Traits\Authorization;
 use Database\Seeders\ToolSeeder;
 use Database\Seeders\ReviewSeeder;
 use Database\Seeders\SectorSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
+
 use Database\Seeders\MinimalUserSeeder;
+
+use Database\Seeders\TypeCategorySeeder;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -21,7 +23,6 @@ class ReviewTest extends TestCase
 {
     use WithFaker;
     use RefreshDatabase;
-    use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -42,6 +43,7 @@ class ReviewTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             CategorySeeder::class,
+            TypeCategorySeeder::class,
             TagSeeder::class,
             LicenseSeeder::class,
             ToolSeeder::class,

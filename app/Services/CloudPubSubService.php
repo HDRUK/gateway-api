@@ -24,7 +24,7 @@ class CloudPubSubService
 
     public function publishMessage(array $data)
     {
-        if (!Config::get('services.googlepubsub.enabled')) {
+        if (Config::get('services.googlepubsub.enabled') === false) {
             return;
         }
 

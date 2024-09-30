@@ -192,7 +192,7 @@ class DatasetController extends Controller
                 foreach ($matches as $m) {
                     $version = DatasetVersion::where('dataset_id', $m)
                     ->filterTitle($filterTitle)
-                    ->latest('version')->select('dataset_id')
+                    ->select('dataset_id')
                     ->when(
                         $request->has('withTrashed') || $filterStatus === 'ARCHIVED',
                         function ($query) {
@@ -401,7 +401,7 @@ class DatasetController extends Controller
             $exportStructuralMetadata = $request->query('export', null);
 
             // Retrieve the dataset with collections, publications, and counts
-            $dataset = Dataset::find($id);
+            $dataset = Dataset::with("team")->find($id);
 
             if (!$dataset) {
                 return response()->json(['message' => 'Dataset not found'], 404);
@@ -805,7 +805,7 @@ class DatasetController extends Controller
                     $versionNumber,
                     base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
                     $elasticIndexing
-                );
+                )->onConnection('redis');
             }
 
             Auditor::log([

@@ -38,6 +38,7 @@ class DatasetIntegrationTest extends TestCase
     public const TEST_URL_USER = 'api/v1/users';
 
     private $metadata = null;
+    private $integration = null;
 
     protected $header = [];
 
@@ -51,14 +52,12 @@ class DatasetIntegrationTest extends TestCase
     {
         $this->commonSetUp();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            DatasetSeeder::class,
-            SectorSeeder::class,
-            TeamSeeder::class,
-            ApplicationSeeder::class,
-            SpatialCoverageSeeder::class,
-        ]);
+        $this->seed(MinimalUserSeeder::class);
+        $this->seed(DatasetSeeder::class);
+        $this->seed(SectorSeeder::class);
+        $this->seed(TeamSeeder::class);
+        $this->seed(ApplicationSeeder::class);
+        $this->seed(SpatialCoverageSeeder::class);
 
         $this->integration = Application::where('id', 1)->first();
 
@@ -98,6 +97,7 @@ class DatasetIntegrationTest extends TestCase
         $response = $this->json('POST', self::TEST_URL_DATASET, [
             'metadata' => $this->metadata,
         ], $this->header);
+
         $response->assertStatus(201);
 
         $response = $this->json('GET', self::TEST_URL_DATASET, [], $this->header);

@@ -28,13 +28,6 @@ class UpdateTool extends BaseFormRequest
             'name' => [
                 'required',
                 'string',
-                function ($attribute, $value, $fail) use ($id) {
-                    $exists = Tool::withTrashed()->where('name', $value)->where('id', '<>', $id)->count();
-
-                    if ($exists) {
-                        $fail('The selected name already exist.');
-                    }
-                },
             ],
             'url' => [
                 'nullable',
@@ -92,6 +85,7 @@ class UpdateTool extends BaseFormRequest
             ],
             'type_category.*' => [
                 'integer',
+                'exists:type_categories,id',
             ],
             'associated_authors' => [
                 'nullable',

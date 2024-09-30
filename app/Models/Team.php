@@ -87,6 +87,7 @@ class Team extends Model
         'team_logo',
         'introduction',
         'dar_modal_content',
+        'service',
     ];
 
     /**

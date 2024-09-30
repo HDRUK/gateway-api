@@ -7,27 +7,28 @@ use App\Models\Tool;
 use App\Models\Dataset;
 use App\Models\Publication;
 use Database\Seeders\TagSeeder;
-use Tests\Traits\Authorization;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\LicenseSeeder;
-use App\Models\PublicationHasDatasetVersion;
+use ElasticClientController as ECC;
+use Database\Seeders\CategorySeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\PublicationHasToolSeeder;
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
-use ElasticClientController as ECC;
+use App\Models\PublicationHasDatasetVersion;
+
+use Database\Seeders\PublicationHasToolSeeder;
+
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class PublicationTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -54,9 +55,10 @@ class PublicationTest extends TestCase
             DatasetVersionSeeder::class,
             PublicationHasDatasetVersionSeeder::class,
             LicenseSeeder::class,
+            CategorySeeder::class,
+            TypeCategorySeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
-            TypeCategorySeeder::class,
             PublicationHasToolSeeder::class,
         ]);
     }

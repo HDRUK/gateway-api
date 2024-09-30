@@ -6,17 +6,18 @@ use Config;
 use Auditor;
 use Exception;
 
-use EnquiriesManagementController as EMC;
+use App\Models\Team;
 
 use App\Models\User;
-use App\Models\Team;
 use App\Models\Dataset;
-use App\Models\EnquiryThread;
-
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+
+use App\Models\EnquiryThread;
 use Illuminate\Http\JsonResponse;
 
 use App\Http\Controllers\Controller;
+use EnquiriesManagementController as EMC;
 
 class EnquiryThreadController extends Controller
 {
@@ -211,7 +212,7 @@ class EnquiryThreadController extends Controller
                         'user_id' => $user->id,
                         'team_id' => "",
                         'project_title' => $input['project_title'],
-                        'unique_key' => md5(microtime() . $jwtUser['id']), // Not random, but should be unique
+                        'unique_key' => Str::random(8), // 8 chars in length
                         'is_dar_dialogue' => $input['is_dar_dialogue'],
                         'is_dar_status' => $input['is_dar_status'],
                         'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
@@ -225,7 +226,7 @@ class EnquiryThreadController extends Controller
                             '[[TEAM_NAME]]' => "",
                             '[[USER_FIRST_NAME]]' => $user->firstname,
                             '[[USER_LAST_NAME]]' => $user->lastname,
-                            '[[USER_ORGANISATION]]' => $user->organisation,
+                            '[[USER_ORGANISATION]]' => isset($user->organisation) ? $user->organisation : $input['organisation'],
                             '[[CONTACT_NUMBER]]' => $input['contact_number'],
                             '[[PROJECT_TITLE]]' => $input['project_title'],
                             '[[RESEARCH_AIM]]' => $input['research_aim'],
@@ -243,7 +244,7 @@ class EnquiryThreadController extends Controller
                         'user_id' => $user->id,
                         'team_id' => "",
                         'project_title' => "",
-                        'unique_key' => md5(microtime() . $jwtUser['id']), // Not random, but should be unique
+                        'unique_key' => Str::random(8), // 8 chars in length
                         'is_dar_dialogue' => $input['is_dar_dialogue'],
                         'is_dar_status' => $input['is_dar_status'],
                         'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],

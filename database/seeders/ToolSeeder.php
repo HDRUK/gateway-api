@@ -3,7 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\Tool;
+use App\Models\TypeCategory;
 use Illuminate\Database\Seeder;
+use App\Models\ToolHasTypeCategory;
 
 class ToolSeeder extends Seeder
 {
@@ -21,5 +23,15 @@ class ToolSeeder extends Seeder
         Tool::factory()->count(2)->create([
             'enabled' => 0,
         ]);
+
+        $tools = Tool::all();
+        foreach ($tools as $tool) {
+            $typeCategoryId = TypeCategory::all()->random()->id;
+
+            ToolHasTypeCategory::create([
+                'tool_id' => $tool->id,
+                'type_category_id' => $typeCategoryId,
+            ]);
+        }
     }
 }

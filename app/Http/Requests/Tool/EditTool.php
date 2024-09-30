@@ -27,13 +27,6 @@ class EditTool extends BaseFormRequest
             ],
             'name' => [
                 'string',
-                function ($attribute, $value, $fail) use ($id) {
-                    $exists = Tool::withTrashed()->where('name', $value)->where('id', '<>', $id)->count();
-
-                    if ($exists) {
-                        $fail('The selected name already exist.');
-                    }
-                },
             ],
             'url' => [
                 'nullable',
@@ -89,6 +82,7 @@ class EditTool extends BaseFormRequest
             ],
             'type_category.*' => [
                 'integer',
+                'exists:type_categories,id',
             ],
             'associated_authors' => [
                 'nullable',
