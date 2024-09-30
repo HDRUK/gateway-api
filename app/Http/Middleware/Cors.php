@@ -9,13 +9,33 @@ class Cors
 {
     public function handle(Request $request, Closure $next)
     {
-        $headers = [
-            // 'Access-Control-Allow-Origin' => env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN'),
-            'Access-Control-Allow-Origin' => '*',
-            // 'Access-Control-Allow-Credentials' => 'true',
-            'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers' => 'Content-Type, Accept, Authorization, X-Requested-With, Application',
-        ];
+        // $headers = [
+        //     'Access-Control-Allow-Origin' => env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN'),
+        //     'Access-Control-Allow-Origin' => '*',
+        //     'Access-Control-Allow-Credentials' => 'true',
+        //     'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+        //     'Access-Control-Allow-Headers' => 'Content-Type, Accept, Authorization, X-Requested-With, Application',
+        // ];
+
+        $allowedOrigins = explode(',', env('CORS_ACCESS_CONTROL_ALLOW_ORIGINS'));
+        $origin = $request->headers->get('Origin');
+
+        if (in_array($origin, $allowedOrigins)) {
+            $headers = [
+                'Access-Control-Allow-Origin' => $origin,
+                'Access-Control-Allow-Credentials' => 'true',
+                'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+                'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization',
+            ];
+        } else {
+            // Optionally handle disallowed origins
+            $headers = [
+                'Access-Control-Allow-Origin' => 'null',
+                'Access-Control-Allow-Credentials' => 'true',
+                'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+                'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization',
+            ];
+        }
 
         if ($request->getMethod() === 'OPTIONS') {
             return response('OK')->withHeaders($headers);
