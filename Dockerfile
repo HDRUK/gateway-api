@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     npm \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
+    libwebp-dev \
     libmcrypt-dev \
     libxml2-dev \
     libzip-dev \
@@ -23,8 +24,9 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     zip \
     default-mysql-client \ 
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql soap zip iconv bcmath \
+    && docker-php-ext-enable gd \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
     && docker-php-ext-configure pcntl --enable-pcntl \
     && docker-php-ext-install pcntl \
@@ -67,6 +69,8 @@ RUN composer install \
     && php artisan config:clear \
     && php artisan ide-helper:generate \
     && php artisan octane:install --server=swoole \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j$(nproc) gd \
     && composer dumpautoload
 
 # Generate Swagger
