@@ -257,7 +257,7 @@ class ReindexEntities extends Command
                 $versionNumber,
                 base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6)),
                 $elasticIndexing
-            )->onConnection('redis');
+            );
         }
         $progressbar->finish();
     }
