@@ -43,9 +43,9 @@ class AuthTest extends TestCase
             'POST',
             self::TEST_URL_AUTH,
             [
-                                    'email' => $this->user['email'],
-                                    'password' => $this->user['password'],
-                                ],
+                'email' => $this->user['email'],
+                'password' => $this->user['password'],
+            ],
             ['Accept' => 'application/json'],
         );
 

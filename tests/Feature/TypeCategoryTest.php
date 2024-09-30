@@ -7,30 +7,28 @@ use Config;
 use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\TypeCategorySeeder;
+
+use Tests\Traits\MockExternalApis;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class TypeCategoryTest extends TestCase
 {
     use RefreshDatabase;
-    private $accessToken = '';
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
+
+    protected $header = [];
 
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
             TypeCategorySeeder::class,
         ]);
-
-        $response = $this->postJson('api/v1/auth', [
-            'email' => 'developers@hdruk.ac.uk',
-            'password' => 'Watch26Task?',
-        ]);
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-
-        $content = $response->decodeResponseJson();
-        $this->accessToken = $content['access_token'];
     }
 
     /**
@@ -40,9 +38,7 @@ class TypeCategoryTest extends TestCase
      */
     public function test_the_application_can_list_type_categories()
     {
-        $response = $this->get('api/v1/type_categories', [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->get('api/v1/type_categories', $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -87,9 +83,7 @@ class TypeCategoryTest extends TestCase
                 'description' => 'A Type Category',
                 'enabled' => false,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -99,9 +93,7 @@ class TypeCategoryTest extends TestCase
 
         $content = $response->decodeResponseJson();
 
-        $response = $this->get('api/v1/type_categories/' . $content['data'], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->get('api/v1/type_categories/' . $content['data'], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -132,9 +124,7 @@ class TypeCategoryTest extends TestCase
                 'description' => 'A Type Category',
                 'enabled' => false,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -167,9 +157,7 @@ class TypeCategoryTest extends TestCase
                 'description' => 'A Type Category',
                 'enabled' => false,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -194,9 +182,7 @@ class TypeCategoryTest extends TestCase
                 'description' => 'A Type Category',
                 'enabled' => true,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -226,9 +212,7 @@ class TypeCategoryTest extends TestCase
                 'description' => 'A Type Category',
                 'enabled' => false,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -249,9 +233,7 @@ class TypeCategoryTest extends TestCase
             [
                 'name' => 'Edited Test Type Category',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseEdit1->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -281,9 +263,7 @@ class TypeCategoryTest extends TestCase
                 'description' => 'A Type Category',
                 'enabled' => false,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -304,9 +284,7 @@ class TypeCategoryTest extends TestCase
             'DELETE',
             'api/v1/type_categories/' . $content['data'],
             [],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))

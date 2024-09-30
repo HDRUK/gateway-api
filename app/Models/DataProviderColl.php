@@ -19,6 +19,7 @@ class DataProviderColl extends Model
         'summary',
         'img_url',
         'url',
+        'service',
     ];
 
     /**

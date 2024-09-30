@@ -93,7 +93,7 @@ class TermExtraction implements ShouldQueue
             if ($response->successful() && array_key_exists('extracted_terms', $response->json())) {
                 foreach ($response->json()['extracted_terms'] as $term) {
                     // Check if the named entity already exists
-                    $namedEntity = NamedEntities::create(['name' => $term]);
+                    $namedEntity = NamedEntities::firstOrCreate(['name' => $term]);
 
                     DatasetVersionHasNamedEntities::updateOrCreate([
                         'dataset_version_id' => $datasetVersion->id,

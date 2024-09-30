@@ -66,11 +66,11 @@ class DurTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             CategorySeeder::class,
+            TypeCategorySeeder::class,
             ProgrammingLanguageSeeder::class,
             ProgrammingPackageSeeder::class,
             LicenseSeeder::class,
             TagSeeder::class,
-            TypeCategorySeeder::class,
             ApplicationSeeder::class,
             CollectionSeeder::class,
             DatasetSeeder::class,

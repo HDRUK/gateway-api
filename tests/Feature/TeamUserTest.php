@@ -33,7 +33,6 @@ class TeamUserTest extends TestCase
      */
     public function setUp(): void
     {
-
         $this->commonSetUp();
 
         $this->seed([

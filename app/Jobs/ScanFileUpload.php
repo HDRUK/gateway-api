@@ -91,11 +91,10 @@ class ScanFileUpload implements ShouldQueue
     public function handle(): void
     {
 
+        $upload = Upload::findOrFail($this->uploadId);
+        $filePath = $upload->file_location;
+
         try {
-
-            $upload = Upload::findOrFail($this->uploadId);
-            $filePath = $upload->file_location;
-
             $body = [
                 'file' => (string)$filePath,
                 'storage' => (string)$this->fileSystem
@@ -103,14 +102,17 @@ class ScanFileUpload implements ShouldQueue
 
             CloudLogger::write('Malware scan initiated');
 
-            $response = Http::timeout(60)->post(
-                env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file',
-                [
+            $response = Http::withBody(
+                json_encode([
                     'file' => $filePath,
                     'storage' => $this->fileSystem,
-                ]
-            );
-            $isError = $response['isError'];
+                ]),
+                'application/json',
+            )->post(env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file');
+
+            $response = $response->json();
+
+            $isError = isset($response['isError']) ? $response['isError'] : false;
 
             if ($isError === true) {
                 throw new Exception($response['error']);
@@ -118,8 +120,70 @@ class ScanFileUpload implements ShouldQueue
 
             $isInfected = $response['isInfected'];
 
-
             CloudLogger::write('Malware scan completed');
+
+            // Check if the file is infected
+            if ($isInfected) {
+                $upload->update([
+                    'status' => 'FAILED',
+                    'error' => $response['viruses']
+                ]);
+                Storage::disk($this->fileSystem . '.unscanned')
+                    ->delete($upload->file_location);
+
+                CloudLogger::write([
+                    'action_type' => 'SCAN',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => 'Uploaded file failed malware scan',
+                ]);
+
+                Auditor::log([
+                    'action_type' => 'SCAN',
+                    'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Uploaded file failed malware scan',
+                ]);
+            } else {
+
+                CloudLogger::write('Uploaded file passed malware scan');
+
+                $loc = $upload->file_location;
+                $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
+
+                Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
+                Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
+
+                CloudLogger::write('Uploaded file moved to safe scanned storage');
+
+                switch ($this->entityFlag) {
+                    case 'dur-from-upload':
+                        $this->createDurFromFile($loc, $upload);
+                        break;
+                    case 'dataset-from-upload':
+                        $this->createDatasetFromFile($loc, $upload);
+                        break;
+                    case 'structural-metadata-upload':
+                        $this->attachStructuralMetadata($loc, $upload);
+                        break;
+                    case 'teams-media':
+                        $this->uploadTeamMedia($loc, $upload, $this->teamId);
+                        break;
+                    case 'collections-media':
+                        $this->uploadCollectionMedia($loc, $upload, $this->collectionId);
+                        break;
+                }
+
+                CloudLogger::write([
+                    'action_type' => 'SCAN',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => 'Uploaded file passed malware scan and processed',
+                ]);
+
+                Auditor::log([
+                    'action_type' => 'SCAN',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Uploaded file passed malware scan and processed',
+                ]);
+            }
         } catch (Exception $e) {
             // Record exception in uploads table
             $upload->update([
@@ -135,70 +199,6 @@ class ScanFileUpload implements ShouldQueue
             ]);
 
             throw new Exception($e->getMessage());
-        }
-
-
-        // Check if the file is infected
-        if ($isInfected) {
-            $upload->update([
-                'status' => 'FAILED',
-                'error' => $response['viruses']
-            ]);
-            Storage::disk($this->fileSystem . '.unscanned')
-                ->delete($upload->file_location);
-
-            CloudLogger::write([
-                'action_type' => 'SCAN',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'Uploaded file failed malware scan',
-            ]);
-
-            Auditor::log([
-                'action_type' => 'SCAN',
-                'action_service' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Uploaded file failed malware scan',
-            ]);
-        } else {
-
-            CloudLogger::write('Uploaded file passed malware scan');
-
-            $loc = $upload->file_location;
-            $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
-
-            Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
-            Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
-
-            CloudLogger::write('Uploaded file moved to safe scanned storage');
-
-            switch ($this->entityFlag) {
-                case 'dur-from-upload':
-                    $this->createDurFromFile($loc, $upload);
-                    break;
-                case 'dataset-from-upload':
-                    $this->createDatasetFromFile($loc, $upload);
-                    break;
-                case 'structural-metadata-upload':
-                    $this->attachStructuralMetadata($loc, $upload);
-                    break;
-                case 'teams-media':
-                    $this->uploadTeamMedia($loc, $upload, $this->teamId);
-                    break;
-                case 'collections-media':
-                    $this->uploadCollectionMedia($loc, $upload, $this->collectionId);
-                    break;
-            }
-
-            CloudLogger::write([
-                'action_type' => 'SCAN',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'Uploaded file passed malware scan and processed',
-            ]);
-
-            Auditor::log([
-                'action_type' => 'SCAN',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Uploaded file passed malware scan and processed',
-            ]);
         }
     }
 
@@ -339,41 +339,46 @@ class ScanFileUpload implements ShouldQueue
 
             // Check structural metadata against schema using traser
             $metadataInput = [
-                "metadata" => [
-                    "structuralMetadata" => $structuralMetadata
+                'metadata' => [
+                    'structuralMetadata' => $structuralMetadata
                 ]
             ];
-            // Default to using the latest GWDM for input and output
-            $inputSchema = $this->inputSchema ? $this->inputSchema : Config::get('metadata.GWDM.name');
-            $inputVersion = $this->inputVersion ? $this->inputVersion : Config::get('metadata.GWDM.version');
-            $outputSchema = $this->outputSchema ? $this->outputSchema : Config::get('metadata.GWDM.name');
-            $outputVersion = $this->outputVersion ? $this->outputVersion : Config::get('metadata.GWDM.version');
-            $result = MMC::translateDataModelType(
-                json_encode($metadataInput),
-                $outputSchema,
-                $outputVersion,
-                $inputSchema,
-                $inputVersion,
-                true,
-                true,
-                "structuralMetadata",
-            );
+            // LS - Traser can't deal with part structural metadata, thus we have to rely on the overall
+            // validation later on. For now, removing this.
+            //
+            // Leaving these commented out for now, to discuss later
 
-            if ($result['wasTranslated']) {
-                $upload->update([
-                    'status' => 'PROCESSED',
-                    'file_location' => $loc,
-                    'entity_type' => 'structural_metadata',
-                    'structural_metadata' => $result['metadata']['structuralMetadata'],
-                ]);
-                CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
-            } else {
-                $upload->update([
-                    'status' => 'FAILED',
-                    'file_location' => $loc,
-                    'error' => $result['traser_message'],
-                ]);
-            }
+            // // Default to using the latest GWDM for input and output
+            // $inputSchema = $this->inputSchema ? $this->inputSchema : Config::get('metadata.GWDM.name');
+            // $inputVersion = $this->inputVersion ? $this->inputVersion : Config::get('metadata.GWDM.version');
+            // $outputSchema = $this->outputSchema ? $this->outputSchema : Config::get('metadata.GWDM.name');
+            // $outputVersion = $this->outputVersion ? $this->outputVersion : Config::get('metadata.GWDM.version');
+            // $result = MMC::translateDataModelType(
+            //     json_encode($metadataInput),
+            //     $outputSchema,
+            //     $outputVersion,
+            //     $inputSchema,
+            //     $inputVersion,
+            //     true,
+            //     true,
+            //     "structuralMetadata",
+            // );
+
+            // if ($result['wasTranslated']) {
+            $upload->update([
+                'status' => 'PROCESSED',
+                'file_location' => $loc,
+                'entity_type' => 'structural_metadata',
+                'structural_metadata' => json_encode($metadataInput['metadata']['structuralMetadata']),
+            ]);
+            CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
+            // } else {
+            //     $upload->update([
+            //         'status' => 'FAILED',
+            //         'file_location' => $loc,
+            //         'error' => $result['traser_message'],
+            //     ]);
+            // }
         } catch (Exception $e) {
             // Record exception in uploads table
             $upload->update([

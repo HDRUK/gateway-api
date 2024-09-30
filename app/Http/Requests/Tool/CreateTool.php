@@ -21,13 +21,6 @@ class CreateTool extends BaseFormRequest
             'name' => [
                 'required',
                 'string',
-                function ($attribute, $value, $fail) {
-                    $exists = Tool::withTrashed()->where('name', $value)->count();
-
-                    if ($exists) {
-                        $fail('The selected name already exist.');
-                    }
-                },
             ],
             'url' => [
                 'nullable',
@@ -89,6 +82,7 @@ class CreateTool extends BaseFormRequest
             ],
             'type_category.*' => [
                 'integer',
+                'exists:type_categories,id',
             ],
             'associated_authors' => [
                 'nullable',

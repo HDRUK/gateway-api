@@ -5,8 +5,9 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Federation;
-use Tests\Traits\Authorization;
+
 use Tests\Traits\MockExternalApis;
+
 use App\Http\Enums\TeamMemberOf;
 use App\Models\TeamHasFederation;
 use App\Models\FederationHasNotification;
@@ -15,12 +16,19 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class FederationTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
-    use MockExternalApis;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     protected $header = [];
-    protected $accessToken = null;
 
+    public const TEST_URL_NOTIFICATION = 'api/v1/notifications';
+    public const TEST_URL_TEAM = 'api/v1/teams';
+
+    public function setUp(): void
+    {
+        $this->commonSetUp();
+    }
 
     /**
      * Get All Federations By Team ID with success
@@ -33,7 +41,7 @@ class FederationTest extends TestCase
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
             'POST',
-            'api/v1/notifications',
+            self::TEST_URL_NOTIFICATION,
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
@@ -49,7 +57,7 @@ class FederationTest extends TestCase
         // Create the new team
         $response = $this->json(
             'POST',
-            'api/v1/teams',
+            self::TEST_URL_TEAM,
             [
                 'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
                 'enabled' => 1,
@@ -85,7 +93,7 @@ class FederationTest extends TestCase
         // create federation for team
         $responseFederation = $this->json(
             'POST',
-            'api/v1/teams/' . $teamId . '/federations',
+            self::TEST_URL_TEAM . '/' . $teamId . '/federations',
             [
                 'federation_type' => 'federation type',
                 'auth_type' => 'BEARER',
@@ -112,7 +120,7 @@ class FederationTest extends TestCase
         $federationId = $contentFederation['data'];
 
         // get federation by team id
-        $responseGetFederation = $this->get('api/v1/teams/' . $teamId . '/federations', $this->header);
+        $responseGetFederation = $this->get(self::TEST_URL_TEAM . '/' . $teamId . '/federations', $this->header);
 
         $responseGetFederation->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
@@ -152,7 +160,7 @@ class FederationTest extends TestCase
         // delete team
         $responseDeleteTeam = $this->json(
             'DELETE',
-            'api/v1/teams' . '/' . $teamId . '?deletePermanently=true',
+            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
             [],
             $this->header
         );
@@ -174,7 +182,7 @@ class FederationTest extends TestCase
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
             'POST',
-            'api/v1/notifications',
+            self::TEST_URL_NOTIFICATION,
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
@@ -190,7 +198,7 @@ class FederationTest extends TestCase
         // Create the new team
         $response = $this->json(
             'POST',
-            'api/v1/teams',
+            self::TEST_URL_TEAM,
             [
                 'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
                 'enabled' => 1,
@@ -226,7 +234,7 @@ class FederationTest extends TestCase
         // create federation for team
         $responseFederation = $this->json(
             'POST',
-            'api/v1/teams/' . $teamId . '/federations',
+            self::TEST_URL_TEAM . '/' . $teamId . '/federations',
             [
                 'federation_type' => 'federation type',
                 'auth_type' => 'BEARER',
@@ -254,7 +262,7 @@ class FederationTest extends TestCase
         $federationId = $contentFederation['data'];
 
         // get federation by id and by team id
-        $responseGetFederation = $this->get('api/v1/teams/' . $teamId . '/federations/' . $federationId, $this->header);
+        $responseGetFederation = $this->get(self::TEST_URL_TEAM . '/' . $teamId . '/federations/' . $federationId, $this->header);
 
         $responseGetFederation->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
@@ -281,7 +289,7 @@ class FederationTest extends TestCase
         // delete team
         $responseDeleteTeam = $this->json(
             'DELETE',
-            'api/v1/teams' . '/' . $teamId . '?deletePermanently=true',
+            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
             [],
             $this->header
         );
@@ -303,7 +311,7 @@ class FederationTest extends TestCase
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
             'POST',
-            'api/v1/notifications',
+            self::TEST_URL_NOTIFICATION,
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
@@ -319,7 +327,7 @@ class FederationTest extends TestCase
         // Create the new team
         $response = $this->json(
             'POST',
-            'api/v1/teams',
+            self::TEST_URL_TEAM,
             [
                 'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
                 'enabled' => 1,
@@ -355,7 +363,7 @@ class FederationTest extends TestCase
         // create federation for team
         $responseFederation = $this->json(
             'POST',
-            'api/v1/teams/' . $teamId . '/federations',
+            self::TEST_URL_TEAM . '/' . $teamId . '/federations',
             [
                 'federation_type' => 'federation type',
                 'auth_type' => 'BEARER',
@@ -383,7 +391,7 @@ class FederationTest extends TestCase
         $federationId = $contentFederation['data'];
 
         // get federation by id and by team id
-        $responseGetFederation = $this->get('api/v1/teams/' . $teamId . '/federations/' . $federationId, $this->header);
+        $responseGetFederation = $this->get(self::TEST_URL_TEAM . '/' . $teamId . '/federations/' . $federationId, $this->header);
 
         $responseGetFederation->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
@@ -429,7 +437,7 @@ class FederationTest extends TestCase
         // delete team
         $responseDeleteTeam = $this->json(
             'DELETE',
-            'api/v1/teams' . '/' . $teamId . '?deletePermanently=true',
+            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
             [],
             $this->header
         );
@@ -451,7 +459,7 @@ class FederationTest extends TestCase
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
             'POST',
-            'api/v1/notifications',
+            self::TEST_URL_NOTIFICATION,
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
@@ -467,7 +475,7 @@ class FederationTest extends TestCase
         // Create the new team
         $response = $this->json(
             'POST',
-            'api/v1/teams',
+            self::TEST_URL_TEAM,
             [
                 'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
                 'enabled' => 1,
@@ -503,7 +511,7 @@ class FederationTest extends TestCase
         // create federation for team
         $responseFederation = $this->json(
             'POST',
-            'api/v1/teams/' . $teamId . '/federations',
+            self::TEST_URL_TEAM . '/' . $teamId . '/federations',
             [
                 'federation_type' => 'federation type',
                 'auth_type' => 'BEARER',
@@ -531,7 +539,7 @@ class FederationTest extends TestCase
         $federationId = $contentFederation['data'];
 
         // get federation by id and by team id
-        $responseGetFederation = $this->get('api/v1/teams/' . $teamId . '/federations/' . $federationId, $this->header);
+        $responseGetFederation = $this->get(self::TEST_URL_TEAM . '/' . $teamId . '/federations/' . $federationId, $this->header);
 
         $responseGetFederation->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
@@ -577,7 +585,7 @@ class FederationTest extends TestCase
         // update federation
         $responseUpdateFederation = $this->json(
             'PUT',
-            'api/v1/teams/' . $teamId . '/federations/' . $federationId,
+            self::TEST_URL_TEAM . '/' . $teamId . '/federations/' . $federationId,
             [
                 'federation_type' => 'federation type',
                 'auth_type' => 'BEARER',
@@ -625,7 +633,7 @@ class FederationTest extends TestCase
         // delete team
         $responseDeleteTeam = $this->json(
             'DELETE',
-            'api/v1/teams' . '/' . $teamId . '?deletePermanently=true',
+            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
             [],
             $this->header
         );
@@ -647,7 +655,7 @@ class FederationTest extends TestCase
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
             'POST',
-            'api/v1/notifications',
+            self::TEST_URL_NOTIFICATION,
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
@@ -663,7 +671,7 @@ class FederationTest extends TestCase
         // Create the new team
         $response = $this->json(
             'POST',
-            'api/v1/teams',
+            self::TEST_URL_TEAM,
             [
                 'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
                 'enabled' => 1,
@@ -699,7 +707,7 @@ class FederationTest extends TestCase
         // create federation for team
         $responseFederation = $this->json(
             'POST',
-            'api/v1/teams/' . $teamId . '/federations',
+            self::TEST_URL_TEAM . '/' . $teamId . '/federations',
             [
                 'federation_type' => 'federation type',
                 'auth_type' => 'BEARER',
@@ -727,7 +735,7 @@ class FederationTest extends TestCase
         $federationId = $contentFederation['data'];
 
         // get federation by id and by team id
-        $responseGetFederation = $this->get('api/v1/teams/' . $teamId . '/federations/' . $federationId, $this->header);
+        $responseGetFederation = $this->get(self::TEST_URL_TEAM . '/' . $teamId . '/federations/' . $federationId, $this->header);
 
         $responseGetFederation->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
@@ -773,7 +781,7 @@ class FederationTest extends TestCase
         // update federation
         $responseUpdateFederation = $this->json(
             'PUT',
-            'api/v1/teams/' . $teamId . '/federations/' . $federationId,
+            self::TEST_URL_TEAM . '/' . $teamId . '/federations/' . $federationId,
             [
                 'federation_type' => 'federation type',
                 'auth_type' => 'BEARER',
@@ -821,7 +829,7 @@ class FederationTest extends TestCase
         // edit federation
         $responseEditFederation = $this->json(
             'PATCH',
-            'api/v1/teams/' . $teamId . '/federations/' . $federationId,
+            self::TEST_URL_TEAM . '/' . $teamId . '/federations/' . $federationId,
             [
                 'federation_type' => 'federation type',
                 'auth_type' => 'BEARER',
@@ -869,7 +877,7 @@ class FederationTest extends TestCase
         // delete team
         $responseDeleteTeam = $this->json(
             'DELETE',
-            'api/v1/teams' . '/' . $teamId . '?deletePermanently=true',
+            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
             [],
             $this->header
         );
@@ -892,7 +900,7 @@ class FederationTest extends TestCase
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
             'POST',
-            'api/v1/notifications',
+            self::TEST_URL_NOTIFICATION,
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
@@ -908,7 +916,7 @@ class FederationTest extends TestCase
         // Create the new team
         $response = $this->json(
             'POST',
-            'api/v1/teams',
+            self::TEST_URL_TEAM,
             [
                 'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
                 'enabled' => 1,
@@ -944,7 +952,7 @@ class FederationTest extends TestCase
         // create federation for team
         $responseFederation = $this->json(
             'POST',
-            'api/v1/teams/' . $teamId . '/federations',
+            self::TEST_URL_TEAM . '/' . $teamId . '/federations',
             [
                 'federation_type' => 'federation type',
                 'auth_type' => 'BEARER',
@@ -972,7 +980,7 @@ class FederationTest extends TestCase
         $federationId = $contentFederation['data'];
 
         // get federation by id and by team id
-        $responseGetFederation = $this->get('api/v1/teams/' . $teamId . '/federations/' . $federationId, $this->header);
+        $responseGetFederation = $this->get(self::TEST_URL_TEAM . '/' . $teamId . '/federations/' . $federationId, $this->header);
 
         $responseGetFederation->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
@@ -1018,7 +1026,7 @@ class FederationTest extends TestCase
         // update federation
         $responseUpdateFederation = $this->json(
             'PUT',
-            'api/v1/teams/' . $teamId . '/federations/' . $federationId,
+            self::TEST_URL_TEAM . '/' . $teamId . '/federations/' . $federationId,
             [
                 'federation_type' => 'federation type',
                 'auth_type' => 'BEARER',
@@ -1066,7 +1074,7 @@ class FederationTest extends TestCase
         // edit federation
         $responseEditFederation = $this->json(
             'PATCH',
-            'api/v1/teams/' . $teamId . '/federations/' . $federationId,
+            self::TEST_URL_TEAM . '/' . $teamId . '/federations/' . $federationId,
             [
                 'federation_type' => 'federation type',
                 'auth_type' => 'BEARER',
@@ -1115,7 +1123,7 @@ class FederationTest extends TestCase
         // delete
         $responseDeleteFederation = $this->json(
             'DELETE',
-            'api/v1/teams/' . $teamId . '/federations/' . $federationId,
+            self::TEST_URL_TEAM . '/' . $teamId . '/federations/' . $federationId,
             [],
             $this->header,
         );
@@ -1141,7 +1149,7 @@ class FederationTest extends TestCase
         // delete team
         $responseDeleteTeam = $this->json(
             'DELETE',
-            'api/v1/teams' . '/' . $teamId . '?deletePermanently=true',
+            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
             [],
             $this->header
         );
