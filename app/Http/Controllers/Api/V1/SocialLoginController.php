@@ -184,6 +184,11 @@ class SocialLoginController extends Controller
                 $socialUser = json_decode(json_encode($response), true);
 
                 $socialUserDetails = $this->openathensResponse($socialUser, $provider);
+
+                $user = User::where([
+                    'providerid' => $socialUserDetails['providerid'],
+                    'provider' => $provider,
+                ])->first();
             } else {
                 $socialUser = Socialite::driver($provider)->user();
 
@@ -201,15 +206,15 @@ class SocialLoginController extends Controller
                         $socialUserDetails = $this->azureResponse($socialUser, $provider);
                         break;
                 }
+
+                $user = User::where([
+                    'email' => $socialUserDetails['email'],
+                    'provider' => $provider,
+                ])->first();
             }
 
-            $user = User::where([
-                'email' => $socialUserDetails['email'],
-                'provider' => $provider,
-            ])->first();
-
             if (!$user) {
-                $user = $this->saveUser($socialUserDetails);
+                $user = $this->saveUser($socialUserDetails, $provider);
             } else {
                 $user = $this->updateUser($user, $socialUserDetails, $provider);
             }
@@ -331,6 +336,8 @@ class SocialLoginController extends Controller
     {
         if ($provider == 'open-athens') {
             $user->providerid = $data['providerid'];
+            $user->preferred_email = 'secondary';
+            $user->update();
         } else {
             $user->providerid = $data['providerid'];
             $user->name = $data['name'];
@@ -349,9 +356,10 @@ class SocialLoginController extends Controller
      * save user in database
      *
      * @param array $value
+     * @param string $provider
      * @return User
      */
-    private function saveUser(array $value): User
+    private function saveUser(array $value, string $provider): User
     {
         $user = new User();
         $user->providerid = $value['providerid'];
@@ -361,6 +369,9 @@ class SocialLoginController extends Controller
         $user->email = $value['email'];
         $user->provider = $value['provider'];
         $user->password = $value['password'];
+        if ($provider == 'open-athens') {
+            $user->preferred_email = 'secondary';
+        }
         $user->save();
 
         return $user;

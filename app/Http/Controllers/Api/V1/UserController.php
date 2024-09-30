@@ -434,7 +434,7 @@ class UserController extends Controller
                     'lastname' => $input['lastname'],
                     'email' => $input['email'],
                     'provider' => array_key_exists('provider', $input) ? $input['provider'] : $user->provider,
-                    'providerid' => array_key_exists('providerid', $input) ? $input['providerid'] : null,
+                    'providerid' => array_key_exists('providerid', $input) ? $input['providerid'] : $user->providerid,
                     'sector_id' => $input['sector_id'],
                     'organisation' => $input['organisation'],
                     'bio' => $input['bio'],
@@ -449,7 +449,16 @@ class UserController extends Controller
                 ];
 
                 if (array_key_exists('secondary_email', $input)) {
-                    $array['secondary_email'] = $user->provider === 'open-athens' ? $user->secondary_email : $input['secondary_email'];
+                    // If user is open athens and does not have a secondary email - update it
+                    // But if user is open athens and has a secondary email - we do not update it
+                    // because it functions as their primary email
+                    if (($user->provider === 'open-athens') && (is_null($user->secondary_email))) {
+                        $array['secondary_email'] = $input['secondary_email'];
+                    } else if ($user->provider === 'open-athens') {
+                        $array['secondary_email'] = $user->secondary_email;
+                    } else {
+                        $array['secondary_email'] = $input['secondary_email'];
+                    }
                 }
 
                 if(array_key_exists('preferred_email', $input)) {
