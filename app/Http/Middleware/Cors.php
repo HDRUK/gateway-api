@@ -17,7 +17,9 @@ class Cors
         //     'Access-Control-Allow-Headers' => 'Content-Type, Accept, Authorization, X-Requested-With, Application',
         // ];
 
-        $allowedOrigins = explode(',', env('CORS_ACCESS_CONTROL_ALLOW_ORIGINS'));
+        // $allowedOrigins = explode(',', env('CORS_ACCESS_CONTROL_ALLOW_ORIGINS'));
+        $allowedOrigins = explode(',', 'https://web.dev.hdruk.cloud,https://rquest.dev.hdruk.cloud,https://rquest.test.healthdatagateway.org');
+
         $origin = $request->headers->get('Origin');
 
         if (in_array($origin, $allowedOrigins)) {
