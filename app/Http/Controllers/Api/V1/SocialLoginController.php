@@ -186,8 +186,7 @@ class SocialLoginController extends Controller
                 $socialUserDetails = $this->openathensResponse($socialUser, $provider);
 
                 $user = User::where([
-                    'providerid' => $socialUserDetails['providerid'],
-                    'provider' => $provider,
+                    'providerid' => $socialUserDetails['providerid']
                 ])->first();
             } else {
                 $socialUser = Socialite::driver($provider)->user();
@@ -208,8 +207,7 @@ class SocialLoginController extends Controller
                 }
 
                 $user = User::where([
-                    'email' => $socialUserDetails['email'],
-                    'provider' => $provider,
+                    'email' => $socialUserDetails['email']
                 ])->first();
             }
 
