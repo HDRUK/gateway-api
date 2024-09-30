@@ -7,31 +7,28 @@ use Config;
 use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\NotificationSeeder;
+
+use Tests\Traits\MockExternalApis;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class NotificationTest extends TestCase
 {
     use RefreshDatabase;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
-    private $accessToken = '';
+    protected $header = [];
 
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
             NotificationSeeder::class,
         ]);
-
-        $response = $this->postJson('api/v1/auth', [
-            'email' => 'developers@hdruk.ac.uk',
-            'password' => 'Watch26Task?',
-        ]);
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-
-        $content = $response->decodeResponseJson();
-        $this->accessToken = $content['access_token'];
     }
 
     /**
@@ -41,9 +38,7 @@ class NotificationTest extends TestCase
      */
     public function test_the_application_can_list_notifications()
     {
-        $response = $this->get('api/v1/notifications', [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->get('api/v1/notifications', $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -93,9 +88,7 @@ class NotificationTest extends TestCase
                 'enabled' => 1,
                 'email' => 'joe@example.com',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -106,9 +99,7 @@ class NotificationTest extends TestCase
 
         $content = $response->decodeResponseJson();
 
-        $response = $this->get('api/v1/notifications/' . $content['data'], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->get('api/v1/notifications/' . $content['data'], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -144,9 +135,7 @@ class NotificationTest extends TestCase
                 'enabled' => 1,
                 'email' => 'joe@example.com',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -181,9 +170,7 @@ class NotificationTest extends TestCase
                 'enabled' => 0,
                 'email' => 'joe@example.com',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -210,9 +197,7 @@ class NotificationTest extends TestCase
                 'enabled' => 1,
                 'email' => 'joe@example.com',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -244,9 +229,7 @@ class NotificationTest extends TestCase
                 'enabled' => 0,
                 'email' => 'joe@example.com',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -274,9 +257,7 @@ class NotificationTest extends TestCase
                 'enabled' => 1,
                 'email' => 'joe@example.com',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -296,9 +277,7 @@ class NotificationTest extends TestCase
             [
                 'message' => 'New message e1',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseEdit1->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -320,9 +299,7 @@ class NotificationTest extends TestCase
                 'opt_in' => 0,
                 'enabled' => 0,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseEdit2->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -355,9 +332,7 @@ class NotificationTest extends TestCase
                 'enabled' => 0,
                 'email' => 'joe@example.com',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -377,9 +352,7 @@ class NotificationTest extends TestCase
             'DELETE',
             'api/v1/notifications/' . $content['data'],
             [],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))

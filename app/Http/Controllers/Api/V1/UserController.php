@@ -50,14 +50,21 @@ class UserController extends Controller
      *       response="200",
      *       description="Success response",
      *       @OA\JsonContent(
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
+     *          @OA\Property(property="current_page", type="integer", example="1"),
+     *             @OA\Property(property="data", type="array", example="[]",
+     *                @OA\Items(type="array",@OA\Items()),
+     *             ),
+     *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/users?page=1"),
+     *          @OA\Property(property="from", type="integer", example="1"),
+     *          @OA\Property(property="last_page", type="integer", example="1"),
+     *          @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/users?page=1"),
+     *          @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *          @OA\Property(property="next_page_url", type="string", example="null"),
+     *          @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/users"),
+     *          @OA\Property(property="per_page", type="integer", example="25"),
+     *          @OA\Property(property="prev_page_url", type="string", example="null"),
+     *          @OA\Property(property="to", type="integer", example="3"),
+     *          @OA\Property(property="total", type="integer", example="3"),
      *          ),
      *       ),
      *    ),
@@ -67,33 +74,20 @@ class UserController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
+        $perPage = request('perPage', Config::get('constants.per_page'));
+        $users = [];
+        
         try {
-            $response = [];
-            if (count($jwtUser)) { //should really always be a jwtUser
+            if (count($jwtUser)) {
                 $userIsAdmin = (bool)$jwtUser['is_admin'];
-                if($userIsAdmin) { // if it's the superadmin return a bunch of information
-                    $users = User::with(
-                        'roles',
-                        'roles.permissions',
-                        'teams',
-                        'notifications'
-                    )->get()->toArray();
-                    $response = $this->getUsers($users);
+                if($userIsAdmin) {
+                    $users = User::with(['roles', 'roles.permissions', 'teams', 'notifications'])->paginate($perPage, ['*'], 'page');
                 } else {
-                    // otherwise, for now, just return the ids and names
-                    // (filtered if appropriate)
                     if ($request->has('filterNames')) {
                         $chars = $request->query('filterNames');
-                        $response = User::where('name', 'like', '%' . $chars . '%')
-                            ->select(['id', 'name'])
-                            ->get()
-                            ->toArray();
+                        $users = User::where('name', 'like', '%' . $chars . '%')->select('id', 'name')->paginate($perPage, ['*'], 'page');
                     } else {
-                        $response = User::select(
-                            'id',
-                            'name'
-                        )->get()->toArray();
+                        $users = User::select('id','name')->paginate($perPage, ['*'], 'page');
                     }
                 }
             }
@@ -105,9 +99,7 @@ class UserController extends Controller
                 'description' => 'User get all',
             ]);
 
-            return response()->json([
-                'data' => $response,
-            ], Config::get('statuscodes.STATUS_OK.code'));
+            return response()->json($users, Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

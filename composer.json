@@ -44,6 +44,7 @@
         "behat/behat": "^3.14",
         "behat/mink": "^1.11",
         "behat/mink-goutte-driver": "^2.0",
+        "intervention/image": "^3.7",
         "brianium/paratest": "^7.2",
         "fakerphp/faker": "^1.9.1",
         "friends-of-behat/mink-extension": "^2.7",
@@ -66,6 +67,7 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
+            "Database\\Seeders\\Omop\\": "database/seeders/omop",
             "Database\\Migrations\\": "database/migrations/",
             "Database\\Demo\\": "database/demo/",
             "Database\\Beta\\": "database/beta/"
@@ -105,7 +107,7 @@
             "vendor/bin/phpcs --standard=PSR1 app"
         ],
         "pest": [
-            "php -d memory_limit=512M vendor/bin/pest"
+            "php -d memory_limit=512M vendor/bin/pest --bail --parallel --compact"
         ],
         "lint": [
             "vendor/bin/pint --preset psr12"

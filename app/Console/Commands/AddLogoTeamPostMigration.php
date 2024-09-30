@@ -259,7 +259,7 @@ class AddLogoTeamPostMigration extends Command
             [
                 'name' => 'nhs england',
                 'mongo_object_id' => '6427fbba72aa1325df67a776',
-                'logo' => 'nhs-england.jpg',
+                'logo' => 'nhs-england.png',
             ],
             [
                 'name' => 'nhs oxford university hospital',
@@ -426,6 +426,11 @@ class AddLogoTeamPostMigration extends Command
                 'name' => 'west of scotland safe haven',
                 'mongo_object_id' => '65279cb1a4a5b147bb6dad11',
                 'logo' => 'west-of-scotland-safe-haven.jpg',
+            ],
+            [
+                'name' => 'GREAT ORMOND STREET HOSPITAL',
+                'mongo_object_id' => '607db9c3e1f9d3704d570d06',
+                'logo' => 'gosh.png',
             ],
         ];
 

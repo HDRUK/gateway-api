@@ -590,11 +590,13 @@ class IntegrationDatasetController extends Controller
                 $this->mapCoverage($input['metadata'], $version);
 
                 // Dispatch term extraction to a subprocess as it may take some time
-                TermExtraction::dispatch(
-                    $dataset->id,
-                    '1',
-                    base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
-                );
+                if($request['status'] === Dataset::STATUS_ACTIVE) {
+                    TermExtraction::dispatch(
+                        $dataset->id,
+                        '1',
+                        base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
+                    )->onConnection('redis');
+                }
 
                 Auditor::log([
                     'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
