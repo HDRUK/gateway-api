@@ -27,13 +27,19 @@ use App\Exceptions\NotFoundException;
 use App\Http\Requests\Team\CreateTeam;
 use App\Http\Requests\Team\DeleteTeam;
 use App\Http\Requests\Team\UpdateTeam;
+use App\Http\Traits\AddMetadataVersion;
 use App\Http\Traits\GetValueByPossibleKeys;
+use App\Http\Traits\IndexElastic;
 use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\RequestTransformation;
 
+use MetadataManagementController as MMC;
+
 class TeamController extends Controller
 {
+    use AddMetadataVersion;
     use GetValueByPossibleKeys;
+    use IndexElastic;
     use TeamTransformation;
     use RequestTransformation;
 
@@ -641,6 +647,10 @@ class TeamController extends Controller
             $users = array_key_exists('users', $input) ? $input['users'] : [];
             $this->updateTeamAdminUsers($teamId, $users);
 
+            if (array_key_exists('name', $array)) {
+                $this->reindexRelatedEntities($teamId);
+            }
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
@@ -794,6 +804,10 @@ class TeamController extends Controller
 
             $users = array_key_exists('users', $input) ? $input['users'] : [];
             $this->updateTeamAdminUsers($teamId, $users);
+
+            if (array_key_exists('name', $array)) {
+                $this->reindexRelatedEntities($teamId);
+            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -978,5 +992,60 @@ class TeamController extends Controller
         $this->publications = array_unique(array_merge($this->publications, Arr::pluck($dataset->allPublications, 'id')));
         $this->tools = array_unique(array_merge($this->tools, Arr::pluck($dataset->allTools, 'id')));
         $this->collections = array_unique(array_merge($this->collections, Arr::pluck($dataset->allCollections, 'id')));
+    }
+
+    private function reindexRelatedEntities(int $teamId): void
+    {
+        try {
+            $team = Team::findOrFail($teamId);
+            $this->reindexElasticDataProvider($teamId);
+            // need to update name in the metadata too?
+            $datasets = Dataset::where('team_id', $teamId)->get();
+            foreach ($datasets as $d) {
+                $publisher = [
+                    'gatewayId' => $team['pid'],
+                    'name' => $team['name'],
+                ];
+                $originalMetadata = $d->latestVersion()->metadata;
+                $metadata = $originalMetadata['metadata'];
+                $metadata['summary']['publisher'] = $publisher;
+
+                $isValid = MMC::validateDataModelType(
+                    json_encode(['metadata' => $metadata]), 
+                    Config::get('metadata.GWDM.name'),
+                    Config::get('metadata.GWDM.version'),
+                );
+                if ($isValid) {
+                    $this->addMetadataVersion(
+                        $d,
+                        $d['status'],
+                        now(),
+                        $metadata,
+                        $originalMetadata
+                    );
+                    $this->reindexElastic($d->id);
+                } else {
+                    throw new Exception('Failed to validate metadata with new team name');
+                }
+            }
+
+            $collections = Collection::where('team_id', $teamId)->pluck('id')->all();
+            foreach ($collections as $c) {
+                $this->indexElasticCollections($c);
+            }
+
+            $durs = Dur::where('team_id', $teamId)->pluck('id')->all();
+            foreach ($durs as $d) {
+                $this->indexElasticDur($d);
+            }
+
+            $tools = Tool::where('team_id', $teamId)->pluck('id')->all();
+            foreach ($tools as $t) {
+                $this->indexElasticTools($t);
+            }
+        } catch (Exception $e) {
+            throw new Exception('Failed to reindex related entities with: ' . $e->getMessage());
+        }
+      
     }
 }
