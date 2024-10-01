@@ -424,6 +424,13 @@ trait IndexElastic
 
             $datasetTitles = [];
             $datasetLinkTypes = [];
+
+            $linkTypeMappings = [
+                'USING' => 'Using a dataset',
+                'ABOUT' => 'About a dataset',
+                'UNKNOWN' => 'Unknown',
+            ];
+
             foreach ($datasets as $dataset) {
                 $metadata = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->metadata;
                 $latestVersionID = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->id;
@@ -432,7 +439,7 @@ trait IndexElastic
                     ['publication_id', '=', (int)$id],
                     ['dataset_version_id', '=', (int)$latestVersionID]
                 ])->first()->link_type ?? 'UNKNOWN';
-                $datasetLinkTypes[] = $linkType;
+                $datasetLinkTypes[] = $linkTypeMappings[$linkType] ?? 'Unknown';
             }
 
             // Split string to array of strings
