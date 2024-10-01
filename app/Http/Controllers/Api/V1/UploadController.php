@@ -68,7 +68,7 @@ class UploadController extends Controller
             $elasticIndexing = $request->boolean('elastic_indexing', true);
             $datasetId = $request->query('dataset_id', null);
             $collectionId = $request->query('collection_id', null);
-
+            
             // store unscanned
             $storedFilename = time() . '_' . $file->getClientOriginalName();
             $filePath = $file->storeAs(
@@ -90,9 +90,7 @@ class UploadController extends Controller
                 'status' => 'PENDING'
             ]);
 
-            if ($collectionId === 'undefined') {
-                $collectionId = $upload->id;
-            }
+
             // spawn scan job
             ScanFileUpload::dispatch(
                 (int)$upload->id,
