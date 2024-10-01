@@ -27,7 +27,7 @@ class UpdateDataset extends BaseFormRequest
             ],
             'create_origin' => [
                 'string',
-                'in:MANUAL,API,FMA',
+                'in:MANUAL,API,GMI',
             ],
             'status' => [
                 'string',

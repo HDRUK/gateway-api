@@ -1155,7 +1155,7 @@ class IntegrationDatasetController extends Controller
         }
 
         // Pre-process check for incoming data from a resource that passes strings
-        // when we expect an associative array. FMA passes strings, this
+        // when we expect an associative array. GMI passes strings, this
         // is a safe-guard to ensure execution is unaffected by other data types.
         if (isset($metadata['metadata'])) {
             if (is_string($metadata['metadata'])) {
