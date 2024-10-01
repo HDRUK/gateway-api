@@ -757,55 +757,6 @@ class DatasetController extends Controller
                 $gwdmMetadata,
                 $submittedMetadata
             );
-            // if($request['status'] === Dataset::STATUS_ACTIVE) {
-            //     // Determine the last version of metadata
-
-            //     if ($currDataset->status !== Dataset::STATUS_DRAFT) {
-            //         $versionNumber = $versionNumber + 1;
-            //     }
-            //     $versionCode = $this->formatVersion($versionNumber);
-            //     $lastMetadata = $currDataset->lastMetadata();
-
-            //     //update the GWDM modified date and version
-            //     $gwdmMetadata['required']['modified'] = $updateTime;
-            //     if(version_compare(Config::get('metadata.GWDM.version'), '1.0', '>')) {
-            //         if(version_compare($lastMetadata['gwdmVersion'], '1.0', '>')) {
-            //             $gwdmMetadata['required']['version'] = $versionCode;
-            //         }
-            //     }
-
-            //     //update the GWDM revisions
-            //     // NOTE: Calum 12/1/24
-            //     //       - url set with a placeholder right now, should be revised before production
-            //     //       - https://hdruk.atlassian.net/browse/GAT-3392
-            //     $gwdmMetadata['required']['revisions'][] = [
-            //         "url" => env('GATEWAY_URL') . '/dataset' .'/' . $id . '?version=' . $versionCode,
-            //         "version" => $versionCode
-            //     ];
-            // }
-
-            // $metadataSaveObject = [
-            //     'gwdmVersion' =>  Config::get('metadata.GWDM.version'),
-            //     'metadata' => $gwdmMetadata,
-            //     'original_metadata' => $submittedMetadata,
-            // ];
-
-            // // Update or create new metadata version based on draft status
-            // if ($currDataset->status !== Dataset::STATUS_DRAFT) {
-            //     DatasetVersion::create([
-            //         'dataset_id' => $currDataset->id,
-            //         'metadata' => json_encode($metadataSaveObject),
-            //         'version' => $versionNumber,
-            //     ]);
-            // } else {
-            //     // Update the existing version
-            //     DatasetVersion::where([
-            //         'dataset_id' => $currDataset->id,
-            //         'version' => $versionNumber,
-            //     ])->update([
-            //         'metadata' => json_encode($metadataSaveObject),
-            //     ]);
-            // }
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
