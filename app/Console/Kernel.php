@@ -19,7 +19,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:cohort-user-expiry')->dailyAt('02:00');
 
         // runs the ARS email scanner
-        $schedule->command('app:alias-reply-scanner')->dailyAt('03:00');
+        $schedule->command('app:alias-reply-scanner')->everyFiveMinutes();
 
         // update license information from EU server
         $schedule->command('app:update-licenses')->monthlyOn(1, '01:00');
