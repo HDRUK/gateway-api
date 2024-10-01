@@ -24,8 +24,8 @@ class UserBetaDemo extends Seeder
             [
                 'firstname' => 'HDRUK',
                 'lastname' => 'Super-User',
-                'email' => 'developers@hdruk.ac.uk',
-                'password' => '$2y$10$57QFbrNCa3kNg1.DyFBhoO9GMV1NtahzJ7zSXixPil1dBKKctQIR.',
+                'email' => env('HDR_ADMIN_USER'),
+                'password' => env('HDR_ADMIN_DB_PASSWORD'),
                 'provider' => 'service',
                 'isAdmin' => true,
                 'roles' => ['hdruk.superadmin'],
@@ -35,8 +35,8 @@ class UserBetaDemo extends Seeder
             [
                 'firstname' => 'HDRUK',
                 'lastname' => 'Super-User',
-                'email' => 'services@hdruk.ac.uk',
-                'password' => '$2y$10$AzdP7ITYj3GkQrk4xXi9KOp2VZTO4QwjxUIm1MjAD2T6FnTNcM09e',
+                'email' => env('HDR_SERVICE_USER'),
+                'password' => env('HDR_SERVICE_DB_PASSWORD'),
                 'provider' => 'service',
                 'isAdmin' => true,
                 'roles' => ['hdruk.superadmin'],

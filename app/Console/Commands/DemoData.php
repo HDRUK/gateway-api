@@ -112,8 +112,8 @@ class DemoData extends Command
     {
         $url = env('APP_URL') . '/api/v1/auth';
         $payload = [
-            'email' => 'developers@hdruk.ac.uk',
-            'password' => 'Watch26Task?',
+            'email' => env('HDR_ADMIN_USER'),
+            'password' => env('HDR_ADMIN_FE_PASSWORD'),
         ];
 
         $response = Http::post($url, $payload);

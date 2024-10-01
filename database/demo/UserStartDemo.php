@@ -19,12 +19,12 @@ class UserStartDemo extends Seeder
     public function run(): void
     {
         // Create our super user account
-        $this->createUser('HDRUK', 'Super-User', 'developers@hdruk.ac.uk', 'Watch26Task?', 'service', true, ['hdruk.superadmin']);
+        $this->createUser('HDRUK', 'Super-User', env('HDR_ADMIN_USER'), env('HDR_ADMIN_FE_PASSWORD'), 'service', true, ['hdruk.superadmin']);
 
         // Create our service layer user account
         // TODO - Need to review permissions for this account overall as superadmin may be too much depending
         // on actual needs
-        $this->createUser('HDRUK', 'Service-User', 'services@hdruk.ac.uk', 'Flood?15Voice', 'service', true, ['hdruk.superadmin']);
+        $this->createUser('HDRUK', 'Service-User', env('HDR_SERVICE_USER'), env('HDR_SERVICE_FE_PASSWORD'), 'service', true, ['hdruk.superadmin']);
     }
 
     /**

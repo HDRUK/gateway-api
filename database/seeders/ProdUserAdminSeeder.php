@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-
 use Database\Seeders\Traits\HelperFunctions;
 
 class ProdUserAdminSeeder extends Seeder
@@ -18,8 +17,8 @@ class ProdUserAdminSeeder extends Seeder
         $this->createUser(
             'HDRUK',
             'Developers',
-            'developers@hdruk.ac.uk',
-            '$2y$10$nDJEl9kavTm4WFRUup6j6eQ8qwTQg69fcNwRym.zFGgjA8izjYkAu',
+            env('HDR_ADMIN_USER'),
+            env('HDR_ADMIN_DB_PASSWORD'),
             true,
             [
                 'hdruk.superadmin',
@@ -29,8 +28,8 @@ class ProdUserAdminSeeder extends Seeder
         $this->createUser(
             'HDRUK',
             'Service-User',
-            'services@hdruk.ac.uk',
-            '$2y$10$qmXzkOCukyMCXwYrSuNgE.S7MMkswr7/vIoENJngxdn5kdeiwCcyu',
+            env('HDR_SERVICE_USER'),
+            env('HDR_SERVICE_DB_PASSWORD'),
             true,
             [
                 'hdruk.admin',
