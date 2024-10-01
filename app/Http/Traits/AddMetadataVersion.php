@@ -12,9 +12,13 @@ trait AddMetadataVersion
 {
     use MetadataOnboard;
     /**
-     * Create new Dataset, calling translation service if necessary
-     *
-     * @return array
+     * Create new dataset_version
+     * 
+     * @param Dataset $currDataset the dataset metadata is being updated for
+     * @param string $incomingStatus the status the dataset will be after this update
+     * @param string $updateTime the time of the update
+     * @param array $newMetadata the new metadata associated with the dataset
+     * @param array $previousMetadata the previous version of metadata associated with the dataset
      */
     public function addMetadataVersion(
         Dataset $currDataset,
