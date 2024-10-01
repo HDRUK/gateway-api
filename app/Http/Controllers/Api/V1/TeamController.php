@@ -999,7 +999,7 @@ class TeamController extends Controller
         try {
             $team = Team::findOrFail($teamId);
             $this->reindexElasticDataProvider($teamId);
-            // need to update name in the metadata too?
+
             $datasets = Dataset::where('team_id', $teamId)->get();
             foreach ($datasets as $d) {
                 $publisher = [
