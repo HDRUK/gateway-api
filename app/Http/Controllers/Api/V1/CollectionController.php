@@ -868,7 +868,9 @@ class CollectionController extends Controller
 
                 $updatedCollection = Collection::withTrashed()->where('id', $id)->first();
                 // Check and update related datasets and tools etc if the collection is active
-                if ($updatedCollection->status !== Collection::STATUS_ACTIVE) {
+
+                if ($updatedCollection->status === Collection::STATUS_ACTIVE) {
+
                     if (array_key_exists('datasets', $input)) {
                         $datasets = $input['datasets'];
                         $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
