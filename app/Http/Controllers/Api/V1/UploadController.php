@@ -5,11 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use Auditor;
 use Config;
 use Exception;
-
 use App\Http\Controllers\Controller;
 use App\Jobs\ScanFileUpload;
 use App\Models\Upload;
-
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -68,7 +66,7 @@ class UploadController extends Controller
             $elasticIndexing = $request->boolean('elastic_indexing', true);
             $datasetId = $request->query('dataset_id', null);
             $collectionId = $request->query('collection_id', null);
-            
+
             // store unscanned
             $storedFilename = time() . '_' . $file->getClientOriginalName();
             $filePath = $file->storeAs(
