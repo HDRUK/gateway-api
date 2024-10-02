@@ -20,10 +20,11 @@ class Cors
         $allowedOrigins = explode(',', 'https://web.dev.hdruk.cloud,https://rquest.dev.hdruk.cloud,https://rquest.test.healthdatagateway.org');
 
         $origin = $request->headers->get('Origin');
+        \Log::info('$origin :: ' . json_encode($origin));
 
         if (in_array($origin, $allowedOrigins)) {
             $headers = [
-                'Access-Control-Allow-Origin' => $origin,
+                'Access-Control-Allow-Origin' => 'rquest',
                 'Access-Control-Allow-Credentials' => 'true',
                 'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
                 'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization',
