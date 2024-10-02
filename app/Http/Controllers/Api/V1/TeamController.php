@@ -1001,7 +1001,7 @@ class TeamController extends Controller
             $this->reindexElasticDataProvider($teamId);
 
             $datasets = Dataset::where('team_id', $teamId)->get();
-            foreach ($datasets as &$d) {
+            foreach ($datasets as $d) {
                 if ($d->status === Dataset::STATUS_ACTIVE) {
                     if(version_compare(Config::get('metadata.GWDM.version'), '1.1', '<')) {
                         $publisher = [
