@@ -1138,7 +1138,7 @@ class CohortRequestController extends Controller
             //     ]);
 
             return response()->json([
-                'redirect_uri' => $rquestInitUrl,
+                'redirect_url' => $rquestInitUrl,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
