@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\User;
-use Carbon\CarbonImmutable;
 use Tests\Traits\MockExternalApis;
 use App\Http\Controllers\JwtController;
 use Database\Seeders\MinimalUserSeeder;
