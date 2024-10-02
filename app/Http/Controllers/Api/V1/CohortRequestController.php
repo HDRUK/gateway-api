@@ -1126,7 +1126,7 @@ class CohortRequestController extends Controller
             $rquestInitUrl = Config::get('services.rquest.init_url');
             \Log::info('CohortRequestController checkAccess :: ' . json_encode($rquestInitUrl));
 
-            return new RedirectResponse($rquestInitUrl, 302);
+            // return new RedirectResponse($rquestInitUrl, 302);
             // return redirect()->away($rquestInitUrl);
             // return response()->json([
             //     'redirect_uri' => $rquestInitUrl,
@@ -1136,6 +1136,10 @@ class CohortRequestController extends Controller
             //         'Access-Control-Allow-Origin' => 'https://rquest.test.healthdatagateway.org',
             //         'Access-Control-Allow-Credentials' => 'true',
             //     ]);
+
+            return response()->json([
+                'redirect_uri' => $rquestInitUrl,
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
