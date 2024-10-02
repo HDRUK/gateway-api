@@ -311,12 +311,14 @@ class SocialLoginController extends Controller
      */
     private function openathensResponse(array $data, string $provider): array
     {
+        $targetedId = is_array($data['eduPersonTargetedID']) ? $data['eduPersonTargetedID'][0] : $data['eduPersonTargetedID'];
+        $affiliation = is_array($data['eduPersonScopedAffiliation']) ? $data['eduPersonScopedAffiliation'][0] : $data['eduPersonScopedAffiliation'];
         return [
-            'providerid' => $data['eduPersonTargetedID'],
+            'providerid' => $targetedId,
             'name' => '',
             'firstname' => '',
             'lastname' => '',
-            'email' => $data['eduPersonTargetedID'] . $data['eduPersonScopedAffiliation'],
+            'email' => $targetedId . $affiliation,
             'provider' => $provider,
             'password' => Hash::make(json_encode($data)),
         ];
