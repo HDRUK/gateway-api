@@ -21,6 +21,7 @@ class Cors
 
         $origin = $request->headers->get('Origin');
         \Log::info('$origin :: ' . json_encode($origin));
+        \Log::info('Cors :: ' . json_encode($request->all()));
 
         if (in_array($origin, $allowedOrigins)) {
             $headers = [

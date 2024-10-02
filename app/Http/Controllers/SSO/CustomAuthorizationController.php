@@ -54,6 +54,9 @@ class CustomAuthorizationController extends Controller
         Request $request,
         ClientRepository $clients,
     ) {
+        $origin = $request->headers->get('Origin');
+        \Log::info('customAuthorize origin :: ' . json_encode($request->all()));
+
         // $userId = session('cr_uid');
         \Log::info('ServerRequestInterface session - cr_uid :: ' . json_encode(session('cr_uid')));
 

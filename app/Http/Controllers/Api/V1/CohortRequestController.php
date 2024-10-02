@@ -1070,6 +1070,9 @@ class CohortRequestController extends Controller
      */
     public function checkAccess(Request $request)
     {
+        $origin = $request->headers->get('Origin');
+        \Log::info('checkAccess origin :: ' . json_encode($request->all()));
+
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
