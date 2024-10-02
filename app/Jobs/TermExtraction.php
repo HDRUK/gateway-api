@@ -28,7 +28,7 @@ class TermExtraction implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    public $tries = 1;
+    public $tries;
     public $timeout;
 
     private string $datasetId = '';
@@ -43,6 +43,7 @@ class TermExtraction implements ShouldQueue
     public function __construct(string $datasetId, int $version, string $data, ?bool $elasticIndex = true)
     {
         $this->timeout = config('jobs.default_timeout', 600);
+        $this->tries = config('jobs.ntries', 2);
         $this->datasetId = $datasetId;
         $this->version = $version;
         $this->data = $data;
