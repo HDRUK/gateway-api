@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use Config;
-
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Team;
@@ -37,7 +36,6 @@ use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Database\Seeders\DurHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
-
 use ElasticClientController as ECC;
 
 class DurTest extends TestCase

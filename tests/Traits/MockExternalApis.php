@@ -5,11 +5,8 @@ namespace Tests\Traits;
 use Config;
 use Http\Mock\Client;
 use Nyholm\Psr7\Response;
-
-
 use Database\Seeders\SectorSeeder;
 use App\Jobs\TermExtraction;
-
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;

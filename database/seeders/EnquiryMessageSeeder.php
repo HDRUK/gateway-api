@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\EnquiryThread;
 use App\Models\EnquiryMessage;
-
 use Illuminate\Database\Seeder;
 
 class EnquiryMessageSeeder extends Seeder

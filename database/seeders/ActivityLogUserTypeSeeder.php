@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Http\Enums\ActivityLogUserType as ActivityLogUserTypeEnums;
 use App\Models\ActivityLogUserType;
-
 use Illuminate\Database\Seeder;
 
 class ActivityLogUserTypeSeeder extends Seeder

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
@@ -14,15 +13,11 @@ use App\Http\Traits\AddMetadataVersion;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\MetadataOnboard;
-
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
-
-
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
-
 use Illuminate\Support\Facades\Storage;
 use MetadataManagementController as MMC;
 use App\Http\Requests\Dataset\GetDataset;
@@ -760,7 +755,7 @@ class DatasetController extends Controller
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
-            if($request['status'] === Dataset::STATUS_ACTIVE) {
+            if ($request['status'] === Dataset::STATUS_ACTIVE) {
                 TermExtraction::dispatch(
                     $currDataset->id,
                     $versionNumber,
@@ -1108,7 +1103,7 @@ class DatasetController extends Controller
                     $metadata = $rowDetails['metadata']['metadata'];
 
                     $publisherName = $metadata['metadata']['summary']['publisher'];
-                    if(version_compare(Config::get('metadata.GWDM.version'), "1.1", "<")) {
+                    if (version_compare(Config::get('metadata.GWDM.version'), "1.1", "<")) {
                         $publisherName = $publisherName['publisherName'];
                     } else {
                         $publisherName = $publisherName['name'];

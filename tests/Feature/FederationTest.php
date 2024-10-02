@@ -5,9 +5,7 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Federation;
-
 use Tests\Traits\MockExternalApis;
-
 use App\Http\Enums\TeamMemberOf;
 use App\Models\TeamHasFederation;
 use App\Models\FederationHasNotification;

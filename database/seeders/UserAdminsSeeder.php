@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
-
 use Database\Seeders\Traits\HelperFunctions;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;

@@ -32,7 +32,6 @@ use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\RequestTransformation;
-
 use MetadataManagementController as MMC;
 
 class TeamController extends Controller
@@ -458,7 +457,7 @@ class TeamController extends Controller
                 }
 
                 //make sure the super admin is added to this team on creation
-                foreach($superAdminIds as $adminId) {
+                foreach ($superAdminIds as $adminId) {
                     TeamHasUser::create(
                         ['team_id' => $team->id, 'user_id' => $adminId],
                     );
@@ -1003,7 +1002,7 @@ class TeamController extends Controller
             $datasets = Dataset::where('team_id', $teamId)->get();
             foreach ($datasets as $d) {
                 if ($d->status === Dataset::STATUS_ACTIVE) {
-                    if(version_compare(Config::get('metadata.GWDM.version'), '1.1', '<')) {
+                    if (version_compare(Config::get('metadata.GWDM.version'), '1.1', '<')) {
                         $publisher = [
                             'publisherId' => $team['pid'],
                             'publisherName' => $team['name'],
@@ -1014,12 +1013,12 @@ class TeamController extends Controller
                             'name' => $team['name'],
                         ];
                     }
-                    
+
                     $metadata = $d->latestVersion()->metadata['metadata'];
                     $metadata['summary']['publisher'] = $publisher;
 
                     $isValid = MMC::validateDataModelType(
-                        json_encode(['metadata' => $metadata]), 
+                        json_encode(['metadata' => $metadata]),
                         Config::get('metadata.GWDM.name'),
                         Config::get('metadata.GWDM.version'),
                     );
@@ -1061,6 +1060,6 @@ class TeamController extends Controller
         } catch (Exception $e) {
             throw new Exception('Failed to reindex related entities with: ' . $e->getMessage());
         }
-      
+
     }
 }

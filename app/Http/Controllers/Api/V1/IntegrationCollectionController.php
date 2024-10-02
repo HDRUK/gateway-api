@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Keyword;
@@ -15,22 +14,17 @@ use Illuminate\Http\Request;
 use App\Models\CollectionHasDur;
 use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
-
 use App\Http\Controllers\Controller;
 use App\Models\CollectionHasDatasetVersion;
 use App\Models\CollectionHasKeyword;
 use App\Exceptions\NotFoundException;
 use App\Http\Traits\IntegrationOverride;
 use App\Models\CollectionHasPublication;
-
-
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\Collection\GetCollection;
-
 use App\Http\Requests\Collection\EditCollection;
 use App\Http\Requests\Collection\CreateCollection;
-
 use App\Http\Requests\Collection\DeleteCollection;
 use App\Http\Requests\Collection\UpdateCollection;
 
@@ -1249,7 +1243,7 @@ class IntegrationCollectionController extends Controller
     {
         $kws = CollectionHasKeyword::where('collection_id', $collectionId)->get();
 
-        foreach($kws as $kw) {
+        foreach ($kws as $kw) {
             $kwId = $kw->keyword_id;
             $checkKeyword = Keyword::where('id', $kwId)->first();
 

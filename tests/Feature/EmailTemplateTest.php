@@ -5,9 +5,7 @@ namespace Tests\Feature;
 use App\Models\EmailTemplate;
 use Tests\TestCase;
 use Database\Seeders\EmailTemplateSeeder;
-
 use Tests\Traits\MockExternalApis;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EmailTemplateTest extends TestCase

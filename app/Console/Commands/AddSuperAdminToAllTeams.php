@@ -30,8 +30,8 @@ class AddSuperAdminToAllTeams extends Command
     {
         $teamIds = Team::pluck("id");
         $superAdminIds = User::where("is_admin", true)->pluck('id');
-        foreach($teamIds as $teamId) {
-            foreach($superAdminIds as $adminId) {
+        foreach ($teamIds as $teamId) {
+            foreach ($superAdminIds as $adminId) {
                 TeamHasUser::updateOrCreate(
                     [
                         'team_id' => $teamId,

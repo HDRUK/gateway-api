@@ -29,7 +29,6 @@ use App\Http\Requests\Tool\EditTool;
 use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
-
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\RequestTransformation;
 
@@ -493,7 +492,7 @@ class ToolController extends Controller
             $this->checkCollections($toolId, $collections, (int)$jwtUser['id']);
 
             $currentTool = Tool::where('id', $toolId)->first();
-            if($currentTool->status === Tool::STATUS_ACTIVE) {
+            if ($currentTool->status === Tool::STATUS_ACTIVE) {
                 $this->indexElasticTools((int) $toolId);
             }
 
@@ -894,7 +893,7 @@ class ToolController extends Controller
             }
 
             $currentTool = Tool::where('id', $id)->first();
-            if($currentTool->status === Tool::STATUS_ACTIVE) {
+            if ($currentTool->status === Tool::STATUS_ACTIVE) {
                 $this->indexElasticTools($id);
             }
 

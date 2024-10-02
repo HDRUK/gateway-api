@@ -46,7 +46,6 @@ use App\Http\Controllers\Api\V1\ToolController;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-
 use ElasticClientController as ECC;
 
 class ToolTest extends TestCase

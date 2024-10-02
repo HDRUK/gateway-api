@@ -4,7 +4,6 @@ namespace Tests\Unit;
 
 use App\Mail\Email;
 use App\Models\EmailTemplate;
-
 use Tests\TestCase;
 use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
