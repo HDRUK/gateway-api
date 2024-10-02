@@ -23,9 +23,6 @@ fi
 # Start the Octane server in the background
 $base_command &
 
-php artisan queue:work
-php artisan queue:work
-php artisan queue:work
 
 # Separate the command from the cron timings, so as to first check for
 # duplicates, thus being immune to multiple insertions
@@ -41,5 +38,7 @@ cronJob="* * * * * $cronCommand"
 # To activate cron service
 service cron start
 
->>>>>>> origin/dev
+php artisan queue:work
+php artisan queue:work
+php artisan queue:work
 php artisan queue:work
