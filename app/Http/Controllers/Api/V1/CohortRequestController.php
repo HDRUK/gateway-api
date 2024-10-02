@@ -26,6 +26,7 @@ use App\Http\Requests\CohortRequest\DeleteCohortRequest;
 use App\Http\Requests\CohortRequest\UpdateCohortRequest;
 use App\Http\Requests\CohortRequest\AssignAdminCohortRequest;
 use App\Http\Requests\CohortRequest\RemoveAdminCohortRequest;
+use Illuminate\Http\RedirectResponse;
 
 class CohortRequestController extends Controller
 {
@@ -1119,11 +1120,8 @@ class CohortRequestController extends Controller
 
             $rquestInitUrl = Config::get('services.rquest.init_url');
             \Log::info('CohortRequestController checkAccess :: ' . json_encode($rquestInitUrl));
-            return redirect('https://rquest.test.healthdatagateway.org/bcrquest/')
-                ->withHeaders([
-                    'Access-Control-Allow-Origin' => 'https://rquest.test.healthdatagateway.org',
-                    'Access-Control-Allow-Credentials' => 'true',
-                ]);
+
+            return new RedirectResponse($rquestInitUrl);
             // return redirect()->away($rquestInitUrl);
             // return response()->json([
             //     'redirect_uri' => $rquestInitUrl,
