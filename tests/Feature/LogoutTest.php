@@ -75,11 +75,6 @@ class LogoutTest extends TestCase
     //     $responseLogin->assertStatus(200);
     //     $jwt = $responseLogin['access_token'];
 
-    //     // check jwt
-    //     $isJwtInDb = AuthorisationCode::findRowByJwt($jwt);
-    //     $this->assertTrue((bool) $isJwtInDb, 'Response was successfully. The token exists in the database.');
-
-
     //     // logout
     //     $responseLogout = $this->json(
     //         'POST',
@@ -91,11 +86,6 @@ class LogoutTest extends TestCase
     //         ]
     //     );
     //     $responseLogout->assertStatus(302);
-
-    //     // check jwt
-    //     $isJwtInDb = AuthorisationCode::findRowByJwt($jwt);
-    //     $this->assertFalse((bool) $isJwtInDb, 'Response was successfully. The token does not exist in the database.');
-
 
     //     // login
     //     $responseUsers = $this->json('GET', self::USERS_URL, [],[
