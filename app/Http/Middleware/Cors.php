@@ -27,19 +27,20 @@ class Cors
 
         if (in_array($origin, $allowedOrigins)) {
             $headers = [
-                'Access-Control-Allow-Origin' => '*',
-                'Access-Control-Allow-Credentials' => 'false',
+                'Access-Control-Allow-Origin' => 'https://web.dev.hdruk.cloud',
+                'Access-Control-Allow-Credentials' => 'true',
                 'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
                 'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization',
             ];
+            \Log::info('Cors A :: ' . json_encode($headers));
         } else {
-            // Optionally handle disallowed origins
             $headers = [
                 'Access-Control-Allow-Origin' => 'https://rquest.test.healthdatagateway.org',
                 'Access-Control-Allow-Credentials' => 'true',
                 'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
                 'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization',
             ];
+            \Log::info('Cors B :: ' . json_encode($headers));
         }
 
         if ($request->getMethod() === 'OPTIONS') {
