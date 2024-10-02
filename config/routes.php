@@ -20,6 +20,17 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
+    [
+        'name' => 'api.v1.auth.refresh',
+        'method' => 'post',
+        'path' => '/refresh_token',
+        'methodController' => 'AuthController@refreshToken',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
 
     // login for:  google || azure || linkedin
     [

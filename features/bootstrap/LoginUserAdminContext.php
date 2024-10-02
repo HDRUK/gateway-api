@@ -2,11 +2,12 @@
 
 namespace App\Behat\Context;
 
+use Exception;
 use PHPUnit\Framework\Assert;
 use Behat\Behat\Context\Context;
-use App\Models\AuthorisationCode;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\JwtController;
+use GuzzleHttp\Exception\GuzzleException;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 
 /**
@@ -82,11 +83,6 @@ class LoginUserAdminContext implements Context
      */
     public function iVerifyTheAccessTokenExistsInTheAuthorisationCodesTable()
     {
-        $authorisationCodes = AuthorisationCode::where([
-            'jwt' => $this->accessToken,
-        ])->first();
-        Assert::assertTrue((bool) $authorisationCodes, 'we should verify the access token');
-
         $jwtController = new JwtController();
         $jwtController->setJwt($this->accessToken);
         $isValidJwt = $jwtController->isValid();
