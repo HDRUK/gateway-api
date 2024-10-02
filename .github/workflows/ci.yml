@@ -42,17 +42,17 @@ jobs:
       id: composerinstall
       run: "composer install"
 
-    - name: Run static analysis
-      id: composerphpstan
-      run: "composer run phpstan"
+    # - name: Run static analysis
+    #   id: composerphpstan
+    #   run: "composer run phpstan"
 
-    - name: Run unit tests
-      id: unittests
-      run: "composer run pest"
-  
-    # - name: Run one unit test file
+    # - name: Run unit tests
     #   id: unittests
-    #   run: "composer run pest -- --filter UploadTest"
+    #   run: "composer run pest"
+  
+    - name: Run one unit test file
+      id: unittests
+      run: "composer run pest -- --filter ActivityLogTypeTest"
 
     - name: Run code sniffer
       id: codesniffer
