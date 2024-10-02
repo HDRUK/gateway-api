@@ -1002,46 +1002,61 @@ class TeamController extends Controller
 
             $datasets = Dataset::where('team_id', $teamId)->get();
             foreach ($datasets as $d) {
-                $publisher = [
-                    'gatewayId' => $team['pid'],
-                    'name' => $team['name'],
-                ];
-                $originalMetadata = $d->latestVersion()->metadata;
-                $metadata = $originalMetadata['metadata'];
-                $metadata['summary']['publisher'] = $publisher;
+                if ($d->status === Dataset::STATUS_ACTIVE) {
+                    if(version_compare(Config::get('metadata.GWDM.version'), '1.1', '<')) {
+                        $publisher = [
+                            'publisherId' => $team['pid'],
+                            'publisherName' => $team['name'],
+                        ];
+                    } else {
+                        $publisher = [
+                            'gatewayId' => $team['pid'],
+                            'name' => $team['name'],
+                        ];
+                    }
+                    
+                    $metadata = $d->latestVersion()->metadata['metadata'];
+                    $metadata['summary']['publisher'] = $publisher;
 
-                $isValid = MMC::validateDataModelType(
-                    json_encode(['metadata' => $metadata]), 
-                    Config::get('metadata.GWDM.name'),
-                    Config::get('metadata.GWDM.version'),
-                );
-                if ($isValid) {
-                    $this->addMetadataVersion(
-                        $d,
-                        $d['status'],
-                        now(),
-                        $metadata,
-                        $originalMetadata
+                    $isValid = MMC::validateDataModelType(
+                        json_encode(['metadata' => $metadata]), 
+                        Config::get('metadata.GWDM.name'),
+                        Config::get('metadata.GWDM.version'),
                     );
-                    $this->reindexElastic($d->id);
-                } else {
-                    throw new Exception('Failed to validate metadata with new team name');
+                    if ($isValid) {
+                        $this->addMetadataVersion(
+                            $d,
+                            $d['status'],
+                            now(),
+                            $metadata,
+                            $d->latestVersion()->metadata
+                        );
+                        $this->reindexElastic($d->id);
+                    } else {
+                        throw new Exception('Failed to validate metadata with new team name');
+                    }
                 }
             }
 
-            $collections = Collection::where('team_id', $teamId)->pluck('id')->all();
+            $collections = Collection::where('team_id', $teamId)->get();
             foreach ($collections as $c) {
-                $this->indexElasticCollections($c);
+                if ($c->status === Collection::STATUS_ACTIVE) {
+                    $this->indexElasticCollections($c->id);
+                }
             }
 
-            $durs = Dur::where('team_id', $teamId)->pluck('id')->all();
+            $durs = Dur::where('team_id', $teamId)->get();
             foreach ($durs as $d) {
-                $this->indexElasticDur($d);
+                if ($d->status === Dur::STATUS_ACTIVE) {
+                    $this->indexElasticDur($d->id);
+                }
             }
 
-            $tools = Tool::where('team_id', $teamId)->pluck('id')->all();
+            $tools = Tool::where('team_id', $teamId)->get();
             foreach ($tools as $t) {
-                $this->indexElasticTools($t);
+                if ($t->status === Tool::STATUS_ACTIVE) {
+                    $this->indexElasticTools($t->id);
+                }
             }
         } catch (Exception $e) {
             throw new Exception('Failed to reindex related entities with: ' . $e->getMessage());
