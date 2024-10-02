@@ -6,9 +6,7 @@ use Auditor;
 use Config;
 use Exception;
 use App\Models\User;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
-use App\Models\AuthorisationCode;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cookie;
@@ -381,32 +379,8 @@ class SocialLoginController extends Controller
      * @param User $user
      * @return string
      */
-    private function createJwt($user): string
+    private function createJwt(User $user): string
     {
-        $currentTime = CarbonImmutable::now();
-        $expireTime = $currentTime->addSeconds(env('JWT_EXPIRATION'));
-
-        $arrayClaims = [
-            'iss' => (string)env('APP_URL'),
-            'sub' => (string)$user['name'],
-            'aud' => (string)env('APP_NAME'),
-            'iat' => (string)strtotime($currentTime),
-            'nbf' => (string)strtotime($currentTime),
-            'exp' => (string)strtotime($expireTime),
-            'jti' => (string)env('JWT_SECRET'),
-            'user' => $user,
-        ];
-
-        $this->jwt->setPayload($arrayClaims);
-        $jwt = $this->jwt->create();
-
-        AuthorisationCode::createRow([
-            'user_id' => (int)$user->id,
-            'jwt' => (string)$jwt,
-            'created_at' => $currentTime,
-            'expired_at' => $expireTime,
-        ]);
-
-        return $jwt;
+        return $this->jwt->generateToken($user->id);
     }
 }

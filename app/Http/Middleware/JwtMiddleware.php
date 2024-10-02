@@ -5,7 +5,6 @@ namespace App\Http\Middleware;
 use Closure;
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Models\AuthorisationCode;
 use App\Exceptions\NotFoundException;
 use App\Http\Controllers\JwtController;
 use App\Http\Traits\UserRolePermissions;
@@ -40,9 +39,8 @@ class JwtMiddleware
             $jwtController = new JwtController();
             $jwtController->setJwt($authorization);
             $isValidJwt = $jwtController->isValid();
-            $isJwtInDb = AuthorisationCode::findRowByJwt($authorization);
 
-            if (!$isValidJwt || !$isJwtInDb) {
+            if (!$isValidJwt) {
                 throw new UnauthorizedException();
             }
 
@@ -82,9 +80,8 @@ class JwtMiddleware
             $jwtController = new JwtController();
             $jwtController->setJwt($jwtBearer);
             $isValidJwt = $jwtController->isValid();
-            $isJwtInDb = AuthorisationCode::findRowByJwt($jwtBearer);
 
-            if (!$isValidJwt && !$isJwtInDb) {
+            if (!$isValidJwt) {
                 throw new UnauthorizedException();
             }
 

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Illuminate\Http\Request;
-use App\Models\AuthorisationCode;
 use App\Http\Controllers\Controller;
 
 class LogoutController extends Controller
@@ -40,23 +39,9 @@ class LogoutController extends Controller
      */
     public function logout(Request $request): mixed
     {
-        $jwt = null;
-
-        if ($request->cookie('token')) {
-            $jwt = $request->cookie('token');
-        } else {
-            $jwt = explode(' ', $request->header('Authorization'))[1];
-        }
-
-        if (AuthorisationCode::where(['jwt' => $jwt])->delete()) {
-            $request->session()->flush();
-            return response()->json([
-                'message' => 'OK',
-            ], 200);
-        }
-
+        $request->session()->flush();
         return response()->json([
-            'message' => 'not found',
-        ], 404);
+            'message' => 'OK',
+        ], 200);
     }
 }
