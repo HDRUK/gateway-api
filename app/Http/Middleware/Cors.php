@@ -34,7 +34,7 @@ class Cors
                 'Access-Control-Allow-Origin' => 'https://rquest.test.healthdatagateway.org',
                 'Access-Control-Allow-Credentials' => 'true',
                 'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers' => 'rigin, X-Requested-With, Content-Type, Accept, Authorization',
+                'Access-Control-Allow-Headers' => 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
             ];
             \Log::info('Cors B :: ' . json_encode($headers));
         }
