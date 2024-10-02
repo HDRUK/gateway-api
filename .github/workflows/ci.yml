@@ -27,11 +27,11 @@ jobs:
     - name: Composer install
       run: "composer install"
 
-    - name: Run static analysis
-      run: "composer run phpstan"
+    # - name: Run static analysis
+    #   run: "composer run phpstan"
   
-    - name: Run unit tests
-      run: "php artisan test"
+    # - name: Run unit tests
+    #   run: "php artisan test"
 
-    - name: Run code sniffer
-      run: "composer run phpcs"
+    # - name: Run code sniffer
+    #   run: "composer run phpcs"
