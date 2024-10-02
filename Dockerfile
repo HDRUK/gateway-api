@@ -11,6 +11,7 @@ WORKDIR /var/www
 COPY composer.* /var/www/
 
 RUN apt-get update && apt-get install -y \
+    cron \
     nodejs \
     npm \
     libfreetype6-dev \
