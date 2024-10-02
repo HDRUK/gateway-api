@@ -24,3 +24,6 @@ fi
 $base_command &
 
 php artisan queue:work
+php artisan queue:work
+php artisan queue:work
+php artisan queue:work
