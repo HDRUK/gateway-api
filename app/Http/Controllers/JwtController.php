@@ -70,15 +70,6 @@ class JwtController extends Controller
                 'id' => $userId,
             ])->first();
 
-            $userClaim = [
-                'id' => $userId,
-                'name' => $user->name,
-                'firstname' => $user->firstname,
-                'lastname' => $user->lastname,
-                'email' => $user->email,
-                'is_admin' => $user->is_admin,
-            ];
-
             $token = $this->config->builder()
                 ->issuedBy((string)env('APP_URL')) // iss claim
                 ->permittedFor((string)env('APP_URL')) // aud claim
@@ -87,7 +78,7 @@ class JwtController extends Controller
                 ->issuedAt($currentTime) // iat claim
                 ->canOnlyBeUsedAfter($currentTime) // nbf claim
                 ->expiresAt($expireTime) // exp claim
-                ->withClaim('user', $userClaim) // custom claim - user
+                ->withClaim('user', $user) // custom claim - user
                 ->getToken($this->config->signer(), $this->config->signingKey());
 
             $jwt = $token->toString();
