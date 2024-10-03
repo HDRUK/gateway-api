@@ -7,6 +7,7 @@ use Auditor;
 use Exception;
 use CloudLogger;
 use App\Models\User;
+use App\Models\OauthUser;
 use App\Jobs\SendEmailJob;
 use App\Models\Permission;
 use Illuminate\Http\Request;
@@ -1097,7 +1098,8 @@ class CohortRequestController extends Controller
                 throw new Exception('Unauthorized for access :: There are not enough permissions allocated for the cohort request');
             }
 
-            // save the user id in session
+            // oidc
+            OauthUser::where('user_id', $userId)->delete();
             session(['cr_uid' => $userId]);
 
             // delete after implementation

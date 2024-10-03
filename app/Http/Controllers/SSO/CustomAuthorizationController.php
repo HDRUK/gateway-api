@@ -54,21 +54,13 @@ class CustomAuthorizationController extends Controller
         Request $request,
         ClientRepository $clients,
     ) {
-        $origin = $request->headers->get('Origin');
-        \Log::info('customAuthorize origin :: ' . json_encode($request->all()));
-
         // $userId = session('cr_uid');
         \Log::info('ServerRequestInterface session - cr_uid :: ' . json_encode(session('cr_uid')));
 
-        // mock user id for with we need:
-        // - cohort_regests.request_status = 'APPROVED'
-        $cohortRequests = CohortRequest::where(['request_status' => 'APPROVED'])
-                            ->first();
-        $userId = $cohortRequests->user_id;
-        // end mock user id
+        // user_id from CohortRequestController@checkAccess
+        $userId = session('cr_uid');
 
-        // this is only temporary - it needs to be there when the flow starts in the backend
-        OauthUser::where('user_id', $userId)->delete();
+        // save nonce and user_id for id_token
         OauthUser::create([
             'user_id' => $userId,
             'nonce' => $request->query('nonce'),
