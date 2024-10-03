@@ -1095,12 +1095,15 @@ class CollectionController extends Controller
     {
         $cols = CollectionHasDatasetVersion::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
-            $dataset_id = DatasetVersion::where("id", $col->dataset_version_id)->first()->dataset_id;
-            if (!in_array($dataset_id, $this->extractInputIdToArray($inDatasets))) {
-                $this->deleteCollectionHasDatasetVersions($collectionId, $col->dataset_version_id);
+            $datasetId = DatasetVersion::where('id', $col->dataset_version_id)->select('dataset_id')->get();
+            if (count($datasetId) > 0) {
+                if (!in_array($datasetId[0]['dataset_id'], $this->extractInputIdToArray($inDatasets))) {
+                    $this->deleteCollectionHasDatasetVersions($collectionId, $col->dataset_version_id);
+                }
             }
         }
 
+        // LS - This is superflous.
         foreach ($inDatasets as $dataset) {
             $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
             $checking = $this->checkInCollectionHasDatasetVersions($collectionId, $datasetVersionId);

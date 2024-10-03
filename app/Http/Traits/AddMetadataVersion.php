@@ -3,7 +3,6 @@
 namespace App\Http\Traits;
 
 use Config;
-use Exception;
 
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
@@ -13,7 +12,7 @@ trait AddMetadataVersion
     use MetadataOnboard;
     /**
      * Create new dataset_version
-     * 
+     *
      * @param Dataset $currDataset the dataset metadata is being updated for
      * @param string $incomingStatus the status the dataset will be after this update
      * @param string $updateTime the time of the update
