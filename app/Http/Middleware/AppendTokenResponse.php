@@ -15,8 +15,8 @@ class AppendTokenResponse
     /**
      * Handle an incoming request.
      *
-     * @param Request $request
-     * @param Closure $next
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
      * @return Response|JsonResponse
      */
     public function handle(Request $request, Closure $next): Response|JsonResponse
@@ -26,13 +26,14 @@ class AppendTokenResponse
 
         if (strpos($currentUrl, 'oauth/token') !== false) {
             $content = json_decode($response->getContent(), true);
+            \Log::info('middleware AppendTokenResponse content :: ' . json_encode($content));
             // $content['id_token'] = $content['access_token'];
 
             $content['id_token'] = $this->generateIdToken($content['access_token']);
 
             \Log::info('middleware AppendTokenResponse content :: ' . json_encode($content));
 
-            return response()->json($content, $response->getStatusCode(), $response->headers->all());
+            // return response()->json($content, $response->getStatusCode(), $response->headers->all());
         }
 
         return $response;
