@@ -98,8 +98,8 @@ class AuthController extends Controller
             ]);
 
             return response()->json([
-                "access_token" => $jwt,
-                "token_type" => "bearer"
+                'access_token' => $jwt,
+                'token_type' => 'bearer'
             ])->setStatusCode(200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
