@@ -6,10 +6,12 @@ use App\Models\User;
 use Lcobucci\JWT\Token;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasPermission;
+use App\Models\OauthUser;
 use App\Models\Permission;
 use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;
+use Log;
 
-trait CustomClaimsAccessTokenTrait
+trait CustomAccessTokenTrait
 {
     use AccessTokenTrait;
 
@@ -20,6 +22,7 @@ trait CustomClaimsAccessTokenTrait
      */
     private function convertToJWT()
     {
+        // https://github.com/HDRUK/gateway-api/blob/2f0f2df3d94a75b8a1a4920a64cd0c6a2267c2d3/src/resources/utilities/ga4gh.utils.js#L10
         $this->initJwtConfiguration();
 
         $rquestroles = $this->getRquestroles($this->getUserIdentifier());
@@ -28,18 +31,70 @@ trait CustomClaimsAccessTokenTrait
             'id' => $this->getUserIdentifier(),
         ])->first();
 
+        $allowedOrigins = [
+            "*",
+            env('APP_URL') . "/*",
+        ];
+        $realmAccess = [
+            "roles" => [
+                "default-roles-rquest-206",
+                "offline_access",
+                "uma_authorization"
+            ],
+        ];
+        $resourceAccess = [
+            "account" => [
+                "roles" => [
+                    "manage-account",
+                    "manage-account-links",
+                    "view-profile"
+                ]
+            ]
+        ];
+        // $sessionState = (string)session()->getId();
+        $sessionState = "ae038c99-8244-4d8e-a85d-e8648fb9dbcd";
+        $identifiedBy = $this->getIdentifier();
+
+        $oauthUsers = OauthUser::where([
+            'user_id' => $this->getUserIdentifier(),
+        ])->first();
+
+        $profile = [
+            $user->firstname,
+            $user->lastname,
+        ];
+
         return $this->jwtConfiguration->builder()
             ->permittedFor($this->getClient()->getIdentifier())
-            ->identifiedBy($this->getIdentifier())
+            ->identifiedBy($identifiedBy)
             ->issuedAt(new \DateTimeImmutable())
+            // ->issuedBy(env('GATEWAY_URL'))
+            ->issuedBy(env('APP_URL'))
             ->canOnlyBeUsedAfter(new \DateTimeImmutable())
             ->expiresAt($this->getExpiryDateTime())
             ->relatedTo((string)$this->getUserIdentifier())
-            ->withClaim('scopes', $this->getScopes())
-            ->withClaim('email', $this->getScopes())
+            ->withClaim('typ', "Bearer")
+            // ->withClaim('auth_time', 0)
+            ->withClaim('nonce', $oauthUsers ? $oauthUsers->nonce : 'test' )
+            ->withClaim('at_hash', $sessionState)
+            ->withClaim('session_state', $sessionState)
+            ->withClaim('sid', $sessionState)
+            ->withClaim('allowed-origins', $allowedOrigins)
+            ->withClaim('email_verified', true)
+            ->withClaim('email', $user->email)
+            ->withClaim('preferred_username', $user->name)
+            ->withClaim('name', $user->lastname . ' ' . $user->firstname)
+            ->withClaim('given_name', $user->firstname)
+            ->withClaim('family_name', $user->lastname)
             ->withClaim('firstname', $user->firstname)
             ->withClaim('lastname', $user->lastname)
-            ->withClaim('rquestroles', $rquestroles) // rquestroles - custom claim
+            ->withClaim('profile', $profile)
+            // ->withClaim('rquestroles', $rquestroles)
+            ->withClaim('realm_access', $realmAccess)
+            ->withClaim('resource_access', $resourceAccess)
+            ->withClaim('scope', "openid profile email rquestroles")
+            ->withClaim('rquestroles', $rquestroles)
+            ->withHeader('kid', env('JWT_KID', 'jwtkidnotfound'))
             ->getToken($this->jwtConfiguration->signer(), $this->jwtConfiguration->signingKey());
     }
 
@@ -51,6 +106,9 @@ trait CustomClaimsAccessTokenTrait
         return $this->convertToJWT()->toString();
     }
 
+    /**
+     * get rquest roles from db
+     */
     public function getRquestroles($id)
     {
         $cohortRequest = CohortRequest::where([

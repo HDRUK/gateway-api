@@ -1069,14 +1069,19 @@ class CohortRequestController extends Controller
      */
     public function checkAccess(Request $request)
     {
+        $origin = $request->headers->get('Origin');
+        \Log::info('checkAccess origin :: ' . json_encode($request));
+        \Log::info('checkAccess origin 2 :: ' . json_encode($request->headers->get('X-Forwarded-Host')));
+
+
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        if (!array_key_exists('id', $jwtUser)) {
+            throw new Exception('Unauthorized');
+        }
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
-            if (!array_key_exists('id', $jwtUser)) {
-                throw new Exception('Unauthorized');
-            }
-
             $userId = (int) $jwtUser['id'];
 
             $checkingCohortRequest = CohortRequest::where([
@@ -1101,10 +1106,14 @@ class CohortRequestController extends Controller
             session(['cr_uid' => $userId]);
 
             // delete after implementation
-            CloudLogger::write('cohort request access :: ' . json_encode([
+            \Log::info('cohort request access :: ' . json_encode([
                 'userId' => $userId,
                 'sessionId' => session()->getId()
             ]));
+            // CloudLogger::write('cohort request access :: ' . json_encode([
+            //     'userId' => $userId,
+            //     'sessionId' => session()->getId()
+            // ]));
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1114,7 +1123,13 @@ class CohortRequestController extends Controller
             ]);
 
             $rquestInitUrl = Config::get('services.rquest.init_url');
-            return redirect()->away($rquestInitUrl);
+            \Log::info('CohortRequestController checkAccess :: ' . json_encode($rquestInitUrl));
+
+            return response()->json([
+                'data' => [
+                    'redirect_url' => $rquestInitUrl,
+                ],
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
