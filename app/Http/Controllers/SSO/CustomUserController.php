@@ -25,9 +25,6 @@ class CustomUserController extends Controller
         try {
             $user = Auth::user();
 
-            \Log::info('CustomUserController userInfo :: ' . json_encode($user));
-            \Log::info('CustomUserController userInfo request :: ' . json_encode($request->user()));
-
             $profile = [
                 $user->firstname,
                 $user->lastname,

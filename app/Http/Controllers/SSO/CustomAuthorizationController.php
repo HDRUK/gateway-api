@@ -54,9 +54,6 @@ class CustomAuthorizationController extends Controller
         Request $request,
         ClientRepository $clients,
     ) {
-        // $userId = session('cr_uid');
-        \Log::info('ServerRequestInterface session - cr_uid :: ' . json_encode(session('cr_uid')));
-
         // user_id from CohortRequestController@checkAccess
         $userId = session('cr_uid');
 

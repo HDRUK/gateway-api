@@ -1102,12 +1102,6 @@ class CohortRequestController extends Controller
             OauthUser::where('user_id', $userId)->delete();
             session(['cr_uid' => $userId]);
 
-            // delete after implementation
-            \Log::info('cohort request access :: ' . json_encode([
-                'userId' => $userId,
-                'sessionId' => session()->getId()
-            ]));
-
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
@@ -1116,7 +1110,6 @@ class CohortRequestController extends Controller
             ]);
 
             $rquestInitUrl = Config::get('services.rquest.init_url');
-            \Log::info('CohortRequestController checkAccess :: ' . json_encode($rquestInitUrl));
 
             return response()->json([
                 'data' => [
