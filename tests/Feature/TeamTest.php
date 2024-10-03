@@ -430,7 +430,7 @@ class TeamTest extends TestCase
             $datasetContent['data']['versions'][0]['metadata']['metadata']['required']['version'],
             '2.0.0'
         );
-        
+
         // delete the team created
         $responseDelete = $this->json(
             'DELETE',

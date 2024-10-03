@@ -30,7 +30,6 @@ class UpdateCollection extends BaseFormRequest
             'image_link' => [
                 'nullable',
                 'string',
-                'url',
             ],
             'enabled' => [
                 'required',
