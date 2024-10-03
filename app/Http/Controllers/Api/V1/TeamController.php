@@ -1014,12 +1014,12 @@ class TeamController extends Controller
                             'name' => $team['name'],
                         ];
                     }
-                    
+
                     $metadata = $d->latestVersion()->metadata['metadata'];
                     $metadata['summary']['publisher'] = $publisher;
 
                     $isValid = MMC::validateDataModelType(
-                        json_encode(['metadata' => $metadata]), 
+                        json_encode(['metadata' => $metadata]),
                         Config::get('metadata.GWDM.name'),
                         Config::get('metadata.GWDM.version'),
                     );
@@ -1061,6 +1061,6 @@ class TeamController extends Controller
         } catch (Exception $e) {
             throw new Exception('Failed to reindex related entities with: ' . $e->getMessage());
         }
-      
+
     }
 }
