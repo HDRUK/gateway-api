@@ -94,14 +94,16 @@ class JwtController extends Controller
         try {
             // Parse the token
             $token = $this->config->parser()->parse($this->jwt);
-            assert($token instanceof UnencryptedToken);
+            if (!$token instanceof UnencryptedToken) {
+                throw new Exception('Token is encrypted and cannot be handled.');
+            }
 
             $constraints = $this->config->validationConstraints();
 
             $this->config->validator()->assert($token, ...$constraints);
 
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new UnauthorizedException('Invalid token :: ' . $e->getMessage());
         }
     }
@@ -111,12 +113,14 @@ class JwtController extends Controller
         try {
             // Parse the token
             $token = $this->config->parser()->parse($this->jwt);
-            assert($token instanceof UnencryptedToken);
+            if (!$token instanceof UnencryptedToken) {
+                throw new Exception('Token is encrypted and cannot be handled.');
+            }
 
             $claims = $token->claims()->all();
 
             return $claims;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new UnauthorizedException('Unable to decode the token :: ' . $e->getMessage());
         }
     }
