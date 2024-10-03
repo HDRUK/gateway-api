@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 use App\Models\User;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
-use App\Models\AuthorisationCode;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\JwtController;
+use App\Exceptions\UnauthorizedException;
 
 class AuthController extends Controller
 {
@@ -60,7 +59,7 @@ class AuthController extends Controller
      *          @OA\Property(
      *             property="access_token",
      *             type="string",
-     *             example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIiLCJzdWIiOiJkYW4gbml0YSIsImF1ZCI6IiIsImlhdCI6IjE2ODAxNzg2NjEiLCJuYmYiOiIxNjgwMTc4NjYxIiwiZXhwIjoiMTY4MDE3ODY2MSIsImp0aSI6IiIsInVzZXIiOnsiaWQiOiIxIiwibmFtZSI6ImRhbiBuaXRhIiwiZW1haWwiOiJuaXRhLmRhbkBnbWFpbC5jb20ifX0.6DdcPUUhv4t2zVO4nfvRg5vp_EGeiJsr5ZBseAlL9Vw"
+     *             example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9_jwt_token"
      *          ),
      *          @OA\Property(
      *             property="token_type",
@@ -74,72 +73,111 @@ class AuthController extends Controller
      *       description="Missing Property",
      *    ),
      * )
-     *
-     * @param Request $request
      */
     public function checkAuthorization(Request $request)
     {
-        $input = $request->all();
+        try {
+            $input = $request->all();
 
-        $user = User::where('email', $input['email'])->where('provider', Config::get('constants.provider.service'))->first();
-        if (!$user) {
-            throw new Exception("User not found");
+            $user = User::where('email', $input['email'])->where('provider', Config::get('constants.provider.service'))->first();
+            if (!$user) {
+                throw new Exception("User not found");
+            }
+
+            if (!Hash::check($input['password'], $user['password'])) {
+                throw new Exception("Password is not matching");
+            }
+
+            $jwt = $this->createJwt($user);
+
+            Auditor::log([
+                'user_id' => $user['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Autorization for user",
+            ]);
+
+            return response()->json([
+                'access_token' => $jwt,
+                'token_type' => 'bearer'
+            ])->setStatusCode(200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
+    }
 
-        if (!Hash::check($input['password'], $user['password'])) {
-            throw new Exception("Password is not matching");
+    /**
+     * @OA\Post(
+     *    path="/api/v1/refresh_token",
+     *    operationId="refresh_token",
+     *    tags={"Authentication"},
+     *    summary="AuthController@refreshToken",
+     *    description="Regenerate jwt token",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="access_token",
+     *             type="string",
+     *             example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9_jwt_token"
+     *          ),
+     *          @OA\Property(
+     *             property="token_type",
+     *             type="string",
+     *             example="bearer",
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="401",
+     *       description="Missing Property",
+     *    ),
+     * )
+     */
+    public function refreshToken(Request $request)
+    {
+        try {
+            $input = $request->all();
+
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            if (!count($jwtUser)) {
+                throw new UnauthorizedException();
+            }
+    
+            $userId = $jwtUser['id'];
+            $user = User::where(['id', $userId])->first();
+            if (is_null($user)) {
+                throw new UnauthorizedException();
+            }
+    
+            $jwt = $this->createJwt($user);
+    
+            Auditor::log([
+                'user_id' => $user['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Refresh Token",
+            ]);
+            
+            return response()->json([
+                "access_token" => $jwt,
+                "token_type" => "bearer"
+            ])->setStatusCode(200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        $jwt = $this->createJwt($user);
-
-        Auditor::log([
-            'user_id' => $user['id'],
-            'action_type' => 'GET',
-            'action_name' => class_basename($this) . '@'.__FUNCTION__,
-            'description' => "Autorization for user",
-        ]);
-
-        return response()->json([
-            "access_token" => $jwt,
-            "token_type" => "bearer"
-        ])->setStatusCode(200);
     }
 
     /**
      * create JWT token
+     *
+     * @param User $user
+     * @return string
      */
-    private function createJwt($user)
+    private function createJwt(User $user): string
     {
-        $currentTime = CarbonImmutable::now();
-        $expireTime = $currentTime->addSeconds(env('JWT_EXPIRATION'));
-
-        $userClaims = [
-            'id' => (string) $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-        ];
-
-        $arrayClaims = [
-            'iss' => (string) env('APP_URL'),
-            'sub' => (string) $user->name,
-            'aud' => (string) env('APP_NAME'),
-            'iat' => (string) strtotime($currentTime),
-            'nbf' => (string) strtotime($currentTime),
-            'exp' => (string) strtotime($expireTime),
-            'jti' => (string) env('JWT_SECRET'),
-            'user' => $userClaims,
-        ];
-
-        $this->jwt->setPayload($arrayClaims);
-        $jwt = $this->jwt->create();
-
-        AuthorisationCode::createRow([
-            'user_id' => (int) $user->id,
-            'jwt' => (string) $jwt,
-            'created_at' => $currentTime,
-            'expired_at' => $expireTime,
-        ]);
-
-        return $jwt;
+        return $this->jwt->generateToken($user->id);
     }
 }

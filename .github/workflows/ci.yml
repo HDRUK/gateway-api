@@ -52,7 +52,7 @@ jobs:
   
     # - name: Run one unit test file
     #   id: unittests
-    #   run: "composer run pest -- --filter UploadTest"
+    #   run: "composer run pest -- --filter ActivityLogTypeTest"
 
     - name: Run code sniffer
       id: codesniffer
