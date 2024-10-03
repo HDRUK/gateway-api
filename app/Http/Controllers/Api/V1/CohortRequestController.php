@@ -1069,11 +1069,6 @@ class CohortRequestController extends Controller
      */
     public function checkAccess(Request $request)
     {
-        $origin = $request->headers->get('Origin');
-        \Log::info('checkAccess origin :: ' . json_encode($request));
-        \Log::info('checkAccess origin 2 :: ' . json_encode($request->headers->get('X-Forwarded-Host')));
-
-
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
@@ -1110,10 +1105,6 @@ class CohortRequestController extends Controller
                 'userId' => $userId,
                 'sessionId' => session()->getId()
             ]));
-            // CloudLogger::write('cohort request access :: ' . json_encode([
-            //     'userId' => $userId,
-            //     'sessionId' => session()->getId()
-            // ]));
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
