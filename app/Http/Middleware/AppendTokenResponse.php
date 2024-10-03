@@ -32,7 +32,7 @@ class AppendTokenResponse
 
             \Log::info('middleware AppendTokenResponse content :: ' . json_encode($content));
 
-            return response()->json($content, $response->getStatusCode(), $response->headers->all());
+            // return response()->json($content, $response->getStatusCode(), $response->headers->all());
         }
 
         return $response;
