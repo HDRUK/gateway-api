@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\DataAccessTemplate;
 use App\Models\DataAccessTemplateHasQuestion;
 use App\Models\QuestionBank;
-
 use Illuminate\Database\Seeder;
 
 class DataAccessTemplateSeeder extends Seeder

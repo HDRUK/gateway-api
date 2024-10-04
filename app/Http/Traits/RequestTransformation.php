@@ -8,7 +8,7 @@ trait RequestTransformation
     {
         $response = [];
 
-        foreach($input as $key => $value) {
+        foreach ($input as $key => $value) {
             if (in_array($key, $keys)) {
                 $response[$key] = $value;
             }

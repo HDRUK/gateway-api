@@ -79,7 +79,7 @@ class KeywordController extends Controller
             $perPage = (int) request('perPage', Config::get('constants.per_page'));
             $keywords = Keyword::where('enabled', 1)
                 ->paginate(function ($total) use ($perPage) {
-                    if($perPage === -1) {
+                    if ($perPage === -1) {
                         return $total;
                     }
                     return $perPage;

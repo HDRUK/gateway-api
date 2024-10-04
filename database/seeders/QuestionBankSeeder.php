@@ -5,8 +5,6 @@ namespace Database\Seeders;
 use App\Models\QuestionBank;
 use App\Models\QuestionBankVersion;
 use App\Models\DataAccessSection;
-
-
 use Illuminate\Database\Seeder;
 
 class QuestionBankSeeder extends Seeder

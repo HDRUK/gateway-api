@@ -5,9 +5,7 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use Database\Seeders\FeatureSeeder;
-
 use Tests\Traits\MockExternalApis;
-
 use App\Models\Feature as FeatureModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

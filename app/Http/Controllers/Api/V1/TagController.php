@@ -58,7 +58,7 @@ class TagController extends Controller
         try {
             $tags = Tag::where('enabled', 1)
                 ->paginate(function ($total) use ($perPage) {
-                    if($perPage === -1) {
+                    if ($perPage === -1) {
                         return $total;
                     }
                     return $perPage;

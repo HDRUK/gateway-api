@@ -3,11 +3,9 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use MetadataManagementController as MMC;
 use Config;
-
 use App\Models\Dataset;
 use App\Models\Team;
 use App\Models\User;
@@ -16,7 +14,6 @@ use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\DatasetVersionSeeder;
-
 use Tests\Traits\Authorization;
 
 class FormHydrationTest extends TestCase

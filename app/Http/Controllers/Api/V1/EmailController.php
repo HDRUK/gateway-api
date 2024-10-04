@@ -3,12 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Config;
-
-
 use App\Models\User;
-
 use App\Jobs\SendEmailJob;
-
 use App\Models\EmailTemplate;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DispatchEmailRequest;

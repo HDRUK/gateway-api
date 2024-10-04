@@ -9,11 +9,9 @@ use App\Models\Tool;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
-
 use App\Models\Permission;
 use App\Models\Application;
 use App\Models\Publication;
-
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;

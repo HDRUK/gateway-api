@@ -28,7 +28,7 @@ class AuthenticateIntegrationMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(!($request->header('x-application-id') && $request->header('x-client_id'))) {
+        if (!($request->header('x-application-id') && $request->header('x-client_id'))) {
             throw new UnauthorizedException('Please provide a x-application-id and x-client-id in your headers');
         }
 

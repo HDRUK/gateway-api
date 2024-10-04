@@ -4,13 +4,11 @@ namespace App\Jobs;
 
 use App\Mail\Email;
 use App\Models\EmailTemplate;
-
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-
 use Illuminate\Support\Facades\Mail;
 
 class SendEmailJob implements ShouldQueue

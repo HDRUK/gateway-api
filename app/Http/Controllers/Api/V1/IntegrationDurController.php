@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-
 use App\Models\Dur;
 use App\Models\Tool;
 use App\Models\Sector;
@@ -13,9 +12,7 @@ use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\DurHasTool;
 use App\Models\Application;
-
 use Illuminate\Http\Request;
-
 use App\Models\DurHasKeyword;
 use App\Models\DurHasDatasetVersion;
 use App\Models\DatasetVersion;
@@ -24,12 +21,9 @@ use App\Models\DurHasPublication;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Dur\EditDur;
 use App\Http\Controllers\Controller;
-
 use App\Http\Requests\Dur\CreateDur;
 use App\Http\Requests\Dur\DeleteDur;
-
 use App\Http\Requests\Dur\UpdateDur;
-
 use App\Exceptions\NotFoundException;
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\IntegrationOverride;
@@ -565,7 +559,7 @@ class IntegrationDurController extends Controller
             }
 
             $currentDurStatus = Dur::where('id', $durId)->first();
-            if($currentDurStatus->status === 'ACTIVE') {
+            if ($currentDurStatus->status === 'ACTIVE') {
                 $this->indexElasticDur($durId);
             }
 
@@ -861,7 +855,7 @@ class IntegrationDurController extends Controller
             }
 
             $currentDurStatus = Dur::where('id', $id)->first();
-            if($currentDurStatus->status === 'ACTIVE') {
+            if ($currentDurStatus->status === 'ACTIVE') {
                 $this->indexElasticDur($id);
             }
 
@@ -1149,7 +1143,7 @@ class IntegrationDurController extends Controller
             }
 
             $currentDurStatus = Dur::where('id', $id)->first();
-            if($currentDurStatus->status === 'ACTIVE') {
+            if ($currentDurStatus->status === 'ACTIVE') {
                 $this->indexElasticDur($id);
             }
 
@@ -1450,7 +1444,7 @@ class IntegrationDurController extends Controller
     {
         $kws = DurHasKeyword::where('dur_id', $durId)->get();
 
-        foreach($kws as $kw) {
+        foreach ($kws as $kw) {
             $kwId = $kw->keyword_id;
             $checkKeyword = Keyword::where('id', $kwId)->first();
 
@@ -1532,7 +1526,7 @@ class IntegrationDurController extends Controller
     {
         $tools = DurHasTool::where('dur_id', $durId)->get();
 
-        foreach($tools as $tool) {
+        foreach ($tools as $tool) {
             $toolId = $tool->tool_id;
             $checkTool = Tool::where('id', $toolId)->first();
 

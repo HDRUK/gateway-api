@@ -80,7 +80,7 @@ class UserController extends Controller
         try {
             if (count($jwtUser)) {
                 $userIsAdmin = (bool)$jwtUser['is_admin'];
-                if($userIsAdmin) {
+                if ($userIsAdmin) {
                     $users = User::with(['roles', 'roles.permissions', 'teams', 'notifications'])->paginate($perPage, ['*'], 'page');
                 } else {
                     if ($request->has('filterNames')) {
@@ -458,7 +458,7 @@ class UserController extends Controller
                     }
                 }
 
-                if(array_key_exists('preferred_email', $input)) {
+                if (array_key_exists('preferred_email', $input)) {
                     $array['preferred_email'] = $user->provider === 'open-athens' ? $user->preferred_email : $input['preferred_email'];
                 }
 

@@ -6,9 +6,7 @@ use Config;
 use Tests\TestCase;
 use App\Http\Enums\TeamMemberOf;
 use App\Models\TeamHasNotification;
-
 use Tests\Traits\MockExternalApis;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class TeamNotificationTest extends TestCase

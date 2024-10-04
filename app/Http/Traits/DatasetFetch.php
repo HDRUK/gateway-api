@@ -30,11 +30,14 @@ trait DatasetFetch
         foreach ($datasets as $dataset) {
             // Retrieve dataset version IDs associated with the current dataset
             $datasetVersionIds = $dataset->versions()->whereIn('id', $versionIds)->pluck('id')->toArray();
-            $datasetTitle = $dataset->latestMetadata()->whereIn('id', $versionIds)->pluck('metadata')->toArray()[0]['metadata']['summary']['abstract']; // This can be modified to return metadata
+            $datasetMetadata = $dataset->latestMetadata()->whereIn('id', $versionIds)->pluck('metadata')->toArray(); // This can be modified to return metadata
+
+            if (count($datasetMetadata) > 0) {
+                $datasetTitle = $datasetMetadata[0]['metadata']['summary']['abstract'] ?? null;
+                $dataset->setAttribute('name', $datasetTitle); // This can be modified to return metadata
+            }
             // Add associated dataset versions to the dataset object
             $dataset->setAttribute('dataset_version_ids', $datasetVersionIds);
-            $dataset->setAttribute('name', $datasetTitle); // This can be modified to return metadata
-
             // Add extra fields as required for DatasetVersionHasTool case.
             if ($linkageTable instanceof DatasetVersionHasTool) {
                 $link_type = DatasetVersionHasTool::where($localTableId, $this->id)->whereIn('dataset_version_id', $datasetVersionIds)->select(['link_type'])->first();
