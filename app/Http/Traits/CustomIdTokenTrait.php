@@ -33,36 +33,36 @@ trait CustomIdTokenTrait
         \Log::info('headers :: ' . json_encode($headers));
 
         $profile = [
-            $claims['family_name'], 
+            $claims['given_name'], 
             $claims['family_name'],
         ];
 
         // Generate new token with similar claims
         $now = new \DateTimeImmutable();
         $newToken = $config->builder()
-                           ->issuedAt($now)
-                           ->expiresAt($now->modify('+15 days'))
-                           ->permittedFor($claims['aud'][0])
-                           ->identifiedBy($claims['jti'])
-                           ->issuedBy(env('APP_URL'))
-                           ->relatedTo($claims['sub'])
-                           ->withClaim('sid', $claims['session_state'])
-                           ->withClaim('nonce', $claims['nonce'])
-                           ->withClaim('typ', 'ID')
-                           ->withClaim('azh', 'rquest')
-                           ->withClaim('auth_time', 0)
-                           ->withClaim('email_verified', true)
-                           ->withClaim('email', $claims['email'])
-                           ->withClaim('name', $claims['name'])
-                           ->withClaim('preferred_username', $claims['preferred_username'])
-                           ->withClaim('firstname', $claims['given_name'])
-                           ->withClaim('lastname', $claims['family_name'])
-                           ->withClaim('profile', $profile)
-                           ->withClaim('given_name', $claims['given_name'])
-                           ->withClaim('family_name', $claims['family_name'])
-                           ->withClaim('rquestroles', $claims['rquestroles'])
-                           ->withHeader('kid', env('JWT_KID', 'jwtkidnotfound'))
-                           ->getToken($config->signer(), $config->signingKey());
+            ->issuedAt($now)
+            ->expiresAt($now->modify('+15 days'))
+            ->permittedFor($claims['aud'][0])
+            ->identifiedBy($claims['jti'])
+            ->issuedBy(env('APP_URL'))
+            ->relatedTo($claims['sub'])
+            ->withClaim('sid', $claims['session_state'])
+            ->withClaim('nonce', $claims['nonce'])
+            ->withClaim('typ', 'ID')
+            ->withClaim('azh', 'rquest')
+            ->withClaim('auth_time', 0)
+            ->withClaim('email_verified', true)
+            ->withClaim('email', $claims['email'])
+            ->withClaim('name', $claims['name'])
+            ->withClaim('preferred_username', $claims['preferred_username'])
+            ->withClaim('firstname', $claims['given_name'])
+            ->withClaim('lastname', $claims['family_name'])
+            ->withClaim('profile', $profile)
+            ->withClaim('given_name', $claims['given_name'])
+            ->withClaim('family_name', $claims['family_name'])
+            ->withClaim('rquestroles', $claims['rquestroles'])
+            ->withHeader('kid', env('JWT_KID', 'jwtkidnotfound'))
+            ->getToken($config->signer(), $config->signingKey());
 
         return $newToken->toString();
     }

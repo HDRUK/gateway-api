@@ -40,14 +40,8 @@ Route::get('/email', function (Request $reqest) {
 
 
 # bcplatform
-// Route::get('/sso/authorize', [CustomAuthorizationController::class, 'customAuthorize']);
-
 Route::get('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middleware('auth:api');
-
-// Route::get('/oauth/logmeout', [CustomLogoutController::class, 'rquestLogout'])->middleware('auth:api');
 Route::match(['get', 'post'], '/oauth/logmeout', [CustomLogoutController::class, 'rquestLogout']);
-
-
 
 // stop all all other routes
 Route::any('{path}', function () {
