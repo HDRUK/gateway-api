@@ -1041,9 +1041,8 @@ class ToolController extends Controller
     }
 
     /**
-     * Creates a new tag if it doesn't exists.
+     * Creates a new tag if it doesn't exist.
      *
-     * @param array $tags
      * @param string $value
      * @return mixed
      */
