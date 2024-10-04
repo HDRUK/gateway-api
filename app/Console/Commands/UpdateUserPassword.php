@@ -27,15 +27,6 @@ class UpdateUserPassword extends Command
      */
     public function handle()
     {
-        $string = '$H4>c7}mw_8;';
-        $this->info('String ' . $string);
-        $this->info('Password hash ' . Hash::make($string));
-
-        $string = '3fD3V/6w2A8S';
-        $this->info('String ' . $string);
-        $this->info('Password hash ' . Hash::make($string));
-
-
         $email = $this->ask('Enter the user\'s email address');
 
         $user = User::where('email', $email)->first();
