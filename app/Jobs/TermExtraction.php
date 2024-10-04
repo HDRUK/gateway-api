@@ -52,7 +52,6 @@ class TermExtraction implements ShouldQueue
         $this->version = $version;
         $this->data = $data;
         $this->tedUrl = config('ted.url');
-
         $this->reIndexElastic = is_null($elasticIndex) ? true : $elasticIndex;
     }
 

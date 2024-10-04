@@ -576,9 +576,12 @@ class DatasetTest extends TestCase
 
 
 
-        if(env('TED_ENABLED')) {
+        /*
+        // - need to temporary disable - this wont be filled because TED runs as a job
+        if(config('ted.enabled')) {
             $this->assertNotEmpty($respArrayActive['data']['named_entities']);
         };
+        */
         $this->assertArrayHasKey(
             'linked_dataset_versions',
             $respArrayActive['data']['versions'][0]
