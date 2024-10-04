@@ -6,6 +6,7 @@ use Hash;
 use Config;
 use Auditor;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\UserHasRole;
 use Illuminate\Http\Request;
@@ -81,9 +82,25 @@ class UserController extends Controller
             if (count($jwtUser)) {
                 $userIsAdmin = (bool)$jwtUser['is_admin'];
 
-                if ($request->has('filterNames')) {
+                if ($request->filled('filterNames')) {
                     $chars = strtolower($request->query('filterNames'));
-                    $users = User::where('LOWER(name)', 'like', '%' . $chars . '%')->select('id', 'name');
+                    $users = [
+                        "data" => User::where(DB::raw('LOWER(name)'), 'like', '%' . $chars . '%')
+                                    ->select('id', 'name', 'email')
+                                    ->get()
+                                    ->map(function ($user) {
+                                        // Split the email into username and domain
+                                        [$username, $domain] = explode('@', $user->email);
+
+                                        // Mask the username part
+                                        $maskedUsername = substr($username, 0, 1) . str_repeat('*', max(strlen($username) - 2, 1));
+
+                                        // Rebuild the email with the masked username
+                                        $user->email = $maskedUsername . '@' . $domain;
+
+                                        return $user;
+                                    })
+                    ];
                 } elseif($userIsAdmin) {
                     $users = User::with(['roles', 'roles.permissions', 'teams', 'notifications'])->paginate($perPage, ['*'], 'page');
                 } else {
