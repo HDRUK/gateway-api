@@ -165,7 +165,12 @@ class DurController extends Controller
             $withRelated = $request->boolean('with_related', true);
             $durs = Dur::when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);
-            })->when($projectTitle, function ($query) use ($projectTitle) {
+            })->when(
+                $request->has('withTrashed') || $filterStatus === 'ARCHIVED',
+                function ($query) {
+                    return $query->withTrashed();
+                }
+            )->when($projectTitle, function ($query) use ($projectTitle) {
                 return $query->where('project_title', 'like', '%'. $projectTitle .'%');
             })->when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
@@ -1253,7 +1258,7 @@ class DurController extends Controller
             $dur->save();
 
             if($initDur->status === Dur::STATUS_ACTIVE) {
-            $this->deleteDurFromElastic($id);
+                $this->deleteDurFromElastic($id);
             }
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
