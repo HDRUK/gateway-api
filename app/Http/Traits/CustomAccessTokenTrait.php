@@ -51,8 +51,7 @@ trait CustomAccessTokenTrait
                 ]
             ]
         ];
-        // $sessionState = (string)session()->getId();
-        $sessionState = "ae038c99-8244-4d8e-a85d-e8648fb9dbcd";
+        $sessionState = (string)session()->getId();
         $identifiedBy = $this->getIdentifier();
 
         $oauthUsers = OauthUser::where([

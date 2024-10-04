@@ -12,8 +12,9 @@ trait CustomIdTokenTrait
     public function generateIdToken($accessToken)
     {
         // Load private and public keys
-        $privateKeyPath = storage_path('oauth-private.key');
-        $publicKeyPath = storage_path('oauth-public.key');
+        $privateKeyPath = str_replace('\\n', "\n", env('PASSPORT_PRIVATE_KEY'));
+        $publicKeyPath = str_replace('\\n', "\n", env('PASSPORT_PUBLIC_KEY'));
+
 
         // Configure lcobucci/jwt
         $config = Configuration::forAsymmetricSigner(
