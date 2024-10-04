@@ -1112,6 +1112,12 @@ class CollectionController extends Controller
                 $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId);
                 $this->reindexElastic($dataset['id']);
             }
+            if ($checking['deleted_at']) {
+                CollectionHasDatasetVersion::withTrashed()->where([
+                    'collection_id' => $collectionId,
+                    'dataset_version_id' => $datasetVersionId,
+                ])->update(['deleted_at' => null]);
+            }
         }
     }
 
@@ -1161,7 +1167,7 @@ class CollectionController extends Controller
     private function checkInCollectionHasDatasetVersions(int $collectionId, int $datasetVersionId)
     {
         try {
-            return CollectionHasDatasetVersion::where([
+            return CollectionHasDatasetVersion::withTrashed()->where([
                 'collection_id' => $collectionId,
                 'dataset_version_id' => $datasetVersionId,
             ])->first();
