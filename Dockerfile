@@ -70,6 +70,8 @@ RUN composer install \
     && php artisan config:clear \
     && php artisan ide-helper:generate \
     && php artisan octane:install --server=swoole \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j$(nproc) gd \
     && composer dumpautoload
 
 # Generate Swagger
