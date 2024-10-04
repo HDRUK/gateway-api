@@ -1043,14 +1043,14 @@ class ToolController extends Controller
     /**
      * Creates a new tag if it doesn't exist.
      *
-     * @param string $value
+     * @param mixed $value
      * @return mixed
      */
     private function createNewTagIfNotExists(mixed $value) {
         if(!is_numeric($value)) {
             $tag = Tag::where([
                 'description' => $value,
-            ])->get()->first();
+            ])->first();
 
             if(is_null($tag)) {
                 $createdTag = Tag::create([
@@ -1072,7 +1072,7 @@ class ToolController extends Controller
      */
     private function insertToolHasTag(array $tags, int $toolId): mixed
     {
-        try {
+        try {git add
             foreach ($tags as $value) {
                 if ($value === 0) {
                     continue;
