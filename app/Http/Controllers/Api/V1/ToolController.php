@@ -1044,7 +1044,7 @@ class ToolController extends Controller
      * Creates a new tag if it doesn't exist.
      *
      * @param mixed $value
-     * @return mixed
+     * @return integer
      */
     private function createNewTagIfNotExists(mixed $value) {
         if(!is_numeric($value)) {
