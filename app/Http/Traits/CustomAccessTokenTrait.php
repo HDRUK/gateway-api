@@ -29,14 +29,12 @@ trait CustomAccessTokenTrait
         $privateKeyPath = str_replace('\\n', "\n", env('PASSPORT_PRIVATE_KEY'));
         $publicKeyPath = str_replace('\\n', "\n", env('PASSPORT_PUBLIC_KEY'));
 
-
         // Configure lcobucci/jwt
         $config = Configuration::forAsymmetricSigner(
             new Sha256(),
             InMemory::file($privateKeyPath),
             InMemory::file($publicKeyPath)
         );
-
 
         $rquestroles = $this->getRquestroles($this->getUserIdentifier());
 
