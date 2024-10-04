@@ -58,12 +58,10 @@ class CustomAuthorizationController extends Controller
         $userId = session('cr_uid');
 
         // save nonce and user_id for id_token
-        // OauthUser::create([
-        //     'user_id' => $userId,
-        //     'nonce' => $request->query('nonce'),
-        // ]);
-
-        session(['cr_nonce' => $request->query('nonce')]);
+        OauthUser::create([
+            'user_id' => $userId,
+            'nonce' => $request->query('nonce'),
+        ]);
 
         return $this->withErrorHandling(function () use ($psrRequest, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);

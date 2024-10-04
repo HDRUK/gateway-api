@@ -55,10 +55,9 @@ trait CustomAccessTokenTrait
         $sessionState = "ae038c99-8244-4d8e-a85d-e8648fb9dbcd";
         $identifiedBy = $this->getIdentifier();
 
-        // $oauthUsers = OauthUser::where([
-        //     'user_id' => $this->getUserIdentifier(),
-        // ])->first();
-        $oauthUsers = session('cr_nonce');
+        $oauthUsers = OauthUser::where([
+            'user_id' => $this->getUserIdentifier(),
+        ])->first();
 
         $profile = [
             $user->firstname,
@@ -69,15 +68,13 @@ trait CustomAccessTokenTrait
             ->permittedFor($this->getClient()->getIdentifier())
             ->identifiedBy($identifiedBy)
             ->issuedAt(new \DateTimeImmutable())
-            // ->issuedBy(env('GATEWAY_URL'))
             ->issuedBy(env('APP_URL'))
             ->canOnlyBeUsedAfter(new \DateTimeImmutable())
             ->expiresAt($this->getExpiryDateTime())
             ->relatedTo((string)$this->getUserIdentifier())
             ->withClaim('typ', "Bearer")
             // ->withClaim('auth_time', 0)
-            // ->withClaim('nonce', $oauthUsers ? $oauthUsers->nonce : 'no_value' )
-            ->withClaim('nonce', $oauthUsers ? $oauthUsers : 'no_value' )
+            ->withClaim('nonce', $oauthUsers ? $oauthUsers->nonce : 'no_value' )
             ->withClaim('at_hash', $sessionState)
             ->withClaim('session_state', $sessionState)
             ->withClaim('sid', $sessionState)
@@ -91,7 +88,6 @@ trait CustomAccessTokenTrait
             ->withClaim('firstname', $user->firstname)
             ->withClaim('lastname', $user->lastname)
             ->withClaim('profile', $profile)
-            // ->withClaim('rquestroles', $rquestroles)
             ->withClaim('realm_access', $realmAccess)
             ->withClaim('resource_access', $resourceAccess)
             ->withClaim('scope', "openid profile email rquestroles")
