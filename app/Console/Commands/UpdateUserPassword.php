@@ -35,8 +35,8 @@ class UpdateUserPassword extends Command
             return 1; // Return non-zero exit code for failure
         }
         
-        $newPassword = $this->getValidPassword();
-        $confirmPassword = $this->secret('Confirm the new password');
+        $newPassword = $this->secret('Please enter the new password');
+        $confirmPassword = $this->secret('Please confirm the new password');
 
         if ($newPassword !== $confirmPassword) {
             $this->error('Passwords do not match. Try again.');
@@ -48,18 +48,5 @@ class UpdateUserPassword extends Command
 
         $this->info('Password updated successfully for user with email ' . $email);
         return 0;
-    }
-
-    private function getValidPassword()
-    {
-        while (true) {
-            $password = $this->secret('Enter the new password (min 10 characters)');
-
-            if (strlen($password) < 5) {
-                $this->info('Password must be at least 10 characters long. Please try again.');
-            } else {
-                return $password;
-            }
-        }
     }
 }
