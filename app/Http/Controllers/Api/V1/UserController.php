@@ -80,16 +80,16 @@ class UserController extends Controller
         try {
             if (count($jwtUser)) {
                 $userIsAdmin = (bool)$jwtUser['is_admin'];
-                if($userIsAdmin) {
+
+                if ($request->has('filterNames')) {
+                    $chars = strtolower($request->query('filterNames'));
+                    $users = User::where('LOWER(name)', 'like', '%' . $chars . '%')->select('id', 'name');
+                } elseif($userIsAdmin) {
                     $users = User::with(['roles', 'roles.permissions', 'teams', 'notifications'])->paginate($perPage, ['*'], 'page');
                 } else {
-                    if ($request->has('filterNames')) {
-                        $chars = $request->query('filterNames');
-                        $users = User::where('name', 'like', '%' . $chars . '%')->select('id', 'name')->paginate($perPage, ['*'], 'page');
-                    } else {
-                        $users = User::select('id', 'name')->paginate($perPage, ['*'], 'page');
-                    }
+                    $users = User::select('id', 'name')->paginate($perPage, ['*'], 'page');
                 }
+
             }
 
             Auditor::log([
