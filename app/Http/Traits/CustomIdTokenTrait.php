@@ -15,7 +15,6 @@ trait CustomIdTokenTrait
         $privateKey = env('PASSPORT_PRIVATE_KEY');
         $publicKey = env('PASSPORT_PUBLIC_KEY');
 
-
         // Configure lcobucci/jwt
         $config = Configuration::forAsymmetricSigner(
             new Sha256(),
