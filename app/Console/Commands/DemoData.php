@@ -113,7 +113,7 @@ class DemoData extends Command
         $url = env('APP_URL') . '/api/v1/auth';
         $payload = [
             'email' => env('HDR_ADMIN_USER'),
-            'password' => env('HDR_ADMIN_FE_PASSWORD'),
+            'password' => env('HDR_ADMIN_USER_PASSWORD'),
         ];
 
         $response = Http::post($url, $payload);

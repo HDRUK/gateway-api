@@ -18,7 +18,7 @@ class ProdUserAdminSeeder extends Seeder
             'HDRUK',
             'Developers',
             env('HDR_ADMIN_USER'),
-            env('HDR_ADMIN_DB_PASSWORD'),
+            env('HDR_ADMIN_USER_ENC_PASSWORD'),
             true,
             [
                 'hdruk.superadmin',
@@ -29,7 +29,7 @@ class ProdUserAdminSeeder extends Seeder
             'HDRUK',
             'Service-User',
             env('HDR_SERVICE_USER'),
-            env('HDR_SERVICE_DB_PASSWORD'),
+            env('HDR_SERVICE_USER_ENC_PASSWORD'),
             true,
             [
                 'hdruk.admin',
