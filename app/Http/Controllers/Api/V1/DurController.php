@@ -1253,7 +1253,7 @@ class DurController extends Controller
             $dur->save();
 
             if($initDur->status === Dur::STATUS_ACTIVE) {
-            $this->deleteDurFromElastic($id);
+                $this->deleteDurFromElastic($id);
             }
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

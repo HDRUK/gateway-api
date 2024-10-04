@@ -144,6 +144,7 @@ class TeamController extends Controller
 
             $teams['data'] = $this->getTeams($teams['data']);
 
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
@@ -305,7 +306,7 @@ class TeamController extends Controller
     {
         try {
             // Get this Team
-            $dp = Team::select('id', 'name', 'is_provider', 'introduction', 'url', 'service', 'team_logo')->where([
+            $dp = Team::select('id', 'name', 'is_provider', 'introduction', 'url', 'team_logo')->where([
                 'id' => $id,
                 'enabled' => 1,
             ])->first();
@@ -352,8 +353,6 @@ class TeamController extends Controller
                 return $collection;
             }, $collections);
 
-            $service = array_values(array_filter(explode(",", $dp->service)));
-
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => [
@@ -361,7 +360,6 @@ class TeamController extends Controller
                     'is_provider' => $dp->is_provider,
                     'team_logo' => $dp->team_logo,
                     'url' => $dp->url,
-                    'service' => empty($service) ? null : $service,
                     'name' => $dp->name,
                     'introduction' => $dp->introduction,
                     'datasets' => $this->datasets,
