@@ -26,14 +26,14 @@ trait CustomAccessTokenTrait
     {
         // https://github.com/HDRUK/gateway-api/blob/2f0f2df3d94a75b8a1a4920a64cd0c6a2267c2d3/src/resources/utilities/ga4gh.utils.js#L10
         // Load private and public keys
-        $privateKeyPath = str_replace('\\n', "\n", env('PASSPORT_PRIVATE_KEY'));
-        $publicKeyPath = str_replace('\\n', "\n", env('PASSPORT_PUBLIC_KEY'));
+        $privateKey = env('PASSPORT_PRIVATE_KEY');
+        $publicKey = env('PASSPORT_PUBLIC_KEY');
 
         // Configure lcobucci/jwt
         $config = Configuration::forAsymmetricSigner(
             new Sha256(),
-            InMemory::file($privateKeyPath),
-            InMemory::file($publicKeyPath)
+            InMemory::plainText($privateKey),
+            InMemory::plainText($publicKey)
         );
 
         $rquestroles = $this->getRquestroles($this->getUserIdentifier());
