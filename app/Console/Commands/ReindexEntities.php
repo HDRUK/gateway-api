@@ -30,6 +30,7 @@ class ReindexEntities extends Command
                             {--maxIndex=} 
                             {--chunkSize=10} 
                             {--term-extraction} 
+                            {--all-terms} 
                             {--fresh}';
     /**
      * The console command description.
@@ -67,11 +68,19 @@ class ReindexEntities extends Command
     protected $chunkSize = null;
 
     /**
-     * Specific index to end run
+     * run TED
      *
      * @var boolean
      */
     protected $termExtraction = false;
+
+    /**
+     * tell TED to run on all terms (override config.ted.use_partial)
+     *
+     * @var boolean
+     */
+    protected $allTerms = false;
+
 
     /**
      * Specific index to end run
@@ -96,6 +105,8 @@ class ReindexEntities extends Command
 
         $this->chunkSize = (int) $this->option('chunkSize');
         $this->termExtraction = $this->option('term-extraction');
+        $this->allTerms = (bool) $this->option('all-terms');
+
         $this->fresh = $this->option('fresh');
 
         if ($entity && method_exists($this, $entity)) {
@@ -242,22 +253,30 @@ class ReindexEntities extends Command
 
     private function rerunTermExtraction(array $ids)
     {
+        if(!config('ted.enabled')) {
+            throw new Exception("TED is not enabled so you cant rerun term extraction..");
+        }
         $progressbar = $this->output->createProgressBar(count($ids));
-
-        echo "Running term extraction \n";
 
         foreach ($ids as $id) {
             $dataset = Dataset::where('id', $id)->first();
             $latestMetadata = $dataset->latestMetadata()->first();
+            $datasetVersionId = $latestMetadata->id;
             $versionNumber = $dataset->lastMetadataVersionNumber()->version;
             $elasticIndexing = true;
 
+            $tedData = $this->allTerms ? $latestMetadata->metadata['metadata'] : $latestMetadata->metadata['metadata']['summary'];
+
             TermExtraction::dispatch(
                 $id,
+                $datasetVersionId,
                 $versionNumber,
-                base64_encode(gzcompress(gzencode(json_encode($latestMetadata->metadata)), 6)),
-                $elasticIndexing
-            )->onConnection('redis');
+                base64_encode(gzcompress(gzencode(json_encode($tedData)))),
+                $elasticIndexing,
+                $this->allTerms === false,
+            );
+
+            $progressbar->advance(1);
         }
         $progressbar->finish();
     }

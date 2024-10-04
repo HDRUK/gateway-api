@@ -6,7 +6,6 @@ use Auditor;
 use Exception;
 
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use App\Models\NamedEntities;
 use App\Models\DatasetVersionHasNamedEntities;
 
@@ -31,22 +30,28 @@ class TermExtraction implements ShouldQueue
     public $tries;
     public $timeout;
 
+    private string $tedUrl;
     private string $datasetId = '';
+    private string $datasetVersionId = '';
     private int $version;
     private string $data = '';
+    private bool $usePartialExtraction;
 
     private bool $reIndexElastic = true;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $datasetId, int $version, string $data, ?bool $elasticIndex = true)
+    public function __construct(string $datasetId, string $datasetVersionId, int $version, string $data, ?bool $elasticIndex = true, ?bool $usePartialExtraction = true)
     {
         $this->timeout = config('jobs.default_timeout', 600);
         $this->tries = config('jobs.ntries', 2);
+        $this->usePartialExtraction = is_null($usePartialExtraction) ? config('ted.use_partial', true) : $usePartialExtraction;
         $this->datasetId = $datasetId;
+        $this->datasetVersionId = $datasetVersionId;
         $this->version = $version;
         $this->data = $data;
+        $this->tedUrl = config('ted.url');
 
         $this->reIndexElastic = is_null($elasticIndex) ? true : $elasticIndex;
     }
@@ -59,12 +64,11 @@ class TermExtraction implements ShouldQueue
     public function handle(): void
     {
         $data = json_decode(gzdecode(gzuncompress(base64_decode($this->data))), true);
-        $datasetModel = Dataset::where('id', $this->datasetId)->first();
-
-        $tedUrl = env('TED_SERVICE_URL');
-        $tedEnabled = env('TED_ENABLED');
-        if($tedEnabled === true) {
-            $this->postToTermExtractionDirector(json_encode($data['metadata']), $this->datasetId);
+        if($this->usePartialExtraction) {
+            //data is partial - summary data only
+            $this->postSummaryToTermExtractionDirector(json_encode($data));
+        } else {
+            $this->postToTermExtractionDirector(json_encode($data));
         }
 
         if ($this->reIndexElastic) {
@@ -73,24 +77,20 @@ class TermExtraction implements ShouldQueue
     }
 
     /**
-     * Passes the incoming dataset to TED for extraction
+     * Passes the incoming metadata summary to TED for extraction
      *
-     * @param string $dataset   The dataset json passed to this process
+     * @param string $summary   The summary json passed to this process
      *
      * @return void
      */
-    private function postToTermExtractionDirector(string $dataset, string $datasetId): void
+    private function postSummaryToTermExtractionDirector(string $summary): void
     {
         try {
-            $response = Http::timeout(300)->withBody(
-                $dataset,
-                'application/json'
-            )->post(env('TED_SERVICE_URL', 'http://localhost:8001'));
 
-            // Fetch the specified dataset version
-            $datasetVersion = DatasetVersion::where('dataset_id', $datasetId)
-                                ->where('version', $this->version)
-                                ->firstOrFail();
+            $response = Http::timeout($this->timeout * 2)->withBody(
+                $summary,
+                'application/json'
+            )->post($this->tedUrl . '/summary');
 
             if ($response->successful() && array_key_exists('extracted_terms', $response->json())) {
                 foreach ($response->json()['extracted_terms'] as $term) {
@@ -98,7 +98,45 @@ class TermExtraction implements ShouldQueue
                     $namedEntity = NamedEntities::firstOrCreate(['name' => $term]);
 
                     DatasetVersionHasNamedEntities::updateOrCreate([
-                        'dataset_version_id' => $datasetVersion->id,
+                        'dataset_version_id' => $this->datasetVersionId,
+                        'named_entities_id' => $namedEntity->id
+                    ]);
+                }
+            }
+
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+    * Passes the incoming dataset to TED for extraction
+    *
+    * @param string $dataset   The dataset json passed to this process
+    *
+    * @return void
+    */
+    private function postToTermExtractionDirector(string $dataset): void
+    {
+        try {
+            $response = Http::timeout($this->timeout * 2)->withBody(
+                $dataset,
+                'application/json'
+            )->post($this->tedUrl  . '/datasets');
+
+            if ($response->successful() && array_key_exists('extracted_terms', $response->json())) {
+                foreach ($response->json()['extracted_terms'] as $term) {
+                    // Check if the named entity already exists
+                    $namedEntity = NamedEntities::firstOrCreate(['name' => $term]);
+
+                    DatasetVersionHasNamedEntities::updateOrCreate([
+                        'dataset_version_id' => $this->datasetVersionId,
                         'named_entities_id' => $namedEntity->id
                     ]);
                 }
