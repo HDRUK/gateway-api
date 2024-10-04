@@ -55,9 +55,10 @@ trait CustomAccessTokenTrait
         $sessionState = "ae038c99-8244-4d8e-a85d-e8648fb9dbcd";
         $identifiedBy = $this->getIdentifier();
 
-        $oauthUsers = OauthUser::where([
-            'user_id' => $this->getUserIdentifier(),
-        ])->first();
+        // $oauthUsers = OauthUser::where([
+        //     'user_id' => $this->getUserIdentifier(),
+        // ])->first();
+        $oauthUsers = session('cr_nonce');
 
         $profile = [
             $user->firstname,

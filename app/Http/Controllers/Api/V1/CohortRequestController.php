@@ -1099,7 +1099,7 @@ class CohortRequestController extends Controller
             }
 
             // oidc
-            OauthUser::where('user_id', $userId)->delete();
+            // OauthUser::where('user_id', $userId)->delete();
             session(['cr_uid' => $userId]);
 
             Auditor::log([
