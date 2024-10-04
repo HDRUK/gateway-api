@@ -9,7 +9,9 @@ use App\Models\CohortRequestHasPermission;
 use App\Models\OauthUser;
 use App\Models\Permission;
 use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;
-use Log;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Signer\Rsa\Sha256;
+use Lcobucci\JWT\Signer\Key\InMemory;
 
 trait CustomAccessTokenTrait
 {
@@ -23,7 +25,18 @@ trait CustomAccessTokenTrait
     private function convertToJWT()
     {
         // https://github.com/HDRUK/gateway-api/blob/2f0f2df3d94a75b8a1a4920a64cd0c6a2267c2d3/src/resources/utilities/ga4gh.utils.js#L10
-        $this->initJwtConfiguration();
+        // Load private and public keys
+        $privateKeyPath = str_replace('\\n', "\n", env('PASSPORT_PRIVATE_KEY'));
+        $publicKeyPath = str_replace('\\n', "\n", env('PASSPORT_PUBLIC_KEY'));
+
+
+        // Configure lcobucci/jwt
+        $config = Configuration::forAsymmetricSigner(
+            new Sha256(),
+            InMemory::file($privateKeyPath),
+            InMemory::file($publicKeyPath)
+        );
+
 
         $rquestroles = $this->getRquestroles($this->getUserIdentifier());
 
@@ -63,7 +76,7 @@ trait CustomAccessTokenTrait
             $user->lastname,
         ];
 
-        return $this->jwtConfiguration->builder()
+        return $config->builder()
             ->permittedFor($this->getClient()->getIdentifier())
             ->identifiedBy($identifiedBy)
             ->issuedAt(new \DateTimeImmutable())
@@ -92,7 +105,7 @@ trait CustomAccessTokenTrait
             ->withClaim('scope', "openid profile email rquestroles")
             ->withClaim('rquestroles', $rquestroles)
             ->withHeader('kid', env('JWT_KID', 'jwtkidnotfound'))
-            ->getToken($this->jwtConfiguration->signer(), $this->jwtConfiguration->signingKey());
+            ->getToken($config->signer(), $config->signingKey());
     }
 
     /**
