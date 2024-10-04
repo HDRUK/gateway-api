@@ -19,7 +19,7 @@ class ProdUserAdminSeeder extends Seeder
             'HDRUK',
             'Developers',
             'developers@hdruk.ac.uk',
-            '$2y$10$nDJEl9kavTm4WFRUup6j6eQ8qwTQg69fcNwRym.zFGgjA8izjYkAu',
+            '$2y$10$3raHZy7qdxNQ7YcyxPn8bO/01RrtZxlRXfph/mkCk7XSyqZmOc36.',
             true,
             [
                 'hdruk.superadmin',
@@ -30,7 +30,7 @@ class ProdUserAdminSeeder extends Seeder
             'HDRUK',
             'Service-User',
             'services@hdruk.ac.uk',
-            '$2y$10$qmXzkOCukyMCXwYrSuNgE.S7MMkswr7/vIoENJngxdn5kdeiwCcyu',
+            '$2y$10$TOtlDGGFnNUbemk2dgBLQOwnThzLSKGOcaWC5zmCFDrIheMeQTFO.',
             true,
             [
                 'hdruk.admin',
