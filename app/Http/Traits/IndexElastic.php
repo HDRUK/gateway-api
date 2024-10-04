@@ -433,6 +433,7 @@ trait IndexElastic
             // - however, due to time constraints, it could mess up lots of other filters
             // - for now, because the link type is a static ENUM, we can map this on the BE
             // - will raise for post-MVP discussion
+
             $linkTypeMappings = [
                 'USING' => 'Using a dataset',
                 'ABOUT' => 'About a dataset',

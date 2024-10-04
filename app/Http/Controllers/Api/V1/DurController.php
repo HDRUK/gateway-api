@@ -1242,6 +1242,7 @@ class DurController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
+            $initDur = Dur::withTrashed()->where('id', $id)->first();
             DurHasDatasetVersion::where(['dur_id' => $id])->delete();
             DurHasKeyword::where(['dur_id' => $id])->delete();
             DurHasPublication::where(['dur_id' => $id])->delete();
@@ -1251,8 +1252,9 @@ class DurController extends Controller
             $dur->status = Dur::STATUS_ARCHIVED;
             $dur->save();
 
+            if($initDur->status === Dur::STATUS_ACTIVE) {
             $this->deleteDurFromElastic($id);
-
+            }
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
