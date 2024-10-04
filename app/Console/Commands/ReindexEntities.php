@@ -253,9 +253,6 @@ class ReindexEntities extends Command
 
     private function rerunTermExtraction(array $ids)
     {
-        if(!config('ted.enabled')) {
-            throw new Exception("TED is not enabled so you cant rerun term extraction..");
-        }
         $progressbar = $this->output->createProgressBar(count($ids));
 
         foreach ($ids as $id) {
