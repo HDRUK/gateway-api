@@ -75,7 +75,7 @@ trait UserRolePermissions
             $roles = array_merge($roles, $return['teams'][$team]['roles']);
             $perms = array_merge($perms, $return['teams'][$team]['perms']);
         }
-        
+
         $return['summary']['roles'] = array_unique($roles);
         $return['summary']['perms'] = array_unique($perms);
 

@@ -126,6 +126,10 @@ class RunPostMigrations extends Command
                 'arguments' => [],
             ], // update data custodian network with details and relations with teams
             [
+                'command' => 'app:update-snsde-custodian-network',
+                'arguments' => [],
+            ],
+            [
                 'command' => 'app:add-logo-team-post-migration',
                 'arguments' => [],
             ], // update teams.team_logo
