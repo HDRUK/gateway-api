@@ -1072,7 +1072,7 @@ class ToolController extends Controller
      */
     private function insertToolHasTag(array $tags, int $toolId): mixed
     {
-        try {git add
+        try {
             foreach ($tags as $value) {
                 if ($value === 0) {
                     continue;
