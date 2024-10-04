@@ -156,7 +156,7 @@ class DurController extends Controller
             if (!array_key_exists('updated_at', $sort)) {
                 $sort['updated_at'] = 'desc';
             }
-            
+
             $mongoId = $request->query('mongo_id', null);
             $projectTitle = $request->query('project_title', null);
             $teamId = $request->query('team_id', null);
@@ -169,7 +169,8 @@ class DurController extends Controller
                 $request->has('withTrashed') || $filterStatus === 'ARCHIVED',
                 function ($query) {
                     return $query->withTrashed();
-                })->when($projectTitle, function ($query) use ($projectTitle) {
+                }
+            )->when($projectTitle, function ($query) use ($projectTitle) {
                 return $query->where('project_title', 'like', '%'. $projectTitle .'%');
             })->when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
@@ -206,7 +207,7 @@ class DurController extends Controller
             foreach ($sort as $key => $value) {
                 $durs->orderBy('dur.' . $key, strtoupper($value));
             }
-         
+
             $durs = $durs->paginate((int) $perPage, ['*'], 'page')
                 ->through(function ($dur) {
                     if ($dur->datasets) {
@@ -217,7 +218,7 @@ class DurController extends Controller
                     }
                     return $dur;
                 });
-               
+
             $durs->getCollection()->transform(function ($dur) {
                 $userDatasets = $dur->userDatasets;
                 $userPublications = $dur->userPublications;
@@ -229,7 +230,7 @@ class DurController extends Controller
                 $dur->setRelation('users', $users);
                 $dur->setRelation('applications', $applications);
 
-                
+
                 unset(
                     $users,
                     $userDatasets,
@@ -383,7 +384,7 @@ class DurController extends Controller
     {
         try {
             $dur = $this->getDurById($id);
-            
+
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
@@ -1257,7 +1258,7 @@ class DurController extends Controller
             $dur->save();
 
             if($initDur->status === Dur::STATUS_ACTIVE) {
-            $this->deleteDurFromElastic($id);
+                $this->deleteDurFromElastic($id);
             }
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
