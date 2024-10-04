@@ -20,6 +20,17 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
+    [
+        'name' => 'api.v1.auth.refresh',
+        'method' => 'post',
+        'path' => '/refresh_token',
+        'methodController' => 'AuthController@refreshToken',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
 
     // login for:  google || azure || linkedin
     [
@@ -473,7 +484,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,tools.create',
         ],
         'constraint' => [],
     ],
@@ -486,7 +496,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,tools.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -501,7 +510,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,tools.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -515,7 +523,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'check.access:permissions,tools.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',

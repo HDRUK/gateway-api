@@ -424,6 +424,22 @@ trait IndexElastic
 
             $datasetTitles = [];
             $datasetLinkTypes = [];
+
+            // Calum 01/10/2024
+            // - Database linktype is USING/ABOUT/UNKNOWN
+            // - we have been requested to change this display text on the FE
+            // - however the FE has to render what the filter returns
+            // - I think it would be better to translate these mappings on the FE
+            // - however, due to time constraints, it could mess up lots of other filters
+            // - for now, because the link type is a static ENUM, we can map this on the BE
+            // - will raise for post-MVP discussion
+
+            $linkTypeMappings = [
+                'USING' => 'Using a dataset',
+                'ABOUT' => 'About a dataset',
+                'UNKNOWN' => 'Unknown',
+            ];
+
             foreach ($datasets as $dataset) {
                 $metadata = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->metadata;
                 $latestVersionID = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->id;
@@ -432,7 +448,7 @@ trait IndexElastic
                     ['publication_id', '=', (int)$id],
                     ['dataset_version_id', '=', (int)$latestVersionID]
                 ])->first()->link_type ?? 'UNKNOWN';
-                $datasetLinkTypes[] = $linkType;
+                $datasetLinkTypes[] =  array_key_exists($linkType, $linkTypeMappings) ? $linkTypeMappings[$linkType] : 'Unknown';
             }
 
             // Split string to array of strings

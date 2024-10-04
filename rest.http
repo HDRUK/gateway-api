@@ -14,6 +14,9 @@
 @uPasswordDar = "Gateway@123"
 # @accessToken=jwt....
 
+# 'developers@hdruk.ac.uk', 'Watch26Task?'
+# 'hdrmetadatamanager@gmail.com', 'Gateway@123'
+
 ### Login
 #### create new auth
 # @name createUserAuth
@@ -54,6 +57,10 @@ POST {{baseUrl}}/api/{{apiVersion}}/logout HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
+### Refresh Token
+POST {{baseUrl}}/api/{{apiVersion}}/refresh_token HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
 ### USERS
 #### create new user
@@ -148,7 +155,7 @@ Authorization: Bearer {{accessToken}}
 
 ### USERS
 #### get all users
-GET {{baseUrl}}/api/{{apiVersion}}/users HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/users?perPage=5 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -226,6 +233,13 @@ Authorization: Bearer {{accessToken}}
     "notifications": [],
     "users": [],
 }
+
+### Audit Logs
+#### get all reviews
+GET {{baseUrl}}/api/{{apiVersion}}/activity_logs HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
 
 ### Review
 #### get all reviews
@@ -2564,3 +2578,5 @@ Authorization: Bearer {{accessToken}}
     "potential_research_benefit": "potential research benefit",
     "query": "Hi there, I'd like to ask some questions about this dataset please. Could you tell me where I might find it?\nThanks, Joe"
 }
+
+

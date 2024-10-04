@@ -76,7 +76,7 @@ class UserController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $perPage = request('perPage', Config::get('constants.per_page'));
         $users = [];
-        
+
         try {
             if (count($jwtUser)) {
                 $userIsAdmin = (bool)$jwtUser['is_admin'];
@@ -87,7 +87,7 @@ class UserController extends Controller
                         $chars = $request->query('filterNames');
                         $users = User::where('name', 'like', '%' . $chars . '%')->select('id', 'name')->paginate($perPage, ['*'], 'page');
                     } else {
-                        $users = User::select('id','name')->paginate($perPage, ['*'], 'page');
+                        $users = User::select('id', 'name')->paginate($perPage, ['*'], 'page');
                     }
                 }
             }
@@ -433,8 +433,8 @@ class UserController extends Controller
                     'firstname' => $input['firstname'],
                     'lastname' => $input['lastname'],
                     'email' => $input['email'],
-                    'provider' =>  Config::get('constants.provider.service'),
-                    'providerid' => array_key_exists('providerid', $input) ? $input['providerid'] : null,
+                    'provider' => array_key_exists('provider', $input) ? $input['provider'] : $user->provider,
+                    'providerid' => array_key_exists('providerid', $input) ? $input['providerid'] : $user->providerid,
                     'sector_id' => $input['sector_id'],
                     'organisation' => $input['organisation'],
                     'bio' => $input['bio'],
@@ -449,7 +449,13 @@ class UserController extends Controller
                 ];
 
                 if (array_key_exists('secondary_email', $input)) {
-                    $array['secondary_email'] = $user->provider === 'open-athens' ? $user->secondary_email : $input['secondary_email'];
+                    if ($user->provider === 'open-athens') {
+                        // If the user has a secondary email, use it; otherwise, use the input value.
+                        $array['secondary_email'] = is_null($user->secondary_email) ? $input['secondary_email'] : $user->secondary_email;
+                    } else {
+                        // For all other providers, use the input value.
+                        $array['secondary_email'] = $input['secondary_email'];
+                    }
                 }
 
                 if(array_key_exists('preferred_email', $input)) {

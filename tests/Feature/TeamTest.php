@@ -7,9 +7,12 @@ use Config;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 use App\Http\Enums\TeamMemberOf;
+use App\Models\Dataset;
 use App\Models\Team;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\SpatialCoverageSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use MetadataManagementController as MMC;
 
 class TeamTest extends TestCase
 {
@@ -19,7 +22,7 @@ class TeamTest extends TestCase
     }
 
     protected $header = [];
-
+    protected $metadata;
 
     public function setUp(): void
     {
@@ -27,7 +30,10 @@ class TeamTest extends TestCase
 
         $this->seed([
             MinimalUserSeeder::class,
+            SpatialCoverageSeeder::class,
         ]);
+
+        $this->metadata = $this->getMetadata();
     }
 
     /**
@@ -354,6 +360,24 @@ class TeamTest extends TestCase
 
         $teamId = $content['data'];
 
+        // Add a dataset associated with the team
+        $responseCreateDataset = $this->json(
+            'POST',
+            '/api/v1/datasets',
+            [
+                'team_id' => $teamId,
+                'user_id' => 1,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseCreateDataset->assertStatus(201);
+        $datasetId = $responseCreateDataset->decodeResponseJson()['data'];
+
+        MMC::spy();
+
         // Finally, update this team with new details
         $updateTeamName = 'Updated Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         $response = $this->json(
@@ -391,6 +415,21 @@ class TeamTest extends TestCase
         $this->assertEquals($content['data']['enabled'], 1);
         $this->assertEquals($content['data']['member_of'], 'HUB');
         $this->assertEquals($content['data']['name'], $updateTeamName);
+
+        MMC::shouldHaveReceived('validateDataModelType')->once();
+
+        $responseGetDataset = $this->json(
+            'GET',
+            '/api/v1/datasets' . '/' . $datasetId,
+            [],
+            $this->header
+        );
+        $responseGetDataset->assertStatus(200);
+        $datasetContent = $responseGetDataset->decodeResponseJson();
+        $this->assertEquals(
+            $datasetContent['data']['versions'][0]['metadata']['metadata']['required']['version'],
+            '2.0.0'
+        );
 
         // delete the team created
         $responseDelete = $this->json(

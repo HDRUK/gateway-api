@@ -3,33 +3,27 @@
 namespace App\Http\Controllers;
 
 use Exception;
+use App\Models\User;
+use Carbon\CarbonImmutable;
+use Lcobucci\Clock\SystemClock;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\UnencryptedToken;
+use Lcobucci\JWT\Signer\Hmac\Sha256;
+use Lcobucci\JWT\Signer\Key\InMemory;
+use Lcobucci\JWT\Validation\Constraint;
+use App\Http\Traits\UserRolePermissions;
+use App\Exceptions\UnauthorizedException;
 
 class JwtController extends Controller
 {
-    /**
-     * @param string $secretKey
-     */
+    use UserRolePermissions;
 
     private string $secretKey;
-
-    /**
-     * @param array $header
-     */
     private array $header;
-
-    /**
-     * @param array $payload
-     */
     private array $payload;
-
-    /**
-     * @param string $jwt
-     */
     private string $jwt;
+    private Configuration $config;
 
-    /**
-     * constructor
-     */
     public function __construct()
     {
         $this->header = [
@@ -39,28 +33,18 @@ class JwtController extends Controller
         $this->payload = [];
         $this->jwt = '';
         $this->secretKey = (string) env('JWT_SECRET');
-    }
 
-    /**
-     * set header
-     *
-     * @param array $value
-     * @return array
-     */
-    public function setHeader(array $value): array
-    {
-        return $this->header = $value;
-    }
+        $this->config = Configuration::forSymmetricSigner(
+            new Sha256(),
+            InMemory::plainText($this->secretKey)
+        );
 
-    /**
-     * set payload
-     *
-     * @param array $value
-     * @return array
-     */
-    public function setPayload(array $value): array
-    {
-        return $this->payload = $value;
+        $this->config->setValidationConstraints(
+            new Constraint\SignedWith($this->config->signer(), $this->config->verificationKey()),
+            new Constraint\IssuedBy((string)env('APP_URL')),
+            new Constraint\PermittedFor((string)env('APP_URL')),
+            new Constraint\StrictValidAt(SystemClock::fromUTC()) // Validates 'exp', 'nbf', 'iat' claims
+        );
     }
 
     /**
@@ -74,87 +58,68 @@ class JwtController extends Controller
         return $this->jwt = $value;
     }
 
-    /**
-     * create the JWT token
-     *
-     * @return string
-     */
-    public function create(): string
-    {
-        $headerEncoded = $this->base64UrlEncode(json_encode($this->header));
-        $payloadEncoded = $this->base64UrlEncode(json_encode($this->payload));
-
-        $signature = hash_hmac('SHA256', "$headerEncoded.$payloadEncoded", $this->secretKey, true);
-        $signatureEncoded = $this->base64UrlEncode($signature);
-
-        $jwt = "$headerEncoded.$payloadEncoded.$signatureEncoded";
-
-        return $jwt;
-    }
-
-    /**
-     * check if JWT token is valid
-     *
-     * @return boolean
-     */
-    public function isValid()
-    {
-        $tokenParts = explode('.', $this->jwt);
-
-        // dd($tokenParts);
-
-        if (count($tokenParts) > 1) {
-            $header = base64_decode($tokenParts[0]);
-            $payload = base64_decode($tokenParts[1]);
-            $signatureProvided = $tokenParts[2];
-
-            $expiration = json_decode($payload)->exp;
-            $isTokenExpired = ($expiration - time()) < 0;
-
-            $base64UrlHeader = $this->base64UrlEncode($header);
-            $base64UrlPayload = $this->base64UrlEncode($payload);
-            $signature = hash_hmac('SHA256', $base64UrlHeader . "." . $base64UrlPayload, $this->secretKey, true);
-            $base64UrlSignature = $this->base64UrlEncode($signature);
-
-            $isSignatureValid = ($base64UrlSignature === $signatureProvided);
-
-            if ($isTokenExpired || !$isSignatureValid) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * decode the JWT token
-     *
-     * @return mixed
-     */
-    public function decode(): mixed
+    public function generateToken($userId)
     {
         try {
-            $tokenParts = explode('.', $this->jwt);
-            $payload = json_decode(base64_decode($tokenParts[1]), true);
+            $currentTime = CarbonImmutable::now();
+            $expireTime = $currentTime->addSeconds(env('JWT_EXPIRATION'));
 
-            return $payload;
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+            $user = User::where([
+                'id' => $userId,
+            ])->first();
+
+            $token = $this->config->builder()
+                ->issuedBy((string)env('APP_URL')) // iss claim
+                ->permittedFor((string)env('APP_URL')) // aud claim
+                ->relatedTo((string)env('APP_NAME')) // aud claim
+                ->identifiedBy(md5(microtime())) // jti claim
+                ->issuedAt($currentTime) // iat claim
+                ->canOnlyBeUsedAfter($currentTime) // nbf claim
+                ->expiresAt($expireTime) // exp claim
+                ->withClaim('user', $user) // custom claim - user
+                ->getToken($this->config->signer(), $this->config->signingKey());
+
+            $jwt = $token->toString();
+
+            return $jwt;
+        } catch (\Exception $e) {
+            throw new Exception('Failed to generate token for user :: ' . $e->getMessage());
         }
     }
 
-
-    /**
-     * encode value in base64
-     *
-     * @param string $value
-     * @return string
-     */
-    private function base64UrlEncode(string $value): string
+    public function isValid()
     {
-        return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
+        try {
+            // Parse the token
+            $token = $this->config->parser()->parse($this->jwt);
+            if (!$token instanceof UnencryptedToken) {
+                throw new Exception('Token is encrypted and cannot be handled.');
+            }
+
+            $constraints = $this->config->validationConstraints();
+
+            $this->config->validator()->assert($token, ...$constraints);
+
+            return true;
+        } catch (Exception $e) {
+            throw new UnauthorizedException('Invalid token :: ' . $e->getMessage());
+        }
     }
 
+    public function decode()
+    {
+        try {
+            // Parse the token
+            $token = $this->config->parser()->parse($this->jwt);
+            if (!$token instanceof UnencryptedToken) {
+                throw new Exception('Token is encrypted and cannot be handled.');
+            }
+
+            $claims = $token->claims()->all();
+
+            return $claims;
+        } catch (Exception $e) {
+            throw new UnauthorizedException('Unable to decode the token :: ' . $e->getMessage());
+        }
+    }
 }

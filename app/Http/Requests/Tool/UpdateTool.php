@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Tool;
 
-use App\Models\Tool;
 use App\Http\Requests\BaseFormRequest;
 
 class UpdateTool extends BaseFormRequest

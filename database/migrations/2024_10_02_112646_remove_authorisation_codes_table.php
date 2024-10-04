@@ -10,9 +10,7 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::table('teams', function (Blueprint $table) {
-            $table->string('service')->nullable();
-        });
+        Schema::dropIfExists('authorisation_codes');
     }
 
     /**
@@ -20,11 +18,12 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        if (Schema::hasColumn('teams', 'service')) {
-            Schema::table('teams', function (Blueprint $table) {
-                $table->dropColumn([
-                    'service',
-                ]);
+        if (!Schema::hasTable('authorisation_codes')) {
+            Schema::create('authorisation_codes', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('user_id')->nullable()->index();
+                $table->text('jwt');
+                $table->timestamps();
             });
         }
     }
