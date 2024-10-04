@@ -84,7 +84,8 @@ class RunPostMigrations extends Command
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'datasets',
-                    'sleep' => $sleep,
+                    '--sleep' => $sleep,
+                    '--chunkSize' => 20,
                     '--term-extraction' => $termExtraction
                 ],
             ],
@@ -92,34 +93,42 @@ class RunPostMigrations extends Command
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'tools',
-                    'sleep' => $sleep,
+                    '--chunkSize' => 100,
+                    '--sleep' => $sleep,
                 ],
             ],
             [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'publications',
-                    'sleep' => $sleep,
+                    '--chunkSize' => 100,
+                    '--sleep' => $sleep,
                 ],
             ],
             [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'durs',
-                    'sleep' => $sleep,
+                    '--chunkSize' => 50,
+                    '--sleep' => $sleep,
                 ],
             ],
             [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'collections',
-                    'sleep' => $sleep,
+                    '--sleep' => $sleep,
+                    '--chunkSize' => 20,
                 ],
             ],
             [
                 'command' => 'app:data-custodian-network-post-migration',
                 'arguments' => [],
             ], // update data custodian network with details and relations with teams
+            [
+                'command' => 'app:update-snsde-custodian-network',
+                'arguments' => [],
+            ],
             [
                 'command' => 'app:add-logo-team-post-migration',
                 'arguments' => [],

@@ -863,52 +863,57 @@ class CollectionController extends Controller
                     $array['deleted_at'] = null;
                 }
 
-                // Update the collection including soft-deleted ones
+                // get initial colleciton
+                $initCollection = Collection::withTrashed()->where('id', $id)->first();
+                //update it
                 Collection::withTrashed()->where('id', $id)->update($array);
-
+                // get updated collection
                 $updatedCollection = Collection::withTrashed()->where('id', $id)->first();
                 // Check and update related datasets and tools etc if the collection is active
-                if ($updatedCollection->status !== Collection::STATUS_ACTIVE) {
-                    if (array_key_exists('datasets', $input)) {
-                        $datasets = $input['datasets'];
-                        $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
-                    }
 
-                    if (array_key_exists('tools', $input)) {
-                        $tools = $input['tools'];
-                        $this->checkTools($id, $tools, (int)$jwtUser['id']);
-                    }
+                if (array_key_exists('datasets', $input)) {
+                    $datasets = $input['datasets'];
+                    $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
+                }
 
-                    if (array_key_exists('dur', $input)) {
-                        $dur = $input['dur'];
-                        $this->checkDurs($id, $dur, (int)$jwtUser['id']);
-                    }
+                if (array_key_exists('tools', $input)) {
+                    $tools = $input['tools'];
+                    $this->checkTools($id, $tools, (int)$jwtUser['id']);
+                }
 
-                    if (array_key_exists('publications', $input)) {
-                        $publications = $input['publications'];
-                        $this->checkPublications($id, $publications, (int)$jwtUser['id']);
-                    }
+                if (array_key_exists('dur', $input)) {
+                    $dur = $input['dur'];
+                    $this->checkDurs($id, $dur, (int)$jwtUser['id']);
+                }
 
-                    if (array_key_exists('keywords', $input)) {
-                        $keywords = $input['keywords'];
-                        $this->checkKeywords($id, $keywords);
-                    }
+                if (array_key_exists('publications', $input)) {
+                    $publications = $input['publications'];
+                    $this->checkPublications($id, $publications, (int)$jwtUser['id']);
+                }
 
-                    // for migration from mongo database
-                    if (array_key_exists('created_at', $input)) {
-                        Collection::where('id', $id)->update(['created_at' => $input['created_at']]);
-                    }
+                if (array_key_exists('keywords', $input)) {
+                    $keywords = $input['keywords'];
+                    $this->checkKeywords($id, $keywords);
+                }
 
-                    // for migration from mongo database
-                    if (array_key_exists('updated_at', $input)) {
-                        Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
-                    }
+                // for migration from mongo database
+                if (array_key_exists('created_at', $input)) {
+                    Collection::where('id', $id)->update(['created_at' => $input['created_at']]);
+                }
 
-                    // add in a team
-                    if (array_key_exists('team_id', $input)) {
-                        Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
-                    }
-                    $this->indexElasticCollections($id);
+                // for migration from mongo database
+                if (array_key_exists('updated_at', $input)) {
+                    Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
+                }
+
+                // add in a team
+                if (array_key_exists('team_id', $input)) {
+                    Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
+                }
+                if ($updatedCollection->status === Collection::STATUS_ACTIVE) {
+                    $this->indexElasticCollections((int) $id);
+                } elseif ($initCollection->status === Collection::STATUS_ACTIVE) {
+                    $this->deleteCollectionFromElastic((int) $id);
                 }
 
 
@@ -1090,12 +1095,15 @@ class CollectionController extends Controller
     {
         $cols = CollectionHasDatasetVersion::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
-            $dataset_id = DatasetVersion::where("id", $col->dataset_version_id)->first()->dataset_id;
-            if (!in_array($dataset_id, $this->extractInputIdToArray($inDatasets))) {
-                $this->deleteCollectionHasDatasetVersions($collectionId, $col->dataset_version_id);
+            $datasetId = DatasetVersion::where('id', $col->dataset_version_id)->select('dataset_id')->get();
+            if (count($datasetId) > 0) {
+                if (!in_array($datasetId[0]['dataset_id'], $this->extractInputIdToArray($inDatasets))) {
+                    $this->deleteCollectionHasDatasetVersions($collectionId, $col->dataset_version_id);
+                }
             }
         }
 
+        // LS - This is superflous.
         foreach ($inDatasets as $dataset) {
             $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
             $checking = $this->checkInCollectionHasDatasetVersions($collectionId, $datasetVersionId);

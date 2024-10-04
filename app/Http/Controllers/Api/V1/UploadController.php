@@ -5,11 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use Auditor;
 use Config;
 use Exception;
-
 use App\Http\Controllers\Controller;
 use App\Jobs\ScanFileUpload;
 use App\Models\Upload;
-
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -90,6 +88,7 @@ class UploadController extends Controller
                 'status' => 'PENDING'
             ]);
 
+
             // spawn scan job
             ScanFileUpload::dispatch(
                 (int)$upload->id,
@@ -103,7 +102,7 @@ class UploadController extends Controller
                 $outputVersion,
                 $elasticIndexing,
                 $datasetId,
-                $collectionId,
+                (int)$collectionId,
             );
 
             // audit log

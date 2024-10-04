@@ -6,9 +6,7 @@ use Auditor;
 use Config;
 use Exception;
 use App\Models\User;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
-use App\Models\AuthorisationCode;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cookie;
@@ -83,30 +81,21 @@ class SocialLoginController extends Controller
     public function login(Request $request, string $provider): mixed
     {
         $redirectUrl = env('GATEWAY_URL');
-        if($request->has("redirect")) {
+        if ($request->has("redirect")) {
             $redirectUrl = $redirectUrl . $request->query('redirect');
         }
 
         session(['redirectUrl' => $redirectUrl]);
 
         if (strtolower($provider) === 'openathens') {
-            $oidc = new OpenIDConnectClient(
-                Config::get('services.openathens.issuer'),
-                Config::get('services.openathens.client_id'),
-                Config::get('services.openathens.client_secret')
-            );
-            $oidc->addScope(array('openid'));
-            $oidc->setAllowImplicitFlow(true);
-            $oidc->addAuthParam(array('response_mode' => 'form_post'));
-            $oidc->setRedirectUrl(Config::get('services.openathens.redirect'));
-            $oidc->authenticate();
+            $provider = 'open-athens';
 
             $params = [
                 'client_id' => Config::get('services.openathens.client_id'),
-                'client_secret' => Config::get('services.openathens.client_secret'),
                 'redirect_uri' => Config::get('services.openathens.redirect'),
                 'response_type' => 'code',
                 'scope' => 'openid',
+                'state' => bin2hex(random_bytes(16))
             ];
             $oaUrl = env('OPENATHENS_ISSUER_URL') . '/oidc/auth?' . http_build_query($params);
 
@@ -164,6 +153,17 @@ class SocialLoginController extends Controller
                 $provider = 'linkedin-openid';
             }
             if (strtolower($provider) === 'openathens') {
+                $provider = 'open-athens';
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+                $input = $request->all();
+                $code = array_key_exists('code', $input) ? $input['code'] : '';
+                $_REQUEST['code'] = $code;
+                $state = array_key_exists('state', $input) ? $input['state'] : '';
+                $_REQUEST['state'] = $state;
+                $_SESSION['openid_connect_state'] = $state;
+
                 $oidc = new OpenIDConnectClient(
                     Config::get('services.openathens.issuer'),
                     Config::get('services.openathens.client_id'),
@@ -175,23 +175,17 @@ class SocialLoginController extends Controller
                     'token_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/token',
                     'userinfo_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/userinfo',
                 ]);
-                $oidc->addScope([
-                    'openid',
-                    'profile',
-                    'email'
-                ]);
-
-                $oidc->setVerifyHost(false);
-                $oidc->setVerifyPeer(false);
-                $oidc->setResponseTypes(['id_token']);
-                $oidc->setAllowImplicitFlow(true);
-                $oidc->addAuthParam(['response_mode' => 'form_post']);
-
+                $oidc->setRedirectUrl(Config::get('services.openathens.redirect'));
                 $oidc->authenticate();
+
                 $response = $oidc->requestUserInfo();
                 $socialUser = json_decode(json_encode($response), true);
 
                 $socialUserDetails = $this->openathensResponse($socialUser, $provider);
+
+                $user = User::where([
+                    'providerid' => $socialUserDetails['providerid']
+                ])->first();
             } else {
                 $socialUser = Socialite::driver($provider)->user();
 
@@ -209,15 +203,14 @@ class SocialLoginController extends Controller
                         $socialUserDetails = $this->azureResponse($socialUser, $provider);
                         break;
                 }
+
+                $user = User::where([
+                    'email' => $socialUserDetails['email']
+                ])->first();
             }
 
-            $user = User::where([
-                'email' => $socialUserDetails['email'],
-                'provider' => $provider,
-            ])->first();
-
             if (!$user) {
-                $user = $this->saveUser($socialUserDetails);
+                $user = $this->saveUser($socialUserDetails, $provider);
             } else {
                 $user = $this->updateUser($user, $socialUserDetails, $provider);
             }
@@ -234,8 +227,7 @@ class SocialLoginController extends Controller
             $cookies = [
                 Cookie::make('token', $jwt),
             ];
-            $redirectUrl = session('redirectUrl');
-            return redirect()->away($redirectUrl)->withCookies($cookies);
+            return redirect()->away(env('GATEWAY_URL') . '/account/profile')->withCookies($cookies);
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -317,12 +309,14 @@ class SocialLoginController extends Controller
      */
     private function openathensResponse(array $data, string $provider): array
     {
+        $targetedId = is_array($data['eduPersonTargetedID']) ? $data['eduPersonTargetedID'][0] : $data['eduPersonTargetedID'];
+        $affiliation = is_array($data['eduPersonScopedAffiliation']) ? $data['eduPersonScopedAffiliation'][0] : $data['eduPersonScopedAffiliation'];
         return [
-            'providerid' => $data['eduPersonTargetedID'],
+            'providerid' => $targetedId,
             'name' => '',
             'firstname' => '',
             'lastname' => '',
-            'email' => $data['eduPersonTargetedID'] . $data['eduPersonScopedAffiliation'],
+            'email' => $targetedId . $affiliation,
             'provider' => $provider,
             'password' => Hash::make(json_encode($data)),
         ];
@@ -338,8 +332,10 @@ class SocialLoginController extends Controller
      */
     private function updateUser(User $user, array $data, string $provider): User
     {
-        if ($provider == 'openathens') {
+        if ($provider == 'open-athens') {
             $user->providerid = $data['providerid'];
+            $user->preferred_email = 'secondary';
+            $user->update();
         } else {
             $user->providerid = $data['providerid'];
             $user->name = $data['name'];
@@ -358,9 +354,10 @@ class SocialLoginController extends Controller
      * save user in database
      *
      * @param array $value
+     * @param string $provider
      * @return User
      */
-    private function saveUser(array $value): User
+    private function saveUser(array $value, string $provider): User
     {
         $user = new User();
         $user->providerid = $value['providerid'];
@@ -370,6 +367,9 @@ class SocialLoginController extends Controller
         $user->email = $value['email'];
         $user->provider = $value['provider'];
         $user->password = $value['password'];
+        if ($provider == 'open-athens') {
+            $user->preferred_email = 'secondary';
+        }
         $user->save();
 
         return $user;
@@ -381,32 +381,8 @@ class SocialLoginController extends Controller
      * @param User $user
      * @return string
      */
-    private function createJwt($user): string
+    private function createJwt(User $user): string
     {
-        $currentTime = CarbonImmutable::now();
-        $expireTime = $currentTime->addSeconds(env('JWT_EXPIRATION'));
-
-        $arrayClaims = [
-            'iss' => (string)env('APP_URL'),
-            'sub' => (string)$user['name'],
-            'aud' => (string)env('APP_NAME'),
-            'iat' => (string)strtotime($currentTime),
-            'nbf' => (string)strtotime($currentTime),
-            'exp' => (string)strtotime($expireTime),
-            'jti' => (string)env('JWT_SECRET'),
-            'user' => $user,
-        ];
-
-        $this->jwt->setPayload($arrayClaims);
-        $jwt = $this->jwt->create();
-
-        AuthorisationCode::createRow([
-            'user_id' => (int)$user->id,
-            'jwt' => (string)$jwt,
-            'created_at' => $currentTime,
-            'expired_at' => $expireTime,
-        ]);
-
-        return $jwt;
+        return $this->jwt->generateToken($user->id);
     }
 }

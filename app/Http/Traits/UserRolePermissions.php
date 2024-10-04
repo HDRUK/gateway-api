@@ -7,9 +7,11 @@ use App\Models\User;
 use App\Models\Permission;
 use App\Models\TeamHasUser;
 use App\Models\UserHasRole;
+use App\Models\CohortRequest;
 use App\Models\TeamUserHasRole;
 use App\Models\RoleHasPermission;
 use App\Exceptions\UnauthorizedException;
+use App\Models\CohortRequestHasPermission;
 
 trait UserRolePermissions
 {
@@ -49,6 +51,7 @@ trait UserRolePermissions
         $return = [];
         // extra - user roles/perms outside team
         $extraRoles = $this->getUserRolesNoTeam($userId);
+        $return['cohort']['roles'] = $this->getCohortUserRoles($userId);
         $return['extra']['roles'] = $extraRoles;
         $return['extra']['perms'] = $this->getPermsFromRoles($extraRoles);
 
@@ -72,6 +75,7 @@ trait UserRolePermissions
             $roles = array_merge($roles, $return['teams'][$team]['roles']);
             $perms = array_merge($perms, $return['teams'][$team]['perms']);
         }
+
         $return['summary']['roles'] = array_unique($roles);
         $return['summary']['perms'] = array_unique($perms);
 
@@ -123,5 +127,25 @@ trait UserRolePermissions
         }
 
         return $return;
+    }
+
+    private function getCohortUserRoles(int $userId): array
+    {
+        $cohortRequest = CohortRequest::where([
+            'user_id' => $userId,
+            'request_status' => 'APPROVED',
+        ])->first();
+
+        if (!$cohortRequest) {
+            return [];
+        }
+
+        $cohortRequestRoleIds = CohortRequestHasPermission::where([
+            'cohort_request_id' => $cohortRequest->id
+        ])->pluck('permission_id')->toArray();
+
+        $cohortRequestRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
+
+        return $cohortRequestRoles;
     }
 }
