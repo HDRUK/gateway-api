@@ -31,6 +31,7 @@ use App\Http\Requests\Tool\EditTool;
 use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
+
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\RequestTransformation;
 
