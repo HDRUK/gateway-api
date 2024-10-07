@@ -152,7 +152,6 @@ trait MetadataOnboard
             $this->mapCoverage($input['metadata'], $version);
 
             // Dispatch term extraction to a subprocess if the dataset is marked as active
-
             if($input['status'] === Dataset::STATUS_ACTIVE && Config::get('ted.enabled')) {
 
                 $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
