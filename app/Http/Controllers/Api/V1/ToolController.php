@@ -1094,7 +1094,7 @@ class ToolController extends Controller
                     )->first();
 
                     // undelete if it has been soft-deleted
-                    if ($toolHasTag && $toolHasTag->deleted_at !== null) {
+                    if ($toolHasTag && $toolHasTag->deleted_at != null) {
                         // We have to use a raw query to undelete because Eloquent can't cope with the fact this model has no single primary key column.
                         \DB::table('tool_has_tags')
                         ->where(['tool_id' => (int)$toolId,
