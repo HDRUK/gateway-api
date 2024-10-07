@@ -159,7 +159,7 @@ class DataProviderCollController extends Controller
             $result = array_merge($dpc->toArray(), [
                 'service' => empty($service) ? null : $service,
             ]);
-            
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $result

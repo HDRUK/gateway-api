@@ -56,7 +56,7 @@ class EditTool extends BaseFormRequest
                 'array',
             ],
             'tag.*' => [
-                'integer',
+                'regex:/^[a-z0-9\s]+$/i'
             ],
             'enabled' => [
                 'boolean',
