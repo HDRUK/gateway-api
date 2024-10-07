@@ -1291,7 +1291,6 @@ class SearchController extends Controller
      *                      @OA\Property(property="_source", type="array",
      *                          @OA\Items(
      *                              @OA\Property(property="name", type="string"),
-     *                              @OA\Property(property="img_url", type="string"),
      *                              @OA\Property(property="datasetTitles", type="array", @OA\Items()),
      *                              @OA\Property(property="geographicLocation", type="array", @OA\Items())
      *                          )
@@ -1351,7 +1350,6 @@ class SearchController extends Controller
                     if ((int)$dp['_id'] === $model['id']) {
                         $dataProviderCollArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $dataProviderCollArray[$i]['name'] = $model['name'];
-                        $dataProviderCollArray[$i]['img_url'] = $model['img_url'];
                         $dataProviderCollArray[$i]['datasetTitles'] = $this->dataProviderDatasetTitles($model);
                         $dataProviderCollArray[$i]['geographicLocations'] = $this->dataProviderLocations($model);
                         $foundFlag = true;
