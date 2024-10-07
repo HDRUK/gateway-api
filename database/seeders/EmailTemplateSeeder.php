@@ -2568,7 +2568,7 @@ class EmailTemplateSeeder extends Seeder
 
         EmailTemplate::create([
             'identifier' => 'feasibilityenquiry.firstmessage',
-            'subject' => '[[USER_FIRST_NAME]] [[PROJECT_TITLE]]',
+            'subject' => 'Feasibility Enquiry from the Health Data Research Gateway: [[USER_FIRST_NAME]] [[USER_LAST_NAME]], [[USER_ORGANISATION]]',
             'body' => '
                 <mjml>
                     <mj-head>
@@ -2657,7 +2657,7 @@ class EmailTemplateSeeder extends Seeder
 
         EmailTemplate::create([
             'identifier' => 'generalenquiry.firstmessage',
-            'subject' => '[[USER_FIRST_NAME]] Enquiry',
+            'subject' => 'General Enquiry from the Health Data Research Gateway: [[USER_FIRST_NAME]] [[USER_LAST_NAME]], [[USER_ORGANISATION]]',
             'body' => '
                 <mjml>
                     <mj-head>
