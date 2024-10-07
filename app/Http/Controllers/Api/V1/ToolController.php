@@ -1046,7 +1046,8 @@ class ToolController extends Controller
      * @param mixed $value
      * @return mixed
      */
-    private function createNewTagIfNotExists(mixed $value) {
+    private function createNewTagIfNotExists(mixed $value)
+    {
         if(!is_numeric($value) && !empty($value)) {
             $tag = Tag::where([
                 'description' => $value,
