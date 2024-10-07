@@ -59,8 +59,8 @@ trait TeamTransformation
                     'name' => $user['name'],
                     'firstname' => $user['firstname'],
                     'lastname' => $user['lastname'],
-                    'email' => $user['email'],
-                    'secondary_email' => $user['secondary_email'],
+                    'email' => $this->maskEmail($user['email']),
+                    'secondary_email' => $this->maskEmail($user['secondary_email']),
                     'preferred_email' => $user['preferred_email'],
                     'provider' => $user['provider'],
                     'created_at' => $user['created_at'],
@@ -150,5 +150,22 @@ trait TeamTransformation
         );
 
         return $response;
+    }
+
+    private function maskEmail(string|null $email)
+    {
+        if(is_null($email)) {
+            return $email;
+        }
+
+        [$username, $domain] = explode('@', $email);
+        $maskedUsername = substr($username, 0, 1) . str_repeat('*', max(strlen($username) - 2, 1)) . substr($username, -1);
+        $domainParts = explode('.', $domain);
+        $domainName = $domainParts[0];
+        $maskedDomain = substr($domainName, 0, 1) . str_repeat('*', max(strlen($domainName) - 2, 1)) . substr($domainName, -1);
+        $maskedDomain .= '.' . implode('.', array_slice($domainParts, 1));
+        $maskedEmail = $maskedUsername . '@' . $maskedDomain;
+
+        return $maskedEmail;
     }
 }
