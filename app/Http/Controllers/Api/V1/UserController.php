@@ -76,6 +76,7 @@ class UserController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $perPage = request('perPage', Config::get('constants.per_page'));
+        $mini = $request->has('mini');
         $users = [];
 
         try {
@@ -89,15 +90,18 @@ class UserController extends Controller
                                     ->select('id', 'name', 'email')
                                     ->get()
                                     ->map(function ($user) {
-                                        // Split the email into username and domain
-                                        [$username, $domain] = explode('@', $user->email);
-
-                                        // Mask the username part
-                                        $maskedUsername = substr($username, 0, 1) . str_repeat('*', max(strlen($username) - 2, 1));
-
-                                        // Rebuild the email with the masked username
-                                        $user->email = $maskedUsername . '@' . $domain;
-
+                                        $user->email = $this->maskEmail($user->email);
+                                        return $user;
+                                    })
+                    ];
+                } elseif($mini) {
+                    //temporary force to get all users but with masked email
+                    // - will not be needed in the future as can just use the above if block
+                    $users = [
+                        "data" => User::select('id', 'name', 'email')
+                                    ->get()
+                                    ->map(function ($user) {
+                                        $user->email = $this->maskEmail($user->email);
                                         return $user;
                                     })
                     ];
