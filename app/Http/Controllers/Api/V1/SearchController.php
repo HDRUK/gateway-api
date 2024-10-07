@@ -679,7 +679,7 @@ class SearchController extends Controller
                 $foundFlag = false;
                 foreach ($collectionModels as $model) {
                     if ((int)$collection['_id'] === $model['id']) {
-                        $collectionArray[$i]['_source']['created_at'] = $model['created_at'];
+                        $collectionArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $collectionArray[$i]['name'] = $model['name'];
                         $collectionArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $collectionArray[$i]['image_link'] = $model['image_link'];

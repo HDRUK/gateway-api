@@ -34,7 +34,7 @@ class UpdateUserPassword extends Command
             $this->error('User with this email does not exist.');
             return 1; // Return non-zero exit code for failure
         }
-        
+
         $newPassword = $this->secret('Please enter the new password');
         $confirmPassword = $this->secret('Please confirm the new password');
 
