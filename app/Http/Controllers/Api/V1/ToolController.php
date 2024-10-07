@@ -1047,7 +1047,7 @@ class ToolController extends Controller
      * @return mixed
      */
     private function createNewTagIfNotExists(mixed $value) {
-        if(!is_numeric($value)) {
+        if(!is_numeric($value) && !empty($value)) {
             $tag = Tag::where([
                 'description' => $value,
             ])->first();
