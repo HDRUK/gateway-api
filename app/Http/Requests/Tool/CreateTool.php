@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Tool;
 
-use App\Models\Tool;
 use App\Http\Requests\BaseFormRequest;
 
 class CreateTool extends BaseFormRequest
@@ -56,7 +55,7 @@ class CreateTool extends BaseFormRequest
                 'array',
             ],
             'tag.*' => [
-                'integer',
+                'regex:/^[a-z0-9\s]+$/i'
             ],
             'enabled' => [
                 'required',

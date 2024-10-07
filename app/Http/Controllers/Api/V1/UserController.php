@@ -6,6 +6,7 @@ use Hash;
 use Config;
 use Auditor;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\UserHasRole;
 use Illuminate\Http\Request;
@@ -75,21 +76,41 @@ class UserController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $perPage = request('perPage', Config::get('constants.per_page'));
+        $mini = $request->has('mini');
         $users = [];
-        
+
         try {
             if (count($jwtUser)) {
                 $userIsAdmin = (bool)$jwtUser['is_admin'];
-                if($userIsAdmin) {
+
+                if ($request->filled('filterNames')) {
+                    $chars = strtolower($request->query('filterNames'));
+                    $users = [
+                        "data" => User::where(DB::raw('LOWER(name)'), 'like', '%' . $chars . '%')
+                                    ->select('id', 'name', 'email')
+                                    ->get()
+                                    ->map(function ($user) {
+                                        $user->email = $this->maskEmail($user->email);
+                                        return $user;
+                                    })
+                    ];
+                } elseif($mini) {
+                    //temporary force to get all users but with masked email
+                    // - will not be needed in the future as can just use the above if block
+                    $users = [
+                        "data" => User::select('id', 'name', 'email')
+                                    ->get()
+                                    ->map(function ($user) {
+                                        $user->email = $this->maskEmail($user->email);
+                                        return $user;
+                                    })
+                    ];
+                } elseif($userIsAdmin) {
                     $users = User::with(['roles', 'roles.permissions', 'teams', 'notifications'])->paginate($perPage, ['*'], 'page');
                 } else {
-                    if ($request->has('filterNames')) {
-                        $chars = $request->query('filterNames');
-                        $users = User::where('name', 'like', '%' . $chars . '%')->select('id', 'name')->paginate($perPage, ['*'], 'page');
-                    } else {
-                        $users = User::select('id','name')->paginate($perPage, ['*'], 'page');
-                    }
+                    $users = User::select('id', 'name')->paginate($perPage, ['*'], 'page');
                 }
+
             }
 
             Auditor::log([
@@ -433,8 +454,8 @@ class UserController extends Controller
                     'firstname' => $input['firstname'],
                     'lastname' => $input['lastname'],
                     'email' => $input['email'],
-                    'provider' =>  Config::get('constants.provider.service'),
-                    'providerid' => array_key_exists('providerid', $input) ? $input['providerid'] : null,
+                    'provider' => array_key_exists('provider', $input) ? $input['provider'] : $user->provider,
+                    'providerid' => array_key_exists('providerid', $input) ? $input['providerid'] : $user->providerid,
                     'sector_id' => $input['sector_id'],
                     'organisation' => $input['organisation'],
                     'bio' => $input['bio'],
@@ -449,7 +470,13 @@ class UserController extends Controller
                 ];
 
                 if (array_key_exists('secondary_email', $input)) {
-                    $array['secondary_email'] = $user->provider === 'open-athens' ? $user->secondary_email : $input['secondary_email'];
+                    if ($user->provider === 'open-athens') {
+                        // If the user has a secondary email, use it; otherwise, use the input value.
+                        $array['secondary_email'] = is_null($user->secondary_email) ? $input['secondary_email'] : $user->secondary_email;
+                    } else {
+                        // For all other providers, use the input value.
+                        $array['secondary_email'] = $input['secondary_email'];
+                    }
                 }
 
                 if(array_key_exists('preferred_email', $input)) {

@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Tool;
 
-use App\Models\Tool;
 use App\Http\Requests\BaseFormRequest;
 
 class EditTool extends BaseFormRequest
@@ -57,7 +56,7 @@ class EditTool extends BaseFormRequest
                 'array',
             ],
             'tag.*' => [
-                'integer',
+                'regex:/^[a-z0-9\s]+$/i'
             ],
             'enabled' => [
                 'boolean',

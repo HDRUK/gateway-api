@@ -10,6 +10,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
 use App\Jobs\TermExtraction;
+use App\Http\Traits\AddMetadataVersion;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\MetadataOnboard;
@@ -35,6 +36,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DatasetController extends Controller
 {
+    use AddMetadataVersion;
     use IndexElastic;
     use GetValueByPossibleKeys;
     use MetadataOnboard;
@@ -746,66 +748,30 @@ class DatasetController extends Controller
                 'is_cohort_discovery' => $isCohortDiscovery,
             ]);
 
+            $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
+
+            $datsetVersionId = $this->addMetadataVersion(
+                $currDataset,
+                $request['status'],
+                $updateTime,
+                $gwdmMetadata,
+                $submittedMetadata
+            );
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
-            if($request['status'] === Dataset::STATUS_ACTIVE) {
-                // Determine the last version of metadata
-
-                if ($currDataset->status !== Dataset::STATUS_DRAFT) {
-                    $versionNumber = $versionNumber + 1;
-                }
-                $versionCode = $this->formatVersion($versionNumber);
-                $lastMetadata = $currDataset->lastMetadata();
-
-                //update the GWDM modified date and version
-                $gwdmMetadata['required']['modified'] = $updateTime;
-                if(version_compare(Config::get('metadata.GWDM.version'), '1.0', '>')) {
-                    if(version_compare($lastMetadata['gwdmVersion'], '1.0', '>')) {
-                        $gwdmMetadata['required']['version'] = $versionCode;
-                    }
-                }
-
-                //update the GWDM revisions
-                // NOTE: Calum 12/1/24
-                //       - url set with a placeholder right now, should be revised before production
-                //       - https://hdruk.atlassian.net/browse/GAT-3392
-                $gwdmMetadata['required']['revisions'][] = [
-                    "url" => env('GATEWAY_URL') . '/dataset' .'/' . $id . '?version=' . $versionCode,
-                    "version" => $versionCode
-                ];
-            }
-
-            $metadataSaveObject = [
-                'gwdmVersion' =>  Config::get('metadata.GWDM.version'),
-                'metadata' => $gwdmMetadata,
-                'original_metadata' => $submittedMetadata,
-            ];
-
-            // Update or create new metadata version based on draft status
-            if ($currDataset->status !== Dataset::STATUS_DRAFT) {
-                DatasetVersion::create([
-                    'dataset_id' => $currDataset->id,
-                    'metadata' => json_encode($metadataSaveObject),
-                    'version' => $versionNumber,
-                ]);
-            } else {
-                // Update the existing version
-                DatasetVersion::where([
-                    'dataset_id' => $currDataset->id,
-                    'version' => $versionNumber,
-                ])->update([
-                    'metadata' => json_encode($metadataSaveObject),
-                ]);
-            }
-
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
-            if($request['status'] === Dataset::STATUS_ACTIVE) {
+            if($request['status'] === Dataset::STATUS_ACTIVE &&  Config::get('ted.enabled')) {
+
+                $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
+
                 TermExtraction::dispatch(
                     $currDataset->id,
+                    $datsetVersionId,
                     $versionNumber,
-                    base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
-                    $elasticIndexing
-                )->onConnection('redis');
+                    base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
+                    $elasticIndexing,
+                    Config::get('ted.use_partial')
+                );
             }
 
             Auditor::log([
