@@ -77,7 +77,7 @@ class Collection extends Model
         $mediaUrl = Config::get('services.media.base_url');
         $escapedMediaUrl = preg_quote($mediaUrl, '/');
         $allowedExtensions = 'jpeg|jpg|png|gif|bmp|webp';
-        $customPattern = "/^(" . $escapedMediaUrl . ")?\/collections\/[a-zA-Z0-9_-]+\.(?:$allowedExtensions)$/";
+        $customPattern = "/^(" . $escapedMediaUrl . ")?\/collections\/[a-zA-Z0-9 _-]+\.(?:$allowedExtensions)$/";
 
         $validator = Validator::make($this->attributes, [
             'image_link' => [
