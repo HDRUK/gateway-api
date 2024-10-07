@@ -359,7 +359,7 @@ class TeamController extends Controller
                 'data' => [
                     'id' => $dp->id,
                     'is_provider' => $dp->is_provider,
-                    'team_logo' => $dp->team_logo,
+                    'team_logo' => Config::get('services.media.base_url') . $dp->team_logo,
                     'url' => $dp->url,
                     'service' => empty($service) ? null : $service,
                     'name' => $dp->name,
