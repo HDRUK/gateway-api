@@ -8,7 +8,7 @@ use Carbon\CarbonImmutable;
 use Lcobucci\Clock\SystemClock;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\UnencryptedToken;
-use Lcobucci\JWT\Signer\Hmac\Sha256; 
+use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Validation\Constraint;
 use App\Http\Traits\UserRolePermissions;
@@ -17,7 +17,7 @@ use App\Exceptions\UnauthorizedException;
 class JwtController extends Controller
 {
     use UserRolePermissions;
-    
+
     private string $secretKey;
     private array $header;
     private array $payload;
