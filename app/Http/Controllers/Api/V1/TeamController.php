@@ -346,10 +346,7 @@ class TeamController extends Controller
 
             $collections = Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', $this->collections)->get()->toArray();
             $collections = array_map(function ($collection) {
-                if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
-                    $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
-                }
-                return $collection;
+                $collection['image_link'] = (is_null($collection['image_link']) || strlen(trim($collection['image_link'])) === 0) ? null : (filter_var($collection['image_link'], FILTER_VALIDATE_URL) ? $collection['image_link'] : Config::get('services.media.base_url') . $collection['image_link']);
             }, $collections);
 
             $service = array_values(array_filter(explode(",", $dp->service)));
