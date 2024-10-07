@@ -106,7 +106,7 @@ class EditTeam extends BaseFormRequest
             ],
             'service' => [
                 'nullable',
-                'url:http,https',
+                'regex:/^(https?:\/\/[^\s,]+(,[^\s,]+)*)?$/i',
             ],
         ];
     }
