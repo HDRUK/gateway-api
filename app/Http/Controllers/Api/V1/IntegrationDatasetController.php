@@ -591,11 +591,16 @@ class IntegrationDatasetController extends Controller
 
                 // Dispatch term extraction to a subprocess as it may take some time
                 if($request['status'] === Dataset::STATUS_ACTIVE) {
+                    $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
+
                     TermExtraction::dispatch(
                         $dataset->id,
+                        $version->id,
                         '1',
-                        base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
-                    )->onConnection('redis');
+                        base64_encode(gzcompress(gzencode(json_encode($tedData)))),
+                        true,
+                        Config::get('ted.use_partial')
+                    );
                 }
 
                 Auditor::log([

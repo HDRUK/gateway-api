@@ -25,7 +25,7 @@ trait AddMetadataVersion
         string $updateTime,
         array $newMetadata,
         array $previousMetadata
-    ): void {
+    ): int {
         $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
         if($incomingStatus === Dataset::STATUS_ACTIVE) {
             // Determine the last version of metadata
@@ -76,5 +76,12 @@ trait AddMetadataVersion
                 'metadata' => json_encode($metadataSaveObject),
             ]);
         }
+
+        $datasetVersionId = DatasetVersion::where([
+            'dataset_id' => $currDataset->id,
+            'version' => $versionNumber,
+        ])->value('id');
+        return $datasetVersionId;
+
     }
 }
