@@ -760,7 +760,7 @@ class DatasetController extends Controller
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
-            if ($request['status'] === Dataset::STATUS_ACTIVE &&  Config::get('ted.enabled')) {
+            if($request['status'] === Dataset::STATUS_ACTIVE &&  Config::get('ted.enabled')) {
 
                 $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
 
@@ -1113,7 +1113,7 @@ class DatasetController extends Controller
                     $metadata = $rowDetails['metadata']['metadata'];
 
                     $publisherName = $metadata['metadata']['summary']['publisher'];
-                    if (version_compare(Config::get('metadata.GWDM.version'), "1.1", "<")) {
+                    if(version_compare(Config::get('metadata.GWDM.version'), "1.1", "<")) {
                         $publisherName = $publisherName['publisherName'];
                     } else {
                         $publisherName = $publisherName['name'];
