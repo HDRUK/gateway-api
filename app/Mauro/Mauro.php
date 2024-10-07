@@ -4,6 +4,7 @@ namespace App\Mauro;
 
 use Exception;
 use App\Exceptions\MauroServiceException;
+
 use Illuminate\Support\Facades\Http;
 
 class Mauro

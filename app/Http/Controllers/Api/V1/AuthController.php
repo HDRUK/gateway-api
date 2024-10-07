@@ -145,22 +145,22 @@ class AuthController extends Controller
             if (!count($jwtUser)) {
                 throw new UnauthorizedException();
             }
-
+    
             $userId = $jwtUser['id'];
             $user = User::where(['id', $userId])->first();
             if (is_null($user)) {
                 throw new UnauthorizedException();
             }
-
+    
             $jwt = $this->createJwt($user);
-
+    
             Auditor::log([
                 'user_id' => $user['id'],
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Refresh Token",
             ]);
-
+            
             return response()->json([
                 "access_token" => $jwt,
                 "token_type" => "bearer"

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\SpatialCoverage;
+
 use Illuminate\Database\Seeder;
 
 class SpatialCoverageSeeder extends Seeder

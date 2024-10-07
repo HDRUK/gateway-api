@@ -12,6 +12,7 @@ use App\Models\Keyword;
 use App\Models\Permission;
 use App\Models\Application;
 use Database\Seeders\DurSeeder;
+
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;

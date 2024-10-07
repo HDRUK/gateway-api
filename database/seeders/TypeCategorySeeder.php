@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\TypeCategory;
+
 use Illuminate\Database\Seeder;
 
 class TypeCategorySeeder extends Seeder

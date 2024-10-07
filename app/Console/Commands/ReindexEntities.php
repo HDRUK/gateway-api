@@ -11,6 +11,7 @@ use App\Models\Collection;
 use App\Jobs\TermExtraction;
 use App\Http\Traits\IndexElastic;
 use Illuminate\Console\Command;
+
 use ElasticClientController as ECC;
 
 class ReindexEntities extends Command
@@ -121,7 +122,7 @@ class ReindexEntities extends Command
         $beforeCount = ECC::countDocuments(ECC::ELASTIC_NAME_DATASET);
         echo "Before reindexing there were $beforeCount datasets indexed \n";
 
-        if ($this->fresh) {
+        if($this->fresh) {
             $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_DATASET);
             echo "Deleted $nDeleted documents from the index \n";
         }

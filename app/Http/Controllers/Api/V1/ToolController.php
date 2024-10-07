@@ -494,7 +494,7 @@ class ToolController extends Controller
             $this->checkCollections($toolId, $collections, (int)$jwtUser['id']);
 
             $currentTool = Tool::where('id', $toolId)->first();
-            if ($currentTool->status === Tool::STATUS_ACTIVE) {
+            if($currentTool->status === Tool::STATUS_ACTIVE) {
                 $this->indexElasticTools((int) $toolId);
             }
 
@@ -895,7 +895,7 @@ class ToolController extends Controller
             }
 
             $currentTool = Tool::where('id', $id)->first();
-            if ($currentTool->status === Tool::STATUS_ACTIVE) {
+            if($currentTool->status === Tool::STATUS_ACTIVE) {
                 $this->indexElasticTools($id);
             }
 
@@ -1294,6 +1294,13 @@ class ToolController extends Controller
                     ]);
                 }
             }
+            foreach ($durs as $value) {
+                DurHasTool::updateOrCreate([
+                    'tool_id' => (int)$toolId,
+                    'dur_id' => (int)$value,
+                ]);
+            }
+
             return true;
         } catch (Exception $e) {
             Auditor::log([

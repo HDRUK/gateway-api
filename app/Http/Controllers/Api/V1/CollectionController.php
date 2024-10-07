@@ -1466,7 +1466,7 @@ class CollectionController extends Controller
     {
         $kws = CollectionHasKeyword::where('collection_id', $collectionId)->get();
 
-        foreach ($kws as $kw) {
+        foreach($kws as $kw) {
             $kwId = $kw->keyword_id;
             $checkKeyword = Keyword::where('id', $kwId)->first();
 

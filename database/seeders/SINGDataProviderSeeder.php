@@ -3,9 +3,11 @@
 namespace Database\Seeders;
 
 use Carbon\Carbon;
+
 use App\Models\Team;
 use App\Models\DataProviderColl;
 use App\Models\DataProviderCollHasTeam;
+
 use Illuminate\Database\Seeder;
 
 class SINGDataProviderSeeder extends Seeder

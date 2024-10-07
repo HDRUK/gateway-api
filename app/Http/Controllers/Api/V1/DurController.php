@@ -29,6 +29,7 @@ use App\Http\Requests\Dur\UploadDur;
 use App\Exceptions\NotFoundException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\RequestTransformation;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -585,7 +586,7 @@ class DurController extends Controller
             }
 
             $currentDur = Dur::where('id', $durId)->first();
-            if ($currentDur->status === Dur::STATUS_ACTIVE) {
+            if($currentDur->status === Dur::STATUS_ACTIVE) {
                 $this->indexElasticDur($durId);
             }
 
@@ -858,9 +859,9 @@ class DurController extends Controller
             }
 
             $currentDur = Dur::where('id', $id)->first();
-            if ($currentDur->status === Dur::STATUS_ACTIVE) {
+            if($currentDur->status === Dur::STATUS_ACTIVE) {
                 $this->indexElasticDur($id);
-            } elseif ($initDur->status === Dur::STATUS_ACTIVE) {
+            } elseif($initDur->status === Dur::STATUS_ACTIVE) {
                 $this->deleteDurFromElastic((int) $id);
             }
 
@@ -1171,7 +1172,7 @@ class DurController extends Controller
                 }
 
                 $currentDur = Dur::where('id', $id)->first();
-                if ($currentDur->status === Dur::STATUS_ACTIVE) {
+                if($currentDur->status === Dur::STATUS_ACTIVE) {
                     $this->indexElasticDur($id);
                 }
 
@@ -1808,7 +1809,7 @@ class DurController extends Controller
     {
         $kws = DurHasKeyword::where('dur_id', $durId)->get();
 
-        foreach ($kws as $kw) {
+        foreach($kws as $kw) {
             $kwId = $kw->keyword_id;
             $checkKeyword = Keyword::where('id', $kwId)->first();
 
@@ -1890,7 +1891,7 @@ class DurController extends Controller
     {
         $tools = DurHasTool::where('dur_id', $durId)->get();
 
-        foreach ($tools as $tool) {
+        foreach($tools as $tool) {
             $toolId = $tool->tool_id;
             $checkTool = Tool::where('id', $toolId)->first();
 

@@ -7,8 +7,10 @@ use Tests\TestCase;
 use Database\Seeders\FilterSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SavedSearchSeeder;
+
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SavedSearchTest extends TestCase

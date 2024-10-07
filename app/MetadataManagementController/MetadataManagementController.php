@@ -9,6 +9,7 @@ use App\Models\DatasetVersion;
 use App\Models\Library;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
+
 use App\Http\Traits\GetValueByPossibleKeys;
 
 class MetadataManagementController
@@ -67,7 +68,7 @@ class MetadataManagementController
             $wasTranslated =  $response->status() === 200;
             $metadata = null;
             $message = null;
-            if ($wasTranslated) {
+            if($wasTranslated) {
                 $metadata = $response->json();
                 $message = 'translation successful';
             } else {
@@ -157,7 +158,7 @@ class MetadataManagementController
     {
         try {
             $dataset = Dataset::with('versions')->where('id', (int)$id)->first();
-            if (!$dataset) {
+            if(!$dataset) {
                 throw new Exception('Dataset with id=' . $id . ' cannot be found');
             }
             $dataset->deleted_at = Carbon::now();

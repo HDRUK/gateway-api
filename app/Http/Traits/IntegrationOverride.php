@@ -4,6 +4,7 @@ namespace App\Http\Traits;
 
 use App\Models\Application;
 use Illuminate\Http\Request;
+
 use App\Exceptions\UnauthorizedException;
 
 trait IntegrationOverride

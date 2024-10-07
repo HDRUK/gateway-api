@@ -3,12 +3,15 @@
 namespace App\Console\Commands;
 
 use Exception;
+
 use App\Models\Tool;
 use App\Models\License;
 use App\Models\TypeCategory;
 use Illuminate\Console\Command;
 use App\Models\ProgrammingLanguage;
 use App\Models\ToolHasTypeCategory;
+
+
 use App\Models\ToolHasProgrammingLanguage;
 use App\Http\Traits\IndexElastic;
 

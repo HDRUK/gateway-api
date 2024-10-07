@@ -18,6 +18,7 @@ use App\Http\Requests\Federation\CreateFederation;
 use App\Http\Requests\Federation\DeleteFederation;
 use App\Http\Requests\Federation\GetAllFederation;
 use App\Http\Requests\Federation\UpdateFederation;
+
 use Illuminate\Support\Facades\Http;
 
 class FederationController extends Controller
@@ -299,7 +300,7 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
 
-            if ($secrets_payload) {
+            if($secrets_payload) {
                 $auth_secret_key_location = Config::get('fma.secrets.prependname') . (string)$federation->pid;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
@@ -326,7 +327,7 @@ class FederationController extends Controller
                 'team_id' => $teamId,
             ]);
 
-            foreach ($input['notifications'] as $email) {
+            foreach($input['notifications'] as $email) {
                 $notification = Notification::create([
                     'notification_type' => 'federation',
                     'message' => '',
@@ -459,7 +460,7 @@ class FederationController extends Controller
             Federation::where('id', $federationId)->update($updateArray);
 
             $secrets_payload = $this->getSecretsPayload($input);
-            if ($secrets_payload) {
+            if($secrets_payload) {
                 $auth_secret_key_location = Config::get('fma.secrets.prependname') . (string)$federationId;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
@@ -627,7 +628,7 @@ class FederationController extends Controller
             Federation::where('id', $federationId)->update($updateArray);
 
             $secrets_payload = $this->getSecretsPayload($input);
-            if ($secrets_payload) {
+            if($secrets_payload) {
                 $auth_secret_key_location = Config::get('fma.secrets.prependname') . (string)$federationId;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),

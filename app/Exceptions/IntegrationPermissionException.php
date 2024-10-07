@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Exception;
+
 use Illuminate\Http\Response;
 
 class IntegrationPermissionException extends Exception

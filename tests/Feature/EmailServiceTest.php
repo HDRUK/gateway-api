@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+
 use App\Jobs\SendEmailJob;
 use App\Models\EmailTemplate;
 use Illuminate\Support\Facades\Bus;
+
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Database\Seeders\EmailTemplateSeeder;

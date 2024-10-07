@@ -5,21 +5,27 @@ namespace App\Http\Controllers\Api\V1;
 use Auditor;
 use Config;
 use Exception;
+
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
+
 use App\Jobs\TermExtraction;
 use MetadataManagementController as MMC;
+
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\IntegrationOverride;
 use App\Http\Traits\MetadataOnboard;
+
 use App\Http\Controllers\Controller;
+
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+
 use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Requests\Dataset\CreateDataset;
@@ -551,14 +557,14 @@ class IntegrationDatasetController extends Controller
                 //            - publisher.publisherId --> publisher.gatewayId
                 //            - publisher.publisherName --> publisher.name
                 // -------------------------------------------------------------------
-                if (version_compare(Config::get('metadata.GWDM.version'), '1.1', '<')) {
+                if(version_compare(Config::get('metadata.GWDM.version'), '1.1', '<')) {
                     $publisher = [
                         'publisherId' => $team['pid'],
                         'publisherName' => $team['name'],
                     ];
                 } else {
                     $version = $this->getVersion(1);
-                    if (array_key_exists('version', $input['metadata']['metadata']['required'])) {
+                    if(array_key_exists('version', $input['metadata']['metadata']['required'])) {
                         $version = $input['metadata']['metadata']['required']['version'];
                     }
                     $required['version'] = $version;
@@ -761,8 +767,8 @@ class IntegrationDatasetController extends Controller
 
                 //update the GWDM modified date and version
                 $input['metadata']['metadata']['required']['modified'] = $updateTime;
-                if (version_compare(Config::get('metadata.GWDM.version'), '1.0', '>')) {
-                    if (version_compare($lastMetadata['gwdmVersion'], '1.0', '>')) {
+                if(version_compare(Config::get('metadata.GWDM.version'), '1.0', '>')) {
+                    if(version_compare($lastMetadata['gwdmVersion'], '1.0', '>')) {
                         $lastVersionCode = $lastMetadata['metadata']['required']['version'];
                     }
                 }
@@ -1132,7 +1138,7 @@ class IntegrationDatasetController extends Controller
 
     private function getVersion(int $version)
     {
-        if ($version > 999) {
+        if($version > 999) {
             throw new Exception('too many versions');
         }
 
@@ -1150,7 +1156,7 @@ class IntegrationDatasetController extends Controller
     private function extractMetadata(Mixed $metadata)
     {
 
-        if (isset($metadata['metadata']['metadata'])) {
+        if(isset($metadata['metadata']['metadata'])) {
             $metadata = $metadata['metadata'];
         }
 

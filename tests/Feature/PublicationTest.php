@@ -18,8 +18,11 @@ use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
+
 use App\Models\PublicationHasDatasetVersion;
+
 use Database\Seeders\PublicationHasToolSeeder;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 

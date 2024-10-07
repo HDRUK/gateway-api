@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Http\Enums\ActivityLogUserType;
+
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

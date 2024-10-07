@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\User;
 use App\Models\ActivityLogType;
 use App\Models\ActivityLogUserType;
+
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

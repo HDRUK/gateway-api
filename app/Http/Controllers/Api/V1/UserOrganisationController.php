@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Exception;
+
 use Auditor;
 use App\Models\User;
 use Illuminate\Http\Request;

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\DataAccessApplicationAnswer;
+
 use Illuminate\Database\Seeder;
 
 class DataAccessApplicationAnswerSeeder extends Seeder

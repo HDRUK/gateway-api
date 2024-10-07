@@ -4,12 +4,14 @@ namespace App\Mail;
 
 use App\Models\EmailTemplate;
 use App\Exceptions\MailSendException;
+
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+
 use Illuminate\Support\Facades\Http;
 
 class Email extends Mailable

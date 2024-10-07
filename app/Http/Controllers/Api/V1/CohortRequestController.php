@@ -176,7 +176,7 @@ class CohortRequestController extends Controller
 
             $query->join('users', 'cohort_requests.user_id', '=', 'users.id');
 
-            foreach ($sort as $key => $value) {
+            foreach($sort as $key => $value) {
                 if (in_array($key, ['created_at', 'updated_at', 'request_status'])) {
                     $query->orderBy('cohort_requests.' . $key, strtoupper($value));
                 }

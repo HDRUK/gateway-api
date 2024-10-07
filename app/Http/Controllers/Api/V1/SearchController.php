@@ -18,6 +18,7 @@ use App\Models\DurHasTool;
 use App\Models\Publication;
 use App\Models\PublicationHasDatasetVersion;
 use App\Models\TypeCategory;
+
 use Illuminate\Http\Request;
 use App\Exports\DataUseExport;
 use App\Models\DatasetVersionHasTool;
@@ -25,6 +26,7 @@ use App\Models\DatasetVersion;
 use App\Exports\ToolListExport;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+
 use App\Exports\DatasetListExport;
 use App\Exports\PublicationExport;
 use App\Models\ProgrammingPackage;
@@ -186,7 +188,7 @@ class SearchController extends Controller
                 $model = Dataset::with('versions', 'team')->where('id', $matchedId)
                            ->first();
 
-                if (!$model) {
+                if(!$model) {
                     \Log::warning('Elastic found id=' . $matchedId . ' which is not an existing dataset');
                     if (isset($datasetsArray[$i])) {
                         unset($datasetsArray[$i]);

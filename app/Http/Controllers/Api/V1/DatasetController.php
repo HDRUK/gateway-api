@@ -755,7 +755,7 @@ class DatasetController extends Controller
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
-            if($request['status'] === Dataset::STATUS_ACTIVE &&  Config::get('ted.enabled')) {
+            if ($request['status'] === Dataset::STATUS_ACTIVE &&  Config::get('ted.enabled')) {
 
                 $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
 

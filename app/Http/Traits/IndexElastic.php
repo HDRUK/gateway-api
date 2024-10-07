@@ -5,8 +5,10 @@ namespace App\Http\Traits;
 use Auditor;
 use Config;
 use Exception;
+
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+
 use App\Models\Collection;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
@@ -28,6 +30,8 @@ use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasTag;
 use App\Models\ToolHasTypeCategory;
 use App\Models\TypeCategory;
+
+
 use ElasticClientController as ECC;
 
 trait IndexElastic
@@ -47,8 +51,8 @@ trait IndexElastic
             $datasetMatch = Dataset::where('id', $datasetId)
                 ->firstOrFail();
 
-            if ($activeCheck) {
-                if ($datasetMatch->status !== Dataset::STATUS_ACTIVE) {
+            if($activeCheck) {
+                if($datasetMatch->status !== Dataset::STATUS_ACTIVE) {
                     return null;
                 }
             }
@@ -93,7 +97,7 @@ trait IndexElastic
                 'headers' => 'application/json'
             ];
 
-            if ($returnParams) {
+            if($returnParams) {
                 unset($metadata);
                 return $params;
             }
@@ -163,7 +167,7 @@ trait IndexElastic
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
-            if ($returnParams) {
+            if($returnParams) {
                 return $params;
             }
 
@@ -242,7 +246,7 @@ trait IndexElastic
                 'headers' => 'application/json'
             ];
 
-            if ($returnParams) {
+            if($returnParams) {
                 return $params;
             }
             ECC::indexDocument($params);
@@ -386,7 +390,7 @@ trait IndexElastic
                 'headers' => 'application/json'
             ];
 
-            if ($returnParams) {
+            if($returnParams) {
                 return $params;
             }
 
@@ -474,7 +478,7 @@ trait IndexElastic
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
-            if ($returnParams) {
+            if($returnParams) {
                 return $params;
             }
 
@@ -601,7 +605,7 @@ trait IndexElastic
                 'headers' => 'application/json'
             ];
 
-            if ($returnParams) {
+            if($returnParams) {
                 return $params;
             }
 
@@ -695,7 +699,7 @@ trait IndexElastic
     public function getMaterialTypes(array $metadata): array|null
     {
         $materialTypes = null;
-        if (version_compare(Config::get('metadata.GWDM.version'), "2.0", "<")) {
+        if(version_compare(Config::get('metadata.GWDM.version'), "2.0", "<")) {
             $containsTissue = !empty($this->getValueByPossibleKeys($metadata, [
                 'metadata.coverage.biologicalsamples',
                 'metadata.coverage.physicalSampleAvailability',
@@ -717,7 +721,7 @@ trait IndexElastic
 
     public function getContainsTissues(?array $materialTypes)
     {
-        if ($materialTypes === null) {
+        if($materialTypes === null) {
             return false;
         }
         return count($materialTypes) > 0;

@@ -3,6 +3,7 @@
 namespace App\Http\Traits;
 
 use Config;
+
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 
@@ -26,7 +27,7 @@ trait AddMetadataVersion
         array $previousMetadata
     ): int {
         $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
-        if ($incomingStatus === Dataset::STATUS_ACTIVE) {
+        if($incomingStatus === Dataset::STATUS_ACTIVE) {
             // Determine the last version of metadata
 
             if ($currDataset->status !== Dataset::STATUS_DRAFT) {
@@ -37,8 +38,8 @@ trait AddMetadataVersion
 
             //update the GWDM modified date and version
             $gwdmMetadata['required']['modified'] = $updateTime;
-            if (version_compare(Config::get('metadata.GWDM.version'), '1.0', '>')) {
-                if (version_compare($lastMetadata['gwdmVersion'], '1.0', '>')) {
+            if(version_compare(Config::get('metadata.GWDM.version'), '1.0', '>')) {
+                if(version_compare($lastMetadata['gwdmVersion'], '1.0', '>')) {
                     $newMetadata['required']['version'] = $versionCode;
                 }
             }

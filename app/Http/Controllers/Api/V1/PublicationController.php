@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use Auditor;
 use Config;
 use Exception;
+
 use App\Exceptions\NotFoundException;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
@@ -17,11 +18,13 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Carbon;
+
 use App\Http\Requests\Publication\GetPublication;
 use App\Http\Requests\Publication\EditPublication;
 use App\Http\Requests\Publication\CreatePublication;
 use App\Http\Requests\Publication\DeletePublication;
 use App\Http\Requests\Publication\UpdatePublication;
+
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\RequestTransformation;
 
@@ -419,7 +422,7 @@ class PublicationController extends Controller
             $this->checkDurs($publicationId, $durs, (int)$jwtUser['id']);
 
             $currentPublication = Publication::where('id', $publicationId)->first();
-            if ($currentPublication->status === Publication::STATUS_ACTIVE) {
+            if($currentPublication->status === Publication::STATUS_ACTIVE) {
                 $this->indexElasticPublication($publicationId);
             } else {
                 $this->deleteFromElastic($publicationId, 'publication');
@@ -571,7 +574,7 @@ class PublicationController extends Controller
             $this->checkDurs($id, $durs, (int)$jwtUser['id']);
 
             $currentPublication = Publication::where('id', $id)->first();
-            if ($currentPublication->status === Publication::STATUS_ACTIVE) {
+            if($currentPublication->status === Publication::STATUS_ACTIVE) {
                 $this->indexElasticPublication((int) $id);
             } else {
                 $this->deleteFromElastic($id, 'publication');
@@ -725,7 +728,7 @@ class PublicationController extends Controller
                         ]);
                     }
 
-                    if ($publicationModel->status === Publication::STATUS_ACTIVE) {
+                    if($publicationModel->status === Publication::STATUS_ACTIVE) {
                         $this->indexElasticPublication($id);
                     } elseif ($originalStatus === Publication::STATUS_ACTIVE) {
                         $this->deleteFromElastic($id, 'publication');

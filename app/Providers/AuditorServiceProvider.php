@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Auditor\Auditor;
+
 use Illuminate\Support\ServiceProvider;
 
 class AuditorServiceProvider extends ServiceProvider

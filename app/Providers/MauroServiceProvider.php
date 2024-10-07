@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Mauro\Mauro;
+
 use Illuminate\Support\ServiceProvider;
 
 class MauroServiceProvider extends ServiceProvider

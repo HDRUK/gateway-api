@@ -4,7 +4,9 @@ namespace App\Console\Commands;
 
 use stdClass;
 use Exception;
+
 use App\Models\CommandConfig;
+
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 
@@ -66,7 +68,7 @@ class FAIRSharingScraper extends Command
     private function runStep(stdClass $runStep): void
     {
         $response = null;
-        switch (strtolower($runStep->auth_type)) {
+        switch(strtolower($runStep->auth_type)) {
             case 'bearer':
                 try {
                     $response = Http::withHeaders([
@@ -96,7 +98,7 @@ class FAIRSharingScraper extends Command
         $response = Http::acceptJson()
             ->post($authStep->url, $authStep->payload);
 
-        if ($response->status() === 200) {
+        if($response->status() === 200) {
             $this->authToken = $response->json()[$authStep->token_response_key];
             return;
         }
