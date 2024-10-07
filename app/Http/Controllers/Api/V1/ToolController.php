@@ -1058,7 +1058,10 @@ class ToolController extends Controller
                     'description' => $value,
                     'enabled' => true,
                 ]);
+
                 return $createdTag->id;
+            } else {
+                return $tag->id;
             }
         }
 
