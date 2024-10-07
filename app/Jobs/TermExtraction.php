@@ -63,7 +63,6 @@ class TermExtraction implements ShouldQueue
     public function handle(): void
     {
         $data = json_decode(gzdecode(gzuncompress(base64_decode($this->data))), true);
-
         if($this->usePartialExtraction) {
             //data is partial - summary data only
             $this->postSummaryToTermExtractionDirector(json_encode($data));
