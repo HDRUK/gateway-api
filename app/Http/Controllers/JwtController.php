@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Auditor;
-use CloudLogger;
 use Exception;
 use App\Models\User;
 use Carbon\CarbonImmutable;
