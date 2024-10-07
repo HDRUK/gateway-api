@@ -590,7 +590,6 @@ class IntegrationDatasetController extends Controller
                 $this->mapCoverage($input['metadata'], $version);
 
                 // Dispatch term extraction to a subprocess as it may take some time
-
                 if($request['status'] === Dataset::STATUS_ACTIVE) {
                     $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
 
