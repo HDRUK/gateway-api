@@ -80,7 +80,7 @@ trait AddMetadataVersion
         $datasetVersionId = DatasetVersion::where([
             'dataset_id' => $currDataset->id,
             'version' => $versionNumber,
-        ])->select('id')->get()->pluck('id')->first();
+        ])->value('id');
         return $datasetVersionId;
 
     }
