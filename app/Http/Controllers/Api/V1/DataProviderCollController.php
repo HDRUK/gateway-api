@@ -151,9 +151,15 @@ class DataProviderCollController extends Controller
                 'description' => 'DataProviderColl get ' . $id,
             ]);
 
+            $service = array_values(array_filter(explode(",", $dpc->service)));
+
+            $result = array_merge($dpc->toArray(), [
+                'service' => empty($service) ? null : $service,
+            ]);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $dpc
+                'data' => $result
             ]);
         } catch (Exception $e) {
             Auditor::log([
@@ -279,6 +285,8 @@ class DataProviderCollController extends Controller
                 return $collection;
             }, $collections);
 
+            $service = array_values(array_filter(explode(",", $dpc->service)));
+
             $result = [
                 'id' => $dpc->id,
                 'name' => $dpc->name,
@@ -286,7 +294,7 @@ class DataProviderCollController extends Controller
                 'summary' => $dpc->summary,
                 'enabled' => $dpc->enabled,
                 'url' => $dpc->url,
-                'service' => $dpc->service,
+                'service' => empty($service) ? null : $service,
                 'teams_counts' => $teamsResult,
                 'datasets_total' => count($this->datasets),
                 'datasets' => $this->datasets,

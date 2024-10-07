@@ -745,7 +745,7 @@ class DatasetController extends Controller
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
 
-            $this->addMetadataVersion(
+            $datsetVersionId = $this->addMetadataVersion(
                 $currDataset,
                 $request['status'],
                 $updateTime,
@@ -755,13 +755,18 @@ class DatasetController extends Controller
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
-            if ($request['status'] === Dataset::STATUS_ACTIVE) {
+            if($request['status'] === Dataset::STATUS_ACTIVE &&  Config::get('ted.enabled')) {
+
+                $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
+
                 TermExtraction::dispatch(
                     $currDataset->id,
+                    $datsetVersionId,
                     $versionNumber,
-                    base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
-                    $elasticIndexing
-                )->onConnection('redis');
+                    base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
+                    $elasticIndexing,
+                    Config::get('ted.use_partial')
+                );
             }
 
             Auditor::log([

@@ -164,7 +164,12 @@ class DurController extends Controller
             $withRelated = $request->boolean('with_related', true);
             $durs = Dur::when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);
-            })->when($projectTitle, function ($query) use ($projectTitle) {
+            })->when(
+                $request->has('withTrashed') || $filterStatus === 'ARCHIVED',
+                function ($query) {
+                    return $query->withTrashed();
+                }
+            )->when($projectTitle, function ($query) use ($projectTitle) {
                 return $query->where('project_title', 'like', '%'. $projectTitle .'%');
             })->when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
@@ -1241,6 +1246,7 @@ class DurController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
+            $initDur = Dur::withTrashed()->where('id', $id)->first();
             DurHasDatasetVersion::where(['dur_id' => $id])->delete();
             DurHasKeyword::where(['dur_id' => $id])->delete();
             DurHasPublication::where(['dur_id' => $id])->delete();
@@ -1250,8 +1256,9 @@ class DurController extends Controller
             $dur->status = Dur::STATUS_ARCHIVED;
             $dur->save();
 
-            $this->deleteDurFromElastic($id);
-
+            if($initDur->status === Dur::STATUS_ACTIVE) {
+                $this->deleteDurFromElastic($id);
+            }
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',

@@ -6,7 +6,9 @@ use Config;
 use Auditor;
 use Exception;
 use App\Exceptions\NotFoundException;
+use App\Http\Enums\TagType;
 use App\Models\Tool;
+use App\Models\Tag;
 use App\Models\Dataset;
 use App\Models\License;
 use App\Models\DurHasTool;
@@ -1038,6 +1040,34 @@ class ToolController extends Controller
     }
 
     /**
+     * Creates a new tag if it doesn't exist.
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    private function createNewTagIfNotExists(mixed $value) {
+        if(!is_numeric($value) && !empty($value)) {
+            $tag = Tag::where([
+                'description' => $value,
+            ])->first();
+
+            if(is_null($tag)) {
+                $createdTag = Tag::create([
+                    'type' => TagType::TOPICS,
+                    'description' => $value,
+                    'enabled' => true,
+                ]);
+
+                return $createdTag->id;
+            } else {
+                return $tag->id;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Insert data into ToolHasTag
      *
      * @param array $tags
@@ -1051,27 +1081,37 @@ class ToolController extends Controller
                 if ($value === 0) {
                     continue;
                 }
+
+                $createdTagId = $this->createNewTagIfNotExists($value);
+
                 // This whole thing could be an updateOrCreate, but Eloquent can't cope with the fact
                 // this model has no single primary key column so we have to go around the houses.
-                $toolHasTag = ToolHasTag::withTrashed()->where(
-                    [
-                    'tool_id' => (int)$toolId,
-                    'tag_id' => (int)$value,
-                    ]
-                )->first();
-                // undelete if it has been soft-deleted
-                if ($toolHasTag && $toolHasTag->deleted_at != null) {
-                    // We have to use a raw query to undelete because Eloquent can't cope with the fact this model has no single primary key column.
-                    \DB::table('tool_has_tags')
-                    ->where(['tool_id' => (int)$toolId,
-                        'tag_id' => (int)$value])
-                        ->update(['deleted_at' => null]);
-                };
+
+                if(is_null($createdTagId)) {
+                    $toolHasTag = ToolHasTag::withTrashed()->where(
+                        [
+                        'tool_id' => (int)$toolId,
+                        'tag_id' => (int)$value,
+                        ]
+                    )->first();
+
+                    // undelete if it has been soft-deleted
+                    if ($toolHasTag && $toolHasTag->deleted_at != null) {
+                        // We have to use a raw query to undelete because Eloquent can't cope with the fact this model has no single primary key column.
+                        \DB::table('tool_has_tags')
+                        ->where(['tool_id' => (int)$toolId,
+                            'tag_id' => (int)$value])
+                            ->update(['deleted_at' => null]);
+                    };
+                } else {
+                    $toolHasTag = false;
+                }
+
                 // create it if required
                 if (!$toolHasTag) {
                     ToolHasTag::create([
                         'tool_id' => (int)$toolId,
-                        'tag_id' => (int)$value,
+                        'tag_id' => $createdTagId ? $createdTagId : (int)$value,
                     ]);
                 }
             }

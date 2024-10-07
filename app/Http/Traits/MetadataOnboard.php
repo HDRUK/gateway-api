@@ -149,13 +149,19 @@ trait MetadataOnboard
             $this->mapCoverage($input['metadata'], $version);
 
             // Dispatch term extraction to a subprocess if the dataset is marked as active
-            if ($input['status'] === Dataset::STATUS_ACTIVE) {
+
+            if($input['status'] === Dataset::STATUS_ACTIVE && Config::get('ted.enabled')) {
+
+                $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
+
                 TermExtraction::dispatch(
                     $dataset->id,
+                    $version->id,
                     '1',
-                    base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
-                    $elasticIndexing
-                )->onConnection('redis');
+                    base64_encode(gzcompress(gzencode(json_encode($tedData)))),
+                    $elasticIndexing,
+                    Config::get('ted.use_partial')
+                );
             }
 
             return [

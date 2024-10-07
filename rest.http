@@ -8,9 +8,9 @@
 @uLastName = "Doe"
 # @uEmail = "hunter59@example.com"
 @uEmailDar = "dan.nita@hdruk.ac.uk"
-@uEmail = "hdrmetadatamanager@gmail.com"
+@uEmail = "developers@hdruk.ac.uk"
 @uEmail2 = "john.for.doe.1234567890@example.com"
-@uPassword = "Gateway@123"
+@uPassword = "Watch26Task?"
 @uPasswordDar = "Gateway@123"
 # @accessToken=jwt....
 
