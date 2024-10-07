@@ -359,7 +359,7 @@ class TeamController extends Controller
                 'data' => [
                     'id' => $dp->id,
                     'is_provider' => $dp->is_provider,
-                    'team_logo' => $dp->team_logo,
+                    'team_logo' => (is_null($dp->team_logo) || strlen(trim($dp->team_logo)) === 0) ? '' : (filter_var($dp->team_logo, FILTER_VALIDATE_URL) ? $dp->team_logo : Config::get('services.media.base_url') . $dp->team_logo),
                     'url' => $dp->url,
                     'service' => empty($service) ? null : $service,
                     'name' => $dp->name,

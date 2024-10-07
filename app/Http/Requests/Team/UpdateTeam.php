@@ -106,10 +106,10 @@ class UpdateTeam extends BaseFormRequest
             ],
             'service' => [
                 'nullable',
-                'url:http,https',
+                'regex:/^(https?:\/\/[^\s,]+(,[^\s,]+)*)?$/i',
             ],
         ];
-    }
+    }                
 
     /**
      * Add Route parameters to the FormRequest.
