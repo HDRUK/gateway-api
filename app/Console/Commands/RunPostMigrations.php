@@ -138,6 +138,10 @@ class RunPostMigrations extends Command
                 'arguments' => [],
             ],
             [
+                'command' => 'app:update-sde-network-members',
+                'arguments' => [],
+            ],
+            [
                 'command' => 'app:add-logo-team-post-migration',
                 'arguments' => [],
             ], // update teams.team_logo
