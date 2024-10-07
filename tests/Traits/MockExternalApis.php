@@ -121,7 +121,15 @@ trait MockExternalApis
         ]);
 
         Http::fake([
-            env('TED_SERVICE_URL', 'http://localhost:8001') => Http::response(
+            config("ted.url") . "/datasets" => Http::response(
+                ['id' => 11, 'extracted_terms' => ['test', 'fake']],
+                201,
+                ['application/json']
+            )
+        ]);
+
+        Http::fake([
+            config("ted.url") . "/summary" => Http::response(
                 ['id' => 11, 'extracted_terms' => ['test', 'fake']],
                 201,
                 ['application/json']
