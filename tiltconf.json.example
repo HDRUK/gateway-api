@@ -5,7 +5,7 @@
 
     "traserServiceRoot": "/Users/lokisinclair/Development/HDRUK/traser",
     "tedServiceRoot": "/Users/lokisinclair/Development/HDRUK/term-extraction-director",
-    "fmaServiceRoot": "/Users/lokisinclair/Development/HDRUK/federated_metadata_mk2",
+    "gmiServiceRoot": "/Users/lokisinclair/Development/HDRUK/federated_metadata_mk2",
     "searchServiceRoot": "/Users/lokisinclair/Development/HDRUK/search-service",
     "qbServiceRoot": "/Users/lokisinclair/Development/HDRUK/qb-service",
     "darasServiceRoot": "/Users/lokisinclair/Development/HDRUK/dar-service",
