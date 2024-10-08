@@ -198,6 +198,7 @@ class SearchController extends Controller
                 $model = $model->toArray();
 
                 $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
+                $datasetsArray[$i]['_source']['updated_at'] = $model['versions'][0]['updated_at'];
                 if (strtolower($viewType) === 'mini') {
                     $datasetsArray[$i]['metadata'] = $this->trimPayload($model['versions'][0]['metadata'], $model);
                 } else {
@@ -521,6 +522,7 @@ class SearchController extends Controller
                         }
                         $toolsArray[$i]['_source']['category'] = $category;
                         $toolsArray[$i]['_source']['created_at'] = $model['created_at'];
+                        $toolsArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $foundFlag = true;
                         break;
                     }
@@ -679,7 +681,7 @@ class SearchController extends Controller
                 $foundFlag = false;
                 foreach ($collectionModels as $model) {
                     if ((int)$collection['_id'] === $model['id']) {
-                        $collectionArray[$i]['_source']['created_at'] = $model['created_at'];
+                        $collectionArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $collectionArray[$i]['name'] = $model['name'];
                         $collectionArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $collectionArray[$i]['image_link'] = (is_null($model['image_link']) || strlen(trim($model['image_link'])) === 0 || (filter_var($model['image_link'], FILTER_VALIDATE_URL)) ? null : Config::get('services.media.base_url') . $model['image_link']);
@@ -850,6 +852,7 @@ class SearchController extends Controller
                     if ((int)$dur['_id'] === $model['id']) {
                         $datasetTitles = $this->durDatasetTitles($model);
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
+                        $durArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $durArray[$i]['projectTitle'] = $model['project_title'];
                         $durArray[$i]['organisationName'] = $model['organisation_name'];
                         $durArray[$i]['team'] = $model['team'];
@@ -1052,6 +1055,7 @@ class SearchController extends Controller
                     foreach ($pubModels as $model) {
                         if ((int)$p['_id'] === $model['id']) {
                             $pubArray[$i]['_source']['created_at'] = $model['created_at'];
+                            $pubArray[$i]['_source']['year_of_publication'] = $model['year_of_publication'];
                             $pubArray[$i]['paper_title'] = $model['paper_title'];
                             // This is an in-transit workaround to remove header elements of the abstract text in the request.
                             // This requires more thought, and only a temporary fix. LS.
@@ -1100,7 +1104,7 @@ class SearchController extends Controller
                 $pubArray = $response['resultList']['result'];
                 $totalResults = $response['hitCount'];
                 foreach ($pubArray as $i => $paper) {
-                    $pubArray[$i]['_source']['publicationDate'] = $paper['pubYear'];
+                    $pubArray[$i]['_source']['year_of_publication'] = $paper['pubYear'];
                     $pubArray[$i]['_source']['title'] = $paper['title'];
                     $pubArray[$i]['paper_title'] = $paper['title'];
                     // This is an in-transit workaround to remove header elements of the abstract text in the request.
