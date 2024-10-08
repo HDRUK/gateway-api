@@ -29,6 +29,8 @@ trait MetadataOnboard
         string | null $inputVersion,
         bool $elasticIndexing
     ): array {
+
+        \Log::info('in metadata onboard');
         $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ?
             $input['is_cohort_discovery'] : false;
 
@@ -58,7 +60,10 @@ trait MetadataOnboard
             $input['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
         );
 
+
         if ($traserResponse['wasTranslated']) {
+            \Log::info('translation successful');
+
             $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
             $input['metadata']['metadata'] = $traserResponse['metadata'];
 
@@ -67,7 +72,10 @@ trait MetadataOnboard
             $mongo_pid = array_key_exists('mongo_pid', $input) ? $input['mongo_pid'] : null;
             $datasetid = array_key_exists('datasetid', $input) ? $input['datasetid'] : null;
 
+            \Log::info('getting pid');
             $pid = array_key_exists('pid', $input) ? $input['pid'] : (string) Str::uuid();
+
+            \Log::info('got pid');
 
             $dataset = MMC::createDataset([
                 'user_id' => $input['user_id'],
@@ -84,6 +92,8 @@ trait MetadataOnboard
                 'status' => $input['status'],
                 'is_cohort_discovery' => $isCohortDiscovery,
             ]);
+
+            \Log::info('created dataset');
 
             $publisher = null;
             $revisions = [

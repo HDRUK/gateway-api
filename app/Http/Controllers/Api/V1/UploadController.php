@@ -53,6 +53,7 @@ class UploadController extends Controller
     public function upload(Request $request): JsonResponse
     {
         try {
+            \Log::info('init upload');
             $input = $request->all();
             $file  = $request->file('file');
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -87,6 +88,8 @@ class UploadController extends Controller
                 'user_id' => (int)$jwtUser['id'],
                 'status' => 'PENDING'
             ]);
+
+            \Log::info('upload created');
 
 
             // spawn scan job
