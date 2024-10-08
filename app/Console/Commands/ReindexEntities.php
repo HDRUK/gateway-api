@@ -128,7 +128,6 @@ class ReindexEntities extends Command
         }
 
         $datasetIds = Dataset::where("status", Dataset::STATUS_ACTIVE)
-            ->where("id", 134)
             ->select("id")
             ->pluck('id')
             ->toArray();
