@@ -91,8 +91,8 @@ trait IndexElastic
             ];
 
 
-            \Log::info('indexing', [  'title' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.title'], ''), 'containsTissue' => $containsTissue,
-            'sampleAvailability' => $materialTypes]);
+            //\Log::info('indexing', [  'title' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.title'], ''), 'containsTissue' => $containsTissue,
+            //'sampleAvailability' => $materialTypes]);
 
             $params = [
                 'index' => ECC::ELASTIC_NAME_DATASET,
