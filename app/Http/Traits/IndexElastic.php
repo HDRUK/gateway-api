@@ -703,15 +703,13 @@ trait IndexElastic
     {
         $materialTypes = null;
         if(version_compare(Config::get('metadata.GWDM.version'), "2.0", "<")) {
-
-            \Log::info('getMaterialTypes', ['message' => 'old gwdm']);
             $containsTissue = !empty($this->getValueByPossibleKeys($metadata, [
                 'metadata.coverage.biologicalsamples',
                 'metadata.coverage.physicalSampleAvailability',
             ], ''));
         } else {
             $tissues =  Arr::get($metadata, 'metadata.tissuesSampleCollection', null);
-            \Log::info('getMaterialTypes', ['message' => 'newer', 'tissues' => $tissues]);
+            \Log::info('getMaterialTypes', ['metadata' => $metadata['metadata'], 'tissues' => $tissues]);
             if (!is_null($tissues)) {
                 $materialTypes = array_reduce($tissues, function ($return, $item) {
                     if ($item['materialType'] !== 'None/not available') {
