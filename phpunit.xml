@@ -26,6 +26,8 @@
     <env name="GOOGLE_CLOUD_LOGGING_ENABLED" value="false"/>
     <env name="GOOGLE_CLOUD_PUBSUB_ENABLED" value="false"/>
     <env name="MEDIA_URL" value="http://media.url"/>
+    <env name="JWT_SECRET" value="7DgKgfVvocDNrVzxXJPR3fkJuplN0PsIQ4PInjjbAEHRDmFLxwpHbvCbLPPtisiM"/>
+    <env name="JWT_EXPIRATION" value="86400"/>
   </php>
   <source>
     <include>

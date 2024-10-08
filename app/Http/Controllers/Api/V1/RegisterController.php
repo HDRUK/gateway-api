@@ -6,8 +6,6 @@ use Hash;
 use Config;
 use Exception;
 use App\Models\User;
-use Carbon\CarbonImmutable;
-use App\Models\AuthorisationCode;
 use App\Http\Requests\UserRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\HubspotContacts;
@@ -121,36 +119,6 @@ class RegisterController extends Controller
      */
     private function createJwt($user)
     {
-        $currentTime = CarbonImmutable::now();
-        $expireTime = $currentTime->addSeconds(env('JWT_EXPIRATION'));
-
-        $userClaims = [
-            'id' => (string)$user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-        ];
-
-        $arrayClaims = [
-            'iss' => (string)env('APP_URL'),
-            'sub' => (string)$user->name,
-            'aud' => (string)env('APP_NAME'),
-            'iat' => (string)strtotime($currentTime),
-            'nbf' => (string)strtotime($currentTime),
-            'exp' => (string)strtotime($expireTime),
-            'jti' => (string)env('JWT_SECRET'),
-            'user' => $userClaims,
-        ];
-
-        $this->jwt->setPayload($arrayClaims);
-        $jwt = $this->jwt->create();
-
-        AuthorisationCode::createRow([
-            'user_id' => (int)$user->id,
-            'jwt' => (string)$jwt,
-            'created_at' => $currentTime,
-            'expired_at' => $expireTime,
-        ]);
-
-        return $jwt;
+        return $this->jwt->generateToken($user->id);
     }
 }
