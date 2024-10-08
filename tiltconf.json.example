@@ -12,7 +12,7 @@
     "clamavServiceRoot": "/Users/lokisinclair/Development/HDRUK/clamav-scanner",
     "traserEnabled": true,
     "tedEnabled": true,
-    "fmaEnabled": true,
+    "gmiEnabled": true,
     "searchEnabled": true,
     "qbEnabled": true
     "darasEnabled": true
