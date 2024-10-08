@@ -102,7 +102,7 @@ class CreateTeam extends BaseFormRequest
             ],
             'service' => [
                 'nullable',
-                'url:http,https',
+                'regex:/^(https?:\/\/[^\s,]+(,[^\s,]+)*)?$/i',
             ],
         ];
     }
