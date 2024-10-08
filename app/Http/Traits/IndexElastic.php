@@ -48,6 +48,11 @@ trait IndexElastic
     public function reindexElastic(string $datasetId, bool $returnParams = false, bool $activeCheck = true): null|array
     {
         try {
+
+            if($datasetId !== 134) {
+                return;
+            }
+
             $datasetMatch = Dataset::where('id', $datasetId)
                 ->firstOrFail();
 
@@ -89,6 +94,7 @@ trait IndexElastic
                 'accessService' => $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.access.accessServiceCategory'], null),
                 'dataProviderColl' => DataProviderColl::whereIn('id', DataProviderCollHasTeam::where('team_id', $datasetMatch->team_id)->pluck('data_provider_coll_id'))->pluck('name')->all(),
             ];
+
 
             \Log::info('indexing', [  'title' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.title'], ''), 'containsTissue' => $containsTissue,
             'sampleAvailability' => $materialTypes]);
@@ -709,7 +715,6 @@ trait IndexElastic
             ], ''));
         } else {
             $tissues =  Arr::get($metadata, 'metadata.tissuesSampleCollection', null);
-            \Log::info('getMaterialTypes', [ 'tissues' => $tissues]);
             if (!is_null($tissues)) {
                 $materialTypes = array_reduce($tissues, function ($return, $item) {
                     if ($item['materialType'] !== 'None/not available') {
