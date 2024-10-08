@@ -58,10 +58,7 @@ trait MetadataOnboard
             $input['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
         );
 
-
         if ($traserResponse['wasTranslated']) {
-            \Log::info('translation successful');
-
             $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
             $input['metadata']['metadata'] = $traserResponse['metadata'];
 

@@ -88,6 +88,7 @@ class UploadController extends Controller
                 'status' => 'PENDING'
             ]);
 
+
             // spawn scan job
             ScanFileUpload::dispatch(
                 (int)$upload->id,
