@@ -50,7 +50,7 @@ trait IndexElastic
         try {
 
             if($datasetId !== 134) {
-                return;
+                return null;
             }
 
             $datasetMatch = Dataset::where('id', $datasetId)
