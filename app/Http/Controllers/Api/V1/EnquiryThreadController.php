@@ -268,6 +268,12 @@ class EnquiryThreadController extends Controller
                 ];
             }
 
+            $payload['thread']['dataCustodians'] = [];
+            foreach ($payload['thread']['datasets'] as $d) {
+                $t = Team::where('id', $d['team_id'])->first();
+                $payload['thread']['dataCustodians'][] = $t->name;
+            }
+
             // For each dataset we need to determine if teams are responsible for the data providing
             // if not, then a separate enquiry thread and message are created for that team also.
             foreach ($payload['thread']['datasets'] as $d) {
