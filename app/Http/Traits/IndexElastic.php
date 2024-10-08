@@ -90,7 +90,8 @@ trait IndexElastic
                 'dataProviderColl' => DataProviderColl::whereIn('id', DataProviderCollHasTeam::where('team_id', $datasetMatch->team_id)->pluck('data_provider_coll_id'))->pluck('name')->all(),
             ];
 
-            \Log::info('indexing', $toIndex);
+            \Log::info('indexing', [   'containsTissue' => $containsTissue,
+            'sampleAvailability' => $materialTypes]);
 
             $params = [
                 'index' => ECC::ELASTIC_NAME_DATASET,
