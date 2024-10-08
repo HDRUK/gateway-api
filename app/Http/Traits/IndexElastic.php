@@ -90,7 +90,7 @@ trait IndexElastic
                 'dataProviderColl' => DataProviderColl::whereIn('id', DataProviderCollHasTeam::where('team_id', $datasetMatch->team_id)->pluck('data_provider_coll_id'))->pluck('name')->all(),
             ];
 
-            \Log::info('indexing', [   'containsTissue' => $containsTissue,
+            \Log::info('indexing', [  'title' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.title'], ''), 'containsTissue' => $containsTissue,
             'sampleAvailability' => $materialTypes]);
 
             $params = [
@@ -709,7 +709,7 @@ trait IndexElastic
             ], ''));
         } else {
             $tissues =  Arr::get($metadata, 'metadata.tissuesSampleCollection', null);
-            \Log::info('getMaterialTypes', ['metadata' => $metadata['metadata'], 'tissues' => $tissues]);
+            \Log::info('getMaterialTypes', [ 'tissues' => $tissues]);
             if (!is_null($tissues)) {
                 $materialTypes = array_reduce($tissues, function ($return, $item) {
                     if ($item['materialType'] !== 'None/not available') {
