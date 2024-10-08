@@ -48,11 +48,6 @@ trait IndexElastic
     public function reindexElastic(string $datasetId, bool $returnParams = false, bool $activeCheck = true): null|array
     {
         try {
-
-            if($datasetId !== 134) {
-                return null;
-            }
-
             $datasetMatch = Dataset::where('id', $datasetId)
                 ->firstOrFail();
 
