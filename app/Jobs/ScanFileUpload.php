@@ -90,7 +90,6 @@ class ScanFileUpload implements ShouldQueue
      */
     public function handle(): void
     {
-        \Log::info('in scanning job');
         $upload = Upload::findOrFail($this->uploadId);
         $filePath = $upload->file_location;
 
@@ -121,8 +120,6 @@ class ScanFileUpload implements ShouldQueue
             $isInfected = $response['isInfected'];
 
             CloudLogger::write('Malware scan completed');
-
-            \Log::info('scan complete');
 
             // Check if the file is infected
             if ($isInfected) {
@@ -254,7 +251,6 @@ class ScanFileUpload implements ShouldQueue
     private function createDatasetFromFile(string $loc, Upload $upload): void
     {
         try {
-            \Log::info('in create dataset');
             $team = Team::findOrFail($this->teamId)->toArray();
 
             $content = Storage::disk($this->fileSystem . '.scanned')->get($loc);
