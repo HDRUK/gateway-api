@@ -354,7 +354,7 @@ class TeamController extends Controller
             }, $collections);
 
             $collections = array_filter($collections, function($collection) {
-                return $collection->status === Collection::STATUS_ACTIVE && $collection->public;
+                return $collection['status'] === Collection::STATUS_ACTIVE && $collection['public'];
             });
 
             $service = array_values(array_filter(explode(",", $dp->service)));
