@@ -227,7 +227,12 @@ class SocialLoginController extends Controller
             $cookies = [
                 Cookie::make('token', $jwt),
             ];
-            return redirect()->away(env('GATEWAY_URL') . '/account/profile')->withCookies($cookies);
+            if ($user['name'] === '' || $user['email'] === '') {
+                return redirect()->away(env('GATEWAY_URL') . '/account/profile')->withCookies($cookies);
+            } else {
+                $redirectUrl = session('redirectUrl');
+                return redirect()->away($redirectUrl)->withCookies($cookies);
+            }
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
