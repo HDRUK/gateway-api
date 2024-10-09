@@ -848,9 +848,9 @@ class SearchController extends Controller
             $durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
             Log::info('Culprit 1');
             // i take 5 seconds
-            // foreach ($durModels as $model) {
-                
-            // }
+            foreach ($durModels as $model) {
+                $model->setAttribute('datasets', $model->allDatasets);
+            }
             Log::info('Culprit 2');
             //is this ever actually used, or was this used to fix something with data?
             // i take 6 seconds
@@ -858,7 +858,6 @@ class SearchController extends Controller
             foreach ($durArray as $i => $dur) {
                 $foundFlag = false;
                 foreach ($durModels as $model) {
-                    $model->setAttribute('datasets', $model->allDatasets);
                     if ((int)$dur['_id'] === $model['id']) {
                         $datasetTitles = $this->durDatasetTitles($model);
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
