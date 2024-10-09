@@ -846,7 +846,7 @@ class SearchController extends Controller
             }
 
             $durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
-
+            Log::info('4');
             foreach ($durModels as $model) {
                 $model->setAttribute('datasets', $model->allDatasets);
             }
@@ -875,7 +875,7 @@ class SearchController extends Controller
                     continue;
                 }
             }
-
+            Log::info('5');
             if ($download) {
                 Auditor::log([
                     'action_type' => 'GET',
@@ -884,20 +884,20 @@ class SearchController extends Controller
                 ]);
                 return Excel::download(new DataUseExport($durArray), 'dur.csv');
             }
-
+            Log::info('6');
             $durArray = $this->sortSearchResult($durArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $durArray, $perPage);
             unset($durArray);
-
+            Log::info('7');
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
             ]);
-
+            Log::info('8');
             $final = $aggs->merge($paginatedData);
-
+            Log::info('9');
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
