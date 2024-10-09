@@ -49,6 +49,7 @@ use App\Http\Requests\Search\DOISearch;
 use App\Http\Requests\Search\PublicationSearch;
 use App\Models\DataProviderColl;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Support\Facades\Log;
 
 class SearchController extends Controller
 {
@@ -827,14 +828,18 @@ class SearchController extends Controller
 
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
+            //$agg = []
             $aggs = Filter::where('type', 'dataUseRegister')->get()->toArray();
             $input['aggs'] = $aggs;
 
+
+            Log::info('1');
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur';
             $response = Http::post($urlString, $input);
-
+            Log::info('2');
             $durArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
+            Log::info('3');
             $matchedIds = [];
             foreach (array_values($durArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
