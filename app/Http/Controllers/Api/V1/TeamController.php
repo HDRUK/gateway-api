@@ -1027,13 +1027,27 @@ class TeamController extends Controller
                         Config::get('metadata.GWDM.version'),
                     );
                     if ($isValid) {
-                        $this->addMetadataVersion(
-                            $d,
-                            $d['status'],
-                            now(),
-                            $metadata,
-                            $d->latestVersion()->metadata
-                        );
+                        $metadataSaveObject = [
+                            'gwdmVersion' =>  Config::get('metadata.GWDM.version'),
+                            'metadata' => $metadata,
+                            'original_metadata' => $d->latestVersion()->metadata['original_metadata'],
+                        ];
+                        DatasetVersion::where([
+                            'dataset_id' => $d->id,
+                            'version' => $d->lastMetadataVersionNumber()->version,
+                        ])->update([
+                            'metadata' => json_encode($metadataSaveObject),
+                        ]);
+                        // Note BES 09/10/24
+                        // Removing the creation of a new version due to memory load
+                        // $this->addMetadataVersion(
+                        //     $d,
+                        //     $d['status'],
+                        //     now(),
+                        //     $metadata,
+                        //     $d->latestVersion()->metadata
+                        // );
+
                         $this->reindexElastic($d->id);
                     } else {
                         throw new Exception('Failed to validate metadata with new team name');
