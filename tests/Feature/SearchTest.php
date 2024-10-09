@@ -1088,7 +1088,7 @@ class SearchTest extends TestCase
                     '_source',
                     'name',
                     'datasetTitles',
-                    'imgr_url',
+                    'img_url',
                     'geographicLocations',
                 ],
             ],
