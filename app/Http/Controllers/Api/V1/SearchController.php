@@ -833,24 +833,26 @@ class SearchController extends Controller
             $input['aggs'] = $aggs;
 
 
-            Log::info('1');
+        
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur';
             $response = Http::post($urlString, $input);
-            Log::info('2');
+         
             $durArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
-            Log::info('3');
+            
             $matchedIds = [];
             foreach (array_values($durArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
             }
 
             $durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
-            Log::info('4');
+            Log::info('Culprit 1');
             foreach ($durModels as $model) {
                 $model->setAttribute('datasets', $model->allDatasets);
             }
-
+            Log::info('Culprit 2');
+            //is this ever actually used, or was this used to fix something with data?
+            $WasIEverUsedCount = 0;
             foreach ($durArray as $i => $dur) {
                 $foundFlag = false;
                 foreach ($durModels as $model) {
@@ -867,6 +869,8 @@ class SearchController extends Controller
                         $durArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $durArray[$i]['toolNames'] = $this->durToolNames($model['id']);
                         $foundFlag = true;
+                        $WasIEverUsedCount ++ ;
+
                         break;
                     }
                 }
@@ -875,7 +879,8 @@ class SearchController extends Controller
                     continue;
                 }
             }
-            Log::info('5');
+            Log::info('Culprit was used: ' .$WasIEverUsedCount);
+            Log::info('Culprit 3');
             if ($download) {
                 Auditor::log([
                     'action_type' => 'GET',
@@ -884,20 +889,20 @@ class SearchController extends Controller
                 ]);
                 return Excel::download(new DataUseExport($durArray), 'dur.csv');
             }
-            Log::info('6');
+            
             $durArray = $this->sortSearchResult($durArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $durArray, $perPage);
             unset($durArray);
-            Log::info('7');
+            
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
             ]);
-            Log::info('8');
+            
             $final = $aggs->merge($paginatedData);
-            Log::info('9');
+            
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
