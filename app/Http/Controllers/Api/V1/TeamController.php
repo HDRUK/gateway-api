@@ -353,12 +353,6 @@ class TeamController extends Controller
                 return $collection;
             }, $collections);
 
-            $collections = [[
-                'id' => 1,
-                'status' => 'ACTIVE',
-                'public' => 1
-            ]];
-
             $collections = array_filter($collections, function($collection) {
                 return $collection['status'] === Collection::STATUS_ACTIVE && $collection['public'];
             });
