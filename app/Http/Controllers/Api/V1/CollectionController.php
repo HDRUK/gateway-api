@@ -510,7 +510,7 @@ class CollectionController extends Controller
             }
 
             $currentCollection = Collection::where('id', $collectionId)->first();
-            if($currentCollection->status === Collection::STATUS_ACTIVE) {
+            if ($currentCollection->status === Collection::STATUS_ACTIVE) {
                 $this->indexElasticCollections((int) $collectionId);
             }
 
@@ -683,7 +683,7 @@ class CollectionController extends Controller
             }
 
             $currentCollection = Collection::where('id', $id)->first();
-            if($currentCollection->status === Collection::STATUS_ACTIVE) {
+            if ($currentCollection->status === Collection::STATUS_ACTIVE) {
                 $this->indexElasticCollections((int) $id);
             } else {
                 $this->deleteCollectionFromElastic((int) $id);
@@ -1111,6 +1111,13 @@ class CollectionController extends Controller
             if (!$checking) {
                 $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId);
                 $this->reindexElastic($dataset['id']);
+            } else {
+                if ($checking['deleted_at']) {
+                    CollectionHasDatasetVersion::withTrashed()->where([
+                        'collection_id' => $collectionId,
+                        'dataset_version_id' => $datasetVersionId,
+                    ])->update(['deleted_at' => null]);
+                }
             }
         }
     }
@@ -1161,7 +1168,7 @@ class CollectionController extends Controller
     private function checkInCollectionHasDatasetVersions(int $collectionId, int $datasetVersionId)
     {
         try {
-            return CollectionHasDatasetVersion::where([
+            return CollectionHasDatasetVersion::withTrashed()->where([
                 'collection_id' => $collectionId,
                 'dataset_version_id' => $datasetVersionId,
             ])->first();
