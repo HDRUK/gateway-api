@@ -343,14 +343,19 @@ class TeamController extends Controller
                 $user = $this->checkEditArray($user, $arrayKeys);
                 $tool['user'] = $user;
             }
-            //$this->collections
-            $collections = Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', [1,2])->get()->toArray();
+
+            $collections = Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at', 'status', 'public')->whereIn('id', $this->collections)->get()->toArray();
+
             $collections = array_map(function ($collection) {
                 if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
                     $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
                 }
                 return $collection;
             }, $collections);
+
+            $collections = array_values(array_filter($collections, function ($collection) {
+                return $collection['status'] === Collection::STATUS_ACTIVE && $collection['public'];
+            }));
 
             $service = array_values(array_filter(explode(",", $dp->service)));
 
@@ -1027,13 +1032,27 @@ class TeamController extends Controller
                         Config::get('metadata.GWDM.version'),
                     );
                     if ($isValid) {
-                        $this->addMetadataVersion(
-                            $d,
-                            $d['status'],
-                            now(),
-                            $metadata,
-                            $d->latestVersion()->metadata
-                        );
+                        $metadataSaveObject = [
+                            'gwdmVersion' =>  Config::get('metadata.GWDM.version'),
+                            'metadata' => $metadata,
+                            'original_metadata' => $d->latestVersion()->metadata['original_metadata'],
+                        ];
+                        DatasetVersion::where([
+                            'dataset_id' => $d->id,
+                            'version' => $d->lastMetadataVersionNumber()->version,
+                        ])->update([
+                            'metadata' => json_encode($metadataSaveObject),
+                        ]);
+                        // Note BES 09/10/24
+                        // Removing the creation of a new version due to memory load
+                        // $this->addMetadataVersion(
+                        //     $d,
+                        //     $d['status'],
+                        //     now(),
+                        //     $metadata,
+                        //     $d->latestVersion()->metadata
+                        // );
+
                         $this->reindexElastic($d->id);
                     } else {
                         throw new Exception('Failed to validate metadata with new team name');

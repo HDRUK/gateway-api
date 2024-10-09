@@ -110,7 +110,7 @@ class SearchTest extends TestCase
                         'title',
                         'dataUseTitles',
                         'populationSize',
-                        'created_at'
+                        'updated_at'
                     ],
                     'dataProviderColl',
                     'team' => [
@@ -198,8 +198,8 @@ class SearchTest extends TestCase
         ]);
         $this->assertTrue($response['data'][0]['_source']['shortTitle'] === 'Another asthma dataset');
 
-        // Test sorting by created_at desc
-        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?sort=created_at:desc', ["query" => "asthma"], ['Accept' => 'application/json']);
+        // Test sorting by updated_at desc
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?sort=updated_at:desc', ["query" => "asthma"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
@@ -232,7 +232,7 @@ class SearchTest extends TestCase
         $this->assertTrue($response['data'][0]['_id'] === '1');
 
         // Test minimal payload for searching datasets
-        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?view_type=mini&sort=created_at:desc', ["query" => "asthma"], ['Accept' => 'application/json']);
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?view_type=mini&sort=updated_at:desc', ["query" => "asthma"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
 
         $metadata = $response['data'][0]['metadata'];
@@ -299,7 +299,7 @@ class SearchTest extends TestCase
                         'description',
                         'name',
                         'tags',
-                        'created_at'
+                        'updated_at'
                     ],
                     'uploader',
                     'team_name',
@@ -407,8 +407,8 @@ class SearchTest extends TestCase
         ]);
         $this->assertTrue($response['data'][0]['_source']['name'] === 'A tool');
 
-        // Test sorting by created_at desc
-        $response = $this->json('POST', self::TEST_URL_SEARCH . "/tools" . '?sort=created_at:desc', ["query" => "nlp"], ['Accept' => 'application/json']);
+        // Test sorting by updated_at desc
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/tools" . '?sort=updated_at:desc', ["query" => "nlp"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
@@ -463,7 +463,7 @@ class SearchTest extends TestCase
                         'name',
                         'keywords',
                         'datasetTitles',
-                        'created_at'
+                        'updated_at'
                     ],
                     'name',
                     'dataProviderColl',
@@ -553,7 +553,7 @@ class SearchTest extends TestCase
         $this->assertTrue($response['data'][0]['_source']['name'] === 'Another Collection');
 
         // Test sorting by created_at desc
-        $response = $this->json('POST', self::TEST_URL_SEARCH . "/collections" . '?sort=created_at:desc', ["query" => "nlp"], ['Accept' => 'application/json']);
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/collections" . '?sort=updated_at:desc', ["query" => "nlp"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
@@ -667,7 +667,7 @@ class SearchTest extends TestCase
                         'publisherName',
                         'sector',
                         'organisationName',
-                        'created_at'
+                        'updated_at'
                     ],
                     'organisationName',
                     'projectTitle',
@@ -762,8 +762,8 @@ class SearchTest extends TestCase
 
         $this->assertTrue($response['data'][0]['_source']['projectTitle'] === 'Another Data Use');
 
-        // Test sorting by created_at desc
-        $response = $this->json('POST', self::TEST_URL_SEARCH . "/dur" . '?sort=created_at:desc', ["query" => "term"], ['Accept' => 'application/json']);
+        // Test sorting by updated_at desc
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/dur" . '?sort=updated_at:desc', ["query" => "term"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
@@ -810,9 +810,8 @@ class SearchTest extends TestCase
                         'journalName',
                         'abstract',
                         'authors',
-                        'publicationDate',
+                        'year_of_publication',
                         'datasetTitles',
-                        'created_at'
                     ],
                     'paper_title',
                     'abstract',
@@ -932,14 +931,14 @@ class SearchTest extends TestCase
         $this->assertTrue($response['data'][0]['_id'] === '1');
 
         // Test federated search sorted by publication date
-        $response = $this->json('POST', self::TEST_URL_SEARCH . "/publications" . '?sort=publicationDate:desc&source=FED', ["query" => "term"], ['Accept' => 'application/json']);
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/publications" . '?sort=year_of_publication:desc&source=FED', ["query" => "term"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
                 0 => [
                     '_source' => [
                         'title',
-                        'publicationDate',
+                        'year_of_publication',
                     ],
                     'paper_title',
                     'abstract',
@@ -976,7 +975,7 @@ class SearchTest extends TestCase
                 0 => [
                     '_source' => [
                         'title',
-                        'publicationDate',
+                        'year_of_publication',
                     ],
                     'paper_title',
                     'abstract',
@@ -1139,7 +1138,7 @@ class SearchTest extends TestCase
         ]);
         $this->assertTrue($response['data'][0]['_source']['name'] === 'Another Provider');
 
-        // Test sorting by created_at desc
+        // Test sorting by updated_at desc
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_provider_colls" . '?sort=updated_at:desc', ["query" => "term"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -1271,7 +1270,7 @@ class SearchTest extends TestCase
         ]);
         $this->assertTrue($response['data'][0]['_source']['name'] === 'Another Provider');
 
-        // Test sorting by created_at desc
+        // Test sorting by updated_at desc
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_providers" . '?sort=updated_at:desc', ["query" => "term"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
