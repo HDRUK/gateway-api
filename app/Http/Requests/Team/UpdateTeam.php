@@ -109,7 +109,7 @@ class UpdateTeam extends BaseFormRequest
                 'regex:/^(https?:\/\/[^\s,]+(,[^\s,]+)*)?$/i',
             ],
         ];
-    }                
+    }
 
     /**
      * Add Route parameters to the FormRequest.
