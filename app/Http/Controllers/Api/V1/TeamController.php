@@ -344,7 +344,7 @@ class TeamController extends Controller
                 $tool['user'] = $user;
             }
 
-            $collections = Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at', 'status')->whereIn('id', $this->collections)->get()->toArray();
+            $collections = Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at', 'public')->whereIn('id', $this->collections)->get()->toArray();
 
             $collections = array_map(function ($collection) {
                 if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
@@ -354,7 +354,7 @@ class TeamController extends Controller
             }, $collections);
 
             $collections = array_filter($collections, function($collection) {
-                return $collection->status === Collection::STATUS_ACTIVE;
+                return $collection->public;
             });
 
             $service = array_values(array_filter(explode(",", $dp->service)));
