@@ -343,14 +343,14 @@ class TeamController extends Controller
                 $user = $this->checkEditArray($user, $arrayKeys);
                 $tool['user'] = $user;
             }
-
-            $collections = Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', $this->collections)->get()->toArray();
+            //$this->collections
+            $collections = Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', [1,2])->get()->toArray();
             $collections = array_map(function ($collection) {
                 if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
                     $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
                 }
                 return $collection;
-            }, array_values($collections));
+            }, $collections);
 
             $service = array_values(array_filter(explode(",", $dp->service)));
 
