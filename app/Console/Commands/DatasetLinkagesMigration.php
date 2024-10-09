@@ -41,8 +41,14 @@ class DatasetLinkagesMigration extends Command
         foreach ($this->csvData as $csv) {
             $sourceDataset = Dataset::where('mongo_object_id', $csv['source_mongo_object_id'])
                 ->select('id')->first();
+            if(!$sourceDataset) {
+                continue;
+            }
             $targetDataset = Dataset::where('mongo_object_id', $csv['target_mongo_object_id'])
                 ->select('id')->first();
+            if(!$targetDataset) {
+                continue;
+            }
 
             $sourceDatasetVersion = DatasetVersion::where('dataset_id', $sourceDataset->id)
                 ->select('id')->first();
