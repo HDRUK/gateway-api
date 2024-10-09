@@ -350,7 +350,7 @@ class TeamController extends Controller
                     $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
                 }
                 return $collection;
-            }, $collections);
+            }, array_values($collections));
 
             $service = array_values(array_filter(explode(",", $dp->service)));
 
