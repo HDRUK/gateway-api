@@ -81,6 +81,7 @@ class ScanFileUpload implements ShouldQueue
         $this->elasticIndexing = $elasticIndexing;
         $this->datasetId = $datasetId;
         $this->collectionId = $collectionId;
+        $this->isTestEnv = strtoupper(config('app.env')) === 'TESTING';
     }
 
     /**
@@ -213,7 +214,7 @@ class ScanFileUpload implements ShouldQueue
 
             $import = new ImportDur($data);
 
-            if (config('app.env') == 'testing') {
+            if ($this->isTestEnv) {
                 Excel::import($import, $path);
             } else {
                 Excel::import($import, $path, $this->fileSystem . '.scanned');
@@ -322,7 +323,7 @@ class ScanFileUpload implements ShouldQueue
 
             $import = array();
 
-            if (config('app.env') == 'testing') {
+            if ($this->isTestEnv) {
                 $import = Excel::toArray($import, $path);
             } else {
                 $import = Excel::toArray(new ImportStructuralMetadata(), $path, $this->fileSystem . '.scanned');
