@@ -320,6 +320,8 @@ class ScanFileUpload implements ShouldQueue
         try {
             $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
 
+            $import = array();
+
             if (config('app.env') == 'testing') {
                 $import = Excel::toArray($import, $path);
             } else {
