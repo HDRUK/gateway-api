@@ -49,6 +49,7 @@ class ScanFileUpload implements ShouldQueue
     private bool $elasticIndexing = true;
     private ?int $datasetId = null;
     private ?int $collectionId = null;
+    private bool $isTestEnv = false;
 
     public $timeout = 180; // default timeout is 60
 
@@ -81,7 +82,7 @@ class ScanFileUpload implements ShouldQueue
         $this->elasticIndexing = $elasticIndexing;
         $this->datasetId = $datasetId;
         $this->collectionId = $collectionId;
-        $this->isTestEnv = strtoupper(config('app.env')) === 'TESTING';
+        $this->isTestEnv = (strtoupper(config('app.env')) === 'TESTING');
     }
 
     /**
