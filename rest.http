@@ -1553,16 +1553,19 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "mongo_object_id": "5fa1a0c7ea8c9619608caa13",
-    "mongo_id": "6978092390119939",
-    "counter": 142,
-    "name": "Welcome to the Gateway!",
-    "description": "Welcome to the Gateway!   This is the place where you will find all the resources you need to use the Gateway, from short how-to videos showing you how to add do things on the Gateway, to self-guided tour, and background information.   Let us know if there is anything else you would like to see in this collection. ",
-    "image_link": "https://images.unsplash.com/photo-1489533119213-66a5cd877091?",
-    "public": true,
+    "mongo_object_id": "602bd30dbec10f066b534cca",
+    "mongo_id": "16338751663288464",
+    "counter": 0,
+    "name": "Outbreak Investigation - NCS COVID-19 Transmssion and Environment",
+    "description": "We are exploring the existing data landscapes",
+    "image_link": "",
+    "public": false,
     "enabled": true,
     "keywords": [],
-    "datasets": []
+    "datasets": [],
+    "tools": [],
+    "dur": [],
+    "publications": []
 }
 
 # {

@@ -24,6 +24,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     zlib1g-dev \
     zip \
+    supervisor \
     default-mysql-client \ 
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql soap zip iconv bcmath \
@@ -60,6 +61,8 @@ COPY . /var/www
 # RUN echo "TRASER_ENABLED=$TRASER_ENABLED" >> /var/www/.env
 # RUN echo "FMA_ENABLED=$TRASER_ENABLED" >> /var/www/.env
 
+# Copy Supervisor configuration
+COPY ./docker/supervisord.conf /etc/supervisor/supervisord.conf
 
 # Composer & laravel
 RUN composer install \
@@ -84,10 +87,13 @@ RUN php artisan passport:keys
 RUN php artisan storage:link
 
 # Starts both, laravel server and job queue
-CMD ["/var/www/docker/start.sh"]
+# CMD ["/var/www/docker/start.sh"]
 
 # Expose port
 EXPOSE 8000
 
 # for study:
 # composer install -q -n --no-ansi --no-dev --no-scripts --no-progress --prefer-dist
+
+# Start Supervisor as the CMD process
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
