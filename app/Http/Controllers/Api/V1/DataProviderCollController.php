@@ -303,7 +303,7 @@ class DataProviderCollController extends Controller
             $result = [
                 'id' => $dpc->id,
                 'name' => $dpc->name,
-                'img_url' => (is_null($dpc->img_url) || strlen(trim($dpc->img_url)) === 0 || filter_var($dpc->img_url, FILTER_VALIDATE_URL) ? null : Config::get('services.media.base_url') . $dpc->img_url),
+                'img_url' => (is_null($dpc->img_url) || strlen(trim($dpc->img_url)) === 0) ? '' : (filter_var($dpc->img_url, FILTER_VALIDATE_URL) ? $dpc->img_url : Config::get('services.media.base_url') . $dpc->img_url),
                 'summary' => $dpc->summary,
                 'enabled' => $dpc->enabled,
                 'url' => $dpc->url,
