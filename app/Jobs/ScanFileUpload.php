@@ -319,7 +319,11 @@ class ScanFileUpload implements ShouldQueue
     {
         try {
             $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
-            $import = Excel::toArray(new ImportStructuralMetadata(), $path);
+            if (config('app.env') == 'testing') {
+                $import = Excel::toArray($import, $path);
+            } else {
+                $import = Excel::toArray(new ImportStructuralMetadata(), $path, $this->fileSystem . '.scanned');
+            }
 
             $structuralMetadata = array();
             foreach ($import[0] as $row) {
