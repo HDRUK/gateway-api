@@ -62,7 +62,7 @@ COPY . /var/www
 # RUN echo "FMA_ENABLED=$TRASER_ENABLED" >> /var/www/.env
 
 # Copy Supervisor configuration
-COPY ./docker/supervisord.conf /etc/supervisor/supervisord.conf
+COPY ./init/supervisord.conf /etc/supervisor/supervisord.conf
 
 # Composer & laravel
 RUN composer install \
