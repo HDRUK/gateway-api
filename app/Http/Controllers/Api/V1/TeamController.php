@@ -326,7 +326,7 @@ class TeamController extends Controller
                 'description' => 'Team get ' . $id . ' summary',
             ]);
 
-            $tools = Tool::whereIn('id', $this->tools)->select('id', 'name', 'user_id', 'created_at')->get();
+            $tools = Tool::whereIn('id', $this->tools)->where('status', Tool::STATUS_ACTIVE)->select('id', 'name', 'user_id', 'created_at')->get();
             foreach ($tools as $tool) {
                 $user = User::where('id', $tool['user_id'])->select('firstname', 'lastname', 'is_admin')->first()->toArray();
                 // Remove names if the user is an admin
@@ -370,10 +370,18 @@ class TeamController extends Controller
                     'name' => $dp->name,
                     'introduction' => $dp->introduction,
                     'datasets' => $this->datasets,
-                    'durs' => Dur::select('id', 'project_title', 'organisation_name', 'status', 'created_at', 'updated_at')->whereIn('id', $this->durs)->get()->toArray(),
+                    'durs' => Dur::select('id', 'project_title', 'organisation_name', 'status', 'created_at', 'updated_at')
+                        ->whereIn('id', $this->durs)
+                        ->where('status', Dur::STATUS_ACTIVE)
+                        ->get()
+                        ->toArray(),
                     'tools' => $tools->toArray(),
                     // TODO: need to add in `link_type` from publication_has_dataset table.
-                    'publications' => Publication::select('id', 'paper_title', 'authors', 'url')->whereIn('id', $this->publications)->get()->toArray(),
+                    'publications' => Publication::select('id', 'paper_title', 'authors', 'url')
+                        ->whereIn('id', $this->publications)
+                        ->where('status', Publication::STATUS_ACTIVE)
+                        ->get()
+                        ->toArray(),
                     'collections' => $collections,
                 ],
             ]);
@@ -956,7 +964,7 @@ class TeamController extends Controller
 
     public function getDatasets(int $teamId)
     {
-        $datasetIds = Dataset::where(['team_id' => $teamId])->pluck('id')->toArray();
+        $datasetIds = Dataset::where(['team_id' => $teamId, 'status' => Dataset::STATUS_ACTIVE])->pluck('id')->toArray();
 
         foreach ($datasetIds as $datasetId) {
             $this->checkingDataset($datasetId);
