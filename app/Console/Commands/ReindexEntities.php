@@ -228,6 +228,10 @@ class ReindexEntities extends Command
 
     private function dataProviders()
     {
+        if ($this->fresh) {
+            $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_DATAPROVIDER);
+            echo "---> Deleted $nDeleted documents from the index \n";
+        }
         $providerIds = array_unique(Dataset::pluck('team_id')->toArray());
         $nTotal = count($providerIds);
         $teamIds = Team::whereIn('id', $providerIds)->select('id')
