@@ -82,7 +82,7 @@ class ScanFileUpload implements ShouldQueue
         $this->elasticIndexing = $elasticIndexing;
         $this->datasetId = $datasetId;
         $this->collectionId = $collectionId;
-        $this->isTestEnv = (strtoupper(config('app.env')) === 'TESTING');
+        $this->isTestEnv = strtoupper(config('app.env')) === 'TESTING';
     }
 
     /**
