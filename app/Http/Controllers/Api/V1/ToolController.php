@@ -1282,6 +1282,20 @@ class ToolController extends Controller
     private function insertDurHasTool(array $durs, int $toolId): mixed
     {
         try {
+            $cols = DurHasTool::where(['tool_id' => $toolId])->get();
+            foreach ($cols as $col) {
+                if (!in_array($col->dur_id, $durs)) {
+                    DurHasTool::where([
+                        'tool_id' => (int)$toolId,
+                        'dur_id' => (int)$col->dur_id,
+                    ])->delete();
+                } else {
+                    DurHasTool::updateOrCreate([
+                        'tool_id' => (int)$toolId,
+                        'dur_id' => (int)$col->dur_id,
+                    ]);
+                }
+            }
             foreach ($durs as $value) {
                 DurHasTool::updateOrCreate([
                     'tool_id' => (int)$toolId,
