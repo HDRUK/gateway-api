@@ -344,18 +344,19 @@ class TeamController extends Controller
                 $tool['user'] = $user;
             }
 
-            $collections = Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at', 'status', 'public')->whereIn('id', $this->collections)->get()->toArray();
+            $collections = Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at', 'status', 'public')->whereIn('id', $this->collections)->get();
 
-            $collections = array_map(function ($collection) {
-                if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
-                    $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
+            $filteredCollections = [];
+
+            foreach ($collections as $collection) {
+                if($collection['status'] === Collection::STATUS_ACTIVE && $collection['public']) {
+                    if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
+                        $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
+                    }
+
+                    array_push($filteredCollections, $collection);
                 }
-                return $collection;
-            }, $collections);
-
-            $collections = array_filter($collections, function($collection) {
-                return $collection['status'] === Collection::STATUS_ACTIVE && $collection['public'];
-            });
+            }
 
             $service = array_values(array_filter(explode(",", $dp->service)));
 
@@ -374,7 +375,7 @@ class TeamController extends Controller
                     'tools' => $tools->toArray(),
                     // TODO: need to add in `link_type` from publication_has_dataset table.
                     'publications' => Publication::select('id', 'paper_title', 'authors', 'url')->whereIn('id', $this->publications)->get()->toArray(),
-                    'collections' => $collections,
+                    'collections' => $filteredCollections,
                 ],
             ]);
         } catch (Exception $e) {
