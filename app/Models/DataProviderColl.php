@@ -62,7 +62,7 @@ class DataProviderColl extends Model
      *
      * @var string
      */
-    private $imgUrl = '';
+    private $img_url = '';
 
     public function teams(): BelongsToMany
     {
