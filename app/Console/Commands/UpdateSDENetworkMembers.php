@@ -41,7 +41,7 @@ class UpdateSDENetworkMembers extends Command
             "Wessex Secure Data Environment (SDE)",
             "NHS England Secure Data Environment (SDE)",
             "Kent, Medway and Sussex Secure Data Environment (SDE)",
-            "Discover-NOW: Part of London Secure Data Environment (SDE)",
+            "Discover-NOW: Part of the London Secure Data Environment (SDE)",
             "INSIGHT UHB: Part of the West Midlands Secure Data Environment (SDE)",
         ];
 
