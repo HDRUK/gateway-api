@@ -626,7 +626,7 @@ class CollectionController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $collectionInfo = Collection::withTrashed()->where('id', $id)->select(['user_id'])->first();
-        $this->checkAccess($input, $collectionInfo->user_id, null, 'user');
+        $this->checkAccess($input, null, $collectionInfo->user_id, 'user');
 
         try {
             $initCollection = Collection::withTrashed()->where('id', $id)->first();
@@ -814,7 +814,7 @@ class CollectionController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $collectionInfo = Collection::withTrashed()->where('id', $id)->select(['user_id'])->first();
-        $this->checkAccess($input, $collectionInfo->user_id, null, 'user');
+        $this->checkAccess($input, null, $collectionInfo->user_id, 'user');
 
         try {
             if ($request->has('unarchive')) {
@@ -994,7 +994,7 @@ class CollectionController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $collectionInfo = Collection::where('id', $id)->select(['user_id'])->first();
-        $this->checkAccess($input, $collectionInfo->user_id, null, 'user');
+        $this->checkAccess($input, null, $collectionInfo->user_id, 'user');
 
         try {
             $collection = Collection::where(['id' => $id])->first();

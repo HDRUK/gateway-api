@@ -10,23 +10,24 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
 use App\Jobs\TermExtraction;
-use App\Http\Traits\AddMetadataVersion;
-use App\Http\Traits\GetValueByPossibleKeys;
-use App\Http\Traits\IndexElastic;
-use App\Http\Traits\MetadataOnboard;
-
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
-
+use App\Http\Traits\CheckAccess;
+use App\Http\Traits\IndexElastic;
 
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+
+
+use App\Http\Traits\MetadataOnboard;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Traits\AddMetadataVersion;
 
 use Illuminate\Support\Facades\Storage;
 use MetadataManagementController as MMC;
 use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\EditDataset;
+use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Requests\Dataset\CreateDataset;
 use App\Http\Requests\Dataset\DeleteDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
@@ -40,6 +41,7 @@ class DatasetController extends Controller
     use IndexElastic;
     use GetValueByPossibleKeys;
     use MetadataOnboard;
+    use CheckAccess;
 
     /**
      * @OA\Get(
@@ -688,6 +690,8 @@ class DatasetController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $initDataset = Dataset::where('id', $id)->first();
+        $this->checkAccess($input, $initDataset->team_id, null, 'team');
 
         try {
             $elasticIndexing = $request->boolean('elastic_indexing', true);
@@ -838,6 +842,8 @@ class DatasetController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $initDataset = Dataset::where('id', $id)->first();
+        $this->checkAccess($input, $initDataset->team_id, null, 'team');
 
         try {
             if ($request->has('unarchive')) {
@@ -979,6 +985,8 @@ class DatasetController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $initDataset = Dataset::where('id', $id)->first();
+        $this->checkAccess($input, $initDataset->team_id, null, 'team');
 
         try {
             $dataset = Dataset::where('id', $id)->first();

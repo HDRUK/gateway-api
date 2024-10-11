@@ -610,7 +610,7 @@ class ToolController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $initTool = Tool::withTrashed()->where('id', $id)->first();
-        $this->checkAccess($input, $initTool->user_id, null, 'user');
+        $this->checkAccess($input, null, $initTool->user_id, 'user');
 
         try {
 
@@ -801,7 +801,7 @@ class ToolController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $toolModel = Tool::withTrashed()->find($id);
-        $this->checkAccess($input, $toolModel->user_id, null, 'user');
+        $this->checkAccess($input, null, $toolModel->user_id, 'user');
 
         try {
             if ($request->has('unarchive')) {
@@ -982,7 +982,7 @@ class ToolController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $tool = Tool::where(['id' => $id])->first();
-        $this->checkAccess($input, $tool->user_id, null, 'user');
+        $this->checkAccess($input, null, $tool->user_id, 'user');
 
         try {
             if ($tool) {
