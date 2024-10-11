@@ -232,10 +232,9 @@ class ReindexEntities extends Command
             $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_DATAPROVIDER);
             echo "---> Deleted $nDeleted documents from the index \n";
         }
-        //$providerIds = array_unique(Dataset::pluck('team_id')->toArray());
-        //$nTotal = count($providerIds);
-        //whereIn('id', $providerIds)->
-        $teamIds = Team::select('id')
+        $providerIds = array_unique(Dataset::pluck('team_id')->toArray());
+        $nTotal = count($providerIds);
+        $teamIds = Team::whereIn('id', $providerIds)->select('id')
             ->pluck('id')->toArray();
 
         $this->bulkProcess($teamIds, 'reindexElasticDataProvider');
