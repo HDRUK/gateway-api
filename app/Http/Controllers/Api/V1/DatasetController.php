@@ -690,7 +690,7 @@ class DatasetController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $initDataset = Dataset::where('id', $id)->first();
+        $initDataset = Dataset::withTrashed()->where('id', $id)->first();
         $this->checkAccess($input, $initDataset->team_id, null, 'team');
 
         try {
@@ -842,7 +842,7 @@ class DatasetController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $initDataset = Dataset::where('id', $id)->first();
+        $initDataset = Dataset::withTrashed()->where('id', $id)->first();
         $this->checkAccess($input, $initDataset->team_id, null, 'team');
 
         try {
