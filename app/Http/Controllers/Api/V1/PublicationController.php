@@ -544,7 +544,7 @@ class PublicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $initPublication = Publication::withTrashed()->where('id', $id)->first();
         $this->checkAccess($input, null, $initPublication->user_id, 'user');
-        
+
         try {
 
             if ($initPublication['status'] === Publication::STATUS_ARCHIVED && !array_key_exists('status', $input)) {

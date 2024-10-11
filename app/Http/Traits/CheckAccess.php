@@ -24,11 +24,10 @@ trait CheckAccess
      */
     public function checkAccess(
         array $input = [],
-        int $dbTeamId = null, 
-        int $dbUserId = null, 
+        int $dbTeamId = null,
+        int $dbUserId = null,
         string $checkType = null
-        )
-    {
+    ) {
         $this->jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         if (!count($this->jwtUser)) {
             throw new Exception('Insufficient information');
