@@ -6,6 +6,7 @@ use Auditor;
 use Hash;
 use Config;
 use Exception;
+use App\Exceptions\UnauthorizedException;
 use App\Models\Application;
 use Illuminate\Support\Str;
 use App\Models\Notification;
@@ -197,8 +198,31 @@ class ApplicationController extends Controller
     public function show(GetApplication $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = $input['jwt_user'];
+            $jwtUserIsAdminId = $input['jwt_user']['is_admin'];
+
             $application = Application::with(['permissions','team','user','notifications'])->where('id', $id)->first();
             $application->makeHidden(['client_secret']);
+
+            $applicationTeamId = $application->team_id;
+
+            $teamPerms = [];
+
+            if (
+                isset($jwtUser['role_perms'], $jwtUser['role_perms']['teams']) &&
+                isset($jwtUser['role_perms']['teams'][(string) $applicationTeamId]) &&
+                isset($jwtUser['role_perms']['teams'][(string) $applicationTeamId]['perms'])
+            ) {
+                $teamPerms = $jwtUser['role_perms']['teams'][(string) $applicationTeamId]['perms'];
+            }
+
+            $jwtUserHasTeamPerm = in_array('applications.read', $teamPerms);
+
+            if(!$application->user_id === $jwtUser['id'] && !$jwtUserIsAdminId && !$jwtUserHasTeamPerm) {
+                throw new UnauthorizedException();
+            }
+
 
             Auditor::log([
                 'action_type' => 'GET',
