@@ -34,9 +34,9 @@ class DeleteOldMetadataVersions extends Command
                     ->groupBy('dataset_id')
                     ->havingRaw('version < MAX(version)');
             }
-        )->pluck('id');
+        )->select('id')->pluck('id');
 
-        dd($datasetIdsToDelete);
+        dd(count($datasetIdsToDelete));
 
     }
 
