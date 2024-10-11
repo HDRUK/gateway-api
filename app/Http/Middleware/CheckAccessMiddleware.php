@@ -39,21 +39,6 @@ class CheckAccessMiddleware
             $currentUserPermissions = $input['jwt_user']['role_perms']['summary']['perms'];
         }
 
-        if ($type === 'roles') {
-            $checkingRoles = array_diff($access, $currentUserRoles);
-            if (!empty($checkingRoles)) {
-                throw new UnauthorizedException();
-            }
-        }
-
-        if ($type === 'permissions') {
-            $checkingPermissions = array_diff($access, $currentUserPermissions);
-
-            if (!empty($checkingPermissions)) {
-                throw new UnauthorizedException();
-            }
-        }
-
         $request->merge(
             [
                 'middleware' => [
