@@ -33,6 +33,11 @@ trait CheckAccess
         if (!count($this->jwtUser)) {
             throw new Exception('Insufficient information');
         }
+
+        if ($this->jwtUser['id_admin']) {
+            return true;
+        }
+
         $this->jwtUserRolePerms = array_key_exists('role_perms', $this->jwtUser) ? $this->jwtUser['role_perms'] : [];
         $this->jwtMiddleware = array_key_exists('middleware', $input) ? $input['middleware'] : [];
         $this->jwtUserId = (int)$this->jwtUser['id'];
