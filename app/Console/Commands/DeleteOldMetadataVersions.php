@@ -27,11 +27,14 @@ class DeleteOldMetadataVersions extends Command
     public function handle()
     {
         $toBeDeleted = DatasetVersion::where('dataset_id', 100)
-        ->where('version', '<', function ($query) {
-            $query->selectRaw('MAX(version)')
+        ->select('id', 'dataset_id', 'version')
+        ->whereIn('dataset_id', function ($query) {
+            $query->select('dataset_id')
                 ->from('dataset_versions')
-                ->whereColumn('dataset_versions.dataset_id', 'dataset_id');
-        })->count();
+                ->groupBy('dataset_id')
+                ->havingRaw('version < MAX(version)');
+        })
+        ->count();
 
         $versions = DatasetVersion::where('dataset_id', 100)->count();
 
