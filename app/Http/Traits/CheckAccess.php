@@ -33,7 +33,7 @@ trait CheckAccess
             throw new Exception('Insufficient information');
         }
 
-        if ($this->jwtUser['id_admin']) {
+        if ($this->jwtUser['is_admin']) {
             return true;
         }
 
@@ -67,6 +67,8 @@ trait CheckAccess
 
         $teamRolePerms = array_key_exists($this->dbTeamId, $this->jwtUserRolePerms) ? $this->jwtUserRolePerms[$this->dbTeamId] : [];
 
+        \Log::info(json_encode($teamRolePerms));
+
         if (!count($teamRolePerms)) {
             throw new UnauthorizedException();
         }
@@ -94,7 +96,7 @@ trait CheckAccess
 
     private function checkAccessUser()
     {
-        if ($this->jwtUserId === $this->dbUserId) {
+        if ($this->jwtUserId !== $this->dbUserId) {
             throw new UnauthorizedException();
         }
 
