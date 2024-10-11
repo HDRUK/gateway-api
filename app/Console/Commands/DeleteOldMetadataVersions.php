@@ -31,7 +31,6 @@ class DeleteOldMetadataVersions extends Command
             function ($query) {
                 $query->select('dataset_id')
                     ->from('dataset_versions')
-                    ->where('dataset_id', 100)
                     ->groupBy('dataset_id')
                     ->havingRaw('version < MAX(version)');
             }
