@@ -52,7 +52,7 @@ trait CheckAccess
             return $this->checkAccessUser();
         }
 
-        throw new Exception('Insufficient information');
+        throw new UnauthorizedException();
     }
 
     private function checkAccessTeam()
@@ -63,13 +63,13 @@ trait CheckAccess
         ])->first();
 
         if (is_null($checkTeamHasUser)) {
-            throw new Exception('Not enough permissions');
+            throw new UnauthorizedException();
         }
 
         $teamRolePerms = array_key_exists($this->dbTeamId, $this->jwtUserRolePerms) ? $this->jwtUserRolePerms[$this->dbTeamId] : [];
 
         if (!count($teamRolePerms)) {
-            throw new Exception('Not enough permissions');
+            throw new UnauthorizedException();
         }
 
         $jwtMiddlewareRoles = array_key_exists('roles', $this->jwtMiddleware) ? $this->jwtMiddleware['roles'] : [];
@@ -80,6 +80,8 @@ trait CheckAccess
             if (!empty($checkingRoles)) {
                 throw new UnauthorizedException();
             }
+
+            return true;
         }
 
         if (count($jwtMiddlewarePerms)) {
@@ -87,15 +89,14 @@ trait CheckAccess
             if (!empty($checkingRoles)) {
                 throw new UnauthorizedException();
             }
+            return true;
         }
-
-        return true;
     }
 
     private function checkAccessUser()
     {
         if ($this->jwtUserId === $this->dbUserId) {
-            throw new Exception('Not enough permissions');
+            throw new UnauthorizedException();
         }
 
         return true;
