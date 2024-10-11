@@ -36,7 +36,7 @@ class DeleteOldMetadataVersions extends Command
             }
         )->select('id')->pluck('id');
 
-        DatasetVersion::whereIn($datasetIdsToDelete)->delete();
+        DatasetVersion::whereIn('id', $datasetIdsToDelete)->delete();
 
     }
 
