@@ -20,7 +20,7 @@ trait CheckAccess
      * @param integer $dbTeamId This is the Team Id coming from database
      * @param integer $dbUserId This is the User Id coming from database
      * @param string $checkType Expect like values team or user
-     * @return void
+     * @return mixed
      */
     public function checkAccess(
         array $input = [],
