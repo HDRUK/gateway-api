@@ -37,7 +37,7 @@ trait CheckAccess
             return true;
         }
 
-        $this->jwtUserRolePerms = array_key_exists('role_perms', $this->jwtUser) ? $this->jwtUser['role_perms'] : [];
+        $this->jwtUserRolePerms = array_key_exists('role_perms', $this->jwtUser) ? $this->jwtUser['role_perms']['teams'] : [];
         $this->jwtMiddleware = array_key_exists('middleware', $input) ? $input['middleware'] : [];
         $this->jwtUserId = (int)$this->jwtUser['id'];
         $this->dbTeamId = (int)$dbTeamId;
@@ -77,7 +77,7 @@ trait CheckAccess
         $jwtMiddlewarePerms = array_key_exists('perms', $this->jwtMiddleware) ? $this->jwtMiddleware['perms'] : [];
 
         if (count($jwtMiddlewareRoles)) {
-            $checkingRoles = array_diff($jwtMiddlewarePerms, $teamRolePerms['roles']);
+            $checkingRoles = array_diff($jwtMiddlewareRoles, $teamRolePerms['roles']);
             if (!empty($checkingRoles)) {
                 throw new UnauthorizedException();
             }
@@ -86,8 +86,8 @@ trait CheckAccess
         }
 
         if (count($jwtMiddlewarePerms)) {
-            $checkingRoles = array_diff($jwtMiddlewarePerms, $teamRolePerms['roles']);
-            if (!empty($checkingRoles)) {
+            $checkingPerms = array_diff($jwtMiddlewarePerms, $teamRolePerms['perms']);
+            if (!empty($checkingPerms)) {
                 throw new UnauthorizedException();
             }
             return true;
