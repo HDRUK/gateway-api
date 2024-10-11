@@ -30,6 +30,9 @@ trait CheckAccess
         )
     {
         $this->jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        if (!count($this->jwtUser)) {
+            throw new Exception('Insufficient information');
+        }
         $this->jwtUserRolePerms = array_key_exists('role_perms', $this->jwtUser) ? $this->jwtUser['role_perms'] : [];
         $this->jwtMiddleware = array_key_exists('middleware', $input) ? $input['middleware'] : [];
         $this->jwtUserId = (int)$this->jwtUser['id'];
@@ -37,11 +40,11 @@ trait CheckAccess
         $this->dbUserId = (int)$dbUserId;
 
         if ($checkType === 'team') {
-            $this->checkAccessTeam();
+            return $this->checkAccessTeam();
         }
 
         if ($checkType === 'user') {
-            $this->checkAccessUser();
+            return $this->checkAccessUser();
         }
 
         throw new Exception('Insufficient information');
