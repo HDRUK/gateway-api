@@ -197,14 +197,15 @@ class EnquiryThreadController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        // var_dump('begin store');
         $enquiryThreadId = null;
         $enquiryMessageId = null;
 
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
+        // var_dump('user');
         $user = User::where('id', $jwtUser['id'])->first();
-
+        // var_dump('user done');
         try {
             if ($input['is_feasibility_enquiry'] === true && $input['is_general_enquiry'] === false) {
                 $payload = [
@@ -239,6 +240,8 @@ class EnquiryThreadController extends Controller
                     ],
                 ];
             } else {
+                // var_dump('is general');
+                // var_dump('user', $user);
                 $payload = [
                     'thread' => [
                         'user_id' => $user->id,
@@ -270,7 +273,9 @@ class EnquiryThreadController extends Controller
 
             // For each dataset we need to determine if teams are responsible for the data providing
             // if not, then a separate enquiry thread and message are created for that team also.
+            // var_dump('begin loop');
             foreach ($payload['thread']['datasets'] as $d) {
+                // var_dump('inside loop');
                 $t = Team::where('id', $d['team_id'])->first();
                 $payload['thread']['team_id'] = $t->id;
                 $payload['message']['message_body']['[[TEAM_NAME]]'] = $t->name;
@@ -330,9 +335,15 @@ class EnquiryThreadController extends Controller
     private function mapDatasets(array $datasets): array
     {
         $arr = [];
-
+        // var_dump('mapDatasets', $datasets);
         foreach ($datasets as $dataset) {
+            // var_dump('dataset', $dataset);
+            // Handles the case where the enquiry is about no datasets, only to a team
+            if ($dataset['dataset_id'] === null) {
+                continue;
+            }
             $ds = Dataset::with('latestMetadata')->where('id', $dataset['dataset_id'])->first();
+            // var_dump('ds', $ds);
             $datasetUrl = env('GATEWAY_URL') . '/dataset/' . $ds->id . '?section=1';
 
             $arr[] = [
