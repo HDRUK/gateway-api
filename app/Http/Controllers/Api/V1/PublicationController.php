@@ -705,7 +705,7 @@ class PublicationController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $publicationModel = Publication::withTrashed()->find($id);
+        $publicationModel = Publication::withTrashed()->where('id', $id)->first();
         $this->checkAccess($input, $publicationModel->user_id, null, 'user');
 
         try {

@@ -625,7 +625,7 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $collectionInfo = Collection::where('id', $id)->select(['user_id'])->first();
+        $collectionInfo = Collection::withTrashed()->where('id', $id)->select(['user_id'])->first();
         $this->checkAccess($input, $collectionInfo->user_id, null, 'user');
 
         try {
@@ -813,7 +813,7 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $collectionInfo = Collection::where('id', $id)->select(['user_id'])->first();
+        $collectionInfo = Collection::withTrashed()->where('id', $id)->select(['user_id'])->first();
         $this->checkAccess($input, $collectionInfo->user_id, null, 'user');
 
         try {
