@@ -8,11 +8,6 @@ use App\Exceptions\UnauthorizedException;
 
 trait CheckAccess
 {
-    private $jwtUser;
-    private $jwtUserRolePerms;
-    private $jwtMiddleware;
-    private $jwtUserId;
-
     /**
      * Check Access
      *
@@ -28,44 +23,44 @@ trait CheckAccess
         int $dbUserId = null,
         string $checkType = null
     ) {
-        $this->jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        if (!count($this->jwtUser)) {
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        if (!count($jwtUser)) {
             throw new Exception('Insufficient information');
         }
 
-        if ($this->jwtUser['is_admin']) {
+        if ($jwtUser['is_admin']) {
             return true;
         }
 
-        $this->jwtUserRolePerms = array_key_exists('role_perms', $this->jwtUser) ? $this->jwtUser['role_perms']['teams'] : [];
-        $this->jwtMiddleware = array_key_exists('middleware', $input) ? $input['middleware'] : [];
-        $this->jwtUserId = (int)$this->jwtUser['id'];
-        $this->dbTeamId = (int)$dbTeamId;
-        $this->dbUserId = (int)$dbUserId;
+        $jwtUserRolePerms = array_key_exists('role_perms', $jwtUser) ? $jwtUser['role_perms']['teams'] : [];
+        $jwtMiddleware = array_key_exists('middleware', $input) ? $input['middleware'] : [];
+        $jwtUserId = (int)$jwtUser['id'];
+        $dbTeamId = (int)$dbTeamId;
+        $dbUserId = (int)$dbUserId;
 
         if ($checkType === 'team') {
-            return $this->checkAccessTeam();
+            return $this->checkAccessTeam($jwtUserRolePerms, $jwtUserId, $dbTeamId, $jwtMiddleware);
         }
 
         if ($checkType === 'user') {
-            return $this->checkAccessUser();
+            return $this->checkAccessUser($jwtUserId, $dbUserId);
         }
 
         throw new UnauthorizedException();
     }
 
-    private function checkAccessTeam()
+    private function checkAccessTeam($jwtUserRolePerms, $jwtUserId, $dbTeamId, $jwtMiddleware)
     {
         $checkTeamHasUser = TeamHasUser::where([
-            'user_id' => $this->jwtUserId,
-            'team_id' => $this->dbTeamId,
+            'user_id' => $jwtUserId,
+            'team_id' => $dbTeamId,
         ])->first();
 
         if (is_null($checkTeamHasUser)) {
             throw new UnauthorizedException();
         }
 
-        $teamRolePerms = array_key_exists($this->dbTeamId, $this->jwtUserRolePerms) ? $this->jwtUserRolePerms[$this->dbTeamId] : [];
+        $teamRolePerms = array_key_exists($dbTeamId, $jwtUserRolePerms) ? $jwtUserRolePerms[$dbTeamId] : [];
 
         \Log::info(json_encode($teamRolePerms));
 
@@ -73,8 +68,8 @@ trait CheckAccess
             throw new UnauthorizedException();
         }
 
-        $jwtMiddlewareRoles = array_key_exists('roles', $this->jwtMiddleware) ? $this->jwtMiddleware['roles'] : [];
-        $jwtMiddlewarePerms = array_key_exists('perms', $this->jwtMiddleware) ? $this->jwtMiddleware['perms'] : [];
+        $jwtMiddlewareRoles = array_key_exists('roles', $jwtMiddleware) ? $jwtMiddleware['roles'] : [];
+        $jwtMiddlewarePerms = array_key_exists('perms', $jwtMiddleware) ? $jwtMiddleware['perms'] : [];
 
         if (count($jwtMiddlewareRoles)) {
             $checkingRoles = array_diff($jwtMiddlewareRoles, $teamRolePerms['roles']);
@@ -94,9 +89,9 @@ trait CheckAccess
         }
     }
 
-    private function checkAccessUser()
+    private function checkAccessUser($jwtUserId, $dbUserId)
     {
-        if ($this->jwtUserId !== $this->dbUserId) {
+        if ($jwtUserId !== $dbUserId) {
             throw new UnauthorizedException();
         }
 
