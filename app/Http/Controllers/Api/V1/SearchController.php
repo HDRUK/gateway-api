@@ -832,8 +832,6 @@ class SearchController extends Controller
             $aggs = Filter::where('type', 'dataUseRegister')->get()->toArray();
             $input['aggs'] = $aggs;
 
-
-        
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur';
             $response = Http::post($urlString, $input);
          
@@ -845,12 +843,12 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
+            //$durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
+            $durModels = Dur::with('userDataSets')->whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
+
             Log::info('Culprit 1');
             // i take 5 seconds
-            foreach ($durModels as $model) {
-                $model->setAttribute('datasets', $model->allDatasets);
-            }
+
             Log::info('Culprit 2');
             //is this ever actually used, or was this used to fix something with data?
             // i take 6 seconds
