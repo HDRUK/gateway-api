@@ -26,6 +26,9 @@ class Kernel extends ConsoleKernel
 
         // update hubspot contacts information
         $schedule->command('app:sync-hubspot-contacts')->dailyAt('04:00');
+
+        // scheduler testing
+        $schedule->command('app:test-scheduler')->everyMinute();
     }
 
     /**
