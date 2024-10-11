@@ -90,6 +90,10 @@ class SocialLoginController extends Controller
         if (strtolower($provider) === 'openathens') {
             $provider = 'open-athens';
 
+            if ($request->has('target_link_uri')) {
+                session(['redirectUrl' => $request->query('target_link_uri')]);
+            }
+
             $params = [
                 'client_id' => Config::get('services.openathens.client_id'),
                 'redirect_uri' => Config::get('services.openathens.redirect'),
