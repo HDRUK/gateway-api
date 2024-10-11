@@ -61,9 +61,6 @@ COPY . /var/www
 # RUN echo "TRASER_ENABLED=$TRASER_ENABLED" >> /var/www/.env
 # RUN echo "FMA_ENABLED=$TRASER_ENABLED" >> /var/www/.env
 
-# Copy Supervisor configuration
-COPY ./init/supervisord.conf /etc/supervisor/supervisord.conf
-
 # Composer & laravel
 RUN composer install \
     && npm install --save-dev chokidar \
@@ -86,14 +83,26 @@ RUN php artisan passport:keys
 # Add symbolic link for public file storage
 RUN php artisan storage:link
 
-# Starts both, laravel server and job queue
-# CMD ["/var/www/docker/start.sh"]
+# supervisor configuration
+COPY ./init/supervisord.conf /etc/supervisor/supervisord.conf
+
+# start configuration
+COPY ./docker/start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
 
 # Expose port
 EXPOSE 8000
+
+# Set the entrypoint to the script
+ENTRYPOINT ["/usr/local/bin/start.sh"]
+
+
+# Starts both, laravel server and job queue
+# CMD ["/var/www/docker/start.sh"]
+
 
 # for study:
 # composer install -q -n --no-ansi --no-dev --no-scripts --no-progress --prefer-dist
 
 # Start Supervisor as the CMD process
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+# CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
