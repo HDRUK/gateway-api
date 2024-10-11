@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Models\Dataset;
+use App\Models\DatasetVersion;
 
 class DeleteOldMetadataVersions extends Command
 {
