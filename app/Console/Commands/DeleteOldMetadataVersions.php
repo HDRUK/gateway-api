@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Dataset;
 use App\Models\DatasetVersion;
 
 class DeleteOldMetadataVersions extends Command
@@ -27,15 +26,17 @@ class DeleteOldMetadataVersions extends Command
      */
     public function handle()
     {
-        $toBeDeleted = DatasetVersion::whereIn('dataset_id', [100, /* other dataset_ids */])
+        $toBeDeleted = DatasetVersion::where('dataset_id', 100)
         ->where('version', '<', function ($query) {
             $query->selectRaw('MAX(version)')
                 ->from('dataset_versions as dv')
                 ->whereColumn('dv.dataset_id', 'dataset_id');
-        })->pluck('version');
+        })->count();
+
+        $versions = DatasetVersion::where('dataset_id', 100)->count();
 
         // Output the records that would be deleted
-        dd($toBeDeleted);
+        echo $toBeDeleted . " " . $versions . "\n";
     }
 
 }
