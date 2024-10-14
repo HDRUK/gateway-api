@@ -64,7 +64,9 @@ class UpdateCollectionLinkedEntities extends Command
                 $relatedModel = $modelClass::where('mongo_object_id', $csv['related_mongo_object_id'])->first();
 
             }
-            $relatedModel = $modelClass::where('mongo_id', $csv['related_mongo_id'])->first();
+            if(is_null($relatedModel)) {
+                $relatedModel = $modelClass::where('mongo_id', $csv['related_mongo_id'])->first();
+            }
 
             if(is_null($relatedModel)) {
                 //cannot find relationship
