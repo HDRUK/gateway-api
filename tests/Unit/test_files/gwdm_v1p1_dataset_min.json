@@ -95,7 +95,8 @@
                 "isMemberOf": "blah",
                 "linkedDatasets": "https://web.www.healthdatagateway.org/dataset/fd8d0743-344a-4758-bb97-f8ad84a37357"
             },
-            "investigations": "https://github.com/HDRUK/papers"
+            "investigations": "https://github.com/HDRUK/papers",
+            "publicationAboutDataset": "10.1000/182"
         },
         "observations": [
             {
