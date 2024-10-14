@@ -32,7 +32,7 @@ trait CheckAccess
             return true;
         }
 
-        $jwtUserRolePerms = array_key_exists('role_perms', $jwtUser) ? $jwtUser['role_perms']['teams'] : [];
+        $jwtUserRolePerms = array_key_exists('role_perms', $jwtUser) ? (array_key_exists('teams', $jwtUser['role_perms']) ? $jwtUser['role_perms']['teams'] : []) : [];
         $jwtMiddleware = array_key_exists('middleware', $input) ? $input['middleware'] : [];
         $jwtUserId = (int)$jwtUser['id'];
         $dbTeamId = (int)$dbTeamId;
