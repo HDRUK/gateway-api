@@ -64,17 +64,4 @@ class TestController extends Controller
 
         return response()->json(['status' => 'success']);
     }
-
-    public function jobTesting(Request $request)
-    {
-        Auditor::log([
-            'action_type' => 'EXCEPTION',
-            'action_name' => class_basename($this) . '@' . __FUNCTION__,
-            'description' => 'using auditor :: ' . now()->toDateTimeString(),
-        ]);
-
-        CloudLogger::write('job testing - cloudlogger :: ' . now()->toDateTimeString());
-
-        return response()->json(['status' => 'success']);
-    }
 }
