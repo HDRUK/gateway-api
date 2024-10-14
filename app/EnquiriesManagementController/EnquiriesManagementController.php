@@ -138,6 +138,8 @@ class EnquiriesManagementController
                 '[[CURRENT_YEAR]]' => $threadDetail['message']['message_body']['[[CURRENT_YEAR]]'],
                 '[[TEAM_NAME]]' => $threadDetail['message']['message_body']['[[TEAM_NAME]]'],
                 '[[USER_FIRST_NAME]]' => $threadDetail['message']['message_body']['[[USER_FIRST_NAME]]'],
+                '[[USER_LAST_NAME]]' => $threadDetail['message']['message_body']['[[USER_LAST_NAME]]'],
+                '[[USER_ORGANISATION]]' => $threadDetail['message']['message_body']['[[USER_ORGANISATION]]'],
                 '[[PROJECT_TITLE]]' => $threadDetail['message']['message_body']['[[PROJECT_TITLE]]'],
                 '[[MESSAGE_BODY]]' => $this->convertThreadToBody($threadDetail),
             ];
