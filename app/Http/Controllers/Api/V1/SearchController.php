@@ -844,7 +844,7 @@ class SearchController extends Controller
             }
 
             //$durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
-            $durModels = Dur::with(['applicationDatasets'])->whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
+            $durModels = Dur::with(['datasetVersions'])->whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
 
         
           
@@ -1591,7 +1591,7 @@ class SearchController extends Controller
     {
       
         $datasetTitles = array();
-        foreach ($durMatch['applicationDatasets'] as $d) {
+        foreach ($durMatch['datasetVersions'] as $d) {
             $metadata = Dataset::where(['id' => $d['id']])
                 ->first()
                 ->latestVersion()
