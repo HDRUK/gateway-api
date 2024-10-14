@@ -202,6 +202,7 @@ class EnquiryThreadController extends Controller
 
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
         $user = User::where('id', $jwtUser['id'])->first();
 
         try {
@@ -270,7 +271,6 @@ class EnquiryThreadController extends Controller
             // For each dataset we need to determine if teams are responsible for the data providing
             // if not, then a separate enquiry thread and message are created for that team also.
             foreach ($payload['thread']['datasets'] as $d) {
-
                 $t = Team::where('id', $d['team_id'])->first();
                 $payload['thread']['team_id'] = $t->id;
                 $payload['message']['message_body']['[[TEAM_NAME]]'] = $t->name;
