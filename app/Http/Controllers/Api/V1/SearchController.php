@@ -832,7 +832,7 @@ class SearchController extends Controller
 
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur';
             $response = Http::post($urlString, $input);
-         
+
             $durArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
             
@@ -840,7 +840,6 @@ class SearchController extends Controller
             foreach (array_values($durArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
             }
- 
             $durModels = Dur::with('datasetVersions')->whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
 
             // below takes 5-6 seconds
@@ -861,8 +860,6 @@ class SearchController extends Controller
                         $durArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $durArray[$i]['toolNames'] = $this->durToolNames($model['id']);
                         $foundFlag = true;
-
-
                         break;
                     }
                 }
@@ -1574,7 +1571,6 @@ class SearchController extends Controller
      */
     private function durDatasetTitles(Dur $durMatch): array
     {
-      
         $datasetTitles = array();
         foreach ($durMatch['datasetVersions'] as $d) {
             $metadata = Dataset::where(['id' => $d['dataset_version_id']])
