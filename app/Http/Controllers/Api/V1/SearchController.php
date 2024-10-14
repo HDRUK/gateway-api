@@ -846,16 +846,22 @@ class SearchController extends Controller
             //$durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
             $durModels = Dur::with('userDataSets')->whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
 
+        
+          
             Log::info('Culprit 1');
             // i take 5 seconds
-
+            // foreach ($durModels as $model) {
+            //     $model->setAttribute('datasets', $model->allDatasets);
+            // }
             Log::info('Culprit 2');
             //is this ever actually used, or was this used to fix something with data?
             // i take 6 seconds
-            $WasIEverUsedCount = 0;
+
             foreach ($durArray as $i => $dur) {
+                Log::info('test 1');
                 $foundFlag = false;
                 foreach ($durModels as $model) {
+                    Log::info('test 2');
                     if ((int)$dur['_id'] === $model['id']) {
                         $datasetTitles = $this->durDatasetTitles($model);
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
@@ -869,7 +875,7 @@ class SearchController extends Controller
                         $durArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $durArray[$i]['toolNames'] = $this->durToolNames($model['id']);
                         $foundFlag = true;
-                        $WasIEverUsedCount ++ ;
+
 
                         break;
                     }
@@ -879,7 +885,6 @@ class SearchController extends Controller
                     continue;
                 }
             }
-            Log::info('Culprit was used: ' .$WasIEverUsedCount);
             Log::info('Culprit 3');
             if ($download) {
                 Auditor::log([
@@ -1584,8 +1589,9 @@ class SearchController extends Controller
      */
     private function durDatasetTitles(Dur $durMatch): array
     {
+      
         $datasetTitles = array();
-        foreach ($durMatch['datasets'] as $d) {
+        foreach ($durMatch['userDataSets'] as $d) {
             $metadata = Dataset::where(['id' => $d['id']])
                 ->first()
                 ->latestVersion()
