@@ -7,6 +7,7 @@ use CloudLogger;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use Artisan;
 
 class TestController extends Controller
 {
@@ -62,6 +63,12 @@ class TestController extends Controller
         ]);
         CloudLogger::write('send string');
 
+        return response()->json(['status' => 'success']);
+    }
+
+    public function callScheduleCommand(Request $request): JsonResponse
+    {
+        Artisan::call('schedule:run');
         return response()->json(['status' => 'success']);
     }
 }
