@@ -1592,7 +1592,7 @@ class SearchController extends Controller
       
         $datasetTitles = array();
         foreach ($durMatch['datasetVersions'] as $d) {
-            $metadata = Dataset::where(['id' => $d['id']])
+            $metadata = Dataset::where(['id' => $d['dataset_version_id']])
                 ->first()
                 ->latestVersion()
                 ->metadata;
