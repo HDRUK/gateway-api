@@ -62,8 +62,6 @@ trait CheckAccess
 
         $teamRolePerms = array_key_exists($dbTeamId, $jwtUserRolePerms) ? $jwtUserRolePerms[$dbTeamId] : [];
 
-        \Log::info(json_encode($teamRolePerms));
-
         if (!count($teamRolePerms)) {
             throw new UnauthorizedException();
         }
