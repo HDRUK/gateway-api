@@ -87,8 +87,7 @@ class Dataset extends Model
             function ($query, $fields) {
                 return $query->select($fields);
             }
-        )
-            ->findOrFail($version);
+        )->findOrFail($version);
     }
 
     public function latestMetadata(): HasOne
