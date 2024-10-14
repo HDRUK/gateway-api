@@ -116,7 +116,7 @@ class Tool extends Model
 
     public function publications(): BelongsToMany
     {
-        return $this->belongsToMany(Publication::class, 'publication_has_tools');
+        return $this->belongsToMany(Publication::class, 'publication_has_tools')->withPivot('deleted_at')->whereNull('publication_has_tools.deleted_at');
     }
 
     public function license(): BelongsTo
@@ -126,7 +126,7 @@ class Tool extends Model
 
     public function durs(): BelongsToMany
     {
-        return $this->belongsToMany(Dur::class, 'dur_has_tools');
+        return $this->belongsToMany(Dur::class, 'dur_has_tools')->withPivot('deleted_at')->whereNull('dur_has_tools.deleted_at');
     }
 
     public function collections(): BelongsToMany

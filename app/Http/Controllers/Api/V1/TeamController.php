@@ -326,7 +326,7 @@ class TeamController extends Controller
                 'description' => 'Team get ' . $id . ' summary',
             ]);
 
-            $tools = Tool::whereIn('id', $this->tools)->select('id', 'name', 'user_id', 'created_at')->get();
+            $tools = Tool::whereIn('id', $this->tools)->where('status', Tool::STATUS_ACTIVE)->select('id', 'name', 'user_id', 'created_at')->get();
             foreach ($tools as $tool) {
                 $user = User::where('id', $tool['user_id'])->select('firstname', 'lastname', 'is_admin')->first()->toArray();
                 // Remove names if the user is an admin
@@ -344,13 +344,18 @@ class TeamController extends Controller
                 $tool['user'] = $user;
             }
 
-            $collections = Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', $this->collections)->get()->toArray();
+            $collections = Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at', 'status', 'public')->whereIn('id', $this->collections)->get()->toArray();
+
             $collections = array_map(function ($collection) {
                 if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
                     $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
                 }
                 return $collection;
             }, $collections);
+
+            $collections = array_values(array_filter($collections, function ($collection) {
+                return $collection['status'] === Collection::STATUS_ACTIVE && $collection['public'];
+            }));
 
             $service = array_values(array_filter(explode(",", $dp->service)));
 
@@ -365,10 +370,18 @@ class TeamController extends Controller
                     'name' => $dp->name,
                     'introduction' => $dp->introduction,
                     'datasets' => $this->datasets,
-                    'durs' => Dur::select('id', 'project_title', 'organisation_name', 'status', 'created_at', 'updated_at')->whereIn('id', $this->durs)->get()->toArray(),
+                    'durs' => Dur::select('id', 'project_title', 'organisation_name', 'status', 'created_at', 'updated_at')
+                        ->whereIn('id', $this->durs)
+                        ->where('status', Dur::STATUS_ACTIVE)
+                        ->get()
+                        ->toArray(),
                     'tools' => $tools->toArray(),
                     // TODO: need to add in `link_type` from publication_has_dataset table.
-                    'publications' => Publication::select('id', 'paper_title', 'authors', 'url')->whereIn('id', $this->publications)->get()->toArray(),
+                    'publications' => Publication::select('id', 'paper_title', 'authors', 'url')
+                        ->whereIn('id', $this->publications)
+                        ->where('status', Publication::STATUS_ACTIVE)
+                        ->get()
+                        ->toArray(),
                     'collections' => $collections,
                 ],
             ]);
@@ -951,7 +964,7 @@ class TeamController extends Controller
 
     public function getDatasets(int $teamId)
     {
-        $datasetIds = Dataset::where(['team_id' => $teamId])->pluck('id')->toArray();
+        $datasetIds = Dataset::where(['team_id' => $teamId, 'status' => Dataset::STATUS_ACTIVE])->pluck('id')->toArray();
 
         foreach ($datasetIds as $datasetId) {
             $this->checkingDataset($datasetId);
@@ -1027,13 +1040,27 @@ class TeamController extends Controller
                         Config::get('metadata.GWDM.version'),
                     );
                     if ($isValid) {
-                        $this->addMetadataVersion(
-                            $d,
-                            $d['status'],
-                            now(),
-                            $metadata,
-                            $d->latestVersion()->metadata
-                        );
+                        $metadataSaveObject = [
+                            'gwdmVersion' =>  Config::get('metadata.GWDM.version'),
+                            'metadata' => $metadata,
+                            'original_metadata' => $d->latestVersion()->metadata['original_metadata'],
+                        ];
+                        DatasetVersion::where([
+                            'dataset_id' => $d->id,
+                            'version' => $d->lastMetadataVersionNumber()->version,
+                        ])->update([
+                            'metadata' => json_encode($metadataSaveObject),
+                        ]);
+                        // Note BES 09/10/24
+                        // Removing the creation of a new version due to memory load
+                        // $this->addMetadataVersion(
+                        //     $d,
+                        //     $d['status'],
+                        //     now(),
+                        //     $metadata,
+                        //     $d->latestVersion()->metadata
+                        // );
+
                         $this->reindexElastic($d->id);
                     } else {
                         throw new Exception('Failed to validate metadata with new team name');
