@@ -3544,8 +3544,8 @@ return [
     [
         'name' => 'call.scheduler',
         'method' => 'get',
-        'path' => '/call_scheduler',
-        'methodController' => 'TestController@callScheduleCommand',
+        'path' => '/call_scheduler_a',
+        'methodController' => 'TestController@callScheduleCommandA',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [],

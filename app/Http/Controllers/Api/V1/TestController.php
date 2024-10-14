@@ -66,9 +66,9 @@ class TestController extends Controller
         return response()->json(['status' => 'success']);
     }
 
-    public function callScheduleCommand(Request $request): JsonResponse
+    public function callScheduleCommandA(Request $request): JsonResponse
     {
-        Artisan::call('schedule:run');
+        Artisan::call('app:alias-reply-scanner');
         return response()->json(['status' => 'success']);
     }
 }
