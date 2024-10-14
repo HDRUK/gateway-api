@@ -871,7 +871,7 @@ class SearchController extends Controller
                         $durArray[$i]['team'] = $model['team'];
                         $durArray[$i]['mongoObjectId'] = $model['mongo_object_id']; // remove
                         $durArray[$i]['datasetTitles'] = array_column($datasetTitles, 'title');
-                        $durArray[$i]['datasetIds'] = array_column($datasetTitles, 'dataset_version_id');
+                        $durArray[$i]['datasetIds'] = array_column($datasetTitles, 'id');
                         $durArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $durArray[$i]['toolNames'] = $this->durToolNames($model['id']);
                         $foundFlag = true;
@@ -1598,7 +1598,7 @@ class SearchController extends Controller
                 ->metadata;
             $datasetTitles[] = [
                 'title' => $metadata['metadata']['summary']['shortTitle'],
-                'id' => $d['id']
+                'id' => $d['dataset_version_id']
             ];
         }
         usort($datasetTitles, function ($a, $b) {
