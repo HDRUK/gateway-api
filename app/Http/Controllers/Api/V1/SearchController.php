@@ -844,7 +844,7 @@ class SearchController extends Controller
             }
 
             //$durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
-            $durModels = Dur::with(['datasetVersions'])->whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
+            $durModels = Dur::with(['applicationDatasets', 'applicationPublications'])->whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
 
         
           
