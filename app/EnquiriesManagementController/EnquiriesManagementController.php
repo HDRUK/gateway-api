@@ -91,6 +91,10 @@ class EnquiriesManagementController
 
         if ($enquiryThread) {
             foreach ($input['datasets'] as $dataset) {
+                // handle case where enquiry is to Data Custodian without a dataset selected
+                if ($dataset['dataset_id'] === null) {
+                    continue;
+                }
                 $datasetVersion = DatasetVersion::where('dataset_id', $dataset['dataset_id'])
                     ->latest('created_at')->first();
                 $enquiryThreadHasDataset = EnquiryThreadHasDatasetVersion::create([
