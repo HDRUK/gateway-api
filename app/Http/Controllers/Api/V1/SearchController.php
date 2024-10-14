@@ -49,7 +49,6 @@ use App\Http\Requests\Search\DOISearch;
 use App\Http\Requests\Search\PublicationSearch;
 use App\Models\DataProviderColl;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Illuminate\Support\Facades\Log;
 
 class SearchController extends Controller
 {
@@ -842,26 +841,14 @@ class SearchController extends Controller
             foreach (array_values($durArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
             }
+ 
+            $durModels = Dur::with('datasetVersions')->whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
 
-            //$durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
-            $durModels = Dur::with(['datasetVersions'])->whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
-
-        
-          
-            Log::info('Culprit 1');
-            // i take 5 seconds
-            // foreach ($durModels as $model) {
-            //     $model->setAttribute('datasets', $model->allDatasets);
-            // }
-            Log::info('Culprit 2');
-            //is this ever actually used, or was this used to fix something with data?
-            // i take 6 seconds
+            // below takes 5-6 seconds
 
             foreach ($durArray as $i => $dur) {
-                Log::info('test 1');
                 $foundFlag = false;
                 foreach ($durModels as $model) {
-                    Log::info('test 2');
                     if ((int)$dur['_id'] === $model['id']) {
                         $datasetTitles = $this->durDatasetTitles($model);
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
@@ -885,7 +872,6 @@ class SearchController extends Controller
                     continue;
                 }
             }
-            Log::info('Culprit 3');
             if ($download) {
                 Auditor::log([
                     'action_type' => 'GET',
