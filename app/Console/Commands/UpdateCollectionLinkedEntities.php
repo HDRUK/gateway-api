@@ -56,6 +56,12 @@ class UpdateCollectionLinkedEntities extends Command
 
         foreach ($this->csvData as $csv) {
             $collection = Collection::where('mongo_object_id', $csv['collection_mongo_object_id'])->select('id')->firstOrFail();
+            if(is_null($collection)) {
+                //for dev and preprod
+                //this csv was made from prod snapshot
+                $progressbar->advance();
+                continue;
+            }
 
             list($modelClass, $modelHasClass) = $relatedObjectMap[$csv['related_entity']];
             $relatedModel = null;
