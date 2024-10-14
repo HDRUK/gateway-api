@@ -75,7 +75,7 @@ class UpdateCollectionLinkedEntities extends Command
             }
 
             if ($csv['related_entity'] === 'dataset') {
-                $relatedModel = $relatedModel->latestVersion();
+                $relatedModel = $relatedModel->latestVersion(['id']);
             }
 
             $modelHasClass::updateOrCreate([
