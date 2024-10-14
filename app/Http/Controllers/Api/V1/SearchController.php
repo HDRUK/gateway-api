@@ -827,7 +827,6 @@ class SearchController extends Controller
 
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
-            //$agg = []
             $aggs = Filter::where('type', 'dataUseRegister')->get()->toArray();
             $input['aggs'] = $aggs;
 
@@ -880,20 +879,20 @@ class SearchController extends Controller
                 ]);
                 return Excel::download(new DataUseExport($durArray), 'dur.csv');
             }
-            
+
             $durArray = $this->sortSearchResult($durArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $durArray, $perPage);
             unset($durArray);
-            
+
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
             ]);
-            
+
             $final = $aggs->merge($paginatedData);
-            
+
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
