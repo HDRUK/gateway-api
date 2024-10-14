@@ -134,6 +134,10 @@ class RunPostMigrations extends Command
                 'arguments' => [],
             ], // update teams.team_logo
             [
+                'command' => 'app:update-collections-user-id',
+                'arguments' => [],
+            ], // update collections.user_id
+            [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'dataProviders',
