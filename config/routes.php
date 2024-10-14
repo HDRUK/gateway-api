@@ -3539,16 +3539,4 @@ return [
         ],
         'constraint' => [],
     ],
-
-    // just for test
-    [
-        'name' => 'job.test',
-        'method' => 'get',
-        'path' => '/job_test',
-        'methodController' => 'TestController@jobTesting',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
-        'constraint' => [],
-    ],
-
 ];
