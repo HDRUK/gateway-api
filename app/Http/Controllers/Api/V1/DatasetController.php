@@ -445,8 +445,8 @@ class DatasetController extends Controller
             // Return the latest metadata for this dataset
             if (!($outputSchemaModel && $outputSchemaModelVersion)) {
                 $withLinks = DatasetVersion::where('id', $latestVersion['id'])
-                ->with(['linkedDatasetVersions'])
-                ->first();
+                    ->with(['linkedDatasetVersions'])
+                    ->first();
                 if ($withLinks) {
                     $dataset->setAttribute('versions', [$withLinks]);
                 }
@@ -710,7 +710,7 @@ class DatasetController extends Controller
             $team = Team::where('id', $teamId)->first();
             $currDataset = Dataset::where('id', $id)->first();
             $currentPid = $currDataset->pid;
-            
+
 
             $payload = $this->extractMetadata($input['metadata']);
             $payload['extra'] = [
