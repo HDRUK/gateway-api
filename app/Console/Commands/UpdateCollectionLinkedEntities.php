@@ -72,7 +72,6 @@ class UpdateCollectionLinkedEntities extends Command
                 continue;
             }
 
-
             if ($csv['related_entity'] === 'dataset') {
                 $relatedModel = $relatedModel->latestVersion();
             }
