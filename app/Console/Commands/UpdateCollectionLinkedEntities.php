@@ -67,7 +67,12 @@ class UpdateCollectionLinkedEntities extends Command
             $relatedModel = null;
 
             if($csv['related_entity'] !== 'publication') {
-                $relatedModel = $modelClass::where('mongo_object_id', $csv['related_mongo_object_id'])->first();
+                if($csv['related_entity'] === 'dataset') {
+                    $relatedModel = $modelClass::where('mongo_pid', $csv['related_mongo_pid'])->first();
+                }
+                if(is_null($relatedModel)) {
+                    $relatedModel = $modelClass::where('mongo_object_id', $csv['related_mongo_object_id'])->first();
+                }
 
             }
             if(is_null($relatedModel)) {
@@ -80,13 +85,15 @@ class UpdateCollectionLinkedEntities extends Command
                 continue;
             }
 
-            if ($csv['related_entity'] === 'dataset') {
+            $relatedEntity = $csv['related_entity'];
+            if ($relatedEntity === 'dataset') {
                 $relatedModel = $relatedModel->latestVersion(['id']);
+                $relatedEntity = 'dataset_version';
             }
 
             $modelHasClass::updateOrCreate([
                 'collection_id'  => $collection->id,
-                $csv['related_entity'] . '_id' =>  $relatedModel->id,
+                $relatedEntity . '_id' =>  $relatedModel->id,
             ]);
 
             $progressbar->advance();
