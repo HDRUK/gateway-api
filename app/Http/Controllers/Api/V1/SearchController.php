@@ -1572,39 +1572,35 @@ class SearchController extends Controller
     private function durDatasetTitles(Dur $durMatch): array
     {
 
-        $datasetIds = collect($durMatch['datasets'])->pluck('id')->toArray();
+        if (empty($durMatch['datasetVersions']) || !is_iterable($durMatch['datasetVersions'])) {
+            return [];
+        }
 
-        // Eager load all datasets with latestVersion in one query
-        $datasets = Dataset::whereIn('id', $datasetIds)
-            ->with('latestVersion') // Eager load latestVersion
-            ->get();
+        \Log::info('is_iterable!');
+        
+        $datasetVersionIds = $datasetVersionIds = $durMatch['datasetVersions']->pluck('dataset_version_id')->toArray();
 
-        // Create an array for titles
+        
+        \Log::info($datasetVersionIds);
+        \Log::info(implode(',',$datasetVersionIds));
+        if (empty($datasetVersionIds)){
+            return [];
+        }
+
+
+        \Log::info('is not empty!');
+        $datasets = DatasetVersion::whereIn('id', $datasetVersionIds)
+        ->get();
+
         $datasetTitles = [];
 
         foreach ($datasets as $dataset) {
-            // Check if latestVersion exists
-            if ($dataset->latestVersion) {
-                $metadata = $dataset->latestVersion->metadata ?? null;
-    
-                if ($metadata && isset($metadata['summary']['shortTitle'])) {
-                    $datasetTitles[] = [
-                        'title' => $metadata['summary']['shortTitle'],
-                        'id' => $dataset->id,
-                    ];
-                }
-            }
+            $datasetTitles[] = [
+                'title' => $dataset['metadata']['metadata']['summary']['shortTitle'],
+                'id' =>(int)implode(',',$datasetVersionIds),
+            ];
+          
         }
-
-        // foreach ($datasets as $dataset) {
-
-        //     if (isset($dataset['summary']['shortTitle'])) {
-        //         $datasetTitles[] = [
-        //             'title' => $dataset['summary']['shortTitle'],
-        //             'id' =>(int)implode(',',$datasetVersionIds),
-        //         ];
-        //     }
-        // }
 
         usort($datasetTitles, function ($a, $b) {
             return strcasecmp($a['title'], $b['title']);
@@ -1612,6 +1608,7 @@ class SearchController extends Controller
 
         return $datasetTitles;
     }
+    
 
     /**
      * Sorts results returned by the search service according to sort field and direction
