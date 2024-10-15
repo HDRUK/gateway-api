@@ -1572,39 +1572,39 @@ class SearchController extends Controller
     private function durDatasetTitles(Dur $durMatch): array
     {
 
-        if (empty($durMatch['datasetVersions']) || !is_iterable($durMatch['datasetVersions'])) {
-            return [];
-        }
+        $datasetIds = collect($durMatch['datasets'])->pluck('id')->toArray();
 
-        \Log::info('is_iterable!');
-        $datasetVersionIds = $datasetVersionIds = $durMatch['datasetVersions']->pluck('dataset_version_id')->toArray();
-  
-        if (empty($datasetVersionIds)){
-            return [];
-        }
+        // Eager load all datasets with latestVersion in one query
+        $datasets = Dataset::whereIn('id', $datasetIds)
+            ->with('latestVersion') // Eager load latestVersion
+            ->get();
 
-
-        \Log::info('is not empty!');
-
-        // $datasets = Dataset::whereIn('id', $datasetVersionIds)
-        // ->with('latestVersion') // Eager load latestVersion
-        // ->get();
-
-        $datasets = Dataset::whereIn('id', $datasetVersionIds)
-        ->first()
-        ->latestVersion()
-        ->metadata;
-
+        // Create an array for titles
         $datasetTitles = [];
-        foreach ($datasets as $dataset) {
 
-            if (isset($dataset['summary']['shortTitle'])) {
-                $datasetTitles[] = [
-                    'title' => $dataset['summary']['shortTitle'],
-                    'id' =>(int)implode(',',$datasetVersionIds),
-                ];
+        foreach ($datasets as $dataset) {
+            // Check if latestVersion exists
+            if ($dataset->latestVersion) {
+                $metadata = $dataset->latestVersion->metadata ?? null;
+    
+                if ($metadata && isset($metadata['summary']['shortTitle'])) {
+                    $datasetTitles[] = [
+                        'title' => $metadata['summary']['shortTitle'],
+                        'id' => $dataset->id,
+                    ];
+                }
             }
         }
+
+        // foreach ($datasets as $dataset) {
+
+        //     if (isset($dataset['summary']['shortTitle'])) {
+        //         $datasetTitles[] = [
+        //             'title' => $dataset['summary']['shortTitle'],
+        //             'id' =>(int)implode(',',$datasetVersionIds),
+        //         ];
+        //     }
+        // }
 
         usort($datasetTitles, function ($a, $b) {
             return strcasecmp($a['title'], $b['title']);
