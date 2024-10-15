@@ -305,7 +305,7 @@ class TeamController extends Controller
     {
         try {
             // Get this Team
-            $dp = Team::select('id', 'name', 'is_provider', 'introduction', 'url', 'service', 'team_logo')->where([
+            $dp = Team::select('id', 'name', 'member_of', 'is_provider', 'introduction', 'url', 'service', 'team_logo')->where([
                 'id' => $id,
                 'enabled' => 1,
             ])->first();
@@ -368,6 +368,7 @@ class TeamController extends Controller
                     'url' => $dp->url,
                     'service' => empty($service) ? null : $service,
                     'name' => $dp->name,
+                    'member_of' => $dp->member_of,
                     'introduction' => $dp->introduction,
                     'datasets' => $this->datasets,
                     'durs' => Dur::select('id', 'project_title', 'organisation_name', 'status', 'created_at', 'updated_at')

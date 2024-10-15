@@ -9,15 +9,16 @@ use App\Models\Dur;
 use App\Models\Tool;
 use App\Models\Sector;
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use App\Models\Keyword;
 use App\Models\DurHasTool;
 use App\Models\Application;
 use Illuminate\Http\Request;
-use App\Models\DurHasDatasetVersion;
 use App\Models\DurHasKeyword;
+use App\Models\DatasetVersion;
+use Illuminate\Support\Carbon;
+use App\Http\Traits\CheckAccess;
 use App\Http\Requests\Dur\GetDur;
-use App\Http\Traits\MapOrganisationSector;
+use App\Http\Traits\IndexElastic;
 use App\Models\DurHasPublication;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Dur\EditDur;
@@ -26,11 +27,11 @@ use App\Http\Requests\Dur\CreateDur;
 use App\Http\Requests\Dur\DeleteDur;
 use App\Http\Requests\Dur\UpdateDur;
 use App\Http\Requests\Dur\UploadDur;
+use App\Models\DurHasDatasetVersion;
 use App\Exceptions\NotFoundException;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Storage;
 
-use App\Http\Traits\IndexElastic;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Traits\MapOrganisationSector;
 use App\Http\Traits\RequestTransformation;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -39,6 +40,7 @@ class DurController extends Controller
     use IndexElastic;
     use RequestTransformation;
     use MapOrganisationSector;
+    use CheckAccess;
 
     /**
      * @OA\Get(
@@ -774,10 +776,10 @@ class DurController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $initDur = Dur::withTrashed()->where('id', $id)->first();
+        $this->checkAccess($input, $initDur->team_id, null, 'team');
 
         try {
-            $initDur = Dur::withTrashed()->where('id', $id)->first();
-
             $arrayKeys = [
                 'non_gateway_datasets',
                 'non_gateway_applicants',
@@ -1058,6 +1060,8 @@ class DurController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $initDur = Dur::withTrashed()->where('id', $id)->first();
+        $this->checkAccess($input, $initDur->team_id, null, 'team');
 
         try {
             if ($request->has('unarchive')) {
@@ -1245,9 +1249,10 @@ class DurController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $initDur = Dur::withTrashed()->where('id', $id)->first();
+        $this->checkAccess($input, $initDur->team_id, null, 'team');
 
         try {
-            $initDur = Dur::withTrashed()->where('id', $id)->first();
             DurHasDatasetVersion::where(['dur_id' => $id])->delete();
             DurHasKeyword::where(['dur_id' => $id])->delete();
             DurHasPublication::where(['dur_id' => $id])->delete();
