@@ -203,7 +203,6 @@ class SearchController extends Controller
                 $datasetsArray[$i]['_source']['updated_at'] = $model['updated_at'];
 
                 if (strtolower($viewType) === 'mini') {
-                    // dd('here 1');
                     $datasetsArray[$i]['metadata'] = $this->trimPayload($model);
                 } else {
                     $datasetsArray[$i]['metadata'] = $model['metadata'];
