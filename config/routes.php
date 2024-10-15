@@ -3539,15 +3539,4 @@ return [
         ],
         'constraint' => [],
     ],
-
-    // for test
-    [
-        'name' => 'call.scheduler',
-        'method' => 'get',
-        'path' => '/call_scheduler_a',
-        'methodController' => 'TestController@callScheduleCommandA',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
-        'constraint' => [],
-    ],
 ];
