@@ -1023,7 +1023,7 @@ class IntegrationDatasetController extends Controller
             $this->checkAppCanHandleDataset($dataset->team_id, $request);
 
             MMC::deleteDataset($id);
-            $this->deleteFromElastic($id, 'dataset');
+            $this->deleteDatasetFromElastic($id);
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
