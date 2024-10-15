@@ -1314,8 +1314,6 @@ class DatasetTest extends TestCase
 
         $this->assertEquals($linkedDatasetVersions, 2);
 
-        dd($linkedDatasetVersions);
-
         // DELETE STUFF
         // permanent delete dataset1
         $responseDeleteDataset = $this->json(
