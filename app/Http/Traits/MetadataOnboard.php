@@ -10,7 +10,6 @@ use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
 use App\Jobs\TermExtraction;
-use App\Http\Traits\UpdateDatasetLinkages;
 
 use Illuminate\Support\Str;
 
@@ -18,7 +17,6 @@ use MetadataManagementController as MMC;
 
 trait MetadataOnboard
 {
-    use UpdateDatasetLinkages;
     /**
      * Create new Dataset, calling translation service if necessary
      *
@@ -149,11 +147,6 @@ trait MetadataOnboard
                 'metadata' => json_encode($input['metadata']),
                 'version' => 1,
             ]);
-
-            // Dispatch the dataset to update the SQL linkages tables 
-            // DatasetVersionHasTool / DatasetVersionHasDatasetVersion and PublicationHas DatasetVersion
-            // This uses the latest dataset version to create the indexes. 
-            $this->createSqlLinkage($dataset, false);
 
             // map coverage/spatial field to controlled list for filtering
             $this->mapCoverage($input['metadata'], $version);
