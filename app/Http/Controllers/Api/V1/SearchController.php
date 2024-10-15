@@ -1574,7 +1574,7 @@ class SearchController extends Controller
             return [];
         }
         
-        $datasetVersionIds = $datasetVersionIds = $durMatch['datasetVersions']->pluck('dataset_version_id')->toArray();
+        $datasetVersionIds = collect($durMatch['datasetVersions']->pluck('dataset_version_id')->toArray());
 
         if (empty($datasetVersionIds)){
             return [];
