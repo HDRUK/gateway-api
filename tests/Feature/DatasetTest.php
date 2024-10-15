@@ -1242,6 +1242,7 @@ class DatasetTest extends TestCase
 
         // inject the PID into the alt metadata
         $this->metadataAlt['metadata']['linkage']['datasetLinkage']['isPartOf']= $pid;
+        $this->metadataAlt['metadata']['linkage']['datasetLinkage']['isMemberOf']= 'HDR UK Papers & Preprints';
         
         // create dataset2
         $responseCreateDataset2 = $this->json(
@@ -1311,7 +1312,9 @@ class DatasetTest extends TestCase
             ->get()
             ->count();
 
-        $this->assertEquals($linkedDatasetVersions, 1);
+        $this->assertEquals($linkedDatasetVersions, 2);
+
+        dd($linkedDatasetVersions);
 
         // DELETE STUFF
         // permanent delete dataset1
