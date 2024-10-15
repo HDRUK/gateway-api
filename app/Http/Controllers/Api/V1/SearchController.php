@@ -1576,10 +1576,6 @@ class SearchController extends Controller
         
         $datasetVersionIds = collect($durMatch['datasetVersions']->pluck('dataset_version_id')->toArray());
 
-        if (empty($datasetVersionIds)){
-            return [];
-        }
-
         $datasets = DatasetVersion::whereIn('id', $datasetVersionIds)
         ->get();
 
