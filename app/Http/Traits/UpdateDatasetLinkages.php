@@ -90,7 +90,7 @@ trait UpdateDatasetLinkages
             if ($latestVersion) {
                 // Add the relevant metadata fields to the search array for this version
                 $datasetSearchArray[] = [
-                    'version_id'   => $latestVersion->id,  // The ID of the dataset version
+                    'dataset_version_id'   => $latestVersion->id,  // The ID of the dataset version
                     'title'        => $this->getValueByPossibleKeys($latestVersion['metadata'], ['title']),  // The title of the dataset version
                     'short_title'  => $this->getValueByPossibleKeys($latestVersion['metadata'], ['shortTitle']),  // The short title, if available
                     'doi_name'     => $this->getValueByPossibleKeys($latestVersion['metadata'], ['doiName']),  // The DOI name associated with the dataset version
@@ -288,11 +288,11 @@ trait UpdateDatasetLinkages
                 elseif ($textMatches) {
                     foreach ($textMatches as $textMatch) {
                         DatasetVersionHasDatasetVersion::updateOrCreate([
-                            'dataset_version_source_id' => $version->id,        // Source dataset version ID
-                            'dataset_version_target_id' => $textMatch['version_id'], // Target dataset version ID from the search match
-                            'linkage_type' => $linkageType,                     // The type of linkage (e.g., 'isDerivedFrom')
-                            'direct_linkage' => 1,                              // Mark the linkage as direct
-                            'description' => "Linked on Dataset {$textMatch['field']}", // Describe which field matched
+                            'dataset_version_source_id' => $version->id,                    // Source dataset version ID
+                            'dataset_version_target_id' => $textMatch['dataset_version_id'],// Target dataset version ID from the search match
+                            'linkage_type' => $linkageType,                                 // The type of linkage (e.g., 'isDerivedFrom')
+                            'direct_linkage' => 1,                                          // Mark the linkage as direct
+                            'description' => "Linked by text matching on Dataset {$textMatch['field']}", // Describe which field matched
                         ]);
 
                         // Log the successful creation of the linkage based on the text match
