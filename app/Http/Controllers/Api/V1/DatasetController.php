@@ -15,6 +15,7 @@ use App\Http\Traits\AddMetadataVersion;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\MetadataOnboard;
+use App\Http\Traits\UpdateDatasetLinkages;
 use App\Http\Traits\CheckAccess;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -37,6 +38,7 @@ class DatasetController extends Controller
     use IndexElastic;
     use GetValueByPossibleKeys;
     use MetadataOnboard;
+    use UpdateDatasetLinkages;
     use CheckAccess;
 
 
@@ -769,6 +771,11 @@ class DatasetController extends Controller
             );
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
+
+            // Dispatch the dataset to update the SQL linkages tables 
+            // DatasetVersionHasTool / DatasetVersionHasDatasetVersion and PublicationHas DatasetVersion
+            // This uses the latest dataset version to create the indexes. 
+            $this->createSqlLinkage($currDataset, false);
 
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
             if($request['status'] === Dataset::STATUS_ACTIVE &&  Config::get('ted.enabled')) {

@@ -261,9 +261,7 @@ trait UpdateDatasetLinkages
                                             ->orWhere('pid', $datasetLinkage)
                                             ->first();
                 }
-
-               
-
+                
                 // If no matching dataset model is found, perform a text-based search in dataset fields
                 if (!$datasetModel) {
                     $textMatches = $this->searchInDataset($datasetSearchArray, $datasetLinkage);
@@ -294,11 +292,11 @@ trait UpdateDatasetLinkages
                             'dataset_version_target_id' => $textMatch['dataset_version_id'],// Target dataset version ID from the search match
                             'linkage_type' => $linkageType,                                 // The type of linkage (e.g., 'isDerivedFrom')
                             'direct_linkage' => 1,                                          // Mark the linkage as direct
-                            'description' => "Linked by text matching on Dataset {$textMatch['field']}", // Describe which field matched
+                            'description' => "Linked by text matching on Dataset {$textMatch['field']}",     // Describe which field matched
                         ]);
 
                         // Log the successful creation of the linkage based on the text match
-                        Log::info("Link created between datasetVersion: {$version->id} and datasetVersion: {$textMatch['version_id']} of type: $linkageType, match={$textMatch['field']}");
+                        Log::info("Link created between datasetVersion: {$version->id} and datasetVersion: {$textMatch['dataset_version_id']} of type: $linkageType, match={$textMatch['field']}");
                     }
                 } else {
                     // Log if no matching dataset or text match was found
@@ -330,13 +328,13 @@ trait UpdateDatasetLinkages
         foreach ($datasetSearchArray as $version) {
             // Loop through each field and value within the dataset version
             foreach ($version as $field => $value) {
-                // Exclude 'version_id' from the search and ensure the value is a string
-                if ($field !== 'version_id' && is_string($value)) {
+                // Exclude 'dataset_version_id' from the search and ensure the value is a string
+                if ($field !== 'dataset_version_id' && is_string($value)) {
                     // Check if the search term exists within the field's value
                     if (strpos($value, $searchTerm) !== false) {
                         // If a match is found, add the version ID and matching field to the results array
                         $matches[] = [
-                            'version_id' => $version['version_id'], // The ID of the matching dataset version
+                            'dataset_version_id' => $version['dataset_version_id'], // The ID of the matching dataset version
                             'field' => $field,                     // The field in which the match was found
                             'matching_value' => $value,            // The actual value that matched the search term
                         ];

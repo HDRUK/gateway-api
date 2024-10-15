@@ -1204,6 +1204,10 @@ class DatasetTest extends TestCase
         $contentCreatePublicationUsing = $responseCreatePublicationUsing->decodeResponseJson();
         $PublicationUsingId = $contentCreatePublicationUsing['data'];
 
+        // inject the publication information into the metadata
+        $this->metadata['metadata']['linkage']['publicationAboutDataset']= "10.1000/182";
+        $this->metadata['metadata']['linkage']['publicationUsingDataset']= "10.1300/182";
+
         // create dataset1
         $responseCreateDataset1 = $this->json(
             'POST',
@@ -1275,8 +1279,10 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
-
+        
         $responseUpdateDataset2->assertStatus(200);
+
+       
 
         // TESTING
         # Now we get testing: lets check out the linkage for Dataset 1:
