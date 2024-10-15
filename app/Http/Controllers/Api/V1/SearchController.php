@@ -187,7 +187,6 @@ class SearchController extends Controller
             foreach ($matchedIds as $i => $matchedId) {
                 $model = Dataset::with('team')->where('id', $matchedId)
                     ->first();
-                $model['metadata'] = $model->latestVersion()['metadata']['metadata'];
 
                 if(!$model) {
                     \Log::warning('Elastic found id=' . $matchedId . ' which is not an existing dataset');
@@ -196,6 +195,8 @@ class SearchController extends Controller
                     }
                     continue;
                 }
+
+                $model['metadata'] = $model->latestVersion()['metadata']['metadata'];
                 $model = $model->toArray();
 
                 $datasetsArray[$i]['_source']['created_at'] = $model['created_at'];
