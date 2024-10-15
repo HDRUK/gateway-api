@@ -185,8 +185,8 @@ class SearchController extends Controller
             }
 
             foreach ($matchedIds as $i => $matchedId) {
-                $model = Dataset::with('versions', 'team')->where('id', $matchedId)
-                           ->first();
+                $model = Dataset::with('team')->where('id', $matchedId)
+                    ->first();
 
                 if(!$model) {
                     \Log::warning('Elastic found id=' . $matchedId . ' which is not an existing dataset');
@@ -195,15 +195,19 @@ class SearchController extends Controller
                     }
                     continue;
                 }
+
+                $model['metadata'] = $model->latestVersion()['metadata']['metadata'];
                 $model = $model->toArray();
 
-                $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
-                $datasetsArray[$i]['_source']['updated_at'] = $model['versions'][0]['updated_at'];
+                $datasetsArray[$i]['_source']['created_at'] = $model['created_at'];
+                $datasetsArray[$i]['_source']['updated_at'] = $model['updated_at'];
+
                 if (strtolower($viewType) === 'mini') {
-                    $datasetsArray[$i]['metadata'] = $this->trimPayload($model['versions'][0]['metadata'], $model);
+                    $datasetsArray[$i]['metadata'] = $this->trimPayload($model);
                 } else {
-                    $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
+                    $datasetsArray[$i]['metadata'] = $model['metadata'];
                 }
+
                 $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
                 $datasetsArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model);
                 $datasetsArray[$i]['team']['id'] = $model['team']['id'];
@@ -1626,7 +1630,7 @@ class SearchController extends Controller
         return $resultArray;
     }
 
-    private function trimPayload(array &$input, array &$dataset): array
+    private function trimPayload(array &$input): array
     {
         $miniMetadata = $input['metadata'];
 

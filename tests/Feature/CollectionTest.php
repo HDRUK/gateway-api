@@ -764,7 +764,7 @@ class CollectionTest extends TestCase
         ];
 
         $countBefore = Collection::count();
-        
+
         // create new collection
         $mockDataIn = [
             "name" => "covid",
