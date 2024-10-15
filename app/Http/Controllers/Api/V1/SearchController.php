@@ -1576,27 +1576,22 @@ class SearchController extends Controller
             return [];
         }
 
-        \Log::info('is_iterable!');
+
         $datasetVersionIds = $datasetVersionIds = $durMatch['datasetVersions']->pluck('dataset_version_id')->toArray();
   
         if (empty($datasetVersionIds)){
             return [];
         }
-        \Log::info('is not empty!');
+
         $metadata = Dataset::whereIn('id', $datasetVersionIds)
         ->first()
         ->latestVersion()
         ->metadata;
 
-        $datasetTitles = [];
-        foreach ($metadata as $dataset) {
-            \Log::info('has datasets!!');
-
-            $datasetTitles[] = [
-                'title' => $metadata['metadata']['summary']['shortTitle'],
-                'id' => (int)implode(',',$datasetVersionIds),
-            ];
-        }
+        $datasetTitles[] = [
+            'title' => $metadata['metadata']['summary']['shortTitle'],
+            'id' => (int)implode(',',$datasetVersionIds),
+        ];
 
         usort($datasetTitles, function ($a, $b) {
             return strcasecmp($a['title'], $b['title']);
