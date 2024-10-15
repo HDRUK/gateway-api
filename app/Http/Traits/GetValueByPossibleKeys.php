@@ -9,7 +9,13 @@ trait GetValueByPossibleKeys
 {
     /**
      * Search for a value in an array by trying multiple possible keys or paths in order.
-     * Supports both simple keys and dot notation paths.
+     * 
+     * Note 15th Oct 2024 - Tom Giles - I have now enhanced this function for full searching:
+     * The function now supports both simple keys and dot notation paths. for example ['tools'] 
+     * or ['linkages.tools'] or even ['metadata.linkages.tools'] will now return the ['tools'] 
+     * object. Previously the full path in the array was requried. I have done this because 
+     * widening the potential search parathenisis provides more flexible in terms maintaining 
+     * functionality across data model changes. 
      *
      * @param array $array The array to search.
      * @param array $keys The list of possible keys or paths to try, in order.
