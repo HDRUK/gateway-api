@@ -261,6 +261,8 @@ trait UpdateDatasetLinkages
                                             ->orWhere('pid', $datasetLinkage)
                                             ->first();
                 }
+
+                $textMatches=[];
                 
                 // If no matching dataset model is found, perform a text-based search in dataset fields
                 if (!$datasetModel) {
