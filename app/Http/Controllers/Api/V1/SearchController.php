@@ -1572,12 +1572,11 @@ class SearchController extends Controller
     private function durDatasetTitles(Dur $durMatch): array
     {
 
-        if (!is_array($durMatch['datasetVersions'])) {
+        if (!$durMatch['datasetVersions']) {
             return [];
-        } else {
-            \Log::info('I Was An Array!');
         }
-        $datasetVersionIds = array_column($durMatch['datasetVersions'], 'dataset_version_id');
+
+        $datasetVersionIds = $durMatch['datasetVersions']->pluck('dataset_version_id')->toArray();
 
         $datasets = Dataset::whereIn('id', $datasetVersionIds)
         ->first()
