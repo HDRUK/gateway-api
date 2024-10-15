@@ -426,8 +426,6 @@ class PublicationController extends Controller
             $currentPublication = Publication::where('id', $publicationId)->first();
             if($currentPublication->status === Publication::STATUS_ACTIVE) {
                 $this->indexElasticPublication($publicationId);
-            } else {
-                $this->deleteFromElastic($publicationId, 'publication');
             }
 
             Auditor::log([
@@ -580,7 +578,7 @@ class PublicationController extends Controller
             $currentPublication = Publication::where('id', $id)->first();
             if($currentPublication->status === Publication::STATUS_ACTIVE) {
                 $this->indexElasticPublication((int) $id);
-            } else {
+            } elseif ($initPublication['status'] === Publication::STATUS_ACTIVE) {
                 $this->deleteFromElastic($id, 'publication');
             }
 
