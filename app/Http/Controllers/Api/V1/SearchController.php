@@ -1574,6 +1574,8 @@ class SearchController extends Controller
 
         if (!is_array($durMatch['datasetVersions'])) {
             return [];
+        } else {
+            \Log::info('I Was An Array!');
         }
         $datasetVersionIds = array_column($durMatch['datasetVersions'], 'dataset_version_id');
 
