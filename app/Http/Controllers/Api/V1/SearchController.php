@@ -1571,17 +1571,29 @@ class SearchController extends Controller
      */
     private function durDatasetTitles(Dur $durMatch): array
     {
-        $datasetTitles = array();
-        foreach ($durMatch['datasetVersions'] as $d) {
-            $metadata = Dataset::where(['id' => $d['dataset_version_id']])
-                ->first()
-                ->latestVersion()
-                ->metadata;
-            $datasetTitles[] = [
-                'title' => $metadata['metadata']['summary']['shortTitle'],
-                'id' => $d['dataset_version_id']
-            ];
+
+        if (!is_array($durMatch['datasetVersions'])) {
+            return [];
         }
+        $datasetVersionIds = array_column($durMatch['datasetVersions'], 'dataset_version_id');
+
+        $datasets = Dataset::whereIn('id', $datasetVersionIds)
+        ->first()
+        ->latestVersion()
+        ->metadata;
+
+        $datasetTitles = [];
+        foreach ($datasets as $dataset) {
+            $metadata = $dataset->latestVersion->metadata ?? null;
+            
+            if ($metadata && isset($metadata['metadata']['summary']['shortTitle'])) {
+                $datasetTitles[] = [
+                    'title' => $metadata['metadata']['summary']['shortTitle'],
+                    'id' => $dataset->id,
+                ];
+            }
+        }
+
         usort($datasetTitles, function ($a, $b) {
             return strcasecmp($a['title'], $b['title']);
         });
