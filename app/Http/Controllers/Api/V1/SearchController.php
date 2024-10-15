@@ -1578,30 +1578,32 @@ class SearchController extends Controller
 
         \Log::info('is_iterable!');
         $datasetVersionIds = $datasetVersionIds = $durMatch['datasetVersions']->pluck('dataset_version_id')->toArray();
-        \Log::info('datasetVersionIds: '.implode(" ",$datasetVersionIds));
-        return [];
-        // $datasets = Dataset::whereIn('id', $datasetVersionIds)
-        // ->first()
-        // ->latestVersion()
-        // ->metadata;
+  
+        if (empty($datasetVersionIds)){
+            return [];
+        }
+        $datasets = Dataset::whereIn('id', $datasetVersionIds)
+        ->first()
+        ->latestVersion()
+        ->metadata;
 
-        // $datasetTitles = [];
-        // foreach ($datasets as $dataset) {
-        //     $metadata = $dataset->latestVersion->metadata ?? null;
+        $datasetTitles = [];
+        foreach ($datasets as $dataset) {
+            $metadata = $dataset->latestVersion->metadata ?? null;
             
-        //     if ($metadata && isset($metadata['metadata']['summary']['shortTitle'])) {
-        //         $datasetTitles[] = [
-        //             'title' => $metadata['metadata']['summary']['shortTitle'],
-        //             'id' => $dataset->id,
-        //         ];
-        //     }
-        // }
+            if ($metadata && isset($metadata['metadata']['summary']['shortTitle'])) {
+                $datasetTitles[] = [
+                    'title' => $metadata['metadata']['summary']['shortTitle'],
+                    'id' => $dataset->id,
+                ];
+            }
+        }
 
-        // usort($datasetTitles, function ($a, $b) {
-        //     return strcasecmp($a['title'], $b['title']);
-        // });
+        usort($datasetTitles, function ($a, $b) {
+            return strcasecmp($a['title'], $b['title']);
+        });
 
-        // return $datasetTitles;
+        return $datasetTitles;
     }
 
     /**
