@@ -1582,22 +1582,28 @@ class SearchController extends Controller
         if (empty($datasetVersionIds)){
             return [];
         }
+
+
         \Log::info('is not empty!');
+
+        // $datasets = Dataset::whereIn('id', $datasetVersionIds)
+        // ->with('latestVersion') // Eager load latestVersion
+        // ->get();
+
         $datasets = Dataset::whereIn('id', $datasetVersionIds)
         ->first()
         ->latestVersion()
         ->metadata;
 
         $datasetTitles = [];
-
         foreach ($datasets as $dataset) {
 
-        if ($dataset) {
-            $datasetTitles[] = [
-                'title' => $datasets['metadata']['summary']['shortTitle'],
-                'id' =>(int)implode(',',$datasetVersionIds),
-            ];
-        }
+            if (is_array($dataset)) {
+                $datasetTitles[] = [
+                    'title' => $dataset['summary']['shortTitle'],
+                    'id' =>(int)implode(',',$datasetVersionIds),
+                ];
+            }
         }
 
         usort($datasetTitles, function ($a, $b) {
