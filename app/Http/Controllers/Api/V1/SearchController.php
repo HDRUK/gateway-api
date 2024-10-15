@@ -1577,37 +1577,13 @@ class SearchController extends Controller
         }
 
         $datasetVersionIds = $durMatch['datasetVersions']->pluck('dataset_version_id')->toArray();
-
-        // Debug output to verify IDs
         \Log::info('Dataset Version IDs:', $datasetVersionIds);
 
-
-        $datasets = Dataset::whereIn('id', $datasetVersionIds)
-            ->with('latestVersion') 
-            ->get(['id']); 
-
-
-        \Log::info('Fetched Datasets:', $datasets->toArray());
-
-
-        $datasetTitles = [];
-        foreach ($datasets as $dataset) {
-
-            $metadata = $dataset->latestVersion->metadata ?? null;
-
-            if ($metadata && isset($metadata['metadata']['summary']['shortTitle'])) {
-                $datasetTitles[] = [
-                    'title' => $metadata['metadata']['summary']['shortTitle'],
-                    'id' => $dataset->id,
-                ];
-            }
-        }
-
+        return []
         // $datasets = Dataset::whereIn('id', $datasetVersionIds)
         // ->first()
         // ->latestVersion()
         // ->metadata;
-        
 
         // $datasetTitles = [];
         // foreach ($datasets as $dataset) {
@@ -1621,11 +1597,11 @@ class SearchController extends Controller
         //     }
         // }
 
-        usort($datasetTitles, function ($a, $b) {
-            return strcasecmp($a['title'], $b['title']);
-        });
+        // usort($datasetTitles, function ($a, $b) {
+        //     return strcasecmp($a['title'], $b['title']);
+        // });
 
-        return $datasetTitles;
+        // return $datasetTitles;
     }
 
     /**
