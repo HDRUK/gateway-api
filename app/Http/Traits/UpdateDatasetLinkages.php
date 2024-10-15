@@ -13,9 +13,13 @@ use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasDatasetVersion;
 use App\Models\DatasetVersionHasTool;
 use App\Models\PublicationHasDatasetVersion;
+use App\Http\Traits\GetValueByPossibleKeys;
+
+
 
 trait UpdateDatasetLinkages
 {
+    use GetValueByPossibleKeys;
 
     /**
      * Add SQL linkages based on GWDM2.0 object
@@ -49,26 +53,25 @@ trait UpdateDatasetLinkages
         // 
         // PROCESS TOOLS
         // 
-        if (isset($version['metadata']['metadata']['linkage']['tools'])) {
+        $tools = $this->getValueByPossibleKeys($version['metadata'], ['tools']);
 
-            $tools = (array) $version['metadata']['metadata']['linkage']['tools'];
+        if ($tools) {
+
+            $tools =  array($tools);
 
             foreach ($tools as $tool) {
-                if (filter_var($tool, FILTER_VALIDATE_URL) == true) {
-                    $toolModel = Tool::where('url', $tool)->first();
+                
+                $toolModel = Tool::where('url', $tool)->first();
 
-                    if ($toolModel) {
-                        DatasetVersionHasTool::updateOrCreate([
-                            'dataset_version_id' => $version->id,
-                            'tool_id' => $toolModel->id,
-                            'link_type' => 'url matched',
-                        ]);
-                        Log::info("Link created between datasetVersion: $version->id and tool: $tool");
-                    } else {
-                        Log::info("Tool not found: $tool");
-                    }
+                if ($toolModel) {
+                    DatasetVersionHasTool::updateOrCreate([
+                        'dataset_version_id' => $version->id,
+                        'tool_id' => $toolModel->id,
+                        'link_type' => 'url matched',
+                    ]);
+                    Log::info("Link created between datasetVersion: $version->id and tool: $tool");
                 } else {
-                    Log::warning("Invalid URL found: $tool");
+                    Log::info("Tool not found: $tool");
                 }
             }
         } else {
@@ -78,47 +81,51 @@ trait UpdateDatasetLinkages
         // 
         // PROCESS PUBLICATIONS USING DATASETS
         //
-        if (isset($version['metadata']['metadata']['linkage']['publicationUsingDataset'])) {
-        
-            $publicationsUsingDataset = (array) $version['metadata']['metadata']['linkage']['publicationUsingDataset'];
+        $publicationsUsingDataset = $this->getValueByPossibleKeys($version['metadata'], ['publicationUsingDataset']);
 
-            foreach ($publicationsUsingDataset as $publication) {
-                $publicationModel = Publication::where('paper_doi', $publication)->first();
+        if ($publicationsUsingDataset) {
 
-                if ($publicationModel) {
+            $publicationsUsingDataset =  array($publicationsUsingDataset);
+
+            foreach ($publicationsUsingDataset as $publicationUsing) {
+                $publicationUsingModel = Publication::where('paper_doi', $publicationUsing)->first();
+
+                if ($publicationUsingModel) {
                     PublicationHasDatasetVersion::updateOrCreate([
                         'dataset_version_id' => $version->id,
-                        'publication_id' => $publicationModel->id,
-                        'link_type' => "Used on",
+                        'publication_id' => $publicationUsingModel->id,
+                        'link_type' => "USING",
                     ]);
-                    Log::info("Link created between datasetVersion: $version->id and publication: $publication");
+                    Log::info("Link created between datasetVersion: $version->id and publication: $publicationUsing");
                 } else {
-                    Log::info("Publication not found for DOI: $publication");
+                    Log::info("Publication not found for DOI: $publicationUsing");
                 }
             }
         } else {
-            Log::info("No Publication using the Dataset Linkages found in metadata");
+            Log::info("No Publication about the dataset found in metadata");
         }
 
         // 
         // PROCESS PUBLICATIONS ABOUT DATASETS
         //
-        if (isset($version['metadata']['metadata']['linkage']['publicationAboutDataset'])) {
-            
-            $publicationsAboutDataset = (array) $version['metadata']['metadata']['linkage']['publicationAboutDataset'];
+        $publicationsAboutDataset = $this->getValueByPossibleKeys($version['metadata'], ['publicationAboutDataset']);
 
-            foreach ($publicationsAboutDataset as $publication) {
-                $publicationModel = Publication::where('paper_doi', $publication)->first();
+        if ($publicationsAboutDataset) {
 
-                if ($publicationModel) {
+            $publicationsAboutDataset =  array($publicationsAboutDataset);
+
+            foreach ($publicationsAboutDataset as $publicationAbout) {
+                $publicationAboutModel = Publication::where('paper_doi', $publicationAbout)->first();
+
+                if ($publicationAboutModel) {
                     PublicationHasDatasetVersion::updateOrCreate([
                         'dataset_version_id' => $version->id,
-                        'publication_id' => $publicationModel->id,
+                        'publication_id' => $publicationAboutModel->id,
                         'link_type' => "ABOUT",
                     ]);
-                    Log::info("Link created between datasetVersion: $version->id and publication: $publication");
+                    Log::info("Link created between datasetVersion: $version->id and publication: $publicationAbout");
                 } else {
-                    Log::info("Publication not found for DOI: $publication");
+                    Log::info("Publication not found for DOI: $publicationAbout");
                 }
             }
         } else {
@@ -128,9 +135,12 @@ trait UpdateDatasetLinkages
         // 
         // PROCESS DATASET VERSION IS DERIVED FROM DATASET VERSION
         //
-        if (isset($version['metadata']['metadata']['linkage']['datasetLinkage']['isDerivedFrom'])) {
-        
-            $datasetIsDerivedFrom = (array) $version['metadata']['metadata']['linkage']['datasetLinkage']['isDerivedFrom'];
+
+        $datasetIsDerivedFrom = $this->getValueByPossibleKeys($version['metadata'], ['isDerivedFrom']);
+
+        if ($datasetIsDerivedFrom) {
+
+            $datasetIsDerivedFrom =  array($datasetIsDerivedFrom);
 
             foreach ($datasetIsDerivedFrom as $datasetLinkage) {
                 $datasetLinkage = basename($datasetLinkage);
@@ -157,11 +167,13 @@ trait UpdateDatasetLinkages
         // 
         // PROCESS DATASET VERSION IS PART OF DATASET VERSION
         //
-        if (isset($version['metadata']['metadata']['linkage']['datasetLinkage']['isPartOf'])) {
-        
-            $datasetIsPartOf = (array) $version['metadata']['metadata']['linkage']['datasetLinkage']['isPartOf'];
+        $datasetIsPartOf = $this->getValueByPossibleKeys($version['metadata'], ['isPartOf']);
 
-            foreach ($datasetIsPartOf as $datasetLinkage) {
+        if ($datasetIsPartOf) {
+
+            $datasetIsPartOf =  array($datasetIsPartOf);
+
+           foreach ($datasetIsPartOf as $datasetLinkage) {
                 $datasetLinkage = basename($datasetLinkage);
                 $datasetModel = Dataset::where('pid', $datasetLinkage)->first();
                     
@@ -186,9 +198,11 @@ trait UpdateDatasetLinkages
         // 
         // PROCESS DATASET VERSION IS MEMBER OF DATASET VERSION
         //
-        if (isset($version['metadata']['metadata']['linkage']['datasetLinkage']['isMemberOf'])) {
-        
-            $datasetIsMemberOf = (array) $version['metadata']['metadata']['linkage']['datasetLinkage']['isMemberOf'];
+        $datasetIsMemberOf = $this->getValueByPossibleKeys($version['metadata'], ['isMemberOf']);
+
+        if ($datasetIsMemberOf) {
+
+            $datasetIsMemberOf =  array($datasetIsMemberOf);
 
             foreach ($datasetIsMemberOf as $datasetLinkage) {
                 $datasetLinkage = basename($datasetLinkage);
@@ -215,9 +229,11 @@ trait UpdateDatasetLinkages
         // 
         // PROCESS DATASET VERSION IS LINKED TO ANOTHER DATASET VERSION
         //
-        if (isset($version['metadata']['metadata']['linkage']['datasetLinkage']['linkedDatasets'])) {
-        
-            $datasetLinkedDatasets = (array) $version['metadata']['metadata']['linkage']['datasetLinkage']['linkedDatasets'];
+        $datasetLinkedDatasets = $this->getValueByPossibleKeys($version['metadata'], ['linkedDatasets']);
+
+        if ($datasetLinkedDatasets) {
+
+            $datasetLinkedDatasets =  array($datasetLinkedDatasets);
 
             foreach ($datasetLinkedDatasets as $datasetLinkage) {
                 $datasetLinkage = basename($datasetLinkage);

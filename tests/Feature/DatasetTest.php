@@ -1178,7 +1178,31 @@ class DatasetTest extends TestCase
 
         $responseCreatePublicationAbout->assertStatus(201);
         $contentCreatePublicationAbout = $responseCreatePublicationAbout->decodeResponseJson();
-        $PublicationId = $contentCreatePublicationAbout['data'];
+        $PublicationAboutId = $contentCreatePublicationAbout['data'];
+
+        // create a Publication (using the dataset)
+        $responseCreatePublicationUsing = $this->json(
+            'POST',
+            self::TEST_URL_PUBLICATION,
+                [
+                'paper_title' => 'Not A Test Paper Title',
+                'authors' => 'Einstein, Albert, Yankovich, Al',
+                'year_of_publication' => '2022',
+                'paper_doi' => '10.1300/182',
+                'publication_type' => 'Paper and such',
+                'journal_name' => 'Something Journal-y here',
+                'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'url' => 'http://paper_example2.html',
+                'datasets' => [],
+                'tools' => [],
+                'status' => 'ACTIVE'
+                ],
+            $this->header,
+        );
+
+        $responseCreatePublicationUsing->assertStatus(201);
+        $contentCreatePublicationUsing = $responseCreatePublicationUsing->decodeResponseJson();
+        $PublicationUsingId = $contentCreatePublicationUsing['data'];
 
         // create dataset1
         $responseCreateDataset1 = $this->json(
@@ -1267,12 +1291,19 @@ class DatasetTest extends TestCase
             ->count();
         $this->assertEquals($linkedToolsCount, 1);
 
-        # lets check if our DatasetVersion-Publication relationship was created
-        $linkedPublicationCount=PublicationHasDatasetVersion::where('dataset_version_id',$latestVersionId1)
-            ->where('publication_id',$PublicationId)
+        # lets check if our DatasetVersion about Publication relationship was created
+        $linkedPublicationAboutCount=PublicationHasDatasetVersion::where('dataset_version_id',$latestVersionId1)
+            ->where('publication_id',$PublicationAboutId)
             ->get()
             ->count();
-        $this->assertEquals($linkedPublicationCount, 1);
+        $this->assertEquals($linkedPublicationAboutCount, 1);
+
+        # lets check if our DatasetVersion using Publication relationship was created
+        $linkedPublicationUsingCount=PublicationHasDatasetVersion::where('dataset_version_id',$latestVersionId1)
+           ->where('publication_id',$PublicationUsingId)
+           ->get()
+           ->count();
+       $this->assertEquals($linkedPublicationUsingCount, 1);
 
         # lets check if our DatasetVersion-DatasetVersion relationship was created
         $linkedDatasetVersions=DatasetVersionHasDatasetVersion::where('dataset_version_target_id',$latestVersionId1)
@@ -1319,17 +1350,29 @@ class DatasetTest extends TestCase
         ]);
         $responseDeleteTool->assertStatus(200);
 
-        // delete Publication
-        $responseDeletePublication = $this->json(
+        // delete Publication about
+        $responseDeletePublicationAbout = $this->json(
             'DELETE',
-            self::TEST_URL_PUBLICATION . '/' . $PublicationId,
+            self::TEST_URL_PUBLICATION . '/' . $PublicationAboutId,
             [],
             $this->header
         );
-        $responseDeletePublication->assertJsonStructure([
+        $responseDeletePublicationAbout->assertJsonStructure([
             'message'
         ]);
-        $responseDeletePublication->assertStatus(200);
+        $responseDeletePublicationAbout->assertStatus(200);
+
+        // delete Publication
+        $responseDeletePublicationUsing = $this->json(
+            'DELETE',
+            self::TEST_URL_PUBLICATION . '/' . $PublicationUsingId,
+            [],
+            $this->header
+        );
+        $responseDeletePublicationUsing->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeletePublicationUsing->assertStatus(200);
 
         // delete team
         $responseDeleteTeam = $this->json(
