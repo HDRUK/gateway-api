@@ -332,16 +332,27 @@ class EnquiryThreadController extends Controller
         $arr = [];
 
         foreach ($datasets as $dataset) {
-            $ds = Dataset::with('latestMetadata')->where('id', $dataset['dataset_id'])->first();
-            $datasetUrl = env('GATEWAY_URL') . '/dataset/' . $ds->id . '?section=1';
+            // Handles the case where the enquiry is about no datasets, only to a team
+            if ($dataset['dataset_id'] === null) {
+                $arr[] = [
+                    'title' => null,
+                    'dataset_id' => null,
+                    'url' => null,
+                    'interest_type' => $dataset['interest_type'],
+                    'team_id' => $dataset['team_id'],
+                ];
+            } else {
+                $ds = Dataset::with('latestMetadata')->where('id', $dataset['dataset_id'])->first();
+                $datasetUrl = env('GATEWAY_URL') . '/dataset/' . $ds->id . '?section=1';
 
-            $arr[] = [
-                'title' => $ds->latestMetadata->metadata['metadata']['summary']['shortTitle'],
-                'dataset_id' => $dataset['dataset_id'],
-                'url' => $datasetUrl,
-                'interest_type' => $dataset['interest_type'],
-                'team_id' => $ds->team_id,
-            ];
+                $arr[] = [
+                    'title' => $ds->latestMetadata->metadata['metadata']['summary']['shortTitle'],
+                    'dataset_id' => $dataset['dataset_id'],
+                    'url' => $datasetUrl,
+                    'interest_type' => $dataset['interest_type'],
+                    'team_id' => $ds->team_id,
+                ];
+            }
         }
 
         return $arr;

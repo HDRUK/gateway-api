@@ -90,6 +90,10 @@ class SocialLoginController extends Controller
         if (strtolower($provider) === 'openathens') {
             $provider = 'open-athens';
 
+            if ($request->has('target_link_uri')) {
+                session(['redirectUrl' => $request->query('target_link_uri')]);
+            }
+
             $params = [
                 'client_id' => Config::get('services.openathens.client_id'),
                 'redirect_uri' => Config::get('services.openathens.redirect'),
@@ -227,7 +231,12 @@ class SocialLoginController extends Controller
             $cookies = [
                 Cookie::make('token', $jwt),
             ];
-            return redirect()->away(env('GATEWAY_URL') . '/account/profile')->withCookies($cookies);
+            if ($user['name'] === '' || $user['email'] === '') {
+                return redirect()->away(env('GATEWAY_URL') . '/account/profile')->withCookies($cookies);
+            } else {
+                $redirectUrl = session('redirectUrl');
+                return redirect()->away($redirectUrl)->withCookies($cookies);
+            }
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
