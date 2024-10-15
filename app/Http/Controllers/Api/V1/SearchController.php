@@ -842,8 +842,6 @@ class SearchController extends Controller
             }
             $durModels = Dur::with('datasetVersions')->whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
 
-            // below takes 5-6 seconds
-
             foreach ($durArray as $i => $dur) {
                 $foundFlag = false;
                 foreach ($durModels as $model) {
@@ -1575,20 +1573,13 @@ class SearchController extends Controller
         if (empty($durMatch['datasetVersions']) || !is_iterable($durMatch['datasetVersions'])) {
             return [];
         }
-
-        \Log::info('is_iterable!');
         
         $datasetVersionIds = $datasetVersionIds = $durMatch['datasetVersions']->pluck('dataset_version_id')->toArray();
 
-        
-        \Log::info($datasetVersionIds);
-        \Log::info(implode(',',$datasetVersionIds));
         if (empty($datasetVersionIds)){
             return [];
         }
 
-
-        \Log::info('is not empty!');
         $datasets = DatasetVersion::whereIn('id', $datasetVersionIds)
         ->get();
 
