@@ -579,7 +579,7 @@ class PublicationController extends Controller
             if($currentPublication->status === Publication::STATUS_ACTIVE) {
                 $this->indexElasticPublication((int) $id);
             } elseif ($initPublication['status'] === Publication::STATUS_ACTIVE) {
-                $this->deleteFromElastic($id, 'publication');
+                $this->deletePublicationFromElastic($id);
             }
 
             Auditor::log([
@@ -734,7 +734,7 @@ class PublicationController extends Controller
                     if($publicationModel->status === Publication::STATUS_ACTIVE) {
                         $this->indexElasticPublication($id);
                     } elseif ($originalStatus === Publication::STATUS_ACTIVE) {
-                        $this->deleteFromElastic($id, 'publication');
+                        $this->deletePublicationFromElastic($id);
                     }
                 }
 
@@ -792,7 +792,7 @@ class PublicationController extends Controller
                     // Index the updated publication in Elasticsearch
                     $this->indexElasticPublication((int) $id);
                 } elseif ($originalStatus === Publication::STATUS_ACTIVE) {
-                    $this->deleteFromElastic($id, 'publication');
+                    $this->deletePublicationFromElastic($id);
                 }
 
                 Auditor::log([
