@@ -1597,7 +1597,7 @@ class SearchController extends Controller
         foreach ($datasets as $dataset) {
             $datasetTitles[] = [
                 'title' => $dataset['metadata']['metadata']['summary']['shortTitle'],
-                'id' =>(int)implode(',',$datasetVersionIds),
+                'id' => $dataset['id'],
             ];
           
         }
