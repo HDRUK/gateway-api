@@ -332,12 +332,6 @@ class DatasetSqlLinkageJob implements ShouldQueue
                                             ->first();
                     } 
                 }
-                $textMatches = [];
-
-                if (!$datasetModel){
-                    // If no PID or URL is present, attempt a text-based search using title
-                    $textMatches = $this->searchInDataset($datasetSearchArray, $title);
-                }
 
                 // If a dataset model is found, create or update the linkage
                 if ($datasetModel) {
@@ -356,7 +350,14 @@ class DatasetSqlLinkageJob implements ShouldQueue
                             'description' => "Linked on Dataset PID",                    // Description for logging purposes
                         ]);
                     } 
-                } elseif ($textMatches) {
+                } 
+                
+                $textMatches = [];
+
+                if (!$datasetModel){
+                    // If no PID or URL is present, attempt a text-based search using title
+                    $textMatches = $this->searchInDataset($datasetSearchArray, $title);
+                
                     // If no dataset model was found but text matches were found, create linkages based on the text matches
                     foreach ($textMatches as $textMatch) {
                         $datasetVersionTargetID = $textMatch['dataset_version_id'];
