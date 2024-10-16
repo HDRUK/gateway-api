@@ -502,61 +502,64 @@ class DurController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        
+        $arrayKeys = [
+            'non_gateway_datasets',
+            'non_gateway_applicants',
+            'funders_and_sponsors',
+            'other_approval_committees',
+            'gateway_outputs_tools',
+            'gateway_outputs_papers',
+            'non_gateway_outputs',
+            'project_title',
+            'project_id_text',
+            'organisation_name',
+            'organisation_sector',
+            'lay_summary',
+            'technical_summary',
+            'latest_approval_date',
+            'manual_upload',
+            'rejection_reason',
+            'sublicence_arrangements',
+            'public_benefit_statement',
+            'data_sensitivity_level',
+            'accredited_researcher_status',
+            'confidential_data_description',
+            'dataset_linkage_description',
+            'duty_of_confidentiality',
+            'legal_basis_for_data_article6',
+            'legal_basis_for_data_article9',
+            'national_data_optout',
+            'organisation_id',
+            'privacy_enhancements',
+            'request_category_type',
+            'request_frequency',
+            'access_type',
+            'mongo_object_dar_id',
+            'technicalSummary',
+            'team_id',
+            'enabled',
+            'last_activity',
+            'counter',
+            'mongo_object_id',
+            'mongo_id',
+            'applicant_id',
+            'status',
+        ];
+        $array = $this->checkEditArray($input, $arrayKeys);
+        $array['team_id'] = array_key_exists('team_id', $input) ? $input['team_id'] : null;
+
+        if (!array_key_exists('team_id', $array)) {
+            throw new NotFoundException("Team Id not found in request.");
+        }
+
+        $this->checkAccess($input, $array['team_id'], null, 'team');
+
+        if (isset($array['organisation_sector'])) {
+            $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
+        }
 
         try {
-            $arrayKeys = [
-                'non_gateway_datasets',
-                'non_gateway_applicants',
-                'funders_and_sponsors',
-                'other_approval_committees',
-                'gateway_outputs_tools',
-                'gateway_outputs_papers',
-                'non_gateway_outputs',
-                'project_title',
-                'project_id_text',
-                'organisation_name',
-                'organisation_sector',
-                'lay_summary',
-                'technical_summary',
-                'latest_approval_date',
-                'manual_upload',
-                'rejection_reason',
-                'sublicence_arrangements',
-                'public_benefit_statement',
-                'data_sensitivity_level',
-                'accredited_researcher_status',
-                'confidential_data_description',
-                'dataset_linkage_description',
-                'duty_of_confidentiality',
-                'legal_basis_for_data_article6',
-                'legal_basis_for_data_article9',
-                'national_data_optout',
-                'organisation_id',
-                'privacy_enhancements',
-                'request_category_type',
-                'request_frequency',
-                'access_type',
-                'mongo_object_dar_id',
-                'technicalSummary',
-                'team_id',
-                'enabled',
-                'last_activity',
-                'counter',
-                'mongo_object_id',
-                'mongo_id',
-                'applicant_id',
-                'status',
-            ];
-            $array = $this->checkEditArray($input, $arrayKeys);
-            $array['team_id'] = array_key_exists('team_id', $input) ? $input['team_id'] : null;
-
-            if (!array_key_exists('team_id', $array)) {
-                throw new NotFoundException("Team Id not found in request.");
-            }
-
-            if (isset($array['organisation_sector'])) {
-                $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
-            }
 
             $dur = Dur::create($array);
             $durId = $dur->id;

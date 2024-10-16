@@ -19,6 +19,7 @@ class CheckAccessMiddleware
         $input = $request->all();
         $jwtUserIsAdminId = $input['jwt_user']['is_admin'];
         $access = explode("|", $data);
+        $teamId = $request->route('teamId');
 
         if ($jwtUserIsAdminId) {
             return $next($request);
@@ -28,6 +29,31 @@ class CheckAccessMiddleware
             throw new UnauthorizedException();
         }
 
+        $currentUserRoles = [];
+        $currentUserPermissions = [];
+        if ($teamId) {
+            $currentUserRoles = array_unique(array_merge($input['jwt_user']['role_perms']['extra']['roles'], $input['jwt_user']['role_perms']['teams'][(string) $teamId]['roles']));
+            $currentUserPermissions = array_unique(array_merge($input['jwt_user']['role_perms']['extra']['perms'], $input['jwt_user']['role_perms']['teams'][(string) $teamId]['perms']));
+        } else {
+            $currentUserRoles = $input['jwt_user']['role_perms']['summary']['roles'];
+            $currentUserPermissions = $input['jwt_user']['role_perms']['summary']['perms'];
+        }
+
+        if ($type === 'roles') {
+            $checkingRoles = array_diff($access, $currentUserRoles);
+            if (!empty($checkingRoles)) {
+                throw new UnauthorizedException();
+            }
+        }
+
+        if ($type === 'permissions') {
+            $checkingPermissions = array_diff($access, $currentUserPermissions);
+
+            if (!empty($checkingPermissions)) {
+                throw new UnauthorizedException();
+            }
+        }
+        
         $request->merge(
             [
                 'middleware' => [
