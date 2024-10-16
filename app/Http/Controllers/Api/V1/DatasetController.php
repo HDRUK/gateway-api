@@ -570,11 +570,12 @@ class DatasetController extends Controller
     public function store(CreateDataset $request): JsonResponse
     {
         $input = $request->all();
+        $teamId = (int)$input['team_id'];
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $this->checkAccess($input, $teamId, null, 'team');
 
         try {
             $elasticIndexing = $request->boolean('elastic_indexing', true);
-            $teamId = (int)$input['team_id'];
 
             $team = Team::where('id', $teamId)->first()->toArray();
 

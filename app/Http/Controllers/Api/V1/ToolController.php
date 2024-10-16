@@ -447,6 +447,10 @@ class ToolController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $teamId = array_key_exists('team_id', $input) ? $input['team_id'] : null;
+        if (!is_null($teamId)) {
+            $this->checkAccess($input, $teamId, null, 'team');
+        }
 
         try {
             $arrayKeys = [
