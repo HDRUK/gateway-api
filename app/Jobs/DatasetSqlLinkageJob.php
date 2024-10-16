@@ -89,7 +89,7 @@ class DatasetSqlLinkageJob implements ShouldQueue
      * @param bool $delete Optional flag to delete existing linkages. Defaults to false.
      * @return void
      */
-    private function createSqlLinkageFromDataset(array $metadata, Dataset $dataset, bool $delete = false): void
+    private function createSqlLinkageFromDataset(array $metadata, Dataset $dataset, bool $delete = false, $datasetSearchArray): void
     {
         // Retrieve the latest dataset_version for the given dataset_id
         $version = $dataset->latestVersion();
@@ -98,7 +98,7 @@ class DatasetSqlLinkageJob implements ShouldQueue
         $allDatasetVersionIds = DatasetVersion::where('dataset_id', $dataset->id)->select('id');
 
         // Build the search array that will be used for finding matching datasets
-        $datasetSearchArray = $this->buildDatasetSearchArray();
+        //$datasetSearchArray = $this->buildDatasetSearchArray();
 
         // If delete is set to true, remove all existing linkages for the dataset
         if ($delete) {
@@ -350,11 +350,12 @@ class DatasetSqlLinkageJob implements ShouldQueue
                             'description' => "Linked on Dataset PID",                    // Description for logging purposes
                         ]);
                     } 
-                } 
-                
-                $textMatches = [];
+                }
 
                 if (!$datasetModel){
+
+                    $textMatches = [];
+
                     // If no PID or URL is present, attempt a text-based search using title
                     $textMatches = $this->searchInDataset($datasetSearchArray, $title);
                 
