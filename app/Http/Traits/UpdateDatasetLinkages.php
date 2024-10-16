@@ -39,7 +39,7 @@ trait UpdateDatasetLinkages
         $version = $dataset->latestVersion();
 
         // Retrieve all dataset_version_ids for the given dataset_id
-        $allDatasetVersionIds = DatasetVersion::where('dataset_id', $dataset->id)->pluck('id');
+        $allDatasetVersionIds = DatasetVersion::where('dataset_id', $dataset->id)->select('id');
 
         // Build the search array that will be used for finding matching datasets
         $datasetSearchArray = $this->buildDatasetSearchArray();
