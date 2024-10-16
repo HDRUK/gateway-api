@@ -215,7 +215,8 @@ class CollectionTest extends TestCase
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
-            "status" => "ACTIVE"
+            "status" => "ACTIVE",
+            "user_id" => 1
         ];
 
         $response = $this->json(
@@ -345,7 +346,8 @@ class CollectionTest extends TestCase
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
-            "status" => "ACTIVE"
+            "status" => "ACTIVE",
+            "user_id" => 1,
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -360,6 +362,7 @@ class CollectionTest extends TestCase
         $this->assertTrue((bool) $mockDataUpdate['enabled'] === (bool) $responseUpdate['data']['enabled']);
         $this->assertTrue((bool) $mockDataUpdate['public'] === (bool) $responseUpdate['data']['public']);
         $this->assertTrue((int) $mockDataUpdate['counter'] === (int) $responseUpdate['data']['counter']);
+        $this->assertTrue((int) $mockDataUpdate['user_id'] === (int) $responseUpdate['data']['user_id']);
     }
 
     /**

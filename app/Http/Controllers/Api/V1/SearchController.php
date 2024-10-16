@@ -839,7 +839,7 @@ class SearchController extends Controller
 
             $durArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
-            
+
             $matchedIds = [];
             foreach (array_values($durArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
@@ -1577,7 +1577,7 @@ class SearchController extends Controller
         if (empty($durMatch['datasetVersions']) || !is_iterable($durMatch['datasetVersions'])) {
             return [];
         }
-        
+
         $datasetVersionIds = collect($durMatch['datasetVersions'])->select('dataset_version_id')->toArray();
 
         $datasets = DatasetVersion::whereIn('id', $datasetVersionIds)
@@ -1590,7 +1590,7 @@ class SearchController extends Controller
                 'title' => $dataset['metadata']['metadata']['summary']['shortTitle'],
                 'id' => $dataset['id'],
             ];
-          
+
         }
 
         usort($datasetTitles, function ($a, $b) {
@@ -1599,7 +1599,7 @@ class SearchController extends Controller
 
         return $datasetTitles;
     }
-    
+
 
     /**
      * Sorts results returned by the search service according to sort field and direction

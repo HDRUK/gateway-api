@@ -469,6 +469,7 @@ class CollectionController extends Controller
                 'mongo_object_id',
                 'mongo_id',
                 'team_id',
+                'user_id',
                 'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -645,6 +646,7 @@ class CollectionController extends Controller
                 'mongo_object_id',
                 'mongo_id',
                 'team_id',
+                'user_id',
                 'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -857,6 +859,7 @@ class CollectionController extends Controller
                     'mongo_object_id',
                     'mongo_id',
                     'team_id',
+                    'user_id',
                     'status',
                 ];
                 $array = $this->checkEditArray($input, $arrayKeys);
