@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use DB;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Builder;
@@ -88,6 +90,35 @@ class Dataset extends Model
                 return $query->select($fields);
             }
         )->findOrFail($version);
+    }
+
+    public function latestVersionID(int $datasetId): null|int
+    {
+        $result = DB::select(
+            '
+                SELECT 
+                    dv.id,
+                    dv.version
+                FROM dataset_versions dv
+                WHERE
+                    dv.version = (
+                        SELECT 
+                            MAX(version)
+                        FROM dataset_versions dv2
+                        WHERE dv2.dataset_id = dv.dataset_id
+                    )
+                AND dv.dataset_id = :dataset_id
+            ',
+            [
+                'dataset_id' => $datasetId,
+            ]
+        );
+
+        if (count($result) > 0) {
+            return $result[0]->id;
+        }
+
+        return null;
     }
 
     public function latestMetadata(): HasOne
