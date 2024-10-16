@@ -56,11 +56,8 @@ class DatasetSqlLinkageJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            // Use cached dataset search array, or build and cache it if not available
-            $datasetSearchArray = $this->getCachedDatasetSearchArray();
-
             // Call the linkage creation method
-            $this->createSqlLinkageFromDataset($this->metadata, $this->dataset, $this->deleteExistingLinkages, $datasetSearchArray);
+            $this->createSqlLinkageFromDataset($this->metadata, $this->dataset, $this->deleteExistingLinkages);
         
         } catch (Exception $e) {
             // Log the exception and rethrow
@@ -98,7 +95,7 @@ class DatasetSqlLinkageJob implements ShouldQueue
         $allDatasetVersionIds = DatasetVersion::where('dataset_id', $dataset->id)->select('id');
 
         // Build the search array that will be used for finding matching datasets
-        //$datasetSearchArray = $this->buildDatasetSearchArray();
+        $datasetSearchArray = $this->buildDatasetSearchArray();
 
         // If delete is set to true, remove all existing linkages for the dataset
         if ($delete) {
@@ -471,18 +468,5 @@ class DatasetSqlLinkageJob implements ShouldQueue
 
         // Return the array of matches (if any)
         return $matches;
-    }
-
-    /**
-     * Retrieve cached dataset search array or build and cache it.
-     *
-     * @return array Cached or newly built dataset search array.
-     */
-    private function getCachedDatasetSearchArray(): array
-    {
-        // Attempt to retrieve the cached search array
-        return (array) Cache::remember('dataset_search_array', 86400, function () {
-            return $this->buildDatasetSearchArray();
-        });
     }
 }
