@@ -13,6 +13,7 @@ use App\Models\DatasetVersionHasTool;
 use Illuminate\Support\Carbon;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
+use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\PublicationHasDatasetVersion;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Storage;
@@ -1291,33 +1292,40 @@ class DatasetTest extends TestCase
         $latestVersionId1 = Dataset::where('id',$datasetId1)->first()->latestVersion()->id;
         $latestVersionId2 = Dataset::where('id',$datasetId2)->first()->latestVersion()->id;
 
-        # lets check if our DatasetVersion-Tool relationship was created
+        # lets check if our DatasetVersion-to-Tool relationship was created
         $linkedToolsCount=DatasetVersionHasTool::where('dataset_version_id',$latestVersionId1)
             ->where('tool_id',$toolId)
             ->get()
             ->count();
         $this->assertEquals($linkedToolsCount, 1);
 
-        # lets check if our DatasetVersion about Publication relationship was created
+        # lets check if our DatasetVersion-about-Publication relationship was created
         $linkedPublicationAboutCount=PublicationHasDatasetVersion::where('dataset_version_id',$latestVersionId1)
             ->where('publication_id',$PublicationAboutId)
             ->get()
             ->count();
         $this->assertEquals($linkedPublicationAboutCount, 1);
 
-        # lets check if our DatasetVersion using Publication relationship was created
+        # lets check if our DatasetVersion-using-Publication relationship was created
         $linkedPublicationUsingCount=PublicationHasDatasetVersion::where('dataset_version_id',$latestVersionId1)
            ->where('publication_id',$PublicationUsingId)
            ->get()
            ->count();
-       $this->assertEquals($linkedPublicationUsingCount, 1);
+        $this->assertEquals($linkedPublicationUsingCount, 1);
 
-        # lets check if our DatasetVersion-DatasetVersion relationships were created
+        # lets check if our DatasetVersion-to-SpatialCoverage relationship was created
+        $linkedPublicationUsingCount=DatasetVersionHasSpatialCoverage::where('dataset_version_id',$latestVersionId1)
+            ->get()
+            ->count();
+
+        $this->assertEquals($linkedPublicationUsingCount, 1);
+
+        # lets check if our DatasetVersion-to-DatasetVersion relationship(s) were created (one using text searching)
         $linkedDatasetVersions=DatasetVersionHasDatasetVersion::where('dataset_version_target_id',$latestVersionId1)
             ->where('dataset_version_source_id',$latestVersionId2)
             ->get()
             ->count();
-
+        
         $this->assertEquals($linkedDatasetVersions, 2);
 
         # lets check that a DatasetVersion-DatasetVersion self loop was not created for dataset2

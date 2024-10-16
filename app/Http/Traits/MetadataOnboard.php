@@ -13,10 +13,12 @@ use App\Jobs\TermExtraction;
 
 use Illuminate\Support\Str;
 
+use App\Http\Traits\UpdateDatasetLinkages;
 use MetadataManagementController as MMC;
 
 trait MetadataOnboard
 {
+    use UpdateDatasetLinkages; 
     /**
      * Create new Dataset, calling translation service if necessary
      *
@@ -147,9 +149,14 @@ trait MetadataOnboard
                 'metadata' => json_encode($input['metadata']),
                 'version' => 1,
             ]);
-
-            // map coverage/spatial field to controlled list for filtering
-            $this->mapCoverage($input['metadata'], $version);
+ 
+            // Dispatch the dataset to update the SQL linkages tables 
+            // DatasetVersionHasTool 
+            // DatasetVersionHasDatasetVersion 
+            // PublicationHasDatasetVersion
+            // DatasetVersionHasSpatialCoverage
+            // This uses the input metadata and new dataset version to create the indexes. 
+            $this->createSqlLinkageFromDataset($input['metadata'], $dataset, false);
 
             // Dispatch term extraction to a subprocess if the dataset is marked as active
             if($input['status'] === Dataset::STATUS_ACTIVE && Config::get('ted.enabled')) {
@@ -178,45 +185,6 @@ trait MetadataOnboard
             ];
         }
 
-    }
-
-    private function mapCoverage(array $metadata, DatasetVersion $version): void
-    {
-        if (!isset($metadata['metadata']['coverage']['spatial'])) {
-            return;
-        }
-
-        $coverage = strtolower($metadata['metadata']['coverage']['spatial']);
-        $ukCoverages = SpatialCoverage::whereNot('region', 'Rest of the world')->get();
-        $worldId = SpatialCoverage::where('region', 'Rest of the world')->first()->id;
-
-        $matchFound = false;
-        foreach ($ukCoverages as $c) {
-            if (str_contains($coverage, strtolower($c['region']))) {
-
-                DatasetVersionHasSpatialCoverage::updateOrCreate([
-                    'dataset_version_id' => (int)$version['id'],
-                    'spatial_coverage_id' => (int)$c['id'],
-                ]);
-                $matchFound = true;
-            }
-        }
-
-        if (!$matchFound) {
-            if (str_contains($coverage, 'united kingdom')) {
-                foreach ($ukCoverages as $c) {
-                    DatasetVersionHasSpatialCoverage::updateOrCreate([
-                        'dataset_version_id' => (int)$version['id'],
-                        'spatial_coverage_id' => (int)$c['id'],
-                    ]);
-                }
-            } else {
-                DatasetVersionHasSpatialCoverage::updateOrCreate([
-                    'dataset_version_id' => (int)$version['id'],
-                    'spatial_coverage_id' => (int)$worldId,
-                ]);
-            }
-        }
     }
 
     public function getVersion(int $version)

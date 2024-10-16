@@ -776,9 +776,12 @@ class DatasetController extends Controller
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
 
             // Dispatch the dataset to update the SQL linkages tables 
-            // DatasetVersionHasTool / DatasetVersionHasDatasetVersion and PublicationHas DatasetVersion
-            // This uses the latest dataset version to create the indexes. 
-            $this->createSqlLinkage($currDataset, false);
+            // DatasetVersionHasTool 
+            // DatasetVersionHasDatasetVersion 
+            // PublicationHasDatasetVersion
+            // DatasetVersionHasSpatialCoverage
+            // This uses the input metadata and new dataset version to create the indexes. 
+            $this->createSqlLinkageFromDataset($input['metadata'], $currDataset, false);
 
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
             if($request['status'] === Dataset::STATUS_ACTIVE &&  Config::get('ted.enabled')) {
