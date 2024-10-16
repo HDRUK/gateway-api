@@ -5,13 +5,23 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Dataset;
+use App\Models\License;
 use App\Models\NamedEntities;
+use App\Models\Publication;
+use App\Models\DatasetVersionHasDatasetVersion;
+use App\Models\DatasetVersionHasTool;
 use Illuminate\Support\Carbon;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
+use App\Models\DatasetVersionHasSpatialCoverage;
+use App\Models\PublicationHasDatasetVersion;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Storage;
 use Database\Seeders\SpatialCoverageSeeder;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\TypeCategorySeeder;
+
+use Database\Seeders\LicenseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetTest extends TestCase
@@ -26,6 +36,8 @@ class DatasetTest extends TestCase
     public const TEST_URL_TEAM = '/api/v1/teams';
     public const TEST_URL_NOTIFICATION = '/api/v1/notifications';
     public const TEST_URL_USER = '/api/v1/users';
+    public const TEST_URL_TOOL = '/api/v1/tools';
+    public const TEST_URL_PUBLICATION = '/api/v1/publications';
 
     protected $metadata;
     protected $metadataAlt;
@@ -36,11 +48,15 @@ class DatasetTest extends TestCase
 
         $this->seed([
             SpatialCoverageSeeder::class,
+            LicenseSeeder::class,
+            CategorySeeder::class,
+            TypeCategorySeeder::class,
         ]);
 
         $this->metadata = $this->getMetadata();
         $this->metadataAlt = $this->metadata;
         $this->metadataAlt['metadata']['summary']['title'] = 'ABC title';
+        $this->metadataAlt['metadata']['required']['gatewayPid'] = '12345';
     }
 
     /**
@@ -995,6 +1011,391 @@ class DatasetTest extends TestCase
             'message'
         ]);
         $responseDeleteDataset->assertStatus(200);
+
+        // delete team
+        $responseDeleteTeam = $this->json(
+            'DELETE',
+            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteTeam->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteTeam->assertStatus(200);
+
+        // delete user
+        $responseDeleteUser = $this->json(
+            'DELETE',
+            self::TEST_URL_USER . '/' . $userId,
+            [],
+            $this->header
+        );
+        $responseDeleteUser->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteUser->assertStatus(200);
+    }
+
+    /**
+     * Create Dataset linkage with success
+     *
+     * @return void
+     */
+    public function test_dataset_linkage__with_success(): void
+    {
+        // create team
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
+            'POST',
+            self::TEST_URL_NOTIFICATION,
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'email' => 'some@email.com',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header,
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create the new team
+        $responseCreateTeam = $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+                'users' => [],
+            ],
+            $this->header,
+        );
+
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
+        $teamId = $contentCreateTeam['data'];
+
+        // create user
+        $responseCreateUser = $this->json(
+            'POST',
+            self::TEST_URL_USER,
+            [
+                'firstname' => 'Firstname',
+                'lastname' => 'Lastname',
+                'email' => 'firstname.lastname.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/75697342",
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'mongo_id' => 1234566,
+                'mongo_object_id' => "12345abcde",
+            ],
+            $this->header,
+        );
+        $responseCreateUser->assertStatus(201);
+        $contentCreateUser = $responseCreateUser->decodeResponseJson();
+        $userId = $contentCreateUser['data'];
+
+        // create a tool
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $responseCreateTool = $this->json(
+            'POST',
+            self::TEST_URL_TOOL,
+                [
+                "mongo_object_id" => "5ece82082abda8b3a06f1941",
+                "name" => "Similique sapiente est vero eum.",
+                "url" => "https://github.com/HDRUK/papers",
+                "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+                'results_insights' => "asfhiasfh aoshfa ",
+                "license" => $licenseId,
+                "tech_stack" => "Cumque molestias excepturi quam at.",
+                "category_id" => 1,
+                "user_id" => 1,
+                "tag" => [],
+                "dataset" => [],
+                "programming_language" => [],
+                "programming_package" => [],
+                "type_category" => [1, 2],
+                "enabled" => 1,
+                "publications" => [],
+                "durs" => [],
+                "collections" => [],
+                "any_dataset" => false,
+                "status" => "ACTIVE"
+            ],
+            $this->header,
+        );
+       
+        $responseCreateTool->assertStatus(201);
+        $contentCreateTool = $responseCreateTool->decodeResponseJson();
+        $toolId = $contentCreateTool['data'];
+
+        // create a Publication (about the dataset)
+        $responseCreatePublicationAbout = $this->json(
+            'POST',
+            self::TEST_URL_PUBLICATION,
+                [
+                'paper_title' => 'Not A Test Paper Title',
+                'authors' => 'Einstein, Albert, Yankovich, Al',
+                'year_of_publication' => '2022',
+                'paper_doi' => '10.1000/182',
+                'publication_type' => 'Paper and such',
+                'journal_name' => 'Something Journal-y here',
+                'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'url' => 'http://paper_example1.html',
+                'datasets' => [],
+                'tools' => [],
+                'status' => 'ACTIVE'
+                ],
+            $this->header,
+        );
+
+        $responseCreatePublicationAbout->assertStatus(201);
+        $contentCreatePublicationAbout = $responseCreatePublicationAbout->decodeResponseJson();
+        $PublicationAboutId = $contentCreatePublicationAbout['data'];
+
+        // create a Publication (using the dataset)
+        $responseCreatePublicationUsing = $this->json(
+            'POST',
+            self::TEST_URL_PUBLICATION,
+                [
+                'paper_title' => 'Not A Test Paper Title',
+                'authors' => 'Einstein, Albert, Yankovich, Al',
+                'year_of_publication' => '2022',
+                'paper_doi' => '10.1300/182',
+                'publication_type' => 'Paper and such',
+                'journal_name' => 'Something Journal-y here',
+                'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'url' => 'http://paper_example2.html',
+                'datasets' => [],
+                'tools' => [],
+                'status' => 'ACTIVE'
+                ],
+            $this->header,
+        );
+
+        $responseCreatePublicationUsing->assertStatus(201);
+        $contentCreatePublicationUsing = $responseCreatePublicationUsing->decodeResponseJson();
+        $PublicationUsingId = $contentCreatePublicationUsing['data'];
+
+        // inject the publication information into the metadata
+        $this->metadata['metadata']['linkage']['publicationAboutDataset']= "10.1000/182";
+        $this->metadata['metadata']['linkage']['publicationUsingDataset']= "10.1300/182";
+
+        // create dataset1
+        $responseCreateDataset1 = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            $this->header,
+        );
+        $responseCreateDataset1->assertStatus(201);
+        $contentCreateDataset1 = $responseCreateDataset1->decodeResponseJson();
+        $datasetId1 = $contentCreateDataset1['data'];
+
+        // update dataset1
+        $responseUpdateDataset1 = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET . '/' . $datasetId1,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+
+        $responseUpdateDataset1->assertStatus(200);
+        
+        
+        // create dataset2
+        $responseCreateDataset2 = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadataAlt,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            $this->header,
+        );
+        $responseCreateDataset2->assertStatus(201);
+        $contentCreateDataset2 = $responseCreateDataset2->decodeResponseJson();
+        
+        $datasetId2 = $contentCreateDataset2['data'];
+
+        // Get the Dataset 1PID and inject it, and a Title based linkage into the alt metadata
+        $pid=Dataset::where('id',$datasetId1)->first()->pid;
+        $this->metadataAlt['metadata']['linkage']['datasetLinkage']['isPartOf']= $pid;
+        $this->metadataAlt['metadata']['linkage']['datasetLinkage']['isMemberOf']= 'HDR UK Papers & Preprints';
+        
+
+        // update dataset2
+        $responseUpdateDataset2 = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET . '/' . $datasetId2,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadataAlt,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        
+        $responseUpdateDataset2->assertStatus(200);
+
+       
+
+        // TESTING
+        # Now we get testing: lets check out the linkage for Dataset 1:
+        # lets get the latest version IDs:
+
+        $latestVersionId1 = Dataset::where('id',$datasetId1)->first()->latestVersion()->id;
+        $latestVersionId2 = Dataset::where('id',$datasetId2)->first()->latestVersion()->id;
+
+        # lets check if our DatasetVersion-to-Tool relationship was created
+        $linkedToolsCount=DatasetVersionHasTool::where('dataset_version_id',$latestVersionId1)
+            ->where('tool_id',$toolId)
+            ->get()
+            ->count();
+        $this->assertEquals($linkedToolsCount, 1);
+
+        # lets check if our DatasetVersion-about-Publication relationship was created
+        $linkedPublicationAboutCount=PublicationHasDatasetVersion::where('dataset_version_id',$latestVersionId1)
+            ->where('publication_id',$PublicationAboutId)
+            ->get()
+            ->count();
+        $this->assertEquals($linkedPublicationAboutCount, 1);
+
+        # lets check if our DatasetVersion-using-Publication relationship was created
+        $linkedPublicationUsingCount=PublicationHasDatasetVersion::where('dataset_version_id',$latestVersionId1)
+           ->where('publication_id',$PublicationUsingId)
+           ->get()
+           ->count();
+        $this->assertEquals($linkedPublicationUsingCount, 1);
+
+        # lets check if our DatasetVersion-to-SpatialCoverage relationship was created
+        $linkedPublicationUsingCount=DatasetVersionHasSpatialCoverage::where('dataset_version_id',$latestVersionId1)
+            ->get()
+            ->count();
+
+        $this->assertEquals($linkedPublicationUsingCount, 1);
+
+        # lets check if our DatasetVersion-to-DatasetVersion relationship(s) were created (one using text searching)
+        $linkedDatasetVersions=DatasetVersionHasDatasetVersion::where('dataset_version_target_id',$latestVersionId1)
+            ->where('dataset_version_source_id',$latestVersionId2)
+            ->get()
+            ->count();
+        
+        $this->assertEquals($linkedDatasetVersions, 2);
+
+        # lets check that a DatasetVersion-DatasetVersion self loop was not created for dataset2
+        $selfLinkedDatasetVersions=DatasetVersionHasDatasetVersion::where('dataset_version_target_id',$latestVersionId2)
+        ->where('dataset_version_source_id',$latestVersionId2)
+        ->get()
+        ->count();
+
+        $this->assertEquals(0, $selfLinkedDatasetVersions);
+
+        // DELETE STUFF
+        // permanent delete dataset1
+        $responseDeleteDataset = $this->json(
+            'DELETE',
+            self::TEST_URL_DATASET . '/' . $datasetId1 . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteDataset->assertStatus(200);
+
+        // permanent delete dataset2
+        $responseDeleteDataset2 = $this->json(
+            'DELETE',
+            self::TEST_URL_DATASET . '/' . $datasetId2 . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteDataset2->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteDataset2->assertStatus(200);
+
+        // delete Tool
+        $responseDeleteTool = $this->json(
+            'DELETE',
+            self::TEST_URL_TOOL . '/' . $toolId,
+            [],
+            $this->header
+        );
+        $responseDeleteTool->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteTool->assertStatus(200);
+
+        // delete Publication about
+        $responseDeletePublicationAbout = $this->json(
+            'DELETE',
+            self::TEST_URL_PUBLICATION . '/' . $PublicationAboutId,
+            [],
+            $this->header
+        );
+        $responseDeletePublicationAbout->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeletePublicationAbout->assertStatus(200);
+
+        // delete Publication
+        $responseDeletePublicationUsing = $this->json(
+            'DELETE',
+            self::TEST_URL_PUBLICATION . '/' . $PublicationUsingId,
+            [],
+            $this->header
+        );
+        $responseDeletePublicationUsing->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeletePublicationUsing->assertStatus(200);
 
         // delete team
         $responseDeleteTeam = $this->json(

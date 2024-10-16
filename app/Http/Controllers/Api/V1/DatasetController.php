@@ -10,6 +10,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
 use App\Jobs\TermExtraction;
+use App\Jobs\DatasetSqlLinkageJob;
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
 use App\Http\Traits\CheckAccess;
@@ -17,7 +18,6 @@ use App\Http\Traits\IndexElastic;
 
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-
 
 use App\Http\Traits\MetadataOnboard;
 use Maatwebsite\Excel\Facades\Excel;
@@ -42,6 +42,7 @@ class DatasetController extends Controller
     use GetValueByPossibleKeys;
     use MetadataOnboard;
     use CheckAccess;
+
 
     /**
      * @OA\Get(
@@ -418,12 +419,21 @@ class DatasetController extends Controller
             // - For the FE i just need a tools linkage count so i'm gonna return `count(dataset->allTools)` for now
             // - Same for collections
             // - Leaving this as it is as im not 100% sure what any FE knock-on effect would be
+
+            // notes Tom 11th Oct 2024...
+            // - this is where we could be injecting these values into the "extra" array prior to validation
+            // - We can restrict this to IDs using the following logic
+            // - $toolIds = implode(', ', array_column($dataset->allTools, 'id'));
+            // - however, this could be built into the function 
+            // - getRelationsViaDatasetVersion in the Dataset Model
+
             $dataset->setAttribute('durs_count', $dataset->latestVersion()->durHasDatasetVersions()->count());
             $dataset->setAttribute('publications_count', $dataset->latestVersion()->publicationHasDatasetVersions()->count());
             $dataset->setAttribute('tools_count', count($dataset->allTools));
             $dataset->setAttribute('collections_count', count($dataset->allCollections));
             $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
             $dataset->setAttribute('durs', $dataset->allDurs  ?? []);
+            $dataset->setAttribute('tools', $dataset->allTools  ?? []);
             $dataset->setAttribute('publications', $dataset->allPublications  ?? []);
             $dataset->setAttribute('named_entities', $dataset->allNamedEntities  ?? []);
             $dataset->setAttribute('collections', $dataset->allCollections  ?? []);
@@ -763,6 +773,16 @@ class DatasetController extends Controller
             );
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
+
+            // Dispatch the dataset to update the SQL linkages tables 
+            // DatasetVersionHasTool 
+            // DatasetVersionHasDatasetVersion 
+            // PublicationHasDatasetVersion
+            // DatasetVersionHasSpatialCoverage
+            // This uses the input metadata and new dataset version to create the indexes. 
+            //$this->createSqlLinkageFromDataset($input['metadata'], $currDataset, false);
+            DatasetSqlLinkageJob::dispatch($input['metadata'], $currDataset, false);
+
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
             if($request['status'] === Dataset::STATUS_ACTIVE &&  Config::get('ted.enabled')) {
 
