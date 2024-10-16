@@ -22,6 +22,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Traits\MetadataOnboard;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Traits\AddMetadataVersion;
+use App\Models\Traits\ModelHelpers;
 
 use Illuminate\Support\Facades\Storage;
 use MetadataManagementController as MMC;
@@ -42,6 +43,7 @@ class DatasetController extends Controller
     use GetValueByPossibleKeys;
     use MetadataOnboard;
     use CheckAccess;
+    use ModelHelpers;
 
     /**
      * @OA\Get(
@@ -411,6 +413,10 @@ class DatasetController extends Controller
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
 
+            // Get only the very latest metadata version ID, and process all related
+            // objects on this, rather than excessively calling latestDataset()-><relation>.
+            $latestVersionID = $dataset->latestVersionID($id);
+
             // Inject attributes via the dataset version table
             // notes Calum 12th August 2024...
             // - This is a mess.. why is `pulibcations_count` returning something different than dataset->allPublications??
@@ -418,8 +424,15 @@ class DatasetController extends Controller
             // - For the FE i just need a tools linkage count so i'm gonna return `count(dataset->allTools)` for now
             // - Same for collections
             // - Leaving this as it is as im not 100% sure what any FE knock-on effect would be
-            $dataset->setAttribute('durs_count', $dataset->latestVersion()->durHasDatasetVersions()->count());
-            $dataset->setAttribute('publications_count', $dataset->latestVersion()->publicationHasDatasetVersions()->count());
+            //
+            // LS - Have replaced publications and dur counts with a raw count of linked relations via
+            // the *_has_* lookups.
+            $dataset->setAttribute('durs_count', $this->countDursForDatasetVersion($latestVersionID));
+            $dataset->setAttribute('publications_count', $this->countPublicationsForDatasetVersion($latestVersionID));
+            // This needs looking into, as helpful as attributes are, they're actually
+            // really poor in terms of performance. It'd be quicker to directly mutate
+            // a model in memory. That is, however, lazy, and better still would be
+            // to translate these to raw sql, as I have done above.
             $dataset->setAttribute('tools_count', count($dataset->allTools));
             $dataset->setAttribute('collections_count', count($dataset->allCollections));
             $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
@@ -431,12 +444,9 @@ class DatasetController extends Controller
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
 
-            // Retrieve the latest version
-            $latestVersion = $dataset->latestVersion();
-
             // Return the latest metadata for this dataset
             if (!($outputSchemaModel && $outputSchemaModelVersion)) {
-                $withLinks = DatasetVersion::where('id', $latestVersion['id'])
+                $withLinks = DatasetVersion::where('id', $latestVersionID)
                     ->with(['linkedDatasetVersions'])
                     ->first();
                 if ($withLinks) {
@@ -445,6 +455,8 @@ class DatasetController extends Controller
             }
 
             if ($outputSchemaModel && $outputSchemaModelVersion) {
+                $latestVersion = $dataset->latestVersion();
+
                 $translated = MMC::translateDataModelType(
                     json_encode($latestVersion->metadata),
                     $outputSchemaModel,
@@ -473,7 +485,7 @@ class DatasetController extends Controller
 
             if ($exportStructuralMetadata === 'structuralMetadata') {
                 $arrayDataset = $dataset->toArray();
-                $latestVersionId = $latestVersion->id;
+                $latestVersionId = $dataset->latestVersionID($id);
                 $versions = $this->getValueByPossibleKeys($arrayDataset, ['versions'], []);
 
                 $count = 0;
