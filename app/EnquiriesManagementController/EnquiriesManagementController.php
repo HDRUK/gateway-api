@@ -188,9 +188,14 @@ class EnquiriesManagementController
     {
         $str = '';
         $datasetsStr = '<br/><br/>';
+        $dataCustodiansStr = '';
 
         foreach ($in['thread']['datasets'] as $d) {
             $datasetsStr .= $d['title'] . ' (<a href="' . $d['url'] . '">Direct link</a>)<br/>';
+        }
+
+        foreach ($in['thread']['dataCustodians'] as $d) {
+            $dataCustodiansStr .= '<p style="text-indent: 15px">' . $d . '</p>';
         }
 
         $str .= 'Name: ' . $in['message']['message_body']['[[USER_FIRST_NAME]]'] . ' ' . $in['message']['message_body']['[[USER_LAST_NAME]]'] . '<br/>';
@@ -207,6 +212,7 @@ class EnquiriesManagementController
         } elseif ($in['thread']['is_general_enquiry']) {
             $str .= 'Enquiry: ' . $in['message']['message_body']['[[QUERY]]'] . '<br/>';
         }
+        $str .= 'This enquiry has also been sent to the following Data Custodians: ' . $dataCustodiansStr . '<br/>';
         return $str;
     }
 }
