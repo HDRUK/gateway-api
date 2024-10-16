@@ -56,19 +56,10 @@ class DatasetSqlLinkageJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            // Retrieve the latest version of the dataset
-            $version = $this->dataset->latestVersion();
+            
+            // Call the linkage creation method from the trait
+            $this->createSqlLinkageFromDataset($this->metadata, $this->dataset, $this->deleteExistingLinkages);
 
-            if ($version) {
-                // Call the linkage creation method from the trait
-                $this->createSqlLinkageFromDataset($this->metadata, $this->dataset, $this->deleteExistingLinkages);
-
-                // Log successful processing
-                Log::info("Successfully processed linkages for dataset ID: {$this->dataset->id}");
-            } else {
-                // Log failure to find the dataset version
-                Log::error("Failed to find the dataset version for dataset ID: {$this->dataset->id}");
-            }
         } catch (Exception $e) {
             // Log the exception and rethrow
             Auditor::log([
@@ -76,8 +67,6 @@ class DatasetSqlLinkageJob implements ShouldQueue
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-
-            Log::error("Error processing dataset linkage: " . $e->getMessage());
 
             throw new Exception($e->getMessage());
         }
@@ -113,9 +102,6 @@ class DatasetSqlLinkageJob implements ShouldQueue
         if ($delete) {
             $this->removeExistingLinkages($allDatasetVersionIds);
         }
-
-        // Log the dataset processing
-        Log::info("Processing Dataset: $dataset->id");
                 
         // Process linkages for tools, publications, and dataset relationships
         $this->processDatasetVersionToToolRelationships($version, 'linkage.tools', 'USING');
@@ -168,17 +154,8 @@ class DatasetSqlLinkageJob implements ShouldQueue
                         'tool_id' => $toolModel->id,           // The ID of the matching tool
                         'link_type' => $linkType,          // Define the type of linkage (URL match)
                     ]);
-
-                    // Log the successful creation of the linkage
-                    Log::info("Link created between datasetVersion: $version->id and tool: $tool: link type: $linkType");
-                } else {
-                    // Log if no matching tool is found in the database for the given URL
-                    Log::info("Tool not found: $tool");
                 }
             }
-        } else {
-            // Log if no tools were found in the dataset metadata
-            Log::info("No Dataset to Tool Linkages found in metadata");
         }
     }
 
@@ -226,17 +203,8 @@ class DatasetSqlLinkageJob implements ShouldQueue
                         'publication_id' => $publicationModel->id,  // The ID of the matching publication
                         'link_type' => $linkType,  // The type of linkage being created (e.g., 'USING', 'ABOUT')
                     ]);
-
-                    // Log the successful creation of the linkage
-                    Log::info("Link created between datasetVersion: $version->id and publication: $publication");
-                } else {
-                    // Log if no matching publication is found in the database for the given DOI
-                    Log::info("Publication not found for DOI: $publication");
-                }
+                } 
             }
-        } else {
-            // Log if no publications were found in the dataset metadata for the given key
-            Log::info("No publications found for key: $metadataKey");
         }
     }
 
@@ -280,9 +248,6 @@ class DatasetSqlLinkageJob implements ShouldQueue
                             'spatial_coverage_id' => $c->id
                             //'link_type' => $linkType,  // placemaker to Include the link type
                         ]);
-
-                        // Log the successful linkage
-                        Log::info("Spatial coverage linked: DatasetVersion {$version->id} to region {$c['region']} with link type: {$linkType}");
                         $matchFound = true;
                         break;  // Exit the loop if a match is found
                     }
@@ -297,9 +262,6 @@ class DatasetSqlLinkageJob implements ShouldQueue
                                 'spatial_coverage_id' => $c->id
                                  //'link_type' => $linkType,  // placemaker to Include the link type
                             ]);
-
-                            // Log the successful linkage for the entire UK
-                            Log::info("Spatial coverage linked: DatasetVersion {$version->id} to region {$c['region']} (United Kingdom) with link type: {$linkType}");
                         }
                     } else {
                         DatasetVersionHasSpatialCoverage::updateOrCreate([
@@ -307,16 +269,10 @@ class DatasetSqlLinkageJob implements ShouldQueue
                             'spatial_coverage_id' => $worldId
                              //'link_type' => $linkType,  // placemaker to Include the link type
                         ]);
-
-                        // Log the default linkage to "Rest of the world"
-                        Log::info("Spatial coverage linked: DatasetVersion {$version->id} to Rest of the world with link type: {$linkType}");
                     }
                 }
             }
-        } else {
-            // Log if no spatial coverage was found in the dataset metadata
-            Log::info("No spatial coverage found in metadata for DatasetVersion {$version->id}");
-        }
+        } 
     }
 
 
@@ -382,7 +338,7 @@ class DatasetSqlLinkageJob implements ShouldQueue
                 }
 
                 // If a dataset model is found, create or update the linkage
-                if (isset($datasetModel) && $datasetModel) {
+                if ($datasetModel) {
 
                     // Retrieve the latest version ID of the target dataset
                     $datasetVersionTargetID = $datasetModel->latestVersion(['id'])->id;
@@ -397,13 +353,7 @@ class DatasetSqlLinkageJob implements ShouldQueue
                             'direct_linkage' => 1,                                        // Mark the linkage as direct
                             'description' => "Linked on Dataset PID",                    // Description for logging purposes
                         ]);
-
-                        // Log the successful creation of the linkage
-                        Log::info("Link created between datasetVersion: {$version->id} and datasetVersion: $datasetVersionTargetID of type: $linkageType");
-                    } else {
-                        // Log that self-loop cannot be created
-                        Log::info("Prevented creation of self loop between datasetVersion: {$version->id} and datasetVersion: {$datasetVersionTargetID} of type: $linkageType");
-                    }
+                    } 
                 } elseif ($textMatches) {
                     // If no dataset model was found but text matches were found, create linkages based on the text matches
                     foreach ($textMatches as $textMatch) {
@@ -419,25 +369,12 @@ class DatasetSqlLinkageJob implements ShouldQueue
                                 'direct_linkage' => 1,
                                 'description' => "Linked by text matching on Dataset {$matchingField}",
                             ]);
-
-                            // Log the successful creation of the linkage based on the text match
-                            Log::info("Link created between datasetVersion: {$datasetVersionSourceID} and datasetVersion: {$datasetVersionTargetID} of type: $linkageType, match={$matchingField}");
-                        } else {
-                            // Log that self-loop cannot be created
-                            Log::info("Prevented creation of self loop between datasetVersion: {$datasetVersionSourceID} and datasetVersion: {$datasetVersionTargetID} of type: $linkageType, match={$matchingField}");
-                        }
+                        } 
                     }
-                } else {
-                    // Log if no matching dataset or text match was found
-                    Log::info("DatasetVersion linkage not found for key: $datasetLinkage ($linkageDescription)");
-                }
+                } 
             }
-        } else {
-            // Log if no linkages were found in the metadata
-            Log::info("No $linkageDescription Dataset Linkages found in metadata");
-        }
+        } 
     }
-
 
     /**
      * Build an array for searching dataset versions by specific fields.
