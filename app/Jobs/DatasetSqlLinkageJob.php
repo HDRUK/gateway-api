@@ -404,7 +404,7 @@ class DatasetSqlLinkageJob implements ShouldQueue
                         // Log that self-loop cannot be created
                         Log::info("Prevented creation of self loop between datasetVersion: {$version->id} and datasetVersion: {$datasetVersionTargetID} of type: $linkageType");
                     }
-                } elseif (isset($textMatches) && $textMatches) {
+                } elseif ($textMatches) {
                     // If no dataset model was found but text matches were found, create linkages based on the text matches
                     foreach ($textMatches as $textMatch) {
                         $datasetVersionTargetID = $textMatch['dataset_version_id'];
