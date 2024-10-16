@@ -839,16 +839,12 @@ class SearchController extends Controller
 
             $durArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
+            
             $matchedIds = [];
             foreach (array_values($durArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
             }
-
-            $durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
-
-            foreach ($durModels as $model) {
-                $model->setAttribute('datasets', $model->allDatasets);
-            }
+            $durModels = Dur::with('datasetVersions')->whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
 
             foreach ($durArray as $i => $dur) {
                 $foundFlag = false;
@@ -874,7 +870,6 @@ class SearchController extends Controller
                     continue;
                 }
             }
-
             if ($download) {
                 Auditor::log([
                     'action_type' => 'GET',
@@ -1578,23 +1573,33 @@ class SearchController extends Controller
      */
     private function durDatasetTitles(Dur $durMatch): array
     {
-        $datasetTitles = array();
-        foreach ($durMatch['datasets'] as $d) {
-            $metadata = Dataset::where(['id' => $d['id']])
-                ->first()
-                ->latestVersion()
-                ->metadata;
-            $datasetTitles[] = [
-                'title' => $metadata['metadata']['summary']['shortTitle'],
-                'id' => $d['id']
-            ];
+
+        if (empty($durMatch['datasetVersions']) || !is_iterable($durMatch['datasetVersions'])) {
+            return [];
         }
+        
+        $datasetVersionIds = collect($durMatch['datasetVersions'])->select('dataset_version_id')->toArray();
+
+        $datasets = DatasetVersion::whereIn('id', $datasetVersionIds)
+        ->get();
+
+        $datasetTitles = [];
+
+        foreach ($datasets as $dataset) {
+            $datasetTitles[] = [
+                'title' => $dataset['metadata']['metadata']['summary']['shortTitle'],
+                'id' => $dataset['id'],
+            ];
+          
+        }
+
         usort($datasetTitles, function ($a, $b) {
             return strcasecmp($a['title'], $b['title']);
         });
 
         return $datasetTitles;
     }
+    
 
     /**
      * Sorts results returned by the search service according to sort field and direction

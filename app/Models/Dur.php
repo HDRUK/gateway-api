@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Dur extends Model
 {
@@ -245,7 +246,7 @@ class Dur extends Model
         return $this->belongsToMany(DatasetVersion::class, 'dur_has_dataset_version', 'dur_id', 'dataset_version_id');
     }
 
-    public function datasetVersions()
+    public function datasetVersions(): HasMany
     {
         return $this->hasMany(DurHasDatasetVersion::class, 'dur_id');
     }
