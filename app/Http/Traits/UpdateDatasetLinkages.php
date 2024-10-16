@@ -271,34 +271,54 @@ trait UpdateDatasetLinkages
 
                 // If a dataset model is found, create or update the linkage
                 if ($datasetModel) {
+
                     // Retrieve the latest version ID of the target dataset
-                    $datasetVersionTargetID = $datasetModel->versions()->latest()->first()->id;
+                    $datasetVersionTargetID = $datasetModel->latestVersion(['id'])->id;
+                    $datasetVersionSourceID = $version->id;
+                    
+                    if($datasetVersionSourceID !=  $datasetVersionTargetID){
 
-                    // Create or update the linkage between the source and target dataset versions
-                    DatasetVersionHasDatasetVersion::updateOrCreate([
-                        'dataset_version_source_id' => $version->id,      // Source dataset version ID
-                        'dataset_version_target_id' => $datasetVersionTargetID, // Target dataset version ID
-                        'linkage_type' => $linkageType,                   // The type of linkage (e.g., 'isDerivedFrom')
-                        'direct_linkage' => 1,                            // Mark the linkage as direct
-                        'description' => "Linked on Dataset PID",         // Description for logging purposes
-                    ]);
+                        // Create or update the linkage between the source and target dataset versions
+                        DatasetVersionHasDatasetVersion::updateOrCreate([
+                            'dataset_version_source_id' => $datasetVersionSourceID,      // Source dataset version ID
+                            'dataset_version_target_id' => $datasetVersionTargetID, // Target dataset version ID
+                            'linkage_type' => $linkageType,                   // The type of linkage (e.g., 'isDerivedFrom')
+                            'direct_linkage' => 1,                            // Mark the linkage as direct
+                            'description' => "Linked on Dataset PID",         // Description for logging purposes
+                        ]);
 
-                    // Log the successful creation of the linkage
-                    Log::info("Link created between datasetVersion: {$version->id} and datasetVersion: $datasetVersionTargetID of type: $linkageType");
+                        // Log the successful creation of the linkage
+                        Log::info("Link created between datasetVersion: {$version->id} and datasetVersion: $datasetVersionTargetID of type: $linkageType");
+                    } else {
+                        // Log that self loop cannot be created
+                        Log::info("Prevented creation of self loop between datasetVersion: {$version->id} and datasetVersion: {$textMatch['dataset_version_id']} of type: $linkageType, match={$textMatch['field']}");
+                    }
                 } 
                 // If no dataset model was found but text matches were found, create linkages based on the text matches
                 elseif ($textMatches) {
                     foreach ($textMatches as $textMatch) {
-                        DatasetVersionHasDatasetVersion::updateOrCreate([
-                            'dataset_version_source_id' => $version->id,                    // Source dataset version ID
-                            'dataset_version_target_id' => $textMatch['dataset_version_id'],// Target dataset version ID from the search match
-                            'linkage_type' => $linkageType,                                 // The type of linkage (e.g., 'isDerivedFrom')
-                            'direct_linkage' => 1,                                          // Mark the linkage as direct
-                            'description' => "Linked by text matching on Dataset {$textMatch['field']}",     // Describe which field matched
-                        ]);
 
-                        // Log the successful creation of the linkage based on the text match
-                        Log::info("Link created between datasetVersion: {$version->id} and datasetVersion: {$textMatch['dataset_version_id']} of type: $linkageType, match={$textMatch['field']}");
+                        // Retrieve the latest version ID of the target dataset
+                        $datasetVersionTargetID = $textMatch['dataset_version_id'];
+                        $datasetVersionSourceID = $version->id;
+                        $matchingField = $textMatch['field'];
+
+                        if($datasetVersionSourceID !=  $datasetVersionTargetID){
+
+                            DatasetVersionHasDatasetVersion::updateOrCreate([
+                                'dataset_version_source_id' => $datasetVersionSourceID,                    // Source dataset version ID
+                                'dataset_version_target_id' => $datasetVersionTargetID,// Target dataset version ID from the search match
+                                'linkage_type' => $linkageType,                                 // The type of linkage (e.g., 'isDerivedFrom')
+                                'direct_linkage' => 1,                                          // Mark the linkage as direct
+                                'description' => "Linked by text matching on Dataset {$matchingField}",     // Describe which field matched
+                            ]);
+
+                            // Log the successful creation of the linkage based on the text match
+                            Log::info("Link created between datasetVersion: {$datasetVersionSourceID} and datasetVersion: {$datasetVersionTargetID} of type: $linkageType, match={$matchingField}");
+                        } else {
+                            // Log that self loop cannot be created
+                            Log::info("Prevented creation of self loop between datasetVersion: {$datasetVersionSourceID} and datasetVersion: {$datasetVersionTargetID} of type: $linkageType, match={$matchingField}");
+                        }
                     }
                 } else {
                     // Log if no matching dataset or text match was found

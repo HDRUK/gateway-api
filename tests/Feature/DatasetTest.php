@@ -1234,19 +1234,13 @@ class DatasetTest extends TestCase
                 'user_id' => $userId,
                 'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
-                'status' => Dataset::STATUS_DRAFT,
+                'status' => Dataset::STATUS_ACTIVE,
             ],
             $this->header,
         );
 
         $responseUpdateDataset1->assertStatus(200);
         
-        // Get the PID
-        $pid=Dataset::where('id',$datasetId1)->first()->pid;
-
-        // inject the PID into the alt metadata
-        $this->metadataAlt['metadata']['linkage']['datasetLinkage']['isPartOf']= $pid;
-        $this->metadataAlt['metadata']['linkage']['datasetLinkage']['isMemberOf']= 'HDR UK Papers & Preprints';
         
         // create dataset2
         $responseCreateDataset2 = $this->json(
@@ -1265,6 +1259,12 @@ class DatasetTest extends TestCase
         $contentCreateDataset2 = $responseCreateDataset2->decodeResponseJson();
         
         $datasetId2 = $contentCreateDataset2['data'];
+
+        // Get the Dataset 1PID and inject it, and a Title based linkage into the alt metadata
+        $pid=Dataset::where('id',$datasetId1)->first()->pid;
+        $this->metadataAlt['metadata']['linkage']['datasetLinkage']['isPartOf']= $pid;
+        $this->metadataAlt['metadata']['linkage']['datasetLinkage']['isMemberOf']= 'HDR UK Papers & Preprints';
+        
 
         // update dataset2
         $responseUpdateDataset2 = $this->json(
@@ -1312,13 +1312,21 @@ class DatasetTest extends TestCase
            ->count();
        $this->assertEquals($linkedPublicationUsingCount, 1);
 
-        # lets check if our DatasetVersion-DatasetVersion relationship was created
+        # lets check if our DatasetVersion-DatasetVersion relationships were created
         $linkedDatasetVersions=DatasetVersionHasDatasetVersion::where('dataset_version_target_id',$latestVersionId1)
             ->where('dataset_version_source_id',$latestVersionId2)
             ->get()
             ->count();
 
         $this->assertEquals($linkedDatasetVersions, 2);
+
+        # lets check that a DatasetVersion-DatasetVersion self loop was not created for dataset2
+        $selfLinkedDatasetVersions=DatasetVersionHasDatasetVersion::where('dataset_version_target_id',$latestVersionId2)
+        ->where('dataset_version_source_id',$latestVersionId2)
+        ->get()
+        ->count();
+
+        $this->assertEquals(0, $selfLinkedDatasetVersions);
 
         // DELETE STUFF
         // permanent delete dataset1
