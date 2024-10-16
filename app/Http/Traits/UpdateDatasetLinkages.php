@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Jobs;
+namespace App\Http\Traits;
 
+use Config;
 use Auditor;
 use Exception;
-use App\Models\Dataset;
+use Illuminate\Support\Facades\Log;
 use App\Models\Publication;
 use App\Models\Tool;
+use App\Models\Dataset;
 use App\Models\SpatialCoverage;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasDatasetVersion;
@@ -14,66 +16,10 @@ use App\Models\DatasetVersionHasTool;
 use App\Models\PublicationHasDatasetVersion;
 use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Http\Traits\GetValueByPossibleKeys;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Cache;
 
-class DatasetSqlLinkageJob implements ShouldQueue
+trait UpdateDatasetLinkages
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GetValueByPossibleKeys;
-
-    public $tries;
-    public $timeout;
-
-    private Dataset $dataset;
-    private array $metadata;
-    private bool $deleteExistingLinkages;
-
-     /**
-     * Create a new job instance.
-     *
-     * @param array $metadata The dataset metadata for processing linkages.
-     * @param Dataset $dataset The dataset object.
-     * @param bool $deleteExistingLinkages Whether to delete existing linkages before processing.
-     */
-    public function __construct(array $metadata, Dataset $dataset, bool $deleteExistingLinkages = false)
-    {
-        $this->timeout = config('jobs.default_timeout', 600); // Timeout for the job
-        $this->tries = config('jobs.ntries', 2); // Number of attempts
-        $this->metadata = $metadata;
-        $this->dataset = $dataset;
-        $this->deleteExistingLinkages = $deleteExistingLinkages;
-    }
-
-    /**
-     * Execute the job.
-     *
-     * @return void
-     */
-    public function handle(): void
-    {
-        try {
-            // Use cached dataset search array, or build and cache it if not available
-            $datasetSearchArray = $this->getCachedDatasetSearchArray();
-
-            // Call the linkage creation method
-            $this->createSqlLinkageFromDataset($this->metadata, $this->dataset, $this->deleteExistingLinkages, $datasetSearchArray);
-        
-        } catch (Exception $e) {
-            // Log the exception and rethrow
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
+    use GetValueByPossibleKeys;
 
     /**
      * Create SQL linkages for tools, publications, and dataset relationships.
@@ -89,7 +35,7 @@ class DatasetSqlLinkageJob implements ShouldQueue
      * @param bool $delete Optional flag to delete existing linkages. Defaults to false.
      * @return void
      */
-    private function createSqlLinkageFromDataset(array $metadata, Dataset $dataset, bool $delete = false): void
+    public function createSqlLinkageFromDataset(array $metadata, Dataset $dataset, bool $delete = false): void
     {
         // Retrieve the latest dataset_version for the given dataset_id
         $version = $dataset->latestVersion();
@@ -104,6 +50,9 @@ class DatasetSqlLinkageJob implements ShouldQueue
         if ($delete) {
             $this->removeExistingLinkages($allDatasetVersionIds);
         }
+
+        // Log the dataset processing
+        Log::info("Processing Dataset: $dataset->id");
                 
         // Process linkages for tools, publications, and dataset relationships
         $this->processDatasetVersionToToolRelationships($version, 'linkage.tools', 'USING');
@@ -156,8 +105,17 @@ class DatasetSqlLinkageJob implements ShouldQueue
                         'tool_id' => $toolModel->id,           // The ID of the matching tool
                         'link_type' => $linkType,          // Define the type of linkage (URL match)
                     ]);
+
+                    // Log the successful creation of the linkage
+                    Log::info("Link created between datasetVersion: $version->id and tool: $tool: link type: $linkType");
+                } else {
+                    // Log if no matching tool is found in the database for the given URL
+                    Log::info("Tool not found: $tool");
                 }
             }
+        } else {
+            // Log if no tools were found in the dataset metadata
+            Log::info("No Dataset to Tool Linkages found in metadata");
         }
     }
 
@@ -205,8 +163,17 @@ class DatasetSqlLinkageJob implements ShouldQueue
                         'publication_id' => $publicationModel->id,  // The ID of the matching publication
                         'link_type' => $linkType,  // The type of linkage being created (e.g., 'USING', 'ABOUT')
                     ]);
-                } 
+
+                    // Log the successful creation of the linkage
+                    Log::info("Link created between datasetVersion: $version->id and publication: $publication");
+                } else {
+                    // Log if no matching publication is found in the database for the given DOI
+                    Log::info("Publication not found for DOI: $publication");
+                }
             }
+        } else {
+            // Log if no publications were found in the dataset metadata for the given key
+            Log::info("No publications found for key: $metadataKey");
         }
     }
 
@@ -250,6 +217,9 @@ class DatasetSqlLinkageJob implements ShouldQueue
                             'spatial_coverage_id' => $c->id
                             //'link_type' => $linkType,  // placemaker to Include the link type
                         ]);
+
+                        // Log the successful linkage
+                        Log::info("Spatial coverage linked: DatasetVersion {$version->id} to region {$c['region']} with link type: {$linkType}");
                         $matchFound = true;
                         break;  // Exit the loop if a match is found
                     }
@@ -264,6 +234,9 @@ class DatasetSqlLinkageJob implements ShouldQueue
                                 'spatial_coverage_id' => $c->id
                                  //'link_type' => $linkType,  // placemaker to Include the link type
                             ]);
+
+                            // Log the successful linkage for the entire UK
+                            Log::info("Spatial coverage linked: DatasetVersion {$version->id} to region {$c['region']} (United Kingdom) with link type: {$linkType}");
                         }
                     } else {
                         DatasetVersionHasSpatialCoverage::updateOrCreate([
@@ -271,10 +244,16 @@ class DatasetSqlLinkageJob implements ShouldQueue
                             'spatial_coverage_id' => $worldId
                              //'link_type' => $linkType,  // placemaker to Include the link type
                         ]);
+
+                        // Log the default linkage to "Rest of the world"
+                        Log::info("Spatial coverage linked: DatasetVersion {$version->id} to Rest of the world with link type: {$linkType}");
                     }
                 }
             }
-        } 
+        } else {
+            // Log if no spatial coverage was found in the dataset metadata
+            Log::info("No spatial coverage found in metadata for DatasetVersion {$version->id}");
+        }
     }
 
 
@@ -340,7 +319,7 @@ class DatasetSqlLinkageJob implements ShouldQueue
                 }
 
                 // If a dataset model is found, create or update the linkage
-                if ($datasetModel) {
+                if (isset($datasetModel) && $datasetModel) {
 
                     // Retrieve the latest version ID of the target dataset
                     $datasetVersionTargetID = $datasetModel->latestVersion(['id'])->id;
@@ -355,8 +334,14 @@ class DatasetSqlLinkageJob implements ShouldQueue
                             'direct_linkage' => 1,                                        // Mark the linkage as direct
                             'description' => "Linked on Dataset PID",                    // Description for logging purposes
                         ]);
-                    } 
-                } elseif ($textMatches) {
+
+                        // Log the successful creation of the linkage
+                        Log::info("Link created between datasetVersion: {$version->id} and datasetVersion: $datasetVersionTargetID of type: $linkageType");
+                    } else {
+                        // Log that self-loop cannot be created
+                        Log::info("Prevented creation of self loop between datasetVersion: {$version->id} and datasetVersion: {$datasetVersionTargetID} of type: $linkageType");
+                    }
+                } elseif (isset($textMatches) && $textMatches) {
                     // If no dataset model was found but text matches were found, create linkages based on the text matches
                     foreach ($textMatches as $textMatch) {
                         $datasetVersionTargetID = $textMatch['dataset_version_id'];
@@ -371,29 +356,25 @@ class DatasetSqlLinkageJob implements ShouldQueue
                                 'direct_linkage' => 1,
                                 'description' => "Linked by text matching on Dataset {$matchingField}",
                             ]);
-                        } 
+
+                            // Log the successful creation of the linkage based on the text match
+                            Log::info("Link created between datasetVersion: {$datasetVersionSourceID} and datasetVersion: {$datasetVersionTargetID} of type: $linkageType, match={$matchingField}");
+                        } else {
+                            // Log that self-loop cannot be created
+                            Log::info("Prevented creation of self loop between datasetVersion: {$datasetVersionSourceID} and datasetVersion: {$datasetVersionTargetID} of type: $linkageType, match={$matchingField}");
+                        }
                     }
-                } 
+                } else {
+                    // Log if no matching dataset or text match was found
+                    Log::info("DatasetVersion linkage not found for key: $datasetLinkage ($linkageDescription)");
+                }
             }
-        } 
+        } else {
+            // Log if no linkages were found in the metadata
+            Log::info("No $linkageDescription Dataset Linkages found in metadata");
+        }
     }
 
-    /**
-     * Remove existing linkages for all versions of a dataset.
-     * 
-     * This method clears existing linkages for the dataset versions provided in the
-     * $allDatasetVersionIds array. It deletes entries from multiple tables such as 
-     * DatasetVersionHasTool, PublicationHasDatasetVersion, and DatasetVersionHasDatasetVersion.
-     *
-     * @param array $allDatasetVersionIds Array of dataset version IDs whose linkages will be deleted.
-     * @return void
-     */
-    private function removeExistingLinkages($allDatasetVersionIds): void
-    {
-        DatasetVersionHasTool::whereIn('dataset_version_id', $allDatasetVersionIds)->delete();
-        PublicationHasDatasetVersion::whereIn('dataset_version_id', $allDatasetVersionIds)->delete();
-        DatasetVersionHasDatasetVersion::whereIn('dataset_version_source_id', $allDatasetVersionIds)->delete();
-    }
 
     /**
      * Build an array for searching dataset versions by specific fields.
@@ -434,6 +415,23 @@ class DatasetSqlLinkageJob implements ShouldQueue
     }
 
     /**
+     * Remove existing linkages for all versions of a dataset.
+     * 
+     * This method clears existing linkages for the dataset versions provided in the
+     * $allDatasetVersionIds array. It deletes entries from multiple tables such as 
+     * DatasetVersionHasTool, PublicationHasDatasetVersion, and DatasetVersionHasDatasetVersion.
+     *
+     * @param array $allDatasetVersionIds Array of dataset version IDs whose linkages will be deleted.
+     * @return void
+     */
+    private function removeExistingLinkages($allDatasetVersionIds): void
+    {
+        DatasetVersionHasTool::whereIn('dataset_version_id', $allDatasetVersionIds)->delete();
+        PublicationHasDatasetVersion::whereIn('dataset_version_id', $allDatasetVersionIds)->delete();
+        DatasetVersionHasDatasetVersion::whereIn('dataset_version_source_id', $allDatasetVersionIds)->delete();
+    }
+
+    /**
      * Search for a dataset linkage by any field (except version_id).
      * 
      * This method searches across multiple fields for a matching string, excluding 
@@ -469,18 +467,5 @@ class DatasetSqlLinkageJob implements ShouldQueue
 
         // Return the array of matches (if any)
         return $matches;
-    }
-
-    /**
-     * Retrieve cached dataset search array or build and cache it.
-     *
-     * @return array Cached or newly built dataset search array.
-     */
-    private function getCachedDatasetSearchArray(): array
-    {
-        // Attempt to retrieve the cached search array
-        return (array) Cache::remember('dataset_search_array', 86400, function () {
-            return $this->buildDatasetSearchArray();
-        });
     }
 }
