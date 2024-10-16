@@ -76,7 +76,7 @@ trait UpdateDatasetLinkages
     private function buildDatasetSearchArray(): array
     {
         // Retrieve all datasets from the database
-        $allDatasets = Dataset::all(); 
+        $allDatasets = Dataset::where('status',Dataset::STATUS_ACTIVE)->get(); 
         
         // Initialize an empty array to hold the dataset search data
         $datasetSearchArray = [];
