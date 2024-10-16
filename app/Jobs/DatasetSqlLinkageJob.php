@@ -1,14 +1,12 @@
 <?php
 
-namespace App\Http\Traits;
+namespace App\Jobs;
 
-use Config;
 use Auditor;
 use Exception;
-use Illuminate\Support\Facades\Log;
+use App\Models\Dataset;
 use App\Models\Publication;
 use App\Models\Tool;
-use App\Models\Dataset;
 use App\Models\SpatialCoverage;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasDatasetVersion;
@@ -16,10 +14,75 @@ use App\Models\DatasetVersionHasTool;
 use App\Models\PublicationHasDatasetVersion;
 use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Http\Traits\GetValueByPossibleKeys;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
-trait UpdateDatasetLinkages
+class DatasetSqlLinkageJob implements ShouldQueue
 {
-    use GetValueByPossibleKeys;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, GetValueByPossibleKeys;
+
+    public $tries;
+    public $timeout;
+
+    private Dataset $dataset;
+    private array $metadata;
+    private bool $deleteExistingLinkages;
+
+    /**
+     * Create a new job instance.
+     *
+     * @param array $metadata The dataset metadata for processing linkages.
+     * @param Dataset $dataset The dataset object.
+     * @param bool $deleteExistingLinkages Whether to delete existing linkages before processing.
+     */
+    public function __construct(array $metadata, Dataset $dataset, bool $deleteExistingLinkages = false)
+    {
+        $this->timeout = config('jobs.default_timeout', 600); // Timeout for the job
+        $this->tries = config('jobs.ntries', 2); // Number of attempts
+        $this->metadata = $metadata;
+        $this->dataset = $dataset;
+        $this->deleteExistingLinkages = $deleteExistingLinkages;
+    }
+
+    /**
+     * Execute the job.
+     *
+     * @return void
+     */
+    public function handle(): void
+    {
+        try {
+            // Retrieve the latest version of the dataset
+            $version = $this->dataset->latestVersion();
+
+            if ($version) {
+                // Call the linkage creation method from the trait
+                $this->createSqlLinkageFromDataset($this->metadata, $this->dataset, $this->deleteExistingLinkages);
+
+                // Log successful processing
+                Log::info("Successfully processed linkages for dataset ID: {$this->dataset->id}");
+            } else {
+                // Log failure to find the dataset version
+                Log::error("Failed to find the dataset version for dataset ID: {$this->dataset->id}");
+            }
+        } catch (Exception $e) {
+            // Log the exception and rethrow
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            Log::error("Error processing dataset linkage: " . $e->getMessage());
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
 
     /**
      * Create SQL linkages for tools, publications, and dataset relationships.
@@ -35,7 +98,7 @@ trait UpdateDatasetLinkages
      * @param bool $delete Optional flag to delete existing linkages. Defaults to false.
      * @return void
      */
-    public function createSqlLinkageFromDataset(array $metadata, Dataset $dataset, bool $delete = false): void
+    private function createSqlLinkageFromDataset(array $metadata, Dataset $dataset, bool $delete = false): void
     {
         // Retrieve the latest dataset_version for the given dataset_id
         $version = $dataset->latestVersion();

@@ -10,6 +10,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
 use App\Jobs\TermExtraction;
+use App\Jobs\DatasetSqlLinkageJob;
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
 use App\Http\Traits\CheckAccess;
@@ -17,7 +18,6 @@ use App\Http\Traits\IndexElastic;
 
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Traits\UpdateDatasetLinkages;
 
 use App\Http\Traits\MetadataOnboard;
 use Maatwebsite\Excel\Facades\Excel;
@@ -41,7 +41,6 @@ class DatasetController extends Controller
     use IndexElastic;
     use GetValueByPossibleKeys;
     use MetadataOnboard;
-    use UpdateDatasetLinkages;
     use CheckAccess;
 
 
@@ -781,7 +780,8 @@ class DatasetController extends Controller
             // PublicationHasDatasetVersion
             // DatasetVersionHasSpatialCoverage
             // This uses the input metadata and new dataset version to create the indexes. 
-            $this->createSqlLinkageFromDataset($input['metadata'], $currDataset, false);
+            //$this->createSqlLinkageFromDataset($input['metadata'], $currDataset, false);
+            DatasetSqlLinkageJob::dispatch($input['metadata'], $currDataset, false);
 
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
             if($request['status'] === Dataset::STATUS_ACTIVE &&  Config::get('ted.enabled')) {

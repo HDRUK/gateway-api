@@ -6,19 +6,14 @@ use Config;
 use Exception;
 
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
-use App\Models\DatasetVersionHasSpatialCoverage;
-use App\Models\SpatialCoverage;
+use App\Jobs\DatasetSqlLinkageJob;
 use App\Jobs\TermExtraction;
 
 use Illuminate\Support\Str;
-
-use App\Http\Traits\UpdateDatasetLinkages;
 use MetadataManagementController as MMC;
 
 trait MetadataOnboard
 {
-    use UpdateDatasetLinkages; 
     /**
      * Create new Dataset, calling translation service if necessary
      *
@@ -156,7 +151,8 @@ trait MetadataOnboard
             // PublicationHasDatasetVersion
             // DatasetVersionHasSpatialCoverage
             // This uses the input metadata and new dataset version to create the indexes. 
-            $this->createSqlLinkageFromDataset($input['metadata'], $dataset, false);
+            //$this->createSqlLinkageFromDataset($input['metadata'], $dataset, false);
+            DatasetSqlLinkageJob::dispatch($input['metadata'], $dataset, false);
 
             // Dispatch term extraction to a subprocess if the dataset is marked as active
             if($input['status'] === Dataset::STATUS_ACTIVE && Config::get('ted.enabled')) {
