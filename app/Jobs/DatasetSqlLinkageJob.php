@@ -19,7 +19,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Cache;
 
 class DatasetSqlLinkageJob implements ShouldQueue
 {
@@ -86,7 +85,7 @@ class DatasetSqlLinkageJob implements ShouldQueue
      * @param bool $delete Optional flag to delete existing linkages. Defaults to false.
      * @return void
      */
-    private function createSqlLinkageFromDataset(array $metadata, Dataset $dataset, bool $delete = false, $datasetSearchArray): void
+    private function createSqlLinkageFromDataset(array $metadata, Dataset $dataset, bool $delete = false): void
     {
         // Retrieve the latest dataset_version for the given dataset_id
         $version = $dataset->latestVersion();
