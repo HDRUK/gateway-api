@@ -341,16 +341,16 @@ class CollectionController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
-     *       name="show_all",
+     *       name="view_type",
      *       in="query",
-     *       description="Boolean flag to show full collection data or a trimmed version (defaults to false).",
+     *       description="Query flag to show full collection data or a trimmed version (defaults to full).",
      *       required=false,
      *       @OA\Schema(
-     *          type="boolean",
-     *          default=false,
-     *          description="Flag to show all data (true) or trimmed data (false)"
+     *          type="string",
+     *          default="full",
+     *          description="Flag to show all data ('full') or trimmed data ('mini')"
      *       ),
-     *       example=false
+     *       example="full"
      *    ),
      *    @OA\Response(
      *       response="200",
@@ -389,8 +389,10 @@ class CollectionController extends Controller
     public function show(GetCollection $request, int $id): JsonResponse
     {
         try {
-            $show_all = $request->boolean('show_all', false);
-            $collection = $this->getCollectionById($id, !$show_all);
+            $viewType = $request->query('view_type', 'full');
+            $trimmed = $viewType === 'mini';
+
+            $collection = $this->getCollectionById($id, $trimmed);
 
             Auditor::log([
                 'action_type' => 'SHOW',
