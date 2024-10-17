@@ -1052,7 +1052,7 @@ class CollectionController extends Controller
         }
     }
 
-    private function getCollectionById(int $collectionId, bool $trimmed = true)
+    private function getCollectionById(int $collectionId, bool $trimmed = false)
     {
         $collection = Collection::with([
             'keywords',
