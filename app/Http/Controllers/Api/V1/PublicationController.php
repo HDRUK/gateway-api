@@ -2,36 +2,38 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 
-use App\Exceptions\NotFoundException;
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use App\Models\Publication;
-use App\Models\PublicationHasDatasetVersion;
-use App\Models\PublicationHasTool;
-use App\Models\DurHasPublication;
-use App\Models\CollectionHasPublication;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Models\DatasetVersion;
 use Illuminate\Support\Carbon;
+use App\Http\Traits\CheckAccess;
+use App\Http\Traits\IndexElastic;
+use App\Models\DurHasPublication;
+use Illuminate\Http\JsonResponse;
+use App\Models\PublicationHasTool;
+use App\Http\Controllers\Controller;
+use App\Exceptions\NotFoundException;
 
+use App\Models\CollectionHasPublication;
+use App\Http\Traits\RequestTransformation;
+use App\Models\PublicationHasDatasetVersion;
 use App\Http\Requests\Publication\GetPublication;
 use App\Http\Requests\Publication\EditPublication;
+
 use App\Http\Requests\Publication\CreatePublication;
 use App\Http\Requests\Publication\DeletePublication;
 use App\Http\Requests\Publication\UpdatePublication;
-
-use App\Http\Traits\IndexElastic;
-use App\Http\Traits\RequestTransformation;
 
 class PublicationController extends Controller
 {
     use IndexElastic;
     use RequestTransformation;
+    use CheckAccess;
 
     /**
      * @OA\Get(
@@ -389,10 +391,14 @@ class PublicationController extends Controller
      */
     public function store(CreatePublication $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $teamId = array_key_exists('team_id', $input) ? $input['team_id'] : null;
+        if (!is_null($teamId)) {
+            $this->checkAccess($input, $teamId, null, 'team');
+        }
 
+        try {
             $publication = Publication::create([
                 'paper_title' => $input['paper_title'],
                 'authors' => $input['authors'],
@@ -424,8 +430,6 @@ class PublicationController extends Controller
             $currentPublication = Publication::where('id', $publicationId)->first();
             if($currentPublication->status === Publication::STATUS_ACTIVE) {
                 $this->indexElasticPublication($publicationId);
-            } else {
-                $this->deleteFromElastic($publicationId, 'publication');
             }
 
             Auditor::log([
@@ -538,10 +542,12 @@ class PublicationController extends Controller
      */
     public function update(UpdatePublication $request, int $id): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $initPublication = Publication::withTrashed()->where('id', $id)->first();
+        $this->checkAccess($input, null, $initPublication->owner_id, 'user');
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            $initPublication = Publication::withTrashed()->where('id', $id)->first();
 
             if ($initPublication['status'] === Publication::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
                 throw new Exception('Cannot update current publication! Status already "ARCHIVED"');
@@ -576,8 +582,8 @@ class PublicationController extends Controller
             $currentPublication = Publication::where('id', $id)->first();
             if($currentPublication->status === Publication::STATUS_ACTIVE) {
                 $this->indexElasticPublication((int) $id);
-            } else {
-                $this->deleteFromElastic($id, 'publication');
+            } elseif ($initPublication['status'] === Publication::STATUS_ACTIVE) {
+                $this->deletePublicationFromElastic($id);
             }
 
             Auditor::log([
@@ -699,11 +705,12 @@ class PublicationController extends Controller
       */
     public function edit(EditPublication $request, int $id): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $publicationModel = Publication::withTrashed()->where('id', $id)->first();
+        $this->checkAccess($input, null, $publicationModel->owner_id, 'user');
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            $publicationModel = Publication::withTrashed()
-                    ->find($id);
             $originalStatus = $publicationModel->status;
 
             if ($request->has('unarchive')) {
@@ -731,7 +738,7 @@ class PublicationController extends Controller
                     if($publicationModel->status === Publication::STATUS_ACTIVE) {
                         $this->indexElasticPublication($id);
                     } elseif ($originalStatus === Publication::STATUS_ACTIVE) {
-                        $this->deleteFromElastic($id, 'publication');
+                        $this->deletePublicationFromElastic($id);
                     }
                 }
 
@@ -789,7 +796,7 @@ class PublicationController extends Controller
                     // Index the updated publication in Elasticsearch
                     $this->indexElasticPublication((int) $id);
                 } elseif ($originalStatus === Publication::STATUS_ACTIVE) {
-                    $this->deleteFromElastic($id, 'publication');
+                    $this->deletePublicationFromElastic($id);
                 }
 
                 Auditor::log([
@@ -868,11 +875,12 @@ class PublicationController extends Controller
      */
     public function destroy(DeletePublication $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $publication = Publication::where(['id' => $id])->first();
+        $this->checkAccess($input, null, $publication->owner_id, 'user');
 
-            $publication = Publication::where(['id' => $id])->first();
+        try {
             if ($publication) {
                 PublicationHasDatasetVersion::where('publication_id', $id)->delete();
                 PublicationHasTool::where(['publication_id' => $id])->delete();

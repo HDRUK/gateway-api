@@ -10,28 +10,19 @@ class JwksController extends Controller
 {
     public function getJwks(Request $request)
     {
-        // remove after
-        // $jwt = (new Parser())->parse((string) $token);
-        // $kid = $jwt->headers()->get('kid');
-        // $path = file_get_contents(__DIR__ . '/../../../storage/oauth-private.key');
-        // $details = openssl_pkey_get_details(openssl_pkey_get_private($path));
-
-        $filePath = storage_path('oauth-public.key');
-        if (!file_exists($filePath)) {
-            throw new Exception('File not found');
+        $publicKeyContent = str_replace('\\n', "\n", env('PASSPORT_PUBLIC_KEY'));
+        if (empty($publicKeyContent)) {
+            throw new Exception('Public key not found in environment variables');
         }
 
-        $path = file_get_contents($filePath);
-        $details = openssl_pkey_get_details(openssl_pkey_get_public($path));
+        $details = openssl_pkey_get_details(openssl_pkey_get_public($publicKeyContent));
 
         $keys = [
             'kty' => 'RSA',
             'alg' => 'RS256',
             'use' => 'sig',
-            'n2' => rtrim(str_replace(['+', '/'], ['-', '_'], base64_encode($details['rsa']['n'])), '='),
-            'e2' => rtrim(str_replace(['+', '/'], ['-', '_'], base64_encode($details['rsa']['e'])), '='),
-            'n' => rtrim(strtr(base64_encode($details['rsa']['n']), '+/', '-_'), '='),
-            'e' => rtrim(strtr(base64_encode($details['rsa']['e']), '+/', '-_'), '='),
+            'n'   => strtr(rtrim(base64_encode($details['rsa']['n']), '='), '+/', '-_'),
+            'e'   => strtr(rtrim(base64_encode($details['rsa']['e']), '='), '+/', '-_'),
             'kid' => env('JWT_KID', 'jwtkidnotfound'),
         ];
 

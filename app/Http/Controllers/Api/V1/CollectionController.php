@@ -9,19 +9,20 @@ use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
 use App\Models\Application;
-use App\Models\DatasetVersion;
 use Illuminate\Http\Request;
+use App\Models\DatasetVersion;
 use Illuminate\Support\Carbon;
+use App\Http\Traits\CheckAccess;
 use App\Models\CollectionHasDur;
+use App\Http\Traits\IndexElastic;
 use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Models\CollectionHasDatasetVersion;
 use App\Models\CollectionHasKeyword;
 use App\Exceptions\NotFoundException;
 use App\Models\CollectionHasPublication;
-use App\Http\Traits\IndexElastic;
 use App\Http\Traits\RequestTransformation;
+use App\Models\CollectionHasDatasetVersion;
 use App\Http\Requests\Collection\GetCollection;
 use App\Http\Requests\Collection\EditCollection;
 use App\Http\Requests\Collection\CreateCollection;
@@ -32,6 +33,7 @@ class CollectionController extends Controller
 {
     use IndexElastic;
     use RequestTransformation;
+    use CheckAccess;
 
     public function __construct()
     {
@@ -467,6 +469,7 @@ class CollectionController extends Controller
                 'mongo_object_id',
                 'mongo_id',
                 'team_id',
+                'user_id',
                 'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -623,6 +626,8 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $collectionInfo = Collection::withTrashed()->where('id', $id)->select(['user_id'])->first();
+        $this->checkAccess($input, null, $collectionInfo->user_id, 'user');
 
         try {
             $initCollection = Collection::withTrashed()->where('id', $id)->first();
@@ -641,6 +646,7 @@ class CollectionController extends Controller
                 'mongo_object_id',
                 'mongo_id',
                 'team_id',
+                'user_id',
                 'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -809,6 +815,8 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $collectionInfo = Collection::withTrashed()->where('id', $id)->select(['user_id'])->first();
+        $this->checkAccess($input, null, $collectionInfo->user_id, 'user');
 
         try {
             if ($request->has('unarchive')) {
@@ -851,6 +859,7 @@ class CollectionController extends Controller
                     'mongo_object_id',
                     'mongo_id',
                     'team_id',
+                    'user_id',
                     'status',
                 ];
                 $array = $this->checkEditArray($input, $arrayKeys);
@@ -987,6 +996,8 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $collectionInfo = Collection::where('id', $id)->select(['user_id'])->first();
+        $this->checkAccess($input, null, $collectionInfo->user_id, 'user');
 
         try {
             $collection = Collection::where(['id' => $id])->first();

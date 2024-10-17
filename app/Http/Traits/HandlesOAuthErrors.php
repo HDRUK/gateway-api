@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\SSO;
+namespace App\Http\Traits;
 
 use Exception;
 use Illuminate\Http\Response;

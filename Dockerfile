@@ -78,7 +78,7 @@ RUN composer install \
 RUN php artisan l5-swagger:generate
 
 # Generate private and public keys
-RUN php artisan passport:keys
+# RUN php artisan passport:keys
 
 # Add symbolic link for public file storage
 RUN php artisan storage:link
