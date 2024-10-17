@@ -120,14 +120,7 @@ class Collection extends Model
             'tool_id'
         )
         ->whereNull('collection_has_tools.deleted_at')
-        ->with("user")
-        ->select(
-            "tools.id",
-            "tools.name",
-            "tools.created_at",
-            "tools.user_id"
-        );
-
+        ->with("user");
     }
 
     public function dur(): BelongsToMany
@@ -138,12 +131,7 @@ class Collection extends Model
             'collection_id',
             'dur_id'
         )
-        ->whereNull('collection_has_durs.deleted_at')
-        ->select([
-            'dur.id',
-            'dur.project_title',
-            'dur.organisation_name'
-        ]);
+        ->whereNull('collection_has_durs.deleted_at');
     }
 
     public function publications(): BelongsToMany
@@ -154,14 +142,7 @@ class Collection extends Model
             'collection_id',
             'publication_id'
         )
-        ->whereNull('collection_has_publications.deleted_at')
-        ->select([
-            "publications.id",
-            "publications.paper_title",
-            "publications.authors",
-            "publications.url",
-            "publications.year_of_publication"
-        ]);
+        ->whereNull('collection_has_publications.deleted_at');
     }
 
     public function datasetVersions(): BelongsToMany
@@ -172,13 +153,7 @@ class Collection extends Model
             'collection_id',
             'dataset_version_id'
         )
-        ->whereNull('collection_has_dataset_version.deleted_at')
-        ->selectRaw('
-            dataset_versions.id,dataset_versions.dataset_id,
-            JSON_UNQUOTE(JSON_EXTRACT(dataset_versions.metadata, "$.metadata.summary.shortTitle")) as shortTitle,
-            CONVERT(JSON_UNQUOTE(JSON_EXTRACT(dataset_versions.metadata, "$.metadata.summary.populationSize")), UNSIGNED) as populationSize,
-            JSON_UNQUOTE(JSON_EXTRACT(dataset_versions.metadata, "$.metadata.summary.datasetType")) as datasetType
-            ');
+        ->whereNull('collection_has_dataset_version.deleted_at');
     }
 
 
