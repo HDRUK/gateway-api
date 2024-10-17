@@ -1044,12 +1044,14 @@ class CollectionController extends Controller
             'tools',
             'dur',
             'publications',
-            'userDatasets',
+            'datasetVersions',
+            /*'userDatasets',
             'userTools',
             'userPublications',
             'applicationDatasets',
             'applicationTools',
             'applicationPublications',
+            */
             'team',
         ])
         ->withTrashed()
@@ -1063,6 +1065,7 @@ class CollectionController extends Controller
         }
 
         // Set the datasets attribute with the latest datasets
+        /*
         $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
 
         $userDatasets = $collection->userDatasets;
@@ -1097,6 +1100,7 @@ class CollectionController extends Controller
             $collection->applicationTools,
             $collection->applicationPublications
         );
+        */
 
         return $collection;
     }

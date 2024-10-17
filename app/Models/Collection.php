@@ -129,6 +129,19 @@ class Collection extends Model
         ->withPivot('collection_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at', 'deleted_at')->whereNull('collection_has_publications.deleted_at');
     }
 
+    public function datasetVersions(): BelongsToMany//HasManyThrough
+    {
+        return $this->belongsToMany(
+            DatasetVersion::class, // The related model
+            'collection_has_dataset_version', // The name of the pivot table
+            'collection_id', // Foreign key on the pivot table for the collection
+            'dataset_version_id' // Foreign key on the pivot table for the dataset version
+        );
+    }
+
+
+
+
     public function userDatasets(): HasManyThrough
     {
         return $this->hasManyThrough(
