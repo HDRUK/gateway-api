@@ -5,40 +5,42 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-use App\Exceptions\NotFoundException;
-use App\Http\Enums\TagType;
-use App\Models\Tool;
 use App\Models\Tag;
+use App\Models\Tool;
 use App\Models\Dataset;
 use App\Models\License;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
+use App\Http\Enums\TagType;
 use App\Models\Application;
-use App\Models\DatasetVersion;
-use App\Models\PublicationHasTool;
-use App\Models\ToolHasTypeCategory;
-use App\Models\DatasetVersionHasTool;
-use App\Models\ToolHasProgrammingPackage;
-use App\Models\ToolHasProgrammingLanguage;
-use App\Models\CollectionHasTool;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
-use Illuminate\Http\JsonResponse;
+use App\Models\DatasetVersion;
 use Illuminate\Support\Carbon;
-use App\Http\Controllers\Controller;
+use App\Http\Traits\CheckAccess;
+use App\Http\Traits\IndexElastic;
+use App\Models\CollectionHasTool;
+use Illuminate\Http\JsonResponse;
+use App\Models\PublicationHasTool;
+use Illuminate\Support\Collection;
 use App\Http\Requests\Tool\GetTool;
+use App\Models\ToolHasTypeCategory;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Tool\EditTool;
+use App\Exceptions\NotFoundException;
+use App\Models\DatasetVersionHasTool;
 use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
 
-use App\Http\Traits\IndexElastic;
+use App\Models\ToolHasProgrammingPackage;
 use App\Http\Traits\RequestTransformation;
+use App\Models\ToolHasProgrammingLanguage;
 
 class ToolController extends Controller
 {
     use IndexElastic;
     use RequestTransformation;
+    use CheckAccess;
 
     /**
      * constructor method
@@ -445,6 +447,10 @@ class ToolController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $teamId = array_key_exists('team_id', $input) ? $input['team_id'] : null;
+        if (!is_null($teamId)) {
+            $this->checkAccess($input, $teamId, null, 'team');
+        }
 
         try {
             $arrayKeys = [
@@ -607,9 +613,10 @@ class ToolController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $initTool = Tool::withTrashed()->where('id', $id)->first();
+        $this->checkAccess($input, null, $initTool->user_id, 'user');
 
         try {
-            $initTool = Tool::withTrashed()->where('id', $id)->first();
 
             if ($initTool['status'] === Tool::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
                 throw new Exception('Cannot update current tool! Status already "ARCHIVED"');
@@ -797,6 +804,8 @@ class ToolController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $toolModel = Tool::withTrashed()->find($id);
+        $this->checkAccess($input, null, $toolModel->user_id, 'user');
 
         try {
             if ($request->has('unarchive')) {
@@ -976,9 +985,10 @@ class ToolController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $tool = Tool::where(['id' => $id])->first();
+        $this->checkAccess($input, null, $tool->user_id, 'user');
 
         try {
-            $tool = Tool::where(['id' => $id])->first();
             if ($tool) {
                 $tool->deleted_at = Carbon::now();
                 $tool->status = Tool::STATUS_ARCHIVED;
