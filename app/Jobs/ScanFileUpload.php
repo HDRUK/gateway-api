@@ -513,4 +513,11 @@ class ScanFileUpload implements ShouldQueue
         return true;
     }
 
+    public function tags(): array
+    {
+        return [
+            'file_scanner',
+            'upload_id:' . $this->uploadId,
+        ];
+    }
 }

@@ -152,5 +152,12 @@ class TermExtraction implements ShouldQueue
         }
     }
 
-
+    public function tags(): array
+    {
+        return [
+            'term_extraction',
+            'dataset_id:' . $this->datasetId,
+            'dataset_version_id:' . $this->datasetVersionId,
+        ];
+    }
 }
