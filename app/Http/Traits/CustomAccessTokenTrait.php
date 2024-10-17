@@ -128,12 +128,21 @@ trait CustomAccessTokenTrait
             return [];
         }
 
-        $cohortRequestRoleIds = CohortRequestHasPermission::where([
+        $cohortRequestRoleIds = CohortRequestHasPermission::select('permission_id')->where([
             'cohort_request_id' => $cohortRequest->id
-        ])->pluck('permission_id')->toArray();
+        ])->get()->toArray();
 
-        $cohortRequestRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
+        $crRoleIds = [];
+        foreach ($cohortRequestRoleIds as $cohortRequestRoleId) {
+            $crRoleIds[] = $cohortRequestRoleId['permission_id'];
+        }
 
-        return $cohortRequestRoles;
+        $rquestrRoles = Permission::select('name')->whereIn('id', $crRoleIds)->get()->toArray();
+        $rRoles = [];
+        foreach ($rquestrRoles as $rquestrRole) {
+            $rRoles[] = $rquestrRole['name'];
+        }
+
+        return $rRoles;
     }
 }

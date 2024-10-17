@@ -40,12 +40,21 @@ class CustomUserController extends Controller
             if (!$cohortRequest) {
                 return [];
             }
-    
-            $cohortRequestRoleIds = CohortRequestHasPermission::where([
+
+            $cohortRequestRoleIds = CohortRequestHasPermission::select('permission_id')->where([
                 'cohort_request_id' => $cohortRequest->id
-            ])->pluck('permission_id')->toArray();
+            ])->get()->toArray();
+
+            $crRoleIds = [];
+            foreach ($cohortRequestRoleIds as $cohortRequestRoleId) {
+                $crRoleIds[] = $cohortRequestRoleId['permission_id'];
+            }
     
-            $rquestrRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
+            $rquestrRoles = Permission::select('name')->whereIn('id', $crRoleIds)->get()->toArray();
+            $rRoles = [];
+            foreach ($rquestrRoles as $rquestrRole) {
+                $rRoles[] = $rquestrRole['name'];
+            }
 
             return response()->json([
                 'id' => $user->id,
@@ -57,7 +66,7 @@ class CustomUserController extends Controller
                 'given_name' => $user->firstname,
                 'family_name' => $user->lastname,
                 'email' => $user->email,
-                'rquestroles' => $rquestrRoles,
+                'rquestroles' => $rRoles,
             ]);
         } catch (Exception $e) {
             throw new Exception($e);
