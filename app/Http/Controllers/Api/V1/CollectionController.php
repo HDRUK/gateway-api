@@ -1133,22 +1133,13 @@ class CollectionController extends Controller
                     ]);
                 });
             },
-            'users' => function ($query) use ($trimmed) {
-                $query->when($trimmed, function ($q) {
-                    $q->select([
-                        'users.id',
-                        'users.name',
-                        'users.email',
-                     ]);
-                });
-            },
             'datasetVersions' => function ($query) use ($trimmed) {
                 $query->when($trimmed, function ($q) {
                     $q->selectRaw('
                         dataset_versions.id,dataset_versions.dataset_id,
-                        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.shortTitle")) as shortTitle,
-                        CONVERT(JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.populationSize")), SIGNED) as populationSize,
-                        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.datasetType")) as datasetType
+                        JSON_UNQUOTE(JSON_EXTRACT(dataset_versions.metadata, "$.metadata.summary.shortTitle")) as shortTitle,
+                        CONVERT(JSON_UNQUOTE(JSON_EXTRACT(dataset_versions.metadata, "$.metadata.summary.populationSize")), UNSIGNED) as populationSize,
+                        JSON_UNQUOTE(JSON_EXTRACT(dataset_versions.metadata, "$.metadata.summary.datasetType")) as datasetType
                     ');
                 });
             },
