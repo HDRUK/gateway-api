@@ -26,19 +26,5 @@ if [ "$APP_ENV" = 'local' ]; then
 else
     echo "running in prod mode"
 
-    # Separate the command from the cron timings, so as to first check for
-    # duplicates, thus being immune to multiple insertions
-    cronCommand="/usr/local/bin/php /var/www/artisan schedule:run > /tmp/cron.log" # >> /dev/null 2>&1"
-    cronJob="* * * * * $cronCommand"
-
-    # To add the above to local crontab
-    ( crontab -l | grep -v -F "$cronCommand" ; echo "$cronJob" ) | crontab -
-
-    ## To remove the above from local crontab
-    # ( crontab -l | grep -v -F "$cronCommand" ) | crontab -
-
-    # To activate cron service
-    service cron start
-
     /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
 fi
