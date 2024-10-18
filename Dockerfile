@@ -43,6 +43,11 @@ RUN wget -O redis-5.3.7.tgz 'http://pecl.php.net/get/redis-5.3.7.tgz' \
     && docker-php-ext-enable gd \
     && docker-php-ext-enable swoole
 
+# python and supervisor
+RUN apt-get update && apt-get install -y \
+    python3 \
+    supervisor
+
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- \
     --install-dir=/usr/local/bin --filename=composer
@@ -59,7 +64,6 @@ COPY . /var/www
 # RUN echo "TED_ENABLED=$TED_ENABLED" >> /var/www/.env
 # RUN echo "TRASER_ENABLED=$TRASER_ENABLED" >> /var/www/.env
 # RUN echo "FMA_ENABLED=$TRASER_ENABLED" >> /var/www/.env
-
 
 # Composer & laravel
 RUN composer install \
@@ -83,11 +87,18 @@ RUN php artisan passport:keys
 # Add symbolic link for public file storage
 RUN php artisan storage:link
 
-# Starts both, laravel server and job queue
-CMD ["/var/www/docker/start.sh"]
+# supervisor configuration
+COPY ./init/supervisord.conf /etc/supervisor/supervisord.conf
+
+# start configuration
+COPY ./docker/start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
 
 # Expose port
 EXPOSE 8000
+
+# Starts both, laravel server and job queue
+CMD ["/var/www/docker/start.sh"]
 
 # for study:
 # composer install -q -n --no-ansi --no-dev --no-scripts --no-progress --prefer-dist
