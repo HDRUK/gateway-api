@@ -93,11 +93,11 @@ class ApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $teamId = $request->query('team_id', null);
         if (!is_null($teamId)) {
-            $this->checkAccess($input,  $teamId, null, 'team');
+            $this->checkAccess($input, $teamId, null, 'team');
         }
         $apps = Application::where('user_id', $jwtUser)->whereNotNull('team_id')->select('team_id')->distinct()->get();
         foreach($apps as $app) {
-            $this->checkAccess($input,  $app->team_id, null, 'team');
+            $this->checkAccess($input, $app->team_id, null, 'team');
         }
 
         try {
