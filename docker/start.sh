@@ -38,9 +38,6 @@ cronJob="* * * * * $cronCommand"
 # To activate cron service
 service cron start
 
-php artisan queue:work &
-php artisan queue:work &
-php artisan queue:work &
-php artisan queue:work 
+php artisan horizon
 
 
