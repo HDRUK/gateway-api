@@ -1055,7 +1055,7 @@ trait MockExternalApis
         // ]);
 
         Http::fake([
-            env('FMA_SERVICE_URL').'*' => Http::response(
+            env('GMI_SERVICE_URL').'*' => Http::response(
                 ['message' => 'success'],
                 200,
                 ['application/json']

@@ -27,7 +27,7 @@ class Dataset extends Model
 
     public const ORIGIN_MANUAL = 'MANUAL';
     public const ORIGIN_API = 'API';
-    public const ORIGIN_FMA = 'FMA';
+    public const ORIGIN_GMI = 'GMI';
 
     /**
      * Table associated with this model
