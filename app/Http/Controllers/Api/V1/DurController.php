@@ -502,7 +502,7 @@ class DurController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        
+
         $arrayKeys = [
             'non_gateway_datasets',
             'non_gateway_applicants',

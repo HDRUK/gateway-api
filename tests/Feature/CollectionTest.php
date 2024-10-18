@@ -156,12 +156,10 @@ class CollectionTest extends TestCase
                 'mongo_object_id',
                 'mongo_id',
                 'keywords',
-                'datasets',
+                'dataset_versions',
                 'tools',
                 'dur',
                 'publications',
-                'users',
-                'applications',
                 'team',
             ]
         ]);

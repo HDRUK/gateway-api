@@ -340,6 +340,18 @@ class CollectionController extends Controller
      *          description="collection id",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="view_type",
+     *       in="query",
+     *       description="Query flag to show full collection data or a trimmed version (defaults to full).",
+     *       required=false,
+     *       @OA\Schema(
+     *          type="string",
+     *          default="full",
+     *          description="Flag to show all data ('full') or trimmed data ('mini')"
+     *       ),
+     *       example="full"
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -377,7 +389,10 @@ class CollectionController extends Controller
     public function show(GetCollection $request, int $id): JsonResponse
     {
         try {
-            $collection = $this->getCollectionById($id);
+            $viewType = $request->query('view_type', 'full');
+            $trimmed = $viewType === 'mini';
+
+            $collection = $this->getCollectionById($id, $trimmed);
 
             Auditor::log([
                 'action_type' => 'SHOW',
@@ -1037,19 +1052,58 @@ class CollectionController extends Controller
         }
     }
 
-    private function getCollectionById(int $collectionId)
+    private function getCollectionById(int $collectionId, bool $trimmed = false)
     {
         $collection = Collection::with([
             'keywords',
-            'tools',
-            'dur',
-            'publications',
-            'userDatasets',
+            'tools' => function ($query) use ($trimmed) {
+                $query->when($trimmed, function ($q) {
+                    $q->select(
+                        "tools.id",
+                        "tools.name",
+                        "tools.created_at",
+                        "tools.user_id"
+                    );
+                });
+            },
+            'dur' => function ($query) use ($trimmed) {
+                $query->when($trimmed, function ($q) {
+                    $q->select([
+                        'dur.id',
+                        'dur.project_title',
+                        'dur.organisation_name'
+                    ]);
+
+                });
+            },
+            'publications' => function ($query) use ($trimmed) {
+                $query->when($trimmed, function ($q) {
+                    $q->select([
+                        "publications.id",
+                        "publications.paper_title",
+                        "publications.authors",
+                        "publications.url",
+                        "publications.year_of_publication"
+                    ]);
+                });
+            },
+            'datasetVersions' => function ($query) use ($trimmed) {
+                $query->when($trimmed, function ($q) {
+                    $q->selectRaw('
+                        dataset_versions.id,dataset_versions.dataset_id,
+                        JSON_UNQUOTE(JSON_EXTRACT(dataset_versions.metadata, "$.metadata.summary.shortTitle")) as shortTitle,
+                        CONVERT(JSON_UNQUOTE(JSON_EXTRACT(dataset_versions.metadata, "$.metadata.summary.populationSize")), UNSIGNED) as populationSize,
+                        JSON_UNQUOTE(JSON_EXTRACT(dataset_versions.metadata, "$.metadata.summary.datasetType")) as datasetType
+                    ');
+                });
+            },
+            /*'userDatasets', //not sure what this is, legacy code? commenting out for now - Calum 17/10/24
             'userTools',
             'userPublications',
             'applicationDatasets',
             'applicationTools',
             'applicationPublications',
+            */
             'team',
         ])
         ->withTrashed()
@@ -1062,7 +1116,14 @@ class CollectionController extends Controller
             }
         }
 
+
+        //Calum 17/10/2024
+        // - commeneting this out
+        // - we are only concerned with collection direct linkage
+        // - not indirect via publications/users etc.
+        // - legacy code, probably can remove but keeping commented out for now
         // Set the datasets attribute with the latest datasets
+        /*
         $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
 
         $userDatasets = $collection->userDatasets;
@@ -1097,6 +1158,7 @@ class CollectionController extends Controller
             $collection->applicationTools,
             $collection->applicationPublications
         );
+        */
 
         return $collection;
     }
