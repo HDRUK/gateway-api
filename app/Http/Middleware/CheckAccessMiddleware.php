@@ -53,7 +53,7 @@ class CheckAccessMiddleware
                 throw new UnauthorizedException();
             }
         }
-        
+
         $request->merge(
             [
                 'middleware' => [
