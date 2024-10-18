@@ -156,6 +156,20 @@ class Collection extends Model
         ->whereNull('collection_has_dataset_version.deleted_at');
     }
 
+    public function datasetVersions(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            DatasetVersion::class,
+            'collection_has_dataset_version',
+            'collection_id',
+            'dataset_version_id'
+        )
+        ->whereNull('collection_has_dataset_version.deleted_at');
+    }
+
+
+
+
     public function userDatasets(): HasManyThrough
     {
         return $this->hasManyThrough(
