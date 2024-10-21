@@ -22,14 +22,7 @@ class AuditLogJob implements ShouldQueue
      *
      * @var int
      */
-    public $tries = 5;
-
-    /**
-     * The number of seconds the job can run before timing out.
-     *
-     * @var int
-     */
-    public $timeout = 30;
+    public $tries = 10;
 
     protected array $data;
 
