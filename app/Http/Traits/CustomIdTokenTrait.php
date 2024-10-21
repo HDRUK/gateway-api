@@ -32,7 +32,7 @@ trait CustomIdTokenTrait
         \Log::info('headers :: ' . json_encode($headers));
 
         $profile = [
-            $claims['given_name'], 
+            $claims['given_name'],
             $claims['family_name'],
         ];
 
