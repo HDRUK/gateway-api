@@ -30,10 +30,10 @@ class TermExtraction implements ShouldQueue
     public $tries;
     public $timeout;
 
-    private string $tedUrl;
+    private string $tedUrl = '';
     private string $datasetId = '';
     private string $datasetVersionId = '';
-    private int $version;
+    private int $version = 0;
     private string $data = '';
     private bool $usePartialExtraction = true;
 
