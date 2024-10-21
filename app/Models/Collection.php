@@ -212,7 +212,7 @@ class Collection extends Model
             'collection_has_users',
             'collection_id',
             'user_id'
-        );
+        )->withPivot('role');
     }
 
 }

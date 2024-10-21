@@ -164,13 +164,14 @@ class CollectionController extends Controller
                 'tools',
                 'dur',
                 'publications',
-                'userDatasets',
-                'userTools',
-                'userPublications',
+                // 'userDatasets',
+                // 'userTools',
+                // 'userPublications',
                 'applicationDatasets',
                 'applicationTools',
                 'applicationPublications',
                 'team',
+                'users',
             ])
             ->when(
                 $sort,
@@ -179,9 +180,11 @@ class CollectionController extends Controller
             ->when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
             })
-            /*->when($userId, function ($query) use ($userId) {
-                return $query->where('user_id', '=', $userId);
-            }) // - this isnt in the DB and should be! bug reported */
+            ->when($userId, function ($query) use ($userId) {
+                $query->whereHas('users', function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                });
+            })
             ->when($filterTitle, function ($query) use ($filterTitle) {
                 return $query->where('name', 'like', '%' . $filterTitle . '%');
             })
@@ -196,13 +199,13 @@ class CollectionController extends Controller
             });
 
             $collections->getCollection()->transform(function ($collection) {
-                $userDatasets = $collection->userDatasets;
-                $userTools = $collection->userTools;
-                $userPublications = $collection->userPublications;
-                $users = $userDatasets->merge($userTools)
-                    ->merge($userPublications)
-                    ->unique('id');
-                $collection->setRelation('users', $users);
+                // $userDatasets = $collection->userDatasets;
+                // $userTools = $collection->userTools;
+                // $userPublications = $collection->userPublications;
+                // $users = $userDatasets->merge($userTools)
+                //     ->merge($userPublications)
+                //     ->unique('id');
+                // $collection->setRelation('users', $users);
                 $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
 
                 $applicationDatasets = $collection->applicationDatasets;
@@ -284,6 +287,17 @@ class CollectionController extends Controller
      *          description="team id",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="user_id",
+     *       in="query",
+     *       description="user id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="user id",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -300,9 +314,16 @@ class CollectionController extends Controller
     {
         try {
             $teamId = $request->query('team_id', null);
-            $counts = Collection::when($teamId, function ($query) use ($teamId) {
-                return $query->where('team_id', '=', $teamId);
-            })->withTrashed()
+            $userId = $request->query('user_id', null);
+            $counts = Collection::withTrashed()->with(['users'])
+                ->when($teamId, function ($query) use ($teamId) {
+                    return $query->where('team_id', '=', $teamId);
+                })
+                ->when($userId, function ($query) use ($userId) {
+                    $query->whereHas('users', function ($query) use ($userId) {
+                        $query->where('user_id', $userId);
+                    });
+                })
                 ->select($field)
                 ->get()
                 ->groupBy($field)
@@ -1126,6 +1147,7 @@ class CollectionController extends Controller
             'applicationPublications',
             */
             'team',
+            'users',
         ])
         ->withTrashed()
         ->where(['id' => $collectionId])
@@ -1136,7 +1158,6 @@ class CollectionController extends Controller
                 $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
             }
         }
-
 
         //Calum 17/10/2024
         // - commeneting this out
