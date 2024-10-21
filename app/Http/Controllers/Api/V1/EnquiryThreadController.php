@@ -99,6 +99,17 @@ class EnquiryThreadController extends Controller
      *            description="EnquiryThread id",
      *         ),
      *      ),
+     *      @OA\Parameter(
+     *         name="include_messages",
+     *         in="query",
+     *         description="Include messages in the response",
+     *         required=false,
+     *         example="true",
+     *         @OA\Schema(
+     *            type="boolean",
+     *            description="Whether to include related messages",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -130,8 +141,14 @@ class EnquiryThreadController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $includeMessages = $request->boolean('include_messages', false);
 
-            $enquiryThread = EnquiryThread::where('id', $id)->get();
+            $enquiryThread = EnquiryThread::when(
+                $includeMessages,
+                function ($query) {
+                    $query->with("messages");
+                }
+            )->where('id', $id)->get();
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
