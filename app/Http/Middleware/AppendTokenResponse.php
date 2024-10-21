@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 class AppendTokenResponse
 {
     use CustomIdTokenTrait;
-    
+
     /**
      * Handle an incoming request.
      *

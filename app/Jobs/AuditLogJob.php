@@ -46,4 +46,16 @@ class AuditLogJob implements ShouldQueue
         $publish = $cloudPubSub->publishMessage($this->data);
         $cloudLogger->write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
     }
+
+    /**
+     * Get the tags that should be assigned to the job.
+     *
+     * @return array<int, string>
+     */
+    public function tags(): array
+    {
+        return [
+            'audit'
+        ];
+    }
 }

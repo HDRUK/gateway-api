@@ -30,12 +30,12 @@ class TermExtraction implements ShouldQueue
     public $tries;
     public $timeout;
 
-    private string $tedUrl;
+    private string $tedUrl = '';
     private string $datasetId = '';
     private string $datasetVersionId = '';
-    private int $version;
+    private int $version = 0;
     private string $data = '';
-    private bool $usePartialExtraction;
+    private bool $usePartialExtraction = true;
 
     private bool $reIndexElastic = true;
 
@@ -152,5 +152,12 @@ class TermExtraction implements ShouldQueue
         }
     }
 
-
+    public function tags(): array
+    {
+        return [
+            'term_extraction',
+            'dataset_id:' . $this->datasetId,
+            'dataset_version_id:' . $this->datasetVersionId,
+        ];
+    }
 }

@@ -1996,9 +1996,9 @@ class EmailTemplateSeeder extends Seeder
             ',
         ]);
 
-        $fmaIntegrationCreateSubject = '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.';
+        $gmiIntegrationCreateSubject = '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.';
 
-        $fmaIntegrationDevCreateBody = '
+        $gmiIntegrationDevCreateBody = '
             <mjml>
                 <mj-head>
                     <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
@@ -2050,24 +2050,24 @@ class EmailTemplateSeeder extends Seeder
             </mjml>
         ';
 
-        // FMAintegration - create - developer
+        // GMIintegration - create - developer
         EmailTemplate::create([
-            'identifier' => 'fmaintegration.developer.create',
-            'subject' => $fmaIntegrationCreateSubject,
-            'body' => $fmaIntegrationDevCreateBody,
+            'identifier' => 'gmiintegration.developer.create',
+            'subject' => $gmiIntegrationCreateSubject,
+            'body' => $gmiIntegrationDevCreateBody,
         ]);
 
-        // FMAintegration - create - team.admin
+        // GMIintegration - create - team.admin
         EmailTemplate::create([
-            'identifier' => 'fmaintegration.team.admin.create',
-            'subject' => $fmaIntegrationCreateSubject,
-            'body' => $fmaIntegrationDevCreateBody,
+            'identifier' => 'gmiintegration.team.admin.create',
+            'subject' => $gmiIntegrationCreateSubject,
+            'body' => $gmiIntegrationDevCreateBody,
         ]);
 
-        // FMAintegration - create - other roles
+        // GMIintegration - create - other roles
         EmailTemplate::create([
-            'identifier' => 'fmaintegration.other.create',
-            'subject' => $fmaIntegrationCreateSubject,
+            'identifier' => 'gmiintegration.other.create',
+            'subject' => $gmiIntegrationCreateSubject,
             'body' => '
                 <mjml>
                 <mj-head>
@@ -2177,7 +2177,7 @@ class EmailTemplateSeeder extends Seeder
 
         // Integrations - disabled - developer
         EmailTemplate::create([
-            'identifier' => 'fmaintegration.developer.disable',
+            'identifier' => 'gmiintegration.developer.disable',
             'subject' => $integrationDisabledSubject,
             'body' => $integrationDevDisabledBody,
             'buttons' => '
@@ -2194,7 +2194,7 @@ class EmailTemplateSeeder extends Seeder
 
         // Integrations - disabled - team.admin
         EmailTemplate::create([
-            'identifier' => 'fmaintegration.team.admin.disable',
+            'identifier' => 'gmiintegration.team.admin.disable',
             'subject' => $integrationDisabledSubject,
             'body' => $integrationDevDisabledBody,
             'buttons' => '
@@ -2211,7 +2211,7 @@ class EmailTemplateSeeder extends Seeder
 
         // Integrations - disabled - other roles
         EmailTemplate::create([
-            'identifier' => 'fmaintegration.other.disable',
+            'identifier' => 'gmiintegration.other.disable',
             'subject' => $integrationDisabledSubject,
             'body' => '
                 <mjml>

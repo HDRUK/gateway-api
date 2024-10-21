@@ -1,12 +1,9 @@
 <?php
 
-use Laravel\Passport\Passport;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SSO\JwksController;
 use App\Http\Middleware\AppendTokenResponse;
 use App\Http\Controllers\SSO\OpenIdController;
-use App\Http\Controllers\SSO\CustomUserController;
 use App\Http\Controllers\SSO\CustomAuthorizationController;
 use Laravel\Passport\Http\Controllers\AccessTokenController;
 
