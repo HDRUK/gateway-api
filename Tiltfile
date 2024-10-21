@@ -62,8 +62,8 @@ if cfg.get("traserEnabled"):
 if cfg.get("tedEnabled"):
     include(cfg.get("tedServiceRoot") + "/Tiltfile")
 
-if cfg.get("fmaEnabled"):
-    include(cfg.get("fmaServiceRoot") + "/Tiltfile")
+if cfg.get("gmiEnabled"):
+    include(cfg.get("gmiServiceRoot") + "/Tiltfile")
 
 if cfg.get("searchEnabled"):
     include(cfg.get("searchServiceRoot") + "/Tiltfile")
@@ -91,7 +91,7 @@ docker_build(
     build_args={
         "TRASER_ENABLED": "1" if cfg.get("traserEnabled") else "0",
         "TED_ENABLED": "1" if cfg.get("tedEnabled") else "0",
-        "FMA_ENABLED": "1" if cfg.get("fmaEnabled") else "0",
+        "GMI_ENABLED": "1" if cfg.get("gmiEnabled") else "0",
         "SEARCH_ENABLED": "1" if cfg.get("searchEnabled") else "0",
     },
     live_update=[

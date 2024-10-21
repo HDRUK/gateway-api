@@ -24,6 +24,7 @@
         "jumbojett/openid-connect-php": "dev-update-redirect-return",
         "laravel/framework": "^10.0",
         "laravel/helpers": "^1.6",
+        "laravel/horizon": "^5.29",
         "laravel/octane": "^2.5",
         "laravel/passport": "^12.2",
         "laravel/sanctum": "^3.2",

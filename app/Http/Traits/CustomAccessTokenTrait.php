@@ -84,7 +84,7 @@ trait CustomAccessTokenTrait
             ->relatedTo((string)$this->getUserIdentifier())
             ->withClaim('typ', "Bearer")
             // ->withClaim('auth_time', 0)
-            ->withClaim('nonce', $oauthUsers ? $oauthUsers->nonce : 'no_value' )
+            ->withClaim('nonce', $oauthUsers ? $oauthUsers->nonce : 'no_value')
             ->withClaim('at_hash', $sessionState)
             ->withClaim('session_state', $sessionState)
             ->withClaim('sid', $sessionState)

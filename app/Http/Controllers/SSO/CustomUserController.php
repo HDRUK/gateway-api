@@ -36,7 +36,7 @@ class CustomUserController extends Controller
                 'user_id' => $userId,
                 'request_status' => 'APPROVED',
             ])->first();
-    
+
             if (!$cohortRequest) {
                 return [];
             }
@@ -49,7 +49,7 @@ class CustomUserController extends Controller
             foreach ($cohortRequestRoleIds as $cohortRequestRoleId) {
                 $crRoleIds[] = $cohortRequestRoleId['permission_id'];
             }
-    
+
             $rquestrRoles = Permission::select('name')->whereIn('id', $crRoleIds)->get()->toArray();
             $rRoles = [];
             foreach ($rquestrRoles as $rquestrRole) {
