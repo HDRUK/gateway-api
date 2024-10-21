@@ -29,7 +29,7 @@ class AuditLogJob implements ShouldQueue
      *
      * @var int
      */
-    public $timeout = 10;
+    public $timeout = 30;
 
     protected array $data;
 
