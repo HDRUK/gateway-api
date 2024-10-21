@@ -35,7 +35,7 @@ class TermExtraction implements ShouldQueue
     private string $datasetVersionId = '';
     private int $version;
     private string $data = '';
-    private bool $usePartialExtraction;
+    private bool $usePartialExtraction = true;
 
     private bool $reIndexElastic = true;
 
