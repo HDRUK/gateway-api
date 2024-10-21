@@ -16,7 +16,7 @@ trait ModelHelpers
                 WHERE
                     dataset_version_id = :dataset_version_id
                 AND
-                    deleted_at = null
+                    deleted_at is NULL
             ',
             [
                 'dataset_version_id' => $datasetVersionId,
@@ -40,7 +40,7 @@ trait ModelHelpers
                 WHERE
                     dataset_version_id = :dataset_version_id
                 AND
-                    deleted_at = null
+                    deleted_at IS NULL
             ',
             [
                 'dataset_version_id' => $datasetVersionId,
