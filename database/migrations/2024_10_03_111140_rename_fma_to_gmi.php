@@ -9,7 +9,7 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        
+
         Dataset::where('create_origin', 'FMA')->update(['create_origin' => 'GMI']);
 
     }
