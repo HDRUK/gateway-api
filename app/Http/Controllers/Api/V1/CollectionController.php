@@ -648,7 +648,7 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $collHasUsers = CollectionHasUser::withTrashed()->where(['collection_id', $id])->select(['user_id'])->get()->toArray();
+        $collHasUsers = CollectionHasUser::where(['collection_id', $id])->select(['user_id'])->get()->toArray();
         foreach ($collHasUsers as $collHasUser) {
             $this->checkAccess($input, null, $collHasUser->user_id, 'user');
         }
@@ -694,7 +694,7 @@ class CollectionController extends Controller
             // users
             $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
             $this->updateCollectionUsers((int)$id, $collaborators);
-            
+
 
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
@@ -843,7 +843,7 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $collHasUsers = CollectionHasUser::withTrashed()->where(['collection_id', $id])->select(['user_id'])->get()->toArray();
+        $collHasUsers = CollectionHasUser::where(['collection_id', $id])->select(['user_id'])->get()->toArray();
         foreach ($collHasUsers as $collHasUser) {
             $this->checkAccess($input, null, $collHasUser->user_id, 'user');
         }
@@ -1030,7 +1030,7 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $collHasUsers = CollectionHasUser::withTrashed()->where(['collection_id', $id])->select(['user_id'])->get()->toArray();
+        $collHasUsers = CollectionHasUser::where(['collection_id', $id])->select(['user_id'])->get()->toArray();
         foreach ($collHasUsers as $collHasUser) {
             $this->checkAccess($input, null, $collHasUser->user_id, 'user');
         }

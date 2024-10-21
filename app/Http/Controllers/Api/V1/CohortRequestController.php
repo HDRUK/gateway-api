@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-use CloudLogger;
 use App\Models\User;
 use App\Models\OauthUser;
 use App\Jobs\SendEmailJob;

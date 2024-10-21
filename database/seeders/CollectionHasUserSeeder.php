@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\Collection;
 use Illuminate\Database\Seeder;
 use App\Models\CollectionHasUser;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CollectionHasUserSeeder extends Seeder
 {
