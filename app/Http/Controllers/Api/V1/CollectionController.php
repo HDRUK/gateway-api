@@ -218,17 +218,17 @@ class CollectionController extends Controller
 
                 // Remove unwanted relations
                 unset(
-                    $users,
-                    $userTools,
-                    $userDatasets,
-                    $userPublications,
+                    // $users,
+                    // $userTools,
+                    // $userDatasets,
+                    // $userPublications,
                     $applications,
                     $applicationTools,
                     $applicationDatasets,
                     $applicationPublications,
-                    $collection->userDatasets,
-                    $collection->userTools,
-                    $collection->userPublications,
+                    // $collection->userDatasets,
+                    // $collection->userTools,
+                    // $collection->userPublications,
                     $collection->applicationDatasets,
                     $collection->applicationTools,
                     $collection->applicationPublications
