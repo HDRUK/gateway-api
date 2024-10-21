@@ -44,15 +44,6 @@ class TermExtraction implements ShouldQueue
      */
     public function __construct(string $datasetId, string $datasetVersionId, int $version, string $data, ?bool $elasticIndex = true, ?bool $usePartialExtraction = true)
     {
-        Auditor::log([
-            'action_type' => 'DEBUG',
-            'action_name' => class_basename($this) . '@' . __FUNCTION__,
-            'ted.url' => config('ted.url'),
-            'ted.use_partial' => config('ted.use_partial'),
-            'jobs.default_timeout' => config('jobs.default_timeout'),
-            'jobs.ntries' => config('jobs.ntries'),
-        ]);
-
         $this->timeout = config('jobs.default_timeout', 600);
         $this->tries = config('jobs.ntries', 2);
         $this->usePartialExtraction = is_null($usePartialExtraction) ? config('ted.use_partial', true) : $usePartialExtraction;
@@ -71,6 +62,15 @@ class TermExtraction implements ShouldQueue
      */
     public function handle(): void
     {
+        Auditor::log([
+            'action_type' => 'DEBUG',
+            'action_name' => class_basename($this) . '@' . __FUNCTION__,
+            'ted.url' => config('ted.url'),
+            'ted.use_partial' => config('ted.use_partial'),
+            'jobs.default_timeout' => config('jobs.default_timeout'),
+            'jobs.ntries' => config('jobs.ntries'),
+        ]);
+        
         $data = json_decode(gzdecode(gzuncompress(base64_decode($this->data))), true);
         if($this->usePartialExtraction) {
             //data is partial - summary data only
