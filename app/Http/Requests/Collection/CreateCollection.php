@@ -105,9 +105,6 @@ class CreateCollection extends BaseFormRequest
             'collaborators' => [
                 'array',
             ],
-            'collaborators' => [
-                'array',
-            ],
             'collaborators.*' => [
                 'integer',
                 'distinct',

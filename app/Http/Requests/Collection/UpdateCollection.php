@@ -110,9 +110,6 @@ class UpdateCollection extends BaseFormRequest
             'collaborators' => [
                 'array',
             ],
-            'collaborators' => [
-                'array',
-            ],
             'collaborators.*' => [
                 'integer',
                 'distinct',

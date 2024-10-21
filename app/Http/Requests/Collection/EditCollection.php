@@ -106,9 +106,6 @@ class EditCollection extends BaseFormRequest
             'collaborators' => [
                 'array',
             ],
-            'collaborators' => [
-                'array',
-            ],
             'collaborators.*' => [
                 'integer',
                 'distinct',
