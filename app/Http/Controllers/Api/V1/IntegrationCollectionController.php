@@ -520,7 +520,7 @@ class IntegrationCollectionController extends Controller
     {
         $input = $request->all();
 
-        // try {
+        try {
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $userId = null;
@@ -601,19 +601,19 @@ class IntegrationCollectionController extends Controller
                 'message' => 'success',
                 'data' => $this->getCollectionById($id),
             ], 200);
-        // } catch (Exception $e) {
-        //     Auditor::log([
-        //         'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
-        //             $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-        //         'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
-        //             $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
-        //         'action_type' => 'EXCEPTION',
-        //         'action_name' => class_basename($this) . '@'.__FUNCTION__,
-        //         'description' => $e->getMessage(),
-        //     ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
 
-        //     throw new Exception($e->getMessage());
-        // }
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
