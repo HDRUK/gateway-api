@@ -282,6 +282,7 @@ class CollectionIntegrationTest extends TestCase
             $mockDataUpdate,
             $this->header
         );
+
         $responseUpdate->assertStatus(200);
         $this->assertTrue($mockDataUpdate['name'] === $responseUpdate['data']['name']);
         $this->assertTrue($mockDataUpdate['description'] === $responseUpdate['data']['description']);
