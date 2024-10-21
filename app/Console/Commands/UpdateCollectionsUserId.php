@@ -41,7 +41,7 @@ class UpdateCollectionsUserId extends Command
                         'collection_id' => $collection->id,
                         'user_id' => $admiUser->id,
                         'role' => 'CREATOR'
-                    ]);    
+                    ]);
                 }
             }
         }
