@@ -2,25 +2,26 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-
-use App\Models\Collection;
-use App\Models\Dataset;
 use App\Models\Dur;
+
+use Tests\TestCase;
 use App\Models\Team;
 use App\Models\Upload;
+use App\Models\Dataset;
+use App\Models\Collection;
 use Tests\Traits\Authorization;
 
-use Database\Seeders\CollectionSeeder;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
-
-
-use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Tests\Traits\MockExternalApis;
+use Database\Seeders\DatasetSeeder;
+use Database\Seeders\CollectionSeeder;
+use Database\Seeders\MinimalUserSeeder;
+
+
+use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\SpatialCoverageSeeder;
+use Database\Seeders\CollectionHasUserSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class UploadTest extends TestCase
 {
@@ -49,6 +50,7 @@ class UploadTest extends TestCase
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
             CollectionSeeder::class,
+            CollectionHasUserSeeder::class,
         ]);
     }
 

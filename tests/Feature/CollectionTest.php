@@ -28,11 +28,12 @@ use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
+use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
 use Database\Seeders\DurHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Database\Seeders\CollectionHasPublicationSeeder;
 
+use Database\Seeders\CollectionHasPublicationSeeder;
 use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
@@ -77,6 +78,7 @@ class CollectionTest extends TestCase
             PublicationSeeder::class,
             PublicationHasDatasetVersionSeeder::class,
             CollectionHasPublicationSeeder::class,
+            CollectionHasUserSeeder::class,
         ]);
     }
 
@@ -360,7 +362,6 @@ class CollectionTest extends TestCase
         $this->assertTrue((bool) $mockDataUpdate['enabled'] === (bool) $responseUpdate['data']['enabled']);
         $this->assertTrue((bool) $mockDataUpdate['public'] === (bool) $responseUpdate['data']['public']);
         $this->assertTrue((int) $mockDataUpdate['counter'] === (int) $responseUpdate['data']['counter']);
-        $this->assertTrue((int) $mockDataUpdate['user_id'] === (int) $responseUpdate['data']['user_id']);
     }
 
     /**
