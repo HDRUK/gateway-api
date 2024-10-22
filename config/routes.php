@@ -3539,4 +3539,15 @@ return [
         ],
         'constraint' => [],
     ],
+    [
+        'name' => 'admin_ctrl',
+        'method' => 'post',
+        'path' => '/admin_ctrl/trigger_ted',
+        'methodController' => 'AdminPanelController@triggerTermExtractionDirector',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
 ];
