@@ -27,8 +27,10 @@ class FixImages extends Command
     public function handle()
     {
         $teams = Team::select(["id","team_logo"])->get();
+        $progressbar = $this->output->createProgressBar(count($teams));
         foreach($teams as $team) {
             if(is_null($team->team_logo)) {
+                $progressbar->advance();
                 continue;
             }
 
@@ -38,6 +40,7 @@ class FixImages extends Command
             }
 
             Team::find($team->id)->update(['team_logo' => $fixed_team_logo]);
+            $progressbar->advance();
 
         }
     }
