@@ -49,6 +49,7 @@ class ScanFileUpload implements ShouldQueue
     private bool $elasticIndexing = true;
     private ?int $datasetId = null;
     private ?int $collectionId = null;
+    private bool $isLocalOrTestEnv = false;
 
     public $timeout = 180; // default timeout is 60
 
@@ -81,6 +82,7 @@ class ScanFileUpload implements ShouldQueue
         $this->elasticIndexing = $elasticIndexing;
         $this->datasetId = $datasetId;
         $this->collectionId = $collectionId;
+        $this->isLocalOrTestEnv = (strtoupper(config('app.env')) === 'TESTING' || strtoupper(config('app.env')) === 'LOCAL');
     }
 
     /**
@@ -213,7 +215,7 @@ class ScanFileUpload implements ShouldQueue
 
             $import = new ImportDur($data);
 
-            if (config('app.env') == 'testing') {
+            if ($this->isLocalOrTestEnv) {
                 Excel::import($import, $path);
             } else {
                 Excel::import($import, $path, $this->fileSystem . '.scanned');
@@ -319,7 +321,14 @@ class ScanFileUpload implements ShouldQueue
     {
         try {
             $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
-            $import = Excel::toArray(new ImportStructuralMetadata(), $path);
+
+            $import = [];
+
+            if ($this->isLocalOrTestEnv) {
+                $import = Excel::toArray(new ImportStructuralMetadata(), $path);
+            } else {
+                $import = Excel::toArray(new ImportStructuralMetadata(), $path, $this->fileSystem . '.scanned');
+            }
 
             $structuralMetadata = array();
             foreach ($import[0] as $row) {
@@ -504,4 +513,11 @@ class ScanFileUpload implements ShouldQueue
         return true;
     }
 
+    public function tags(): array
+    {
+        return [
+            'file_scanner',
+            'upload_id:' . $this->uploadId,
+        ];
+    }
 }

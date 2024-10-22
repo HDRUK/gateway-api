@@ -2,19 +2,23 @@
 
 namespace App\Http\Controllers\SSO;
 
-use CloudLogger;
+use App\Models\OauthUser;
 use Illuminate\Http\Request;
-use App\Models\CohortRequest;
+use Laravel\Passport\Passport;
 use Laravel\Passport\Bridge\User;
 use App\Http\Controllers\Controller;
+use Laravel\Passport\ClientRepository;
+use App\Http\Traits\HandlesOAuthErrors;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
 use League\OAuth2\Server\AuthorizationServer;
 use Illuminate\Contracts\Routing\ResponseFactory;
+use Laravel\Passport\Http\Controllers\RetrievesAuthRequestFromSession;
 
 class CustomAuthorizationController extends Controller
 {
     use HandlesOAuthErrors;
+    use RetrievesAuthRequestFromSession;
 
     /**
      * The authorization server.
@@ -43,21 +47,37 @@ class CustomAuthorizationController extends Controller
      */
     public function customAuthorize(
         ServerRequestInterface $psrRequest,
+        Request $request,
+        ClientRepository $clients,
     ) {
-        // $userId = session('cr_uid');
+        // user_id from CohortRequestController@checkAccess
+        $userId = session('cr_uid');
 
-        // mock user id for with we need:
-        // - cohort_regests.request_status = 'APPROVED'
-        $cohortRequests = CohortRequest::where(['request_status' => 'APPROVED'])->first();
-        $userId = $cohortRequests->user_id;
-        // end mock user id
-
-        CloudLogger::write('Start authorization for userId :: ' . $userId);
+        // save nonce and user_id for id_token
+        OauthUser::create([
+            'user_id' => $userId,
+            'nonce' => $request->query('nonce'),
+        ]);
 
         return $this->withErrorHandling(function () use ($psrRequest, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
             return $this->approveRequest($authRequest, $userId);
         });
+    }
+
+    /**
+     * Transform the authorization requests's scopes into Scope instances.
+     *
+     * @param  \League\OAuth2\Server\RequestTypes\AuthorizationRequest  $authRequest
+     * @return array
+     */
+    protected function parseScopes($authRequest)
+    {
+        return Passport::scopesFor(
+            collect($authRequest->getScopes())->map(function ($scope) {
+                return $scope->getIdentifier();
+            })->unique()->all()
+        );
     }
 
     /**

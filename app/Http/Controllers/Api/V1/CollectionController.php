@@ -9,19 +9,20 @@ use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
 use App\Models\Application;
-use App\Models\DatasetVersion;
 use Illuminate\Http\Request;
+use App\Models\DatasetVersion;
 use Illuminate\Support\Carbon;
+use App\Http\Traits\CheckAccess;
 use App\Models\CollectionHasDur;
+use App\Http\Traits\IndexElastic;
 use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Models\CollectionHasDatasetVersion;
 use App\Models\CollectionHasKeyword;
 use App\Exceptions\NotFoundException;
 use App\Models\CollectionHasPublication;
-use App\Http\Traits\IndexElastic;
 use App\Http\Traits\RequestTransformation;
+use App\Models\CollectionHasDatasetVersion;
 use App\Http\Requests\Collection\GetCollection;
 use App\Http\Requests\Collection\EditCollection;
 use App\Http\Requests\Collection\CreateCollection;
@@ -32,6 +33,7 @@ class CollectionController extends Controller
 {
     use IndexElastic;
     use RequestTransformation;
+    use CheckAccess;
 
     public function __construct()
     {
@@ -338,6 +340,18 @@ class CollectionController extends Controller
      *          description="collection id",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="view_type",
+     *       in="query",
+     *       description="Query flag to show full collection data or a trimmed version (defaults to full).",
+     *       required=false,
+     *       @OA\Schema(
+     *          type="string",
+     *          default="full",
+     *          description="Flag to show all data ('full') or trimmed data ('mini')"
+     *       ),
+     *       example="full"
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -375,7 +389,10 @@ class CollectionController extends Controller
     public function show(GetCollection $request, int $id): JsonResponse
     {
         try {
-            $collection = $this->getCollectionById($id);
+            $viewType = $request->query('view_type', 'full');
+            $trimmed = $viewType === 'mini';
+
+            $collection = $this->getCollectionById($id, $trimmed);
 
             Auditor::log([
                 'action_type' => 'SHOW',
@@ -467,6 +484,7 @@ class CollectionController extends Controller
                 'mongo_object_id',
                 'mongo_id',
                 'team_id',
+                'user_id',
                 'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -623,6 +641,8 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $collectionInfo = Collection::withTrashed()->where('id', $id)->select(['user_id'])->first();
+        $this->checkAccess($input, null, $collectionInfo->user_id, 'user');
 
         try {
             $initCollection = Collection::withTrashed()->where('id', $id)->first();
@@ -641,6 +661,7 @@ class CollectionController extends Controller
                 'mongo_object_id',
                 'mongo_id',
                 'team_id',
+                'user_id',
                 'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -809,6 +830,8 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $collectionInfo = Collection::withTrashed()->where('id', $id)->select(['user_id'])->first();
+        $this->checkAccess($input, null, $collectionInfo->user_id, 'user');
 
         try {
             if ($request->has('unarchive')) {
@@ -851,6 +874,7 @@ class CollectionController extends Controller
                     'mongo_object_id',
                     'mongo_id',
                     'team_id',
+                    'user_id',
                     'status',
                 ];
                 $array = $this->checkEditArray($input, $arrayKeys);
@@ -987,6 +1011,8 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $collectionInfo = Collection::where('id', $id)->select(['user_id'])->first();
+        $this->checkAccess($input, null, $collectionInfo->user_id, 'user');
 
         try {
             $collection = Collection::where(['id' => $id])->first();
@@ -1026,19 +1052,58 @@ class CollectionController extends Controller
         }
     }
 
-    private function getCollectionById(int $collectionId)
+    private function getCollectionById(int $collectionId, bool $trimmed = false)
     {
         $collection = Collection::with([
             'keywords',
-            'tools',
-            'dur',
-            'publications',
-            'userDatasets',
+            'tools' => function ($query) use ($trimmed) {
+                $query->when($trimmed, function ($q) {
+                    $q->select(
+                        "tools.id",
+                        "tools.name",
+                        "tools.created_at",
+                        "tools.user_id"
+                    );
+                });
+            },
+            'dur' => function ($query) use ($trimmed) {
+                $query->when($trimmed, function ($q) {
+                    $q->select([
+                        'dur.id',
+                        'dur.project_title',
+                        'dur.organisation_name'
+                    ]);
+
+                });
+            },
+            'publications' => function ($query) use ($trimmed) {
+                $query->when($trimmed, function ($q) {
+                    $q->select([
+                        "publications.id",
+                        "publications.paper_title",
+                        "publications.authors",
+                        "publications.url",
+                        "publications.year_of_publication"
+                    ]);
+                });
+            },
+            'datasetVersions' => function ($query) use ($trimmed) {
+                $query->when($trimmed, function ($q) {
+                    $q->selectRaw('
+                        dataset_versions.id,dataset_versions.dataset_id,
+                        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.shortTitle")) as shortTitle,
+                        CONVERT(JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.populationSize")), SIGNED) as populationSize,
+                        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.datasetType")) as datasetType
+                    ');
+                });
+            },
+            /*'userDatasets', //not sure what this is, legacy code? commenting out for now - Calum 17/10/24
             'userTools',
             'userPublications',
             'applicationDatasets',
             'applicationTools',
             'applicationPublications',
+            */
             'team',
         ])
         ->withTrashed()
@@ -1051,7 +1116,14 @@ class CollectionController extends Controller
             }
         }
 
+
+        //Calum 17/10/2024
+        // - commeneting this out
+        // - we are only concerned with collection direct linkage
+        // - not indirect via publications/users etc.
+        // - legacy code, probably can remove but keeping commented out for now
         // Set the datasets attribute with the latest datasets
+        /*
         $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
 
         $userDatasets = $collection->userDatasets;
@@ -1086,6 +1158,7 @@ class CollectionController extends Controller
             $collection->applicationTools,
             $collection->applicationPublications
         );
+        */
 
         return $collection;
     }

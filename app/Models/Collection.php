@@ -48,6 +48,7 @@ class Collection extends Model
         'updated_at',
         'updated_on',
         'status',
+        'user_id',
     ];
 
     protected $casts = [
@@ -112,21 +113,51 @@ class Collection extends Model
 
     public function tools(): BelongsToMany
     {
-        return $this->belongsToMany(Tool::class, 'collection_has_tools')
-        ->withPivot('collection_id', 'tool_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at', 'deleted_at')->whereNull('collection_has_tools.deleted_at');
+        return $this->belongsToMany(
+            Tool::class,
+            'collection_has_tools',
+            'collection_id',
+            'tool_id'
+        )
+        ->whereNull('collection_has_tools.deleted_at')
+        ->with("user");
     }
 
     public function dur(): BelongsToMany
     {
-        return $this->belongsToMany(Dur::class, 'collection_has_durs')
-        ->withPivot('collection_id', 'dur_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at', 'deleted_at')->whereNull('collection_has_durs.deleted_at');
+        return $this->belongsToMany(
+            Dur::class,
+            'collection_has_durs',
+            'collection_id',
+            'dur_id'
+        )
+        ->whereNull('collection_has_durs.deleted_at');
     }
 
     public function publications(): BelongsToMany
     {
-        return $this->belongsToMany(Publication::class, 'collection_has_publications')
-        ->withPivot('collection_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at', 'deleted_at')->whereNull('collection_has_publications.deleted_at');
+        return $this->belongsToMany(
+            Publication::class,
+            'collection_has_publications',
+            'collection_id',
+            'publication_id'
+        )
+        ->whereNull('collection_has_publications.deleted_at');
     }
+
+    public function datasetVersions(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            DatasetVersion::class,
+            'collection_has_dataset_version',
+            'collection_id',
+            'dataset_version_id'
+        )
+        ->whereNull('collection_has_dataset_version.deleted_at');
+    }
+
+
+
 
     public function userDatasets(): HasManyThrough
     {

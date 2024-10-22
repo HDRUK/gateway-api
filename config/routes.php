@@ -2214,107 +2214,107 @@ return [
     ],
 
     // team.federation
-    // [
-    //     'name' => 'team.federation',
-    //     'method' => 'get',
-    //     'path' => '/teams/{teamId}/federations',
-    //     'methodController' => 'FederationController@index',
-    //     'namespaceController' => 'App\Http\Controllers\Api\V1',
-    //     'middleware' => [
-    //         'jwt.verify',
-    //         'check.access:permissions,integrations.metadata',
-    //     ],
-    //     'constraint' => [
-    //         'teamId' => '[0-9]+',
-    //     ],
-    // ],
-    // [
-    //     'name' => 'team.federation',
-    //     'method' => 'get',
-    //     'path' => '/teams/{teamId}/federations/{federationId}',
-    //     'methodController' => 'FederationController@show',
-    //     'namespaceController' => 'App\Http\Controllers\Api\V1',
-    //     'middleware' => [
-    //         'jwt.verify',
-    //         'check.access:permissions,integrations.metadata',
-    //     ],
-    //     'constraint' => [
-    //         'teamId' => '[0-9]+',
-    //         'federationId' => '[0-9]+',
-    //     ],
-    // ],
-    // [
-    //     'name' => 'team.federation',
-    //     'method' => 'post',
-    //     'path' => '/teams/{teamId}/federations',
-    //     'methodController' => 'FederationController@store',
-    //     'namespaceController' => 'App\Http\Controllers\Api\V1',
-    //     'middleware' => [
-    //         'jwt.verify',
-    //         'check.access:permissions,integrations.metadata',
-    //     ],
-    //     'constraint' => [
-    //         'teamId' => '[0-9]+',
-    //     ],
-    // ],
-    // [
-    //     'name' => 'team.federation',
-    //     'method' => 'put',
-    //     'path' => '/teams/{teamId}/federations/{federationId}',
-    //     'methodController' => 'FederationController@update',
-    //     'namespaceController' => 'App\Http\Controllers\Api\V1',
-    //     'middleware' => [
-    //         'jwt.verify',
-    //         'check.access:permissions,integrations.metadata',
-    //     ],
-    //     'constraint' => [
-    //         'teamId' => '[0-9]+',
-    //         'federationId' => '[0-9]+',
-    //     ],
-    // ],
-    // [
-    //     'name' => 'team.federation',
-    //     'method' => 'patch',
-    //     'path' => '/teams/{teamId}/federations/{federationId}',
-    //     'methodController' => 'FederationController@edit',
-    //     'namespaceController' => 'App\Http\Controllers\Api\V1',
-    //     'middleware' => [
-    //         'jwt.verify',
-    //         'check.access:permissions,integrations.metadata',
-    //     ],
-    //     'constraint' => [
-    //         'teamId' => '[0-9]+',
-    //         'federationId' => '[0-9]+',
-    //     ],
-    // ],
-    // [
-    //     'name' => 'team.federation',
-    //     'method' => 'delete',
-    //     'path' => '/teams/{teamId}/federations/{federationId}',
-    //     'methodController' => 'FederationController@destroy',
-    //     'namespaceController' => 'App\Http\Controllers\Api\V1',
-    //     'middleware' => [
-    //         'jwt.verify',
-    //         'check.access:permissions,integrations.metadata',
-    //     ],
-    //     'constraint' => [
-    //         'teamId' => '[0-9]+',
-    //         'federationId' => '[0-9]+',
-    //     ],
-    // ],
-    // [
-    //     'name' => 'team.federation',
-    //     'method' => 'post',
-    //     'path' => '/teams/{teamId}/federations/test',
-    //     'methodController' => 'FederationController@testFederation',
-    //     'namespaceController' => 'App\Http\Controllers\Api\V1',
-    //     'middleware' => [
-    //         'jwt.verify',
-    //     ],
-    //     'constraint' => [
-    //         'teamId' => '[0-9]+',
-    //     ],
-    // ],
+    [
+        'name' => 'team.federation',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/federations',
+        'methodController' => 'FederationController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,integrations.metadata',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.federation',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/federations/{federationId}',
+        'methodController' => 'FederationController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,integrations.metadata',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'federationId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.federation',
+        'method' => 'post',
+        'path' => '/teams/{teamId}/federations',
+        'methodController' => 'FederationController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,integrations.metadata',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.federation',
+        'method' => 'put',
+        'path' => '/teams/{teamId}/federations/{federationId}',
+        'methodController' => 'FederationController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,integrations.metadata',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'federationId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.federation',
+        'method' => 'patch',
+        'path' => '/teams/{teamId}/federations/{federationId}',
+        'methodController' => 'FederationController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,integrations.metadata',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'federationId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.federation',
+        'method' => 'delete',
+        'path' => '/teams/{teamId}/federations/{federationId}',
+        'methodController' => 'FederationController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,integrations.metadata',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'federationId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.federation',
+        'method' => 'post',
+        'path' => '/teams/{teamId}/federations/test',
+        'methodController' => 'FederationController@testFederation',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
 
     // cohort_requests
     [
@@ -3535,6 +3535,17 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'admin_ctrl',
+        'method' => 'post',
+        'path' => '/admin_ctrl/trigger_ted',
+        'methodController' => 'AdminPanelController@triggerTermExtractionDirector',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
             'sanitize.input',
         ],
         'constraint' => [],

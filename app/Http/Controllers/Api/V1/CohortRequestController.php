@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-use CloudLogger;
 use App\Models\User;
+use App\Models\OauthUser;
 use App\Jobs\SendEmailJob;
 use App\Models\Permission;
 use Illuminate\Http\Request;
@@ -1069,14 +1069,14 @@ class CohortRequestController extends Controller
      */
     public function checkAccess(Request $request)
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        if (!array_key_exists('id', $jwtUser)) {
+            throw new Exception('Unauthorized');
+        }
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
-            if (!array_key_exists('id', $jwtUser)) {
-                throw new Exception('Unauthorized');
-            }
-
             $userId = (int) $jwtUser['id'];
 
             $checkingCohortRequest = CohortRequest::where([
@@ -1097,14 +1097,9 @@ class CohortRequestController extends Controller
                 throw new Exception('Unauthorized for access :: There are not enough permissions allocated for the cohort request');
             }
 
-            // save the user id in session
+            // oidc
+            OauthUser::where('user_id', $userId)->delete();
             session(['cr_uid' => $userId]);
-
-            // delete after implementation
-            CloudLogger::write('cohort request access :: ' . json_encode([
-                'userId' => $userId,
-                'sessionId' => session()->getId()
-            ]));
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1114,7 +1109,12 @@ class CohortRequestController extends Controller
             ]);
 
             $rquestInitUrl = Config::get('services.rquest.init_url');
-            return redirect()->away($rquestInitUrl);
+
+            return response()->json([
+                'data' => [
+                    'redirect_url' => $rquestInitUrl,
+                ],
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

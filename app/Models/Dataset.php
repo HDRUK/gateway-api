@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use DB;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,7 +27,7 @@ class Dataset extends Model
 
     public const ORIGIN_MANUAL = 'MANUAL';
     public const ORIGIN_API = 'API';
-    public const ORIGIN_FMA = 'FMA';
+    public const ORIGIN_GMI = 'GMI';
 
     /**
      * Table associated with this model
@@ -75,19 +77,54 @@ class Dataset extends Model
     /**
      * The very latest version of a DatasetVersion object that corresponds to this dataset.
      **/
-    public function latestVersion(): DatasetVersion
+    public function latestVersion(?array $fields = null): DatasetVersion
     {
         $version = DatasetVersion::where('dataset_id', $this->id)
             ->select(['version','id'])
             ->latest('version')
             ->first()
             ->id;
-        return DatasetVersion::findOrFail($version);
+        return DatasetVersion::when(
+            $fields,
+            function ($query, $fields) {
+                return $query->select($fields);
+            }
+        )->findOrFail($version);
+    }
+
+    public function latestVersionID(int $datasetId): null|int
+    {
+        $result = DB::select(
+            '
+                SELECT 
+                    dv.id,
+                    dv.version
+                FROM dataset_versions dv
+                WHERE
+                    dv.version = (
+                        SELECT 
+                            MAX(version)
+                        FROM dataset_versions dv2
+                        WHERE dv2.dataset_id = dv.dataset_id
+                    )
+                AND dv.dataset_id = :dataset_id
+            ',
+            [
+                'dataset_id' => $datasetId,
+            ]
+        );
+
+        if (count($result) > 0) {
+            return $result[0]->id;
+        }
+
+        return null;
     }
 
     public function latestMetadata(): HasOne
     {
-        return $this->hasOne(DatasetVersion::class, 'dataset_id')->withTrashed()->latest('version');
+        return $this->hasOne(DatasetVersion::class, 'dataset_id')->withTrashed()
+            ->orderBy('version', 'desc')->limit(1);
     }
 
     /**
@@ -96,7 +133,7 @@ class Dataset extends Model
     public function lastMetadataVersionNumber(): DatasetVersion
     {
         return DatasetVersion::where('dataset_id', $this->id)
-            ->latest('version')->select('version')->first();
+            ->orderBy('version', 'desc')->select('version')->first();
     }
 
     /**
@@ -106,7 +143,7 @@ class Dataset extends Model
     {
         $version = DatasetVersion::where('dataset_id', $this->id)
             ->select(['version','id'])
-            ->latest('version')
+            ->orderBy('version', 'desc')
             ->first()
             ->id;
         $datasetVersion = DatasetVersion::findOrFail($version)->toArray();
@@ -133,8 +170,8 @@ class Dataset extends Model
     public function scopeOrderByMetadata(Builder $query, string $field, string $direction): Builder
     {
         return $query->orderBy(DatasetVersion::selectRaw("JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.".$field."')")
-                            ->whereColumn('datasets.id', 'dataset_versions.dataset_id')
-                            ->latest()->limit(1), $direction);
+            ->whereColumn('datasets.id', 'dataset_versions.dataset_id')
+            ->latest()->limit(1), $direction);
     }
 
     /**
