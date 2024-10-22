@@ -35,7 +35,7 @@ class FixImages extends Command
             $team_logo = str_replace(env('MEDIA_URL'), '', $team->team_logo);
 
             echo $team->id . ' ' . $team->team_logo . "\n";
-            echo env('MEDIA_URL') . $team_logo . "\n";
+            echo $team_logo . "\n";
         }
     }
 }
