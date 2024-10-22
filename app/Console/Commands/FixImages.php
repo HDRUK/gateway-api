@@ -28,7 +28,14 @@ class FixImages extends Command
     {
         $teams = Team::select(["id","team_logo"])->get();
         foreach($teams as $team) {
+            if(is_null($team->team_logo)) {
+                continue;
+            }
+
+            $team_logo = str_replace(env('MEDIA_URL'), '', $team->team_logo);
+
             echo $team->id . ' ' . $team->team_logo . "\n";
+            echo env('MEDIA_URL') . $team_logo . "\n";
         }
     }
 }
