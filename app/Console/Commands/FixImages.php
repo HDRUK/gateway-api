@@ -12,20 +12,22 @@ class FixImages extends Command
      *
      * @var string
      */
-    protected $signature = 'app:fix-images';
+    protected $signature = 'app:fix-images {--dryRun : Perform a dry run without updating the database}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Fixes team logos by removing MEDIA_URL prefix and optionally performs a dry run.';
+
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
+        $dryRun = $this->option('dryRun');
         $teams = Team::select(["id","team_logo"])->get();
         $progressbar = $this->output->createProgressBar(count($teams));
         foreach($teams as $team) {
@@ -39,7 +41,11 @@ class FixImages extends Command
                 $fixed_team_logo = null;
             }
 
-            Team::find($team->id)->update(['team_logo' => $fixed_team_logo]);
+            if ($dryRun) {
+                $this->info("Team ID: {$team->id}, Old Logo: {$team->team_logo}, New Logo: {$fixed_team_logo}");
+            } else {
+                Team::find($team->id)->update(['team_logo' => $fixed_team_logo]);
+            }
             $progressbar->advance();
 
         }
