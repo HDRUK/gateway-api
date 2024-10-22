@@ -38,7 +38,7 @@ class UpdateCollectionsUserId extends Command
 
                 if (is_null($collectionHasUsers)) {
                     CollectionHasUser::create([
-                        'collection_id' => $collection->id,
+                        'collection_id' => $collection['id'],
                         'user_id' => $admiUser->id,
                         'role' => 'CREATOR'
                     ]);
