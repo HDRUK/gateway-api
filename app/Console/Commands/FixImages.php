@@ -32,10 +32,13 @@ class FixImages extends Command
                 continue;
             }
 
-            $team_logo = str_replace(env('MEDIA_URL'), '', $team->team_logo);
+            $fixed_team_logo = str_replace(env('MEDIA_URL'), '', $team->team_logo);
+            if (!str_starts_with($fixed_team_logo, '/teams')) {
+                $fixed_team_logo = null;
+            }
 
-            echo $team->id . ' ' . $team->team_logo . "\n";
-            echo $team_logo . "\n";
+            Team::find($team->id)->update(['team_logo' => $fixed_team_logo]);
+
         }
     }
 }
