@@ -123,7 +123,8 @@ class Dataset extends Model
 
     public function latestMetadata(): HasOne
     {
-        return $this->hasOne(DatasetVersion::class, 'dataset_id')->withTrashed()->latest('version');
+        return $this->hasOne(DatasetVersion::class, 'dataset_id')->withTrashed()
+            ->orderBy('version', 'desc')->limit(1);
     }
 
     /**
@@ -132,7 +133,7 @@ class Dataset extends Model
     public function lastMetadataVersionNumber(): DatasetVersion
     {
         return DatasetVersion::where('dataset_id', $this->id)
-            ->latest('version')->select('version')->first();
+            ->orderBy('version', 'desc')->select('version')->first();
     }
 
     /**
@@ -142,7 +143,7 @@ class Dataset extends Model
     {
         $version = DatasetVersion::where('dataset_id', $this->id)
             ->select(['version','id'])
-            ->latest('version')
+            ->orderBy('version', 'desc')
             ->first()
             ->id;
         $datasetVersion = DatasetVersion::findOrFail($version)->toArray();
@@ -169,8 +170,8 @@ class Dataset extends Model
     public function scopeOrderByMetadata(Builder $query, string $field, string $direction): Builder
     {
         return $query->orderBy(DatasetVersion::selectRaw("JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.".$field."')")
-                            ->whereColumn('datasets.id', 'dataset_versions.dataset_id')
-                            ->latest()->limit(1), $direction);
+            ->whereColumn('datasets.id', 'dataset_versions.dataset_id')
+            ->latest()->limit(1), $direction);
     }
 
     /**
