@@ -30,14 +30,14 @@ class TermExtraction implements ShouldQueue
     public $tries;
     public $timeout;
 
-    private string $tedUrl = '';
-    private string $datasetId = '';
-    private string $datasetVersionId = '';
-    private int $version = 0;
-    private string $data = '';
-    private bool $usePartialExtraction = true;
+    protected string $tedUrl = '';
+    protected string $datasetId = '';
+    protected string $datasetVersionId = '';
+    protected int $version = 0;
+    protected string $data = '';
+    protected bool $usePartialExtraction = true;
 
-    private bool $reIndexElastic = true;
+    protected bool $reIndexElastic = true;
 
     /**
      * Create a new job instance.
@@ -70,7 +70,7 @@ class TermExtraction implements ShouldQueue
             'jobs.default_timeout' => config('jobs.default_timeout'),
             'jobs.ntries' => config('jobs.ntries'),
         ]);
-        
+
         $data = json_decode(gzdecode(gzuncompress(base64_decode($this->data))), true);
         if($this->usePartialExtraction) {
             //data is partial - summary data only
