@@ -425,7 +425,7 @@ class TeamController extends Controller
      *              @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *              @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
-     *              @OA\Property(property="users", type="array", example="[1, 2]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="teamAdmins", type="array", example="[1, 2]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              @OA\Property(property="is_provider", type="boolean", example="1"),
      *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
@@ -458,10 +458,10 @@ class TeamController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         $arrayTeam = array_filter($input, function ($key) {
-            return $key !== 'notifications' || $key !== 'users';
+            return $key !== 'notifications' || $key !== 'teamAdmins';
         }, ARRAY_FILTER_USE_KEY);
         $arrayTeamNotification = $input['notifications'];
-        $arrayTeamUsers = $input['users'];
+        $arrayTeamAdmins = $input['teamAdmins'];
         $superAdminIds = User::where('is_admin', true)->pluck('id');
         $team = Team::create($arrayTeam);
 
@@ -482,7 +482,7 @@ class TeamController extends Controller
                 }
 
                 $roles = Role::where(['name' => 'custodian.team.admin'])->first();
-                foreach ($arrayTeamUsers as $value) {
+                foreach ($arrayTeamAdmins as $value) {
                     $teamHasUsers = TeamHasUser::create([
                         'team_id' => (int)$team->id,
                         'user_id' => (int)$value,
@@ -574,6 +574,7 @@ class TeamController extends Controller
      *              @OA\Property(property="introduction", type="string", example="info about the team"),
      *              @OA\Property(property="dar_modal_content", type="string", example="dar info"),
      *              @OA\Property(property="service", type="string", example="https://example"),
+     *              @OA\Property(property="teamAdmins", type="array", example=[2,4]),
      *          ),
      *      ),
      *      @OA\Response(
@@ -646,10 +647,13 @@ class TeamController extends Controller
                 'team_logo',
                 'dar_modal_content',
                 'service',
+                'teamAdmins'
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
+            $teamAdmins = array_key_exists('teamAdmins', $input) ? $input['teamAdmins'] : [];
+            unset($array['teamAdmins']);
             Team::where('id', $teamId)->update($array);
 
             $arrayTeamNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
@@ -661,8 +665,7 @@ class TeamController extends Controller
                 ]);
             }
 
-            $users = array_key_exists('users', $input) ? $input['users'] : [];
-            $this->updateTeamAdminUsers($teamId, $users);
+            $this->updateTeamAdminUsers($teamId, $teamAdmins);
 
             if (array_key_exists('name', $array)) {
                 $this->reindexRelatedEntities($teamId);
@@ -731,6 +734,7 @@ class TeamController extends Controller
      *              @OA\Property(property="introduction", type="string", example="info about the team"),
      *              @OA\Property(property="dar_modal_content", type="string", example="dar info"),
      *              @OA\Property(property="service", type="string", example="https://example"),
+     *              @OA\Property(property="teamAdmins", type="array", example=[2,4]),
      *          ),
      *      ),
      *      @OA\Response(
@@ -803,9 +807,12 @@ class TeamController extends Controller
                 'team_logo',
                 'dar_modal_content',
                 'service',
+                'teamAdmins'
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
+            $teamAdmins = array_key_exists('teamAdmins', $input) ? $input['teamAdmins'] : [];
+            unset($array['teamAdmins']);
 
             Team::where('id', $teamId)->update($array);
 
@@ -819,8 +826,7 @@ class TeamController extends Controller
                 ]);
             }
 
-            $users = array_key_exists('users', $input) ? $input['users'] : [];
-            $this->updateTeamAdminUsers($teamId, $users);
+            $this->updateTeamAdminUsers($teamId, $teamAdmins);
 
             if (array_key_exists('name', $array)) {
                 $this->reindexRelatedEntities($teamId);

@@ -70,7 +70,7 @@ class TermExtraction implements ShouldQueue
             'jobs.default_timeout' => config('jobs.default_timeout'),
             'jobs.ntries' => config('jobs.ntries'),
         ]);
-        
+
         $data = json_decode(gzdecode(gzuncompress(base64_decode($this->data))), true);
         if($this->usePartialExtraction) {
             //data is partial - summary data only
