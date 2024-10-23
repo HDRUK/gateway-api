@@ -126,7 +126,7 @@ class MetadataManagementTest extends TestCase
             [
                 'team_id' => $this->teamId,
                 'user_id' => $this->userId,
-                'metadata' => ['metadata' => $newMetadata],
+                'metadata' => $newMetadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_ACTIVE,
             ],
