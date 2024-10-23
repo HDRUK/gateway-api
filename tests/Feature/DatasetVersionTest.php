@@ -17,6 +17,9 @@ use Database\Seeders\RoleSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
 use Database\Seeders\UserSeeder;
+use Database\Seeders\DatasetSeeder;
+use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\MinimalUserSeeder;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -594,5 +597,112 @@ class DatasetVersionTest extends TestCase
 
 
     }
+
+
+    public function test_get_dataset_with_multiple_versions(): void
+    {
+        $initialMetadata = $this->getMetadata();
+        $team = Team::first();
+        $user = User::first();
+
+        $nInitialDatasets = Dataset::where("team_id", $team->id)->count();
+
+        //create a dataset
+        $responseCreateDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $team->id,
+                'user_id' => $user->id,
+                'metadata' => $initialMetadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header
+        );
+        $responseCreateDataset->assertStatus(201);
+        $datasetId = $responseCreateDataset['data'];
+
+        $updatedMetadata = $this->getMetadata();
+        $responseUpdateDataset = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET . '/' . $datasetId,
+            [
+                'team_id' => $team->id,
+                'user_id' => $user->id,
+                'metadata' => $updatedMetadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header
+        );
+        $responseUpdateDataset->assertStatus(200);
+
+
+        $responseGetDataset = $this->json(
+            'GET',
+            self::TEST_URL_DATASET . '/' . $datasetId,
+            $this->header
+        );
+
+        $this->assertCount(1, $responseGetDataset['data']['versions']);
+
+
+    }
+
+    public function test_get_datasets_with_multiple_versions(): void
+    {
+        $this->seed([
+            MinimalUserSeeder::class,
+            DatasetSeeder::class, //10 datasets
+            DatasetSeeder::class, //another 10
+            DatasetVersionSeeder::class,//seed the 20 with random number of versions
+        ]);
+
+        $responseGetDatasets = $this->json(
+            'GET',
+            self::TEST_URL_DATASET,
+            $this->header
+        );
+
+        $responseGetDatasets->assertStatus(200);
+        $this->assertCount(20, $responseGetDatasets['data']);
+
+        foreach ($responseGetDatasets['data'] as $dataset) {
+            $this->assertArrayHasKey('latest_metadata', $dataset);
+            $this->assertNotEmpty($dataset['latest_metadata']);
+
+            $nVersions = DatasetVersion::where("dataset_id", $dataset['id'])->count();
+            //the version number should be equal to the total number of versions
+            $this->assertEquals($nVersions, $dataset['latest_metadata']['version']);
+
+        }
+    }
+
+    public function test_get_datasets_with_changing_per_page(): void
+    {
+        $this->seed([
+            MinimalUserSeeder::class,
+            DatasetSeeder::class, //10 datasets
+            DatasetSeeder::class, //another 10
+            DatasetVersionSeeder::class,//seed the 20 with random number of versions
+        ]);
+
+        $responseGetDatasets = $this->json(
+            'GET',
+            self::TEST_URL_DATASET,
+            $this->header
+        );
+
+        $responseGetDatasets->assertStatus(200);
+        $this->assertCount(20, $responseGetDatasets['data']);
+
+        foreach ($responseGetDatasets['data'] as $dataset) {
+            $this->assertArrayHasKey('latest_metadata', $dataset);
+            $this->assertNotEmpty($dataset['latest_metadata']);
+        }
+    }
+
+
 
 }

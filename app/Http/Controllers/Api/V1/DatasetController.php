@@ -181,7 +181,7 @@ class DatasetController extends Controller
                 function ($query) use ($filterStatus) {
                     return $query->where('status', '=', $filterStatus);
                 }
-            )->select(['id'])->get();
+            )->select(['id', 'updated'])->get();
 
             // Map initially found datasets to just ids.
             foreach ($initialDatasets as $ds) {
