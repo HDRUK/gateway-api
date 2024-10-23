@@ -76,6 +76,8 @@ trait AddMetadataVersion
                 'version' => $versionNumber,
             ]);
 
+            unset($metadataSaveObject);
+
             // If relations were found, link those to the new metadata version
             if (count($dv) > 0) {
                 foreach ($dv as $relation) {
