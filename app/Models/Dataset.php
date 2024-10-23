@@ -120,7 +120,11 @@ class Dataset extends Model
 
     public function latestMetadata(): HasOne
     {
+<<<<<<< HEAD
         return $this->hasOne(DatasetVersion::class, 'dataset_id')->withTrashed()
+=======
+        return $this->hasOne(DatasetVersion::class, 'dataset_id')
+>>>>>>> 70fb3b10 (Merge pull request #840 from HDRUK/hotfix/latest-metadata)
             ->orderBy('version', 'desc');
     }
 
