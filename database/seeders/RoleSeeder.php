@@ -18,6 +18,7 @@ class RoleSeeder extends Seeder
     {
         $roles = [
             'hdruk.superadmin' => [
+                'full_name' => 'HDR UK SuperAdmin',
                 'permissions' => [
                     'perms' => 'all',
                 ]
@@ -72,6 +73,7 @@ class RoleSeeder extends Seeder
                 ],
             ],
             'hdruk.metadata' => [
+                'full_name' => 'HDR UK Metadata',
                 'permissions' => [
                     'integrations.metadata',
                     'datasets.read',
