@@ -318,6 +318,26 @@ class DatasetTest extends TestCase
 
         $this->assertTrue($first->gt($second));
 
+
+
+        //create an archived dataset from team1
+        $specificTime = Carbon::parse('2023-02-01 00:00:00');
+        Carbon::setTestNow($specificTime);
+        $labelDataset2 = 'Archived ABC DATASET';
+        $responseCreateDatasetArchived = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamId1,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ARCHIVED,
+            ],
+            $this->header,
+        );
+        $responseCreateDatasetArchived->assertStatus(201);
+
         /*
         * use the endpoint /api/v1/datasets/count to find unique values of the field 'status'
         */
@@ -331,8 +351,54 @@ class DatasetTest extends TestCase
         $responseCount->assertStatus(200);
         $countActive = $responseCount['data']['ACTIVE'];
         $countDraft = $responseCount['data']['DRAFT'];
+        $countArchived = $responseCount['data']['ARCHIVED'];
+
         $this->assertTrue($countActive === 1);
         $this->assertTrue($countDraft === 1);
+        $this->assertTrue($countArchived === 1);
+
+        $responseActiveDatasets = $this->json(
+            'GET',
+            self::TEST_URL_DATASET .
+            '?team_id=' . $teamId1 .
+            '&status=ACTIVE',
+            [],
+            $this->header
+        );
+        $responseActiveDatasets->assertStatus(200);
+
+        $this->assertCount(1, $responseActiveDatasets['data']);
+        $this->assertArrayHasKey('latest_metadata', $responseActiveDatasets['data'][0]);
+        $this->assertNotEmpty($responseActiveDatasets['data'][0]['latest_metadata']);
+
+        $responseDraftDatasets = $this->json(
+            'GET',
+            self::TEST_URL_DATASET .
+            '?team_id=' . $teamId1 .
+            '&status=DRAFT',
+            [],
+            $this->header
+        );
+        $responseDraftDatasets->assertStatus(200);
+
+        $this->assertCount(1, $responseDraftDatasets['data']);
+        $this->assertArrayHasKey('latest_metadata', $responseDraftDatasets['data'][0]);
+        $this->assertNotEmpty($responseDraftDatasets['data'][0]['latest_metadata']);
+
+        $responseArchivedDatasets = $this->json(
+            'GET',
+            self::TEST_URL_DATASET .
+            '?team_id=' . $teamId1 .
+            '&status=ARCHIVED',
+            [],
+            $this->header
+        );
+        $responseArchivedDatasets->assertStatus(200);
+
+        $this->assertCount(1, $responseArchivedDatasets['data']);
+        $this->assertArrayHasKey('latest_metadata', $responseArchivedDatasets['data'][0]);
+        $this->assertNotEmpty($responseArchivedDatasets['data'][0]['latest_metadata']);
+
 
         /*
         * reverse this sorting
@@ -429,6 +495,9 @@ class DatasetTest extends TestCase
         }
 
     }
+
+
+
 
 
     /**
