@@ -264,11 +264,15 @@ class ScanFileUpload implements ShouldQueue
                 'user_id' => $this->userId,
                 'team_id' => $this->teamId,
             ];
+
+            $defineInputSchema = $this->inputSchema ? $this->inputSchema : Config::get('form_hydration.schema.model');
+            $defineInputVersion = $this->inputVersion ? $this->inputVersion : Config::get('form_hydration.schema.latest_version');
+
             $metadataResult = $this->metadataOnboard(
                 $input,
                 $team,
-                $this->inputSchema,
-                $this->inputVersion,
+                $defineInputSchema,
+                $defineInputVersion,
                 $this->elasticIndexing
             );
 
