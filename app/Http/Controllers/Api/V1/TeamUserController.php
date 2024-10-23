@@ -819,9 +819,9 @@ class TeamUserController extends Controller
             $return = '<ul>';
             foreach ($roleNames as $roleName) {
                 $role = Role::where(['name' => $roleName])->select(['full_name'])->first();
-                $return.= '<li>' . $role->full_name . '</li>';
+                $return .= '<li>' . $role->full_name . '</li>';
             }
-            $return.= '</ul>';
+            $return .= '</ul>';
         }
 
         return $return;
