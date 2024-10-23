@@ -705,7 +705,7 @@ class TeamUserController extends Controller
                 $updatesMade[$roleName] = $action ? true : false;
             }
 
-            $this->sendEmailUpdate($roleName, $action, $teamId, $userId, $jwtUser);
+            $this->sendEmailUpdate($teamId, $userId);
 
             return $updatesMade;
         } catch (Exception $e) {
@@ -787,7 +787,7 @@ class TeamUserController extends Controller
         }
     }
 
-    public function sendEmailUpdate(string $role, bool $action, int $teamId, int $userId)
+    public function sendEmailUpdate(int $teamId, int $userId)
     {
         $template = EmailTemplate::where(['identifier', 'update.roles.team.user'])->first();
         $team = Team::where('id', '=', $teamId)->first();
@@ -798,16 +798,6 @@ class TeamUserController extends Controller
                 'name' => $user['name'],
             ],
         ];
-
-        $strCurrRoleNames = "";
-        if (count($this->afterRoleNames)) {
-            $strCurrRoleNames = '<ul>';
-            foreach ($this->afterRoleNames as $afterRoleName) {
-                $role = Role::where(['name' => $afterRoleName])->select(['full_name'])->first();
-                $strCurrRoleNames.= '<li>' . $role->full_name . '</li>';
-            }
-            $strCurrRoleNames.= '</ul>';
-        }
 
         $replacements = [
             '[[USER_FIRSTNAME]]' => $user['firstname'],
