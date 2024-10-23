@@ -37,6 +37,10 @@ Route::get('/email', function (Request $reqest) {
     ]);
 });
 
+Route::get('/schedule_ars', function (Request $request) {
+    Artisan::call('app:alias-reply-scanner');
+});
+
 
 # bcplatform
 Route::get('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middleware('auth:api');
