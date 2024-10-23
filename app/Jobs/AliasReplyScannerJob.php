@@ -49,7 +49,7 @@ class AliasReplyScannerJob implements ShouldQueue
         if ($alias) {
             $this->processAlias($alias, $message);
         } else {
-            Log::warn('... alias not found in the email sent');
+            Log::warning('... alias not found in the email sent');
         }
 
         ARS::deleteMessage($message);
@@ -63,7 +63,7 @@ class AliasReplyScannerJob implements ShouldQueue
         if ($thread) {
             $this->processThread($message, $thread);
         } else {
-            Log::warn('... valid thread not found for key=' . $alias);
+            Log::warning('... valid thread not found for key=' . $alias);
         }
     }
 
