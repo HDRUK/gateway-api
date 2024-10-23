@@ -28,10 +28,10 @@ trait AddMetadataVersion
         array $previousMetadata,
         int $previousMetadataVersionNumber
     ): array {
+        $versionNumber = 0;
+
         if($incomingStatus === Dataset::STATUS_ACTIVE) {
             // Determine the last version of metadata
-            $versionNumber = 0;
-
             if ($currDataset->status !== Dataset::STATUS_DRAFT) {
                 $versionNumber = $previousMetadataVersionNumber + 1;
             }
@@ -91,6 +91,8 @@ trait AddMetadataVersion
                 }
             }
         } else {
+            $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
+
             // Update the existing version
             $newVersion = DatasetVersion::where([
                 'dataset_id' => $currDataset->id,
