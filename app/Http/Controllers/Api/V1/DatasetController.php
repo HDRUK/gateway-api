@@ -765,17 +765,15 @@ class DatasetController extends Controller
                 'is_cohort_discovery' => $isCohortDiscovery,
             ]);
 
-            $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
-
-            $datsetVersionId = $this->addMetadataVersion(
+            $retVal = $this->addMetadataVersion(
                 $currDataset,
                 $request['status'],
                 $updateTime,
                 $gwdmMetadata,
-                $submittedMetadata
+                $submittedMetadata,
+                $currDataset->lastMetadataVersionNumber()->version
             );
 
-            $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
             if($request['status'] === Dataset::STATUS_ACTIVE &&  Config::get('ted.enabled')) {
 
@@ -783,8 +781,8 @@ class DatasetController extends Controller
 
                 TermExtraction::dispatch(
                     $currDataset->id,
-                    $datsetVersionId,
-                    $versionNumber,
+                    $retVal['datsetVersionId'],
+                    $retVal['versionNumber'],
                     base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
                     $elasticIndexing,
                     Config::get('ted.use_partial')
@@ -796,7 +794,7 @@ class DatasetController extends Controller
                 'team_id' => $teamId,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Dataset ' . $id . ' with version ' . ($versionNumber + 1) . ' updated',
+                'description' => 'Dataset ' . $id . ' with version ' . ($retVal['versionNumber'] + 1) . ' updated',
             ]);
 
             //note Calum 13/08/2024
@@ -814,7 +812,7 @@ class DatasetController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception($e->getMessage());
+            throw new Exception($e);
         }
     }
 
