@@ -33,7 +33,7 @@ trait DatasetFetch
             $datasetMetadata = $dataset->latestMetadata()->whereIn('id', $versionIds)->pluck('metadata')->toArray(); // This can be modified to return metadata
 
             if (count($datasetMetadata) > 0) {
-                $datasetTitle = $datasetMetadata[0]['metadata']['summary']['abstract'] ?? null;
+                $datasetTitle = $datasetMetadata[0]['metadata']['summary']['title'] ?? null;
                 $dataset->setAttribute('name', $datasetTitle); // This can be modified to return metadata
             }
             // Add associated dataset versions to the dataset object
