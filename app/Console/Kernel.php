@@ -21,7 +21,7 @@ class Kernel extends ConsoleKernel
 
         // runs the ARS email scanner
         // $schedule->command('app:alias-reply-scanner')->everyFiveMinutes();
-        $schedule->job(new AliasReplyScannerJob)->everyFiveMinutes(); 
+        $schedule->job(new AliasReplyScannerJob())->everyFiveMinutes();
 
         // update license information from EU server
         $schedule->command('app:update-licenses')->monthlyOn(1, '01:00');
