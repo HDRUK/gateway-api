@@ -101,13 +101,10 @@ class Dataset extends Model
                     dv.version
                 FROM dataset_versions dv
                 WHERE
-                    dv.version = (
-                        SELECT 
-                            MAX(version)
-                        FROM dataset_versions dv2
-                        WHERE dv2.dataset_id = dv.dataset_id
-                    )
-                AND dv.dataset_id = :dataset_id
+                    dv.dataset_id = :dataset_id
+                ORDER BY
+                    version DESC
+                LIMIT 1
             ',
             [
                 'dataset_id' => $datasetId,
@@ -123,7 +120,7 @@ class Dataset extends Model
 
     public function latestMetadata(): HasOne
     {
-        return $this->hasOne(DatasetVersion::class, 'dataset_id')
+        return $this->hasOne(DatasetVersion::class, 'dataset_id')->withTrashed()
             ->orderBy('version', 'desc');
     }
 
