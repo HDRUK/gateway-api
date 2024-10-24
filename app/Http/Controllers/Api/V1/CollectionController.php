@@ -1677,6 +1677,10 @@ class CollectionController extends Controller
             'role' => 'CREATOR',
         ]);
 
+        $collaboratorIds = array_filter($collaboratorIds, function ($cId) use ($creatorId) {
+            return (int)$cId !== (int)$creatorId;
+        });
+
         foreach ($collaboratorIds as $collaboratorId) {
             CollectionHasUser::create([
                 'collection_id' => $collectionId,

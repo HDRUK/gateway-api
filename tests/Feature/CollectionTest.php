@@ -9,6 +9,7 @@ use App\Models\Tool;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
+use App\Models\CollectionHasUser;
 use App\Models\Publication;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
@@ -322,6 +323,7 @@ class CollectionTest extends TestCase
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
             "status" => "ACTIVE",
+            'collaborators' => [3,4],
         ];
         $responseIns = $this->json(
             'POST',
@@ -332,6 +334,10 @@ class CollectionTest extends TestCase
 
         $responseIns->assertStatus(201);
         $idIns = (int) $responseIns['data'];
+
+        $collectionHasUsers = CollectionHasUser::where(['collection_id' => $idIns])->count();
+        // one creator (jwt) + two collaborators
+        $this->assertTrue((int)$collectionHasUsers === 3);
 
         // update collection
         $mockDataUpdate = [
