@@ -775,18 +775,23 @@ class DatasetController extends Controller
             );
 
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
-            if($request['status'] === Dataset::STATUS_ACTIVE &&  Config::get('ted.enabled')) {
+            if($request['status'] === Dataset::STATUS_ACTIVE) {
+                if(Config::get('ted.enabled')) {
+                    $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
 
-                $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
-
-                TermExtraction::dispatch(
-                    $currDataset->id,
-                    $retVal['datsetVersionId'],
-                    $retVal['versionNumber'],
-                    base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
-                    $elasticIndexing,
-                    Config::get('ted.use_partial')
-                );
+                    TermExtraction::dispatch(
+                        $currDataset->id,
+                        $retVal['datsetVersionId'],
+                        $retVal['versionNumber'],
+                        base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
+                        $elasticIndexing,
+                        Config::get('ted.use_partial')
+                    );
+                } else {
+                    $this->reindexElastic($currDataset->id);
+                }
+            } elseif($initDataset->status === Dataset::STATUS_ACTIVE) {
+                $this->deleteDatasetFromElastic($currDataset->id);
             }
 
             Auditor::log([
