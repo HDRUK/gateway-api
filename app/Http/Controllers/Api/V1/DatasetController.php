@@ -781,7 +781,7 @@ class DatasetController extends Controller
 
                     TermExtraction::dispatch(
                         $currDataset->id,
-                        $retVal['datsetVersionId'],
+                        $retVal['datasetVersionId'],
                         $retVal['versionNumber'],
                         base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
                         $elasticIndexing,
@@ -791,8 +791,7 @@ class DatasetController extends Controller
                     $this->reindexElastic($currDataset->id);
                 }
             } elseif($initDataset->status === Dataset::STATUS_ACTIVE) {
-                throw new Exeception("up da raaaaaa");
-                //$this->deleteDatasetFromElastic($currDataset->id);
+                $this->deleteDatasetFromElastic($currDataset->id);
             }
 
             Auditor::log([
