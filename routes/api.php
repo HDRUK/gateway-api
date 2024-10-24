@@ -37,7 +37,6 @@ Route::get('/email', function (Request $reqest) {
     ]);
 });
 
-
 # bcplatform
 Route::get('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middleware('auth:api');
 Route::match(['get', 'post'], '/oauth/logmeout', [CustomLogoutController::class, 'rquestLogout']);
