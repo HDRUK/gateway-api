@@ -9,7 +9,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Http\Traits\TeamTransformation;
-use Log;
 
 use AliasReplyScanner as ARS;
 
@@ -75,7 +74,6 @@ class AliasReplyScannerJob implements ShouldQueue
     public function processThread($message, $thread)
     {
         $response = ARS::scrapeAndStoreContent($message, $thread->id);
-        Log::info('... ' . $response->message_body);
         CloudLogger::write('... ' . json_encode($response->message_body));
     }
 
