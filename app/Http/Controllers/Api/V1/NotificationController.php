@@ -136,6 +136,7 @@ class NotificationController extends Controller
 
             $notification = Notification::findOrFail($id);
 
+            // mask the email if the user_id is supplied. Otherwise, return the full email.
             if ($notification->user_id) {
                 $user = User::where('id', $notification->user_id)->first();
                 $notification->email = $this->maskEmail($user->email);

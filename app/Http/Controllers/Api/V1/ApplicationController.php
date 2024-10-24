@@ -747,14 +747,25 @@ class ApplicationController extends Controller
             }
 
             foreach ($notifications as $notification) {
-                $notification = Notification::create([
-                    'notification_type' => 'application',
-                    'message' => '',
-                    'opt_in' => 0,
-                    'enabled' => 1,
-                    // This will need additional logic to handle the case where an email of a non-user is supplied to the FE, but that's not supported yet so leave that for future
-                    'user_id' => (int) $notification,
-                ]);
+                // $notification may be a user id, or it may be an email address.
+                if (is_numeric($notification)) {
+                    $notification = Notification::create([
+                        'notification_type' => 'application',
+                        'message' => '',
+                        'opt_in' => 0,
+                        'enabled' => 1,
+                        'user_id' => (int) $notification,
+                    ]);
+                } else {
+                    $notification = Notification::create([
+                        'notification_type' => 'application',
+                        'message' => '',
+                        'opt_in' => 0,
+                        'enabled' => 1,
+                        'email' => $notification,
+                        'user_id' => null,
+                    ]);
+                }
 
                 ApplicationHasNotification::create([
                     'application_id' => $applicationId,
