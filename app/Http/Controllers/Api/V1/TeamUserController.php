@@ -789,7 +789,7 @@ class TeamUserController extends Controller
 
     public function sendEmailUpdate(int $teamId, int $userId)
     {
-        $template = EmailTemplate::where(['identifier', 'update.roles.team.user'])->first();
+        $template = EmailTemplate::where(['identifier' => 'update.roles.team.user'])->first();
         $team = Team::where('id', '=', $teamId)->first();
         $user = User::where('id', '=', $userId)->first();
         $to = [
