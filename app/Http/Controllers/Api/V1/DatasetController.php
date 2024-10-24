@@ -135,8 +135,15 @@ class DatasetController extends Controller
             $datasetId = $request->query('dataset_id', null);
             $mongoPId = $request->query('mongo_pid', null);
             $withMetadata = $request->boolean('with_metadata', true);
-
+            // apply any initial filters to get initial datasets
+            $filterTitle = $request->query('title', '');
             $sort = $request->query('sort', 'created:desc');
+
+            // Don't judge... I felt really dirty
+            if (isset($filterTitle) && $filterTitle === '') {
+                return response()->json([
+                ], 200);
+            }
 
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
@@ -162,9 +169,6 @@ class DatasetController extends Controller
                     ], 400);
             }
 
-            // apply any initial filters to get initial datasets
-            $filterTitle = $request->query('title', null);
-
             $initialDatasets = Dataset::when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
             })->when($datasetId, function ($query) use ($datasetId) {
@@ -188,7 +192,7 @@ class DatasetController extends Controller
                 $matches[] = $ds->id;
             }
 
-            if (!empty($filterTitle)) {
+            if (!empty($filterTitle) && $filterTitle !== '') {
                 // If we've received a 'title' for the search, then only return
                 // datasets that match that title
                 $titleMatches = [];
