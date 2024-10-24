@@ -20,7 +20,7 @@ class AliasReplyScannerJob implements ShouldQueue
     use SerializesModels;
     use TeamTransformation;
 
-    private int $noMessageFound = 0;
+    private int $noMessagesFound = 0;
 
     /**
      * Create a new job instance.
@@ -38,7 +38,7 @@ class AliasReplyScannerJob implements ShouldQueue
         $messages = ARS::getNewMessagesSafe();
         CloudLogger::write('Found ' . count($messages) . ' new messages');
 
-        $this->noMessageFound = count($messages);
+        $this->noMessagesFound = count($messages);
 
         foreach($messages as $i => $message) {
             CloudLogger::write('Working on message #' . $i);
@@ -81,7 +81,7 @@ class AliasReplyScannerJob implements ShouldQueue
     {
         return [
             'alias_reply_scanner',
-            'no_of_messages_found:' . $this->noMessageFound,
+            'no_of_messages_found:' . $this->noMessagesFound,
         ];
     }
 }
