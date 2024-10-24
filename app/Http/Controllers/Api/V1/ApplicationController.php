@@ -752,7 +752,8 @@ class ApplicationController extends Controller
                     'message' => '',
                     'opt_in' => 0,
                     'enabled' => 1,
-                    'email' => $notification,
+                    // This will need additional logic to handle the case where an email of a non-user is supplied to the FE, but that's not supported yet so leave that for future
+                    'user_id' => (int) $notification,
                 ]);
 
                 ApplicationHasNotification::create([

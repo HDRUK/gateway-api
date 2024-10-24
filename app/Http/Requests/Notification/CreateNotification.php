@@ -33,7 +33,6 @@ class CreateNotification extends BaseFormRequest
             'email' => [
                 'nullable',
                 'email',
-                'required_without:user_id',
             ],
             'user_id' => [
                 'nullable',
