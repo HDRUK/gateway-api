@@ -23,11 +23,12 @@ fi
 # Start the Octane server in the background
 $base_command &
 
+export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8;
 
 # Separate the command from the cron timings, so as to first check for
 # duplicates, thus being immune to multiple insertions
 cronCommand="/usr/local/bin/php /var/www/artisan schedule:run >> /dev/null 2>&1"
-cronJob="* * * * * $cronCommand"
+cronJob="* * * * * export LANG=en_GB.UTF-8 LC_ALL=en_GB.UTF-8; $cronCommand"
 
 # To add the above to local crontab
 ( crontab -l | grep -v -F "$cronCommand" ; echo "$cronJob" ) | crontab -

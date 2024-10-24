@@ -33,10 +33,6 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pcntl \
     && docker-php-ext-install sockets
 
-# Set locale environment variables
-ENV LANG en_GB.UTF-8
-ENV LC_ALL en_GB.UTF-8
-
 # Install Redis and Imagick
 RUN wget -O redis-5.3.7.tgz 'http://pecl.php.net/get/redis-5.3.7.tgz' \
     && pecl install redis-5.3.7.tgz \
