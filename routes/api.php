@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Http\Request;
-use App\Jobs\AliasReplyScannerJob;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SSO\CustomUserController;
 use App\Http\Controllers\SSO\CustomLogoutController;
