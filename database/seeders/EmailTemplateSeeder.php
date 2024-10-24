@@ -2803,7 +2803,7 @@ class EmailTemplateSeeder extends Seeder
         // cohort.request.admin.remove
         EmailTemplate::create([
             'identifier' => 'cohort.request.admin.remove',
-            'subject' => 'Your Cohort Discovery admin permissions has been removed',
+            'subject' => 'Your Cohort Discovery admin permissions have been removed',
             'body' => '
                 <mjml>
                     <mj-head>
@@ -2829,7 +2829,7 @@ class EmailTemplateSeeder extends Seeder
                         <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                             <mj-column width="100%">
                                 <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                    Your Cohort Discovery admin permissions has been removed
+                                    Your Cohort Discovery admin permissions have been removed
                                 </mj-text>
                             </mj-column>
                         </mj-section>
@@ -2840,7 +2840,7 @@ class EmailTemplateSeeder extends Seeder
                                     Dear [[USER_FIRSTNAME]],
                                 </mj-text>
                                 <mj-text line-height="20px">
-                                    You have been removed as a Cohort Discovery admin on the Gateway
+                                    You have been removed as a Cohort Discovery admin on the Gateway.
                                 </mj-text>
 
                                 <mj-text>
@@ -2916,7 +2916,7 @@ class EmailTemplateSeeder extends Seeder
                                     Dear [[USER_FIRSTNAME]],
                                 </mj-text>
                                 <mj-text line-height="20px">
-                                    Your roles within [[TEAM_NAME]] has been updated:
+                                    Your roles within [[TEAM_NAME]] have been updated:
                                 </mj-text>
 
                                 <mj-text>
@@ -2967,7 +2967,7 @@ class EmailTemplateSeeder extends Seeder
 
         EmailTemplate::create([
             'identifier' => 'add.new.user.team',
-            'subject' => 'Congratulations! Your have beed added to team.',
+            'subject' => 'Congratulations! Your have been added to a team.',
             'body' => '
                 <mjml>
                     <mj-head>
@@ -2994,7 +2994,7 @@ class EmailTemplateSeeder extends Seeder
                         <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                             <mj-column width="100%">
                                 <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                    Congratulations! Your have beed added to [[TEAM_NAME]]
+                                    Congratulations! You have been added to [[TEAM_NAME]]
                                 </mj-text>
                             </mj-column>
                         </mj-section>
