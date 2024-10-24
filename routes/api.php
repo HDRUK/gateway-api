@@ -38,16 +38,6 @@ Route::get('/email', function (Request $reqest) {
     ]);
 });
 
-Route::get('/scheduler_command', function (Request $reqest) {
-    Artisan::call('app:alias-reply-scanner');
-});
-
-
-Route::get('/scheduler_job', function (Request $reqest) {
-    AliasReplyScannerJob::dispatch();
-});
-
-
 # bcplatform
 Route::get('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middleware('auth:api');
 Route::match(['get', 'post'], '/oauth/logmeout', [CustomLogoutController::class, 'rquestLogout']);
