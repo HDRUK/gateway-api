@@ -791,7 +791,8 @@ class DatasetController extends Controller
                     $this->reindexElastic($currDataset->id);
                 }
             } elseif($initDataset->status === Dataset::STATUS_ACTIVE) {
-                $this->deleteDatasetFromElastic($currDataset->id);
+                throw new Exeception("up da raaaaaa");
+                //$this->deleteDatasetFromElastic($currDataset->id);
             }
 
             Auditor::log([
