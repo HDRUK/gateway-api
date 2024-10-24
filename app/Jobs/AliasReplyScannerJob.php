@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use CloudLogger;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -20,6 +21,8 @@ class AliasReplyScannerJob implements ShouldQueue
     use SerializesModels;
     use TeamTransformation;
 
+    private int $noMessageFound = 0;
+
     /**
      * Create a new job instance.
      */
@@ -34,42 +37,53 @@ class AliasReplyScannerJob implements ShouldQueue
     public function handle(): void
     {
         $messages = ARS::getNewMessagesSafe();
-        Log::info('Found ' . count($messages) . ' new messages');
+        CloudLogger::write('Found ' . count($messages) . ' new messages');
+
+        $this->noMessageFound = count($messages);
 
         foreach($messages as $i => $message) {
-            Log::info('Working on message #' . $i);
+            CloudLogger::write('Working on message #' . $i);
             $this->processMessage($message);
         }
     }
 
-    private function processMessage($message)
+    public function processMessage($message)
     {
         $alias = ARS::getAlias($message);
 
         if ($alias) {
             $this->processAlias($alias, $message);
         } else {
-            Log::warning('... alias not found in the email sent');
+            CloudLogger::write('... alias not found in the email sent');
         }
 
         ARS::deleteMessage($message);
-        Log::info('... message deleted from the inbox');
+        CloudLogger::write('... message deleted from the inbox');
     }
 
-    private function processAlias($alias, $message)
+    public function processAlias($alias, $message)
     {
         $thread = ARS::getThread($alias);
 
         if ($thread) {
             $this->processThread($message, $thread);
         } else {
-            Log::warning('... valid thread not found for key=' . $alias);
+            CloudLogger::write('... valid thread not found for key=' . $alias);
         }
     }
 
-    private function processThread($message, $thread)
+    public function processThread($message, $thread)
     {
         $response = ARS::scrapeAndStoreContent($message, $thread->id);
         Log::info('... ' . $response->message_body);
+        CloudLogger::write('... ' . json_encode($response->message_body));
+    }
+
+    public function tags(): array
+    {
+        return [
+            'alias_reply_scanner',
+            'no_of_messages_found:' . $this->noMessageFound,
+        ];
     }
 }
