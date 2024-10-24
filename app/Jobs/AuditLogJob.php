@@ -24,13 +24,6 @@ class AuditLogJob implements ShouldQueue
      */
     public $tries = 5;
 
-    /**
-     * The number of seconds the job can run before timing out.
-     *
-     * @var int
-     */
-    public $timeout = 10;
-
     protected array $data;
 
     public function __construct(array $auditLog)
