@@ -781,7 +781,7 @@ class DatasetController extends Controller
 
                 TermExtraction::dispatch(
                     $currDataset->id,
-                    $retVal['datsetVersionId'],
+                    $retVal['datasetVersionId'],
                     $retVal['versionNumber'],
                     base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
                     $elasticIndexing,
