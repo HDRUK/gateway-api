@@ -86,7 +86,8 @@ class NotificationTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );
@@ -113,6 +114,7 @@ class NotificationTest extends TestCase
                     'opt_in',
                     'enabled',
                     'email',
+                    'user_id',
                 ],
             ]);
 
@@ -133,7 +135,8 @@ class NotificationTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );
@@ -168,7 +171,8 @@ class NotificationTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 0,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );
@@ -195,7 +199,8 @@ class NotificationTest extends TestCase
                 'message' => 'New message',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );
@@ -227,7 +232,8 @@ class NotificationTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 0,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );
@@ -255,7 +261,8 @@ class NotificationTest extends TestCase
                 'message' => 'New message',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );
@@ -330,7 +337,8 @@ class NotificationTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 0,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );

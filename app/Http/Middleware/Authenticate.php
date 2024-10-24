@@ -16,7 +16,7 @@ class Authenticate extends Middleware
     {
         $currentUrl = $request->url();
 
-        if (! $request->expectsJson() && (strpos($currentUrl, 'oauth/logoutme') !== false || strpos($currentUrl, '/bcrquest') !== false)) {
+        if (!$request->expectsJson() && (strpos($currentUrl, 'oauth/logoutme') !== false || strpos($currentUrl, '/bcrquest') !== false)) {
             return route('login');
         }
     }
