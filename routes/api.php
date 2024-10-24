@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+use App\Jobs\AliasReplyScannerJob;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SSO\CustomUserController;
 use App\Http\Controllers\SSO\CustomLogoutController;
@@ -35,6 +36,15 @@ Route::get('/email', function (Request $reqest) {
             '[[subheading_text]]' => 'Something here 2',
         ],
     ]);
+});
+
+Route::get('/scheduler_command', function (Request $reqest) {
+    Artisan::call('app:alias-reply-scanner');
+});
+
+
+Route::get('/scheduler_job', function (Request $reqest) {
+    AliasReplyScannerJob::dispatch();
 });
 
 
