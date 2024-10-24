@@ -866,6 +866,7 @@ class FederationController extends Controller
     private function getSecretsPayload(array $input)
     {
         $secrets_payload = [];
+        $secret_key = '';
         if (in_array($input['auth_type'], ['BEARER', 'API_KEY'])) {
             $secret_key = $input['auth_secret_key'];
         }
