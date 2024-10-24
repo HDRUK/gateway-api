@@ -192,7 +192,7 @@ class DatasetController extends Controller
                 $matches[] = $ds->id;
             }
 
-            if (!empty($filterTitle) && $filterTitle !== '') {
+            if (!empty($filterTitle)) {
                 // If we've received a 'title' for the search, then only return
                 // datasets that match that title
                 $titleMatches = [];
