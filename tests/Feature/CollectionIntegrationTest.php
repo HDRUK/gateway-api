@@ -33,6 +33,7 @@ use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
+use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionHasPublicationSeeder;
@@ -80,6 +81,7 @@ class CollectionIntegrationTest extends TestCase
             PublicationSeeder::class,
             PublicationHasDatasetVersionSeeder::class,
             CollectionHasPublicationSeeder::class,
+            CollectionHasUserSeeder::class,
         ]);
 
         $this->integration = Application::where('id', 1)->first();
@@ -280,6 +282,7 @@ class CollectionIntegrationTest extends TestCase
             $mockDataUpdate,
             $this->header
         );
+
         $responseUpdate->assertStatus(200);
         $this->assertTrue($mockDataUpdate['name'] === $responseUpdate['data']['name']);
         $this->assertTrue($mockDataUpdate['description'] === $responseUpdate['data']['description']);

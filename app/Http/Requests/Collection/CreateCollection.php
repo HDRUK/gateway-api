@@ -102,6 +102,14 @@ class CreateCollection extends BaseFormRequest
                 'integer',
                 'exists:users,id',
             ],
+            'collaborators' => [
+                'array',
+            ],
+            'collaborators.*' => [
+                'integer',
+                'distinct',
+                'exists:users,id',
+            ],
             'team_id' => [
                 'integer',
                 'exists:teams,id',
