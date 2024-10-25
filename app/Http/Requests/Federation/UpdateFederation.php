@@ -5,8 +5,6 @@ namespace App\Http\Requests\Federation;
 use Closure;
 use App\Models\TeamHasFederation;
 use App\Http\Requests\BaseFormRequest;
-use Egulias\EmailValidator\EmailValidator;
-use Egulias\EmailValidator\Validation\RFCValidation;
 
 class UpdateFederation extends BaseFormRequest
 {
@@ -77,9 +75,7 @@ class UpdateFederation extends BaseFormRequest
             ],
             'notifications.*' => [
                 function (string $attribute, mixed $value, Closure $fail) {
-                    $validator = new EmailValidator();
-                    $is_email = $validator->isValid($value, new RFCValidation());
-                    if (!(is_numeric($value) || $is_email)) {
+                    if (!(is_numeric($value) || filter_var($email, FILTER_VALIDATE_EMAIL))) {
                         $fail("The {$attribute} is invalid.");
                     }
                 },
