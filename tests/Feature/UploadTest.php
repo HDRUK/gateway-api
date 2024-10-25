@@ -281,7 +281,7 @@ class UploadTest extends TestCase
         // post file to files endpoint
         $response = $this->json(
             'POST',
-            self::TEST_URL . '?entity_flag=dataset-from-upload&team_id=' . $team,
+            self::TEST_URL . '?entity_flag=dataset-from-upload&input_schema=GWDM&input_version=2.0&team_id=' . $team,
             [
                 'file' => $file
             ],
@@ -291,7 +291,6 @@ class UploadTest extends TestCase
                 'Authorization' => $this->header['Authorization']
             ]
         );
-
         $response->assertJsonStructure([
             'data' => [
                 'id',

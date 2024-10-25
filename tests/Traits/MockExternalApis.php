@@ -1044,7 +1044,8 @@ trait MockExternalApis
            ) {
                $metadata = json_decode($dataset, true)["metadata"];
                //mock translating alternative schemas via traser - just give it a new GWDM metadata
-               if(!array_key_exists("required", $metadata) || !is_null($inputSchema)) {
+
+               if(!array_key_exists("required", $metadata) || (!is_null($inputSchema) && $inputSchema !== 'GWDM')) {
                    $metadata = $this->getMetadata();
                }
                return [
