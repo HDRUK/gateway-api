@@ -1206,7 +1206,7 @@ class CohortRequestController extends Controller
         *    operationId="fetch_cohort_requests_by_usr",
         *    tags={"Cohort Requests"},
         *    summary="CohortRequestController@byUser",
-        *    description="Returns a list of cohort requests",
+        *    description="Returns cohort request for given user ID",
         *    security={{"bearerAuth":{}}},
         *    @OA\Parameter(
         *       name="id",
