@@ -212,7 +212,6 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
-
         $responseCreateDataset->assertStatus(201);
 
         $datasetId1 = $responseCreateDataset['data'];
