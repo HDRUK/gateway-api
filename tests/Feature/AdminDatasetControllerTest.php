@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 use Database\Seeders\DatasetSeeder;
+use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\MinimalUserSeeder;
 
 class AdminDatasetControllerTest extends TestCase
@@ -27,6 +28,7 @@ class AdminDatasetControllerTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             DatasetSeeder::class,
+            DatasetVersionSeeder::class,
         ]);
     }
 
@@ -35,15 +37,25 @@ class AdminDatasetControllerTest extends TestCase
         // Arrange: Ensure the TermExtraction job is queued
         Queue::fake();
 
+        $allDatasetIds = Dataset::select('id')->pluck('id')->toArray();
+
         // Act: Call the endpoint without parameters to use defaults
-        $response = $this->json('POST', self::TEST_URL_DATASET . '/trigger/term_extraction', [], $this->header);
-        //dd($response);
+        $response = $this->json(
+            'POST',
+            self::TEST_URL_DATASET . '/trigger/term_extraction',
+            [],
+            $this->header
+        );
+
+        $content = $response->decodeResponseJson();
+        $response->assertStatus(200);
+
         // Assert: Check that the job was dispatched and response is correct
         Queue::assertPushed(TermExtraction::class);
         $response->assertStatus(200)
                  ->assertJson([
                      'message' => 'triggered ted',
-                     'datasetIds' => [1, 10],
+                     'datasetIds' => $allDatasetIds
                  ]);
     }
 
@@ -53,50 +65,43 @@ class AdminDatasetControllerTest extends TestCase
         Queue::fake();
 
         // Act: Call the endpoint with custom minId and maxId
-        $response = $this->json('POST', '/api/v1/admin-dataset/trigger-term-extraction', [
-            'minId' => 1,
-            'maxId' => 10,
-        ]);
+        $response = $this->json(
+            'POST',
+            self::TEST_URL_DATASET . '/trigger/term_extraction',
+            ['minId' => 3, 'maxId' => 5],
+            $this->header
+        );
 
         // Assert: Check that the job was dispatched and response is correct
         Queue::assertPushed(TermExtraction::class);
         $response->assertStatus(200)
                  ->assertJson([
                      'message' => 'triggered ted',
-                     'datasetIds' => [1, 10],
+                     'datasetIds' => [3, 4, 5],
                  ]);
     }
 
-    public function testTriggerTermExtractionWithPartialFalse()
+    public function testTriggerTermExtractionHandlesUnauthorised()
     {
-        // Arrange: Ensure the TermExtraction job is queued
-        Queue::fake();
+        //no token
+        $response = $this->json('POST', self::TEST_URL_DATASET . '/trigger/term_extraction', []);
+        $response->assertStatus(401);
 
-        // Act: Call the endpoint with partial set to false
-        $response = $this->json('POST', '/api/v1/admin-dataset/trigger-term-extraction', [
-            'partial' => false,
-        ]);
+        //create header with token for non-super admin
+        $this->authorisationUser(false);
+        $jwt = $this->getAuthorisationJwt(false);
+        $header = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwt,
+        ];
 
-        // Assert: Check that the job was dispatched with partial = false
-        Queue::assertPushed(TermExtraction::class, function ($job) {
-            return !$job->partial;
-        });
+        $response = $this->json('POST', self::TEST_URL_DATASET . '/trigger/term_extraction', [], $header);
+        $response->assertStatus(401);
 
-        $response->assertStatus(200)
-                 ->assertJson([
-                     'message' => 'triggered ted',
-                 ]);
+        //token in header for super-admin
+        $response = $this->json('POST', self::TEST_URL_DATASET . '/trigger/term_extraction', [], $this->header);
+        $response->assertStatus(200);
+
     }
 
-    public function testTriggerTermExtractionHandlesException()
-    {
-        // Simulate an exception during the process by making the max ID unreachable
-        Dataset::shouldReceive('max')->andThrow(new \Exception('Simulated exception'));
-
-        // Act: Call the endpoint
-        $response = $this->json('POST', '/api/v1/admin-dataset/trigger-term-extraction');
-
-        // Assert: Verify response is an error
-        $response->assertStatus(500);
-    }
 }

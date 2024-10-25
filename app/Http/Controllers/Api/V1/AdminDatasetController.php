@@ -24,7 +24,6 @@ class AdminDatasetController extends Controller
             $minId = $request->input('minId', 1);
             $maxId = $request->input('maxId', Dataset::max('id'));
 
-
             $datasetIds = Dataset::whereBetween("id", [$minId, $maxId])
                             ->select('id')
                             ->pluck('id');
