@@ -75,7 +75,7 @@ class UpdateFederation extends BaseFormRequest
             ],
             'notifications.*' => [
                 function (string $attribute, mixed $value, Closure $fail) {
-                    if (!(is_numeric($value) || filter_var($email, FILTER_VALIDATE_EMAIL))) {
+                    if (!(is_numeric($value) || filter_var($value, FILTER_VALIDATE_EMAIL))) {
                         $fail("The {$attribute} is invalid.");
                     }
                 },
