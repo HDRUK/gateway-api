@@ -12,6 +12,7 @@ use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Storage;
+use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -36,6 +37,7 @@ class DatasetTest extends TestCase
         $this->commonSetUp();
 
         $this->seed([
+            MinimalUserSeeder::class,
             SpatialCoverageSeeder::class,
         ]);
 
@@ -84,7 +86,8 @@ class DatasetTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
-                'email' => 'Some@email.com',
+                'email' => null,
+                'user_id' => 3,
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
@@ -516,7 +519,8 @@ class DatasetTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
-                'email' => 'Some@email.com',
+                'email' => null,
+                'user_id' => 3,
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
@@ -766,7 +770,8 @@ class DatasetTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
-                'email' => 'some@email.com',
+                'email' => null,
+                'user_id' => 3,
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
@@ -948,7 +953,8 @@ class DatasetTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
-                'email' => 'some@email.com',
+                'email' => null,
+                'user_id' => 3,
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
@@ -1101,7 +1107,8 @@ class DatasetTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
-                'email' => 'some@email.com',
+                'email' => null,
+                'user_id' => 3,
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
@@ -1238,7 +1245,8 @@ class DatasetTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
-                'email' => 'some@email.com',
+                'email' => null,
+                'user_id' => 3,
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
@@ -1483,7 +1491,8 @@ class DatasetTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
-                'email' => 'some@email.com',
+                'email' => null,
+                'user_id' => 3,
                 'opt_in' => 1,
                 'enabled' => 1,
             ],

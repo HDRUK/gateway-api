@@ -32,8 +32,14 @@ class EditNotification extends BaseFormRequest
                 'boolean',
             ],
             'email' => [
+                'nullable',
                 'email',
             ],
+            'user_id' => [
+                'nullable',
+                'integer',
+                'exists:users,id',
+            ]
         ];
     }
 

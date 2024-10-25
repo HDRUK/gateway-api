@@ -327,13 +327,15 @@ class FederationController extends Controller
                 'team_id' => $teamId,
             ]);
 
-            foreach($input['notifications'] as $email) {
+            foreach($input['notifications'] as $notification) {
+                // $notification may be a user id, or it may be an email address.
                 $notification = Notification::create([
                     'notification_type' => 'federation',
                     'message' => '',
                     'opt_in' => 0,
                     'enabled' => 1,
-                    'email' => $email,
+                    'email' => is_numeric($notification) ? null : $notification,
+                    'user_id' => is_numeric($notification) ? (int) $notification : null,
                 ]);
 
                 FederationHasNotification::create([
@@ -487,13 +489,15 @@ class FederationController extends Controller
                 FederationHasNotification::where('notification_id', $federationNotification)->delete();
             }
 
-            foreach ($input['notifications'] as $email) {
+            foreach ($input['notifications'] as $notification) {
+                // $notification may be a user id, or it may be an email address.
                 $notification = Notification::create([
                     'notification_type' => 'federation',
                     'message' => '',
                     'opt_in' => 0,
                     'enabled' => 1,
-                    'email' => $email,
+                    'email' => is_numeric($notification) ? null : $notification,
+                    'user_id' => is_numeric($notification) ? (int) $notification : null,
                 ]);
 
                 FederationHasNotification::create([
@@ -657,13 +661,15 @@ class FederationController extends Controller
                     FederationHasNotification::where('notification_id', $federationNotification)->delete();
                 }
 
-                foreach ($input['notifications'] as $email) {
+                foreach ($input['notifications'] as $notification) {
+                    // $notification may be a user id, or it may be an email address.
                     $notification = Notification::create([
                         'notification_type' => 'federation',
                         'message' => '',
                         'opt_in' => 0,
                         'enabled' => 1,
-                        'email' => $email,
+                        'email' => is_numeric($notification) ? null : $notification,
+                        'user_id' => is_numeric($notification) ? (int) $notification : null,
                     ]);
 
                     FederationHasNotification::create([
@@ -860,7 +866,10 @@ class FederationController extends Controller
     private function getSecretsPayload(array $input)
     {
         $secrets_payload = [];
-        $secret_key = $input['auth_secret_key'];
+        $secret_key = '';
+        if (in_array($input['auth_type'], ['BEARER', 'API_KEY'])) {
+            $secret_key = $input['auth_secret_key'];
+        }
         switch ($input['auth_type']) {
             case 'BEARER':
                 $secrets_payload = [
