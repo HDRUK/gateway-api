@@ -142,8 +142,11 @@ trait IndexElastic
                 $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages);
                 $metadata = $dataset->latestVersion()->metadata;
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-                if (!in_array($metadata['metadata']['summary']['datasetType'], $dataTypes)) {
-                    $dataTypes[] = $metadata['metadata']['summary']['datasetType'];
+                $types = explode(';,;', $metadata['metadata']['summary']['datasetType']);
+                foreach ($types as $t) {
+                    if (!in_array($t, $dataTypes)) {
+                        $dataTypes[] = $t;
+                    }
                 }
                 foreach ($dataset['spatialCoverage'] as $loc) {
                     if (!in_array($loc['region'], $locations)) {

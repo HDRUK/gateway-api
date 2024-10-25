@@ -7,30 +7,31 @@ use Auditor;
 use Exception;
 
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use App\Models\Keyword;
 use App\Models\Collection;
 use App\Models\Application;
 use Illuminate\Http\Request;
+use App\Models\DatasetVersion;
 use App\Models\CollectionHasDur;
+use App\Http\Traits\IndexElastic;
 use App\Models\CollectionHasTool;
-use Illuminate\Http\JsonResponse;
 
+use App\Models\CollectionHasUser;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Models\CollectionHasDatasetVersion;
 use App\Models\CollectionHasKeyword;
 use App\Exceptions\NotFoundException;
 use App\Http\Traits\IntegrationOverride;
+
+
 use App\Models\CollectionHasPublication;
-
-
-use App\Http\Traits\IndexElastic;
 use App\Http\Traits\RequestTransformation;
+use App\Models\CollectionHasDatasetVersion;
+
 use App\Http\Requests\Collection\GetCollection;
-
 use App\Http\Requests\Collection\EditCollection;
-use App\Http\Requests\Collection\CreateCollection;
 
+use App\Http\Requests\Collection\CreateCollection;
 use App\Http\Requests\Collection\DeleteCollection;
 use App\Http\Requests\Collection\UpdateCollection;
 
@@ -350,6 +351,8 @@ class IntegrationCollectionController extends Controller
                 $appId = (int) $input['app']['id'];
                 $app = Application::where(['id' => $appId])->first();
                 $userId = (int) $app->user_id;
+            } else {
+                $userId = (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']);
             }
 
             $arrayKeys = [
@@ -368,7 +371,9 @@ class IntegrationCollectionController extends Controller
             $collection = Collection::create($array);
             $collectionId = (int) $collection->id;
 
-            $array['user_id'] = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
+            $array['user_id'] = $userId;
+            $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
+            $this->createCollectionUsers((int)$collectionId, (int)$userId, $collaborators);
 
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
             $this->checkDatasets($collectionId, $datasets, $array['user_id'], $appId);
@@ -528,6 +533,8 @@ class IntegrationCollectionController extends Controller
                 $appId = (int) $input['app']['id'];
                 $app = Application::where(['id' => $appId])->first();
                 $userId = (int) $app->user_id;
+            } else {
+                $userId = (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']);
             }
 
             $arrayKeys = [
@@ -544,7 +551,10 @@ class IntegrationCollectionController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Collection::where('id', $id)->update($array);
-            $array['user_id'] = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
+            $array['user_id'] = $userId;
+
+            $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
+            $this->updateCollectionUsers((int)$id, $collaborators);
 
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
             $this->checkDatasets($id, $datasets, $array['user_id'], $appId);
@@ -702,6 +712,8 @@ class IntegrationCollectionController extends Controller
                 $userId = (int) $input['jwt_user']['id'];
             } elseif (array_key_exists('app_user', $input)) {
                 $appId = (int) $input['app']['id'];
+            } else {
+                $userId = (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']);
             }
 
             $arrayKeys = [
@@ -718,7 +730,10 @@ class IntegrationCollectionController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Collection::where('id', $id)->update($array);
-            $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
+            $userIdFinal = $userId;
+
+            $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
+            $this->updateCollectionUsers((int)$id, $collaborators);
 
             if (array_key_exists('datasets', $input)) {
                 $datasets = $input['datasets'];
@@ -1382,5 +1397,40 @@ class IntegrationCollectionController extends Controller
         );
 
         return $collection;
+    }
+
+    // add users to collections
+    public function createCollectionUsers(int $collectionId, int $creatorId, array $collaboratorIds)
+    {
+        CollectionHasUser::create([
+            'collection_id' => $collectionId,
+            'user_id' => $creatorId,
+            'role' => 'CREATOR',
+        ]);
+
+        foreach ($collaboratorIds as $collaboratorId) {
+            CollectionHasUser::create([
+                'collection_id' => $collectionId,
+                'user_id' => $collaboratorId,
+                'role' => 'COLLABORATOR',
+            ]);
+        }
+    }
+
+    // update users to collections
+    public function updateCollectionUsers(int $collectionId, array $collaboratorIds)
+    {
+        CollectionHasUser::where([
+            'collection_id' => $collectionId,
+            'role' => 'COLLABORATOR',
+        ])->delete();
+
+        foreach ($collaboratorIds as $collaboratorId) {
+            CollectionHasUser::create([
+                'collection_id' => $collectionId,
+                'user_id' => $collaboratorId,
+                'role' => 'COLLABORATOR',
+            ]);
+        }
     }
 }

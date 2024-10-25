@@ -9,6 +9,7 @@ use App\Models\Tool;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
+use App\Models\CollectionHasUser;
 use App\Models\Publication;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
@@ -28,11 +29,12 @@ use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
+use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
 use Database\Seeders\DurHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Database\Seeders\CollectionHasPublicationSeeder;
 
+use Database\Seeders\CollectionHasPublicationSeeder;
 use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
@@ -77,6 +79,7 @@ class CollectionTest extends TestCase
             PublicationSeeder::class,
             PublicationHasDatasetVersionSeeder::class,
             CollectionHasPublicationSeeder::class,
+            CollectionHasUserSeeder::class,
         ]);
     }
 
@@ -320,6 +323,7 @@ class CollectionTest extends TestCase
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
             "status" => "ACTIVE",
+            'collaborators' => [3,4],
         ];
         $responseIns = $this->json(
             'POST',
@@ -330,6 +334,10 @@ class CollectionTest extends TestCase
 
         $responseIns->assertStatus(201);
         $idIns = (int) $responseIns['data'];
+
+        $collectionHasUsers = CollectionHasUser::where(['collection_id' => $idIns])->count();
+        // one creator (jwt) + two collaborators
+        $this->assertTrue((int)$collectionHasUsers === 3);
 
         // update collection
         $mockDataUpdate = [
@@ -360,7 +368,6 @@ class CollectionTest extends TestCase
         $this->assertTrue((bool) $mockDataUpdate['enabled'] === (bool) $responseUpdate['data']['enabled']);
         $this->assertTrue((bool) $mockDataUpdate['public'] === (bool) $responseUpdate['data']['public']);
         $this->assertTrue((int) $mockDataUpdate['counter'] === (int) $responseUpdate['data']['counter']);
-        $this->assertTrue((int) $mockDataUpdate['user_id'] === (int) $responseUpdate['data']['user_id']);
     }
 
     /**
