@@ -1030,27 +1030,6 @@ trait MockExternalApis
             )
         ]);
 
-        $closure = function (
-            string $dataset,
-            string $outputSchema,
-            string $outputVersion,
-            string $inputSchema = null,
-            string $inputVersion = null,
-            bool $validateInput = true,
-            bool $validateOutput = true,
-            string $subsection = null
-        ) {
-            if(is_null($inputSchema)) {
-                return [
-                    "traser_message" => "",
-                    "wasTranslated" => true,
-                    "metadata" => json_decode($dataset, true)["metadata"],
-                    "statusCode" => "200",
-                ];
-            } else {
-                dd($inputSchema);
-            }
-        };
 
         MMC::shouldReceive("translateDataModelType")
            ->andReturnUsing(function (
