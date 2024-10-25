@@ -8,9 +8,10 @@ use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasDatasetVersion;
 
-trait AddMetadataVersion
+trait MetadataVersioning
 {
     use MetadataOnboard;
+
     /**
      * Create new dataset_version
      *
@@ -111,5 +112,28 @@ trait AddMetadataVersion
             'datasetVersionId' => $datasetVersion['id'],
             'versionNumber' => $datasetVersion['version'],
         ];
+    }
+
+    public function updateMetadataVersion(
+        Dataset $currDataset,
+        array $newMetadata,
+        array $previousMetadata
+    ): int {
+
+        $metadataSaveObject = [
+            'gwdmVersion' => Config::get('metadata.GWDM.version'),
+            'metadata' => $newMetadata,
+            'original_metadata' => $previousMetadata,
+        ];
+
+        $dv = DatasetVersion::where([
+            'dataset_id' => $currDataset->id,
+            'version' => $currDataset->lastMetadataVersionNumber()->version,
+        ])->first();
+
+        $dv->metadata = json_encode($metadataSaveObject);
+        $dv->save();
+
+        return $dv->id;
     }
 }

@@ -27,7 +27,6 @@ use App\Exceptions\NotFoundException;
 use App\Http\Requests\Team\CreateTeam;
 use App\Http\Requests\Team\DeleteTeam;
 use App\Http\Requests\Team\UpdateTeam;
-use App\Http\Traits\AddMetadataVersion;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\TeamTransformation;
@@ -37,7 +36,6 @@ use MetadataManagementController as MMC;
 
 class TeamController extends Controller
 {
-    use AddMetadataVersion;
     use GetValueByPossibleKeys;
     use IndexElastic;
     use TeamTransformation;
@@ -1052,15 +1050,6 @@ class TeamController extends Controller
                         ])->update([
                             'metadata' => json_encode($metadataSaveObject),
                         ]);
-                        // Note BES 09/10/24
-                        // Removing the creation of a new version due to memory load
-                        // $this->addMetadataVersion(
-                        //     $d,
-                        //     $d['status'],
-                        //     now(),
-                        //     $metadata,
-                        //     $d->latestVersion()->metadata
-                        // );
 
                         $this->reindexElastic($d->id);
                     } else {
