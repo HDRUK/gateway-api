@@ -138,8 +138,8 @@ class NotificationController extends Controller
 
             // mask the email if the user_id is supplied. Otherwise, return the full email.
             if ($notification->user_id) {
-                $user = User::where('id', $notification->user_id)->select('email')->first();
-                $notification->email = $this->maskEmail($user->email);
+                $user = User::where('id', $notification->user_id)->select('email', 'preferred_email', 'secondary_email')->first();
+                $notification->email = $this->maskEmail($user->preferred_email === 'primary' ? $user->email : $user->secondary_email);
             }
 
             if ($notification) {
