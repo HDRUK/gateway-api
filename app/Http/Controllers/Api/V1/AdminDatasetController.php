@@ -87,6 +87,11 @@ class AdminDatasetController extends Controller
     public function triggerTermExtraction(Request $request): JsonResponse
     {
         try {
+
+            if(!Config::get('ted.enabled')) {
+                throw new Exception("TED not enabled and you're trying to trigger TED");
+            }
+
             $partial = $request->input('partial', false);
             $minId = $request->input('minId', 1);
             $maxId = $request->input('maxId', Dataset::max('id'));
