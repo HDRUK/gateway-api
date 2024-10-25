@@ -2100,6 +2100,18 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
+    [
+        'name' => 'datasets',
+        'method' => 'post',
+        'path' => '/datasets/admin_ctrl/trigger/term_extraction',
+        'methodController' => 'AdminDatasetController@triggerTermExtraction',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
 
 
     // datasets integrations
