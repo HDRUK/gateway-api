@@ -219,8 +219,8 @@ class NotificationController extends Controller
                 'message' => $input['message'],
                 'opt_in' => $input['opt_in'],
                 'enabled' => $input['enabled'],
-                'email' => $input['email'],
-                'user_id' => $input['user_id'],
+                'email' => isset($input['email']) ? $input['email'] : null,
+                'user_id' => isset($input['email']) ? $input['user_id'] : null,
             ]);
 
             Auditor::log([
