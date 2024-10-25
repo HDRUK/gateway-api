@@ -1245,12 +1245,7 @@ class CohortRequestController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         try {
-            $cohortRequest = CohortRequest::where('user_id', (int)$id)
-                ->with([
-                    'user',
-                    'permissions',
-                    ])
-                ->first();
+            $cohortRequest = CohortRequest::where('user_id', (int)$id)->first();
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
