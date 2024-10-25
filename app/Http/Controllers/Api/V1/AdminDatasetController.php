@@ -17,7 +17,7 @@ class AdminDatasetController extends Controller
 {
     /**
      * @OA\Post(
-     *     path="/datasets/admin_ctrl/trigger/term_extraction",
+     *     path="/api/v1/datasets/admin_ctrl/trigger/term_extraction",
      *     summary="Trigger Term Extraction for Datasets",
      *     description="Triggers the term extraction job for datasets within a specified range and controls whether data is partially indexed in Elasticsearch.",
      *     tags={"Datasets"},
