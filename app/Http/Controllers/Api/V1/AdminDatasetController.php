@@ -122,7 +122,7 @@ class AdminDatasetController extends Controller
             return response()->json([
                 'message' => "triggered ted",
                 "dataset_ids" => $datasetIds,
-                "ted_data" => $tedData
+                "used_partial" => $partial
             ], 200);
         } catch (Exception $e) {
             Auditor::log([
