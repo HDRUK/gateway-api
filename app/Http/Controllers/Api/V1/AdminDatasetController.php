@@ -93,7 +93,7 @@ class AdminDatasetController extends Controller
                 throw new Exception("TED not enabled and you're trying to trigger TED");
             }
 
-            $partial = $request->input('partial', false);
+            $partial = $request->input('partial', Config::get('ted.use_partial'));
             $minId = $request->input('minId', 1);
             $maxId = $request->input('maxId', Dataset::max('id'));
             $elasticIndexing = $request->input('indexElastic', true);
@@ -119,7 +119,11 @@ class AdminDatasetController extends Controller
                     $partial,
                 );
             }
-            return response()->json(['message' => "triggered ted","datasetIds" => $datasetIds], 200);
+            return response()->json([
+                'message' => "triggered ted",
+                "dataset_ids" => $datasetIds,
+                "ted_data" => $tedData
+            ], 200);
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',

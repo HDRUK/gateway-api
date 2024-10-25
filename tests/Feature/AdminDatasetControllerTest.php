@@ -55,7 +55,7 @@ class AdminDatasetControllerTest extends TestCase
         $response->assertStatus(200)
                  ->assertJson([
                      'message' => 'triggered ted',
-                     'datasetIds' => $allDatasetIds
+                     'dataset_ids' => $allDatasetIds
                  ]);
     }
 
@@ -77,7 +77,7 @@ class AdminDatasetControllerTest extends TestCase
         $response->assertStatus(200)
                  ->assertJson([
                      'message' => 'triggered ted',
-                     'datasetIds' => [3, 4, 5],
+                     'dataset_ids' => [3, 4, 5],
                  ]);
     }
 
