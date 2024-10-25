@@ -58,7 +58,7 @@ class AdminDatasetController extends Controller
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(property="message", type="string", example="triggered ted"),
-     *             @OA\Property(property="datasetIds", type="array", @OA\Items(type="integer"))
+     *             @OA\Property(property="dataset_ids", type="array", @OA\Items(type="integer"))
      *         )
      *     ),
      *     @OA\Response(
