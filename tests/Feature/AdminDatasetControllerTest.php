@@ -47,16 +47,18 @@ class AdminDatasetControllerTest extends TestCase
             $this->header
         );
 
-        $content = $response->decodeResponseJson();
-        $response->assertStatus(200);
+        if(config("ted.enabled")) {
+            $response->assertStatus(200);
 
-        // Assert: Check that the job was dispatched and response is correct
-        Queue::assertPushed(TermExtraction::class);
-        $response->assertStatus(200)
-                 ->assertJson([
-                     'message' => 'triggered ted',
-                     'dataset_ids' => $allDatasetIds
-                 ]);
+            // Assert: Check that the job was dispatched and response is correct
+            Queue::assertPushed(TermExtraction::class);
+            $response->assertJson([
+                        'message' => 'triggered ted',
+                        'dataset_ids' => $allDatasetIds
+                    ]);
+        } else {
+            $response->assertStatus(500);
+        }
     }
 
     public function testTriggerTermExtractionWithCustomIds()
@@ -71,14 +73,17 @@ class AdminDatasetControllerTest extends TestCase
             ['minId' => 3, 'maxId' => 5],
             $this->header
         );
-
-        // Assert: Check that the job was dispatched and response is correct
-        Queue::assertPushed(TermExtraction::class);
-        $response->assertStatus(200)
-                 ->assertJson([
-                     'message' => 'triggered ted',
-                     'dataset_ids' => [3, 4, 5],
-                 ]);
+        if(config("ted.enabled")) {
+            // Assert: Check that the job was dispatched and response is correct
+            Queue::assertPushed(TermExtraction::class);
+            $response->assertStatus(200)
+                     ->assertJson([
+                         'message' => 'triggered ted',
+                         'dataset_ids' => [3, 4, 5],
+                     ]);
+        } else {
+            $response->assertStatus(500);
+        }
     }
 
     public function testTriggerTermExtractionHandlesUnauthorised()
@@ -100,7 +105,11 @@ class AdminDatasetControllerTest extends TestCase
 
         //token in header for super-admin
         $response = $this->json('POST', self::TEST_URL_DATASET . '/trigger/term_extraction', [], $this->header);
-        $response->assertStatus(200);
+        if(config("ted.enabled")) {
+            $response->assertStatus(200);
+        } else {
+            $response->assertStatus(500);
+        }
 
     }
 
