@@ -87,7 +87,7 @@ class AdminDatasetController extends Controller
     public function triggerTermExtraction(Request $request): JsonResponse
     {
         try {
-            $partial = $request->input('partial', true);
+            $partial = $request->input('partial', false);
             $minId = $request->input('minId', 1);
             $maxId = $request->input('maxId', Dataset::max('id'));
             $elasticIndexing = $request->input('indexElastic', true);
