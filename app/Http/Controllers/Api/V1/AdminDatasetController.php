@@ -23,6 +23,7 @@ class AdminDatasetController extends Controller
             $partial = $request->input('partial', true);
             $minId = $request->input('minId', 1);
             $maxId = $request->input('maxId', Dataset::max('id'));
+            $elasticIndexing = $request->input('indexElastic', true);
 
             $datasetIds = Dataset::whereBetween("id", [$minId, $maxId])
                             ->select('id')
@@ -33,7 +34,6 @@ class AdminDatasetController extends Controller
                 $latestMetadata = $dataset->lastMetadata();
                 $datasetVersionId = $dataset->latestVersionId($id);
                 $versionNumber = $dataset->lastMetadataVersionNumber()->version;
-                $elasticIndexing = true;
 
                 $tedData = $partial ? $latestMetadata['metadata']['summary'] : $latestMetadata['metadata'];
 
