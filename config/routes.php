@@ -2337,7 +2337,9 @@ return [
         'middleware' => [
             'jwt.verify',
         ],
-        'constraint' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'cohort_requests_access',

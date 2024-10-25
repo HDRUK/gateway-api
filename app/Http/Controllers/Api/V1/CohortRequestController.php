@@ -1240,7 +1240,7 @@ class CohortRequestController extends Controller
         *    ),
         * )
         */
-    public function byUser(Request $request, string $id): JsonResponse
+    public function byUser(Request $request, int $id): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
