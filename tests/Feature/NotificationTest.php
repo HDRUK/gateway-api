@@ -152,6 +152,63 @@ class NotificationTest extends TestCase
             $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
+
+        $response = $this->json(
+            'POST',
+            'api/v1/notifications',
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'opt_in' => 1,
+                'enabled' => 1,
+                'email' => 'test@test.com',
+                'user_id' => null,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $this->assertEquals(
+            $content['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+    }
+
+    /**
+     * Creates a new notification but fails due to missing email and user_id
+     *
+     * @return void
+     */
+    public function test_the_application_cannot_create_a_notification_without_email_or_user_id()
+    {
+        $response = $this->json(
+            'POST',
+            'api/v1/notifications',
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'opt_in' => 1,
+                'enabled' => 1,
+                'email' => null,
+                'user_id' => null,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $content = $response->decodeResponseJson();
+
+        $this->assertEquals($content['message'], 'Invalid argument(s)');
     }
 
     /**
