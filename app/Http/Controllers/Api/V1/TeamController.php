@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use Auditor;
 use Config;
+use DB;
 use Exception;
 use App\Models\Role;
 use App\Models\Team;
@@ -302,11 +303,11 @@ class TeamController extends Controller
     public function showSummary(Request $request, int $id): JsonResponse
     {
         try {
-            // Get this Team
-            $dp = Team::select('id', 'name', 'member_of', 'is_provider', 'introduction', 'url', 'service', 'team_logo')->where([
-                'id' => $id,
-                'enabled' => 1,
-            ])->first();
+            $dp = Team::select('id', 'name', 'member_of', 'is_provider', 'introduction', 'url', 'service', 'team_logo')
+                ->where([
+                    'id' => $id,
+                    'enabled' => 1,
+                ])->first();
 
             if (!$dp) {
                 return response()->json([
@@ -318,24 +319,27 @@ class TeamController extends Controller
             // This sets not only this->datasets, but also this->durs, publications, tools and collections
             $this->getDatasets($dp->id);
 
-            Auditor::log([
-                'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Team get ' . $id . ' summary',
-            ]);
+            $teamDurs = Dur::where(['team_id' => $id])->select('id')->get();
+            foreach ($teamDurs as $teamDur) {
+                if (!in_array($teamDur->id, $this->durs)) {
+                    $this->durs[] = $teamDur->id;
+                }
+            }
 
             $tools = Tool::whereIn('id', $this->tools)
                 ->where('status', Tool::STATUS_ACTIVE)
-                ->select(['id', 'name', 'user_id', 'created_at'])
-                ->get()
-                ->toArray();
+                ->select('id', 'name', 'user_id', 'created_at')
+                ->get();
             foreach ($tools as $tool) {
-                $user = User::where('id', $tool['user_id'])->select('firstname', 'lastname', 'is_admin')->first()->toArray();
-                // Remove names if the user is an admin
-                if ($user['is_admin']) {
-                    $user['firstname'] = '';
-                    $user['lastname'] = '';
-                }
+                $user = User::where('id', $tool->user_id)
+                    ->select(
+                        DB::raw("CASE WHEN is_admin = 1 THEN '' ELSE firstname END as firstname"),
+                        DB::raw("CASE WHEN is_admin = 1 THEN '' ELSE lastname END as lastname"),
+                        'is_admin'
+                    )
+                    ->first()
+                    ->toArray();
+
                 // Reduce the amount of data returned to the bare minimum
                 $arrayKeys = [
                     'firstname',
@@ -363,6 +367,12 @@ class TeamController extends Controller
             }));
 
             $service = array_values(array_filter(explode(",", $dp->service)));
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team get ' . $id . ' summary',
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
