@@ -49,7 +49,8 @@ class FixCollectionImages extends Command
             $collection = Collection::where("mongo_object_id", $collectionMongoId);
 
             if ($dryRun) {
-                $this->info("Team ID: {$collection->first()->id}, Old Logo: {$collection->image_link}, New Logo: {$imagePath}");
+                $col = $collection->first();
+                $this->info("Team ID: {$col->id}, Old Logo: {$col->image_link}, New Logo: {$imagePath}");
             } else {
                 $collection->update(['image_link' => $imagePath]);
             }
