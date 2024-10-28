@@ -669,9 +669,9 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $collHasUsers = CollectionHasUser::where(['collection_id', $id])->select(['user_id'])->get()->toArray();
+        $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
         foreach ($collHasUsers as $collHasUser) {
-            $this->checkAccess($input, null, $collHasUser->user_id, 'user');
+            $this->checkAccess($input, null, $collHasUser['user_id'], 'user');
         }
 
         try {
@@ -864,9 +864,9 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $collHasUsers = CollectionHasUser::where(['collection_id', $id])->select(['user_id'])->get()->toArray();
+        $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
         foreach ($collHasUsers as $collHasUser) {
-            $this->checkAccess($input, null, $collHasUser->user_id, 'user');
+            $this->checkAccess($input, null, $collHasUser['user_id'], 'user');
         }
 
         try {
@@ -1051,15 +1051,14 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
-        $collHasUsers = CollectionHasUser::where(['collection_id', $id])->select(['user_id'])->get()->toArray();
-
+        $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
         foreach ($collHasUsers as $collHasUser) {
-            $this->checkAccess($input, null, $collHasUser->user_id, 'user');
+            $this->checkAccess($input, null, $collHasUser['user_id'], 'user');
         }
 
         try {
             $collection = Collection::where(['id' => $id])->first();
+            $initialStatus = $collection->status;
             if ($collection) {
                 CollectionHasDatasetVersion::where(['collection_id' => $id])->delete();
                 CollectionHasTool::where(['collection_id' => $id])->delete();
@@ -1069,7 +1068,9 @@ class CollectionController extends Controller
                 Collection::where(['id' => $id])->update(['status' => Collection::STATUS_ARCHIVED]);
                 Collection::where(['id' => $id])->delete();
 
-                $this->deleteCollectionFromElastic($id);
+                if($initialStatus === Collection::STATUS_ACTIVE) {
+                    $this->deleteCollectionFromElastic($id);
+                }
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
