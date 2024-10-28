@@ -42,8 +42,8 @@ class MetadataManagementController
                 'output_version' => $outputVersion,
                 'input_schema' => $inputSchema,
                 'input_version' => $inputVersion,
-                'validate_input' => 0, //$validateInput ? '1' : 0 ,
-                'validate_output' => 0, //$validateOutput ? '1' : 0 ,
+                'validate_input' => $validateInput ? '1' : 0 ,
+                'validate_output' => $validateOutput ? '1' : 0 ,
                 'subsection' => $subsection,
             ];
 
