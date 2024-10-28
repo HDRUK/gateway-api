@@ -669,9 +669,9 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $collHasUsers = CollectionHasUser::where(['collection_id', $id])->select(['user_id'])->get()->toArray();
+        $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
         foreach ($collHasUsers as $collHasUser) {
-            $this->checkAccess($input, null, $collHasUser->user_id, 'user');
+            $this->checkAccess($input, null, $collHasUser['user_id'], 'user');
         }
 
         try {
@@ -864,9 +864,9 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $collHasUsers = CollectionHasUser::where(['collection_id', $id])->select(['user_id'])->get()->toArray();
+        $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
         foreach ($collHasUsers as $collHasUser) {
-            $this->checkAccess($input, null, $collHasUser->user_id, 'user');
+            $this->checkAccess($input, null, $collHasUser['user_id'], 'user');
         }
 
         try {
@@ -1051,9 +1051,9 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $collHasUsers = CollectionHasUser::where(['collection_id', $id])->select(['user_id'])->get()->toArray();
+        $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
         foreach ($collHasUsers as $collHasUser) {
-            $this->checkAccess($input, null, $collHasUser->user_id, 'user');
+            $this->checkAccess($input, null, $collHasUser['user_id'], 'user');
         }
 
         try {
