@@ -324,7 +324,9 @@ class TeamController extends Controller
                 'description' => 'Team get ' . $id . ' summary',
             ]);
 
-            $tools = Tool::whereIn('id', $this->tools)->where('status', Tool::STATUS_ACTIVE)->select('id', 'name', 'user_id', 'created_at')->get();
+            $tools = Tool::whereIn('id', $this->tools)->where('status', Tool::STATUS_ACTIVE)->select('id', 'name', 'user_id', 'created_at')
+                ->get()
+                ->toArray();
             foreach ($tools as $tool) {
                 $user = User::where('id', $tool['user_id'])->select('firstname', 'lastname', 'is_admin')->first()->toArray();
                 // Remove names if the user is an admin
@@ -342,7 +344,10 @@ class TeamController extends Controller
                 $tool['user'] = $user;
             }
 
-            $collections = Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at', 'status', 'public')->whereIn('id', $this->collections)->get()->toArray();
+            $collections = Collection::whereIn('id', $this->collections)
+                ->select('id', 'name', 'image_link', 'created_at', 'updated_at', 'status', 'public')
+                ->get()
+                ->toArray();
 
             $collections = array_map(function ($collection) {
                 if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
@@ -963,10 +968,10 @@ class TeamController extends Controller
 
     public function getDatasets(int $teamId)
     {
-        $datasetIds = Dataset::where(['team_id' => $teamId, 'status' => Dataset::STATUS_ACTIVE])->pluck('id')->toArray();
+        $datasets = Dataset::where(['team_id' => $teamId, 'status' => Dataset::STATUS_ACTIVE])->select(['id'])->get();
 
-        foreach ($datasetIds as $datasetId) {
-            $this->checkingDataset($datasetId);
+        foreach ($datasets as $dataset) {
+            $this->checkingDataset($dataset->id);
         }
     }
 
