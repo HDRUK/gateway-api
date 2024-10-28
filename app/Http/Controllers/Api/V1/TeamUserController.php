@@ -729,14 +729,16 @@ class TeamUserController extends Controller
             'team_id' => $teamId,
             'user_id' => $userId,
         ])->first();
-
+        
         if (!is_null($teamHasUsers)) {
             $currRoleIds = TeamUserHasRole::where([
                 'team_has_user_id' => $teamHasUsers->id,
-            ])->get()->toArray();
+            ])->get();
             foreach ($currRoleIds as $currRoleId) {
-                $role = Role::where(['id' => $currRoleId['role_id']])->first();
-                $this->beforeRoleNames[] = $role->name;
+                $role = Role::where('id' ,$currRoleId->role_id)->first();
+                if (!is_null($role)) {
+                    $this->beforeRoleNames[] = $role['name'];
+                }
             }
         }
 
@@ -748,9 +750,11 @@ class TeamUserController extends Controller
             } else {
                 $this->deleteRoleNames[] = $roleName;
             }
-        }
 
-        $this->addRoleNames = array_diff($this->afterRoleNames, $this->beforeRoleNames);
+            if ($action && !in_array($roleName, $this->beforeRoleNames)) {
+                $this->addRoleNames[] = $roleName;
+            }
+        }
     }
 
     private function sendEmail(int $teamId, int $userId, array $roles)
