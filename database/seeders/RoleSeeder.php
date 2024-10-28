@@ -72,7 +72,6 @@ class RoleSeeder extends Seeder
                 ],
             ],
             'hdruk.metadata' => [
-                'full_name' => '',
                 'permissions' => [
                     'integrations.metadata',
                     'datasets.read',
