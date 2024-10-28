@@ -324,7 +324,9 @@ class TeamController extends Controller
                 'description' => 'Team get ' . $id . ' summary',
             ]);
 
-            $tools = Tool::whereIn('id', $this->tools)->where('status', Tool::STATUS_ACTIVE)->select('id', 'name', 'user_id', 'created_at')
+            $tools = Tool::whereIn('id', $this->tools)
+                ->where('status', Tool::STATUS_ACTIVE)
+                ->select(['id', 'name', 'user_id', 'created_at'])
                 ->get()
                 ->toArray();
             foreach ($tools as $tool) {
