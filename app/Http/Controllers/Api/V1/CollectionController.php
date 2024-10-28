@@ -1058,6 +1058,7 @@ class CollectionController extends Controller
 
         try {
             $collection = Collection::where(['id' => $id])->first();
+            $initialStatus = $collection->status;
             if ($collection) {
                 CollectionHasDatasetVersion::where(['collection_id' => $id])->delete();
                 CollectionHasTool::where(['collection_id' => $id])->delete();
@@ -1067,7 +1068,9 @@ class CollectionController extends Controller
                 Collection::where(['id' => $id])->update(['status' => Collection::STATUS_ARCHIVED]);
                 Collection::where(['id' => $id])->delete();
 
-                $this->deleteCollectionFromElastic($id);
+                if($initialStatus === Collection::STATUS_ACTIVE) {
+                    $this->deleteCollectionFromElastic($id);
+                }
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
