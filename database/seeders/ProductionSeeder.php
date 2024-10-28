@@ -26,6 +26,7 @@ class ProductionSeeder extends Seeder
             ProgrammingLanguageSeeder::class,
             ProgrammingPackageSeeder::class,
             TypeCategorySeeder::class,
+            CohortRequestEmailSeeder::class,
             ProdUserAdminSeeder::class,
         ]);
     }
