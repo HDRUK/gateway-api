@@ -33,7 +33,7 @@ class UpdateRoleNames extends Command
             ],
             [
                 'name' => 'hdruk.metadata',
-                'full_name' => 'HDR UK Metadata',
+                'full_name' => 'HDR UK Metadata Admin',
             ],
         ];
 
