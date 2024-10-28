@@ -41,6 +41,7 @@ class FixCollectionImages extends Command
         $progressbar = $this->output->createProgressBar(count($csvData));
         $progressbar->start();
 
+        //add these new images
         foreach ($csvData as $item) {
             $collectionMongoId = $item['PID'];
 
@@ -52,11 +53,17 @@ class FixCollectionImages extends Command
             } else {
                 $collection->update(['image_link' => $imagePath]);
             }
-
-
-
             $progressbar->advance();
         }
+
+        if ($dryRun) {
+            $nbad = Collection::where("image_link", "not like", "/collection%")->count();
+            $this->info("There are {$nbad} collections still, these images will be removed");
+        } else {
+            //if any images still dont start with /collection i.e. saved in our GCP bucket - remove them!
+            Collection::where("image_link", "not like", "/collection%")->update(['image_link' => null]);
+        }
+
     }
 
     private function readMigrationFile(string $migrationFile): void
