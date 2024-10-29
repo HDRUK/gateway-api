@@ -207,6 +207,11 @@ GET {{baseUrl}}/api/{{apiVersion}}/teams HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
+
+#### summary by team id
+GET {{baseUrl}}/api/{{apiVersion}}/teams/90/summary HTTP/1.1
+Content-Type: application/json
+
 #### get one team by id
 GET {{baseUrl}}/api/{{apiVersion}}/teams/13 HTTP/1.1
 Content-Type: application/json
