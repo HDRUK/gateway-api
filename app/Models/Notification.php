@@ -22,6 +22,7 @@ class Notification extends Model
         'opt_in',
         'enabled',
         'email',
+        'user_id',
     ];
 
     protected $casts = [

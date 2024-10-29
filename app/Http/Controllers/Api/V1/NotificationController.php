@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use Auditor;
 use Config;
 use Exception;
+use App\Models\User;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -13,11 +14,13 @@ use App\Http\Requests\Notification\EditNotification;
 use App\Http\Requests\Notification\CreateNotification;
 use App\Http\Requests\Notification\DeleteNotification;
 use App\Http\Requests\Notification\UpdateNotification;
+use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\Notification\GetNotification;
 
 class NotificationController extends Controller
 {
+    use TeamTransformation;
     use RequestTransformation;
 
     /**
@@ -132,6 +135,13 @@ class NotificationController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $notification = Notification::findOrFail($id);
+
+            // mask the email if the user_id is supplied. Otherwise, return the full email.
+            if ($notification->user_id) {
+                $user = User::where('id', $notification->user_id)->select('email', 'preferred_email', 'secondary_email')->first();
+                $notification->email = $this->maskEmail($user->preferred_email === 'primary' ? $user->email : $user->secondary_email);
+            }
+
             if ($notification) {
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -209,7 +219,8 @@ class NotificationController extends Controller
                 'message' => $input['message'],
                 'opt_in' => $input['opt_in'],
                 'enabled' => $input['enabled'],
-                'email' => $input['email'],
+                'email' => isset($input['email']) ? $input['email'] : null,
+                'user_id' => isset($input['email']) ? $input['user_id'] : null,
             ]);
 
             Auditor::log([
@@ -310,6 +321,7 @@ class NotificationController extends Controller
                 'opt_in' => $input['opt_in'],
                 'enabled' => $input['enabled'],
                 'email' => $input['email'],
+                'user_id' => $input['user_id'],
             ]);
 
             Auditor::log([
@@ -409,6 +421,7 @@ class NotificationController extends Controller
                 'opt_in',
                 'enabled',
                 'email',
+                'user_id',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);

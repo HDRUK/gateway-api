@@ -2100,6 +2100,18 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
+    [
+        'name' => 'datasets',
+        'method' => 'post',
+        'path' => '/datasets/admin_ctrl/trigger/term_extraction',
+        'methodController' => 'AdminDatasetController@triggerTermExtraction',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
 
 
     // datasets integrations
@@ -2327,6 +2339,19 @@ return [
             'jwt.verify',
         ],
         'constraint' => [],
+    ],
+    [
+        'name' => 'cohort_requests_user',
+        'method' => 'get',
+        'path' => '/cohort_requests/user/{id}',
+        'methodController' => 'CohortRequestController@byUser',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'cohort_requests_access',
