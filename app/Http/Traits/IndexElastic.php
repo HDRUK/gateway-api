@@ -78,6 +78,7 @@ trait IndexElastic
                 'startDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.startDate'], null),
                 'endDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.endDate'], Carbon::now()->addYears(5)),
                 'dataType' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], '')),
+                'dataSubType' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetSubType'], '')),
                 'containsTissue' => $containsTissue,
                 'sampleAvailability' => $materialTypes,
                 'conformsTo' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
@@ -123,7 +124,7 @@ trait IndexElastic
     }
 
     /**
-     * Calls a re-indexing of Elastic search when a data procider id is given.
+     * Calls a re-indexing of Elastic search when a data provider id is given.
      *
      * @param string $teamId The team id from the DB.
      * @param bool $returnParams Optional flag to return parameters.
@@ -142,8 +143,11 @@ trait IndexElastic
                 $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages);
                 $metadata = $dataset->latestVersion()->metadata;
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-                if (!in_array($metadata['metadata']['summary']['datasetType'], $dataTypes)) {
-                    $dataTypes[] = $metadata['metadata']['summary']['datasetType'];
+                $types = explode(';,;', $metadata['metadata']['summary']['datasetType']);
+                foreach ($types as $t) {
+                    if (!in_array($t, $dataTypes)) {
+                        $dataTypes[] = $t;
+                    }
                 }
                 foreach ($dataset['spatialCoverage'] as $loc) {
                     if (!in_array($loc['region'], $locations)) {

@@ -7,28 +7,27 @@ use Exception;
 use Tests\TestCase;
 use App\Models\Tool;
 use ReflectionClass;
-use App\Http\Enums\TeamMemberOf;
+use App\Models\Dataset;
 use App\Models\License;
+use App\Models\Collection;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Models\Publication;
-use App\Models\PublicationHasTool;
-use App\Models\Collection;
-use App\Models\CollectionHasTool;
-use App\Models\ToolHasTypeCategory;
-use App\Models\Dataset;
-use App\Models\DatasetVersionHasTool;
-use App\Models\ToolHasProgrammingPackage;
-use App\Models\ToolHasProgrammingLanguage;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
+use App\Http\Enums\TeamMemberOf;
 use Database\Seeders\ToolSeeder;
+use App\Models\CollectionHasTool;
+use App\Models\PublicationHasTool;
 use Tests\Traits\MockExternalApis;
+use App\Models\ToolHasTypeCategory;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
+use ElasticClientController as ECC;
 use Database\Seeders\CategorySeeder;
+use App\Models\DatasetVersionHasTool;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\DurHasToolSeeder;
 use Database\Seeders\ToolHasTagSeeder;
@@ -36,18 +35,20 @@ use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TypeCategorySeeder;
+use App\Models\ToolHasProgrammingPackage;
+use App\Models\ToolHasProgrammingLanguage;
 use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\CollectionHasToolSeeder;
+use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\DurHasPublicationSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
-use Database\Seeders\CollectionHasToolSeeder;
-use Database\Seeders\DatasetVersionHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
 use Database\Seeders\ProgrammingLanguageSeeder;
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\DatasetVersionHasToolSeeder;
 
-use ElasticClientController as ECC;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class ToolTest extends TestCase
 {
@@ -96,6 +97,7 @@ class ToolTest extends TestCase
             CollectionSeeder::class,
             CollectionHasToolSeeder::class,
             DatasetVersionHasToolSeeder::class,
+            CollectionHasUserSeeder::class,
         ]);
     }
 
@@ -276,7 +278,8 @@ class ToolTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
-                'email' => 'Some@email.com',
+                'email' => null,
+                'user_id' => 3,
                 'opt_in' => 1,
                 'enabled' => 1,
             ],

@@ -152,4 +152,25 @@ class DatasetVersion extends Model
         );
     }
 
+     /**
+     * The reduced dataset versions that belong to the dataset version, the above linkedDatasetVersions
+     * is used in a few places, if in infuture we discover that we only ever need to use the below instead, 
+     * we can easily switch. - Jamie B 
+     */
+    public function reducedLinkedDatasetVersions(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            DatasetVersion::class,
+            'dataset_version_has_dataset_version',
+            'dataset_version_source_id',
+            'dataset_version_target_id'
+        )->withPivot(
+            'dataset_version_source_id',
+            'dataset_version_target_id',
+            'linkage_type',
+        )->selectRaw("dataset_versions.id,
+        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.title')) as title,
+        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.shortTitle')) as shortTitle");
+    }
+
 }

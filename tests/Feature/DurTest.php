@@ -7,6 +7,7 @@ use Config;
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Team;
+use App\Models\Tool;
 use App\Models\User;
 use App\Models\Sector;
 use App\Models\Dataset;
@@ -15,30 +16,30 @@ use App\Models\Publication;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use App\Http\Enums\TeamMemberOf;
-use App\Models\Tool;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
+use ElasticClientController as ECC;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\DurHasToolSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
+use Illuminate\Support\Facades\Storage;
 use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\DurHasPublicationSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Database\Seeders\DurHasDatasetVersionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Storage;
 
-use ElasticClientController as ECC;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class DurTest extends TestCase
 {
@@ -73,6 +74,7 @@ class DurTest extends TestCase
             TagSeeder::class,
             ApplicationSeeder::class,
             CollectionSeeder::class,
+            CollectionHasUserSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
@@ -742,7 +744,8 @@ class DurTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
-                'email' => 'some@email.com',
+                'email' => null,
+                'user_id' => 3,
                 'opt_in' => 1,
                 'enabled' => 1,
             ],

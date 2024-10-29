@@ -156,9 +156,6 @@ class Collection extends Model
         ->whereNull('collection_has_dataset_version.deleted_at');
     }
 
-
-
-
     public function userDatasets(): HasManyThrough
     {
         return $this->hasManyThrough(
@@ -207,4 +204,15 @@ class Collection extends Model
     {
         return $this->belongsTo(Team::class);
     }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            User::class,
+            'collection_has_users',
+            'collection_id',
+            'user_id'
+        )->withPivot('role');
+    }
+
 }
