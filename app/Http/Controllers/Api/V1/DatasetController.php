@@ -467,7 +467,7 @@ class DatasetController extends Controller
 
                 if ($translated['wasTranslated']) {
                     $withLinks = DatasetVersion::where('id', $latestVersion['id'])
-                        ->with(['linkedDatasetVersions'])
+                        ->with(['reducedLinkedDatasetVersions'])
                         ->first();
                     $withLinks['metadata'] = json_encode(['metadata' => $translated['metadata']]);
                     $dataset->setAttribute('versions', [$withLinks]);
