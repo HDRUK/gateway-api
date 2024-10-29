@@ -254,6 +254,91 @@ class TeamController extends Controller
 
     /**
      * @OA\Get(
+     *      path="/api/v1/teams/search",
+     *      summary="TeamController@searchByName",
+     *      description="Return an array of teams matching search criteria",
+     *      tags={"Teams"},
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="name",
+     *         in="query",
+     *         description="Name to search for",
+     *         required=true,
+     *         @OA\Schema(
+     *            type="string",
+     *            description="Name to search for",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *               @OA\Property(property="data", type="array",
+     *                  @OA\Items(type="object",
+     *                    @OA\Property(property="id", type="integer", example="123"),
+     *                    @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                    @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                    @OA\Property(property="enabled", type="boolean", example="1"),
+     *                    @OA\Property(property="name", type="string", example="someName"),
+     *                    @OA\Property(property="allows_messaging", type="boolean", example="1"),
+     *                    @OA\Property(property="workflow_enabled", type="boolean", example="1"),
+     *                    @OA\Property(property="access_requests_management", type="boolean", example="1"),
+     *                    @OA\Property(property="uses_5_safes", type="boolean", example="1"),
+     *                    @OA\Property(property="is_admin", type="boolean", example="1"),
+     *                    @OA\Property(property="member_of", type="string", example="someOrg"),
+     *                    @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
+     *                    @OA\Property(property="application_form_updated_by", type="integer", example="555"),
+     *                    @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
+     *                    @OA\Property(property="users", type="array", example="[]", @OA\Items()),
+     *                    @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
+     *                    @OA\Property(property="is_question_bank", type="boolean", example="1"),
+     *                    @OA\Property(property="is_provider", type="boolean", example="1"),
+     *                    @OA\Property(property="url", type="string", example="https://example/image.jpg"),
+     *                    @OA\Property(property="introduction", type="string", example="info about the team"),
+     *                    @OA\Property(property="service", type="string", example="https://example"),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function searchByName(Request $request): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $teams = Team::where('name', 'like', '%' . $input['name'] . '%')->get();
+            if ($teams) {
+                return response()->json([
+                    'message' => 'success',
+                    'data' => $teams,
+                ], 200);
+            }
+
+            return response()->json([
+                'message' => 'no_matches',
+                'data' => null,
+            ], 404);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e,
+            ]);
+
+            throw new Exception($e);
+        }
+    }
+
+    /**
+     * @OA\Get(
      *      path="/api/v1/teams/{id}/summary",
      *      summary="TeamController@showSummary",
      *      description="Return a single team summary for use in Data Provider view",

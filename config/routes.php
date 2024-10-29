@@ -381,6 +381,17 @@ return [
     [
         'name' => 'teams',
         'method' => 'get',
+        'path' => '/teams/search',
+        'methodController' => 'TeamController@searchByName',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'teams',
+        'method' => 'get',
         'path' => '/teams/{teamId}/summary',
         'methodController' => 'TeamController@showSummary',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
