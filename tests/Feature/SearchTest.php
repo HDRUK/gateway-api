@@ -669,7 +669,7 @@ class SearchTest extends TestCase
                         'publisherName',
                         'sector',
                         'organisationName',
-                        'updated_at',
+                        'updated_at'
                     ],
                     'organisationName',
                     'projectTitle',
