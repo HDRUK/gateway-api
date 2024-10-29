@@ -861,6 +861,7 @@ class SearchController extends Controller
                         $durArray[$i]['datasetIds'] = array_column($datasetTitles, 'id');
                         $durArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $durArray[$i]['toolNames'] = $this->durToolNames($model['id']);
+                        $durArray[$i]['non_gateway_datasets'] = $model['non_gateway_datasets'];
                         $foundFlag = true;
                         break;
                     }
