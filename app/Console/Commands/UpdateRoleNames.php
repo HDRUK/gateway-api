@@ -32,8 +32,24 @@ class UpdateRoleNames extends Command
                 'full_name' => 'HDR UK SuperAdmin',
             ],
             [
+                'name' => 'hdruk.admin',
+                'full_name' => 'HDR UK Admin',
+            ],
+            [
                 'name' => 'hdruk.metadata',
                 'full_name' => 'HDR UK Metadata Admin',
+            ],
+            [
+                'name' => 'hdruk.dar',
+                'full_name' => 'HDR UK - DAR Admin',
+            ],
+            [
+                'name' => 'hdruk.custodian',
+                'full_name' => 'HDR UK - Custodian Onboarding Admin',
+            ],
+            [
+                'name' => 'hdruk.cohort.admin',
+                'full_name' => 'HDR UK - Cohort Discovery Manager',
             ],
         ];
 
