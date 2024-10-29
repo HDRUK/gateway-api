@@ -677,6 +677,7 @@ class SearchTest extends TestCase
                     'team',
                     'dataProviderColl',
                     'toolNames',
+                    'non_gateway_datasets'
                 ],
             ],
             'aggregations',
