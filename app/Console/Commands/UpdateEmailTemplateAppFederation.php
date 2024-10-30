@@ -341,7 +341,7 @@ class UpdateEmailTemplateAppFederation extends Command
                                     Dear [[USER_FIRSTNAME]],
                                 </mj-text>
                                 <mj-text line-height="20px">
-                                    [[GATEWAY_APP_NAME]] has been created to enable automated integration with the Gateway:
+                                    <b>[[GATEWAY_APP_NAME]]</b> has been created to enable automated integration with the Gateway:
                                 </mj-text>
                                 <mj-text>
                                     Date: [[GATEWAY_APP_CREATED_AT_DATE]]
@@ -433,7 +433,7 @@ class UpdateEmailTemplateAppFederation extends Command
                                     Dear [[USER_FIRSTNAME]],
                                 </mj-text>
                                 <mj-text line-height="20px">
-                                    [[GATEWAY_APP_NAME]] has been updated on the Gateway:
+                                    <b>[[GATEWAY_APP_NAME]]</b> has been updated on the Gateway:
                                 </mj-text>
                                 <mj-text>
                                     Date: [[GATEWAY_APP_UPDATED_AT_DATE]]
