@@ -239,3 +239,19 @@ If the auth process does work and times out, try:
 php artisan key:generate
 php artisan config:cache
 ```
+
+### Laravel Queues
+Laravel queues, now uses Horizon (https://laravel.com/docs/10.x/horizon) - which makes use of Redis. This means that a redis instance is required within your cluster. To install, run `helm install redis-local oci://registry-1.docker.io/bitnamicharts/redis`, once provisioned, you can use the following to retrieve the configured password: `export REDIS_PASSWORD=$(kubectl get secret --namespace default redis-local -o jsonpath="{.data.redis-password}" | base64 -d)`
+
+Then update your local .env file to reflect the use of redis within the local cluster as follows:
+
+```
+REDIS_HOST="CLUSTER_URL_FROM_INSTALLATION_OUTPUT"
+REDIS_PASSWORD=PASSWORD_FROM_ABOVE_COMMAND
+REDIS_PORT=6379
+
+# You also need to update your local QUEUE_CONNECTION config to
+QUEUE_CONNECTION=redis
+
+```
+

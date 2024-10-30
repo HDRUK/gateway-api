@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use Auditor;
 use Config;
+use DB;
 use Exception;
 use App\Models\Role;
 use App\Models\Team;
@@ -27,7 +28,6 @@ use App\Exceptions\NotFoundException;
 use App\Http\Requests\Team\CreateTeam;
 use App\Http\Requests\Team\DeleteTeam;
 use App\Http\Requests\Team\UpdateTeam;
-use App\Http\Traits\AddMetadataVersion;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\TeamTransformation;
@@ -37,7 +37,6 @@ use MetadataManagementController as MMC;
 
 class TeamController extends Controller
 {
-    use AddMetadataVersion;
     use GetValueByPossibleKeys;
     use IndexElastic;
     use TeamTransformation;
@@ -256,6 +255,91 @@ class TeamController extends Controller
 
     /**
      * @OA\Get(
+     *      path="/api/v1/teams/search",
+     *      summary="TeamController@searchByName",
+     *      description="Return an array of teams matching search criteria",
+     *      tags={"Teams"},
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="name",
+     *         in="query",
+     *         description="Name to search for",
+     *         required=true,
+     *         @OA\Schema(
+     *            type="string",
+     *            description="Name to search for",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *               @OA\Property(property="data", type="array",
+     *                  @OA\Items(type="object",
+     *                    @OA\Property(property="id", type="integer", example="123"),
+     *                    @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                    @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                    @OA\Property(property="enabled", type="boolean", example="1"),
+     *                    @OA\Property(property="name", type="string", example="someName"),
+     *                    @OA\Property(property="allows_messaging", type="boolean", example="1"),
+     *                    @OA\Property(property="workflow_enabled", type="boolean", example="1"),
+     *                    @OA\Property(property="access_requests_management", type="boolean", example="1"),
+     *                    @OA\Property(property="uses_5_safes", type="boolean", example="1"),
+     *                    @OA\Property(property="is_admin", type="boolean", example="1"),
+     *                    @OA\Property(property="member_of", type="string", example="someOrg"),
+     *                    @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
+     *                    @OA\Property(property="application_form_updated_by", type="integer", example="555"),
+     *                    @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
+     *                    @OA\Property(property="users", type="array", example="[]", @OA\Items()),
+     *                    @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
+     *                    @OA\Property(property="is_question_bank", type="boolean", example="1"),
+     *                    @OA\Property(property="is_provider", type="boolean", example="1"),
+     *                    @OA\Property(property="url", type="string", example="https://example/image.jpg"),
+     *                    @OA\Property(property="introduction", type="string", example="info about the team"),
+     *                    @OA\Property(property="service", type="string", example="https://example"),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function searchByName(Request $request): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $teams = Team::where('name', 'like', '%' . $input['name'] . '%')->get();
+            if ($teams) {
+                return response()->json([
+                    'message' => 'success',
+                    'data' => $teams,
+                ], 200);
+            }
+
+            return response()->json([
+                'message' => 'no_matches',
+                'data' => null,
+            ], 404);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e,
+            ]);
+
+            throw new Exception($e);
+        }
+    }
+
+    /**
+     * @OA\Get(
      *      path="/api/v1/teams/{id}/summary",
      *      summary="TeamController@showSummary",
      *      description="Return a single team summary for use in Data Provider view",
@@ -304,11 +388,11 @@ class TeamController extends Controller
     public function showSummary(Request $request, int $id): JsonResponse
     {
         try {
-            // Get this Team
-            $dp = Team::select('id', 'name', 'is_provider', 'introduction', 'url', 'service', 'team_logo')->where([
-                'id' => $id,
-                'enabled' => 1,
-            ])->first();
+            $dp = Team::select('id', 'name', 'member_of', 'is_provider', 'introduction', 'url', 'service', 'team_logo')
+                ->where([
+                    'id' => $id,
+                    'enabled' => 1,
+                ])->first();
 
             if (!$dp) {
                 return response()->json([
@@ -320,20 +404,27 @@ class TeamController extends Controller
             // This sets not only this->datasets, but also this->durs, publications, tools and collections
             $this->getDatasets($dp->id);
 
-            Auditor::log([
-                'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Team get ' . $id . ' summary',
-            ]);
-
-            $tools = Tool::whereIn('id', $this->tools)->select('id', 'name', 'user_id', 'created_at')->get();
-            foreach ($tools as $tool) {
-                $user = User::where('id', $tool['user_id'])->select('firstname', 'lastname', 'is_admin')->first()->toArray();
-                // Remove names if the user is an admin
-                if ($user['is_admin']) {
-                    $user['firstname'] = '';
-                    $user['lastname'] = '';
+            $teamDurs = Dur::where(['team_id' => $id])->select('id')->get();
+            foreach ($teamDurs as $teamDur) {
+                if (!in_array($teamDur->id, $this->durs)) {
+                    $this->durs[] = $teamDur->id;
                 }
+            }
+
+            $tools = Tool::whereIn('id', $this->tools)
+                ->where('status', Tool::STATUS_ACTIVE)
+                ->select('id', 'name', 'user_id', 'created_at')
+                ->get();
+            foreach ($tools as $tool) {
+                $user = User::where('id', $tool->user_id)
+                    ->select(
+                        DB::raw("CASE WHEN is_admin = 1 THEN '' ELSE firstname END as firstname"),
+                        DB::raw("CASE WHEN is_admin = 1 THEN '' ELSE lastname END as lastname"),
+                        'is_admin'
+                    )
+                    ->first()
+                    ->toArray();
+
                 // Reduce the amount of data returned to the bare minimum
                 $arrayKeys = [
                     'firstname',
@@ -344,7 +435,11 @@ class TeamController extends Controller
                 $tool['user'] = $user;
             }
 
-            $collections = Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', $this->collections)->get()->toArray();
+            $collections = Collection::whereIn('id', $this->collections)
+                ->select('id', 'name', 'image_link', 'created_at', 'updated_at', 'status', 'public')
+                ->get()
+                ->toArray();
+
             $collections = array_map(function ($collection) {
                 if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
                     $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
@@ -352,7 +447,17 @@ class TeamController extends Controller
                 return $collection;
             }, $collections);
 
+            $collections = array_values(array_filter($collections, function ($collection) {
+                return $collection['status'] === Collection::STATUS_ACTIVE && $collection['public'];
+            }));
+
             $service = array_values(array_filter(explode(",", $dp->service)));
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team get ' . $id . ' summary',
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -363,12 +468,21 @@ class TeamController extends Controller
                     'url' => $dp->url,
                     'service' => empty($service) ? null : $service,
                     'name' => $dp->name,
+                    'member_of' => $dp->member_of,
                     'introduction' => $dp->introduction,
                     'datasets' => $this->datasets,
-                    'durs' => Dur::select('id', 'project_title', 'organisation_name', 'status', 'created_at', 'updated_at')->whereIn('id', $this->durs)->get()->toArray(),
+                    'durs' => Dur::select('id', 'project_title', 'organisation_name', 'status', 'created_at', 'updated_at')
+                        ->whereIn('id', $this->durs)
+                        ->where('status', Dur::STATUS_ACTIVE)
+                        ->get()
+                        ->toArray(),
                     'tools' => $tools->toArray(),
                     // TODO: need to add in `link_type` from publication_has_dataset table.
-                    'publications' => Publication::select('id', 'paper_title', 'authors', 'url')->whereIn('id', $this->publications)->get()->toArray(),
+                    'publications' => Publication::select('id', 'paper_title', 'authors', 'url')
+                        ->whereIn('id', $this->publications)
+                        ->where('status', Publication::STATUS_ACTIVE)
+                        ->get()
+                        ->toArray(),
                     'collections' => $collections,
                 ],
             ]);
@@ -951,10 +1065,10 @@ class TeamController extends Controller
 
     public function getDatasets(int $teamId)
     {
-        $datasetIds = Dataset::where(['team_id' => $teamId])->pluck('id')->toArray();
+        $datasets = Dataset::where(['team_id' => $teamId, 'status' => Dataset::STATUS_ACTIVE])->select(['id'])->get();
 
-        foreach ($datasetIds as $datasetId) {
-            $this->checkingDataset($datasetId);
+        foreach ($datasets as $dataset) {
+            $this->checkingDataset($dataset->id);
         }
     }
 
@@ -1027,13 +1141,18 @@ class TeamController extends Controller
                         Config::get('metadata.GWDM.version'),
                     );
                     if ($isValid) {
-                        $this->addMetadataVersion(
-                            $d,
-                            $d['status'],
-                            now(),
-                            $metadata,
-                            $d->latestVersion()->metadata
-                        );
+                        $metadataSaveObject = [
+                            'gwdmVersion' =>  Config::get('metadata.GWDM.version'),
+                            'metadata' => $metadata,
+                            'original_metadata' => $d->latestVersion()->metadata['original_metadata'],
+                        ];
+                        DatasetVersion::where([
+                            'dataset_id' => $d->id,
+                            'version' => $d->lastMetadataVersionNumber()->version,
+                        ])->update([
+                            'metadata' => json_encode($metadataSaveObject),
+                        ]);
+
                         $this->reindexElastic($d->id);
                     } else {
                         throw new Exception('Failed to validate metadata with new team name');

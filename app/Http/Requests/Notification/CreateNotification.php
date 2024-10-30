@@ -31,9 +31,15 @@ class CreateNotification extends BaseFormRequest
                 'boolean',
             ],
             'email' => [
-                'required',
+                'nullable',
                 'email',
+                'required_without:user_id'
             ],
+            'user_id' => [
+                'nullable',
+                'integer',
+                'exists:users,id',
+            ]
         ];
     }
 }

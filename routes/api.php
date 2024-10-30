@@ -1,10 +1,9 @@
 <?php
 
 use Illuminate\Http\Request;
-
 use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\SSO\CustomAuthorizationController;
+use App\Http\Controllers\SSO\CustomUserController;
+use App\Http\Controllers\SSO\CustomLogoutController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,11 +37,9 @@ Route::get('/email', function (Request $reqest) {
     ]);
 });
 
-
 # bcplatform
-Route::get('/sso/authorize', [CustomAuthorizationController::class, 'customAuthorize']);
-
-
+Route::get('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middleware('auth:api');
+Route::match(['get', 'post'], '/oauth/logmeout', [CustomLogoutController::class, 'rquestLogout']);
 
 // stop all all other routes
 Route::any('{path}', function () {

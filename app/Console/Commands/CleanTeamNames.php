@@ -3,6 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\Team;
+
+use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use Illuminate\Console\Command;
 use App\Http\Traits\IndexElastic;
 
@@ -39,6 +42,25 @@ class CleanTeamNames extends Command
         foreach ($teams as $team) {
             $team->name = $this->applyAcronyms(ucwords(strtolower($team->name)));
             $team->save();
+
+            $publisher = [
+                'gatewayId' => $team->pid,
+                'name' => $team->name,
+            ];
+
+            $datasets = Dataset::where('team_id', $team->id)->get();
+
+            foreach ($datasets as $d) {
+                $latestVersion = $d->latestVersion();
+                $datasetVersionId = $latestVersion->id;
+                $metadata = $latestVersion->metadata;
+                $metadata['metadata']['summary']['publisher'] = $publisher;
+
+                DatasetVersion::findOrFail($datasetVersionId)->update([
+                    "metadata" => $metadata
+                ]);
+
+            }
 
             if ($reindexEnabled) {
                 $this->reindexElasticDataProvider($team->id);

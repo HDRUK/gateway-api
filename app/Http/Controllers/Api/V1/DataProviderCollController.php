@@ -70,10 +70,16 @@ class DataProviderCollController extends Controller
             $input = $request->all();
 
             $perPage = request('perPage', Config::get('constants.per_page'));
+            $mediaBaseUrl = Config::get('services.media.base_url');
+
             $dpc = DataProviderColl::with([
                 'teams'
                 ])->where('enabled', 1)
-                ->paginate((int) $perPage, ['*'], 'page');
+                ->paginate((int) $perPage, ['*'], 'page')
+                ->through(function ($item) use ($mediaBaseUrl) {
+                    $item->img_url = (is_null($item->img_url) || strlen(trim($item->img_url)) === 0) ? null : (filter_var($item->img_url, FILTER_VALIDATE_URL) ? $item->img_url : $mediaBaseUrl . $item->img_url);
+                    return $item;
+                });
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -147,6 +153,10 @@ class DataProviderCollController extends Controller
             $dpc = DataProviderColl::with([
                 'teams',
                 ])->where('id', $id)->firstOrFail();
+
+
+            $mediaBaseUrl = Config::get('services.media.base_url');
+            $dpc->img_url = (is_null($dpc->img_url) || strlen(trim($dpc->img_url)) === 0) ? null : (filter_var($dpc->img_url, FILTER_VALIDATE_URL) ? $dpc->img_url : $mediaBaseUrl . $dpc->img_url);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -293,7 +303,7 @@ class DataProviderCollController extends Controller
             $result = [
                 'id' => $dpc->id,
                 'name' => $dpc->name,
-                'img_url' => $dpc->img_url,
+                'img_url' => (is_null($dpc->img_url) || strlen(trim($dpc->img_url)) === 0) ? '' : (filter_var($dpc->img_url, FILTER_VALIDATE_URL) ? $dpc->img_url : Config::get('services.media.base_url') . $dpc->img_url),
                 'summary' => $dpc->summary,
                 'enabled' => $dpc->enabled,
                 'url' => $dpc->url,

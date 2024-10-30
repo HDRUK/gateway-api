@@ -14,7 +14,9 @@ class Authenticate extends Middleware
      */
     protected function redirectTo($request)
     {
-        if (!$request->expectsJson()) {
+        $currentUrl = $request->url();
+
+        if (!$request->expectsJson() && (strpos($currentUrl, 'oauth/logoutme') !== false || strpos($currentUrl, '/bcrquest') !== false)) {
             return route('login');
         }
     }

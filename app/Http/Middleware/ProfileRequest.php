@@ -14,10 +14,18 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class ProfileRequest
 {
-    public function handle(Request $request, Closure $next): JsonResponse|StreamedResponse|RedirectResponse|Response|BinaryFileResponse
+    /**
+     * profile request middleware
+     *
+     * @param Request $request
+     * @param Closure $next
+     * @return JsonResponse|StreamedResponse|RedirectResponse|Response|BinaryFileResponse|SymfonyResponse
+     */
+    public function handle(Request $request, Closure $next): JsonResponse|StreamedResponse|RedirectResponse|Response|BinaryFileResponse|SymfonyResponse
     {
         if (Config::get('profiling.profiler_active')) {
             // Create our profiler

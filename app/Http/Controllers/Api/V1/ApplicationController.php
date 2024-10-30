@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Hash;
 use Config;
+use Auditor;
 use Exception;
 use App\Models\Application;
 use Illuminate\Support\Str;
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use App\Http\Traits\CheckAccess;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Models\ApplicationHasPermission;
@@ -24,6 +25,7 @@ use App\Http\Requests\Application\UpdateApplication;
 class ApplicationController extends Controller
 {
     use RequestTransformation;
+    use CheckAccess;
 
     public function __construct()
     {
@@ -89,13 +91,19 @@ class ApplicationController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $teamId = $request->query('team_id', null);
+        if (!is_null($teamId)) {
+            $this->checkAccess($input, $teamId, null, 'team');
+        }
+        $apps = Application::where('user_id', $jwtUser)->whereNotNull('team_id')->select('team_id')->distinct()->get();
+        foreach($apps as $app) {
+            $this->checkAccess($input, $app->team_id, null, 'team');
+        }
 
         try {
             $applications = Application::getAll('user_id', $jwtUser)->with(['permissions','team','user','notifications']);
 
-
-            $teamId = $request->query('team_id');
-            if ($teamId !== null) {
+            if (!is_null($teamId)) {
                 $applications = $applications->where('team_id', (int)$teamId);
             }
 
@@ -196,8 +204,12 @@ class ApplicationController extends Controller
      */
     public function show(GetApplication $request, int $id): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $application = Application::with(['permissions','team','user','notifications'])->where('id', $id)->first();
+        $this->checkAccess($input, $application->team_id, null, 'team');
+
         try {
-            $application = Application::with(['permissions','team','user','notifications'])->where('id', $id)->first();
             $application->makeHidden(['client_secret']);
 
             Auditor::log([
@@ -284,6 +296,7 @@ class ApplicationController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $this->checkAccess($input, $input['team_id'], null, 'team');
 
         try {
             // While it seems weak, random uses openssl_random_pseudo_bytes under the hood
@@ -427,6 +440,8 @@ class ApplicationController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $initApplication = Application::withTrashed()->where('id', $id)->first();
+        $this->checkAccess($input, $initApplication->team_id, null, 'team');
 
         try {
             $array = [
@@ -557,6 +572,8 @@ class ApplicationController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $initApplication = Application::withTrashed()->where('id', $id)->first();
+        $this->checkAccess($input, $initApplication->team_id, null, 'team');
 
         try {
             $arrayKeys = ['name', 'image_link', 'description', 'team_id', 'user_id', 'enabled'];
@@ -646,6 +663,8 @@ class ApplicationController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $initApplication = Application::withTrashed()->where('id', $id)->first();
+        $this->checkAccess($input, $initApplication->team_id, null, 'team');
 
         try {
             Application::where('id', $id)->delete();
@@ -728,12 +747,14 @@ class ApplicationController extends Controller
             }
 
             foreach ($notifications as $notification) {
+                // $notification may be a user id, or it may be an email address.
                 $notification = Notification::create([
                     'notification_type' => 'application',
                     'message' => '',
                     'opt_in' => 0,
                     'enabled' => 1,
-                    'email' => $notification,
+                    'email' => is_numeric($notification) ? null : $notification,
+                    'user_id' => is_numeric($notification) ? (int) $notification : null,
                 ]);
 
                 ApplicationHasNotification::create([

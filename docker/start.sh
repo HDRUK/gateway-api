@@ -23,10 +23,9 @@ fi
 # Start the Octane server in the background
 $base_command &
 
-
 # Separate the command from the cron timings, so as to first check for
 # duplicates, thus being immune to multiple insertions
-cronCommand="/usr/local/bin/php /var/www/artisan schedule:run > /tmp/cron.log" # >> /dev/null 2>&1"
+cronCommand="/usr/local/bin/php /var/www/artisan schedule:run >> /dev/null 2>&1"
 cronJob="* * * * * $cronCommand"
 
 # To add the above to local crontab
@@ -38,9 +37,6 @@ cronJob="* * * * * $cronCommand"
 # To activate cron service
 service cron start
 
-php artisan queue:work &
-php artisan queue:work &
-php artisan queue:work &
-php artisan queue:work 
+php artisan horizon
 
 

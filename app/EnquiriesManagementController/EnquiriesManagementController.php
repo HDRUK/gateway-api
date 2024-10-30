@@ -91,6 +91,10 @@ class EnquiriesManagementController
 
         if ($enquiryThread) {
             foreach ($input['datasets'] as $dataset) {
+                // handle case where enquiry is to Data Custodian without a dataset selected
+                if ($dataset['dataset_id'] === null) {
+                    continue;
+                }
                 $datasetVersion = DatasetVersion::where('dataset_id', $dataset['dataset_id'])
                     ->latest('created_at')->first();
                 $enquiryThreadHasDataset = EnquiryThreadHasDatasetVersion::create([
@@ -134,6 +138,8 @@ class EnquiriesManagementController
                 '[[CURRENT_YEAR]]' => $threadDetail['message']['message_body']['[[CURRENT_YEAR]]'],
                 '[[TEAM_NAME]]' => $threadDetail['message']['message_body']['[[TEAM_NAME]]'],
                 '[[USER_FIRST_NAME]]' => $threadDetail['message']['message_body']['[[USER_FIRST_NAME]]'],
+                '[[USER_LAST_NAME]]' => $threadDetail['message']['message_body']['[[USER_LAST_NAME]]'],
+                '[[USER_ORGANISATION]]' => $threadDetail['message']['message_body']['[[USER_ORGANISATION]]'],
                 '[[PROJECT_TITLE]]' => $threadDetail['message']['message_body']['[[PROJECT_TITLE]]'],
                 '[[MESSAGE_BODY]]' => $this->convertThreadToBody($threadDetail),
             ];
@@ -182,9 +188,14 @@ class EnquiriesManagementController
     {
         $str = '';
         $datasetsStr = '<br/><br/>';
+        $dataCustodiansStr = '';
 
         foreach ($in['thread']['datasets'] as $d) {
             $datasetsStr .= $d['title'] . ' (<a href="' . $d['url'] . '">Direct link</a>)<br/>';
+        }
+
+        foreach ($in['thread']['dataCustodians'] as $d) {
+            $dataCustodiansStr .= '<p style="text-indent: 15px">' . $d . '</p>';
         }
 
         $str .= 'Name: ' . $in['message']['message_body']['[[USER_FIRST_NAME]]'] . ' ' . $in['message']['message_body']['[[USER_LAST_NAME]]'] . '<br/>';
@@ -201,6 +212,7 @@ class EnquiriesManagementController
         } elseif ($in['thread']['is_general_enquiry']) {
             $str .= 'Enquiry: ' . $in['message']['message_body']['[[QUERY]]'] . '<br/>';
         }
+        $str .= 'This enquiry has also been sent to the following Data Custodians: ' . $dataCustodiansStr . '<br/>';
         return $str;
     }
 }

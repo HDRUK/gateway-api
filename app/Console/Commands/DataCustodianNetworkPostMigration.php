@@ -29,16 +29,12 @@ class DataCustodianNetworkPostMigration extends Command
      */
     public function handle()
     {
-        $logoBasePath = env('MEDIA_URL', null);
-        if (!$logoBasePath) {
-            $this->error('MEDIA_URL parameter in environment file not found');
-            exit();
-        }
+
 
         $dataCustodianNetworks = [
             [
                 'name' => 'Scottish Safe Haven Network',
-                'logo' => $logoBasePath . '/data-custodian-network/scottish-safe-haven-network.png',
+                'logo' => '/data-custodian-network/scottish-safe-haven-network.png',
                 'description' => 'The Scottish Safe Haven Network (SSHN), which began operations in 2014, is responsible for managing access to NHS Scotland data for secondary use that benefits the public. Coordinated by Research Data Scotland, the network is made up of four accredited regional Safe Havens (DaSH, Data Loch, Glasgow, and HIC) and one national Safe Haven (eDRIS) that cover the entire Scottish population of 5.4 million. The network, which was established to provide researchers with a data access service that uses secure computing environments that comply with the "Five Safes”, operates under the Safe Haven Charter and has gained extensive expertise in data linkage. The regional Safe Havens have access to detailed, individual-level data such as laboratory data, hospital visits, and digital echocardiograms (ECGs), while the national Safe Haven provides access to whole population data such as the Scottish Mortality Records.',
                 'teams' => [
                     'Public Health Scotland',
@@ -51,7 +47,7 @@ class DataCustodianNetworkPostMigration extends Command
 
             [
                 'name' => 'Secure eResearch Platform (SeRP)',
-                'logo' => $logoBasePath . '/data-custodian-network/serp.png',
+                'logo' => '/data-custodian-network/serp.png',
                 'description' => 'SeRP UK is operated as a private research cloud and is operated as a multi-tenancy model which means you control how and who uses it all under one pricing structure. It lets you build economies of scale and offers a cost effective data management and governance environment for users whilst also enabling them to be part of the SeRP UK research community. 
                 SeRP UK is accredited to the ISO27001 information security standard. SeRP UK is used by many research organisations across the UK to host research data within a secure research environment enabling collaborative research.
                 SeRP UK is the perfect solution for any organisation that has accumulated a large amount of data, that intends to share that data for the purposes of research and long term benefit to society, and that wants to do so in the most secure and safe way possible to reduce associated risks.',
@@ -64,7 +60,7 @@ class DataCustodianNetworkPostMigration extends Command
 
             [
                 'name' => 'SNSDE',
-                'logo' => $logoBasePath . '/data-custodian-network/snsde-network.png',
+                'logo' => '/data-custodian-network/snsde-network.png',
                 'description' => 'The NHS Research Secure Data Environment (SDE) Network is made up of 12 SDEs who provide secure access to healthcare data for research and innovation.',
                 'teams' => [
                     'Wessex SDE',

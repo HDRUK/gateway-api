@@ -30,6 +30,7 @@ class EditPublication extends BaseFormRequest
                 'max:4',
             ],
             'paper_doi' => [
+                'nullable',
                 'string',
                 'max:255',
             ],

@@ -185,8 +185,8 @@ class SearchController extends Controller
             }
 
             foreach ($matchedIds as $i => $matchedId) {
-                $model = Dataset::with('versions', 'team')->where('id', $matchedId)
-                           ->first();
+                $model = Dataset::with('team')->where('id', $matchedId)
+                    ->first();
 
                 if(!$model) {
                     \Log::warning('Elastic found id=' . $matchedId . ' which is not an existing dataset');
@@ -195,15 +195,19 @@ class SearchController extends Controller
                     }
                     continue;
                 }
+
+                $model['metadata'] = $model->latestVersion()['metadata']['metadata'];
                 $model = $model->toArray();
 
-                $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
-                $datasetsArray[$i]['_source']['updated_at'] = $model['versions'][0]['updated_at'];
+                $datasetsArray[$i]['_source']['created_at'] = $model['created_at'];
+                $datasetsArray[$i]['_source']['updated_at'] = $model['updated_at'];
+
                 if (strtolower($viewType) === 'mini') {
-                    $datasetsArray[$i]['metadata'] = $this->trimPayload($model['versions'][0]['metadata'], $model);
+                    $datasetsArray[$i]['metadata'] = $this->trimPayload($model);
                 } else {
-                    $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
+                    $datasetsArray[$i]['metadata'] = $model['metadata'];
                 }
+
                 $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
                 $datasetsArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model);
                 $datasetsArray[$i]['team']['id'] = $model['team']['id'];
@@ -835,16 +839,12 @@ class SearchController extends Controller
 
             $durArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
+
             $matchedIds = [];
             foreach (array_values($durArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
             }
-
-            $durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
-
-            foreach ($durModels as $model) {
-                $model->setAttribute('datasets', $model->allDatasets);
-            }
+            $durModels = Dur::with('datasetVersions')->whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
 
             foreach ($durArray as $i => $dur) {
                 $foundFlag = false;
@@ -861,6 +861,7 @@ class SearchController extends Controller
                         $durArray[$i]['datasetIds'] = array_column($datasetTitles, 'id');
                         $durArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $durArray[$i]['toolNames'] = $this->durToolNames($model['id']);
+                        $durArray[$i]['non_gateway_datasets'] = $model['non_gateway_datasets'];
                         $foundFlag = true;
                         break;
                     }
@@ -870,7 +871,6 @@ class SearchController extends Controller
                     continue;
                 }
             }
-
             if ($download) {
                 Auditor::log([
                     'action_type' => 'GET',
@@ -1576,23 +1576,33 @@ class SearchController extends Controller
      */
     private function durDatasetTitles(Dur $durMatch): array
     {
-        $datasetTitles = array();
-        foreach ($durMatch['datasets'] as $d) {
-            $metadata = Dataset::where(['id' => $d['id']])
-                ->first()
-                ->latestVersion()
-                ->metadata;
-            $datasetTitles[] = [
-                'title' => $metadata['metadata']['summary']['shortTitle'],
-                'id' => $d['id']
-            ];
+
+        if (empty($durMatch['datasetVersions']) || !is_iterable($durMatch['datasetVersions'])) {
+            return [];
         }
+
+        $datasetVersionIds = collect($durMatch['datasetVersions'])->select('dataset_version_id')->toArray();
+
+        $datasets = DatasetVersion::whereIn('id', $datasetVersionIds)
+        ->get();
+
+        $datasetTitles = [];
+
+        foreach ($datasets as $dataset) {
+            $datasetTitles[] = [
+                'title' => $dataset['metadata']['metadata']['summary']['shortTitle'],
+                'id' => $dataset['id'],
+            ];
+
+        }
+
         usort($datasetTitles, function ($a, $b) {
             return strcasecmp($a['title'], $b['title']);
         });
 
         return $datasetTitles;
     }
+
 
     /**
      * Sorts results returned by the search service according to sort field and direction
@@ -1628,7 +1638,7 @@ class SearchController extends Controller
         return $resultArray;
     }
 
-    private function trimPayload(array &$input, array &$dataset): array
+    private function trimPayload(array &$input): array
     {
         $miniMetadata = $input['metadata'];
 

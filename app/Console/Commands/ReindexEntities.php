@@ -155,8 +155,8 @@ class ReindexEntities extends Command
         }
 
         $nTotal = Tool::count();
-        $toolIds = Tool::where("status", Tool::STATUS_ACTIVE)
-            ->select("id")
+        $toolIds = Tool::where('status', Tool::STATUS_ACTIVE)
+            ->select('id')
             ->pluck('id')
             ->toArray();
         $this->sliceIds($toolIds);
@@ -173,8 +173,8 @@ class ReindexEntities extends Command
             echo "---> Deleted $nDeleted documents from the index \n";
         }
         $nTotal = Publication::count();
-        $publicationIds = Publication::where("status", Publication::STATUS_ACTIVE)
-            ->select("id")
+        $publicationIds = Publication::where('status', Publication::STATUS_ACTIVE)
+            ->select('id')
             ->pluck('id')
             ->toArray();
         $this->sliceIds($publicationIds);
@@ -193,8 +193,8 @@ class ReindexEntities extends Command
         }
 
         $nTotal = Dur::count();
-        $durIds = Dur::where("status", Publication::STATUS_ACTIVE)
-            ->select("id")
+        $durIds = Dur::where('status', Publication::STATUS_ACTIVE)
+            ->select('id')
             ->pluck('id')
             ->toArray();
         $this->sliceIds($durIds);
@@ -213,8 +213,8 @@ class ReindexEntities extends Command
         }
 
         $nTotal = Collection::count();
-        $collectionIds = Collection::where("status", Collection::STATUS_ACTIVE)
-            ->select("id")
+        $collectionIds = Collection::where('status', Collection::STATUS_ACTIVE)
+            ->select('id')
             ->pluck('id')
             ->toArray();
         $this->sliceIds($collectionIds);
@@ -228,6 +228,10 @@ class ReindexEntities extends Command
 
     private function dataProviders()
     {
+        if ($this->fresh) {
+            $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_DATAPROVIDER);
+            echo "---> Deleted $nDeleted documents from the index \n";
+        }
         $providerIds = array_unique(Dataset::pluck('team_id')->toArray());
         $nTotal = count($providerIds);
         $teamIds = Team::whereIn('id', $providerIds)->select('id')

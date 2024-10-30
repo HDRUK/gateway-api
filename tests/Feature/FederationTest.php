@@ -9,6 +9,7 @@ use App\Models\Federation;
 use Tests\Traits\MockExternalApis;
 
 use App\Http\Enums\TeamMemberOf;
+use Database\Seeders\MinimalUserSeeder;
 use App\Models\TeamHasFederation;
 use App\Models\FederationHasNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,6 +29,10 @@ class FederationTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
+
+        $this->seed([
+            MinimalUserSeeder::class,
+        ]);
     }
 
     /**
@@ -47,7 +52,8 @@ class FederationTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header,
         );
@@ -104,9 +110,9 @@ class FederationTest extends TestCase
                 'run_time_hour' => 11,
                 'enabled' => true,
                 'notifications' => [
-                    't1@test.com',
-                    't2@test.com',
-                    't3@test.com'
+                    '1',
+                    '2',
+                    '3'
                 ]
             ],
             $this->header,
@@ -188,7 +194,8 @@ class FederationTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header,
         );
@@ -245,9 +252,9 @@ class FederationTest extends TestCase
                 'run_time_hour' => 11,
                 'enabled' => true,
                 'notifications' => [
-                    't1@test.com',
-                    't2@test.com',
-                    't3@test.com'
+                    '1',
+                    '2',
+                    '3',
                 ]
             ],
             $this->header,
@@ -317,7 +324,8 @@ class FederationTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header,
         );
@@ -374,9 +382,9 @@ class FederationTest extends TestCase
                 'run_time_hour' => 11,
                 'enabled' => true,
                 'notifications' => [
-                    't1@test.com',
-                    't2@test.com',
-                    't3@test.com'
+                    '1',
+                    '2',
+                    '3',
                 ]
             ],
             $this->header,
@@ -465,7 +473,8 @@ class FederationTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header,
         );
@@ -522,9 +531,9 @@ class FederationTest extends TestCase
                 'run_time_hour' => 11,
                 'enabled' => true,
                 'notifications' => [
-                    't1@test.com',
-                    't2@test.com',
-                    't3@test.com'
+                    '1',
+                    '2',
+                    '3',
                 ]
             ],
             $this->header,
@@ -596,10 +605,10 @@ class FederationTest extends TestCase
                 'run_time_hour' => 11,
                 'enabled' => true,
                 'notifications' => [
-                    'y1@test.com',
-                    'y2@test.com',
-                    'y3@test.com',
-                    'y4@test.com'
+                    '1',
+                    '2',
+                    '3',
+                    '4',
                 ]
             ],
             $this->header,
@@ -661,7 +670,8 @@ class FederationTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header,
         );
@@ -718,9 +728,9 @@ class FederationTest extends TestCase
                 'run_time_hour' => 11,
                 'enabled' => true,
                 'notifications' => [
-                    't1@test.com',
-                    't2@test.com',
-                    't3@test.com'
+                    '1',
+                    '2',
+                    '3',
                 ]
             ],
             $this->header,
@@ -792,10 +802,10 @@ class FederationTest extends TestCase
                 'run_time_hour' => 11,
                 'enabled' => true,
                 'notifications' => [
-                    'y1@test.com',
-                    'y2@test.com',
-                    'y3@test.com',
-                    'y4@test.com'
+                    '1',
+                    '2',
+                    '3',
+                    '4',
                 ]
             ],
             $this->header,
@@ -840,8 +850,8 @@ class FederationTest extends TestCase
                 'run_time_hour' => 11,
                 'enabled' => true,
                 'notifications' => [
-                    'y1@test.com',
-                    'y2@test.com',
+                    '1',
+                    '2',
                 ]
             ],
             $this->header,
@@ -906,7 +916,8 @@ class FederationTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header,
         );
@@ -963,9 +974,9 @@ class FederationTest extends TestCase
                 'run_time_hour' => 11,
                 'enabled' => true,
                 'notifications' => [
-                    't1@test.com',
-                    't2@test.com',
-                    't3@test.com'
+                    '1',
+                    '2',
+                    '3',
                 ]
             ],
             $this->header,
@@ -1037,10 +1048,10 @@ class FederationTest extends TestCase
                 'run_time_hour' => 11,
                 'enabled' => true,
                 'notifications' => [
-                    'y1@test.com',
-                    'y2@test.com',
-                    'y3@test.com',
-                    'y4@test.com'
+                    '1',
+                    '2',
+                    '3',
+                    '4',
                 ]
             ],
             $this->header,
@@ -1085,8 +1096,8 @@ class FederationTest extends TestCase
                 'run_time_hour' => 11,
                 'enabled' => true,
                 'notifications' => [
-                    'y1@test.com',
-                    'y2@test.com',
+                    '1',
+                    '2',
                 ]
             ],
             $this->header,

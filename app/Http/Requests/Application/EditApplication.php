@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Application;
 
+use Closure;
 use App\Http\Requests\BaseFormRequest;
 
 class EditApplication extends BaseFormRequest
@@ -41,6 +42,16 @@ class EditApplication extends BaseFormRequest
             ],
             'enabled' => [
                 'boolean',
+            ],
+            'notifications' => [
+                'array',
+            ],
+            'notifications.*' => [
+                function (string $attribute, mixed $value, Closure $fail) {
+                    if (!(is_numeric($value) || filter_var($value, FILTER_VALIDATE_EMAIL))) {
+                        $fail("The {$attribute} is invalid.");
+                    }
+                },
             ],
             'permissions' => [
                 'array',

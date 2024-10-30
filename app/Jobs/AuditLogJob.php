@@ -10,7 +10,9 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 
-class AuditLogJob implements ShouldQueue
+use Laravel\Horizon\Contracts\Silenced;
+
+class AuditLogJob implements ShouldQueue, Silenced
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -23,13 +25,6 @@ class AuditLogJob implements ShouldQueue
      * @var int
      */
     public $tries = 5;
-
-    /**
-     * The number of seconds the job can run before timing out.
-     *
-     * @var int
-     */
-    public $timeout = 10;
 
     protected array $data;
 
@@ -45,5 +40,17 @@ class AuditLogJob implements ShouldQueue
     {
         $publish = $cloudPubSub->publishMessage($this->data);
         $cloudLogger->write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
+    }
+
+    /**
+     * Get the tags that should be assigned to the job.
+     *
+     * @return array<int, string>
+     */
+    public function tags(): array
+    {
+        return [
+            'audit'
+        ];
     }
 }

@@ -6,10 +6,12 @@ use Config;
 
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use App\Models\DatasetVersionHasDatasetVersion;
 
-trait AddMetadataVersion
+trait MetadataVersioning
 {
     use MetadataOnboard;
+
     /**
      * Create new dataset_version
      *
@@ -24,16 +26,17 @@ trait AddMetadataVersion
         string $incomingStatus,
         string $updateTime,
         array $newMetadata,
-        array $previousMetadata
-    ): int {
-        $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
+        array $previousMetadata,
+        int $previousMetadataVersionNumber
+    ): array {
+        $versionNumber = 0;
+
         if($incomingStatus === Dataset::STATUS_ACTIVE) {
             // Determine the last version of metadata
-
             if ($currDataset->status !== Dataset::STATUS_DRAFT) {
-                $versionNumber = $versionNumber + 1;
+                $versionNumber = $previousMetadataVersionNumber + 1;
             }
-            $versionCode = $this->formatVersion($versionNumber);
+            $versionCode = $this->formatVersion($previousMetadataVersionNumber);
             $lastMetadata = $currDataset->lastMetadata();
 
             //update the GWDM modified date and version
@@ -62,14 +65,37 @@ trait AddMetadataVersion
 
         // Update or create new metadata version based on draft status
         if ($currDataset->status !== Dataset::STATUS_DRAFT) {
-            DatasetVersion::create([
+            // Now find previous attached relations and store those for the new version
+            $dv = DatasetVersionHasDatasetVersion::where([
+                'dataset_version_source_id' => $currDataset->latestVersionID($currDataset->id),
+                'linkage_type' => DatasetVersionHasDatasetVersion::LINKAGE_TYPE_DATASETS,
+            ])->get();
+
+            $newVersion = DatasetVersion::create([
                 'dataset_id' => $currDataset->id,
                 'metadata' => json_encode($metadataSaveObject),
                 'version' => $versionNumber,
             ]);
+
+            unset($metadataSaveObject);
+
+            // If relations were found, link those to the new metadata version
+            if (count($dv) > 0) {
+                foreach ($dv as $relation) {
+                    DatasetVersionHasDatasetVersion::create([
+                        'dataset_version_source_id' => $newVersion->id,
+                        'dataset_version_target_id' => $relation->dataset_version_target_id,
+                        'linkage_type' => $relation->linkage_type,
+                        'direct_linkage' => $relation->direct_linkage,
+                        'description' => $relation->description,
+                    ]);
+                }
+            }
         } else {
+            $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
+
             // Update the existing version
-            DatasetVersion::where([
+            $newVersion = DatasetVersion::where([
                 'dataset_id' => $currDataset->id,
                 'version' => $versionNumber,
             ])->update([
@@ -77,11 +103,37 @@ trait AddMetadataVersion
             ]);
         }
 
-        $datasetVersionId = DatasetVersion::where([
+        $datasetVersion = DatasetVersion::where([
             'dataset_id' => $currDataset->id,
             'version' => $versionNumber,
-        ])->value('id');
-        return $datasetVersionId;
+        ])->select(['id', 'version'])->first();
 
+        return [
+            'datasetVersionId' => $datasetVersion['id'],
+            'versionNumber' => $datasetVersion['version'],
+        ];
+    }
+
+    public function updateMetadataVersion(
+        Dataset $currDataset,
+        array $newMetadata,
+        array $previousMetadata
+    ): int {
+
+        $metadataSaveObject = [
+            'gwdmVersion' => Config::get('metadata.GWDM.version'),
+            'metadata' => $newMetadata,
+            'original_metadata' => $previousMetadata,
+        ];
+
+        $dv = DatasetVersion::where([
+            'dataset_id' => $currDataset->id,
+            'version' => $currDataset->lastMetadataVersionNumber()->version,
+        ])->first();
+
+        $dv->metadata = json_encode($metadataSaveObject);
+        $dv->save();
+
+        return $dv->id;
     }
 }

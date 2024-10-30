@@ -54,6 +54,15 @@ class CheckAccessMiddleware
             }
         }
 
+        $request->merge(
+            [
+                'middleware' => [
+                    'roles' => ($type === 'roles') ? $access : [],
+                    'perms' => ($type === 'permissions') ? $access : [],
+                ],
+            ],
+        );
+
         return $next($request);
     }
 }

@@ -26,11 +26,6 @@ class AddLogoTeamPostMigration extends Command
      */
     public function handle()
     {
-        $logoBasePath = env('MEDIA_URL', null);
-        if (!$logoBasePath) {
-            $this->error('MEDIA_URL parameter in environment file not found');
-            exit();
-        }
 
         $custodians = [
             [
@@ -448,7 +443,7 @@ class AddLogoTeamPostMigration extends Command
             ])->first();
 
             if ($team) {
-                $logoUrl = $logoBasePath . '/teams/' . $custodian['logo'];
+                $logoUrl = '/teams/' . $custodian['logo'];
                 Team::where([
                     'mongo_object_id' => $custodian['mongo_object_id'],
                 ])->update([

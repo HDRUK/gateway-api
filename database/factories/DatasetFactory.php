@@ -23,7 +23,7 @@ class DatasetFactory extends Factory
         $origin = fake()->randomElement([
             Dataset::ORIGIN_MANUAL,
             Dataset::ORIGIN_API,
-            Dataset::ORIGIN_FMA
+            Dataset::ORIGIN_GMI
         ]);
 
         return [

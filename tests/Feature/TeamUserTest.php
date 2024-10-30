@@ -649,7 +649,8 @@ class TeamUserTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
-                'email' => 'some@email.com',
+                'email' => null,
+                'user_id' => 3,
                 'opt_in' => 1,
                 'enabled' => 1,
             ],

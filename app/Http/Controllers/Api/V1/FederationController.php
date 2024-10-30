@@ -301,13 +301,13 @@ class FederationController extends Controller
             $secrets_payload = $this->getSecretsPayload($input);
 
             if($secrets_payload) {
-                $auth_secret_key_location = Config::get('fma.secrets.prependname') . (string)$federation->pid;
+                $auth_secret_key_location = Config::get('gmi.secrets.prependname') . (string)$federation->pid;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
                     "secret_id" => $auth_secret_key_location,
                     "payload" => json_encode($secrets_payload)
                 ];
-                $response = Http::post(env('FMA_SERVICE_URL') . '/federation', $payload);
+                $response = Http::post(env('GMI_SERVICE_URL') . '/federation', $payload);
 
                 if (!$response->successful()) {
                     Federation::where('id', $federation->id)->delete();
@@ -327,13 +327,15 @@ class FederationController extends Controller
                 'team_id' => $teamId,
             ]);
 
-            foreach($input['notifications'] as $email) {
+            foreach($input['notifications'] as $notification) {
+                // $notification may be a user id, or it may be an email address.
                 $notification = Notification::create([
                     'notification_type' => 'federation',
                     'message' => '',
                     'opt_in' => 0,
                     'enabled' => 1,
-                    'email' => $email,
+                    'email' => is_numeric($notification) ? null : $notification,
+                    'user_id' => is_numeric($notification) ? (int) $notification : null,
                 ]);
 
                 FederationHasNotification::create([
@@ -461,13 +463,13 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
             if($secrets_payload) {
-                $auth_secret_key_location = Config::get('fma.secrets.prependname') . (string)$federationId;
+                $auth_secret_key_location = Config::get('gmi.secrets.prependname') . (string)$federationId;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
                     "secret_id" => $auth_secret_key_location,
                     "payload" => json_encode($secrets_payload)
                 ];
-                $response = Http::patch(env('FMA_SERVICE_URL') . '/federation', $payload);
+                $response = Http::patch(env('GMI_SERVICE_URL') . '/federation', $payload);
 
                 if (!$response->successful()) {
                     return response()->json([
@@ -487,13 +489,15 @@ class FederationController extends Controller
                 FederationHasNotification::where('notification_id', $federationNotification)->delete();
             }
 
-            foreach ($input['notifications'] as $email) {
+            foreach ($input['notifications'] as $notification) {
+                // $notification may be a user id, or it may be an email address.
                 $notification = Notification::create([
                     'notification_type' => 'federation',
                     'message' => '',
                     'opt_in' => 0,
                     'enabled' => 1,
-                    'email' => $email,
+                    'email' => is_numeric($notification) ? null : $notification,
+                    'user_id' => is_numeric($notification) ? (int) $notification : null,
                 ]);
 
                 FederationHasNotification::create([
@@ -629,13 +633,13 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
             if($secrets_payload) {
-                $auth_secret_key_location = Config::get('fma.secrets.prependname') . (string)$federationId;
+                $auth_secret_key_location = Config::get('gmi.secrets.prependname') . (string)$federationId;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
                     "secret_id" => $auth_secret_key_location,
                     "payload" => json_encode($secrets_payload)
                 ];
-                $response = Http::patch(env('FMA_SERVICE_URL') . '/federation', $payload);
+                $response = Http::patch(env('GMI_SERVICE_URL') . '/federation', $payload);
 
                 if (!$response->successful()) {
                     return response()->json([
@@ -657,13 +661,15 @@ class FederationController extends Controller
                     FederationHasNotification::where('notification_id', $federationNotification)->delete();
                 }
 
-                foreach ($input['notifications'] as $email) {
+                foreach ($input['notifications'] as $notification) {
+                    // $notification may be a user id, or it may be an email address.
                     $notification = Notification::create([
                         'notification_type' => 'federation',
                         'message' => '',
                         'opt_in' => 0,
                         'enabled' => 1,
-                        'email' => $email,
+                        'email' => is_numeric($notification) ? null : $notification,
+                        'user_id' => is_numeric($notification) ? (int) $notification : null,
                     ]);
 
                     FederationHasNotification::create([
@@ -844,7 +850,7 @@ class FederationController extends Controller
         $input = $request->all();
 
         try {
-            $response = Http::post(env('FMA_SERVICE_URL') . '/test', $input);
+            $response = Http::post(env('GMI_SERVICE_URL') . '/test', $input);
             return response()->json($response->json());
         } catch (Exception $e) {
             Auditor::log([
@@ -860,7 +866,10 @@ class FederationController extends Controller
     private function getSecretsPayload(array $input)
     {
         $secrets_payload = [];
-        $secret_key = $input['auth_secret_key'];
+        $secret_key = '';
+        if (in_array($input['auth_type'], ['BEARER', 'API_KEY'])) {
+            $secret_key = $input['auth_secret_key'];
+        }
         switch ($input['auth_type']) {
             case 'BEARER':
                 $secrets_payload = [

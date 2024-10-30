@@ -91,7 +91,8 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );
@@ -232,7 +233,8 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );
@@ -310,7 +312,8 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );
@@ -425,11 +428,13 @@ class TeamTest extends TestCase
             $this->header
         );
         $responseGetDataset->assertStatus(200);
-        $datasetContent = $responseGetDataset->decodeResponseJson();
-        $this->assertEquals(
-            $datasetContent['data']['versions'][0]['metadata']['metadata']['required']['version'],
-            '2.0.0'
-        );
+        // Note BES 09/10/24
+        // Removing the creation of a new version due to memory load
+        // $datasetContent = $responseGetDataset->decodeResponseJson();
+        // $this->assertEquals(
+        //     $datasetContent['data']['versions'][0]['metadata']['metadata']['required']['version'],
+        //     '2.0.0'
+        // );
 
         // delete the team created
         $responseDelete = $this->json(
@@ -461,7 +466,8 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );
@@ -624,7 +630,8 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );

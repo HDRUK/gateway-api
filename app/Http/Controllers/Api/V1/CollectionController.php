@@ -9,29 +9,32 @@ use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
 use App\Models\Application;
-use App\Models\DatasetVersion;
 use Illuminate\Http\Request;
+use App\Models\DatasetVersion;
 use Illuminate\Support\Carbon;
+use App\Http\Traits\CheckAccess;
 use App\Models\CollectionHasDur;
+use App\Http\Traits\IndexElastic;
 use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Models\CollectionHasDatasetVersion;
 use App\Models\CollectionHasKeyword;
 use App\Exceptions\NotFoundException;
 use App\Models\CollectionHasPublication;
-use App\Http\Traits\IndexElastic;
 use App\Http\Traits\RequestTransformation;
+use App\Models\CollectionHasDatasetVersion;
 use App\Http\Requests\Collection\GetCollection;
 use App\Http\Requests\Collection\EditCollection;
 use App\Http\Requests\Collection\CreateCollection;
 use App\Http\Requests\Collection\DeleteCollection;
 use App\Http\Requests\Collection\UpdateCollection;
+use App\Models\CollectionHasUser;
 
 class CollectionController extends Controller
 {
     use IndexElastic;
     use RequestTransformation;
+    use CheckAccess;
 
     public function __construct()
     {
@@ -161,13 +164,14 @@ class CollectionController extends Controller
                 'tools',
                 'dur',
                 'publications',
-                'userDatasets',
-                'userTools',
-                'userPublications',
+                // 'userDatasets',
+                // 'userTools',
+                // 'userPublications',
                 'applicationDatasets',
                 'applicationTools',
                 'applicationPublications',
                 'team',
+                'users',
             ])
             ->when(
                 $sort,
@@ -176,9 +180,11 @@ class CollectionController extends Controller
             ->when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
             })
-            /*->when($userId, function ($query) use ($userId) {
-                return $query->where('user_id', '=', $userId);
-            }) // - this isnt in the DB and should be! bug reported */
+            ->when($userId, function ($query) use ($userId) {
+                $query->whereHas('users', function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                });
+            })
             ->when($filterTitle, function ($query) use ($filterTitle) {
                 return $query->where('name', 'like', '%' . $filterTitle . '%');
             })
@@ -193,13 +199,13 @@ class CollectionController extends Controller
             });
 
             $collections->getCollection()->transform(function ($collection) {
-                $userDatasets = $collection->userDatasets;
-                $userTools = $collection->userTools;
-                $userPublications = $collection->userPublications;
-                $users = $userDatasets->merge($userTools)
-                    ->merge($userPublications)
-                    ->unique('id');
-                $collection->setRelation('users', $users);
+                // $userDatasets = $collection->userDatasets;
+                // $userTools = $collection->userTools;
+                // $userPublications = $collection->userPublications;
+                // $users = $userDatasets->merge($userTools)
+                //     ->merge($userPublications)
+                //     ->unique('id');
+                // $collection->setRelation('users', $users);
                 $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
 
                 $applicationDatasets = $collection->applicationDatasets;
@@ -212,17 +218,17 @@ class CollectionController extends Controller
 
                 // Remove unwanted relations
                 unset(
-                    $users,
-                    $userTools,
-                    $userDatasets,
-                    $userPublications,
+                    // $users,
+                    // $userTools,
+                    // $userDatasets,
+                    // $userPublications,
                     $applications,
                     $applicationTools,
                     $applicationDatasets,
                     $applicationPublications,
-                    $collection->userDatasets,
-                    $collection->userTools,
-                    $collection->userPublications,
+                    // $collection->userDatasets,
+                    // $collection->userTools,
+                    // $collection->userPublications,
                     $collection->applicationDatasets,
                     $collection->applicationTools,
                     $collection->applicationPublications
@@ -281,6 +287,17 @@ class CollectionController extends Controller
      *          description="team id",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="user_id",
+     *       in="query",
+     *       description="user id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="user id",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -297,9 +314,16 @@ class CollectionController extends Controller
     {
         try {
             $teamId = $request->query('team_id', null);
-            $counts = Collection::when($teamId, function ($query) use ($teamId) {
-                return $query->where('team_id', '=', $teamId);
-            })->withTrashed()
+            $userId = $request->query('user_id', null);
+            $counts = Collection::withTrashed()->with(['users'])
+                ->when($teamId, function ($query) use ($teamId) {
+                    return $query->where('team_id', '=', $teamId);
+                })
+                ->when($userId, function ($query) use ($userId) {
+                    $query->whereHas('users', function ($query) use ($userId) {
+                        $query->where('user_id', $userId);
+                    });
+                })
                 ->select($field)
                 ->get()
                 ->groupBy($field)
@@ -338,6 +362,18 @@ class CollectionController extends Controller
      *          description="collection id",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="view_type",
+     *       in="query",
+     *       description="Query flag to show full collection data or a trimmed version (defaults to full).",
+     *       required=false,
+     *       @OA\Schema(
+     *          type="string",
+     *          default="full",
+     *          description="Flag to show all data ('full') or trimmed data ('mini')"
+     *       ),
+     *       example="full"
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -375,7 +411,10 @@ class CollectionController extends Controller
     public function show(GetCollection $request, int $id): JsonResponse
     {
         try {
-            $collection = $this->getCollectionById($id);
+            $viewType = $request->query('view_type', 'full');
+            $trimmed = $viewType === 'mini';
+
+            $collection = $this->getCollectionById($id, $trimmed);
 
             Auditor::log([
                 'action_type' => 'SHOW',
@@ -418,11 +457,13 @@ class CollectionController extends Controller
      *             @OA\Property(property="description", type="string", example="Dolorem voluptas consequatur nihil illum et sunt libero."),
      *             @OA\Property(property="image_link", type="string", example="https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"),
      *             @OA\Property(property="enabled", type="boolean", example="true"),
+     *             @OA\Property(property="user_id", type="integer", example="true"),
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="collaborators", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="public", type="boolean", example="true"),
      *          ),
      *       ),
@@ -488,6 +529,11 @@ class CollectionController extends Controller
 
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($collectionId, $keywords);
+
+            // users
+            $userId = (int)$jwtUser['id'];
+            $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
+            $this->createCollectionUsers((int)$collectionId, (int)$userId, $collaborators);
 
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
@@ -623,6 +669,10 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
+        foreach ($collHasUsers as $collHasUser) {
+            $this->checkAccess($input, null, $collHasUser['user_id'], 'user');
+        }
 
         try {
             $initCollection = Collection::withTrashed()->where('id', $id)->first();
@@ -661,6 +711,11 @@ class CollectionController extends Controller
 
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($id, $keywords);
+
+            // users
+            $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
+            $this->updateCollectionUsers((int)$id, $collaborators);
+
 
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
@@ -809,6 +864,10 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
+        foreach ($collHasUsers as $collHasUser) {
+            $this->checkAccess($input, null, $collHasUser['user_id'], 'user');
+        }
 
         try {
             if ($request->has('unarchive')) {
@@ -871,6 +930,12 @@ class CollectionController extends Controller
                 $updatedCollection = Collection::withTrashed()->where('id', $id)->first();
                 // Check and update related datasets and tools etc if the collection is active
 
+
+                // users
+                $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
+                $this->updateCollectionUsers((int)$id, $collaborators);
+
+
                 if (array_key_exists('datasets', $input)) {
                     $datasets = $input['datasets'];
                     $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
@@ -915,7 +980,6 @@ class CollectionController extends Controller
                 } elseif ($initCollection->status === Collection::STATUS_ACTIVE) {
                     $this->deleteCollectionFromElastic((int) $id);
                 }
-
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
@@ -987,9 +1051,14 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
+        foreach ($collHasUsers as $collHasUser) {
+            $this->checkAccess($input, null, $collHasUser['user_id'], 'user');
+        }
 
         try {
             $collection = Collection::where(['id' => $id])->first();
+            $initialStatus = $collection->status;
             if ($collection) {
                 CollectionHasDatasetVersion::where(['collection_id' => $id])->delete();
                 CollectionHasTool::where(['collection_id' => $id])->delete();
@@ -999,7 +1068,9 @@ class CollectionController extends Controller
                 Collection::where(['id' => $id])->update(['status' => Collection::STATUS_ARCHIVED]);
                 Collection::where(['id' => $id])->delete();
 
-                $this->deleteCollectionFromElastic($id);
+                if($initialStatus === Collection::STATUS_ACTIVE) {
+                    $this->deleteCollectionFromElastic($id);
+                }
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
@@ -1026,20 +1097,60 @@ class CollectionController extends Controller
         }
     }
 
-    private function getCollectionById(int $collectionId)
+    private function getCollectionById(int $collectionId, bool $trimmed = false)
     {
         $collection = Collection::with([
             'keywords',
-            'tools',
-            'dur',
-            'publications',
-            'userDatasets',
+            'tools' => function ($query) use ($trimmed) {
+                $query->when($trimmed, function ($q) {
+                    $q->select(
+                        "tools.id",
+                        "tools.name",
+                        "tools.created_at",
+                        "tools.user_id"
+                    );
+                });
+            },
+            'dur' => function ($query) use ($trimmed) {
+                $query->when($trimmed, function ($q) {
+                    $q->select([
+                        'dur.id',
+                        'dur.project_title',
+                        'dur.organisation_name'
+                    ]);
+
+                });
+            },
+            'publications' => function ($query) use ($trimmed) {
+                $query->when($trimmed, function ($q) {
+                    $q->select([
+                        "publications.id",
+                        "publications.paper_title",
+                        "publications.authors",
+                        "publications.url",
+                        "publications.year_of_publication"
+                    ]);
+                });
+            },
+            'datasetVersions' => function ($query) use ($trimmed) {
+                $query->when($trimmed, function ($q) {
+                    $q->selectRaw('
+                        dataset_versions.id,dataset_versions.dataset_id,
+                        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.shortTitle")) as shortTitle,
+                        CONVERT(JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.populationSize")), SIGNED) as populationSize,
+                        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.datasetType")) as datasetType
+                    ');
+                });
+            },
+            /*'userDatasets', //not sure what this is, legacy code? commenting out for now - Calum 17/10/24
             'userTools',
             'userPublications',
             'applicationDatasets',
             'applicationTools',
             'applicationPublications',
+            */
             'team',
+            'users',
         ])
         ->withTrashed()
         ->where(['id' => $collectionId])
@@ -1051,7 +1162,13 @@ class CollectionController extends Controller
             }
         }
 
+        //Calum 17/10/2024
+        // - commeneting this out
+        // - we are only concerned with collection direct linkage
+        // - not indirect via publications/users etc.
+        // - legacy code, probably can remove but keeping commented out for now
         // Set the datasets attribute with the latest datasets
+        /*
         $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
 
         $userDatasets = $collection->userDatasets;
@@ -1086,6 +1203,7 @@ class CollectionController extends Controller
             $collection->applicationTools,
             $collection->applicationPublications
         );
+        */
 
         return $collection;
     }
@@ -1551,6 +1669,45 @@ class CollectionController extends Controller
         }
 
         return $response;
+    }
+
+    // add users to collections
+    public function createCollectionUsers(int $collectionId, int $creatorId, array $collaboratorIds)
+    {
+        CollectionHasUser::create([
+            'collection_id' => $collectionId,
+            'user_id' => $creatorId,
+            'role' => 'CREATOR',
+        ]);
+
+        $collaboratorIds = array_filter($collaboratorIds, function ($cId) use ($creatorId) {
+            return (int)$cId !== (int)$creatorId;
+        });
+
+        foreach ($collaboratorIds as $collaboratorId) {
+            CollectionHasUser::create([
+                'collection_id' => $collectionId,
+                'user_id' => $collaboratorId,
+                'role' => 'COLLABORATOR',
+            ]);
+        }
+    }
+
+    // update users to collections
+    public function updateCollectionUsers(int $collectionId, array $collaboratorIds)
+    {
+        CollectionHasUser::where([
+            'collection_id' => $collectionId,
+            'role' => 'COLLABORATOR',
+        ])->delete();
+
+        foreach ($collaboratorIds as $collaboratorId) {
+            CollectionHasUser::create([
+                'collection_id' => $collectionId,
+                'user_id' => $collaboratorId,
+                'role' => 'COLLABORATOR',
+            ]);
+        }
     }
 
 }

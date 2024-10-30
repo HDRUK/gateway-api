@@ -2,48 +2,34 @@
 
 namespace App\Services;
 
-use Config;
-use Google\Cloud\Logging\LoggingClient;
-
 class CloudLoggerService
 {
-    protected $logging;
-    protected $logger;
+    private $logLevels = [
+        'emergency',
+        'alert',
+        'critical',
+        'error',
+        'warning',
+        'notice',
+        'info',
+        'debug',
+    ];
 
     public function __construct()
     {
-        if (Config::get('services.googlelogging.enabled')) {
-            $this->logging = new LoggingClient([
-                'projectId' => Config::get('services.googlelogging.project_id'),
-            ]);
 
-            $this->logger = $this->logging->logger(Config::get('services.googlelogging.log_name'));
-        }
     }
 
     public function write($data, $severity = 'INFO')
     {
-        if (!$this->logger) {
-            return;
-        }
-
-        $message = '';
-
         $message = is_string($data) ? $data : json_encode($data);
+        $output = strtolower($severity);
 
-        $entry = $this->logger->entry($message, [
-            'severity' => $severity,
-            'resource' => ['type' => 'global']
-        ]);
-
-        return $this->logger->write($entry);
-    }
-
-    public function clearLogging()
-    {
-        if ($this->logging && $this->logger) {
-            $this->logging = null;
-            $this->logger = null;
+        if (!in_array($output, $this->logLevels)) {
+            \Log::error($output . ' is not in known logging levels of "' . implode(', ', $this->logLevels) .
+                '" for message: ' . $message);
         }
+
+        \Log::$output($message);
     }
 }

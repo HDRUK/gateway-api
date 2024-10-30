@@ -1030,15 +1030,31 @@ trait MockExternalApis
             )
         ]);
 
+
         MMC::shouldReceive("translateDataModelType")
-            ->andReturnUsing(function (string $metadata) {
-                return [
-                    "traser_message" => "",
-                    "wasTranslated" => true,
-                    "metadata" => json_decode($metadata, true)["metadata"],
-                    "statusCode" => "200",
-                ];
-            });
+           ->andReturnUsing(function (
+               string $dataset,
+               string $outputSchema,
+               string $outputVersion,
+               string $inputSchema = null,
+               string $inputVersion = null,
+               bool $validateInput = true,
+               bool $validateOutput = true,
+               string $subsection = null
+           ) {
+               $metadata = json_decode($dataset, true)["metadata"];
+               //mock translating alternative schemas via traser - just give it a new GWDM metadata
+
+               if(!array_key_exists("required", $metadata) || (!is_null($inputSchema) && $inputSchema !== 'GWDM')) {
+                   $metadata = $this->getMetadata();
+               }
+               return [
+                   "traser_message" => "",
+                   "wasTranslated" => true,
+                   "metadata" => $metadata,
+                   "statusCode" => "200",
+               ];
+           });
         MMC::shouldReceive("validateDataModelType")->andReturn(true);
         MMC::makePartial();
 
@@ -1055,7 +1071,7 @@ trait MockExternalApis
         // ]);
 
         Http::fake([
-            env('FMA_SERVICE_URL').'*' => Http::response(
+            env('GMI_SERVICE_URL').'*' => Http::response(
                 ['message' => 'success'],
                 200,
                 ['application/json']
