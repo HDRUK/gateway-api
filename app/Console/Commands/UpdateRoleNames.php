@@ -121,7 +121,6 @@ class UpdateRoleNames extends Command
                     'team-members.create',
                     'team-members.update',
                     'team-members.delete',
-
                     'custodians.create',
                     'custodians.read',
                     'custodians.update',
