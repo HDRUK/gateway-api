@@ -51,44 +51,46 @@ class UpdateEmailTemplateAppFederation extends Command
                                 <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
                             </mj-column>
                         </mj-section>
-        
+
                         <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                             <mj-column width="100%">
                                 <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                    Congratulations! Your permissions have changed for [[TEAM_NAME]] 
+                                    Congratulations! A new Private App has been created for [[TEAM_NAME]] 
                                 </mj-text>
                             </mj-column>
                         </mj-section>
-        
+
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text  line-height="20px">
                                     Dear [[USER_FIRSTNAME]],
                                 </mj-text>
                                 <mj-text line-height="20px">
-                                    Your roles within [[TEAM_NAME]] have been updated:
+                                    [[APP_NAME]] has been created to enable automated integration with the Gateway:
                                 </mj-text>
                                 <mj-text>
-                                    Current Roles:<br/>
-                                    [[CURRENT_ROLES]]
+                                    Date: [[APP_CREATED_AT_DATE]]
                                 </mj-text>
                                 <mj-text>
-                                    Added Roles:<br/>
-                                    [[ADDED_ROLES]]
-                                </mj-text>
-                                <mj-text>
-                                    Removed Roles:<br/>
-                                    [[REMOVED_ROLES]]
+                                    Status: [[APP_STATUS]]
                                 </mj-text>
                             </mj-column>
                         </mj-section>
-                      
-                      	<mj-section>
+                        
+                        <mj-section>
+                            <mj-column width="100%">
+                                <mj-text  line-height="20px">
+                                    To review or edit the integration, click the link below or visit your account on the Gateway.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+                        
+                        <mj-section>
                             <mj-column>
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                             </mj-column>
                         </mj-section>
-        
+
                         <mj-section>
                             <mj-column>
                                 <mj-text align="center">
@@ -99,7 +101,7 @@ class UpdateEmailTemplateAppFederation extends Command
                                 </mj-text>
                             </mj-column>
                         </mj-section>
-        
+
                     </mj-body>
                 </mjml>',
             'buttons' => '
@@ -117,7 +119,7 @@ class UpdateEmailTemplateAppFederation extends Command
         // private.app.update
         EmailTemplate::create([
             'identifier' => 'private.app.update',
-            'subject' => 'Congratulations! Private App has been updated.',
+            'subject' => 'Private App has been updated.',
             'body' => '
                 <mjml>
                     <mj-head>
@@ -143,7 +145,7 @@ class UpdateEmailTemplateAppFederation extends Command
                         <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                             <mj-column width="100%">
                                 <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                    Private App has been updated for [[TEAM_NAME]].
+                                    Private App has been updated for [[TEAM_NAME]] 
                                 </mj-text>
                             </mj-column>
                         </mj-section>
@@ -157,14 +159,14 @@ class UpdateEmailTemplateAppFederation extends Command
                                     [[APP_NAME]] has been updated on the Gateway:
                                 </mj-text>
                                 <mj-text>
-                                    Date: [[APP_UPDATED_DATE]]
+                                    Date: [[APP_UPDATED_AT_DATE]]
                                 </mj-text>
                                 <mj-text>
                                     Status: [[APP_STATUS]]
                                 </mj-text>
                             </mj-column>
                         </mj-section>
-
+                        
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text line-height="20px">
@@ -172,7 +174,7 @@ class UpdateEmailTemplateAppFederation extends Command
                                 </mj-text>
                             </mj-column>
                         </mj-section>
-
+                        
                         <mj-section>
                             <mj-column>
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
@@ -207,7 +209,7 @@ class UpdateEmailTemplateAppFederation extends Command
         // private.app.delete
         EmailTemplate::create([
             'identifier' => 'private.app.delete',
-            'subject' => 'Congratulations! Private App has been updated.',
+            'subject' => 'Private App has been deleted.',
             'body' => '
                 <mjml>
                     <mj-head>
@@ -247,7 +249,7 @@ class UpdateEmailTemplateAppFederation extends Command
                                     [[APP_NAME]] has been deleted on the Gateway:
                                 </mj-text>
                                 <mj-text>
-                                    Date: [[APP_UPDATED_DATE]]
+                                    Date: [[APP_DELETED_AT_DATE]]
                                 </mj-text>
                             </mj-column>
                         </mj-section>
