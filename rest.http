@@ -2240,9 +2240,16 @@ Authorization: Bearer {{accessToken}}
 }
 
 
-
-
 ### Search
+#### search for doi
+POST {{baseUrl}}/api/{{apiVersion}}/search/doi HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+    "query": "https://doi.org/10.1155/2023/5885059"
+}
+
 #### search for datasets
 # example url: POST {{baseUrl}}/api/{{apiVersion}}/search/datasets?page=2 HTTP/1.1
 # example url: POST {{baseUrl}}/api/{{apiVersion}}/search/datasets?perPage=5 HTTP/1.1

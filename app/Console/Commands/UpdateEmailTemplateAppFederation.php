@@ -300,7 +300,9 @@ class UpdateEmailTemplateAppFederation extends Command
         ]);
 
         // federation.app.create
-        EmailTemplate::create([
+        EmailTemplate::updateOrCreate([
+            'identifier' => 'federation.app.create',
+        ], [
             'identifier' => 'federation.app.create',
             'subject' => 'Contratulations! A new Gateway App has been created.',
             'body' => '
@@ -342,10 +344,10 @@ class UpdateEmailTemplateAppFederation extends Command
                                     [[GATEWAY_APP_NAME]] has been created to enable automated integration with the Gateway:
                                 </mj-text>
                                 <mj-text>
-                                    Date: [[GATEWAY_APP_UPDATED_DATE]]
+                                    Date: [[GATEWAY_APP_CREATED_AT_DATE]]
                                 </mj-text>
                                 <mj-text>
-                                    Status: [[GATEWAY_APP_UPDATED_DATE]]
+                                    Status: [[GATEWAY_APP_STATUS]]
                                 </mj-text>
                             </mj-column>
                         </mj-section>
@@ -390,7 +392,9 @@ class UpdateEmailTemplateAppFederation extends Command
         ]);
 
         // federation.app.update
-        EmailTemplate::create([
+        EmailTemplate::updateOrCreate([
+            'identifier' => 'federation.app.update',
+        ], [
             'identifier' => 'federation.app.update',
             'subject' => 'Gateway App has been updated.',
             'body' => '
@@ -432,10 +436,10 @@ class UpdateEmailTemplateAppFederation extends Command
                                     [[GATEWAY_APP_NAME]] has been updated on the Gateway:
                                 </mj-text>
                                 <mj-text>
-                                    Date: [[GATEWAY_APP_UPDATED_DATE]]
+                                    Date: [[GATEWAY_APP_UPDATED_AT_DATE]]
                                 </mj-text>
                                 <mj-text>
-                                    Status: [[GATEWAY_APP_UPDATED_DATE]]
+                                    Status: [[GATEWAY_APP_STATUS]]
                                 </mj-text>
                             </mj-column>
                         </mj-section>
