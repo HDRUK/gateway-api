@@ -1261,6 +1261,7 @@ class SearchController extends Controller
      *              mediaType="application/json",
      *              @OA\Schema(
      *                  @OA\Property(property="query", type="string", example="national data provider colls"),
+     *                  @OA\Property(property="filters", type="string", example={"filtersExample": @OA\Schema(ref="#/components/examples/filtersExample")})
      *              )
      *          )
      *      ),
@@ -1294,6 +1295,7 @@ class SearchController extends Controller
      *                  @OA\Items(
      *                      @OA\Property(property="_source", type="array",
      *                          @OA\Items(
+     *                              @OA\Property(property="id", type="string"),
      *                              @OA\Property(property="name", type="string"),
      *                              @OA\Property(property="img_url", type="string"),
      *                              @OA\Property(property="datasetTitles", type="array", @OA\Items()),
@@ -1353,6 +1355,7 @@ class SearchController extends Controller
                 $foundFlag = false;
                 foreach ($dataProviderCollModels as $model) {
                     if ((int)$dp['_id'] === $model['id']) {
+                        $dataProviderCollArray[$i]['id'] = $model['id'];
                         $dataProviderCollArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $dataProviderCollArray[$i]['name'] = $model['name'];
                         $dataProviderCollArray[$i]['img_url'] = $model['img_url'];
