@@ -27,7 +27,9 @@ class UpdateEmailTemplateAppFederation extends Command
     public function handle()
     {
         // private.app.create
-        EmailTemplate::create([
+        EmailTemplate::updateOrCreate([
+            'identifier' => 'private.app.create',
+        ], [
             'identifier' => 'private.app.create',
             'subject' => 'Congratulations! A new Private App has been created.',
             'body' => '
@@ -117,7 +119,9 @@ class UpdateEmailTemplateAppFederation extends Command
         ]);
 
         // private.app.update
-        EmailTemplate::create([
+        EmailTemplate::updateOrCreate([
+            'identifier' => 'private.app.update',
+        ],[
             'identifier' => 'private.app.update',
             'subject' => 'Private App has been updated.',
             'body' => '
@@ -207,7 +211,9 @@ class UpdateEmailTemplateAppFederation extends Command
         ]);
 
         // private.app.delete
-        EmailTemplate::create([
+        EmailTemplate::updateOrCreate([
+            'identifier' => 'private.app.delete',
+        ],[
             'identifier' => 'private.app.delete',
             'subject' => 'Private App has been deleted.',
             'body' => '

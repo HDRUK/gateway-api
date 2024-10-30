@@ -454,7 +454,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get one application by id
-GET {{baseUrl}}/api/{{apiVersion}}/applications/51 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/applications/2 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
