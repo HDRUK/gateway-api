@@ -59,7 +59,8 @@ class DatasetVersionTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
-                'email' => 'Some@email.com',
+                'email' => null,
+                'user_id' => 3,
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
@@ -186,7 +187,8 @@ class DatasetVersionTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
-                'email' => 'Some@email.com',
+                'email' => null,
+                'user_id' => 3,
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
@@ -293,201 +295,204 @@ class DatasetVersionTest extends TestCase
 
     }
 
-    public function test_a_dataset_version_is_created_on_dataset_update(): void
-    {
-        // First create a notification to be used by the new team
-        $responseNotification = $this->json(
-            'POST',
-            self::TEST_URL_NOTIFICATION,
-            [
-                'notification_type' => 'applicationSubmitted',
-                'message' => 'Some message here',
-                'email' => 'Some@email.com',
-                'opt_in' => 1,
-                'enabled' => 1,
-            ],
-            $this->header,
-        );
+    // LS - Removed due to removing versioning for a time
+    //
+    // public function test_a_dataset_version_is_created_on_dataset_update(): void
+    // {
+    //     // First create a notification to be used by the new team
+    //     $responseNotification = $this->json(
+    //         'POST',
+    //         self::TEST_URL_NOTIFICATION,
+    //         [
+    //             'notification_type' => 'applicationSubmitted',
+    //             'message' => 'Some message here',
+    //             'email' => null,
+    //             'user_id' => 3,
+    //             'opt_in' => 1,
+    //             'enabled' => 1,
+    //         ],
+    //         $this->header,
+    //     );
 
-        $contentNotification = $responseNotification->decodeResponseJson();
-        $notificationID = $contentNotification['data'];
+    //     $contentNotification = $responseNotification->decodeResponseJson();
+    //     $notificationID = $contentNotification['data'];
 
-        $responseCreateTeam = $this->json(
-            'POST',
-            self::TEST_URL_TEAM,
-            [
-                'name' => 'Test Team 1',
-                'enabled' => 1,
-                'allows_messaging' => 1,
-                'workflow_enabled' => 1,
-                'access_requests_management' => 1,
-                'uses_5_safes' => 1,
-                'is_admin' => 1,
-                'member_of' => fake()->randomElement([
-                    TeamMemberOf::ALLIANCE,
-                    TeamMemberOf::HUB,
-                    TeamMemberOf::OTHER,
-                    TeamMemberOf::NCS,
-                ]),
-                'contact_point' => 'dinos345@mail.com',
-                'application_form_updated_by' => 'Someone Somewhere',
-                'application_form_updated_on' => '2023-04-06 15:44:41',
-                'notifications' => [$notificationID],
-                'users' => [],
-            ],
-            $this->header,
-        );
+    //     $responseCreateTeam = $this->json(
+    //         'POST',
+    //         self::TEST_URL_TEAM,
+    //         [
+    //             'name' => 'Test Team 1',
+    //             'enabled' => 1,
+    //             'allows_messaging' => 1,
+    //             'workflow_enabled' => 1,
+    //             'access_requests_management' => 1,
+    //             'uses_5_safes' => 1,
+    //             'is_admin' => 1,
+    //             'member_of' => fake()->randomElement([
+    //                 TeamMemberOf::ALLIANCE,
+    //                 TeamMemberOf::HUB,
+    //                 TeamMemberOf::OTHER,
+    //                 TeamMemberOf::NCS,
+    //             ]),
+    //             'contact_point' => 'dinos345@mail.com',
+    //             'application_form_updated_by' => 'Someone Somewhere',
+    //             'application_form_updated_on' => '2023-04-06 15:44:41',
+    //             'notifications' => [$notificationID],
+    //             'users' => [],
+    //         ],
+    //         $this->header,
+    //     );
 
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
+    //     $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+    //     ->assertJsonStructure([
+    //         'message',
+    //         'data',
+    //     ]);
 
-        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
-        $teamId = $contentCreateTeam['data'];
+    //     $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
+    //     $teamId = $contentCreateTeam['data'];
 
-        // create user
-        $responseCreateUser = $this->json(
-            'POST',
-            self::TEST_URL_USER,
-            [
-                'firstname' => 'Firstname',
-                'lastname' => 'Lastname',
-                'email' => 'firstname.lastname.123456789@test.com',
-                'password' => 'Passw@rd1!',
-                'sector_id' => 1,
-                'organisation' => 'Test Organisation',
-                'bio' => 'Test Biography',
-                'domain' => 'https://testdomain.com',
-                'link' => 'https://testlink.com/link',
-                'orcid' => " https://orcid.org/75697342",
-                'contact_feedback' => 1,
-                'contact_news' => 1,
-                'mongo_id' => 1234566,
-                'mongo_object_id' => "12345abcde",
-            ],
-            $this->header,
-        );
-        $responseCreateUser->assertStatus(201);
-        $contentCreateUser = $responseCreateUser->decodeResponseJson();
-        $userId = $contentCreateUser['data'];
+    //     // create user
+    //     $responseCreateUser = $this->json(
+    //         'POST',
+    //         self::TEST_URL_USER,
+    //         [
+    //             'firstname' => 'Firstname',
+    //             'lastname' => 'Lastname',
+    //             'email' => 'firstname.lastname.123456789@test.com',
+    //             'password' => 'Passw@rd1!',
+    //             'sector_id' => 1,
+    //             'organisation' => 'Test Organisation',
+    //             'bio' => 'Test Biography',
+    //             'domain' => 'https://testdomain.com',
+    //             'link' => 'https://testlink.com/link',
+    //             'orcid' => " https://orcid.org/75697342",
+    //             'contact_feedback' => 1,
+    //             'contact_news' => 1,
+    //             'mongo_id' => 1234566,
+    //             'mongo_object_id' => "12345abcde",
+    //         ],
+    //         $this->header,
+    //     );
+    //     $responseCreateUser->assertStatus(201);
+    //     $contentCreateUser = $responseCreateUser->decodeResponseJson();
+    //     $userId = $contentCreateUser['data'];
 
-        $responseCreateDataset = $this->json(
-            'POST',
-            self::TEST_URL_DATASET,
-            [
-                'team_id' => $teamId,
-                'user_id' => $userId,
-                'metadata' => $this->metadata,
-                'create_origin' => Dataset::ORIGIN_MANUAL,
-                'status' => Dataset::STATUS_ACTIVE,
-            ],
-            $this->header
-        );
+    //     $responseCreateDataset = $this->json(
+    //         'POST',
+    //         self::TEST_URL_DATASET,
+    //         [
+    //             'team_id' => $teamId,
+    //             'user_id' => $userId,
+    //             'metadata' => $this->metadata,
+    //             'create_origin' => Dataset::ORIGIN_MANUAL,
+    //             'status' => Dataset::STATUS_ACTIVE,
+    //         ],
+    //         $this->header
+    //     );
 
-        $responseCreateDataset->assertStatus(201);
-        $datasetId = $responseCreateDataset['data'];
+    //     $responseCreateDataset->assertStatus(201);
+    //     $datasetId = $responseCreateDataset['data'];
 
-        $dataset1 = Dataset::with('versions')->where('id', $datasetId)->first();
+    //     $dataset1 = Dataset::with('versions')->where('id', $datasetId)->first();
 
-        $this->assertTrue((count($dataset1->versions)) === 1);
-        $updatedMetadata = $this->metadata;
+    //     $this->assertTrue((count($dataset1->versions)) === 1);
+    //     $updatedMetadata = $this->metadata;
 
-        $updatedMetadata['metadata']['summary']['title'] = 'Updated Metadata Title 123';
+    //     $updatedMetadata['metadata']['summary']['title'] = 'Updated Metadata Title 123';
 
-        $responseUpdateDataset = $this->json(
-            'PUT',
-            self::TEST_URL_DATASET . '/' . $datasetId,
-            [
-                'team_id' => $teamId,
-                'user_id' => $userId,
-                'metadata' => $updatedMetadata,
-                'create_origin' => Dataset::ORIGIN_MANUAL,
-                'status' => Dataset::STATUS_ACTIVE,
-            ],
-            $this->header
-        );
+    //     $responseUpdateDataset = $this->json(
+    //         'PUT',
+    //         self::TEST_URL_DATASET . '/' . $datasetId,
+    //         [
+    //             'team_id' => $teamId,
+    //             'user_id' => $userId,
+    //             'metadata' => $updatedMetadata,
+    //             'create_origin' => Dataset::ORIGIN_MANUAL,
+    //             'status' => Dataset::STATUS_ACTIVE,
+    //         ],
+    //         $this->header
+    //     );
 
-        $responseUpdateDataset->assertStatus(200);
+    //     $responseUpdateDataset->assertStatus(200);
 
-        $version = DatasetVersion::where('dataset_id', $datasetId)->get();
+    //     $version = DatasetVersion::where('dataset_id', $datasetId)->get();
 
-        $this->assertTrue((count($version)) === 2);
+    //     $this->assertTrue((count($version)) === 2);
 
-        $this->assertEquals($version[0]->version, 1);
-        $this->assertEquals($version[1]->version, 2);
+    //     $this->assertEquals($version[0]->version, 1);
+    //     $this->assertEquals($version[1]->version, 2);
 
-        $this->assertEquals(
-            $version[0]->metadata['metadata']['summary']['title'],
-            $this->metadata['metadata']['summary']['title']
-        );
-        $this->assertEquals(
-            $version[1]->metadata['metadata']['summary']['title'],
-            $updatedMetadata['metadata']['summary']['title']
-        );
+    //     $this->assertEquals(
+    //         $version[0]->metadata['metadata']['summary']['title'],
+    //         $this->metadata['metadata']['summary']['title']
+    //     );
+    //     $this->assertEquals(
+    //         $version[1]->metadata['metadata']['summary']['title'],
+    //         $updatedMetadata['metadata']['summary']['title']
+    //     );
 
-        // assert that changing the status does not create a new version
-        $responseChangeStatusDataset = $this->json(
-            'PATCH',
-            self::TEST_URL_DATASET . '/' . $datasetId,
-            [
-                'status' => Dataset::STATUS_DRAFT,
-            ],
-            $this->header
-        );
+    //     // assert that changing the status does not create a new version
+    //     $responseChangeStatusDataset = $this->json(
+    //         'PATCH',
+    //         self::TEST_URL_DATASET . '/' . $datasetId,
+    //         [
+    //             'status' => Dataset::STATUS_DRAFT,
+    //         ],
+    //         $this->header
+    //     );
 
-        $responseChangeStatusDataset->assertStatus(200);
+    //     $responseChangeStatusDataset->assertStatus(200);
 
-        $version = DatasetVersion::where('dataset_id', $datasetId)->get();
+    //     $version = DatasetVersion::where('dataset_id', $datasetId)->get();
 
-        $this->assertTrue((count($version)) === 2);
+    //     $this->assertTrue((count($version)) === 2);
 
-        $this->assertEquals($version[0]->version, 1);
-        $this->assertEquals($version[1]->version, 2);
+    //     $this->assertEquals($version[0]->version, 1);
+    //     $this->assertEquals($version[1]->version, 2);
 
-        $this->assertEquals(
-            $version[0]->metadata['metadata']['summary']['title'],
-            $this->metadata['metadata']['summary']['title']
-        );
-        $this->assertEquals(
-            $version[1]->metadata['metadata']['summary']['title'],
-            'Updated Metadata Title 123'
-        );
+    //     $this->assertEquals(
+    //         $version[0]->metadata['metadata']['summary']['title'],
+    //         $this->metadata['metadata']['summary']['title']
+    //     );
+    //     $this->assertEquals(
+    //         $version[1]->metadata['metadata']['summary']['title'],
+    //         'Updated Metadata Title 123'
+    //     );
 
-        $responseDeleteDataset = $this->json(
-            'DELETE',
-            self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
-            [],
-            $this->header
-        );
+    //     $responseDeleteDataset = $this->json(
+    //         'DELETE',
+    //         self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
+    //         [],
+    //         $this->header
+    //     );
 
-        $responseDeleteDataset->assertStatus(200);
+    //     $responseDeleteDataset->assertStatus(200);
 
-        // Confirm DatasetVersions associated with this Dataset have also been (soft) deleted
-        $versions = DatasetVersion::withTrashed()->where('dataset_id', $datasetId);
-        foreach ($versions as $v) {
-            $this->assertTrue($v->deleted_at !== null);
-        }
+    //     // Confirm DatasetVersions associated with this Dataset have also been (soft) deleted
+    //     $versions = DatasetVersion::withTrashed()->where('dataset_id', $datasetId);
+    //     foreach ($versions as $v) {
+    //         $this->assertTrue($v->deleted_at !== null);
+    //     }
 
-        $responseDeleteTeam = $this->json(
-            'DELETE',
-            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
-            [],
-            $this->header
-        );
+    //     $responseDeleteTeam = $this->json(
+    //         'DELETE',
+    //         self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
+    //         [],
+    //         $this->header
+    //     );
 
-        $responseDeleteTeam->assertStatus(200);
+    //     $responseDeleteTeam->assertStatus(200);
 
-        $responseDeleteUser = $this->json(
-            'DELETE',
-            self::TEST_URL_USER . '/' . $userId,
-            [],
-            $this->header
-        );
+    //     $responseDeleteUser = $this->json(
+    //         'DELETE',
+    //         self::TEST_URL_USER . '/' . $userId,
+    //         [],
+    //         $this->header
+    //     );
 
-        $responseDeleteUser->assertStatus(200);
-    }
+    //     $responseDeleteUser->assertStatus(200);
+    // }
 
 
     public function test_create_dataset_different_gwdm_versions(): void
@@ -555,7 +560,7 @@ class DatasetVersionTest extends TestCase
 
         $datasetId = $responseCreateDataset['data'];
         //get the 2nd version of the metadata that was just updated
-        $dataset2 = DatasetVersion::where('dataset_id', $datasetId)->skip(1)->take(1)->first();
+        $dataset2 = DatasetVersion::where('dataset_id', $datasetId)->first();
         //check this has used the newer GWDM 1.1
         $dataset2GwdmVersion = $dataset2['metadata']['gwdmVersion'];
         $this->assertEquals($dataset2GwdmVersion, "1.1");
@@ -585,7 +590,7 @@ class DatasetVersionTest extends TestCase
 
         $datasetId = $responseCreateDataset['data'];
         //get the 2nd version of the metadata that was just updated
-        $dataset2 = DatasetVersion::where('dataset_id', $datasetId)->skip(2)->take(1)->first();
+        $dataset2 = DatasetVersion::where('dataset_id', $datasetId)->first();
         //check this has used the newer GWDM 2.0
         $dataset2GwdmVersion = $dataset2['metadata']['gwdmVersion'];
         $this->assertEquals($dataset2GwdmVersion, "2.0");

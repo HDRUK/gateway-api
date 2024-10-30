@@ -1201,4 +1201,68 @@ class CohortRequestController extends Controller
         }
     }
 
+    /* @OA\Get(
+        *    path="/api/v1/cohort_requests/user/{id}",
+        *    operationId="fetch_cohort_requests_by_usr",
+        *    tags={"Cohort Requests"},
+        *    summary="CohortRequestController@byUser",
+        *    description="Returns cohort request for given user ID",
+        *    security={{"bearerAuth":{}}},
+        *    @OA\Parameter(
+        *       name="id",
+        *       in="path",
+        *       description="user id",
+        *       required=true,
+        *       example="1",
+        *       @OA\Schema(
+        *          type="integer",
+        *          description="user id",
+        *       ),
+        *    ),
+        *    @OA\Response(
+        *       response="200",
+        *       description="Success response",
+        *       @OA\JsonContent(
+        *         @OA\Items(type="object",
+        *           @OA\Property(property="id", type="integer", example="123"),
+        *           @OA\Property(property="user_id", type="integer", example="1"),
+        *           @OA\Property(property="request_status", type="string", example="PENDING"),
+        *           @OA\Property(property="cohort_status", type="boolean", example="0"),
+        *           @OA\Property(property="request_expire_at", type="datetime", example="2023-04-03 12:00:00"),
+        *           @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+        *           @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+        *           @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+        *           @OA\Property(property="accept_declaration", type="boolean", example="0"),
+        *         ),
+        *       ),
+        *    ),
+        * )
+        */
+    public function byUser(Request $request, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        try {
+            $cohortRequest = CohortRequest::where('user_id', (int)$id)->first();
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Cohort Request get by user ' . $id,
+            ]);
+            return response()->json([
+                'message' => 'success',
+                'data' => $cohortRequest,
+            ], 200);
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+            throw new Exception($e->getMessage());
+        }
+    }
 }

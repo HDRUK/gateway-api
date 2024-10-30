@@ -21,7 +21,7 @@ use App\Http\Controllers\Controller;
 
 use App\Http\Traits\MetadataOnboard;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Http\Traits\AddMetadataVersion;
+use App\Http\Traits\MetadataVersioning;
 use App\Models\Traits\ModelHelpers;
 
 use Illuminate\Support\Facades\Storage;
@@ -38,7 +38,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DatasetController extends Controller
 {
-    use AddMetadataVersion;
+    use MetadataVersioning;
     use IndexElastic;
     use GetValueByPossibleKeys;
     use MetadataOnboard;
@@ -467,7 +467,7 @@ class DatasetController extends Controller
 
                 if ($translated['wasTranslated']) {
                     $withLinks = DatasetVersion::where('id', $latestVersion['id'])
-                        ->with(['linkedDatasetVersions'])
+                        ->with(['reducedLinkedDatasetVersions'])
                         ->first();
                     $withLinks['metadata'] = json_encode(['metadata' => $translated['metadata']]);
                     $dataset->setAttribute('versions', [$withLinks]);
@@ -765,28 +765,32 @@ class DatasetController extends Controller
                 'is_cohort_discovery' => $isCohortDiscovery,
             ]);
 
-            $retVal = $this->addMetadataVersion(
+            $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
+
+            $datasetVersionId = $this->updateMetadataVersion(
                 $currDataset,
-                $request['status'],
-                $updateTime,
                 $gwdmMetadata,
                 $submittedMetadata,
-                $currDataset->lastMetadataVersionNumber()->version
             );
 
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
-            if($request['status'] === Dataset::STATUS_ACTIVE &&  Config::get('ted.enabled')) {
+            if($request['status'] === Dataset::STATUS_ACTIVE) {
+                if(Config::get('ted.enabled')) {
+                    $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
 
-                $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
-
-                TermExtraction::dispatch(
-                    $currDataset->id,
-                    $retVal['datasetVersionId'],
-                    $retVal['versionNumber'],
-                    base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
-                    $elasticIndexing,
-                    Config::get('ted.use_partial')
-                );
+                    TermExtraction::dispatch(
+                        $currDataset->id,
+                        $datasetVersionId,
+                        $versionNumber,
+                        base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
+                        $elasticIndexing,
+                        Config::get('ted.use_partial')
+                    );
+                } else {
+                    $this->reindexElastic($currDataset->id);
+                }
+            } elseif($initDataset->status === Dataset::STATUS_ACTIVE) {
+                $this->deleteDatasetFromElastic($currDataset->id);
             }
 
             Auditor::log([
@@ -794,7 +798,7 @@ class DatasetController extends Controller
                 'team_id' => $teamId,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Dataset ' . $id . ' with version ' . ($retVal['versionNumber'] + 1) . ' updated',
+                'description' => 'Dataset ' . $id . ' with version ' . ($versionNumber) . ' updated',
             ]);
 
             //note Calum 13/08/2024

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Application;
 
+use Closure;
 use App\Http\Requests\BaseFormRequest;
 
 class CreateApplication extends BaseFormRequest
@@ -40,6 +41,16 @@ class CreateApplication extends BaseFormRequest
             'enabled' => [
                 'required',
                 'boolean',
+            ],
+            'notifications' => [
+                'array',
+            ],
+            'notifications.*' => [
+                function (string $attribute, mixed $value, Closure $fail) {
+                    if (!(is_numeric($value) || filter_var($value, FILTER_VALIDATE_EMAIL))) {
+                        $fail("The {$attribute} is invalid.");
+                    }
+                },
             ],
             'permissions' => [
                 'array',
