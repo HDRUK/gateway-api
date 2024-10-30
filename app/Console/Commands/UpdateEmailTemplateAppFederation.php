@@ -68,7 +68,7 @@ class UpdateEmailTemplateAppFederation extends Command
                                     Dear [[USER_FIRSTNAME]],
                                 </mj-text>
                                 <mj-text line-height="20px">
-                                    [[APP_NAME]] has been created to enable automated integration with the Gateway:
+                                    <b>[[APP_NAME]]</b> has been created to enable automated integration with the Gateway:
                                 </mj-text>
                                 <mj-text>
                                     Date: [[APP_CREATED_AT_DATE]]
@@ -121,7 +121,7 @@ class UpdateEmailTemplateAppFederation extends Command
         // private.app.update
         EmailTemplate::updateOrCreate([
             'identifier' => 'private.app.update',
-        ],[
+        ], [
             'identifier' => 'private.app.update',
             'subject' => 'Private App has been updated.',
             'body' => '
@@ -160,7 +160,7 @@ class UpdateEmailTemplateAppFederation extends Command
                                     Dear [[USER_FIRSTNAME]],
                                 </mj-text>
                                 <mj-text line-height="20px">
-                                    [[APP_NAME]] has been updated on the Gateway:
+                                    <b>[[APP_NAME]]</b> has been updated on the Gateway:
                                 </mj-text>
                                 <mj-text>
                                     Date: [[APP_UPDATED_AT_DATE]]
@@ -213,7 +213,7 @@ class UpdateEmailTemplateAppFederation extends Command
         // private.app.delete
         EmailTemplate::updateOrCreate([
             'identifier' => 'private.app.delete',
-        ],[
+        ], [
             'identifier' => 'private.app.delete',
             'subject' => 'Private App has been deleted.',
             'body' => '
@@ -252,7 +252,7 @@ class UpdateEmailTemplateAppFederation extends Command
                                     Dear [[USER_FIRSTNAME]],
                                 </mj-text>
                                 <mj-text line-height="20px">
-                                    [[APP_NAME]] has been deleted on the Gateway:
+                                    <b>[[APP_NAME]]</b> has been deleted on the Gateway:
                                 </mj-text>
                                 <mj-text>
                                     Date: [[APP_DELETED_AT_DATE]]

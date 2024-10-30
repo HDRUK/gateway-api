@@ -152,11 +152,11 @@ class DatasetVersion extends Model
         );
     }
 
-     /**
-     * The reduced dataset versions that belong to the dataset version, the above linkedDatasetVersions
-     * is used in a few places, if in infuture we discover that we only ever need to use the below instead, 
-     * we can easily switch. - Jamie B 
-     */
+    /**
+    * The reduced dataset versions that belong to the dataset version, the above linkedDatasetVersions
+    * is used in a few places, if in infuture we discover that we only ever need to use the below instead,
+    * we can easily switch. - Jamie B
+    */
     public function reducedLinkedDatasetVersions(): BelongsToMany
     {
         return $this->belongsToMany(

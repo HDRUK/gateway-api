@@ -681,7 +681,7 @@ class ApplicationController extends Controller
             Application::where('id', $id)->delete();
             ApplicationHasPermission::where('application_id', $id)->delete();
 
-            // I don't know if deleting an application should also delete the connection with the notifications. 
+            // I don't know if deleting an application should also delete the connection with the notifications.
             // What happens if undo is done after delete?
             $applicationHasNotificationIds = ApplicationHasNotification::where('application_id', $id)->pluck('notification_id');
 
@@ -837,10 +837,10 @@ class ApplicationController extends Controller
                 '[[APP_STATUS]]' => $app->enabled ? 'enabled' : 'disabled',
                 '[[CURRENT_YEAR]]' => date('Y'),
             ];
-    
+
             SendEmailJob::dispatch($to, $template, $replacements);
         }
-        
+
     }
 
     public function sendEmailTo(Application $app): array
