@@ -851,7 +851,10 @@ class FederationController extends Controller
 
         try {
             $response = Http::post(env('GMI_SERVICE_URL') . '/test', $input);
-            return response()->json($response->json());
+            return response()->json([
+                'data' => $response->json(),
+            ], 200);
+
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
