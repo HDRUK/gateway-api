@@ -55,8 +55,7 @@ class CustomAuthorizationController extends Controller
         $userId = session('cr_uid');
 
         if (!$userId) {
-            $rquestInitUrl = Config::get('services.rquest.init_url');
-            return redirect()->away($rquestInitUrl);
+            return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
         }
 
         // save nonce and user_id for id_token
