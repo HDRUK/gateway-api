@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\SSO;
 
+use Config;
 use App\Models\OauthUser;
 use Illuminate\Http\Request;
 use Laravel\Passport\Passport;
@@ -52,6 +53,11 @@ class CustomAuthorizationController extends Controller
     ) {
         // user_id from CohortRequestController@checkAccess
         $userId = session('cr_uid');
+
+        if (!$userId) {
+            $rquestInitUrl = Config::get('services.rquest.init_url');
+            return redirect()->away($rquestInitUrl);
+        }
 
         // save nonce and user_id for id_token
         OauthUser::create([
