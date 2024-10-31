@@ -47,7 +47,7 @@ class AssignTeamToCollection extends Command
             $teamMongoId = $item['team_id'];
             $teamName = $item['team_name'];
             $team = Team::where("mongo_object_id", $teamMongoId)->select("id")->first();
-            if(!$team && !is_null($teamName)) {
+            if(!$team && !is_null($teamName) && trim($teamName) !== '') {
                 $team = Team::where("name", "like", "%".$teamName."%")->select("id")->first();
             }
             if(!$team) {
