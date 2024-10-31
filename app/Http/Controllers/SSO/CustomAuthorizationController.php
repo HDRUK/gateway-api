@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\SSO;
 
-use Config;
 use App\Models\OauthUser;
 use Illuminate\Http\Request;
 use Laravel\Passport\Passport;
