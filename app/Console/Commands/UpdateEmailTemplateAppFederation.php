@@ -29,7 +29,7 @@ class UpdateEmailTemplateAppFederation extends Command
         // private.app.create
         EmailTemplate::updateOrCreate([
             'identifier' => 'private.app.create',
-        ], [
+        ],[
             'identifier' => 'private.app.create',
             'subject' => 'Congratulations! A new Private App has been created.',
             'body' => '
@@ -106,6 +106,8 @@ class UpdateEmailTemplateAppFederation extends Command
 
                     </mj-body>
                 </mjml>',
+        ]);
+        EmailTemplate::where('identifier', 'private.app.create')->update([
             'buttons' => '
                 {
                     "replacements": [
@@ -115,7 +117,7 @@ class UpdateEmailTemplateAppFederation extends Command
                         }
                     ]
                 }
-            '
+            ',
         ]);
 
         // private.app.update
@@ -198,6 +200,8 @@ class UpdateEmailTemplateAppFederation extends Command
 
                     </mj-body>
                 </mjml>',
+        ]);
+        EmailTemplate::where('identifier', 'private.app.update')->update([
             'buttons' => '
                 {
                     "replacements": [
@@ -207,8 +211,9 @@ class UpdateEmailTemplateAppFederation extends Command
                         }
                     ]
                 }
-            '
+            ',
         ]);
+
 
         // private.app.delete
         EmailTemplate::updateOrCreate([
@@ -287,6 +292,8 @@ class UpdateEmailTemplateAppFederation extends Command
 
                     </mj-body>
                 </mjml>',
+        ]);
+        EmailTemplate::where('identifier', 'private.app.delete')->update([
             'buttons' => '
                 {
                     "replacements": [
@@ -296,7 +303,7 @@ class UpdateEmailTemplateAppFederation extends Command
                         }
                     ]
                 }
-            '
+            ',
         ]);
 
         // federation.app.create
@@ -379,6 +386,8 @@ class UpdateEmailTemplateAppFederation extends Command
 
                     </mj-body>
                 </mjml>',
+        ]);
+        EmailTemplate::where('identifier', 'federation.app.create')->update([
             'buttons' => '
                 {
                     "replacements": [
@@ -388,8 +397,9 @@ class UpdateEmailTemplateAppFederation extends Command
                         }
                     ]
                 }
-            '
+            ',
         ]);
+
 
         // federation.app.update
         EmailTemplate::updateOrCreate([
@@ -471,6 +481,8 @@ class UpdateEmailTemplateAppFederation extends Command
 
                     </mj-body>
                 </mjml>',
+        ]);
+        EmailTemplate::where('identifier', 'federation.app.update')->update([
             'buttons' => '
                 {
                     "replacements": [
@@ -480,8 +492,7 @@ class UpdateEmailTemplateAppFederation extends Command
                         }
                     ]
                 }
-            '
+            ',
         ]);
-
     }
 }
