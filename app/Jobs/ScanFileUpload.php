@@ -267,12 +267,15 @@ class ScanFileUpload implements ShouldQueue
             if (str_contains($d, env('GATEWAY_URL'))) {
                 $exploded = explode('/', $d);
                 $datasetId = (int) end($exploded);
-                $dvID = Dataset::findOrFail($datasetId)->latestVersionID($datasetId);
-                DurHasDatasetVersion::create([
-                    'dur_id' => $durId,
-                    'dataset_version_id' => $dvID
-                ]);
-                continue;
+                $dataset = Dataset::where('id', $datasetId)->first();
+                if ($dataset) {
+                    $dvID = $dataset->latestVersionID($datasetId);
+                    DurHasDatasetVersion::create([
+                        'dur_id' => $durId,
+                        'dataset_version_id' => $dvID
+                    ]);
+                    continue;
+                }
             }
 
             // Try to string match on dataset titles
