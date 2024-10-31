@@ -40,17 +40,17 @@ class UpdateCollectionHasUsers extends Command
             $collectionMongoId = strtoupper(trim($item['_id']));
             $userAdmin = User::where('is_admin', 1)->first();
 
-            $author0= trim($item['authors[0]']);
-            $author1= trim($item['authors[1]']);
-            $author2= trim($item['authors[2]']);
-            $author3= trim($item['authors[3]']);
-            $author4= trim($item['authors[4]']);
-            $author5= trim($item['authors[5]']);
-            $author6= trim($item['authors[6]']);
-            $author7= trim($item['authors[7]']);
-            $author8= trim($item['authors[8]']);
-            $author9= trim($item['authors[9]']);
-            $author10= trim($item['authors[10]']);
+            $author0 = trim($item['authors[0]']);
+            $author1 = trim($item['authors[1]']);
+            $author2 = trim($item['authors[2]']);
+            $author3 = trim($item['authors[3]']);
+            $author4 = trim($item['authors[4]']);
+            $author5 = trim($item['authors[5]']);
+            $author6 = trim($item['authors[6]']);
+            $author7 = trim($item['authors[7]']);
+            $author8 = trim($item['authors[8]']);
+            $author9 = trim($item['authors[9]']);
+            $author10 = trim($item['authors[10]']);
 
             $authors = [];
 
