@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use App\Models\Application;
 use App\Models\Notification;
 use Illuminate\Database\Seeder;
@@ -21,15 +22,20 @@ class ApplicationSeeder extends Seeder
         foreach ($applications as $application) {
 
             $applicationId = $application->id;
-            $noNotifications = rand(1, 3);
+            $noNotifications = rand(1, 5);
 
             for ($i = 1; $i <= $noNotifications; $i++) {
+                $addUserId = fake()->randomElement([0, 1]);
+
+                $userId = User::all()->random()->id;
+
                 $notification = Notification::create([
                     'notification_type' => 'application',
                     'message' => null,
                     'opt_in' => true,
                     'enabled' => true,
-                    'email' => fake()->unique()->safeEmail(),
+                    'user_id' => $addUserId ? $userId : null,
+                    'email' => $addUserId ? null : fake()->unique()->safeEmail(),
                 ]);
 
                 ApplicationHasNotification::create([
