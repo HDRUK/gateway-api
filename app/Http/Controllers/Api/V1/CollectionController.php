@@ -1717,7 +1717,7 @@ class CollectionController extends Controller
         }
     }
 
-    // mask emails with users
+    // mask emails within users
     private function maskEmail(string|null $email)
     {
         if(is_null($email)) {
