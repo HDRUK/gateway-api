@@ -34,7 +34,7 @@ class UpdateCollectionsUserId extends Command
             $collections = Collection::select(['id'])->get()->toArray();
 
             foreach ($collections as $collection) {
-                $collectionHasUsers = CollectionHasUser::where(['collection_id', $collection['id']])->first();
+                $collectionHasUsers = CollectionHasUser::where(['collection_id' => $collection['id']])->first();
 
                 if (is_null($collectionHasUsers)) {
                     CollectionHasUser::create([
