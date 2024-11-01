@@ -350,7 +350,15 @@ return [
             'id' => '[0-9]+',
         ],
     ],
-
+    [
+        'name' => 'sitemap',
+        'method' => 'get',
+        'path' => '/sitemap',
+        'methodController' => 'SiteMapController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
     // TODO - Add DAR.decision rule and route
 
     // teams
