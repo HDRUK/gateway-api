@@ -51,6 +51,11 @@ class Collection extends Model
         'user_id',
     ];
 
+    protected static $htmlDecodedFields = [
+        'description',
+    ];
+
+
     protected $casts = [
         'enabled' => 'boolean',
     ];
@@ -66,6 +71,15 @@ class Collection extends Model
         static::updating(function ($model) {
             $model->validateFields();
         });
+
+        static::retrieved(function ($post) {
+            foreach (self::$htmlDecodedFields as $field) {
+                if (isset($post->$field)) {
+                    $post->$field = html_entity_decode($post->$field, ENT_QUOTES, 'UTF-8');
+                }
+            }
+        });
+
     }
 
     /**
