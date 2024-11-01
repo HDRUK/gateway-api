@@ -12,6 +12,7 @@ use App\Models\Application;
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use App\Http\Traits\CheckAccess;
 use App\Models\CollectionHasDur;
 use App\Http\Traits\IndexElastic;
@@ -1132,6 +1133,15 @@ class CollectionController extends Controller
                     ]);
                 });
             },
+            'users' => function ($query) use ($trimmed) {
+                $query->when($trimmed, function ($q) {
+                    $q->select([
+                        'users.id',
+                        'users.name',
+                        'users.email',
+                     ]);
+                });
+            },
             'datasetVersions' => function ($query) use ($trimmed) {
                 $query->when($trimmed, function ($q) {
                     $q->selectRaw('
@@ -1150,7 +1160,6 @@ class CollectionController extends Controller
             'applicationPublications',
             */
             'team',
-            'users',
         ])
         ->withTrashed()
         ->where(['id' => $collectionId])
@@ -1159,6 +1168,15 @@ class CollectionController extends Controller
         if ($collection) {
             if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
                 $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
+            }
+
+            if($collection->users) {
+                $collection->users->map(function ($user) {
+                    $currentEmail = $user->email;
+                    [$username, $domain] = explode('@', $currentEmail);
+                    $user->email = Str::mask($username, '*', 1, strlen($username) - 2) . '@' . Str::mask($domain, '*', 1, strlen($domain) - 2);
+                    return $user;
+                });
             }
         }
 
@@ -1709,5 +1727,4 @@ class CollectionController extends Controller
             ]);
         }
     }
-
 }
