@@ -169,11 +169,13 @@ class FormHydrationController extends Controller
 
         $defaultValues['Data use limitation'] = $this->mostCommonValue(
             'metadata.metadata.accessibility.usage.dataUseLimitation',
-            $datasets
+            $datasets,
+            true
         );
         $defaultValues['Data use requirements'] = $this->mostCommonValue(
             'metadata.metadata.accessibility.usage.dataUseRequirements',
-            $datasets
+            $datasets,
+            true
         );
         $defaultValues['Access rights'] = $this->mostCommonValue(
             'metadata.metadata.accessibility.access.accessRights',
@@ -191,10 +193,11 @@ class FormHydrationController extends Controller
             'metadata.metadata.accessibility.access.deliveryLeadTime',
             $datasets
         );
-        $defaultValues['Format'] = [$this->mostCommonValue(
-            'metadata.metadata.accessibility.formatAndStandards.format',
-            $datasets
-        )];
+        $defaultValues['Format'] = $this->mostCommonValue(
+            'metadata.metadata.accessibility.formatAndStandards.formats',
+            $datasets,
+            true
+        );
 
         $defaultValues = array_merge($defaultValues, $this->generalDefaults());
         return $defaultValues;
@@ -209,18 +212,23 @@ class FormHydrationController extends Controller
         ];
     }
 
-    private function mostCommonValue(string $path, array $datasets): string
+    private function mostCommonValue(string $path, array $datasets, bool $isArray = false): mixed
     {
         $values = array();
         foreach ($datasets as $dataset) {
             $v = $this->getValueFromPath($dataset, $path);
-            $values[] = is_null($v) ? "" : $this->getValueFromPath($dataset, $path);
+            $values[] = is_null($v) ? '' : $this->getValueFromPath($dataset, $path);
         }
 
         $countMap = array_count_values($values);
         arsort($countMap);
         $mostCommon = array_keys($countMap)[0];
-        return $mostCommon;
+
+        if ($isArray) {
+            return $mostCommon === '' ? [] : explode(';,;', $mostCommon);
+        } else {
+            return $mostCommon === '' ? null : $mostCommon;
+        }
     }
 
     public function getValueFromPath(array $item, string $path)

@@ -53,6 +53,10 @@ class CustomAuthorizationController extends Controller
         // user_id from CohortRequestController@checkAccess
         $userId = session('cr_uid');
 
+        if (!$userId) {
+            return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
+        }
+
         // save nonce and user_id for id_token
         OauthUser::create([
             'user_id' => $userId,

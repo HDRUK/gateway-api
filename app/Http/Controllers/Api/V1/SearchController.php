@@ -861,6 +861,7 @@ class SearchController extends Controller
                         $durArray[$i]['datasetIds'] = array_column($datasetTitles, 'id');
                         $durArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $durArray[$i]['toolNames'] = $this->durToolNames($model['id']);
+                        $durArray[$i]['non_gateway_datasets'] = $model['non_gateway_datasets'];
                         $foundFlag = true;
                         break;
                     }
@@ -1260,6 +1261,7 @@ class SearchController extends Controller
      *              mediaType="application/json",
      *              @OA\Schema(
      *                  @OA\Property(property="query", type="string", example="national data provider colls"),
+     *                  @OA\Property(property="filters", type="string", example={"filtersExample": @OA\Schema(ref="#/components/examples/filtersExample")})
      *              )
      *          )
      *      ),
@@ -1293,7 +1295,9 @@ class SearchController extends Controller
      *                  @OA\Items(
      *                      @OA\Property(property="_source", type="array",
      *                          @OA\Items(
+     *                              @OA\Property(property="id", type="string"),
      *                              @OA\Property(property="name", type="string"),
+     *                              @OA\Property(property="img_url", type="string"),
      *                              @OA\Property(property="datasetTitles", type="array", @OA\Items()),
      *                              @OA\Property(property="geographicLocation", type="array", @OA\Items())
      *                          )
@@ -1351,8 +1355,10 @@ class SearchController extends Controller
                 $foundFlag = false;
                 foreach ($dataProviderCollModels as $model) {
                     if ((int)$dp['_id'] === $model['id']) {
+                        $dataProviderCollArray[$i]['id'] = $model['id'];
                         $dataProviderCollArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $dataProviderCollArray[$i]['name'] = $model['name'];
+                        $dataProviderCollArray[$i]['img_url'] = $model['img_url'];
                         $dataProviderCollArray[$i]['datasetTitles'] = $this->dataProviderDatasetTitles($model);
                         $dataProviderCollArray[$i]['geographicLocations'] = $this->dataProviderLocations($model);
                         $foundFlag = true;
