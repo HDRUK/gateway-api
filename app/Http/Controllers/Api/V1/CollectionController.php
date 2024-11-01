@@ -1160,6 +1160,13 @@ class CollectionController extends Controller
             if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
                 $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
             }
+
+            if($collection->users) {
+                $collection->users->map(function ($user) {
+                    $user->email = $this->maskEmail($user->email);
+                    return $user;
+                });
+            }
         }
 
         //Calum 17/10/2024
@@ -1710,4 +1717,21 @@ class CollectionController extends Controller
         }
     }
 
+    // mask emails with users
+    private function maskEmail(string|null $email)
+    {
+        if(is_null($email)) {
+            return $email;
+        }
+
+        [$username, $domain] = explode('@', $email);
+        $maskedUsername = substr($username, 0, 1) . str_repeat('*', max(strlen($username) - 2, 1)) . substr($username, -1);
+        $domainParts = explode('.', $domain);
+        $domainName = $domainParts[0];
+        $maskedDomain = substr($domainName, 0, 1) . str_repeat('*', max(strlen($domainName) - 2, 1)) . substr($domainName, -1);
+        $maskedDomain .= '.' . implode('.', array_slice($domainParts, 1));
+        $maskedEmail = $maskedUsername . '@' . $maskedDomain;
+
+        return $maskedEmail;
+    }
 }
