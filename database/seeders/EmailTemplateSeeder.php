@@ -2729,7 +2729,7 @@ class EmailTemplateSeeder extends Seeder
         // private.app.create
         EmailTemplate::updateOrCreate([
             'identifier' => 'private.app.create',
-        ],[
+        ], [
             'identifier' => 'private.app.create',
             'subject' => 'Congratulations! A new Private App has been created.',
             'body' => '
