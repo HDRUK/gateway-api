@@ -162,7 +162,7 @@ class FormHydrationController extends Controller
         $defaultValues['Name of data provider'] = $team['name'];
         $defaultValues['Organisation Logo'] = (is_null($team['team_logo']) || strlen(trim($team['team_logo'])) === 0) ? null : (filter_var($team['team_logo'], FILTER_VALIDATE_URL) ? $team['team_logo'] : Config::get('services.media.base_url') . $team['team_logo']);
         $defaultValues['Organisation Description'] = $team['name'];
-        $defaultValues['contact point'] = $team['contact_point'];
+        $defaultValues['Contact point'] = $team['contact_point'];
         $defaultValues['Organisation Membership'] = $team['memberOf'];
         $defaultValues['Data Controller'] = $team['name'];
         $defaultValues['Data Processor'] = $team['name'];
