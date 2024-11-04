@@ -42,23 +42,28 @@ class UpdateMissingPublications extends Command
      */
     public function handle()
     {
-
         $progressbar = $this->output->createProgressBar(count($this->csvData));
         $progressbar->start();
 
         $countImported = 0;
+        $noDoiUrl = 0;
+        $duplicateDoi = 0;
+        $noDataFromDoi = 0;
         foreach ($this->csvData as $item) {
             $publicationMongoId = trim($item['Mongo Id']);
-            $publicationDoi = 'https://doi.org/' . trim($item['Possible DOI']);
-            if (!$publicationDoi) {
+            $possibleDoi = trim($item['Possible DOI']);
+            if (!$possibleDoi || empty($possibleDoi)) {
+                $noDoiUrl++;
                 $progressbar->advance();
                 continue;
             }
+            $publicationDoi = 'https://doi.org/' . $possibleDoi;
             $publicationDatasetLinks = trim($item['Dataset Links pid']);
             $publicationUploader = trim($item['Uploader']);
 
             $checkDoiInPub = Publication::where('paper_doi', $publicationDoi)->first();
             if (!is_null($checkDoiInPub)) {
+                $duplicateDoi++;
                 $progressbar->advance();
                 continue;
             }
@@ -71,11 +76,13 @@ class UpdateMissingPublications extends Command
             $return = $response->json();
 
             if (!isset($return['resultList']['result']) || !is_array($return['resultList']['result'])) {
+                $noDataFromDoi++;
                 $progressbar->advance();
                 continue;
             }
 
             if (count($return['resultList']['result']) !== 1) {
+                $noDataFromDoi++;
                 $progressbar->advance();
                 continue;
             }
@@ -85,14 +92,8 @@ class UpdateMissingPublications extends Command
             $publication['paper_title'] = $returnShort['title'];
             $publication['authors'] = $returnShort['authorString'];
             $publication['abstract'] = $returnShort['abstractText'];
-            $publication['is_preprint'] = str_contains($returnShort['id'], 'PPR') ? true : false;
-            if (!$publication['is_preprint']) {
-                $publication['journal_name'] = $returnShort['journalInfo']['journal']['title'] ?? '';
-                $publication['year_of_publication'] = $returnShort['pubYear'];
-            } else {
-                $publication['journal_name'] = '';
-                $publication['year_of_publication'] = '';
-            }
+            $publication['journal_name'] = $returnShort['journalInfo']['journal']['title'] ?? '';
+            $publication['year_of_publication'] = $returnShort['pubYear'] ?? '';
             $publication['paper_doi'] = $publicationDoi;
             $publication['mongo_id'] = $publicationMongoId;
             $publication['status'] = 'ACTIVE';
@@ -121,8 +122,6 @@ class UpdateMissingPublications extends Command
 
                 $datasetVersionId = Dataset::where('id', $dataset->id)->first()->latestVersion()->id;
                 if (!is_null($datasetVersionId)) {
-                    $this->info($datasetVersionId . PHP_EOL);
-
                     $arrCreate = [
                         'publication_id' => $pubId,
                         'dataset_version_id' => $datasetVersionId,
@@ -139,7 +138,9 @@ class UpdateMissingPublications extends Command
             $countImported++;
         }
 
-        echo PHP_EOL . $countImported . ' publications were imported' . PHP_EOL;
+        echo PHP_EOL . $noDataFromDoi . ' publications could not be imported because it is not contained in DOI url' . PHP_EOL;
+        echo 'Was not imported ' . $duplicateDoi . ' publications because of the duplication DOI url' . PHP_EOL;
+        echo $countImported . ' publications were imported' . PHP_EOL;
         echo 'Completed ...' . PHP_EOL;
     }
 
