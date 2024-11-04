@@ -49,13 +49,12 @@ class UpdateMissingPublications extends Command
         foreach ($this->csvData as $item) {
             $publicationMongoId = trim($item['Mongo Id']);
             $publicationDoi = 'https://doi.org/' . trim($item['Possible DOI']);
-            $publicationDatasetLinks = trim($item['Dataset Links pid']);
-            $publicationUploader = trim($item['Uploader']);
-
             if (!$publicationDoi) {
                 $progressbar->advance();
                 continue;
             }
+            $publicationDatasetLinks = trim($item['Dataset Links pid']);
+            $publicationUploader = trim($item['Uploader']);
 
             $checkDoiInPub = Publication::where('paper_doi', $publicationDoi)->first();
             if (!is_null($checkDoiInPub)) {
@@ -81,7 +80,6 @@ class UpdateMissingPublications extends Command
             }
 
             $publication = [];
-            $this->info($publicationDoi);
             $returnShort = $return['resultList']['result'][0];
             $publication['paper_title'] = $returnShort['title'];
             $publication['authors'] = $returnShort['authorString'];
