@@ -83,8 +83,8 @@ class UpdateEmailCohortButtons extends Command
                         <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                             <mj-column width="100%">
                                 <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                Congratulations! Your Cohort Discovery registration has been approved.
-                            </mj-text>
+                                    Congratulations! Your Cohort Discovery registration has been approved.
+                                </mj-text>
                             </mj-column>
                         </mj-section>
 
