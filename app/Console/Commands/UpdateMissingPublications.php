@@ -46,6 +46,7 @@ class UpdateMissingPublications extends Command
         $progressbar = $this->output->createProgressBar(count($this->csvData));
         $progressbar->start();
 
+        $countImported = 0;
         foreach ($this->csvData as $item) {
             $publicationMongoId = trim($item['Mongo Id']);
             $publicationDoi = 'https://doi.org/' . trim($item['Possible DOI']);
@@ -62,7 +63,7 @@ class UpdateMissingPublications extends Command
                 continue;
             }
 
-            $url = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi';
+            $url = env('SEARCH_SERVICE_URL') . '/search/federated_papers/doi';
             $response = Http::post($url, [
                 'query' => $publicationDoi,
             ]);
@@ -135,7 +136,11 @@ class UpdateMissingPublications extends Command
             }
 
             $progressbar->advance();
+            $countImported++;
         }
+
+        echo PHP_EOL . $countImported . ' publications were imported' . PHP_EOL;
+        echo 'Completed ...' . PHP_EOL;
     }
 
     private function getUrl(array $input)
