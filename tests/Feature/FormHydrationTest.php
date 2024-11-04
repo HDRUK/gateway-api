@@ -8,14 +8,15 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use MetadataManagementController as MMC;
 use Config;
 
+use App\Http\Enums\TeamMemberOf;
 use App\Models\Dataset;
 use App\Models\Team;
-use App\Models\User;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\SectorSeeder;
 
 use Tests\Traits\Authorization;
 
@@ -36,6 +37,7 @@ class FormHydrationTest extends TestCase
         parent::setUp();
 
         $this->seed([
+            SectorSeeder::class,
             MinimalUserSeeder::class,
             TeamHasUserSeeder::class,
             KeywordSeeder::class,
@@ -43,9 +45,17 @@ class FormHydrationTest extends TestCase
             DatasetVersionSeeder::class,
         ]);
 
-        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min.json', 0, null);
+        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v2p0_dataset_min.json', 0, null);
         $json = json_decode($jsonFile, true);
         $this->metadata = $json;
+
+        $this->authorisationUser();
+        $jwt = $this->getAuthorisationJwt();
+        $this->currentUser = $this->getUserFromJwt($jwt);
+        $this->header = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwt,
+        ];
     }
 
     public function test_form_hydration_schema(): void
@@ -166,8 +176,68 @@ class FormHydrationTest extends TestCase
         MMC::shouldReceive("validateDataModelType")->andReturn(true);
         MMC::makePartial();
 
-        $teamId = Team::all()->random()->id;
-        $userId = User::all()->random()->id;
+        // Create the new team
+        $responseCreateTeam = $this->json(
+            'POST',
+            'api/v1/teams',
+            [
+                'name' => 'Form hydration test team',
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => TeamMemberOf::OTHER,
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'is_question_bank' => 1,
+                'notifications' => [],
+                'users' => [],
+                'url' => 'https://fakeimg.pl/350x200/ff0000/000',
+                'introduction' => fake()->sentence(),
+                'dar_modal_content' => fake()->sentence(),
+                'service' => 'https://service.local/test',
+            ],
+            $this->header
+        );
+
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $content = $responseCreateTeam->decodeResponseJson();
+        $teamId = $content['data'];
+
+        // Create a new user
+        $responseUser = $this->json(
+            'POST',
+            '/api/v1/users',
+            [
+                'firstname' => 'FormHydration',
+                'lastname' => 'Test',
+                'email' => 'just.test.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/12345678",
+                'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",
+            ],
+            $this->header
+        );
+        $responseUser->assertStatus(201);
+        $userId = $responseUser->decodeResponseJson()['data'];
+
+        // Create a new dataset with the above team and user
         $responseCreateDataset = $this->json(
             'POST',
             'api/v1/datasets',
@@ -181,20 +251,20 @@ class FormHydrationTest extends TestCase
             $this->header,
         );
 
-        // LS - Removed teamId as this is an iffy test at best, in terms of data
-        // available. This test doesn't create everything it needs to ensure
-        // successful outcome, thus relies entirely on seeded/migrated data
-        // which has been completely hit and miss.
-        $response = $this->get('api/v1/form_hydration');
+        $response = $this->get('api/v1/form_hydration?team_id=' . $teamId);
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
-                "data" => [
-                    "schema_fields",
-                    "validation",
-                    "defaultValues"
+                'data' => [
+                    'schema_fields',
+                    'validation',
+                    'defaultValues'
                 ]
             ]);
 
+        $defaultValues = $response->decodeResponseJson()['data']['defaultValues'];
+        $this->assertEquals($defaultValues['Name of data provider'], 'Form hydration test team');
+        $this->assertEquals($defaultValues['Jurisdiction'], ['UK']);
+        $this->assertIsArray($defaultValues['Data use limitation']);
     }
 
 }
