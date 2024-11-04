@@ -1541,7 +1541,7 @@ class EmailTemplateSeeder extends Seeder
                                     Dear [[USER_FIRSTNAME]],
                                 </mj-text>
                                 <mj-text line-height="30px">
-                                    You have been granted access for Cohort Discovery under [[USER_EMAIL]]. Please use buttons below to access Cohort Discovery and watch video on how to use the tool.<br/>Your Cohort Discovery access is valid for a 6-month period after which you will need to re-new your access.<br/>If you require furthersupport raise a support ticket on the HDR UK Innovation Gateway.
+                                    You have been granted access for Cohort Discovery under [[USER_EMAIL]]. Please use buttons below to access Cohort Discovery and watch video on how to use the tool.<br/>Your Cohort Discovery access is valid for a 6-month period after which you will need to re-new your access.<br/>If you require further support raise a support ticket on the HDR UK Innovation Gateway.
                                 </mj-text>
                                 <mj-text>
                                     <mj-text>
