@@ -3194,5 +3194,6 @@ class EmailTemplateSeeder extends Seeder
                 }
             ',
         ]);
+
     }
 }
