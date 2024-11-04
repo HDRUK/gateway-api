@@ -52,7 +52,7 @@ class UpdateMissingPublications extends Command
         foreach ($this->csvData as $item) {
             $publicationMongoId = trim($item['Mongo Id']);
             $possibleDoi = trim($item['Possible DOI']);
-            if (!$possibleDoi || empty($possibleDoi)) {
+            if (!$possibleDoi) {
                 $noDoiUrl++;
                 $progressbar->advance();
                 continue;
@@ -141,6 +141,8 @@ class UpdateMissingPublications extends Command
         echo PHP_EOL . $noDataFromDoi . ' publications could not be imported because it is not contained in DOI url' . PHP_EOL;
         echo 'Was not imported ' . $duplicateDoi . ' publications because of the duplication DOI url' . PHP_EOL;
         echo $countImported . ' publications were imported' . PHP_EOL;
+        $total = $noDataFromDoi + $duplicateDoi + $countImported;
+        echo $total . ' total' . PHP_EOL;
         echo 'Completed ...' . PHP_EOL;
     }
 
