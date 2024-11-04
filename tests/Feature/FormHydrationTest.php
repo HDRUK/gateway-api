@@ -264,6 +264,7 @@ class FormHydrationTest extends TestCase
         $defaultValues = $response->decodeResponseJson()['data']['defaultValues'];
         $this->assertEquals($defaultValues['Name of data provider'], 'Form hydration test team');
         $this->assertEquals($defaultValues['Jurisdiction'], ['UK']);
+        $this->assertNull($defaultValues['Organisation Logo']);
         $this->assertIsArray($defaultValues['Data use limitation']);
     }
 
