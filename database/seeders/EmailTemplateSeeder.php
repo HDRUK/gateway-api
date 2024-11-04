@@ -1412,15 +1412,15 @@ class EmailTemplateSeeder extends Seeder
                 </mjml>
           ',
           'buttons' => '
-          {
-              "replacements": [
-                  {
-                      "placeholder": "[[COHORT_DISCOVERY_RENEW_URL]]",
-                      "actual": "env(GATEWAY_URL)/en/about/cohort-discovery-request"
-                  }
-              ]
-          }
-        '
+                {
+                    "replacements": [
+                        {
+                            "placeholder": "[[COHORT_DISCOVERY_RENEW_URL]]",
+                            "actual": "env(GATEWAY_URL)/en/about/cohort-discovery"
+                        }
+                    ]
+                }
+            ',
         ]);
 
         // Cohort Discovery access will soon expire
@@ -1490,15 +1490,15 @@ class EmailTemplateSeeder extends Seeder
                 </mjml>
             ',
             'buttons' => '
-            {
-                "replacements": [
-                    {
-                        "placeholder": "[[COHORT_DISCOVERY_RENEW_URL]]",
-                        "actual": "env(GATEWAY_URL)/en/about/cohort-discovery-request"
-                    }
-                ]
-            }
-          '
+                {
+                    "replacements": [
+                        {
+                            "placeholder": "[[COHORT_DISCOVERY_RENEW_URL]]",
+                            "actual": "env(GATEWAY_URL)/en/about/cohort-discovery"
+                        }
+                    ]
+                }
+            ',
         ]);
 
         // Cohort Discovery access approved
@@ -1568,15 +1568,15 @@ class EmailTemplateSeeder extends Seeder
                 </mjml>
             ',
             'buttons' => '
-            {
-                "replacements": [
-                    {
-                        "placeholder": "[[COHORT_DISCOVERY_ACCESS_URL]]",
-                        "actual": "env(RQUEST_URL)/bcrquest/cohorts"
-                    }
-                ]
-            }
-            '
+                {
+                    "replacements": [
+                        {
+                            "placeholder": "[[COHORT_DISCOVERY_ACCESS_URL]]",
+                            "actual": "env(GATEWAY_URL)/en/en/about/cohort-discovery"
+                        }
+                    ]
+                }
+            ',
         ]);
 
         // Cohort Discovery access rejected
@@ -3189,48 +3189,6 @@ class EmailTemplateSeeder extends Seeder
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
                             "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration/list"
-                        }
-                    ]
-                }
-            ',
-        ]);
-
-        // cohort.discovery.access.expired
-        EmailTemplate::where('identifier', 'cohort.discovery.access.expired')->update([
-            'buttons' => '
-                {
-                    "replacements": [
-                        {
-                            "placeholder": "[[COHORT_DISCOVERY_RENEW_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/about/cohort-discovery"
-                        }
-                    ]
-                }
-            ',
-        ]);
-
-        // cohort.discovery.access.will.expire
-        EmailTemplate::where('identifier', 'cohort.discovery.access.will.expire')->update([
-            'buttons' => '
-                {
-                    "replacements": [
-                        {
-                            "placeholder": "[[COHORT_DISCOVERY_RENEW_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/about/cohort-discovery"
-                        }
-                    ]
-                }
-            ',
-        ]);
-
-        // cohort.discovery.access.approved
-        EmailTemplate::where('identifier', 'cohort.discovery.access.approved')->update([
-            'buttons' => '
-                {
-                    "replacements": [
-                        {
-                            "placeholder": "[[COHORT_DISCOVERY_ACCESS_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/en/about/cohort-discovery"
                         }
                     ]
                 }
