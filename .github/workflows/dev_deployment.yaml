@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - 'dev'
+      - 'bugfix/GAT-5678'
 
 env:
   PROJECT_ID: '${{ secrets.PROJECT_ID }}'
@@ -26,7 +27,7 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: bugfix/GAT-5678
 
       - name: Read VERSION file
         id: getversion
@@ -76,7 +77,7 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: bugfix/GAT-5678
 
       - name: Google Auth
         id: auth

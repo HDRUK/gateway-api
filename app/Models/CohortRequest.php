@@ -83,7 +83,7 @@ class CohortRequest extends Model
      */
     public function scopeFilterByOrganisation(Builder $query, string $value): Builder
     {
-        return $query->whereHas('user', function ($query) use ($value) {
+        return $query->whereHas('organisation', function ($query) use ($value) {
             $query->where('organisation', 'LIKE', '%' . $value . '%');
         });
     }
@@ -97,10 +97,12 @@ class CohortRequest extends Model
      */
     public function scopeFilterByOrganisationOrName(Builder $query, string $value): Builder
     {
-        return $query->whereHas('user', function ($query) use ($value) {
-            $query->where('organisation', 'LIKE', '%' . $value . '%')
-                  ->orWhere('name', 'LIKE', '%' . $value . '%');
-        });
+        if (!empty($filter)) {
+            return $query->where(function($query) use ($filter) {
+                $query->where('organisation', 'LIKE', '%' . $filter . '%')
+                      ->orWhere('name', 'LIKE', '%' . $filter . '%');
+            });
+        }
     }
 
     public function scopeFilterByMultiOrganisation(Builder $query, array $values): Builder
