@@ -13,7 +13,7 @@ use App\Models\PublicationHasDatasetVersion;
 class UpdateMissingPublications extends Command
 {
     use IndexElastic;
-    
+
     /**
      * The name and signature of the console command.
      *
@@ -110,7 +110,7 @@ class UpdateMissingPublications extends Command
 
             $pub = Publication::create($publication);
             $pubId = (int)$pub->id;
-            
+
             // datasets
             $cleanDataLinkIds = str_replace(["[", "]", "'"], "", $publicationDatasetLinks);
             $pubDataLinkIds = explode(", ", $cleanDataLinkIds);
