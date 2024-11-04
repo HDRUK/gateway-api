@@ -42,6 +42,8 @@ class UpdateMissingPublications extends Command
      */
     public function handle()
     {
+        $userAdmin = User::where('is_admin', 1)->first();
+
         $progressbar = $this->output->createProgressBar(count($this->csvData));
         $progressbar->start();
 
@@ -102,7 +104,9 @@ class UpdateMissingPublications extends Command
 
             // user/uploader
             $user = User::where('mongo_id', $publicationUploader)->first();
-            if (!is_null($user)) {
+            if (is_null($user)) {
+                $publication['owner_id'] = $userAdmin->id;
+            } else {
                 $publication['owner_id'] = $user->id;
             }
 
@@ -138,11 +142,10 @@ class UpdateMissingPublications extends Command
             $countImported++;
         }
 
-        echo PHP_EOL . $noDataFromDoi . ' publications could not be imported because it is not contained in DOI url' . PHP_EOL;
-        echo 'Was not imported ' . $duplicateDoi . ' publications because of the duplication DOI url' . PHP_EOL;
+        echo PHP_EOL . 'Was not imported ' .  $noDoiUrl . ' publications - missing DOI url' . PHP_EOL;
+        echo 'Was not imported ' .  $noDataFromDoi . ' publications - no data from DOI url' . PHP_EOL;
+        echo 'Was not imported ' . $duplicateDoi . ' publications - duplication DOI url' . PHP_EOL;
         echo $countImported . ' publications were imported' . PHP_EOL;
-        $total = $noDataFromDoi + $duplicateDoi + $countImported;
-        echo $total . ' total' . PHP_EOL;
         echo 'Completed ...' . PHP_EOL;
     }
 
