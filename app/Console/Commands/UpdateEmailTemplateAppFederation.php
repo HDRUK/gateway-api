@@ -29,7 +29,7 @@ class UpdateEmailTemplateAppFederation extends Command
         // private.app.create
         EmailTemplate::updateOrCreate([
             'identifier' => 'private.app.create',
-        ],[
+        ], [
             'identifier' => 'private.app.create',
             'subject' => 'Congratulations! A new Private App has been created.',
             'body' => '
