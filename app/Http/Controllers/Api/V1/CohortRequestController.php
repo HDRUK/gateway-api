@@ -144,6 +144,11 @@ class CohortRequestController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $email = $request->query('email', null);
+        $organisation = $request->query('organisation', null);
+        $name = $request->query('name', null);
+        $status = $request->query('request_status', null);
+        $filterText = $request->query('text', null);
 
         try {
             $sort = [];
@@ -153,28 +158,36 @@ class CohortRequestController extends Controller
                 $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
             }
 
-            $query = CohortRequest::with(['user', 'logs', 'logs.user', 'permissions']);
-
-            // filter by users.email
-            $query->filterByEmail($request->has('email') ? $request->query('email') : '');
-
-            // filter by users.organisation
-            $query->filterByOrganisation($request->has('organisation') ? $request->query('organisation') : '');
-
-            // filter by users.name
-            $query->filterByUserName($request->has('name') ? $request->query('name') : '');
-
-            // filter by request_status
-            if ($request->has('request_status')) {
-                $query->where('request_status', strtoupper($request->query('request_status')));
-            }
-
-            // filter by users.organisation or users.name
-            if ($request->has('text')) {
-                $query->filterByOrganisationOrName($request->query('text'));
-            }
-
-            $query->join('users', 'cohort_requests.user_id', '=', 'users.id');
+            $query = CohortRequest::with(['user.teams', 'logs', 'logs.user', 'permissions'])
+                ->when($email, function ($query) use ($email) {
+                    $query->whereHas('user', function ($query) use ($email) {
+                        $query->where('email', 'LIKE', '%' . $email . '%')
+                            ->orWhere('secondary_email', 'LIKE', '%' . $email . '%');
+                    });
+                })
+                ->when($name, function ($query) use ($name) {
+                    $query->whereHas('user', function ($query) use ($name) {
+                        $query->where('name', 'LIKE', '%' . $name . '%');
+                    });
+                })
+                ->when($organisation, function ($query) use ($organisation) {
+                    $query->whereHas('user.teams', function ($query) use ($organisation) {
+                        $query->where('name', 'LIKE', '%' . $organisation . '%');
+                    });
+                })
+                ->when($status, function ($query) use ($status) {
+                    return $query->where('request_status', '=', $status);
+                })
+                ->when($filterText, function ($query) use ($filterText) {
+                    $query->where(function ($query) use ($filterText) {
+                        $query->whereHas('user', function ($q) use ($filterText) {
+                            $q->where('name', 'LIKE', '%' . $filterText . '%');
+                        })
+                        ->orWhereHas('user.teams', function ($q) use ($filterText) {
+                            $q->where('name', 'LIKE', '%' . $filterText . '%');
+                        });
+                    });
+                });
 
             foreach($sort as $key => $value) {
                 if (in_array($key, ['created_at', 'updated_at', 'request_status'])) {
@@ -185,8 +198,6 @@ class CohortRequestController extends Controller
                     $query->orderBy('users.' . $key, strtoupper($value));
                 }
             }
-
-            $query->select('cohort_requests.*');
 
             $cohortRequests = $query->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
