@@ -286,8 +286,6 @@ class CohortRequestController extends Controller
                 }
             }
 
-            $this->sendEmail($id);
-
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
