@@ -1192,9 +1192,6 @@ class CohortRequestController extends Controller
                 '[[EXPIRE_DATE]]' => $cohort['request_expire_at'],
                 '[[CURRENT_YEAR]]' => date("Y"),
                 '[[USER_EMAIL]]' => $userEmail,
-                '[[COHORT_DISCOVERY_ACCESS_URL]]' => Config::get('cohort.cohort_discovery_access_url'),
-                '[[COHORT_DISCOVERY_USING_URL]]' => Config::get('cohort.cohort_discovery_using_url'),
-                '[[COHORT_DISCOVERY_RENEW_URL]]' => Config::get('cohort.cohort_discovery_renew_url'),
             ];
 
             if ($template) {
