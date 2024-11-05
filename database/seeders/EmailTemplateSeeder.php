@@ -1390,7 +1390,7 @@ class EmailTemplateSeeder extends Seeder
                                 <mj-text>
                                     <mj-text>
                                         Regards,<br/>
-                                        Gateway Cohort Discovery admin.
+                                        Gateway Cohort Discovery Admin.
                                     </mj-text>
                                 </mj-text>
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[COHORT_DISCOVERY_RENEW_URL]]">Renew Cohort Discovery access</mj-button>
@@ -1468,7 +1468,7 @@ class EmailTemplateSeeder extends Seeder
                                 <mj-text>
                                     <mj-text>
                                         Regards,<br/>
-                                        Gateway Cohort Discovery admin.
+                                        Gateway Cohort Discovery Admin.
                                     </mj-text>
                                 </mj-text>
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[COHORT_DISCOVERY_RENEW_URL]]">Renew Cohort Discovery access</mj-button>
@@ -1546,7 +1546,7 @@ class EmailTemplateSeeder extends Seeder
                                 <mj-text>
                                     <mj-text>
                                         Regards,<br/>
-                                        Gateway Cohort Discovery admin.
+                                        Gateway Cohort Discovery Admin.
                                     </mj-text>
                                 </mj-text>
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[COHORT_DISCOVERY_ACCESS_URL]]">Access Cohort Discovery</mj-button>
@@ -1572,7 +1572,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[COHORT_DISCOVERY_ACCESS_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/en/about/cohort-discovery"
+                            "actual": "env(GATEWAY_URL)/en/about/cohort-discovery"
                         }
                     ]
                 }
@@ -1630,7 +1630,7 @@ class EmailTemplateSeeder extends Seeder
                                 <mj-text>
                                 <mj-text>
                                     Regards,<br/>
-                                    Gateway Cohort Discovery admin.
+                                    Gateway Cohort Discovery Admin.
                                 </mj-text>
                                 </mj-text>
                             </mj-column>
@@ -1697,7 +1697,7 @@ class EmailTemplateSeeder extends Seeder
                                 <mj-text>
                                 <mj-text>
                                     Regards,<br/>
-                                    Gateway Cohort Discovery admin.
+                                    Gateway Cohort Discovery Admin.
                                 </mj-text>
                                 </mj-text>
                             </mj-column>
@@ -1759,12 +1759,12 @@ class EmailTemplateSeeder extends Seeder
                                     Dear [[USER_FIRSTNAME]],
                                 </mj-text>
                                 <mj-text line-height="30px">
-                                    This is an automated message to let you know that your access to the Cohort Discovery tool has been permanently removed. If you have any question or would like to discuss this further please raise a supportticket on the HDR UK Innovation Gateway.
+                                    This is an automated message to let you know that your access to the Cohort Discovery tool has been permanently removed. If you have any question or would like to discuss this further please raise a support ticket on the HDR UK Innovation Gateway.
                                 </mj-text>
                                 <mj-text>
                                 <mj-text>
                                     Regards,<br/>
-                                    Gateway Cohort Discovery admin.
+                                    Gateway Cohort Discovery Admin.
                                 </mj-text>
                                 </mj-text>
                             </mj-column>
@@ -1826,12 +1826,12 @@ class EmailTemplateSeeder extends Seeder
                                     Dear [[USER_FIRSTNAME]],
                                 </mj-text>
                                 <mj-text line-height="30px">
-                                    This is an automated message to let you know that your access to the Cohort Discovery tool has suspended. If you have any question or would like to discuss this further please raise a supportticket on the HDR UK Innovation Gateway.
+                                    This is an automated message to let you know that your access to the Cohort Discovery tool has suspended. If you have any question or would like to discuss this further please raise a support ticket on the HDR UK Innovation Gateway.
                                 </mj-text>
                                 <mj-text>
                                 <mj-text>
                                     Regards,<br/>
-                                    Gateway Cohort Discovery admin.
+                                    Gateway Cohort Discovery Admin.
                                 </mj-text>
                                 </mj-text>
                             </mj-column>
