@@ -88,6 +88,7 @@ trait IndexElastic
                 'dataUseTitles' => array_map(fn ($dur) => $dur['project_title'], $datasetMatch->allDurs),
                 'geographicLocation' => array_map(fn ($spatialCoverage) => $spatialCoverage['region'], $datasetMatch->allSpatialCoverages),
                 'accessService' => $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.access.accessServiceCategory'], null),
+                'datasetDOI' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.doiName'], ''),
                 'dataProviderColl' => DataProviderColl::whereIn('id', DataProviderCollHasTeam::where('team_id', $datasetMatch->team_id)->pluck('data_provider_coll_id'))->pluck('name')->all(),
             ];
 
