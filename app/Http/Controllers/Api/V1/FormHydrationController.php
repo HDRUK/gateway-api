@@ -136,6 +136,7 @@ class FormHydrationController extends Controller
         $teamId = $request->input('team_id', null);
 
         $hydrationJson = MMC::getOnboardingFormHydrated($model, $version, $dataTypes);
+
         if ($teamId) {
             $hydrationJson['defaultValues'] = $this->getDefaultValues((int)$teamId);
         } else {
@@ -151,12 +152,9 @@ class FormHydrationController extends Controller
     private function getDefaultValues(int $id): array
     {
         $team = Team::findOrFail($id);
-        $datasets = Dataset::where('team_id', $id)->get();
-        foreach ($datasets as $dataset) {
-            $dataset['metadata'] = $dataset->latestVersion()->metadata;
-        }
 
-        $datasets = $datasets->toArray();
+
+
         $defaultValues = array();
         $defaultValues['identifier'] = $team['id'];
         $defaultValues['Name of data provider'] = $team['name'];
@@ -167,39 +165,50 @@ class FormHydrationController extends Controller
         $defaultValues['Data Controller'] = $team['name'];
         $defaultValues['Data Processor'] = $team['name'];
 
-        $defaultValues['Data use limitation'] = $this->mostCommonValue(
-            'metadata.metadata.accessibility.usage.dataUseLimitation',
-            $datasets,
-            true
-        );
-        $defaultValues['Data use requirements'] = $this->mostCommonValue(
-            'metadata.metadata.accessibility.usage.dataUseRequirements',
-            $datasets,
-            true
-        );
-        $defaultValues['Access rights'] = $this->mostCommonValue(
-            'metadata.metadata.accessibility.access.accessRights',
-            $datasets
-        );
-        $defaultValues['Access service description'] = $this->mostCommonValue(
-            'metadata.metadata.accessibility.access.accessService',
-            $datasets
-        );
-        $defaultValues['Access request cost'] = $this->mostCommonValue(
-            'metadata.metadata.accessibility.access.accessRequestCost',
-            $datasets
-        );
-        $defaultValues['Time to dataset access'] = $this->mostCommonValue(
-            'metadata.metadata.accessibility.access.deliveryLeadTime',
-            $datasets
-        );
-        $defaultValues['Format'] = $this->mostCommonValue(
-            'metadata.metadata.accessibility.formatAndStandards.formats',
-            $datasets,
-            true
-        );
+        $datasets = Dataset::where('team_id', $id)->get();
+        $datasetDefaultValues = array();
+        if(count($datasets) > 0) { //protect if team has no datasets
 
-        $defaultValues = array_merge($defaultValues, $this->generalDefaults());
+            foreach ($datasets as $dataset) {
+                $dataset['metadata'] = $dataset->latestVersion()->metadata;
+            }
+
+            $datasets = $datasets->toArray();
+
+            $datasetDefaultValues['Data use limitation'] = $this->mostCommonValue(
+                'metadata.metadata.accessibility.usage.dataUseLimitation',
+                $datasets,
+                true
+            );
+            $datasetDefaultValues['Data use requirements'] = $this->mostCommonValue(
+                'metadata.metadata.accessibility.usage.dataUseRequirements',
+                $datasets,
+                true
+            );
+            $datasetDefaultValues['Access rights'] = $this->mostCommonValue(
+                'metadata.metadata.accessibility.access.accessRights',
+                $datasets
+            );
+            $datasetDefaultValues['Access service description'] = $this->mostCommonValue(
+                'metadata.metadata.accessibility.access.accessService',
+                $datasets
+            );
+            $datasetDefaultValues['Access request cost'] = $this->mostCommonValue(
+                'metadata.metadata.accessibility.access.accessRequestCost',
+                $datasets
+            );
+            $datasetDefaultValues['Time to dataset access'] = $this->mostCommonValue(
+                'metadata.metadata.accessibility.access.deliveryLeadTime',
+                $datasets
+            );
+            $datasetDefaultValues['Format'] = $this->mostCommonValue(
+                'metadata.metadata.accessibility.formatAndStandards.formats',
+                $datasets,
+                true
+            );
+        }
+
+        $defaultValues = array_merge($defaultValues, $datasetDefaultValues, $this->generalDefaults());
         return $defaultValues;
     }
 

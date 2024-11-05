@@ -8,18 +8,11 @@ use App\Models\Dataset;
 use App\Models\Dur;
 use App\Models\Team;
 use App\Models\Tool;
-use Hash;
-use Config;
-use Auditor;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 
-
 class SiteMapController extends Controller
 {
-
     /**
      * @OA\Get(
      *    path="/api/v1/sitemap",
