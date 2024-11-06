@@ -214,6 +214,10 @@ class SearchController extends Controller
                 $datasetsArray[$i]['team']['is_question_bank'] = $model['team']['is_question_bank'];
                 $datasetsArray[$i]['team']['name'] = $model['team']['name'];
                 $datasetsArray[$i]['team']['member_of'] = $model['team']['member_of'];
+                $datasetsArray[$i]['team']['is_dar'] = $model['team']['is_dar'];
+                $datasetsArray[$i]['team']['dar_modal_header'] = $model['team']['dar_modal_header'];
+                $datasetsArray[$i]['team']['dar_modal_content'] = $model['team']['dar_modal_content'];
+                $datasetsArray[$i]['team']['dar_modal_footer'] = $model['team']['dar_modal_footer'];
             }
 
 
