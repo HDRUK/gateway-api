@@ -47,7 +47,7 @@ class LinkageExtraction implements ShouldQueue
      */
     public function handle(): void
     {
-        if(!version_compare($gwdmVersion, '2.0', '=')) {
+        if(!version_compare($this->gwdmVersion, '2.0', '=')) {
             throw new Exception("LinkageExtraction only supported for GWDM v2.0");
         }
         if(is_null($this->linkages)) {
