@@ -205,7 +205,7 @@ export const v2DatasetsStub = [
 		pid: 'b67f0edd-fed2-4d68-a25f-d225759aa3b0',
 		id: 'dfb21b3b-7fd9-40c4-892e-810edd6dfc25',
 		version: '0.0.1',
-		identifier: 'https://web.www.healthdatagateway.org/dataset/dfb21b3b-7fd9-40c4-892e-810edd6dfc25',
+		identifier: 'https://web.old.healthdatagateway.org/dataset/dfb21b3b-7fd9-40c4-892e-810edd6dfc25',
 		revisions: {
 			'0.0.1': 'dfb21b3b-7fd9-40c4-892e-810edd6dfc25',
 			latest: 'dfb21b3b-7fd9-40c4-892e-810edd6dfc25',
@@ -252,7 +252,7 @@ export const v2DatasetsStub = [
 		pid: 'b67f0edd-fed2-4d68-a25f-d225759aa3b0',
 		id: 'dfb21b3b-7fd9-40c4-892e-810edd6dfc25',
 		version: '0.0.1',
-		identifier: 'https://web.www.healthdatagateway.org/dataset/dfb21b3b-7fd9-40c4-892e-810edd6dfc25',
+		identifier: 'https://web.old.healthdatagateway.org/dataset/dfb21b3b-7fd9-40c4-892e-810edd6dfc25',
 		revisions: {
 			'0.0.1': 'dfb21b3b-7fd9-40c4-892e-810edd6dfc25',
 			latest: 'dfb21b3b-7fd9-40c4-892e-810edd6dfc25',
