@@ -591,6 +591,12 @@ class IntegrationDatasetController extends Controller
 
                 // Dispatch term extraction to a subprocess as it may take some time
                 if($request['status'] === Dataset::STATUS_ACTIVE) {
+
+                    LinkageExtraction::dispatch(
+                        $dataset->id,
+                        $version->id,
+                    );
+
                     $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
 
                     TermExtraction::dispatch(

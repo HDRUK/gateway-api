@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Storage;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
+use App\Jobs\LinkageExtraction;
 
 class DatasetTest extends TestCase
 {
@@ -856,6 +858,7 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
+        Queue::assertNotPushed(LinkageExtraction::class);
         $responseCreateDataset->assertStatus(201);
         $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
         $datasetId = $contentCreateDataset['data'];
@@ -884,7 +887,7 @@ class DatasetTest extends TestCase
         $responseUnarchiveDataset->assertJsonStructure([
             'message'
         ]);
-
+        Queue::assertPushed(LinkageExtraction::class);
         $responseUnarchiveDataset->assertStatus(200);
 
         // change dataset status
@@ -1039,6 +1042,7 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
+        Queue::assertPushed(LinkageExtraction::class);
         $responseCreateDataset->assertStatus(201);
         $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
         $datasetId = $contentCreateDataset['data'];

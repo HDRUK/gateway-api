@@ -12,6 +12,7 @@ use Illuminate\Queue\SerializesModels;
 
 use App\Models\DatasetVersionHasDatasetVersion;
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
 
 class LinkageExtraction implements ShouldQueue
 {
@@ -22,18 +23,22 @@ class LinkageExtraction implements ShouldQueue
 
     protected string $sourceDatasetId = '';
     protected string $sourceDatasetVersionId = '';
+    protected string $gwdmVersion = '';
     protected array $linkages;
     protected string $description = '';
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $datasetId, string $datasetVersionId, string $linkages)
+    public function __construct(string $datasetId, string $datasetVersionId)
     {
         $this->sourceDatasetId = $datasetId;
         $this->sourceDatasetVersionId = $datasetVersionId;
-        $this->linkages = json_decode(gzdecode(gzuncompress(base64_decode($linkages))), true);
-        $this->description = 'Extracted linkage from LinkageExtraction job';
+        $version = DatasetVersion::findOrFail($datasetVersionId);
+
+        $this->gwdmVersion = $version->metadata['gwdmVersion'];
+        $this->linkages = $version->metadata['metadata']['linkage']['datasetLinkage'] ?? null;
+        $this->description = 'Extracted from GWDM';
 
     }
 
@@ -42,7 +47,16 @@ class LinkageExtraction implements ShouldQueue
      */
     public function handle(): void
     {
-        //delete any existing
+        if(!version_compare($gwdmVersion, '2.0', '=')) {
+            throw new Exception("LinkageExtraction only supported for GWDM v2.0");
+        }
+        if(is_null($this->linkages)) {
+            throw new Exception("LinkageExtraction cannot find linkages in the data");
+        }
+
+        //delete any existing relationships for this source id
+        // - delete ones where the description indicates it was added by this job
+        // - leave others alone
         DatasetVersionHasDatasetVersion::where([
             'dataset_version_source_id' => $this->sourceDatasetId,
             'direct_linkage' => 1,

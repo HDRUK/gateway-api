@@ -157,8 +157,7 @@ trait MetadataOnboard
 
                 LinkageExtraction::dispatch(
                     $dataset->id,
-                    $version->id,
-                    base64_encode(gzcompress(gzencode(json_encode($input['metadata']['metadata']['linkage']['datasetLinkage']))))
+                    $version->id
                 );
 
                 if(Config::get('ted.enabled')) {

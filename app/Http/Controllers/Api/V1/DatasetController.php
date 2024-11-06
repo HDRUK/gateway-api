@@ -10,6 +10,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
 use App\Jobs\TermExtraction;
+use App\Jobs\LinkageExtraction;
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
 use App\Http\Traits\CheckAccess;
@@ -775,6 +776,17 @@ class DatasetController extends Controller
 
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
             if($request['status'] === Dataset::STATUS_ACTIVE) {
+
+                $linkages = $input['metadata']['metadata']['linkage']['datasetLinkage'] ?? null;
+
+                if($linkages) {
+                    LinkageExtraction::dispatch(
+                        $currDataset->id,
+                        $datasetVersionId,
+                    );
+                }
+
+
                 if(Config::get('ted.enabled')) {
                     $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
 
@@ -874,6 +886,10 @@ class DatasetController extends Controller
                     $metadata->save();
 
                     if ($request['status'] === Dataset::STATUS_ACTIVE) {
+                        LinkageExtraction::dispatch(
+                            $datasetModel->id,
+                            $metadata->id,
+                        );
                         $this->reindexElastic($id);
                     }
 
@@ -911,6 +927,20 @@ class DatasetController extends Controller
                 ])) {
                     $datasetModel->status = $request['status'];
                     $datasetModel->save();
+
+                    $metadata = DatasetVersion::withTrashed()->where('dataset_id', $id)->latest()->first();
+
+                    $linkages = $metadata->metadata['metadata']['linkage']['datasetLinkage'];
+
+
+                    if($request['status'] === Dataset::STATUS_ACTIVE) {
+                        LinkageExtraction::dispatch(
+                            $datasetModel->id,
+                            $metadata->id,
+                        );
+                    }
+
+
                 } else {
                     $message = 'unknown status type';
 

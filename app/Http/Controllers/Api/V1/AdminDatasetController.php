@@ -190,7 +190,6 @@ class AdminDatasetController extends Controller
 
             $minId = $request->input('minId', 1);
             $maxId = $request->input('maxId', Dataset::max('id'));
-            $elasticIndexing = $request->input('indexElastic', true);
 
             $datasetIds = Dataset::whereBetween("id", [$minId, $maxId])
                             ->select('id')
@@ -201,11 +200,9 @@ class AdminDatasetController extends Controller
                 $latestMetadata = $dataset->lastMetadata();
                 $datasetVersionId = $dataset->latestVersionId($id);
 
-                $linkage = $latestMetadata['metadata']['linkage']['datasetLinkage'];
                 LinkageExtraction::dispatch(
                     $dataset->id,
-                    $datasetVersionId,
-                    base64_encode(gzcompress(gzencode(json_encode($linkage))))
+                    $datasetVersionId
                 );
             }
             return response()->json([
