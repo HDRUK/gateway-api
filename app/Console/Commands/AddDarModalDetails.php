@@ -51,7 +51,7 @@ class AddDarModalDetails extends Command
                 ]);
                 $this->info($item . ' updated');
             } else {
-                $this->warning($item . ' not found for update');
+                $this->warn($item . ' not found for update');
             }
         }
     }
