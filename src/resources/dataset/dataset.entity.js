@@ -44,7 +44,7 @@ export default class DatasetClass extends Entity {
 		const transformedObject = this.transformTo(transformer, { strict: false });
 
 		// Manually update identifier URL link
-		transformedObject.dataset.identifier = `https://web.www.healthdatagateway.org/dataset/${this.datasetid}`;
+		transformedObject.dataset.identifier = `https://web.old.healthdatagateway.org/dataset/${this.datasetid}`;
 		
 		// Append static schema details for v2
 		transformedObject.dataset['@schema'] = {

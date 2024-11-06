@@ -253,7 +253,7 @@ export default class CollectionsService {
 				}
 			}
 
-			let relatedObject = { ...data[0], updated: Date.parse(updated) };
+			let relatedObject = { ...data[0], updated: new Date(Date.parse(updated)).toISOString() };
 			resolve(relatedObject);
 		});
 	}

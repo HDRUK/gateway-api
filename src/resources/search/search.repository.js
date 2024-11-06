@@ -364,7 +364,7 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 					'datasetfields.metadataquality.weighted_error_percent': 1,
 					'datasetfields.metadataquality.weighted_completeness_percent': 1,
 
-					latestUpdate: '$timestamps.updated',
+					latestUpdate: '$updatedAt',
 					relatedresources: {
 						$add: [
 							{
