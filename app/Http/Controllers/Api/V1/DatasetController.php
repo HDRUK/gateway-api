@@ -32,6 +32,7 @@ use App\Http\Requests\Dataset\EditDataset;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Requests\Dataset\CreateDataset;
 use App\Http\Requests\Dataset\DeleteDataset;
+use App\Http\Requests\Dataset\ExportDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
 use App\Exports\DatasetStructuralMetadataExport;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -1205,6 +1206,17 @@ class DatasetController extends Controller
      *          description="dataset id",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="download_type",
+     *       in="query",
+     *       description="download type",
+     *       required=true,
+     *       example="structural",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="download type",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response=200,
      *       description="CSV file",
@@ -1232,8 +1244,11 @@ class DatasetController extends Controller
      *    )
      * )
      */
-    public function export_single(GetDataset $request, int $id): StreamedResponse
+    public function export_single(ExportDataset $request, int $id): StreamedResponse
     {
+        $input = $request->all();
+        $download_type = $input['download_type'];
+
         $dataset = Dataset::where('id', '=', $id)->first();
 
         $result = $dataset->latestVersion();
