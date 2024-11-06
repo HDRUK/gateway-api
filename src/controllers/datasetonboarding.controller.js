@@ -3,7 +3,6 @@ import _ from 'lodash';
 import axios from 'axios';
 import FormData from 'form-data';
 import { v4 as uuidv4 } from 'uuid';
-import * as Sentry from '@sentry/node';
 import { isEmpty, escapeRegExp } from 'lodash';
 
 import { Data } from '../resources/tool/data.model';
@@ -13,8 +12,6 @@ import datasetonboardingUtil from '../utils/datasetonboarding.util';
 import { PublisherModel } from '../resources/publisher/publisher.model';
 import { activityLogService } from '../resources/activitylog/dependency';
 const HttpClient = require('../services/httpClient/httpClient');
-
-const readEnv = process.env.ENV || 'prod';
 
 export default class DatasetOnboardingController {
 	constructor(datasetonboardingService) {
@@ -614,10 +611,7 @@ export default class DatasetOnboardingController {
 				return res.status(400).json({ success: false, message: 'No metadata found' });
 			}
 		} catch (err) {
-			if (readEnv === 'test' || readEnv === 'prod') {
-				Sentry.captureException(err);
-			}
-			process.stdout.write(`${err.message}\n`);
+			process.stdout.write(`DATASETONBOARDING - Bulk upload of metadata failed : ${err.message}\n`);
 			return res.status(500).json({ success: false, message: 'Bulk upload of metadata failed', error: err.message });
 		}
 	};

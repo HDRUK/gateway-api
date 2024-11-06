@@ -1,4 +1,3 @@
-import { Console } from '@sentry/node/dist/integrations';
 import { isEmpty, has } from 'lodash';
 
 export default class QuestionbankService {

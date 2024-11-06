@@ -502,7 +502,7 @@ router.get('', async (req, res) => {
 				}
 		}
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`STATS - GET STATS : ${err.message}\n`);
 		return res.json({ success: false, error: err.message });
 	}
 });

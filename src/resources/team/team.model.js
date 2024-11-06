@@ -12,7 +12,21 @@ const TeamSchema = new Schema(
 			{
 				_id: false,
 				memberid: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-				roles: { type: [String], enum: ['reviewer', 'manager', 'metadata_editor'], required: true },
+				roles: { 
+					type: [String], 
+					enum: [
+						'reviewer',
+						'manager',
+						'metadata_editor',
+						'custodian.team.admin',
+						'custodian.metadata.manager',
+						'custodian.dar.manager',
+						'admin_dataset',
+						'admin_data_use',
+						'editor'
+					], 
+					required: true 
+				},
 				dateCreated: Date,
 				dateUpdated: Date,
 				notifications: [

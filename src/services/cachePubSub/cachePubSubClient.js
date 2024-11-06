@@ -11,14 +11,14 @@ export const publishMessageToChannel = async (channel, message) => {
             await client.connect();
         }
     
-        client.on("connect", () => console.log("Redis cache is ready"));
-        client.on("error", (err) => console.log('Redis Client Error', err));
-        client.on('ready', () => console.log('redis is running'));
+        client.on("connect", () => process.stdout.write(`Redis cache is ready`));
+        client.on("error", (err) => process.stdout.write(`Redis Client Error : ${err.message}`));
+        client.on('ready', () => process.stdout.write(`redis is running`));
     
         await client.publish(channel, message);
     
     } catch (e) {
-        console.log(e);
+        process.stdout.write(`Redis Create Client Error : ${e.message}`);
         throw new Error(e.message);
     }
 }

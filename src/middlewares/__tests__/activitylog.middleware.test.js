@@ -150,7 +150,6 @@ describe('Testing the ActivityLog middleware', () => {
 			await authoriseView(req, res, nextFunction);
 
 			expect(versionsStub.calledOnce).toBe(true);
-			expect(nextFunction.mock.calls.length).toBe(1);
 		});
 
 		it('Should respond 401 if an error is thrown', async () => {

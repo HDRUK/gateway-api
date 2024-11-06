@@ -44,13 +44,13 @@ export default class DatasetClass extends Entity {
 		const transformedObject = this.transformTo(transformer, { strict: false });
 
 		// Manually update identifier URL link
-		transformedObject.dataset.identifier = `https://web.www.healthdatagateway.org/dataset/${this.datasetid}`;
+		transformedObject.dataset.identifier = `https://web.old.healthdatagateway.org/dataset/${this.datasetid}`;
 		
 		// Append static schema details for v2
 		transformedObject.dataset['@schema'] = {
 			type: `Dataset`,
 			version: `2.0.0`,
-			url: `https://raw.githubusercontent.com/HDRUK/schemata/master/schema/dataset/latest/dataset.schema.json`,
+			url: `https://raw.githubusercontent.com/HDRUK/schemata/master/schema/dataset/2.1.0/dataset.schema.json`,
 		}
 
 		// Return v2 object

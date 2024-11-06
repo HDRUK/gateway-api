@@ -105,6 +105,6 @@ async function archiveOtherVersions(id, dataSetId, status) {
 			);
 		}
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`DATA REQUEST - archiveOtherVersions : ${err.message}\n`);
 	}
 }

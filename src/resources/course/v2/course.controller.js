@@ -33,7 +33,7 @@ export default class CourseController extends Controller {
 			});
 		} catch (err) {
             // Return error response if something goes wrong
-            console.error(err.message);
+            process.stdout.write(`COURSE - setStatus : ${err.message}\n`);
             return res.status(500).json({
 				success: false,
 				message: 'A server error occurred, please try again',
@@ -52,7 +52,7 @@ export default class CourseController extends Controller {
 			});
 		} catch (err) {
             // Return error response if something goes wrong
-            console.error(err.message);
+            process.stdout.write(`COURSE - getCourses : ${err.message}\n`);
             return res.status(500).json({
 				success: false,
 				message: 'A server error occurred, please try again',
