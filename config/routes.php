@@ -2126,6 +2126,17 @@ return [
     [
         'name' => 'datasets',
         'method' => 'get',
+        'path' => '/datasets/export_single/{id}',
+        'methodController' => 'DatasetController@export_single',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
         'path' => '/datasets/export/mock',
         'methodController' => 'DatasetController@exportMock',
         'namespaceController' => 'App\Http\Controllers\Api\V1',

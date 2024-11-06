@@ -1186,6 +1186,97 @@ class DatasetController extends Controller
 
         return $response;
     }
+    /**
+     * @OA\Get(
+     *    path="/api/v1/datasets/export_single/{id}",
+     *    operationId="export_datasets_single",
+     *    tags={"Datasets"},
+     *    summary="DatasetController@export_single",
+     *    description="Export Structural Metadata CSV of a single dataset",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="dataset id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="dataset id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=200,
+     *       description="CSV file",
+     *       @OA\MediaType(
+     *          mediaType="text/csv",
+     *          @OA\Schema(
+     *             type="string",
+     *             example="Title,""Publisher name"",Version,""Last Activity"",""Method of dataset creation"",Status,""Metadata detail""\n""Publications mentioning HDRUK"",""Health Data Research UK"",2.0.0,""2023-04-21T11:31:00.000Z"",MANUAL,ACTIVE,""{""properties\/accessibility\/usage\/dataUseRequirements"":{""id"":""95c37b03-54c4-468b-bda4-4f53f9aaaadd"",""namespace"":""hdruk.profile"",""key"":""properties\/accessibility\/usage\/dataUseRequirements"",""value"":""N\/A"",""lastUpdated"":""2023-12-14T11:31:11.312Z""},""properties\/required\/gatewayId"":{""id"":""8214d549-db98-453f-93e8-d88c6195ad93"",""namespace"":""hdruk.profile"",""key"":""properties\/required\/gatewayId"",""value"":""1234"",""lastUpdated"":""2023-12-14T11:31:11.311Z""}""",
+     *          )
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=400,
+     *       description="Bad request",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Invalid argument(s)")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Unauthorized",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="unauthorized")
+     *       )
+     *    )
+     * )
+     */
+    public function export_single(GetDataset $request, int $id): StreamedResponse
+    {
+        $dataset = Dataset::where('id', '=', $id)->first();
+
+        $result = $dataset->latestVersion();
+
+        // callback function that writes to php://output
+        $response = new StreamedResponse(
+            function () use ($result) {
+                // Open output stream
+                $handle = fopen('php://output', 'w');
+
+                $headerRow = [
+                    'Section',
+                    'Column name',
+                    'Data type',
+                    'Column description',
+                    'Sensitive',
+                ];
+
+                // Add CSV headers
+                fputcsv($handle, $headerRow);
+                // add the given number of rows to the file.
+                foreach ($result['metadata']["metadata"]["structuralMetadata"] as $rowDetails) {
+                    $row = [
+                        $rowDetails["name"] !== null ? $rowDetails["name"] : '',
+                        $rowDetails["columns"][0]["name"] !== null ? $rowDetails["columns"][0]["name"] : '',
+                        $rowDetails["columns"][0]["dataType"] !== null ? $rowDetails["columns"][0]["dataType"] : '',
+                        $rowDetails["columns"][0]["description"] !== null ? str_replace("\n", "", $rowDetails["columns"][0]["description"]) : '',
+                        $rowDetails["columns"][0]["sensitive"] !== null ? $rowDetails["columns"][0]["sensitive"] === true ? "true" : "false" : '',
+                    ];
+                    fputcsv($handle, $row);
+                }
+
+                // Close the output stream
+                fclose($handle);
+            }
+        );
+
+        $response->headers->set('Content-Type', 'text/csv');
+        $response->headers->set('Content-Disposition', 'attachment;filename="' . $id . '_' . $result['metadata']['metadata']['summary']['title'] . '_Structural_Metadata.csv"');
+        $response->headers->set('Cache-Control', 'max-age=0');
+
+        return $response;
+    }
 
     /**
      * @OA\Get(
