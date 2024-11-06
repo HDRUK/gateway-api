@@ -283,15 +283,11 @@ class DatasetVersionTest extends TestCase
         $publisherId = $metadata['metadata']['summary']['publisher'];
         if(version_compare(Config::get('metadata.GWDM.version'), "1.1", "<")) {
             $publisherId =  $publisherId['publisherId'];
-        } else {
-            $publisherId =  $publisherId['gatewayId'];
+            $this->assertEquals(
+                $publisherId,
+                $teamPid
+            );
         }
-
-
-        $this->assertEquals(
-            $publisherId,
-            $teamPid
-        );
 
     }
 

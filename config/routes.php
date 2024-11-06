@@ -400,6 +400,19 @@ return [
     [
         'name' => 'teams',
         'method' => 'get',
+        'path' => '/teams/{teamPid}/id',
+        'methodController' => 'TeamController@getIdFromPid',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'teams',
+        'method' => 'get',
         'path' => '/teams/{teamId}/summary',
         'methodController' => 'TeamController@showSummary',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
