@@ -40,6 +40,7 @@ class AddDarModalDetails extends Command
 
         $darModelHeader = 'Data access requests not enabled for this Data Custodian';
         $darModelContent = 'This Data Custodian uses the Gateway Data Access Request Module. The Module is temporarily unavailable while we make improvements. In the interim, please submit a general enquiry to the Data Custodian directly, who will provide more details on how to submit a Data Access Request form. For future applications, please return to the Gateway to use the Data Access Request Module.';
+        $darModelFooter = '';
 
         foreach ($items as $item) {
             $team = Team::where('name', 'like', '%' . $item . '%')->first();
@@ -48,6 +49,8 @@ class AddDarModalDetails extends Command
                 Team::where('name', $item)->update([
                     'dar_modal_header' => $darModelHeader,
                     'dar_modal_content' => $darModelContent,
+                    'dar_modal_footer' => $darModelFooter,
+                    'is_dar' => 1,
                 ]);
                 $this->info($item . ' updated');
             } else {
