@@ -127,7 +127,7 @@ class AliasReplyScanner
             'id' => $threadId,
         ])->first();
 
-        $uniqueKey = '^' . $enquiryThread->unique_key . '$';
+        $uniqueKey = $enquiryThread->unique_key;
 
         $enquiryThreads = EnquiryThread::where([
             'unique_key' => $uniqueKey

@@ -10,6 +10,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
 use App\Jobs\TermExtraction;
+use App\Jobs\LinkageExtraction;
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
 use App\Http\Traits\CheckAccess;
@@ -21,7 +22,7 @@ use App\Http\Controllers\Controller;
 
 use App\Http\Traits\MetadataOnboard;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Http\Traits\AddMetadataVersion;
+use App\Http\Traits\MetadataVersioning;
 use App\Models\Traits\ModelHelpers;
 
 use Illuminate\Support\Facades\Storage;
@@ -38,7 +39,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DatasetController extends Controller
 {
-    use AddMetadataVersion;
+    use MetadataVersioning;
     use IndexElastic;
     use GetValueByPossibleKeys;
     use MetadataOnboard;
@@ -181,7 +182,7 @@ class DatasetController extends Controller
                 function ($query) use ($filterStatus) {
                     return $query->where('status', '=', $filterStatus);
                 }
-            )->select(['id', 'updated'])->get();
+            )->select(['id'])->get();
 
             // Map initially found datasets to just ids.
             foreach ($initialDatasets as $ds) {
@@ -467,7 +468,7 @@ class DatasetController extends Controller
 
                 if ($translated['wasTranslated']) {
                     $withLinks = DatasetVersion::where('id', $latestVersion['id'])
-                        ->with(['linkedDatasetVersions'])
+                        ->with(['reducedLinkedDatasetVersions'])
                         ->first();
                     $withLinks['metadata'] = json_encode(['metadata' => $translated['metadata']]);
                     $dataset->setAttribute('versions', [$withLinks]);
@@ -767,28 +768,35 @@ class DatasetController extends Controller
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
 
-            $datsetVersionId = $this->addMetadataVersion(
+            $datasetVersionId = $this->updateMetadataVersion(
                 $currDataset,
-                $request['status'],
-                $updateTime,
                 $gwdmMetadata,
-                $submittedMetadata
+                $submittedMetadata,
             );
 
-            $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
-            if($request['status'] === Dataset::STATUS_ACTIVE &&  Config::get('ted.enabled')) {
+            if($request['status'] === Dataset::STATUS_ACTIVE) {
 
-                $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
-
-                TermExtraction::dispatch(
+                LinkageExtraction::dispatch(
                     $currDataset->id,
-                    $datsetVersionId,
-                    $versionNumber,
-                    base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
-                    $elasticIndexing,
-                    Config::get('ted.use_partial')
+                    $datasetVersionId,
                 );
+                if(Config::get('ted.enabled')) {
+                    $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
+
+                    TermExtraction::dispatch(
+                        $currDataset->id,
+                        $datasetVersionId,
+                        $versionNumber,
+                        base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
+                        $elasticIndexing,
+                        Config::get('ted.use_partial')
+                    );
+                } else {
+                    $this->reindexElastic($currDataset->id);
+                }
+            } elseif($initDataset->status === Dataset::STATUS_ACTIVE) {
+                $this->deleteDatasetFromElastic($currDataset->id);
             }
 
             Auditor::log([
@@ -796,7 +804,7 @@ class DatasetController extends Controller
                 'team_id' => $teamId,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Dataset ' . $id . ' with version ' . ($versionNumber + 1) . ' updated',
+                'description' => 'Dataset ' . $id . ' with version ' . ($versionNumber) . ' updated',
             ]);
 
             //note Calum 13/08/2024
@@ -814,7 +822,7 @@ class DatasetController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception($e->getMessage());
+            throw new Exception($e);
         }
     }
 
@@ -872,6 +880,10 @@ class DatasetController extends Controller
                     $metadata->save();
 
                     if ($request['status'] === Dataset::STATUS_ACTIVE) {
+                        LinkageExtraction::dispatch(
+                            $datasetModel->id,
+                            $metadata->id,
+                        );
                         $this->reindexElastic($id);
                     }
 
@@ -909,6 +921,17 @@ class DatasetController extends Controller
                 ])) {
                     $datasetModel->status = $request['status'];
                     $datasetModel->save();
+
+                    $metadata = DatasetVersion::withTrashed()->where('dataset_id', $id)->latest()->first();
+
+                    if($request['status'] === Dataset::STATUS_ACTIVE) {
+                        LinkageExtraction::dispatch(
+                            $datasetModel->id,
+                            $metadata->id,
+                        );
+                    }
+
+
                 } else {
                     $message = 'unknown status type';
 

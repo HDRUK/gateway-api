@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Federation;
 
+use Closure;
 use App\Models\TeamHasFederation;
 use App\Http\Requests\BaseFormRequest;
 
@@ -73,7 +74,11 @@ class UpdateFederation extends BaseFormRequest
                 'array',
             ],
             'notifications.*' => [
-                'email',
+                function (string $attribute, mixed $value, Closure $fail) {
+                    if (!(is_numeric($value) || filter_var($value, FILTER_VALIDATE_EMAIL))) {
+                        $fail("The {$attribute} is invalid.");
+                    }
+                },
             ],
             'tested' => [
                 'boolean',

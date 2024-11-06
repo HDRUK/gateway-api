@@ -6,10 +6,13 @@ use Hash;
 use Config;
 use Auditor;
 use Exception;
+use App\Models\Team;
+use App\Jobs\SendEmailJob;
 use App\Models\Application;
 use Illuminate\Support\Str;
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use App\Models\EmailTemplate;
 use App\Http\Traits\CheckAccess;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -101,7 +104,7 @@ class ApplicationController extends Controller
         }
 
         try {
-            $applications = Application::getAll('user_id', $jwtUser)->with(['permissions','team','user','notifications']);
+            $applications = Application::getAll('user_id', $jwtUser)->with(['permissions','team','user','notifications.userNotification']);
 
             if (!is_null($teamId)) {
                 $applications = $applications->where('team_id', (int)$teamId);
@@ -206,7 +209,7 @@ class ApplicationController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $application = Application::with(['permissions','team','user','notifications'])->where('id', $id)->first();
+        $application = Application::with(['permissions','team','user','notifications.userNotification'])->where('id', $id)->first();
         $this->checkAccess($input, $application->team_id, null, 'team');
 
         try {
@@ -345,6 +348,8 @@ class ApplicationController extends Controller
                 'description' => 'Application ' . $application->id . ' created',
             ]);
 
+            $this->sendEmail((int)$application->id, 'CREATE');
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => Application::with(['permissions', 'team', 'user'])
@@ -478,6 +483,8 @@ class ApplicationController extends Controller
                 'description' => 'Application ' . $id . ' updated',
             ]);
 
+            $this->sendEmail((int)$id, 'UPDATE');
+
             return response()->json([
                 'message' => 'success',
                 'data' => $application
@@ -601,6 +608,8 @@ class ApplicationController extends Controller
                 'description' => 'Application ' . $id . ' updated',
             ]);
 
+            $this->sendEmail((int)$id, 'UPDATE');
+
             return response()->json([
                 'message' => 'success',
                 'data' => $application
@@ -667,9 +676,13 @@ class ApplicationController extends Controller
         $this->checkAccess($input, $initApplication->team_id, null, 'team');
 
         try {
+            $this->sendEmail((int)$id, 'DELETE');
+
             Application::where('id', $id)->delete();
             ApplicationHasPermission::where('application_id', $id)->delete();
 
+            // I don't know if deleting an application should also delete the connection with the notifications.
+            // What happens if undo is done after delete?
             $applicationHasNotificationIds = ApplicationHasNotification::where('application_id', $id)->pluck('notification_id');
 
             foreach ($applicationHasNotificationIds as $applicationHasNotificationId) {
@@ -747,12 +760,14 @@ class ApplicationController extends Controller
             }
 
             foreach ($notifications as $notification) {
+                // $notification may be a user id, or it may be an email address.
                 $notification = Notification::create([
                     'notification_type' => 'application',
                     'message' => '',
                     'opt_in' => 0,
                     'enabled' => 1,
-                    'email' => $notification,
+                    'email' => is_numeric($notification) ? null : $notification,
+                    'user_id' => is_numeric($notification) ? (int) $notification : null,
                 ]);
 
                 ApplicationHasNotification::create([
@@ -772,4 +787,93 @@ class ApplicationController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    // send email
+    public function sendEmail(int $appId, string $type)
+    {
+        $app = Application::with(['team','user','notifications.userNotification'])->where('id', $appId)->first();
+        if (is_null($app)) {
+            throw new Exception('Application not found!');
+        }
+
+        $template = null;
+        switch ($type) {
+            case 'CREATE':
+                $template = EmailTemplate::where('identifier', '=', 'private.app.create')->first();
+                break;
+            case 'UPDATE':
+                $template = EmailTemplate::where('identifier', '=', 'private.app.update')->first();
+                break;
+            case 'DELETE':
+                $template = EmailTemplate::where('identifier', '=', 'private.app.delete')->first();
+                break;
+            default:
+                throw new Exception("Send email type not found!");
+                break;
+        }
+
+        if (is_null($template)) {
+            throw new Exception('Email template not found!');
+        }
+
+        $receivers = $this->sendEmailTo($app);
+
+        foreach ($receivers as $receiver) {
+            $to = [
+                'to' => [
+                    'email' => $receiver['email'],
+                    'name' => $receiver['name'],
+                ],
+            ];
+
+            $replacements = [
+                '[[TEAM_ID]]' => $app->team->id,
+                '[[TEAM_NAME]]' => $app->team->name,
+                '[[USER_FIRSTNAME]]' => $receiver['firstname'],
+                '[[APP_NAME]]' => $app->name,
+                '[[APP_CREATED_AT_DATE]]' => $app->created_at,
+                '[[APP_UPDATED_AT_DATE]]' => $app->updated_at,
+                '[[APP_DELETED_AT_DATE]]' => date('Y-m-d'),
+                '[[APP_STATUS]]' => $app->enabled ? 'enabled' : 'disabled',
+                '[[CURRENT_YEAR]]' => date('Y'),
+            ];
+
+            SendEmailJob::dispatch($to, $template, $replacements);
+        }
+
+    }
+
+    public function sendEmailTo(Application $app): array
+    {
+        $return = [];
+
+        $return[] = [
+            'email' => $app->user->email,
+            'name' => $app->user->name,
+            'firstname' => $app->user->firstname,
+        ];
+
+        foreach ($app->notifications as $notification) {
+            if ($notification['user_id']) {
+                $return[] = [
+                    'email' => $notification['userNotification']->email,
+                    'name' => $notification['userNotification']->name,
+                    'firstname' => $notification['userNotification']->firstname,
+                ];
+            } else {
+                $return[] = [
+                    'email' => $notification['email'],
+                    'name' => null,
+                    'firstname' => null,
+                ];
+            }
+        }
+
+        $emails = array_column($return, 'email');
+        $uniqueEmails = array_unique($emails);
+        $uniqueArray = array_intersect_key($return, $uniqueEmails);
+
+        return array_values($uniqueArray);
+    }
+
 }

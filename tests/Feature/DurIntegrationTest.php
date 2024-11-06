@@ -28,13 +28,14 @@ use Database\Seeders\PublicationSeeder;
 use App\Models\ApplicationHasPermission;
 use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\DurHasPublicationSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Database\Seeders\DurHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class DurIntegrationTest extends TestCase
 {
@@ -77,6 +78,7 @@ class DurIntegrationTest extends TestCase
             DurHasPublicationSeeder::class,
             DurHasToolSeeder::class,
             DurHasDatasetVersionSeeder::class,
+            CollectionHasUserSeeder::class,
         ]);
 
         $this->integration = Application::where('id', 1)->first();

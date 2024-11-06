@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Collection;
+use App\Models\CollectionHasUser;
 use App\Models\User;
 use Illuminate\Console\Command;
 
@@ -30,9 +31,19 @@ class UpdateCollectionsUserId extends Command
         $admiUser = User::where('is_admin', 1)->first();
 
         if (!is_null($admiUser)) {
-            Collection::where('user_id', null)->update([
-                'user_id' => $admiUser->id,
-            ]);
+            $collections = Collection::select(['id'])->get()->toArray();
+
+            foreach ($collections as $collection) {
+                $collectionHasUsers = CollectionHasUser::where(['collection_id' => $collection['id']])->first();
+
+                if (is_null($collectionHasUsers)) {
+                    CollectionHasUser::create([
+                        'collection_id' => $collection['id'],
+                        'user_id' => $admiUser->id,
+                        'role' => 'CREATOR'
+                    ]);
+                }
+            }
         }
     }
 }

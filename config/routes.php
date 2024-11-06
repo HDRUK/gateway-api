@@ -350,7 +350,15 @@ return [
             'id' => '[0-9]+',
         ],
     ],
-
+    [
+        'name' => 'sitemap',
+        'method' => 'get',
+        'path' => '/sitemap',
+        'methodController' => 'SiteMapController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
     // TODO - Add DAR.decision rule and route
 
     // teams
@@ -377,6 +385,17 @@ return [
         'constraint' => [
             'teamId' => '[0-9]+',
         ],
+    ],
+    [
+        'name' => 'teams',
+        'method' => 'get',
+        'path' => '/teams/search',
+        'methodController' => 'TeamController@searchByName',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
     ],
     [
         'name' => 'teams',
@@ -2100,6 +2119,30 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
+    [
+        'name' => 'datasets',
+        'method' => 'post',
+        'path' => '/datasets/admin_ctrl/trigger/term_extraction',
+        'methodController' => 'AdminDatasetController@triggerTermExtraction',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'post',
+        'path' => '/datasets/admin_ctrl/trigger/linkage_extraction',
+        'methodController' => 'AdminDatasetController@triggerLinkageExtraction',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
 
 
     // datasets integrations
@@ -2327,6 +2370,19 @@ return [
             'jwt.verify',
         ],
         'constraint' => [],
+    ],
+    [
+        'name' => 'cohort_requests_user',
+        'method' => 'get',
+        'path' => '/cohort_requests/user/{id}',
+        'methodController' => 'CohortRequestController@byUser',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'cohort_requests_access',
@@ -3535,6 +3591,17 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'admin_ctrl',
+        'method' => 'post',
+        'path' => '/admin_ctrl/trigger_ted',
+        'methodController' => 'AdminPanelController@triggerTermExtractionDirector',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
             'sanitize.input',
         ],
         'constraint' => [],

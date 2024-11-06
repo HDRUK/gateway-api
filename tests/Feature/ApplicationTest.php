@@ -13,7 +13,7 @@ use Database\Seeders\ApplicationSeeder;
 
 use Tests\Traits\MockExternalApis;
 use App\Http\Traits\IntegrationOverride;
-
+use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ApplicationTest extends TestCase
@@ -40,6 +40,7 @@ class ApplicationTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             ApplicationSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
     }
 

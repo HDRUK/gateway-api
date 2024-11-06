@@ -91,7 +91,8 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );
@@ -232,7 +233,8 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );
@@ -310,7 +312,8 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );
@@ -463,7 +466,8 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );
@@ -626,7 +630,8 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
-                'email' => 'joe@example.com',
+                'email' => null,
+                'user_id' => 3,
             ],
             $this->header
         );

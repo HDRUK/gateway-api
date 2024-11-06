@@ -2,24 +2,26 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
+use App\Jobs\SendEmailJob;
 use App\Models\Federation;
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use App\Models\EmailTemplate;
 use App\Models\TeamHasFederation;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Http;
 use App\Models\FederationHasNotification;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\Federation\GetFederation;
 use App\Http\Requests\Federation\EditFederation;
 use App\Http\Requests\Federation\CreateFederation;
+
 use App\Http\Requests\Federation\DeleteFederation;
 use App\Http\Requests\Federation\GetAllFederation;
 use App\Http\Requests\Federation\UpdateFederation;
-
-use Illuminate\Support\Facades\Http;
 
 class FederationController extends Controller
 {
@@ -98,7 +100,7 @@ class FederationController extends Controller
             $perPage = request('per_page', Config::get('constants.per_page'));
             $federations = Federation::whereHas('team', function ($query) use ($teamId) {
                 $query->where('id', $teamId);
-            })->with(['notifications'])->paginate($perPage, ['*'], 'page');
+            })->with(['team', 'notifications.userNotification'])->paginate($perPage, ['*'], 'page');
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -189,7 +191,7 @@ class FederationController extends Controller
         try {
             $federations = Federation::whereHas('team', function ($query) use ($teamId) {
                 $query->where('id', $teamId);
-            })->where('id', $federationId)->with(['notifications'])->first()->toArray();
+            })->where('id', $federationId)->with(['team', 'notifications.userNotification'])->first()->toArray();
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -327,13 +329,15 @@ class FederationController extends Controller
                 'team_id' => $teamId,
             ]);
 
-            foreach($input['notifications'] as $email) {
+            foreach($input['notifications'] as $notification) {
+                // $notification may be a user id, or it may be an email address.
                 $notification = Notification::create([
                     'notification_type' => 'federation',
                     'message' => '',
                     'opt_in' => 0,
                     'enabled' => 1,
-                    'email' => $email,
+                    'email' => is_numeric($notification) ? null : $notification,
+                    'user_id' => is_numeric($notification) ? (int) $notification : null,
                 ]);
 
                 FederationHasNotification::create([
@@ -341,6 +345,8 @@ class FederationController extends Controller
                     'notification_id' => $notification->id,
                 ]);
             }
+
+            $this->sendEmail($federation->id, 'CREATE');
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -487,13 +493,15 @@ class FederationController extends Controller
                 FederationHasNotification::where('notification_id', $federationNotification)->delete();
             }
 
-            foreach ($input['notifications'] as $email) {
+            foreach ($input['notifications'] as $notification) {
+                // $notification may be a user id, or it may be an email address.
                 $notification = Notification::create([
                     'notification_type' => 'federation',
                     'message' => '',
                     'opt_in' => 0,
                     'enabled' => 1,
-                    'email' => $email,
+                    'email' => is_numeric($notification) ? null : $notification,
+                    'user_id' => is_numeric($notification) ? (int) $notification : null,
                 ]);
 
                 FederationHasNotification::create([
@@ -506,6 +514,8 @@ class FederationController extends Controller
                 ->whereHas('team', function ($query) use ($teamId) {
                     $query->where('id', $teamId);
                 })->with(['notifications'])->first();
+
+            $this->sendEmail($federationId, 'UPDATE');
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -657,13 +667,15 @@ class FederationController extends Controller
                     FederationHasNotification::where('notification_id', $federationNotification)->delete();
                 }
 
-                foreach ($input['notifications'] as $email) {
+                foreach ($input['notifications'] as $notification) {
+                    // $notification may be a user id, or it may be an email address.
                     $notification = Notification::create([
                         'notification_type' => 'federation',
                         'message' => '',
                         'opt_in' => 0,
                         'enabled' => 1,
-                        'email' => $email,
+                        'email' => is_numeric($notification) ? null : $notification,
+                        'user_id' => is_numeric($notification) ? (int) $notification : null,
                     ]);
 
                     FederationHasNotification::create([
@@ -677,6 +689,8 @@ class FederationController extends Controller
                 ->whereHas('team', function ($query) use ($teamId) {
                     $query->where('id', $teamId);
                 })->with(['notifications'])->first();
+
+            $this->sendEmail($federationId, 'UPDATE');
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -845,7 +859,10 @@ class FederationController extends Controller
 
         try {
             $response = Http::post(env('GMI_SERVICE_URL') . '/test', $input);
-            return response()->json($response->json());
+            return response()->json([
+                'data' => $response->json(),
+            ], 200);
+
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -860,7 +877,10 @@ class FederationController extends Controller
     private function getSecretsPayload(array $input)
     {
         $secrets_payload = [];
-        $secret_key = $input['auth_secret_key'];
+        $secret_key = '';
+        if (in_array($input['auth_type'], ['BEARER', 'API_KEY'])) {
+            $secret_key = $input['auth_secret_key'];
+        }
         switch ($input['auth_type']) {
             case 'BEARER':
                 $secrets_payload = [
@@ -879,6 +899,86 @@ class FederationController extends Controller
                 break;
         }
         return $secrets_payload;
+    }
+
+    // send email
+    public function sendEmail(int $federationId, string $type)
+    {
+        $federation = Federation::where('id', $federationId)
+            ->with(['team','notifications.userNotification'])
+            ->first();
+        if (is_null($federation)) {
+            throw new Exception('Gateway App not found!');
+        }
+
+        $template = null;
+        switch ($type) {
+            case 'CREATE':
+                $template = EmailTemplate::where('identifier', '=', 'federation.app.create')->first();
+                break;
+            case 'UPDATE':
+                $template = EmailTemplate::where('identifier', '=', 'federation.app.update')->first();
+                break;
+            default:
+                throw new Exception("Send email type not found!");
+                break;
+        }
+
+        if (is_null($template)) {
+            throw new Exception('Email template not found!');
+        }
+
+        $receivers = $this->sendEmailTo($federation);
+
+        foreach ($receivers as $receiver) {
+            $to = [
+                'to' => [
+                    'email' => $receiver['email'],
+                    'name' => $receiver['name'],
+                ],
+            ];
+
+            $replacements = [
+                '[[TEAM_ID]]' => $federation->team[0]['id'],
+                '[[TEAM_NAME]]' => $federation->team[0]['name'],
+                '[[USER_FIRSTNAME]]' => $receiver['firstname'],
+                '[[GATEWAY_APP_NAME]]' => 'Integration ' . $federation->federation_type,
+                '[[GATEWAY_APP_CREATED_AT_DATE]]' => $federation->created_at,
+                '[[GATEWAY_APP_UPDATED_AT_DATE]]' => $federation->updated_at,
+                '[[GATEWAY_APP_STATUS]]' => $federation->enabled ? 'enabled' : 'disabled',
+                '[[CURRENT_YEAR]]' => date('Y'),
+            ];
+
+            SendEmailJob::dispatch($to, $template, $replacements);
+        }
+
+    }
+
+    public function sendEmailTo(Federation $federation): array
+    {
+        $return = [];
+
+        foreach ($federation->notifications as $notification) {
+            if ($notification['user_id']) {
+                $return[] = [
+                    'email' => $notification['userNotification']->email,
+                    'name' => $notification['userNotification']->name,
+                    'firstname' => $notification['userNotification']->firstname,
+                ];
+            } else {
+                $return[] = [
+                    'email' => $notification['email'],
+                    'name' => null,
+                    'firstname' => null,
+                ];
+            }
+        }
+
+        $emails = array_column($return, 'email');
+        $uniqueEmails = array_unique($emails);
+        $uniqueArray = array_intersect_key($return, $uniqueEmails);
+
+        return array_values($uniqueArray);
     }
 
 }

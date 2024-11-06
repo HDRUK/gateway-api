@@ -3,11 +3,11 @@
 namespace Tests\Feature;
 
 use Config;
+use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
-use App\Models\Dur;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
@@ -18,22 +18,23 @@ use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
+use Database\Seeders\DurHasToolSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\TypeCategorySeeder;
 use MetadataManagementController as MMC;
 use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\DatasetVersionHasToolSeeder;
-use Database\Seeders\DatasetVersionHasDatasetVersionSeeder;
+use Database\Seeders\CollectionHasUserSeeder;
+use Database\Seeders\DataProviderCollsSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
-use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
-use Database\Seeders\DataProviderCollsSeeder;
-use Database\Seeders\DurHasToolSeeder;
+use Database\Seeders\DatasetVersionHasToolSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\CollectionHasDatasetVersionSeeder;
+use Database\Seeders\DatasetVersionHasDatasetVersionSeeder;
 
 class SearchTest extends TestCase
 {
@@ -81,6 +82,7 @@ class SearchTest extends TestCase
             PublicationHasToolSeeder::class,
             DataProviderCollsSeeder::class,
             DurHasToolSeeder::class,
+            CollectionHasUserSeeder::class,
         ]);
 
         $this->metadata = $this->getMetadata();
@@ -675,6 +677,7 @@ class SearchTest extends TestCase
                     'team',
                     'dataProviderColl',
                     'toolNames',
+                    'non_gateway_datasets'
                 ],
             ],
             'aggregations',
@@ -1048,7 +1051,9 @@ class SearchTest extends TestCase
                         'geographicLocations',
                         'updated_at'
                     ],
+                    'id',
                     'name',
+                    'img_url',
                     'datasetTitles',
                     'geographicLocations',
                 ],
@@ -1087,6 +1092,8 @@ class SearchTest extends TestCase
                     '_source',
                     'name',
                     'datasetTitles',
+                    'id',
+                    'img_url',
                     'geographicLocations',
                 ],
             ],
@@ -1117,6 +1124,8 @@ class SearchTest extends TestCase
                     'highlight',
                     '_source',
                     'name',
+                    'id',
+                    'img_url',
                     'datasetTitles',
                     'geographicLocations',
                 ],
@@ -1148,6 +1157,8 @@ class SearchTest extends TestCase
                     'highlight',
                     '_source',
                     'name',
+                    'id',
+                    'img_url',
                     'datasetTitles',
                     'geographicLocations',
                 ],

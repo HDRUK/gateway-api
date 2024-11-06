@@ -144,6 +144,11 @@ class CohortRequestController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $email = $request->query('email', null);
+        $organisation = $request->query('organisation', null);
+        $name = $request->query('name', null);
+        $status = $request->query('request_status', null);
+        $filterText = $request->query('text', null);
 
         try {
             $sort = [];
@@ -153,28 +158,36 @@ class CohortRequestController extends Controller
                 $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
             }
 
-            $query = CohortRequest::with(['user', 'logs', 'logs.user', 'permissions']);
-
-            // filter by users.email
-            $query->filterByEmail($request->has('email') ? $request->query('email') : '');
-
-            // filter by users.organisation
-            $query->filterByOrganisation($request->has('organisation') ? $request->query('organisation') : '');
-
-            // filter by users.name
-            $query->filterByUserName($request->has('name') ? $request->query('name') : '');
-
-            // filter by request_status
-            if ($request->has('request_status')) {
-                $query->where('request_status', strtoupper($request->query('request_status')));
-            }
-
-            // filter by users.organisation or users.name
-            if ($request->has('text')) {
-                $query->filterByOrganisationOrName($request->query('text'));
-            }
-
-            $query->join('users', 'cohort_requests.user_id', '=', 'users.id');
+            $query = CohortRequest::with(['user.teams', 'logs', 'logs.user', 'permissions'])
+                ->when($email, function ($query) use ($email) {
+                    $query->whereHas('user', function ($query) use ($email) {
+                        $query->where('email', 'LIKE', '%' . $email . '%')
+                            ->orWhere('secondary_email', 'LIKE', '%' . $email . '%');
+                    });
+                })
+                ->when($name, function ($query) use ($name) {
+                    $query->whereHas('user', function ($query) use ($name) {
+                        $query->where('name', 'LIKE', '%' . $name . '%');
+                    });
+                })
+                ->when($organisation, function ($query) use ($organisation) {
+                    $query->whereHas('user.teams', function ($query) use ($organisation) {
+                        $query->where('name', 'LIKE', '%' . $organisation . '%');
+                    });
+                })
+                ->when($status, function ($query) use ($status) {
+                    return $query->where('request_status', '=', $status);
+                })
+                ->when($filterText, function ($query) use ($filterText) {
+                    $query->where(function ($query) use ($filterText) {
+                        $query->whereHas('user', function ($q) use ($filterText) {
+                            $q->where('name', 'LIKE', '%' . $filterText . '%');
+                        })
+                        ->orWhereHas('user.teams', function ($q) use ($filterText) {
+                            $q->where('name', 'LIKE', '%' . $filterText . '%');
+                        });
+                    });
+                });
 
             foreach($sort as $key => $value) {
                 if (in_array($key, ['created_at', 'updated_at', 'request_status'])) {
@@ -185,8 +198,6 @@ class CohortRequestController extends Controller
                     $query->orderBy('users.' . $key, strtoupper($value));
                 }
             }
-
-            $query->select('cohort_requests.*');
 
             $cohortRequests = $query->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
@@ -1181,9 +1192,6 @@ class CohortRequestController extends Controller
                 '[[EXPIRE_DATE]]' => $cohort['request_expire_at'],
                 '[[CURRENT_YEAR]]' => date("Y"),
                 '[[USER_EMAIL]]' => $userEmail,
-                '[[COHORT_DISCOVERY_ACCESS_URL]]' => Config::get('cohort.cohort_discovery_access_url'),
-                '[[COHORT_DISCOVERY_USING_URL]]' => Config::get('cohort.cohort_discovery_using_url'),
-                '[[COHORT_DISCOVERY_RENEW_URL]]' => Config::get('cohort.cohort_discovery_renew_url'),
             ];
 
             if ($template) {
@@ -1201,4 +1209,68 @@ class CohortRequestController extends Controller
         }
     }
 
+    /* @OA\Get(
+        *    path="/api/v1/cohort_requests/user/{id}",
+        *    operationId="fetch_cohort_requests_by_usr",
+        *    tags={"Cohort Requests"},
+        *    summary="CohortRequestController@byUser",
+        *    description="Returns cohort request for given user ID",
+        *    security={{"bearerAuth":{}}},
+        *    @OA\Parameter(
+        *       name="id",
+        *       in="path",
+        *       description="user id",
+        *       required=true,
+        *       example="1",
+        *       @OA\Schema(
+        *          type="integer",
+        *          description="user id",
+        *       ),
+        *    ),
+        *    @OA\Response(
+        *       response="200",
+        *       description="Success response",
+        *       @OA\JsonContent(
+        *         @OA\Items(type="object",
+        *           @OA\Property(property="id", type="integer", example="123"),
+        *           @OA\Property(property="user_id", type="integer", example="1"),
+        *           @OA\Property(property="request_status", type="string", example="PENDING"),
+        *           @OA\Property(property="cohort_status", type="boolean", example="0"),
+        *           @OA\Property(property="request_expire_at", type="datetime", example="2023-04-03 12:00:00"),
+        *           @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+        *           @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+        *           @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+        *           @OA\Property(property="accept_declaration", type="boolean", example="0"),
+        *         ),
+        *       ),
+        *    ),
+        * )
+        */
+    public function byUser(Request $request, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        try {
+            $cohortRequest = CohortRequest::where('user_id', (int)$id)->first();
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Cohort Request get by user ' . $id,
+            ]);
+            return response()->json([
+                'message' => 'success',
+                'data' => $cohortRequest,
+            ], 200);
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+            throw new Exception($e->getMessage());
+        }
+    }
 }

@@ -9,6 +9,11 @@ class DatasetVersionHasDatasetVersion extends Model
 {
     use HasFactory;
 
+    public const LINKAGE_TYPE_DATASETS = 'linkedDatasets';
+    public const LINKAGE_TYPE_DERIVED_FROM = 'isDerivedFrom';
+    public const LINKAGE_TYPE_PART_OF = 'isPartOf';
+    public const LINKAGE_TYPE_MEMBER_OF = 'isMemberOf';
+
     protected $fillable = [
         'dataset_version_source_id',
         'dataset_version_target_id',

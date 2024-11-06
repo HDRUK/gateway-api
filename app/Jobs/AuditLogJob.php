@@ -10,7 +10,9 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 
-class AuditLogJob implements ShouldQueue
+use Laravel\Horizon\Contracts\Silenced;
+
+class AuditLogJob implements ShouldQueue, Silenced
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -23,13 +25,6 @@ class AuditLogJob implements ShouldQueue
      * @var int
      */
     public $tries = 5;
-
-    /**
-     * The number of seconds the job can run before timing out.
-     *
-     * @var int
-     */
-    public $timeout = 10;
 
     protected array $data;
 
