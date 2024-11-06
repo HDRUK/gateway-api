@@ -29,7 +29,7 @@ class DatasetTableExport implements WithHeadings, FromCollection, WithMapping
         return [
             'Metadata Title',
             'Population',
-            'Data range',
+            'Date range',
             'Access Service',
             'Data standard',
             'Cohort Discovery',
@@ -43,7 +43,7 @@ class DatasetTableExport implements WithHeadings, FromCollection, WithMapping
         return [
             $row['title'],
             $row['populationSize'],
-            $row['dataRange'],
+            $row['dateRange'],
             $row['accessService'],
             $row['dataStandard'],
             $row['cohortDiscovery'],
@@ -56,27 +56,27 @@ class DatasetTableExport implements WithHeadings, FromCollection, WithMapping
     {
         $array = [];
         foreach ($data as $item) {
-            $version = $this->getValueFromPath($item, 'metadata/gwdmVersion');
-            $title = $this->getValueFromPath($item, 'metadata/metadata/summary/title');
+            $version = $this->getValueFromPath($item, 'gwdmVersion');
+            $title = $this->getValueFromPath($item, 'metadata/summary/title');
             $populationSize = ($version !== '1.0') ?
-                $this->getValueFromPath($item, 'metadata/metadata/summary/populationSize') : '';
-            $startDate = $this->getValueFromPath($item, 'metadata/metadata/provenance/temporal/startDate');
-            $endData = $this->getValueFromPath($item, 'metadata/metadata/provenance/temporal/endData');
-            $accessService = $this->getValueFromPath($item, 'metadata/metadata/accesibility/access/accessService');
-            $dataStandard = $this->getValueFromPath($item, 'metadata/metadata/accesibility/formatAndStandards/conformsTo');
+                $this->getValueFromPath($item, 'metadata/summary/populationSize') : '';
+            $startDate = $this->getValueFromPath($item, 'metadata/provenance/temporal/startDate');
+            $endDate = $this->getValueFromPath($item, 'metadata/provenance/temporal/endDate');
+            $accessService = $this->getValueFromPath($item, 'metadata/accessibility/access/accessService');
+            $dataStandard = $this->getValueFromPath($item, 'metadata/accessibility/formatAndStandards/conformsTo');
             $cohortDiscovery = $this->getValueFromPath($item, 'isCohortDiscovery');
-            $structuralMetadata = $this->getValueFromPath($item, 'metadata/metadata/structuralMetadata');
+            $structuralMetadata = $this->getValueFromPath($item, 'metadata/structuralMetadata');
             $publisher = '';
             if ($version === '1.0') {
-                $publisher = $this->getValueFromPath($item, 'metadata/metadata/summary/publisher/publisherName');
+                $publisher = $this->getValueFromPath($item, 'metadata/summary/publisher/publisherName');
             } else {
-                $publisher = $this->getValueFromPath($item, 'metadata/metadata/summary/publisher/name');
+                $publisher = $this->getValueFromPath($item, 'metadata/summary/publisher/name');
             }
 
             $array[] = [
                 'title' => $title,
                 'populationSize' => (int)$populationSize,
-                'dataRange' => $this->convertDate($startDate, $endData),
+                'dateRange' => $this->convertDate($startDate, $endDate),
                 'accessService' => $accessService,
                 'dataStandard' => $dataStandard,
                 'cohortDiscovery' => $cohortDiscovery,
