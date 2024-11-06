@@ -24,7 +24,7 @@ class LinkageExtraction implements ShouldQueue
     protected string $sourceDatasetId = '';
     protected string $sourceDatasetVersionId = '';
     protected string $gwdmVersion = '';
-    protected array $linkages;
+    protected array|null $linkages;
     protected string $description = '';
 
     /**
