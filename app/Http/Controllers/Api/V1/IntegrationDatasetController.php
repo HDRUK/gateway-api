@@ -14,6 +14,7 @@ use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
 
 use App\Jobs\TermExtraction;
+use App\Jobs\LinkageExtraction;
 use MetadataManagementController as MMC;
 
 use App\Http\Traits\IndexElastic;
