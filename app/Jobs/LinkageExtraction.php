@@ -73,7 +73,7 @@ class LinkageExtraction implements ShouldQueue
                     continue;
                 }
                 DatasetVersionHasDatasetVersion::updateOrCreate([
-                    'dataset_version_source_id' => $this->sourceDatasetId,
+                    'dataset_version_source_id' => $this->sourceDatasetVersionId,
                     'dataset_version_target_id' => $targetDatasetVersionId,
                     'linkage_type' => $key,
                     'direct_linkage' => 1,
