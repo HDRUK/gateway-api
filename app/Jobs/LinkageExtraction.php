@@ -58,7 +58,7 @@ class LinkageExtraction implements ShouldQueue
         // - delete ones where the description indicates it was added by this job
         // - leave others alone
         DatasetVersionHasDatasetVersion::where([
-            'dataset_version_source_id' => $this->sourceDatasetId,
+            'dataset_version_source_id' => $this->sourceDatasetVersionId,
             'direct_linkage' => 1,
             'description' => $this->description
         ])->delete();
