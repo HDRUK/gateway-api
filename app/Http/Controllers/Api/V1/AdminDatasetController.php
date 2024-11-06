@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Jobs\TermExtraction;
 use App\Jobs\LinkageExtraction;
 
 use App\Models\Dataset;
