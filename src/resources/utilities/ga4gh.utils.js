@@ -69,7 +69,7 @@ const _buildGa4ghVisas = async user => {
 				type: 'ControlledAccessGrants',
 				asserted: dar.dateFinalStatus.getTime(), //date DAR was approved
 				value: dar.pids.map(pid => {
-					return 'https://web.www.healthdatagateway.org/dataset/' + pid;
+					return 'https://web.old.healthdatagateway.org/dataset/' + pid;
 				}), //URL to each dataset that they have been approved for
 				source: 'https://www.healthdatagateway.org',
 				by: 'dac',
