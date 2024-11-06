@@ -11,7 +11,6 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
 use App\Models\DatasetVersionHasDatasetVersion;
-use App\Models\DatasetVersion;
 use App\Models\Dataset;
 
 class LinkageExtraction implements ShouldQueue
@@ -24,6 +23,7 @@ class LinkageExtraction implements ShouldQueue
     protected string $sourceDatasetId = '';
     protected string $sourceDatasetVersionId = '';
     protected array $linkages;
+    protected string $description = '';
 
     /**
      * Create a new job instance.
@@ -33,6 +33,8 @@ class LinkageExtraction implements ShouldQueue
         $this->sourceDatasetId = $datasetId;
         $this->sourceDatasetVersionId = $datasetVersionId;
         $this->linkages = json_decode(gzdecode(gzuncompress(base64_decode($linkages))), true);
+        $this->description = 'Extracted linkage from LinkageExtraction job';
+
     }
 
     /**
@@ -40,6 +42,13 @@ class LinkageExtraction implements ShouldQueue
      */
     public function handle(): void
     {
+        //delete any existing
+        DatasetVersionHasDatasetVersion::where([
+            'dataset_version_source_id' => $this->sourceDatasetId,
+            'direct_linkage' => 1,
+            'description' => $this->description
+        ])->delete();
+
         foreach ($this->linkages as $key => $data) {
             if(!$data) {
                 continue;
@@ -54,7 +63,7 @@ class LinkageExtraction implements ShouldQueue
                     'dataset_version_target_id' => $targetDatasetVersionId,
                     'linkage_type' => $key,
                     'direct_linkage' => 1,
-                    'description' => 'Extracted linkage from LinkageExtraction job'
+                    'description' => $this->description
                 ]);
 
             }
