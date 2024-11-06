@@ -777,16 +777,10 @@ class DatasetController extends Controller
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
             if($request['status'] === Dataset::STATUS_ACTIVE) {
 
-                $linkages = $input['metadata']['metadata']['linkage']['datasetLinkage'] ?? null;
-
-                if($linkages) {
-                    LinkageExtraction::dispatch(
-                        $currDataset->id,
-                        $datasetVersionId,
-                    );
-                }
-
-
+                LinkageExtraction::dispatch(
+                    $currDataset->id,
+                    $datasetVersionId,
+                );
                 if(Config::get('ted.enabled')) {
                     $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
 
@@ -929,9 +923,6 @@ class DatasetController extends Controller
                     $datasetModel->save();
 
                     $metadata = DatasetVersion::withTrashed()->where('dataset_id', $id)->latest()->first();
-
-                    $linkages = $metadata->metadata['metadata']['linkage']['datasetLinkage'];
-
 
                     if($request['status'] === Dataset::STATUS_ACTIVE) {
                         LinkageExtraction::dispatch(
