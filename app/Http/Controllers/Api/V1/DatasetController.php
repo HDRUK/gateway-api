@@ -1255,30 +1255,54 @@ class DatasetController extends Controller
 
         // callback function that writes to php://output
         $response = new StreamedResponse(
-            function () use ($result) {
+            function () use ($result, $download_type) {
                 // Open output stream
                 $handle = fopen('php://output', 'w');
 
-                $headerRow = [
-                    'Section',
-                    'Column name',
-                    'Data type',
-                    'Column description',
-                    'Sensitive',
-                ];
-
-                // Add CSV headers
-                fputcsv($handle, $headerRow);
-                // add the given number of rows to the file.
-                foreach ($result['metadata']["metadata"]["structuralMetadata"] as $rowDetails) {
-                    $row = [
-                        $rowDetails["name"] !== null ? $rowDetails["name"] : '',
-                        $rowDetails["columns"][0]["name"] !== null ? $rowDetails["columns"][0]["name"] : '',
-                        $rowDetails["columns"][0]["dataType"] !== null ? $rowDetails["columns"][0]["dataType"] : '',
-                        $rowDetails["columns"][0]["description"] !== null ? str_replace("\n", "", $rowDetails["columns"][0]["description"]) : '',
-                        $rowDetails["columns"][0]["sensitive"] !== null ? $rowDetails["columns"][0]["sensitive"] === true ? "true" : "false" : '',
+                if ($download_type === 'structural') {
+                    $headerRow = [
+                        'Section',
+                        'Column name',
+                        'Data type',
+                        'Column description',
+                        'Sensitive',
                     ];
-                    fputcsv($handle, $row);
+
+                    // Add CSV headers
+                    fputcsv($handle, $headerRow);
+                    // add the given number of rows to the file.
+                    foreach ($result['metadata']["metadata"]["structuralMetadata"] as $rowDetails) {
+                        $row = [
+                            $rowDetails["name"] !== null ? $rowDetails["name"] : '',
+                            $rowDetails["columns"][0]["name"] !== null ? $rowDetails["columns"][0]["name"] : '',
+                            $rowDetails["columns"][0]["dataType"] !== null ? $rowDetails["columns"][0]["dataType"] : '',
+                            $rowDetails["columns"][0]["description"] !== null ? str_replace("\n", "", $rowDetails["columns"][0]["description"]) : '',
+                            $rowDetails["columns"][0]["sensitive"] !== null ? $rowDetails["columns"][0]["sensitive"] === true ? "true" : "false" : '',
+                        ];
+                        fputcsv($handle, $row);
+                    }
+                } elseif ($download_type === 'observations') {
+                    $headerRow = [
+                        'Observed Node',
+                        'Disambiguating Description',
+                        'Measured Value',
+                        'Measured Property',
+                        'Observation Date',
+                    ];
+
+                    // Add CSV headers
+                    fputcsv($handle, $headerRow);
+                    // add the given number of rows to the file.
+                    foreach ($result['metadata']["metadata"]["observations"] as $rowDetails) {
+                        $row = [
+                            $rowDetails["observedNode"] !== null ? $rowDetails["observedNode"] : '',
+                            $rowDetails["disambiguatingDescription"] !== null ? $rowDetails["disambiguatingDescription"] : '',
+                            $rowDetails["measuredValue"] !== null ? $rowDetails["measuredValue"] : '',
+                            $rowDetails["measuredProperty"] !== null ? $rowDetails["measuredProperty"] : '',
+                            $rowDetails["observationDate"] !== null ? $rowDetails["observationDate"] : '',
+                        ];
+                        fputcsv($handle, $row);
+                    }
                 }
 
                 // Close the output stream
@@ -1287,7 +1311,13 @@ class DatasetController extends Controller
         );
 
         $response->headers->set('Content-Type', 'text/csv');
-        $response->headers->set('Content-Disposition', 'attachment;filename="' . $id . '_' . $result['metadata']['metadata']['summary']['title'] . '_Structural_Metadata.csv"');
+        if ($download_type === 'structural') {
+            $response->headers->set('Content-Disposition', 'attachment;filename="' . $id . '_' . $result['metadata']['metadata']['summary']['title'] . '_Structural_Metadata.csv"');
+        } elseif ($download_type === 'observations') {
+            $response->headers->set('Content-Disposition', 'attachment;filename="' . $id . '_' . $result['metadata']['metadata']['summary']['title'] . '_Observations.csv"');
+        } else {
+            $response->headers->set('Content-Disposition', 'attachment;filename="placeholder_name.csv"');
+        }
         $response->headers->set('Cache-Control', 'max-age=0');
 
         return $response;
