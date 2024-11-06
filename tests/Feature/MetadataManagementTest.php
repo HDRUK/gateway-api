@@ -133,6 +133,7 @@ class MetadataManagementTest extends TestCase
             ],
             $this->header,
         );
+
         $responseUpdateDataset->assertStatus(200);
 
         $finalDataset = Dataset::where("id", $initialActiveId)->first();
