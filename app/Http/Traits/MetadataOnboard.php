@@ -125,20 +125,16 @@ trait MetadataOnboard
                     'publisherId' => $team['pid'],
                     'publisherName' => $team['name'],
                 ];
+                $input['metadata']['metadata']['summary']['publisher'] = $publisher;
             } else {
                 $version = $this->formatVersion(1);
                 if(array_key_exists('version', $input['metadata']['metadata']['required'])) {
                     $version = $input['metadata']['metadata']['required']['version'];
                 }
                 $required['version'] = $version;
-                $publisher = [
-                    'gatewayId' => $team['pid'],
-                    'name' => $team['name'],
-                ];
             }
 
             $input['metadata']['metadata']['required'] = $required;
-            $input['metadata']['metadata']['summary']['publisher'] = $publisher;
 
             //include a note of what the metadata was (i.e. which GWDM version)
             $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
