@@ -263,7 +263,7 @@ helm repo add codecentric https://codecentric.github.io/helm-charts
 helm install mailhog codecentric/mailhog
 ```
 
-- read cluster: similar with `mailhog.default.svc.cluster.local`
+- cluster: `mailhog.default.svc.cluster.local`
 
 start:
 port forward Kubernetes mailhog service
