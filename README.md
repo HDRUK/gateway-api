@@ -255,3 +255,35 @@ QUEUE_CONNECTION=redis
 
 ```
 
+
+### Setup email locally
+
+```
+helm repo add codecentric https://codecentric.github.io/helm-charts
+helm install mailhog codecentric/mailhog
+```
+
+- read cluster: similar with `mailhog.default.svc.cluster.local`
+
+start:
+port forward Kubernetes mailhog service
+```
+kubectl port-forward <mailhog-port-name> 1025:1025 8025:8025
+```
+
+After running the command, port forwarding will be established, allowing you to access MailHog’s SMTP server and web interface from your local machine.
+
+- To access the SMTP server, you can configure your email client or use a command-line tool like telnet to connect to localhost:1025
+- To access the web interface, you can open your web browser and go to `http://localhost:8025`
+
+setup in laravel env
+```
+MAIL_MAILER=smtp
+MAIL_HOST=mailhog
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+```
