@@ -1094,16 +1094,17 @@ class SearchController extends Controller
                 }
             } else {
 
-                $isDoi = ((isset($input['query'])) && ($this->isDoi($input['query'])));
-
-                if ($isDoi) {
-                    $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi';
-                    $response = Http::post($urlString, $input);
+                if (isset($input['query']) && is_array($input['query'])) {
+                    $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search/array';
                 } else {
-                    $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search';
-                    $input['field'] = ['TITLE', 'ABSTRACT', 'METHODS'];
-                    $response = Http::post($urlString, $input);
+                    if (isset($input['query']) && $this->isDoi($input['query'])) {
+                        $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi';
+                    } else {
+                        $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search';
+                    }
                 }
+                $input['field'] = ['TITLE', 'ABSTRACT', 'METHODS'];
+                $response = Http::post($urlString, $input);
 
                 $pubArray = $response['resultList']['result'];
                 $totalResults = $response['hitCount'];
