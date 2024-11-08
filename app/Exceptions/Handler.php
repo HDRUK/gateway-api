@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use CloudLogger;
 use Config;
 use Throwable;
 use Illuminate\Http\Request;
@@ -76,6 +77,12 @@ class Handler extends ExceptionHandler
                 'trace' => $e->getTrace(),
             ];
         }
+
+        CloudLogger::write([
+            'action_type' => 'EXCEPTION',
+            'action_message' => $response['message'],
+            'details' => $response['details'],
+        ]);
 
         return response()->json($response, $statusCode);
     }

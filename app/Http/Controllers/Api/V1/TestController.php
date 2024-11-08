@@ -64,4 +64,12 @@ class TestController extends Controller
 
         return response()->json(['status' => 'success']);
     }
+
+    public function testSendException(Request $request): JsonResponse
+    {
+        throw new \Exception('test exception');
+
+        return response()->json(['status' => 'success']);
+    }
+
 }

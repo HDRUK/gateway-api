@@ -3619,4 +3619,19 @@ return [
         ],
         'constraint' => [],
     ],
+
+    // test
+    [
+        'name' => 'test exception' ,
+        'method' => 'get',
+        'path' => '/test-send-exception',
+        'methodController' => 'TestController@testSendException',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+
+
 ];
