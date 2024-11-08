@@ -970,6 +970,41 @@ class SearchTest extends TestCase
         $this->assertTrue($response['data'][0]['paper_title'] === 'Federated publication two');
         $this->assertTrue($response['data'][1]['paper_title'] === 'Federated publication');
 
+        // Test federated search with array of queries
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/publications" . '?source=FED', ["query" => ["term", "another term"]], ['Accept' => 'application/json']);
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    '_source' => [
+                        'title',
+                        'year_of_publication',
+                    ],
+                    'paper_title',
+                    'abstract',
+                    'authors',
+                    'journal_name',
+                    'year_of_publication',
+                    'full_text_url',
+                    'url'
+                ],
+            ],
+            'aggregations',
+            'elastic_total',
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',
+        ]);
+
         // Test federated search recognises a doi and performs doi search
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/publications?source=FED", ["query" => "https://doi.org/10.3310/abcde"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
