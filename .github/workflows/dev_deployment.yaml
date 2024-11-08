@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - 'dev'
-      - 'send_error_log_to_gcp_logging'
 
 env:
   PROJECT_ID: '${{ secrets.PROJECT_ID }}'
@@ -27,7 +26,7 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
         with:
-          ref: send_error_log_to_gcp_logging
+          ref: dev
 
       - name: Read VERSION file
         id: getversion
@@ -77,7 +76,7 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
         with:
-          ref: send_error_log_to_gcp_logging
+          ref: dev
 
       - name: Google Auth
         id: auth
