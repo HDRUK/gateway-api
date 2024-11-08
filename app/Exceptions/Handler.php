@@ -78,11 +78,13 @@ class Handler extends ExceptionHandler
             ];
         }
 
-        CloudLogger::write([
-            'action_type' => 'EXCEPTION',
-            'action_message' => $response['message'],
-            'details' => $response['details'],
-        ]);
+        if (env('GOOGLE_CLOUD_LOGGING_ENABLED')) {
+            CloudLogger::write([
+                'action_type' => 'EXCEPTION',
+                'action_message' => $response['message'],
+                'details' => $response['details'],
+            ]);
+        }
 
         return response()->json($response, $statusCode);
     }
