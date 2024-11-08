@@ -41,5 +41,3 @@ if [ "$APP_ENV" = 'local' ]; then
 fi
 
 php artisan horizon
-
-
