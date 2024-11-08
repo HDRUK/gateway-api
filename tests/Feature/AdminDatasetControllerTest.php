@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Dataset;
+use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
@@ -110,6 +111,28 @@ class AdminDatasetControllerTest extends TestCase
         } else {
             $response->assertStatus(500);
         }
+
+    }
+
+    public function testTriggerLinkageExtractionWithDefaults()
+    {
+        Queue::fake();
+
+        $allDatasetIds = Dataset::select('id')->pluck('id')->toArray();
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL_DATASET . '/trigger/linkage_extraction',
+            [],
+            $this->header
+        );
+        $response->assertStatus(200);
+
+        Queue::assertPushed(LinkageExtraction::class);
+        $response->assertJson([
+                    'message' => 'triggered linkage',
+                    'dataset_ids' => $allDatasetIds
+                ]);
 
     }
 
