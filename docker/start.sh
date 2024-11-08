@@ -35,10 +35,10 @@ if [ "$APP_ENV" = 'local' ]; then
 
     ## To remove the above from local crontab
     # ( crontab -l | grep -v -F "$cronCommand" ) | crontab -
-fi
 
-# To activate cron service
-service cron start
+    # To activate cron service
+    service cron start
+fi
 
 php artisan horizon
 
