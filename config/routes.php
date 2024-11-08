@@ -350,7 +350,15 @@ return [
             'id' => '[0-9]+',
         ],
     ],
-
+    [
+        'name' => 'sitemap',
+        'method' => 'get',
+        'path' => '/sitemap',
+        'methodController' => 'SiteMapController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
     // TODO - Add DAR.decision rule and route
 
     // teams
@@ -388,6 +396,19 @@ return [
             'jwt.verify',
         ],
         'constraint' => [],
+    ],
+    [
+        'name' => 'teams',
+        'method' => 'get',
+        'path' => '/teams/{teamPid}/id',
+        'methodController' => 'TeamController@getIdFromPid',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'teams',
@@ -2116,6 +2137,18 @@ return [
         'method' => 'post',
         'path' => '/datasets/admin_ctrl/trigger/term_extraction',
         'methodController' => 'AdminDatasetController@triggerTermExtraction',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'post',
+        'path' => '/datasets/admin_ctrl/trigger/linkage_extraction',
+        'methodController' => 'AdminDatasetController@triggerLinkageExtraction',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
