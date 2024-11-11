@@ -258,7 +258,7 @@ class TeamController extends Controller
     *      path="/api/v1/teams/{teamPid}/id",
     *      tags={"Teams"},
     *      summary="TeamController@getIdFromPid",
-    *      description="Get the teamId from a Pid",
+    *      description="Get the teamId from a Pid. Failure to find such a team results in a successful null response.",
     *      security={{"bearerAuth":{}}},
     *      @OA\Parameter(
     *         name="teamPid",
@@ -278,13 +278,6 @@ class TeamController extends Controller
     *              @OA\Property(property="message", type="string"),
     *              @OA\Property(property="data", type="number")
     *          ),
-    *      ),
-    *      @OA\Response(
-    *          response=404,
-    *          description="Not found response",
-    *          @OA\JsonContent(
-    *              @OA\Property(property="message", type="string", example="not found"),
-    *          )
     *      )
     * )
     */
