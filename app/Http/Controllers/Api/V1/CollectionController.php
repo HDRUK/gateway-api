@@ -536,30 +536,32 @@ class CollectionController extends Controller
             $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
             $this->createCollectionUsers((int)$collectionId, (int)$userId, $collaborators);
 
-            // for migration from mongo database
-            if (array_key_exists('created_at', $input)) {
-                Collection::where('id', $collectionId)->update(['created_at' => $input['created_at']]);
+           // for migration from mongo database
+           if (array_key_exists('created_at', $input)) {
+                $collection->update(['created_at' => $input['created_at']]);
             }
 
             // for migration from mongo database
             if (array_key_exists('updated_at', $input)) {
-                Collection::where('id', $collectionId)->update(['updated_at' => $input['updated_at']]);
+                $collection->update(['updated_at' => $input['updated_at']]);
+
             }
 
             // updated_on
             if (array_key_exists('updated_on', $input)) {
-                Collection::where('id', $collectionId)->update(['updated_on' => $input['updated_on']]);
+                $collection->update(['updated_on' => $input['updated_on']]);
             }
 
             // add in a team
             if (array_key_exists('team_id', $input)) {
-                Collection::where('id', $collectionId)->update(['team_id' => $input['team_id']]);
+                $collection->update(['team_id' => $input['team_id']]);
             }
 
-            $currentCollection = Collection::where('id', $collectionId)->first();
-            if ($currentCollection->status === Collection::STATUS_ACTIVE) {
-                $this->indexElasticCollections((int) $collectionId);
+            if ($collection->status === Collection::STATUS_ACTIVE) {
+                $this->indexElasticCollections((int) $collection->id);
             }
+
+
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
