@@ -1180,6 +1180,8 @@ class CollectionController extends Controller
             }
         }
 
+        $collection->description = htmlspecialchars_decode($collection->description);
+
         //Calum 17/10/2024
         // - commeneting this out
         // - we are only concerned with collection direct linkage
