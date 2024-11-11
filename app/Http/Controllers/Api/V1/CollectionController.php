@@ -1182,6 +1182,9 @@ class CollectionController extends Controller
             }
         }
 
+        // teams.introduction, comes out with the chars decoded.. collection.description, does not...
+        // I debugged it to high hell and got Big L involved and we assume there be dragons...
+        // so this is a lil hotfix..
         $collection->description = htmlspecialchars_decode($collection->description);
 
         //Calum 17/10/2024
