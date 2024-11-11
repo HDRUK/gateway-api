@@ -290,7 +290,12 @@ class TeamController extends Controller
     */
     public function getIdFromPid(Request $request, string $pid): JsonResponse
     {
-        $id = Team::where('pid', $pid)->select('id')->first()->id;
+        try {
+            $id = Team::where('pid', $pid)->select('id')->firstOrFail()->id;
+        } catch (Exception $e) {
+            $id = null;
+        }
+
         return response()->json([
             'message' => 'success',
             'data' => $id,
