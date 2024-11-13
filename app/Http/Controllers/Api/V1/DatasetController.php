@@ -1304,18 +1304,22 @@ class DatasetController extends Controller
 
                     // Add CSV headers
                     fputcsv($handle, $headerRow);
+
+                    // Note that the contents here need to be manually kept up to date with the contents of
+                    // gateway-web-2/src/app/[locale]/(logged-out)/dataset/[datasetId]/config.tsx.
+                    // The 'Summary Demographics' rows match the summary boxes at the top of the dataset landing page
                     $rows = [
                         ['Dataset', 'Name', $this->getValueFromPath($result, 'summary/title')],
-                        ['Dataset', 'Gateway URL', $this->getValueFromPath($result, 'required/revisions/0/url')], //?
-                        ['Dataset', 'Dataset Type', $this->getValueFromPath($result, 'summary/datasetType')], //sort out delimiter
-                        ['Dataset', 'Dataset Sub-type', $this->getValueFromPath($result, 'summary/datasetSubType')], //sort out delimiter
-                        ['Dataset', 'Collection Sources', $this->getValueFromPath($result, 'provenance/origin/collectionSituation')], //sort out delimiter
+                        ['Dataset', 'Gateway URL', $this->getValueFromPath($result, 'required/revisions/0/url')],
+                        ['Dataset', 'Dataset Type', $this->getValueFromPath($result, 'summary/datasetType')],
+                        ['Dataset', 'Dataset Sub-type', $this->getValueFromPath($result, 'summary/datasetSubType')],
+                        ['Dataset', 'Collection Sources', $this->getValueFromPath($result, 'provenance/origin/collectionSituation')],
 
-                        ['Summary Demographics', 'Population Size', $this->getValueFromPath($result, 'summary/populationSize') === "-1" ? "" : $this->getValueFromPath($result, 'summary/populationSize')], // formatTextDelimiter
-                        ['Summary Demographics', 'Years', $this->getValueFromPath($result, 'provenance/temporal/startDate')], //formatYearStat
+                        ['Summary Demographics', 'Population Size', $this->getValueFromPath($result, 'summary/populationSize') === "-1" ? "" : $this->getValueFromPath($result, 'summary/populationSize')],
+                        ['Summary Demographics', 'Years', $this->getValueFromPath($result, 'provenance/temporal/startDate')],
                         ['Summary Demographics', 'Associate BioSamples', $this->getValueFromPath($result, 'coverage/materialType')],
-                        ['Summary Demographics', 'Geographic coverage', $this->getValueFromPath($result, 'coverage/spatial')], //splitStringList
-                        ['Summary Demographics', 'Lead time', $this->getValueFromPath($result, 'accessibility/access/deliveryLeadTime')], //parseLeadTime
+                        ['Summary Demographics', 'Geographic coverage', $this->getValueFromPath($result, 'coverage/spatial')],
+                        ['Summary Demographics', 'Lead time', $this->getValueFromPath($result, 'accessibility/access/deliveryLeadTime')],
 
                         ['Summary', 'Abstract', $this->getValueFromPath($result, 'summary/abstract')],
                         ['Summary', 'DOI for dataset', $this->getValueFromPath($result, 'summary/doiName')],
@@ -1388,11 +1392,11 @@ class DatasetController extends Controller
 
         $response->headers->set('Content-Type', 'text/csv');
         if ($download_type === 'structural') {
-            $response->headers->set('Content-Disposition', 'attachment;filename="' . $id . '_' . $result['metadata']['metadata']['summary']['title'] . '_Structural_Metadata.csv"');
+            $response->headers->set('Content-Disposition', 'attachment;filename="' . $id . '_' . $result['summary']['title'] . '_Structural_Metadata.csv"');
         } elseif ($download_type === 'observations') {
-            $response->headers->set('Content-Disposition', 'attachment;filename="' . $id . '_' . $result['metadata']['metadata']['summary']['title'] . '_Observations.csv"');
+            $response->headers->set('Content-Disposition', 'attachment;filename="' . $id . '_' . $result['summary']['title'] . '_Observations.csv"');
         } elseif ($download_type === 'metadata') {
-            $response->headers->set('Content-Disposition', 'attachment;filename="' . $id . '_' . $result['metadata']['metadata']['summary']['title'] . '_Metadata.csv"');
+            $response->headers->set('Content-Disposition', 'attachment;filename="' . $id . '_' . $result['summary']['title'] . '_Metadata.csv"');
         } else {
             $response->headers->set('Content-Disposition', 'attachment;filename="placeholder_name.csv"');
         }
