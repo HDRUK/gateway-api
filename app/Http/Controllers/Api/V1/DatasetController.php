@@ -1240,7 +1240,7 @@ class DatasetController extends Controller
     public function exportMetadata(ExportDataset $request, int $id): StreamedResponse
     {
         $input = $request->all();
-        $download_type = $input['download_type'];
+        $download_type = strtolower($input['download_type']);
 
         $dataset = Dataset::where('id', '=', $id)->first();
 
@@ -1391,15 +1391,17 @@ class DatasetController extends Controller
         );
 
         $response->headers->set('Content-Type', 'text/csv');
+        $filename = $id . '_' . $result['summary']['title'];
         if ($download_type === 'structural') {
-            $response->headers->set('Content-Disposition', 'attachment;filename="' . $id . '_' . $result['summary']['title'] . '_Structural_Metadata.csv"');
+            $filename .= '_Structural_Metadata.csv';
         } elseif ($download_type === 'observations') {
-            $response->headers->set('Content-Disposition', 'attachment;filename="' . $id . '_' . $result['summary']['title'] . '_Observations.csv"');
+            $filename .= '_Observations.csv';
         } elseif ($download_type === 'metadata') {
-            $response->headers->set('Content-Disposition', 'attachment;filename="' . $id . '_' . $result['summary']['title'] . '_Metadata.csv"');
+            $filename .= '_Metadata.csv';
         } else {
-            $response->headers->set('Content-Disposition', 'attachment;filename="placeholder_name.csv"');
+            $filename .= '.csv';
         }
+        $response->headers->set('Content-Disposition', 'attachment;filename="' . $filename . '"');
         $response->headers->set('Cache-Control', 'max-age=0');
 
         return $response;
