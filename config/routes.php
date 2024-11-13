@@ -2126,8 +2126,8 @@ return [
     [
         'name' => 'datasets',
         'method' => 'get',
-        'path' => '/datasets/export_single/{id}',
-        'methodController' => 'DatasetController@export_single',
+        'path' => '/datasets/export_metadata/{id}',
+        'methodController' => 'DatasetController@exportMetadata',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
