@@ -1313,12 +1313,77 @@ class DatasetController extends Controller
                     // var_dump($result['metadata']['metadata']);
                     // Add CSV headers
                     fputcsv($handle, $headerRow);
+                    $result = $result['metadata']['metadata'];
                     $rows = [
-                        ['Dataset', 'Name', $result['metadata']['metadata']['summary']['title']],
-                        ['Dataset', 'Gateway URL', $result['metadata']['metadata']['required']['revisions'][0]['url']], //?
-                        ['Dataset', 'Dataset Type', $result['metadata']['metadata']['summary']['datasetType']], //sort out delimiter
-                        ['Dataset', 'Dataset Sub-type', $result['metadata']['metadata']['summary']['datasetSubType']], //sort out delimiter
-                        ['Dataset', 'Collection Sources', $result['metadata']['metadata']['provenance']['origin']['collectionSituation']], //sort out delimiter
+                        ['Dataset', 'Name', $this->getValueFromPath($result, 'summary/title')],
+                        ['Dataset', 'Gateway URL', $this->getValueFromPath($result, 'required/revisions/0/url')], //?
+                        ['Dataset', 'Dataset Type', $this->getValueFromPath($result, 'summary/datasetType')], //sort out delimiter
+                        ['Dataset', 'Dataset Sub-type', $this->getValueFromPath($result, 'summary/datasetSubType')], //sort out delimiter
+                        ['Dataset', 'Collection Sources', $this->getValueFromPath($result, 'provenance/origin/collectionSituation')], //sort out delimiter
+
+                        ['Summary Demographics', 'Population Size', $this->getValueFromPath($result, 'summary/populationSize') === "-1" ? "" : $this->getValueFromPath($result, 'summary/populationSize')], // formatTextDelimiter
+                        ['Summary Demographics', 'Years', $this->getValueFromPath($result, 'provenance/temporal/startDate')], //formatYearStat
+                        ['Summary Demographics', 'Associate BioSamples', $this->getValueFromPath($result, 'coverage/materialType')],
+                        ['Summary Demographics', 'Geographic coverage', $this->getValueFromPath($result, 'coverage/spatial')], //splitStringList
+                        ['Summary Demographics', 'Lead time', $this->getValueFromPath($result, 'accessibility/access/deliveryLeadTime')], //parseLeadTime
+
+                        ['Summary', 'Abstract', $this->getValueFromPath($result, 'summary/abstract')],
+                        ['Summary', 'DOI for dataset', $this->getValueFromPath($result, 'summary/doiName')],
+
+                        ['Documentation', 'Description', $this->getValueFromPath($result, 'documentation/description')],
+                        ['Documentation', 'Dataset type', $this->getValueFromPath($result, 'provenance/origin/datasetType')],
+                        ['Documentation', 'Dataset sub-type', $this->getValueFromPath($result, 'provenance/origin/datasetSubType')],
+                        ['Documentation', 'Dataset population size', $this->getValueFromPath($result, 'summary/populationSize')],
+                        ['Documentation', 'Associated media', $this->getValueFromPath($result, 'documentation/associatedMedia')],
+                        ['Documentation', 'Synthetic data web link', $this->getValueFromPath($result, 'structuralMetadata/syntheticDataWebLink')],
+
+                        ['Keywords', 'Keywords', $this->getValueFromPath($result, 'summary/keywords')],
+
+                        ['Provenance', 'Purpose of dataset collection', $this->getValueFromPath($result, 'provenance/origin/purpose')],
+                        ['Provenance', 'Source of dataset extraction', $this->getValueFromPath($result, 'provenance/origin/source')],
+                        ['Provenance', 'Collection source setting', $this->getValueFromPath($result, 'provenance/origin/collectionSource')],
+                        ['Provenance', 'Patient pathway description', $this->getValueFromPath($result, 'coverage/pathway')],
+                        ['Provenance', 'Image contrast', $this->getValueFromPath($result, 'provenance/origin/imageContrast')],
+                        ['Provenance', 'Biological sample availability', $this->getValueFromPath($result, 'coverage/materialType')],
+
+                        ['Details', 'Publishing frequency', $this->getValueFromPath($result, 'provenance/temporal/publishingFrequency')],
+                        ['Details', 'Version', $this->getValueFromPath($result, 'version')],
+                        ['Details', 'Modified', $this->getValueFromPath($result, 'modified')],
+                        ['Details', 'Distribution release date', $this->getValueFromPath($result, 'provenance/termporal/distributionReleaseDate')],
+                        ['Details', 'Citation Requirements', implode(',', $this->getValueFromPath($result, 'accessibility/usage/resourceCreator'))],
+
+                        ['Coverage', 'Start date', $this->getValueFromPath($result, 'provenance/temporal/startDate')],
+                        ['Coverage', 'End date', $this->getValueFromPath($result, 'provenance/temporal/endDate')],
+                        ['Coverage', 'Time lag', $this->getValueFromPath($result, 'provenance/temporal/timeLag')],
+                        ['Coverage', 'Geographic coverage', $this->getValueFromPath($result, 'coverage/spatial')],
+                        ['Coverage', 'Minimum age range', $this->getValueFromPath($result, 'coverage/typicalAgeRangeMin')],
+                        ['Coverage', 'Maximum age range', $this->getValueFromPath($result, 'coverage/typicalAgeRangeMax')],
+                        ['Coverage', 'Follow-up', $this->getValueFromPath($result, 'coverage/followUp')],
+                        ['Coverage', 'Dataset completeness', $this->getValueFromPath($result, 'coverage/datasetCompleteness')],
+
+                        ['Omics', 'Assay', $this->getValueFromPath($result, 'omics/assay')],
+                        ['Omics', 'Platform', $this->getValueFromPath($result, 'omics/platform')],
+
+                        ['Accessibility', 'Language', $this->getValueFromPath($result, 'accessibility/formatAndStandards/language')],
+                        ['Accessibility', 'Alignment with standardised data models', $this->getValueFromPath($result, 'accessibility/formatAndStandards/conformsTo')],
+                        ['Accessibility', 'Controlled vocabulary', $this->getValueFromPath($result, 'accessibility/formatAndStandards/vocabularyEncodingScheme')],
+                        ['Accessibility', 'Format', $this->getValueFromPath($result, 'accessibility/formatAndStandards/format')],
+
+                        ['Data Access Request', 'Dataset pipeline status', $this->getValueFromPath($result, 'documentation/inPipeline')],
+                        ['Data Access Request', 'Access rights', $this->getValueFromPath($result, 'accessibility/access/accessRights')],
+                        ['Data Access Request', 'Time to dataset access', $this->getValueFromPath($result, 'accessibility/access/deliveryLeadTime')],
+                        ['Data Access Request', 'Access request cost', $this->getValueFromPath($result, 'accessibility/access/accessRequestCost')],
+                        ['Data Access Request', 'Access method category', $this->getValueFromPath($result, 'accessibility/access/accessServiceCategory')],
+                        ['Data Access Request', 'Access mode', $this->getValueFromPath($result, 'accessibility/access/accessMode')],
+                        ['Data Access Request', 'Access service description', $this->getValueFromPath($result, 'accessibility/access/accessService')],
+                        ['Data Access Request', 'Jurisdiction', $this->getValueFromPath($result, 'accessibility/access/jurisdiction')],
+                        ['Data Access Request', 'Data use limitation', $this->getValueFromPath($result, 'accessibility/usage/dataUseLimitation')],
+                        ['Data Access Request', 'Data use requirements', $this->getValueFromPath($result, 'accessibility/usage/dataUseRequirements')],
+                        ['Data Access Request', 'Data Controller', $this->getValueFromPath($result, 'accessibility/access/dataController')],
+                        ['Data Access Request', 'Data Processor', $this->getValueFromPath($result, 'accessibility/access/dataProcessor')],
+                        ['Data Access Request', 'Investigations', $this->getValueFromPath($result, 'enrichmentAndLinkage/investigations')],
+
+                        ['Demographics', 'Demographic Frequency', $this->getValueFromPath($result, 'demographicFrequency')],
                     ];
 
                     // add the given number of rows to the file.
@@ -1449,5 +1514,21 @@ class DatasetController extends Controller
             $metadata = $tmpMetadata;
         }
         return $metadata;
+    }
+
+    public function getValueFromPath(array $item, string $path)
+    {
+        $keys = explode('/', $path);
+
+        $return = $item;
+        foreach ($keys as $key) {
+            if (isset($return[$key])) {
+                $return = $return[$key];
+            } else {
+                return null;
+            }
+        }
+
+        return $return;
     }
 }
