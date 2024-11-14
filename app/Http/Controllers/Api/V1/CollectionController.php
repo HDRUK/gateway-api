@@ -25,10 +25,10 @@ use App\Models\CollectionHasPublication;
 use App\Http\Traits\RequestTransformation;
 use App\Models\CollectionHasDatasetVersion;
 use App\Http\Requests\Collection\GetCollection;
-use App\Http\Requests\Collection\EditCollection;
-use App\Http\Requests\Collection\CreateTeamCollection;
 use App\Http\Requests\Collection\DeleteCollection;
-use App\Http\Requests\Collection\UpdateCollection;
+use App\Http\Requests\Collection\CreateTeamCollection;
+use App\Http\Requests\Collection\UpdateTeamCollection;
+use App\Http\Requests\Collection\EditTeamCollection;
 use App\Models\CollectionHasUser;
 
 class CollectionController extends Controller
@@ -448,6 +448,17 @@ class CollectionController extends Controller
      *    summary="CollectionController@store",
      *    description="Create a new collection for a team",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
      *    @OA\RequestBody(
      *       required=true,
      *       description="Pass user credentials",
@@ -497,6 +508,7 @@ class CollectionController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        // The permissions to add a collection to this team are checked in middleware
         $input['team_id'] = $teamId;
 
         try {
@@ -583,11 +595,22 @@ class CollectionController extends Controller
 
     /**
      * @OA\Put(
-     *    path="/api/v1/collections/{id}",
+     *    path="/api/v1/teams/{teamId}/collections/{id}",
      *    tags={"Collections"},
      *    summary="Update a collection",
-     *    description="Update a collection",
+     *    description="Update a collection owned by a team",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
      *    @OA\Parameter(
      *       name="id",
      *       in="path",
@@ -647,7 +670,7 @@ class CollectionController extends Controller
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
-     *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="collaborators", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *              ),
@@ -662,14 +685,13 @@ class CollectionController extends Controller
      *      )
      * )
      */
-    public function update(UpdateCollection $request, int $id): JsonResponse
+    public function update(UpdateTeamCollection $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
-        foreach ($collHasUsers as $collHasUser) {
-            $this->checkAccess($input, null, $collHasUser['user_id'], 'user');
-        }
+
+        // TODO: check that we have permissions on the currently owning team - the middleware will have checked $teamId from the route
+        $input['team_id'] = $teamId;
 
         try {
             $initCollection = Collection::withTrashed()->where('id', $id)->first();
@@ -709,11 +731,6 @@ class CollectionController extends Controller
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($id, $keywords);
 
-            // users
-            $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
-            $this->updateCollectionUsers((int)$id, $collaborators);
-
-
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
                 Collection::where('id', $id)->update(['created_at' => $input['created_at']]);
@@ -727,11 +744,6 @@ class CollectionController extends Controller
             // updated_on
             if (array_key_exists('updated_on', $input)) {
                 Collection::where('id', $id)->update(['updated_on' => $input['updated_on']]);
-            }
-
-            // add in a team
-            if (array_key_exists('team_id', $input)) {
-                Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
             }
 
             $currentCollection = Collection::where('id', $id)->first();
@@ -767,18 +779,20 @@ class CollectionController extends Controller
 
     /**
      * @OA\Patch(
-     *    path="/api/v1/collections/{id}",
+     *    path="/api/v1/teams/{teamId}/collections/{id}",
      *    tags={"Collections"},
      *    summary="Edit a collection",
-     *    description="Edit a collection",
+     *    description="Edit a collection owned by a team",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
-     *       name="unarchive",
-     *       in="query",
-     *       description="Unarchive a collection",
+     *       name="teamId",
+     *       in="path",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
      *       @OA\Schema(
-     *          type="string",
-     *          description="instruction to unarchive collection",
+     *          type="integer",
+     *          description="team id",
      *       ),
      *    ),
      *    @OA\Parameter(
@@ -790,6 +804,15 @@ class CollectionController extends Controller
      *       @OA\Schema(
      *          type="integer",
      *          description="collection id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="unarchive",
+     *       in="query",
+     *       description="Unarchive a collection",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="instruction to unarchive collection",
      *       ),
      *    ),
      *    @OA\RequestBody(
@@ -841,9 +864,8 @@ class CollectionController extends Controller
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
-     *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
-     *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
+     *                   @OA\Property(property="collaborators", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *              ),
      *        ),
@@ -857,14 +879,13 @@ class CollectionController extends Controller
      *      )
      * )
      */
-    public function edit(EditCollection $request, int $id): JsonResponse
+    public function edit(EditTeamCollection $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
-        foreach ($collHasUsers as $collHasUser) {
-            $this->checkAccess($input, null, $collHasUser['user_id'], 'user');
-        }
+
+        // TODO: check that we have permissions on the currently owning team - the middleware will have checked $teamId from the route
+        $input['team_id'] = $teamId;
 
         try {
             if ($request->has('unarchive')) {
@@ -968,10 +989,6 @@ class CollectionController extends Controller
                     Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
                 }
 
-                // add in a team
-                if (array_key_exists('team_id', $input)) {
-                    Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
-                }
                 if ($updatedCollection->status === Collection::STATUS_ACTIVE) {
                     $this->indexElasticCollections((int) $id);
                 } elseif ($initCollection->status === Collection::STATUS_ACTIVE) {
@@ -980,7 +997,7 @@ class CollectionController extends Controller
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
-                    'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : null,
+                    'target_team_id' => $teamId,
                     'action_type' => 'UPDATE',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Collection ' . $id . ' updated',
@@ -1005,11 +1022,22 @@ class CollectionController extends Controller
 
     /**
      * @OA\Delete(
-     *    path="/api/v1/collections/{id}",
+     *    path="/api/v1/teams/{teamId}/collections/{id}",
      *    tags={"Collections"},
      *    summary="Delete a collection",
-     *    description="Delete a collection",
+     *    description="Delete a collection owned by a team",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
      *    @OA\Parameter(
      *       name="id",
      *       in="path",
@@ -1044,7 +1072,7 @@ class CollectionController extends Controller
      *    )
      * )
      */
-    public function destroy(DeleteCollection $request, int $id): JsonResponse
+    public function destroy(DeleteCollection $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
