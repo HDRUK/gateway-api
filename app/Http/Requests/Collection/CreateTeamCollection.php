@@ -4,7 +4,7 @@ namespace App\Http\Requests\Collection;
 
 use App\Http\Requests\BaseFormRequest;
 
-class CreateCollection extends BaseFormRequest
+class CreateTeamCollection extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.

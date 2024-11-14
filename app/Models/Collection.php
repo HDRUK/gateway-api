@@ -48,7 +48,7 @@ class Collection extends Model
         'updated_at',
         'updated_on',
         'status',
-        'user_id',
+        'team_id',
     ];
 
     protected $casts = [

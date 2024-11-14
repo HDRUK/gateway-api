@@ -26,7 +26,7 @@ use App\Http\Traits\RequestTransformation;
 use App\Models\CollectionHasDatasetVersion;
 use App\Http\Requests\Collection\GetCollection;
 use App\Http\Requests\Collection\EditCollection;
-use App\Http\Requests\Collection\CreateCollection;
+use App\Http\Requests\Collection\CreateTeamCollection;
 use App\Http\Requests\Collection\DeleteCollection;
 use App\Http\Requests\Collection\UpdateCollection;
 use App\Models\CollectionHasUser;
@@ -442,11 +442,11 @@ class CollectionController extends Controller
 
     /**
      * @OA\Post(
-     *    path="/api/v1/collections",
-     *    operationId="create_collections",
+     *    path="/api/v1/teams/{teamId}/collections",
+     *    operationId="create_team_collections",
      *    tags={"Collections"},
      *    summary="CollectionController@store",
-     *    description="Create a new collection",
+     *    description="Create a new collection for a team",
      *    security={{"bearerAuth":{}}},
      *    @OA\RequestBody(
      *       required=true,
@@ -458,7 +458,6 @@ class CollectionController extends Controller
      *             @OA\Property(property="description", type="string", example="Dolorem voluptas consequatur nihil illum et sunt libero."),
      *             @OA\Property(property="image_link", type="string", example="https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"),
      *             @OA\Property(property="enabled", type="boolean", example="true"),
-     *             @OA\Property(property="user_id", type="integer", example="true"),
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
@@ -493,10 +492,12 @@ class CollectionController extends Controller
      *    )
      * )
      */
-    public function store(CreateCollection $request): JsonResponse
+    public function store(CreateTeamCollection $request, int $teamId): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        $input['team_id'] = $teamId;
 
         try {
             $arrayKeys = [
@@ -531,13 +532,11 @@ class CollectionController extends Controller
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($collectionId, $keywords);
 
-            // users
-            $userId = (int)$jwtUser['id'];
-            $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
-            $this->createCollectionUsers((int)$collectionId, (int)$userId, $collaborators);
+            // add current user as CREATOR
+            $this->createCollectionUsers((int)$collectionId, (int)$jwtUser['id'], []);
 
-           // for migration from mongo database
-           if (array_key_exists('created_at', $input)) {
+            // for migration from mongo database
+            if (array_key_exists('created_at', $input)) {
                 $collection->update(['created_at' => $input['created_at']]);
             }
 
@@ -552,11 +551,6 @@ class CollectionController extends Controller
                 $collection->update(['updated_on' => $input['updated_on']]);
             }
 
-            // add in a team
-            if (array_key_exists('team_id', $input)) {
-                $collection->update(['team_id' => $input['team_id']]);
-            }
-
             if ($collection->status === Collection::STATUS_ACTIVE) {
                 $this->indexElasticCollections((int) $collection->id);
             }
@@ -565,7 +559,7 @@ class CollectionController extends Controller
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
-                'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : null,
+                'target_team_id' => $teamId,
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Collection ' . $collectionId . ' created',

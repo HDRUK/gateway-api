@@ -1381,7 +1381,7 @@ return [
     [
         'name' => 'collections',
         'method' => 'post',
-        'path' => '/collections',
+        'path' => '/teams/{teamId}/collections',
         'methodController' => 'CollectionController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
