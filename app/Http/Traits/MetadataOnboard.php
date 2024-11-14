@@ -10,6 +10,7 @@ use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
 use App\Jobs\TermExtraction;
+use App\Jobs\LinkageExtraction;
 
 use Illuminate\Support\Str;
 
@@ -124,20 +125,16 @@ trait MetadataOnboard
                     'publisherId' => $team['pid'],
                     'publisherName' => $team['name'],
                 ];
+                $input['metadata']['metadata']['summary']['publisher'] = $publisher;
             } else {
                 $version = $this->formatVersion(1);
                 if(array_key_exists('version', $input['metadata']['metadata']['required'])) {
                     $version = $input['metadata']['metadata']['required']['version'];
                 }
                 $required['version'] = $version;
-                $publisher = [
-                    'gatewayId' => $team['pid'],
-                    'name' => $team['name'],
-                ];
             }
 
             $input['metadata']['metadata']['required'] = $required;
-            $input['metadata']['metadata']['summary']['publisher'] = $publisher;
 
             //include a note of what the metadata was (i.e. which GWDM version)
             $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
@@ -152,18 +149,25 @@ trait MetadataOnboard
             $this->mapCoverage($input['metadata'], $version);
 
             // Dispatch term extraction to a subprocess if the dataset is marked as active
-            if($input['status'] === Dataset::STATUS_ACTIVE && Config::get('ted.enabled')) {
+            if($input['status'] === Dataset::STATUS_ACTIVE) {
 
-                $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
-
-                TermExtraction::dispatch(
+                LinkageExtraction::dispatch(
                     $dataset->id,
-                    $version->id,
-                    '1',
-                    base64_encode(gzcompress(gzencode(json_encode($tedData)))),
-                    $elasticIndexing,
-                    Config::get('ted.use_partial')
+                    $version->id
                 );
+
+                if(Config::get('ted.enabled')) {
+                    $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
+
+                    TermExtraction::dispatch(
+                        $dataset->id,
+                        $version->id,
+                        '1',
+                        base64_encode(gzcompress(gzencode(json_encode($tedData)))),
+                        $elasticIndexing,
+                        Config::get('ted.use_partial')
+                    );
+                }
             }
 
             return [

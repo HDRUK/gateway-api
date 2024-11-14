@@ -254,6 +254,48 @@ class TeamController extends Controller
     }
 
     /**
+    * @OA\Get(
+    *      path="/api/v1/teams/{teamPid}/id",
+    *      tags={"Teams"},
+    *      summary="TeamController@getIdFromPid",
+    *      description="Get the teamId from a Pid. Failure to find such a team results in a successful null response.",
+    *      security={{"bearerAuth":{}}},
+    *      @OA\Parameter(
+    *         name="teamPid",
+    *         in="path",
+    *         description="team pid",
+    *         required=true,
+    *         example="c98b8ef9-f840-4823-b0b7-0d8575ce01e0",
+    *         @OA\Schema(
+    *            type="string",
+    *            description="team pid",
+    *         ),
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Success",
+    *          @OA\JsonContent(
+    *              @OA\Property(property="message", type="string"),
+    *              @OA\Property(property="data", type="number")
+    *          ),
+    *      )
+    * )
+    */
+    public function getIdFromPid(Request $request, string $pid): JsonResponse
+    {
+        try {
+            $id = Team::where('pid', $pid)->select('id')->firstOrFail()->id;
+        } catch (Exception $e) {
+            $id = null;
+        }
+
+        return response()->json([
+            'message' => 'success',
+            'data' => $id,
+        ], 200);
+    }
+
+    /**
      * @OA\Get(
      *      path="/api/v1/teams/search",
      *      summary="TeamController@searchByName",

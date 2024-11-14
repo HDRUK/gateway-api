@@ -14,6 +14,7 @@ use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
 
 use App\Jobs\TermExtraction;
+use App\Jobs\LinkageExtraction;
 use MetadataManagementController as MMC;
 
 use App\Http\Traits\IndexElastic;
@@ -591,6 +592,12 @@ class IntegrationDatasetController extends Controller
 
                 // Dispatch term extraction to a subprocess as it may take some time
                 if($request['status'] === Dataset::STATUS_ACTIVE) {
+
+                    LinkageExtraction::dispatch(
+                        $dataset->id,
+                        $version->id,
+                    );
+
                     $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
 
                     TermExtraction::dispatch(

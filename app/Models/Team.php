@@ -44,6 +44,9 @@ class Team extends Model
         'introduction',
         'dar_modal_content',
         'service',
+        'is_dar',
+        'dar_modal_footer',
+        'dar_modal_header',
     ];
 
     /**
@@ -60,6 +63,7 @@ class Team extends Model
         'notification_status' => 'boolean',
         'is_question_bank' => 'boolean',
         'is_provider' => 'boolean',
+        'is_dar' => 'boolean',
     ];
 
     protected static $htmlDecodedFields = [
@@ -171,6 +175,13 @@ class Team extends Model
      * @var string
      */
     private $mongo_object_id = '';
+
+    /**
+     * Indicates whether the team is an admin
+     *
+     * @var bool
+     */
+    private $is_dar = false;
 
     protected static function boot()
     {

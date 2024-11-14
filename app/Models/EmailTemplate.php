@@ -20,6 +20,7 @@ class EmailTemplate extends Model
         'enabled',
         'body',
         'subject',
+        'buttons'
     ];
 
     /**
