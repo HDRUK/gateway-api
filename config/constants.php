@@ -30,7 +30,7 @@ return [
             'firstname' => 'Bob',
             'lastname' => 'Dylan',
             'email' => 'bob.dylan.1234567890@example.com',
-            'password' => 'passw@rdBo0bDy1an',
+            'password' => 'passw@rdB0bDy1an',
             'is_admin' => 0
         ],
     ],
