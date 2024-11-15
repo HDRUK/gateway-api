@@ -356,7 +356,7 @@ class CollectionTeamTest extends TestCase
                 }
             )
         )
-        ->times(2);
+        ->times(3);
 
         ECC::shouldIgnoreMissing(); //ignore index on datasets
 
@@ -424,6 +424,28 @@ class CollectionTeamTest extends TestCase
         $this->assertTrue((bool) $mockDataUpdate['enabled'] === (bool) $responseUpdate['data']['enabled']);
         $this->assertTrue((bool) $mockDataUpdate['public'] === (bool) $responseUpdate['data']['public']);
         $this->assertTrue((int) $mockDataUpdate['counter'] === (int) $responseUpdate['data']['counter']);
+
+        // generate jwt for a different user than the one who created the collection, and give them custodian.team.admin role on that team
+        $this->authorisationUser(false, 2);
+
+        $nonAdmin2Jwt = $this->getAuthorisationJwt(false, 2);
+        [
+            'nonAdminUser' => $nonAdminUser2,
+            'team' => $team
+        ] = $this->getNonAdminUserAsCustodianTeamAdminInTeam($nonAdmin2Jwt, $team);
+        $headerNonAdmin2 = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $nonAdmin2Jwt,
+        ];
+
+        $responseUpdate = $this->json(
+            'PUT',
+            $this->test_url($team->id) . $idIn,
+            $mockDataUpdate,
+            $headerNonAdmin2
+        );
+
+        $responseUpdate->assertStatus(200);
     }
 
     /**
@@ -483,29 +505,30 @@ class CollectionTeamTest extends TestCase
         ];
 
         // generate jwt for a different user than the one who created the collection
-        // TODO: - this can't be done as we can only generate one admin and one non-admin currently.
-        // $this->authorisationUser(false);
-        // $nonAdminJwt = $this->getAuthorisationJwt(false);
-        // $headerNonAdmin = [
-        //     'Accept' => 'application/json',
-        //     'Authorization' => 'Bearer ' . $nonAdminJwt,
-        // ];
-        // $nonAdminUser2 = $this->getUserFromJwt($this->nonAdminJwt);
+        $this->authorisationUser(false, 2);
 
-        // // double-check they're not in the same team anyway - we want them to have no access
-        // $teamHasUser = TeamHasUser::where(['user_id' => $nonAdminUser2['id'], 'team_id' => $team->id])->first();
-        // if ($teamHasUser) {
-        //     $teamHasUser->delete();
-        // }
+        $nonAdmin2Jwt = $this->getAuthorisationJwt(false, 2);
+        $headerNonAdmin2 = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $nonAdmin2Jwt,
+        ];
 
-        // $responseUpdate = $this->json(
-        //     'PUT',
-        //     $this->test_url($team->id) . $idIn,
-        //     $mockDataUpdate,
-        //     $headerNonAdmin
-        // );
+        $nonAdminUser2 = $this->getUserFromJwt($nonAdmin2Jwt);
 
-        // $responseUpdate->assertStatus(401); // Unauthorized
+        // double-check they're not in the same team anyway - we want them to have no access
+        $teamHasUser = TeamHasUser::where(['user_id' => $nonAdminUser2['id'], 'team_id' => $team->id])->first();
+        if ($teamHasUser) {
+            $teamHasUser->delete();
+        }
+
+        $responseUpdate = $this->json(
+            'PUT',
+            $this->test_url($team->id) . $idIn,
+            $mockDataUpdate,
+            $headerNonAdmin2
+        );
+
+        $responseUpdate->assertStatus(401); // Unauthorized
     }
 
     /**
@@ -1022,12 +1045,19 @@ class CollectionTeamTest extends TestCase
         return $return;
     }
 
-    private function getNonAdminUserAsCustodianTeamAdminInTeam()
+    private function getNonAdminUserAsCustodianTeamAdminInTeam(mixed $jwt = null, Team $team = null)
     {
+        if (!$jwt) {
+            $jwt = $this->nonAdminJwt;
+        }
+
         // get an existing non-admin user
-        $nonAdminUser = $this->getUserFromJwt($this->nonAdminJwt);
+        $nonAdminUser = $this->getUserFromJwt($jwt);
         // add them to a Team
-        $team = Team::all()->random();
+        if (!$team) {
+            $team = Team::all()->random();
+        }
+
         TeamHasUser::create([
             'team_id' => (int)$team->id,
             'user_id' => (int)$nonAdminUser['id'],
