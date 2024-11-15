@@ -32,7 +32,8 @@ class CheckAccessMiddleware
         $currentUserRoles = [];
         $currentUserPermissions = [];
         if ($teamId) {
-            if (array_key_exists((string) $teamId, $input['jwt_user']['role_perms']['teams'])) {
+            if (array_key_exists('teams', $input['jwt_user']['role_perms']) &&
+                array_key_exists((string) $teamId, $input['jwt_user']['role_perms']['teams'])) {
                 $currentUserRoles = array_unique(array_merge($input['jwt_user']['role_perms']['extra']['roles'], $input['jwt_user']['role_perms']['teams'][(string) $teamId]['roles']));
                 $currentUserPermissions = array_unique(array_merge($input['jwt_user']['role_perms']['extra']['perms'], $input['jwt_user']['role_perms']['teams'][(string) $teamId]['perms']));
             } else {
