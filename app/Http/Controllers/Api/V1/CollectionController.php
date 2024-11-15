@@ -690,11 +690,14 @@ class CollectionController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        // TODO: check that we have permissions on the currently owning team - the middleware will have checked $teamId from the route
         $input['team_id'] = $teamId;
 
         try {
             $initCollection = Collection::withTrashed()->where('id', $id)->first();
+
+            // Check that we have permissions on the currently owning team - the middleware will have checked $teamId from the route
+            $owningTeamId = $initCollection->team_id;
+            $this->checkAccess($input, $owningTeamId, null, 'team');
 
             if ($initCollection['status'] === Collection::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
                 throw new Exception('Cannot update current collection! Status already "ARCHIVED"');
