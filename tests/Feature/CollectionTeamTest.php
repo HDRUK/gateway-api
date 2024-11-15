@@ -19,7 +19,6 @@ use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
-// use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
 use ElasticClientController as ECC;
@@ -100,91 +99,6 @@ class CollectionTeamTest extends TestCase
         ];
     }
 
-    // /**
-    //  * Get All Collections with success
-    //  *
-    //  * @return void
-    //  */
-    // public function test_get_all_collections_with_success(): void
-    // {
-    //     $response = $this->json('GET', self::TEST_URL, [], $this->header);
-
-    //     $response->assertJsonStructure([
-    //         'data' => [
-    //             0 => [
-    //                 'id',
-    //                 'name',
-    //                 'description',
-    //                 'image_link',
-    //                 'enabled',
-    //                 'public',
-    //                 'counter',
-    //                 'created_at',
-    //                 'updated_at',
-    //                 'deleted_at',
-    //                 'mongo_object_id',
-    //                 'mongo_id',
-    //                 'keywords',
-    //                 'datasets',
-    //                 'tools',
-    //                 'dur',
-    //                 'publications',
-    //                 'users',
-    //                 'applications',
-    //                 'team',
-    //             ],
-    //         ],
-    //         'current_page',
-    //         'first_page_url',
-    //         'from',
-    //         'last_page',
-    //         'last_page_url',
-    //         'links',
-    //         'next_page_url',
-    //         'path',
-    //         'per_page',
-    //         'prev_page_url',
-    //         'to',
-    //         'total',
-    //     ]);
-    //     $response->assertStatus(200);
-    // }
-
-    // /**
-    //  * Get Collection by Id with success
-    //  *
-    //  * @return void
-    //  */
-    // public function test_get_collection_by_id_with_success(): void
-    // {
-    //     $collectionId = (int) Collection::all()->random()->id;
-    //     $response = $this->json('GET', self::TEST_URL . '/' . $collectionId, [], $this->header);
-
-    //     $response->assertJsonStructure([
-    //         'message',
-    //         'data' => [
-    //             'id',
-    //             'name',
-    //             'description',
-    //             'image_link',
-    //             'enabled',
-    //             'public',
-    //             'counter',
-    //             'created_at',
-    //             'updated_at',
-    //             'deleted_at',
-    //             'mongo_object_id',
-    //             'mongo_id',
-    //             'keywords',
-    //             'dataset_versions',
-    //             'tools',
-    //             'dur',
-    //             'publications',
-    //             'team',
-    //         ]
-    //     ]);
-    //     $response->assertStatus(200);
-    // }
 
     /**
      * Create new Collection with success
@@ -646,7 +560,7 @@ class CollectionTeamTest extends TestCase
         $responseIns->assertStatus(201);
         $idIns = (int) $responseIns['data'];
 
-        // update collection
+        // update collection with same user
         $mockDataUpdate = [
             "name" => "covid update",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
@@ -690,16 +604,30 @@ class CollectionTeamTest extends TestCase
         $this->assertTrue($mockDataEdit1['description'] === $responseEdit1['data']['description']);
         $this->assertTrue($mockDataEdit1['image_link'] === $responseEdit1['data']['image_link']);
 
-        // edit
+        // edit with another user
         $mockDataEdit2 = [
             "name" => "covid another edit",
             "counter" => 126
         ];
+
+        // generate jwt for a different user than the one who created the collection, and give them custodian.team.admin role on that team
+        $this->authorisationUser(false, 2);
+
+        $nonAdmin2Jwt = $this->getAuthorisationJwt(false, 2);
+        [
+            'nonAdminUser' => $nonAdminUser2,
+            'team' => $team
+        ] = $this->getNonAdminUserAsCustodianTeamAdminInTeam($nonAdmin2Jwt, $team);
+        $headerNonAdmin2 = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $nonAdmin2Jwt,
+        ];
+
         $responseEdit2 = $this->json(
             'PATCH',
             $this->test_url($team->id) . $idIns,
             $mockDataEdit2,
-            $this->headerNonAdmin
+            $headerNonAdmin2
         );
         $responseEdit2->assertStatus(200);
         $this->assertTrue($mockDataEdit2['name'] === $responseEdit2['data']['name']);
@@ -780,21 +708,30 @@ class CollectionTeamTest extends TestCase
         ];
 
         // generate jwt for a different user than the one who created the collection
-        // $this->authorisationUser(false);
-        // $nonAdminJwt = $this->getAuthorisationJwt(false);
-        // $headerNonAdmin = [
-        //     'Accept' => 'application/json',
-        //     'Authorization' => 'Bearer ' . $nonAdminJwt,
-        // ];
+        $this->authorisationUser(false, 2);
 
-        // $responseEdit1 = $this->json(
-        //     'PATCH',
-        //     $this->test_url($team->id) . $idIns,
-        //     $mockDataEdit1,
-        //     $headerNonAdmin
-        // );
+        $nonAdmin2Jwt = $this->getAuthorisationJwt(false, 2);
+        $headerNonAdmin2 = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $nonAdmin2Jwt,
+        ];
 
-        // $responseEdit1->assertStatus(401); // Unauthorized
+        $nonAdminUser2 = $this->getUserFromJwt($nonAdmin2Jwt);
+
+        // double-check they're not in the same team anyway - we want them to have no access
+        $teamHasUser = TeamHasUser::where(['user_id' => $nonAdminUser2['id'], 'team_id' => $team->id])->first();
+        if ($teamHasUser) {
+            $teamHasUser->delete();
+        }
+
+        $responseEdit1 = $this->json(
+            'PATCH',
+            $this->test_url($team->id) . $idIns,
+            $mockDataEdit1,
+            $headerNonAdmin2
+        );
+
+        $responseEdit1->assertStatus(401); // Unauthorized
 
     }
 
@@ -803,7 +740,7 @@ class CollectionTeamTest extends TestCase
      *
      * @return void
      */
-    public function test_soft_delete_and_unarchive_team_collection_with_success(): void
+    public function test_soft_delete_and_unarchive_team_collection_with_and_without_success(): void
     {
         ECC::shouldReceive("deleteDocument")
             ->times(1);
@@ -847,7 +784,35 @@ class CollectionTeamTest extends TestCase
         $countAfter = Collection::count();
         $this->assertEquals($countAfter, $countBefore + 1);
 
-        // delete collection
+        // generate jwt for a different user than the one who created the collection
+        $this->authorisationUser(false, 2);
+
+        $nonAdmin2Jwt = $this->getAuthorisationJwt(false, 2);
+        $headerNonAdmin2 = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $nonAdmin2Jwt,
+        ];
+
+        $nonAdminUser2 = $this->getUserFromJwt($nonAdmin2Jwt);
+
+        // double-check they're not in the same team anyway - we want them to have no access
+        $teamHasUser = TeamHasUser::where(['user_id' => $nonAdminUser2['id'], 'team_id' => $team->id])->first();
+        if ($teamHasUser) {
+            $teamHasUser->delete();
+        }
+
+        // try to delete collection when not in the correct team - this will fail
+        $response = $this->json('DELETE', $this->test_url($team->id) . $idIn, [], $headerNonAdmin2);
+        $response->assertStatus(401);
+
+        $countAfter = Collection::count();
+        $countTrashedAfter = Collection::onlyTrashed()->count();
+
+        $this->assertEquals($countAfter, $countBefore + 1);
+        $this->assertEquals($countTrashedAfter, 0);
+
+
+        // delete collection when authorised
         $response = $this->json('DELETE', $this->test_url($team->id) . $idIn, [], $this->headerNonAdmin);
         $response->assertStatus(200);
 
@@ -922,56 +887,6 @@ class CollectionTeamTest extends TestCase
         $response->assertStatus(200);
     }
 
-
-    /**
-     * SoftDelete Collection by Id without success
-     *
-     * @return void
-     */
-    public function test_soft_delete_team_collection_without_success(): void
-    {
-        // TODO: can't test this without a second nonAdmin user
-
-        // // generate jwt for a different user than the one who created the collection
-        // $this->authorisationUser(false);
-        // $nonAdminJwt = $this->getAuthorisationJwt(false);
-        // $headerNonAdmin = [
-        //     'Accept' => 'application/json',
-        //     'Authorization' => 'Bearer ' . $nonAdminJwt,
-        // ];
-
-        // $countBefore = Collection::count();
-
-        // // create new collection
-        // $mockDataIn = [
-        //     "name" => "covid",
-        //     "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-        //     "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
-        //     "enabled" => true,
-        //     "public" => true,
-        //     "counter" => 123,
-        //     "datasets" => $this->generateDatasets(),
-        //     "tools" => $this->generateTools(),
-        //     "keywords" => $this->generateKeywords(),
-        //     "dur" => $this->generateDurs(),
-        //     "publications" => $this->generatePublications(),
-        // ];
-        // $responseIn = $this->json(
-        //     'POST',
-        //     $this->test_url($team->id),
-        //     $mockDataIn,
-        //     $this->headerNonAdmin
-        // );
-        // $responseIn->assertStatus(201);
-        // $idIn = (int) $responseIn['data'];
-
-        // $countAfter = Collection::count();
-        // $this->assertEquals($countAfter, $countBefore + 1);
-
-        // // delete collection
-        // $response = $this->json('DELETE', $this->test_url($team->id) . $idIn, [], $headerNonAdmin);
-        // $response->assertStatus(401);
-    }
 
     private function generateKeywords()
     {

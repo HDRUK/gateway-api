@@ -887,20 +887,23 @@ class CollectionController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        // TODO: check that we have permissions on the currently owning team - the middleware will have checked $teamId from the route
         $input['team_id'] = $teamId;
 
         try {
             if ($request->has('unarchive')) {
-                $collectionModel = Collection::withTrashed()
+                $collection = Collection::withTrashed()
                     ->find($id);
+                // Check that we have permissions on the currently owning team - the middleware will have checked $teamId from the route
+                $owningTeamId = $collection->team_id;
+                $this->checkAccess($input, $owningTeamId, null, 'team');
+
                 if ($request['status'] !== Collection::STATUS_ARCHIVED) {
                     if (in_array($request['status'], [
                         Collection::STATUS_ACTIVE, Collection::STATUS_DRAFT
                     ])) {
-                        $collectionModel->status = $request['status'];
-                        $collectionModel->deleted_at = null;
-                        $collectionModel->save();
+                        $collection->status = $request['status'];
+                        $collection->deleted_at = null;
+                        $collection->save();
 
                         CollectionHasDatasetVersion::withTrashed()->where('collection_id', $id)->restore();
                         CollectionHasTool::withTrashed()->where('collection_id', $id)->restore();
@@ -943,19 +946,18 @@ class CollectionController extends Controller
                     $array['deleted_at'] = null;
                 }
 
-                // get initial colleciton
+                // get initial collection
                 $initCollection = Collection::withTrashed()->where('id', $id)->first();
-                //update it
+
+                // Check that we have permissions on the currently owning team - the middleware will have checked $teamId from the route
+                $owningTeamId = $initCollection->team_id;
+                $this->checkAccess($input, $owningTeamId, null, 'team');
+
+                // update it
                 Collection::withTrashed()->where('id', $id)->update($array);
                 // get updated collection
                 $updatedCollection = Collection::withTrashed()->where('id', $id)->first();
                 // Check and update related datasets and tools etc if the collection is active
-
-
-                // users
-                $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
-                $this->updateCollectionUsers((int)$id, $collaborators);
-
 
                 if (array_key_exists('datasets', $input)) {
                     $datasets = $input['datasets'];
@@ -1080,12 +1082,14 @@ class CollectionController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
-        foreach ($collHasUsers as $collHasUser) {
-            $this->checkAccess($input, null, $collHasUser['user_id'], 'user');
-        }
+
 
         try {
             $collection = Collection::where(['id' => $id])->first();
+            // Check that we have permissions on the currently owning team - the middleware will have checked $teamId from the route
+            $owningTeamId = $collection->team_id;
+            $this->checkAccess($input, $owningTeamId, null, 'team');
+
             $initialStatus = $collection->status;
             if ($collection) {
                 CollectionHasDatasetVersion::where(['collection_id' => $id])->delete();
