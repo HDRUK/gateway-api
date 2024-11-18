@@ -22,6 +22,8 @@ use App\Models\CollectionHasPublication;
 use App\Http\Traits\RequestTransformation;
 use App\Models\CollectionHasDatasetVersion;
 use App\Http\Requests\Collection\CreateCollection;
+use App\Http\Requests\Collection\DeleteCollection;
+use App\Http\Requests\Collection\EditCollection;
 use App\Http\Requests\Collection\UpdateCollection;
 use App\Models\CollectionHasUser;
 
@@ -91,7 +93,6 @@ class CollectionController extends Controller
      */
     public function store(CreateCollection $request): JsonResponse
     {
-        var_dump('store');
         // no checks on permissions are required, so long as you're logged in, and that will be checked by jwt middleware.
 
         $input = $request->all();
@@ -109,36 +110,31 @@ class CollectionController extends Controller
                 'mongo_id',
                 'status',
             ];
-            var_dump('checkEditArray');
             $array = $this->checkEditArray($input, $arrayKeys);
-            var_dump('checkedEditArray');
+
             $collection = Collection::create($array);
-            var_dump('created', $collection->id);
             $collectionId = (int) $collection->id;
-            var_dump('check datasets');
 
-            $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
-            var_dump($datasets);
+            $datasets = $input['datasets'] ?? [];
+
             $this->checkDatasets($collectionId, $datasets, (int)$jwtUser['id']);
-            var_dump('checked datasets');
 
-            $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
+            $tools = $input['tools'] ?? [];
             $this->checkTools($collectionId, $tools, (int)$jwtUser['id']);
 
-            $dur = array_key_exists('dur', $input) ? $input['dur'] : [];
+            $dur = $input['dur'] ?? [];
             $this->checkDurs($collectionId, $dur, (int)$jwtUser['id']);
 
-            $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
+            $publications = $input['publications'] ?? [];
             $this->checkPublications($collectionId, $publications, (int)$jwtUser['id']);
 
-            $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
+            $keywords = $input['keywords'] ?? [];
             $this->checkKeywords($collectionId, $keywords);
 
             // users
-            var_dump($jwtUser);
             $userId = (int)$jwtUser['id'];
-            $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
-            var_dump('create collaborators');
+            $collaborators = $input['collaborators'] ?? [];
+
             $this->createCollectionUsers((int)$collectionId, $userId, $collaborators);
 
             // for migration from mongo database
@@ -251,9 +247,10 @@ class CollectionController extends Controller
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="collaborators", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
-     *              ),
+     *             ),
      *        ),
      *    ),
      *      @OA\Response(
@@ -268,16 +265,11 @@ class CollectionController extends Controller
     public function update(UpdateCollection $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $input['jwt_user'] ?? [];
 
+        // Allow access only to collaborators
         $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
-        var_dump('collhasusers', $collHasUsers);
-        $dbUserIds = array_column($collHasUsers, 'user_id');
-        var_dump('dbUserIds', $dbUserIds);
-        var_dump('input jwtid', $input['jwt_user']['id']);
-        $access = $this->checkAccessCollaborators($input, array_column($collHasUsers, 'user_id'));
-
-        var_dump('access rights', $access);
+        $this->checkAccessCollaborators($input, array_column($collHasUsers, 'user_id'));
 
         try {
             $initCollection = Collection::withTrashed()->where('id', $id)->first();
@@ -301,23 +293,23 @@ class CollectionController extends Controller
 
             Collection::where('id', $id)->update($array);
 
-            $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
+            $datasets = $input['datasets'] ?? [];
             $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
 
-            $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
+            $tools = $input['tools'] ?? [];
             $this->checkTools($id, $tools, (int)$jwtUser['id']);
 
-            $dur = array_key_exists('dur', $input) ? $input['dur'] : [];
+            $dur = $input['dur'] ?? [];
             $this->checkDurs($id, $dur, (int)$jwtUser['id']);
 
-            $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
+            $publications = $input['publications'] ?? [];
             $this->checkPublications($id, $publications, (int)$jwtUser['id']);
 
-            $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
+            $keywords = $input['keywords'] ?? [];
             $this->checkKeywords($id, $keywords);
 
             // users
-            $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
+            $collaborators = $input['collaborators'] ?? [];
             $this->updateCollectionUsers((int)$id, $collaborators);
 
             // for migration from mongo database
@@ -334,20 +326,19 @@ class CollectionController extends Controller
             if (array_key_exists('updated_on', $input)) {
                 Collection::where('id', $id)->update(['updated_on' => $input['updated_on']]);
             }
-            var_dump('index');
+
             $currentCollection = Collection::where('id', $id)->first();
             if ($currentCollection->status === Collection::STATUS_ACTIVE) {
                 $this->indexElasticCollections((int) $id);
             } else {
                 $this->deleteCollectionFromElastic((int) $id);
             }
-            var_dump('indexed');
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
-                'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : null,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'Collection ' . $id . ' updated',
+                'description' => 'Personal Collection ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -366,6 +357,337 @@ class CollectionController extends Controller
         }
     }
 
+
+    /**
+     * @OA\Patch(
+     *    path="/api/v2/collections/{id}",
+     *    tags={"Collections"},
+     *    summary="Edit a collection",
+     *    description="Edit a collection",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="unarchive",
+     *       in="query",
+     *       description="Unarchive a collection",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="instruction to unarchive collection",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="collection id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="collection id",
+     *       ),
+     *    ),
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="name", type="string", example="covid"),
+     *             @OA\Property(property="description", type="string", example="Dolorem voluptas consequatur nihil illum et sunt libero."),
+     *             @OA\Property(property="image_link", type="string", example="https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"),
+     *             @OA\Property(property="enabled", type="boolean", example="true"),
+     *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="collaborators", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="public", type="boolean", example="true"),
+     *             @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Not found response",
+     *       @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="not found")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *        response=200,
+     *        description="Success",
+     *        @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(
+     *                 property="data", type="object",
+     *                   @OA\Property(property="id", type="integer", example="123"),
+     *                   @OA\Property(property="name", type="string", example="expedita"),
+     *                   @OA\Property(property="description", type="string", example="Quibusdam in ducimus eos est."),
+     *                   @OA\Property(property="image_link", type="string", example="https:\/\/via.placeholder.com\/640x480.png\/003333?text=animals+iusto"),
+     *                   @OA\Property(property="enabled", type="boolean", example="1"),
+     *                   @OA\Property(property="public", type="boolean", example="0"),
+     *                   @OA\Property(property="counter", type="integer", example="34319"),
+     *                   @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                   @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
+     *                   @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
+     *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="collaborators", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
+     *                   @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
+     *              ),
+     *        ),
+     *    ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function edit(EditCollection $request, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = $input['jwt_user'] ?? [];
+
+        // Allow access only to collaborators
+        $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
+        $this->checkAccessCollaborators($input, array_column($collHasUsers, 'user_id'));
+
+        try {
+            if ($request->has('unarchive')) {
+                $collectionModel = Collection::withTrashed()
+                    ->find($id);
+                if ($request['status'] !== Collection::STATUS_ARCHIVED) {
+                    if (in_array($request['status'], [
+                        Collection::STATUS_ACTIVE, Collection::STATUS_DRAFT
+                    ])) {
+                        $collectionModel->status = $request['status'];
+                        $collectionModel->deleted_at = null;
+                        $collectionModel->save();
+
+                        CollectionHasDatasetVersion::withTrashed()->where('collection_id', $id)->restore();
+                        CollectionHasTool::withTrashed()->where('collection_id', $id)->restore();
+                        CollectionHasDur::withTrashed()->where('collection_id', $id)->restore();
+                        CollectionHasPublication::withTrashed()->where('collection_id', $id)->restore();
+
+                        Auditor::log([
+                            'user_id' => (int)$jwtUser['id'],
+                            'action_type' => 'UPDATE',
+                            'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                            'description' => 'Personal Collection ' . $id . ' unarchived and marked as ' . strtoupper($request['status']),
+                        ]);
+                    }
+                }
+
+                return response()->json([
+                    'message' => 'success',
+                    'data' => $this->getCollectionById($id),
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            } else {
+                $arrayKeys = [
+                    'name',
+                    'description',
+                    'image_link',
+                    'enabled',
+                    'public',
+                    'counter',
+                    'mongo_object_id',
+                    'mongo_id',
+                    'team_id',
+                    'status',
+                ];
+                $array = $this->checkEditArray($input, $arrayKeys);
+
+                // Handle the 'deleted_at' field based on 'status'
+                if (isset($input['status']) && ($input['status'] === Collection::STATUS_ARCHIVED)) {
+                    $array['deleted_at'] = Carbon::now();
+
+                } else {
+                    $array['deleted_at'] = null;
+                }
+
+                // get initial colleciton
+                $initCollection = Collection::withTrashed()->where('id', $id)->first();
+                //update it
+                Collection::withTrashed()->where('id', $id)->update($array);
+                // get updated collection
+                $updatedCollection = Collection::withTrashed()->where('id', $id)->first();
+                // Check and update related datasets and tools etc if the collection is active
+
+
+                // collaborators
+                if (array_key_exists('collaborators', $input)) {
+                    $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
+                    $this->updateCollectionUsers((int)$id, $collaborators);
+                }
+
+                if (array_key_exists('datasets', $input)) {
+                    $datasets = $input['datasets'];
+                    $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
+                }
+
+                if (array_key_exists('tools', $input)) {
+                    $tools = $input['tools'];
+                    $this->checkTools($id, $tools, (int)$jwtUser['id']);
+                }
+
+                if (array_key_exists('dur', $input)) {
+                    $dur = $input['dur'];
+                    $this->checkDurs($id, $dur, (int)$jwtUser['id']);
+                }
+
+                if (array_key_exists('publications', $input)) {
+                    $publications = $input['publications'];
+                    $this->checkPublications($id, $publications, (int)$jwtUser['id']);
+                }
+
+                if (array_key_exists('keywords', $input)) {
+                    $keywords = $input['keywords'];
+                    $this->checkKeywords($id, $keywords);
+                }
+
+                // for migration from mongo database
+                if (array_key_exists('created_at', $input)) {
+                    Collection::where('id', $id)->update(['created_at' => $input['created_at']]);
+                }
+
+                // for migration from mongo database
+                if (array_key_exists('updated_at', $input)) {
+                    Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
+                }
+
+                // add in a team
+                if (array_key_exists('team_id', $input)) {
+                    Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
+                }
+                if ($updatedCollection->status === Collection::STATUS_ACTIVE) {
+                    $this->indexElasticCollections((int) $id);
+                } elseif ($initCollection->status === Collection::STATUS_ACTIVE) {
+                    $this->deleteCollectionFromElastic((int) $id);
+                }
+
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'UPDATE',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Personal Collection ' . $id . ' updated',
+                ]);
+
+                return response()->json([
+                    'message' => 'success',
+                    'data' => $this->getCollectionById($id),
+                ], 200);
+            }
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *    path="/api/v2/collections/{id}",
+     *    tags={"Collections"},
+     *    summary="Delete a collection",
+     *    description="Delete a collection",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="collection id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="collection id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Not found response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="not found")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=200,
+     *       description="Success",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="success")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=500,
+     *       description="Error",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="error")
+     *       )
+     *    )
+     * )
+     */
+    public function destroy(DeleteCollection $request, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = $input['jwt_user'] ?? [];
+
+        // Allow access only to collaborators
+        $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
+        $this->checkAccessCollaborators($input, array_column($collHasUsers, 'user_id'));
+
+        try {
+            $collection = Collection::where(['id' => $id])->first();
+            $initialStatus = $collection->status;
+            if ($collection) {
+                CollectionHasDatasetVersion::where(['collection_id' => $id])->delete();
+                CollectionHasTool::where(['collection_id' => $id])->delete();
+                CollectionHasDur::where(['collection_id' => $id])->delete();
+                CollectionHasKeyword::where(['collection_id' => $id])->delete();
+                CollectionHasPublication::where(['collection_id' => $id])->delete();
+                Collection::where(['id' => $id])->update(['status' => Collection::STATUS_ARCHIVED]);
+                Collection::where(['id' => $id])->delete();
+
+                if($initialStatus === Collection::STATUS_ACTIVE) {
+                    $this->deleteCollectionFromElastic($id);
+                }
+
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'DELETE',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => 'Personal Collection ' . $id . ' deleted',
+                ]);
+
+                return response()->json([
+                    'message' => 'success',
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
+
+            throw new NotFoundException();
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
 
     private function getCollectionById(int $collectionId, bool $trimmed = false)
     {
@@ -503,13 +825,9 @@ class CollectionController extends Controller
     // datasets
     private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null)
     {
-        // var_dump('checkDatasets where');
         $cols = CollectionHasDatasetVersion::where(['collection_id' => $collectionId])->get();
-        // var_dump('checkDatasets got');
         foreach ($cols as $col) {
-            // var_dump('checkDatasets cols', $col);
             $datasetId = DatasetVersion::where('id', $col->dataset_version_id)->select('dataset_id')->get();
-            // var_dump('checkDatasets datasetId', $datasetId);
             if (count($datasetId) > 0) {
                 if (!in_array($datasetId[0]['dataset_id'], $this->extractInputIdToArray($inDatasets))) {
                     $this->deleteCollectionHasDatasetVersions($collectionId, $col->dataset_version_id);
