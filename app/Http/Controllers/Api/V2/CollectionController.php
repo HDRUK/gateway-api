@@ -9,7 +9,6 @@ use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
 use App\Models\Application;
-use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
 use Illuminate\Support\Str;
 use App\Http\Traits\CheckAccess;
@@ -19,12 +18,11 @@ use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Models\CollectionHasKeyword;
-use App\Exceptions\NotFoundException;
 use App\Models\CollectionHasPublication;
 use App\Http\Traits\RequestTransformation;
 use App\Models\CollectionHasDatasetVersion;
 use App\Http\Requests\Collection\CreateCollection;
-use App\Http\Requests\Collection\GetCollection;
+use App\Http\Requests\Collection\UpdateCollection;
 use App\Models\CollectionHasUser;
 
 class CollectionController extends Controller
@@ -38,403 +36,6 @@ class CollectionController extends Controller
         //
     }
 
-    // /**
-    //  * @OA\Get(
-    //  *    path="/api/v1/collections",
-    //  *    operationId="fetch_all_collections",
-    //  *    tags={"Collections"},
-    //  *    summary="CollectionController@index",
-    //  *    description="Returns a list of collections",
-    //  *    security={{"bearerAuth":{}}},
-    //  *    @OA\Parameter(
-    //  *       name="name",
-    //  *       in="query",
-    //  *       required=false,
-    //  *       @OA\Schema(type="string"),
-    //  *       description="Filter collections by name"
-    //  *    ),
-    //  *    @OA\Parameter(
-    //  *       name="team_id",
-    //  *       in="query",
-    //  *       required=false,
-    //  *       @OA\Schema(type="integer"),
-    //  *       description="Filter collections by team ID"
-    //  *    ),
-    //  *    @OA\Parameter(
-    //  *       name="user_id",
-    //  *       in="query",
-    //  *       required=false,
-    //  *       @OA\Schema(type="integer"),
-    //  *       description="Filter collections by user ID"
-    //  *    ),
-    //  *    @OA\Parameter(
-    //  *       name="title",
-    //  *       in="query",
-    //  *       required=false,
-    //  *       @OA\Schema(type="string"),
-    //  *       description="Filter collections by title"
-    //  *    ),
-    //  *    @OA\Parameter(
-    //  *       name="status",
-    //  *       in="query",
-    //  *       required=false,
-    //  *       @OA\Schema(type="string"),
-    //  *       description="Filter collections by status (DRAFT, ACTIVE, ARCHIVED)"
-    //  *    ),
-    //  *    @OA\Response(
-    //  *       response=200,
-    //  *       description="Success",
-    //  *       @OA\JsonContent(
-    //  *          @OA\Property(property="message", type="string"),
-    //  *          @OA\Property(property="data", type="array",
-    //  *             @OA\Items(
-    //  *                @OA\Property(property="id", type="integer", example="123"),
-    //  *                @OA\Property(property="name", type="string", example="expedita"),
-    //  *                @OA\Property(property="description", type="string", example="Quibusdam in ducimus eos est."),
-    //  *                @OA\Property(property="image_link", type="string", example="https:\/\/via.placeholder.com\/640x480.png\/003333?text=animals+iusto"),
-    //  *                @OA\Property(property="enabled", type="boolean", example="1"),
-    //  *                @OA\Property(property="public", type="boolean", example="0"),
-    //  *                @OA\Property(property="counter", type="integer", example="34319"),
-    //  *                @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-    //  *                @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-    //  *                @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-    //  *                @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
-    //  *                @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
-    //  *                @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
-    //  *                @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
-    //  *                @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
-    //  *                @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
-    //  *                @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
-    //  *                @OA\Property(property="users", type="array", example="[]", @OA\Items()),
-    //  *                @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
-    //  *                @OA\Property(property="team", type="array", example="{}", @OA\Items()),
-    //  *             ),
-    //  *          ),
-    //  *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
-    //  *          @OA\Property(property="from", type="integer", example="1"),
-    //  *          @OA\Property(property="last_page", type="integer", example="1"),
-    //  *          @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
-    //  *          @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
-    //  *          @OA\Property(property="next_page_url", type="string", example="null"),
-    //  *          @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections"),
-    //  *          @OA\Property(property="per_page", type="integer", example="25"),
-    //  *          @OA\Property(property="prev_page_url", type="string", example="null"),
-    //  *          @OA\Property(property="to", type="integer", example="3"),
-    //  *          @OA\Property(property="total", type="integer", example="3"),
-    //  *       )
-    //  *    )
-    //  * )
-    //  */
-    // public function index(Request $request): JsonResponse
-    // {
-    //     try {
-    //         $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
-    //         $name = $request->query('name', null);
-    //         $filterTitle = $request->query('title', null);
-    //         $filterStatus = $request->query('status', null);
-
-    //         $teamId = $request->query('team_id', null);
-    //         $userId = $request->query('user_id', null);
-
-    //         $sort = $request->query('sort', 'name:desc');
-    //         $tmp = explode(":", $sort);
-    //         $sortField = $tmp[0];
-    //         $sortDirection = array_key_exists(1, $tmp) ? $tmp[1] : 'desc';
-
-    //         $collections = Collection::when($name, function ($query) use ($name) {
-    //             return $query->where('name', 'LIKE', '%' . $name . '%');
-    //         })
-    //         ->when(
-    //             $filterStatus,
-    //             function ($query) use ($filterStatus) {
-    //                 return $query->where('status', '=', $filterStatus)
-    //                     ->when(
-    //                         $filterStatus === Collection::STATUS_ARCHIVED,
-    //                         function ($query) {
-    //                             return $query->withTrashed();
-    //                         }
-    //                     );
-    //             }
-    //         )
-    //         ->with([
-    //             'keywords',
-    //             'tools',
-    //             'dur',
-    //             'publications',
-    //             // 'userDatasets',
-    //             // 'userTools',
-    //             // 'userPublications',
-    //             'applicationDatasets',
-    //             'applicationTools',
-    //             'applicationPublications',
-    //             'team',
-    //             'users',
-    //         ])
-    //         ->when(
-    //             $sort,
-    //             fn ($query) => $query->orderBy($sortField, $sortDirection)
-    //         )
-    //         ->when($teamId, function ($query) use ($teamId) {
-    //             return $query->where('team_id', '=', $teamId);
-    //         })
-    //         ->when($userId, function ($query) use ($userId) {
-    //             $query->whereHas('users', function ($query) use ($userId) {
-    //                 $query->where('user_id', $userId);
-    //             });
-    //         })
-    //         ->when($filterTitle, function ($query) use ($filterTitle) {
-    //             return $query->where('name', 'like', '%' . $filterTitle . '%');
-    //         })
-    //         ->paginate((int) $perPage, ['*'], 'page');
-
-    //         $collections->getCollection()->transform(function ($collection) {
-    //             if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
-    //                 $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
-    //             }
-
-    //             return $collection;
-    //         });
-
-    //         $collections->getCollection()->transform(function ($collection) {
-    //             // $userDatasets = $collection->userDatasets;
-    //             // $userTools = $collection->userTools;
-    //             // $userPublications = $collection->userPublications;
-    //             // $users = $userDatasets->merge($userTools)
-    //             //     ->merge($userPublications)
-    //             //     ->unique('id');
-    //             // $collection->setRelation('users', $users);
-    //             $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
-
-    //             $applicationDatasets = $collection->applicationDatasets;
-    //             $applicationTools = $collection->applicationTools;
-    //             $applicationPublications = $collection->applicationPublications;
-    //             $applications = $applicationDatasets->merge($applicationTools)
-    //                 ->merge($applicationPublications)
-    //                 ->unique('id');
-    //             $collection->setRelation('applications', $applications);
-
-    //             // Remove unwanted relations
-    //             unset(
-    //                 // $users,
-    //                 // $userTools,
-    //                 // $userDatasets,
-    //                 // $userPublications,
-    //                 $applications,
-    //                 $applicationTools,
-    //                 $applicationDatasets,
-    //                 $applicationPublications,
-    //                 // $collection->userDatasets,
-    //                 // $collection->userTools,
-    //                 // $collection->userPublications,
-    //                 $collection->applicationDatasets,
-    //                 $collection->applicationTools,
-    //                 $collection->applicationPublications
-    //             );
-
-    //             return $collection;
-    //         });
-
-    //         Auditor::log([
-    //             'action_type' => 'INDEX',
-    //             'action_name' => class_basename($this) . '@'.__FUNCTION__,
-    //             'description' => "Collection index",
-    //         ]);
-
-    //         return response()->json(
-    //             $collections
-    //         );
-    //     } catch (Exception $e) {
-    //         Auditor::log([
-    //             'action_type' => 'EXCEPTION',
-    //             'action_name' => class_basename($this) . '@'.__FUNCTION__,
-    //             'description' => $e->getMessage(),
-    //         ]);
-
-    //         throw new Exception($e->getMessage());
-    //     }
-    // }
-
-    // /**
-    //  * @OA\Get(
-    //  *    path="/api/v1/collections/count/{field}",
-    //  *    operationId="count_unique_fields_collections",
-    //  *    tags={"Collections"},
-    //  *    summary="CollectionController@count",
-    //  *    description="Get Counts for distinct entries of a field in the model",
-    //  *    security={{"bearerAuth":{}}},
-    //  *    @OA\Parameter(
-    //  *       name="field",
-    //  *       in="path",
-    //  *       description="name of the field to perform a count on",
-    //  *       required=true,
-    //  *       example="status",
-    //  *       @OA\Schema(
-    //  *          type="string",
-    //  *          description="status field",
-    //  *       ),
-    //  *    ),
-    //  *    @OA\Parameter(
-    //  *       name="team_id",
-    //  *       in="query",
-    //  *       description="team id",
-    //  *       required=true,
-    //  *       example="1",
-    //  *       @OA\Schema(
-    //  *          type="integer",
-    //  *          description="team id",
-    //  *       ),
-    //  *    ),
-    //  *    @OA\Parameter(
-    //  *       name="user_id",
-    //  *       in="query",
-    //  *       description="user id",
-    //  *       required=true,
-    //  *       example="1",
-    //  *       @OA\Schema(
-    //  *          type="integer",
-    //  *          description="user id",
-    //  *       ),
-    //  *    ),
-    //  *    @OA\Response(
-    //  *       response="200",
-    //  *       description="Success response",
-    //  *       @OA\JsonContent(
-    //  *          @OA\Property(
-    //  *             property="data",
-    //  *             type="object",
-    //  *          )
-    //  *       )
-    //  *    )
-    //  * )
-    //  */
-    // public function count(Request $request, string $field): JsonResponse
-    // {
-    //     try {
-    //         $teamId = $request->query('team_id', null);
-    //         $userId = $request->query('user_id', null);
-    //         $counts = Collection::withTrashed()->with(['users'])
-    //             ->when($teamId, function ($query) use ($teamId) {
-    //                 return $query->where('team_id', '=', $teamId);
-    //             })
-    //             ->when($userId, function ($query) use ($userId) {
-    //                 $query->whereHas('users', function ($query) use ($userId) {
-    //                     $query->where('user_id', $userId);
-    //                 });
-    //             })
-    //             ->select($field)
-    //             ->get()
-    //             ->groupBy($field)
-    //             ->map->count();
-
-    //         Auditor::log([
-    //             'action_type' => 'GET',
-    //             'action_name' => class_basename($this) . '@'.__FUNCTION__,
-    //             'description' => "Collection count",
-    //         ]);
-
-    //         return response()->json([
-    //             "data" => $counts
-    //         ]);
-    //     } catch (Exception $e) {
-    //         throw new Exception($e->getMessage());
-    //     }
-    // }
-
-    // /**
-    //  * @OA\Get(
-    //  *    path="/api/v1/collections/{id}",
-    //  *    operationId="fetch_collections",
-    //  *    tags={"Collections"},
-    //  *    summary="CollectionController@show",
-    //  *    description="Get collection by id",
-    //  *    security={{"bearerAuth":{}}},
-    //  *    @OA\Parameter(
-    //  *       name="id",
-    //  *       in="path",
-    //  *       description="collection id",
-    //  *       required=true,
-    //  *       example="1",
-    //  *       @OA\Schema(
-    //  *          type="integer",
-    //  *          description="collection id",
-    //  *       ),
-    //  *    ),
-    //  *    @OA\Parameter(
-    //  *       name="view_type",
-    //  *       in="query",
-    //  *       description="Query flag to show full collection data or a trimmed version (defaults to full).",
-    //  *       required=false,
-    //  *       @OA\Schema(
-    //  *          type="string",
-    //  *          default="full",
-    //  *          description="Flag to show all data ('full') or trimmed data ('mini')"
-    //  *       ),
-    //  *       example="full"
-    //  *    ),
-    //  *    @OA\Response(
-    //  *       response="200",
-    //  *       description="Success response",
-    //  *       @OA\JsonContent(
-    //  *          @OA\Property(property="message", type="string", example="success"),
-    //  *             @OA\Property(property="data", type="array",
-    //  *                @OA\Items(type="object",
-    //  *                   @OA\Property(property="id", type="integer", example="123"),
-    //  *                   @OA\Property(property="name", type="string", example="expedita"),
-    //  *                   @OA\Property(property="description", type="string", example="Quibusdam in ducimus eos est."),
-    //  *                   @OA\Property(property="image_link", type="string", example="https:\/\/via.placeholder.com\/640x480.png\/003333?text=animals+iusto"),
-    //  *                   @OA\Property(property="enabled", type="boolean", example="1"),
-    //  *                   @OA\Property(property="public", type="boolean", example="0"),
-    //  *                   @OA\Property(property="counter", type="integer", example="34319"),
-    //  *                   @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-    //  *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-    //  *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-    //  *                   @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
-    //  *                   @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
-    //  *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
-    //  *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
-    //  *                   @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
-    //  *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
-    //  *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
-    //  *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
-    //  *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
-    //  *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
-    //  *                ),
-    //  *             ),
-    //  *          ),
-    //  *       ),
-    //  *    ),
-    //  * )
-    //  */
-    // public function show(GetCollection $request, int $id): JsonResponse
-    // {
-    //     try {
-    //         $viewType = $request->query('view_type', 'full');
-    //         $trimmed = $viewType === 'mini';
-
-    //         $collection = $this->getCollectionById($id, $trimmed);
-
-    //         Auditor::log([
-    //             'action_type' => 'SHOW',
-    //             'action_name' => class_basename($this) . '@'.__FUNCTION__,
-    //             'description' => 'CohortRequest show ' . $id,
-    //         ]);
-
-    //         return response()->json([
-    //             'message' => 'success',
-    //             'data' => $collection,
-    //         ], 200);
-
-    //         throw new NotFoundException();
-    //     } catch (Exception $e) {
-    //         Auditor::log([
-    //             'action_type' => 'EXCEPTION',
-    //             'action_name' => class_basename($this) . '@'.__FUNCTION__,
-    //             'description' => $e->getMessage(),
-    //         ]);
-
-    //         throw new Exception($e->getMessage());
-    //     }
-    // }
 
     /**
      * @OA\Post(
@@ -529,18 +130,16 @@ class CollectionController extends Controller
 
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($collectionId, $publications, (int)$jwtUser['id']);
-            var_dump('check keywords');
 
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($collectionId, $keywords);
-            var_dump('checked up to users');
 
             // users
             var_dump($jwtUser);
             $userId = (int)$jwtUser['id'];
             $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
             var_dump('create collaborators');
-            $this->createCollectionUsers((int)$collectionId, (int)$userId, $collaborators);
+            $this->createCollectionUsers((int)$collectionId, $userId, $collaborators);
 
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
@@ -584,6 +183,189 @@ class CollectionController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    /**
+     * @OA\Put(
+     *    path="/api/v2/collections/{id}",
+     *    tags={"Collections"},
+     *    summary="Update a collection",
+     *    description="Update a collection owned by an individual",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="collection id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="collection id",
+     *       ),
+     *    ),
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="name", type="string", example="covid"),
+     *             @OA\Property(property="description", type="string", example="Dolorem voluptas consequatur nihil illum et sunt libero."),
+     *             @OA\Property(property="image_link", type="string", example="https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"),
+     *             @OA\Property(property="enabled", type="boolean", example="true"),
+     *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="collaborators", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="public", type="boolean", example="true"),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Not found response",
+     *       @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="not found")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *        response=200,
+     *        description="Success",
+     *        @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(
+     *                 property="data", type="object",
+     *                   @OA\Property(property="id", type="integer", example="123"),
+     *                   @OA\Property(property="name", type="string", example="expedita"),
+     *                   @OA\Property(property="description", type="string", example="Quibusdam in ducimus eos est."),
+     *                   @OA\Property(property="image_link", type="string", example="https:\/\/via.placeholder.com\/640x480.png\/003333?text=animals+iusto"),
+     *                   @OA\Property(property="enabled", type="boolean", example="1"),
+     *                   @OA\Property(property="public", type="boolean", example="0"),
+     *                   @OA\Property(property="counter", type="integer", example="34319"),
+     *                   @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                   @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
+     *                   @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
+     *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
+     *              ),
+     *        ),
+     *    ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function update(UpdateCollection $request, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
+        var_dump('collhasusers', $collHasUsers);
+        $dbUserIds = array_column($collHasUsers, 'user_id');
+        var_dump('dbUserIds', $dbUserIds);
+        var_dump('input jwtid', $input['jwt_user']['id']);
+        $access = $this->checkAccessCollaborators($input, array_column($collHasUsers, 'user_id'));
+
+        var_dump('access rights', $access);
+
+        try {
+            $initCollection = Collection::withTrashed()->where('id', $id)->first();
+
+            if ($initCollection['status'] === Collection::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
+                throw new Exception('Cannot update current collection! Status already "ARCHIVED"');
+            }
+
+            $arrayKeys = [
+                'name',
+                'description',
+                'image_link',
+                'enabled',
+                'public',
+                'counter',
+                'mongo_object_id',
+                'mongo_id',
+                'status',
+            ];
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            Collection::where('id', $id)->update($array);
+
+            $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
+            $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
+
+            $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
+            $this->checkTools($id, $tools, (int)$jwtUser['id']);
+
+            $dur = array_key_exists('dur', $input) ? $input['dur'] : [];
+            $this->checkDurs($id, $dur, (int)$jwtUser['id']);
+
+            $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
+            $this->checkPublications($id, $publications, (int)$jwtUser['id']);
+
+            $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
+            $this->checkKeywords($id, $keywords);
+
+            // users
+            $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
+            $this->updateCollectionUsers((int)$id, $collaborators);
+
+            // for migration from mongo database
+            if (array_key_exists('created_at', $input)) {
+                Collection::where('id', $id)->update(['created_at' => $input['created_at']]);
+            }
+
+            // for migration from mongo database
+            if (array_key_exists('updated_at', $input)) {
+                Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
+            }
+
+            // updated_on
+            if (array_key_exists('updated_on', $input)) {
+                Collection::where('id', $id)->update(['updated_on' => $input['updated_on']]);
+            }
+            var_dump('index');
+            $currentCollection = Collection::where('id', $id)->first();
+            if ($currentCollection->status === Collection::STATUS_ACTIVE) {
+                $this->indexElasticCollections((int) $id);
+            } else {
+                $this->deleteCollectionFromElastic((int) $id);
+            }
+            var_dump('indexed');
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : null,
+                'action_type' => 'UPDATE',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Collection ' . $id . ' updated',
+            ]);
+
+            return response()->json([
+                'message' => 'success',
+                'data' => $this->getCollectionById($id),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
 
     private function getCollectionById(int $collectionId, bool $trimmed = false)
     {
@@ -721,13 +503,13 @@ class CollectionController extends Controller
     // datasets
     private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null)
     {
-        var_dump('checkDatasets where');
+        // var_dump('checkDatasets where');
         $cols = CollectionHasDatasetVersion::where(['collection_id' => $collectionId])->get();
-        var_dump('checkDatasets got');
+        // var_dump('checkDatasets got');
         foreach ($cols as $col) {
-            var_dump('checkDatasets cols', $col);
+            // var_dump('checkDatasets cols', $col);
             $datasetId = DatasetVersion::where('id', $col->dataset_version_id)->select('dataset_id')->get();
-            var_dump('checkDatasets datasetId', $datasetId);
+            // var_dump('checkDatasets datasetId', $datasetId);
             if (count($datasetId) > 0) {
                 if (!in_array($datasetId[0]['dataset_id'], $this->extractInputIdToArray($inDatasets))) {
                     $this->deleteCollectionHasDatasetVersions($collectionId, $col->dataset_version_id);

@@ -46,6 +46,7 @@ class CollectionTest extends TestCase
     }
 
     public const TEST_URL = '/api/v1/collections';
+    public const TEST_URL_V2 = '/api/v2/collections';
 
     protected $header = [];
 
@@ -81,6 +82,25 @@ class CollectionTest extends TestCase
             CollectionHasPublicationSeeder::class,
             CollectionHasUserSeeder::class,
         ]);
+
+        // Generate non-admin user for CREATOR
+        $this->authorisationUser(false);
+        $this->nonAdminJwt = $this->getAuthorisationJwt(false);
+        $this->headerNonAdmin = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $this->nonAdminJwt,
+        ];
+
+        // generate jwt for a different user than the one who created the collection
+        // This user can be used to test as COLLABORATOR or as non-collaborator
+        $this->authorisationUser(false, 2);
+        $this->nonAdmin2Jwt = $this->getAuthorisationJwt(false, 2);
+        $this->nonAdmin2User = $this->getUserFromJwt($this->nonAdmin2Jwt);
+        $this->headerNonAdmin2 = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $this->nonAdmin2Jwt,
+        ];
+
     }
 
     /**
@@ -216,15 +236,14 @@ class CollectionTest extends TestCase
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
-            "status" => "ACTIVE",
-            "user_id" => 1
+            "status" => "ACTIVE"
         ];
 
         $response = $this->json(
             'POST',
-            self::TEST_URL,
+            self::TEST_URL_V2,
             $mockData,
-            $this->header
+            $this->headerNonAdmin
         );
 
         $countAfter = Collection::count();
@@ -280,16 +299,16 @@ class CollectionTest extends TestCase
 
         $response = $this->json(
             'POST',
-            self::TEST_URL,
+            self::TEST_URL_V2,
             $mockData,
-            $this->header
+            $this->headerNonAdmin
         );
         $response->assertStatus(201);
 
     }
 
     /**
-     * Update Collection with sucess by id
+     * Update Collection with success by id
      *
      * @return void
      */
@@ -305,12 +324,13 @@ class CollectionTest extends TestCase
                 }
             )
         )
-        ->times(2);
+        ->times(3);
 
         ECC::shouldIgnoreMissing(); //ignore index on datasets
 
+
         // create new collection
-        $mockDataIns = [
+        $mockDataIn = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
             "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
@@ -323,23 +343,23 @@ class CollectionTest extends TestCase
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
             "status" => "ACTIVE",
-            'collaborators' => [3,4],
+            'collaborators' => [$this->nonAdmin2User['id']],
         ];
-        $responseIns = $this->json(
+        $responseIn = $this->json(
             'POST',
-            self::TEST_URL,
-            $mockDataIns,
-            $this->header
+            self::TEST_URL_V2,
+            $mockDataIn,
+            $this->headerNonAdmin
         );
 
-        $responseIns->assertStatus(201);
-        $idIns = (int) $responseIns['data'];
+        $responseIn->assertStatus(201);
+        $idIn = (int) $responseIn['data'];
 
-        $collectionHasUsers = CollectionHasUser::where(['collection_id' => $idIns])->count();
-        // one creator (jwt) + two collaborators
-        $this->assertTrue((int)$collectionHasUsers === 3);
+        $collectionHasUsers = CollectionHasUser::where(['collection_id' => $idIn])->count();
+        // one creator (jwt) + one collaborators
+        $this->assertTrue((int)$collectionHasUsers === 2);
 
-        // update collection
+        // update collection by CREATOR
         $mockDataUpdate = [
             "name" => "covid update",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
@@ -353,13 +373,44 @@ class CollectionTest extends TestCase
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
             "status" => "ACTIVE",
-            "user_id" => 1,
+            "collaborators" => [$this->nonAdmin2User['id']],
+        ];
+
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL_V2 . '/' . $idIn,
+            $mockDataUpdate,
+            $this->headerNonAdmin
+        );
+
+        $responseUpdate->assertStatus(200);
+        $this->assertTrue($mockDataUpdate['name'] === $responseUpdate['data']['name']);
+        $this->assertTrue($mockDataUpdate['description'] === $responseUpdate['data']['description']);
+        $this->assertTrue((bool) $mockDataUpdate['enabled'] === (bool) $responseUpdate['data']['enabled']);
+        $this->assertTrue((bool) $mockDataUpdate['public'] === (bool) $responseUpdate['data']['public']);
+        $this->assertTrue((int) $mockDataUpdate['counter'] === (int) $responseUpdate['data']['counter']);
+
+        // update collection by COLLABORATOR
+        $mockDataUpdate = [
+            "name" => "covid update by collaborator",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update by collaborator",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 1,
+            "datasets" => $datasets,
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE",
+            "collaborators" => [$this->nonAdmin2User['id']],
         ];
         $responseUpdate = $this->json(
             'PUT',
-            self::TEST_URL . '/' . $idIns,
+            self::TEST_URL_V2 . '/' . $idIn,
             $mockDataUpdate,
-            $this->header
+            $this->headerNonAdmin2
         );
 
         $responseUpdate->assertStatus(200);
@@ -371,7 +422,7 @@ class CollectionTest extends TestCase
     }
 
     /**
-     * Update Collection without sucess by id
+     * Update Collection without success by id
      *
      * @return void
      */
@@ -380,7 +431,7 @@ class CollectionTest extends TestCase
         $datasets = $this->generateDatasets();
 
         // create new collection
-        $mockDataIns = [
+        $mockDataIn = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
             "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
@@ -393,18 +444,19 @@ class CollectionTest extends TestCase
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
             "status" => "ACTIVE",
+            "collaborators" => [],
         ];
-        $responseIns = $this->json(
+        $responseIn = $this->json(
             'POST',
-            self::TEST_URL,
-            $mockDataIns,
-            $this->header
+            self::TEST_URL_V2,
+            $mockDataIn,
+            $this->headerNonAdmin
         );
 
-        $responseIns->assertStatus(201);
-        $idIns = (int) $responseIns['data'];
+        $responseIn->assertStatus(201);
+        $idIn = (int) $responseIn['data'];
 
-        // update collection
+        // fail to update collection by non-COLLABORATOR
         $mockDataUpdate = [
             "name" => "covid update",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
@@ -417,29 +469,22 @@ class CollectionTest extends TestCase
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
-            "status" => "ACTIVE"
-        ];
-
-        // generate jwt for a different user than the one who created the collection
-        $this->authorisationUser(false);
-        $nonAdminJwt = $this->getAuthorisationJwt(false);
-        $headerNonAdmin = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $nonAdminJwt,
+            "status" => "ACTIVE",
+            "collaborators" => [$this->nonAdmin2User['id']]
         ];
 
         $responseUpdate = $this->json(
             'PUT',
-            self::TEST_URL . '/' . $idIns,
+            self::TEST_URL_V2 . '/' . $idIn,
             $mockDataUpdate,
-            $headerNonAdmin
+            $this->headerNonAdmin2
         );
 
         $responseUpdate->assertStatus(401); // Unauthorized
     }
 
     /**
-     * Update Collection with sucess by id
+     * Update Collection with success by id
      *
      * @return void
      */
@@ -474,12 +519,13 @@ class CollectionTest extends TestCase
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
             "status" => "ACTIVE",
+            "collaborators" => [$this->nonAdmin2User['id']],
         ];
         $responseIns = $this->json(
             'POST',
-            self::TEST_URL,
+            self::TEST_URL_V2,
             $mockDataIns,
-            $this->header
+            $this->headerNonAdmin
         );
 
         $responseIns->assertStatus(201);
@@ -498,13 +544,14 @@ class CollectionTest extends TestCase
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
-            "status" => "DRAFT"
+            "status" => "DRAFT",
+            'collaborators' => [$this->nonAdmin2User['id']],
         ];
         $responseUpdate = $this->json(
             'PUT',
-            self::TEST_URL . '/' . $idIns,
+            self::TEST_URL_V2 . '/' . $idIns,
             $mockDataUpdate,
-            $this->header
+            $this->headerNonAdmin2
         );
         $responseUpdate->assertStatus(200);
     }
@@ -517,7 +564,7 @@ class CollectionTest extends TestCase
     public function test_edit_collection_with_success(): void
     {
         // create new collection
-        $mockDataIns = [
+        $mockDataIn = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
             "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
@@ -531,15 +578,15 @@ class CollectionTest extends TestCase
             "publications" => $this->generatePublications(),
             "status" => "ACTIVE",
         ];
-        $responseIns = $this->json(
+        $responseIn = $this->json(
             'POST',
-            self::TEST_URL,
-            $mockDataIns,
-            $this->header
+            self::TEST_URL_V2,
+            $mockDataIn,
+            $this->headerNonAdmin
         );
 
-        $responseIns->assertStatus(201);
-        $idIns = (int) $responseIns['data'];
+        $responseIn->assertStatus(201);
+        $idIn = (int) $responseIn['data'];
 
         // update collection
         $mockDataUpdate = [
@@ -557,9 +604,9 @@ class CollectionTest extends TestCase
         ];
         $responseUpdate = $this->json(
             'PUT',
-            self::TEST_URL . '/' . $idIns,
+            self::TEST_URL_V2 . '/' . $idIn,
             $mockDataUpdate,
-            $this->header
+            $this->headerNonAdmin
         );
         $responseUpdate->assertStatus(200);
         $this->assertTrue($mockDataUpdate['name'] === $responseUpdate['data']['name']);
@@ -576,7 +623,7 @@ class CollectionTest extends TestCase
         ];
         $responseEdit1 = $this->json(
             'PATCH',
-            self::TEST_URL . '/' . $idIns,
+            self::TEST_URL_V2 . '/' . $idIns,
             $mockDataEdit1,
             $this->header
         );
@@ -592,7 +639,7 @@ class CollectionTest extends TestCase
         ];
         $responseEdit2 = $this->json(
             'PATCH',
-            self::TEST_URL . '/' . $idIns,
+            self::TEST_URL_V2 . '/' . $idIns,
             $mockDataEdit2,
             $this->header
         );
@@ -626,7 +673,7 @@ class CollectionTest extends TestCase
         ];
         $responseIns = $this->json(
             'POST',
-            self::TEST_URL,
+            self::TEST_URL_V2,
             $mockDataIns,
             $this->header
         );
@@ -650,7 +697,7 @@ class CollectionTest extends TestCase
         ];
         $responseUpdate = $this->json(
             'PUT',
-            self::TEST_URL . '/' . $idIns,
+            self::TEST_URL_V2 . '/' . $idIns,
             $mockDataUpdate,
             $this->header
         );
@@ -678,7 +725,7 @@ class CollectionTest extends TestCase
 
         $responseEdit1 = $this->json(
             'PATCH',
-            self::TEST_URL . '/' . $idIns,
+            self::TEST_URL_V2 . '/' . $idIns,
             $mockDataEdit1,
             $headerNonAdmin
         );
@@ -762,7 +809,7 @@ class CollectionTest extends TestCase
      *
      * @return void
      */
-    public function test_does_not_delete_index_on_draft_archived(): void
+    public function test_does_not_delete_index_on_draft_archived_collection(): void
     {
         ECC::shouldReceive("deleteDocument")
             ->times(0);
