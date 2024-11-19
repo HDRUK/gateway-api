@@ -536,8 +536,8 @@ class CollectionController extends Controller
             $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
             $this->createCollectionUsers((int)$collectionId, (int)$userId, $collaborators);
 
-           // for migration from mongo database
-           if (array_key_exists('created_at', $input)) {
+            // for migration from mongo database
+            if (array_key_exists('created_at', $input)) {
                 $collection->update(['created_at' => $input['created_at']]);
             }
 
