@@ -554,7 +554,6 @@ class CollectionController extends Controller
             // for migration from mongo database
             if (array_key_exists('updated_at', $input)) {
                 $collection->update(['updated_at' => $input['updated_at']]);
-
             }
 
             // updated_on
