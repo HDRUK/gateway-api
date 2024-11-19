@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Collection;
+namespace App\Http\Requests\V2\Collection;
 
 use App\Http\Requests\BaseFormRequest;
 
-class UpdateCollection extends BaseFormRequest
+class EditCollection extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -21,22 +21,18 @@ class UpdateCollection extends BaseFormRequest
             ],
             'name' => [
                 'string',
-                'required',
             ],
             'description' => [
                 'string',
-                'required',
             ],
             'image_link' => [
                 'nullable',
                 'string',
             ],
             'enabled' => [
-                'required',
                 'boolean',
             ],
             'public' => [
-                'required',
                 'boolean',
             ],
             'datasets' => [

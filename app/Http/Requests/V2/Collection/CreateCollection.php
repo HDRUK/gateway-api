@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Collection;
+namespace App\Http\Requests\V2\Collection;
 
 use App\Http\Requests\BaseFormRequest;
 

@@ -25,7 +25,7 @@ use App\Models\CollectionHasPublication;
 use App\Http\Traits\RequestTransformation;
 use App\Models\CollectionHasDatasetVersion;
 use App\Http\Requests\Collection\GetCollection;
-use App\Http\Requests\Collection\DeleteCollection;
+use App\Http\Requests\Collection\DeleteTeamCollection;
 use App\Http\Requests\Collection\CreateTeamCollection;
 use App\Http\Requests\Collection\UpdateTeamCollection;
 use App\Http\Requests\Collection\EditTeamCollection;
@@ -1077,7 +1077,7 @@ class CollectionController extends Controller
      *    )
      * )
      */
-    public function destroy(DeleteCollection $request, int $teamId, int $id): JsonResponse
+    public function destroy(DeleteTeamCollection $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];

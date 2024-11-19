@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Collection;
+namespace App\Http\Requests\CollectionIntegration;
 
 use App\Http\Requests\BaseFormRequest;
 
-class DeleteCollection extends BaseFormRequest
+class GetCollectionIntegration extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.

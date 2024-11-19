@@ -23,10 +23,10 @@ use App\Models\CollectionHasKeyword;
 use App\Models\CollectionHasPublication;
 use App\Http\Traits\RequestTransformation;
 use App\Models\CollectionHasDatasetVersion;
-use App\Http\Requests\Collection\CreateCollection;
-use App\Http\Requests\Collection\DeleteCollection;
-use App\Http\Requests\Collection\EditCollection;
-use App\Http\Requests\Collection\UpdateCollection;
+use App\Http\Requests\V2\Collection\CreateCollection;
+use App\Http\Requests\V2\Collection\DeleteCollection;
+use App\Http\Requests\V2\Collection\EditCollection;
+use App\Http\Requests\V2\Collection\UpdateCollection;
 use App\Models\CollectionHasUser;
 
 class CollectionController extends Controller

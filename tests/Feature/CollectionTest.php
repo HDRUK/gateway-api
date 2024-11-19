@@ -45,7 +45,6 @@ class CollectionTest extends TestCase
         setUp as commonSetUp;
     }
 
-    public const TEST_URL = '/api/v1/collections';
     public const TEST_URL_V2 = '/api/v2/collections';
 
     protected $header = [];
@@ -101,92 +100,6 @@ class CollectionTest extends TestCase
             'Authorization' => 'Bearer ' . $this->nonAdmin2Jwt,
         ];
 
-    }
-
-    /**
-     * Get All Collections with success
-     *
-     * @return void
-     */
-    public function test_get_all_collections_with_success(): void
-    {
-        $response = $this->json('GET', self::TEST_URL, [], $this->header);
-
-        $response->assertJsonStructure([
-            'data' => [
-                0 => [
-                    'id',
-                    'name',
-                    'description',
-                    'image_link',
-                    'enabled',
-                    'public',
-                    'counter',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'mongo_object_id',
-                    'mongo_id',
-                    'keywords',
-                    'datasets',
-                    'tools',
-                    'dur',
-                    'publications',
-                    'users',
-                    'applications',
-                    'team',
-                ],
-            ],
-            'current_page',
-            'first_page_url',
-            'from',
-            'last_page',
-            'last_page_url',
-            'links',
-            'next_page_url',
-            'path',
-            'per_page',
-            'prev_page_url',
-            'to',
-            'total',
-        ]);
-        $response->assertStatus(200);
-    }
-
-    /**
-     * Get Collection by Id with success
-     *
-     * @return void
-     */
-    public function test_get_collection_by_id_with_success(): void
-    {
-        $collectionId = (int) Collection::all()->random()->id;
-        $response = $this->json('GET', self::TEST_URL . '/' . $collectionId, [], $this->header);
-
-        $response->assertJsonStructure([
-            'message',
-            'data' => [
-                'id',
-                'name',
-                'description',
-                'image_link',
-                'enabled',
-                'public',
-                'counter',
-                'created_at',
-                'updated_at',
-                'deleted_at',
-                'mongo_object_id',
-                'mongo_id',
-                'keywords',
-                'dataset_versions',
-                'tools',
-                'dur',
-                'publications',
-                'team',
-            ]
-        ]);
-        $response->assertStatus(200);
     }
 
     /**
