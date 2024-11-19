@@ -21,6 +21,7 @@ use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Models\CollectionHasKeyword;
 use App\Models\CollectionHasPublication;
+use App\Exceptions\UnauthorizedException;
 use App\Http\Traits\RequestTransformation;
 use App\Models\CollectionHasDatasetVersion;
 use App\Http\Requests\V2\Collection\CreateCollection;
@@ -276,6 +277,11 @@ class CollectionController extends Controller
         try {
             $initCollection = Collection::withTrashed()->where('id', $id)->first();
 
+            // Don't allow us to edit a team-owned Collection via this endpoint
+            if ($initCollection['team_id'] !== null) {
+                throw new UnauthorizedException('Cannot update a team-owned Collection via the individual Collection endpoint');
+            }
+
             if ($initCollection['status'] === Collection::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
                 throw new Exception('Cannot update current collection! Status already "ARCHIVED"');
             }
@@ -347,6 +353,10 @@ class CollectionController extends Controller
                 'message' => 'success',
                 'data' => $this->getCollectionById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -467,6 +477,11 @@ class CollectionController extends Controller
             if ($request->has('unarchive')) {
                 $collectionModel = Collection::withTrashed()
                     ->find($id);
+
+                // Don't allow us to edit a team-owned Collection via this endpoint
+                if ($collectionModel['team_id'] !== null) {
+                    throw new UnauthorizedException('Cannot update a team-owned Collection via the individual Collection endpoint');
+                }
                 if ($request['status'] !== Collection::STATUS_ARCHIVED) {
                     if (in_array($request['status'], [
                         Collection::STATUS_ACTIVE, Collection::STATUS_DRAFT
@@ -518,6 +533,12 @@ class CollectionController extends Controller
 
                 // get initial colleciton
                 $initCollection = Collection::withTrashed()->where('id', $id)->first();
+
+                // Don't allow us to edit a team-owned Collection via this endpoint
+                if ($initCollection['team_id'] !== null) {
+                    throw new UnauthorizedException('Cannot edit a team-owned Collection via the individual Collection endpoint');
+                }
+
                 //update it
                 Collection::withTrashed()->where('id', $id)->update($array);
                 // get updated collection
@@ -588,6 +609,10 @@ class CollectionController extends Controller
                     'data' => $this->getCollectionById($id),
                 ], 200);
             }
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -652,6 +677,11 @@ class CollectionController extends Controller
 
         try {
             $collection = Collection::where(['id' => $id])->first();
+
+            // Don't allow us to edit a team-owned Collection via this endpoint
+            if ($collection['team_id'] !== null) {
+                throw new UnauthorizedException('Cannot delete a team-owned Collection via the individual Collection endpoint');
+            }
             $initialStatus = $collection->status;
             if ($collection) {
                 CollectionHasDatasetVersion::where(['collection_id' => $id])->delete();
@@ -679,6 +709,10 @@ class CollectionController extends Controller
             }
 
             throw new NotFoundException();
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
