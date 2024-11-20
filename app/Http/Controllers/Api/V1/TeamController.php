@@ -1190,10 +1190,18 @@ class TeamController extends Controller
                 ->paginate($perPage, ['*'], 'page');
 
             foreach ($datasets as &$d) {
-                $d->latestMetadata['metadata'] = $this->trimDatasets($d->latestMetadata['metadata'], [
+                $miniMetadata = $this->trimDatasets($d->latestMetadata['metadata'], [
                     'summary',
                     'required',
                 ]);
+
+                // latestMetadata is a relation and cannot be assigned at this
+                // level, safely. So, unset all forms of metadata on the object
+                // and overwrite with out minimal version
+                unset($d['latest_metadata']);
+                unset($d['latestMetadata']);
+
+                $d['latest_metadata'] = $miniMetadata;
             }
 
             return response()->json([
