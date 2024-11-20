@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Collection;
+namespace App\Http\Requests\V2\Collection;
 
 use App\Http\Requests\BaseFormRequest;
 
-class EditCollection extends BaseFormRequest
+class CreateCollection extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -14,25 +14,24 @@ class EditCollection extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'id' => [
-                'int',
-                'required',
-                'exists:collections,id',
-            ],
             'name' => [
                 'string',
+                'required',
             ],
             'description' => [
                 'string',
+                'required',
             ],
             'image_link' => [
                 'nullable',
                 'string',
             ],
             'enabled' => [
+                'required',
                 'boolean',
             ],
             'public' => [
+                'required',
                 'boolean',
             ],
             'datasets' => [
@@ -99,10 +98,6 @@ class EditCollection extends BaseFormRequest
                 'string',
                 'distinct',
             ],
-            'user_id' => [
-                'integer',
-                'exists:users,id',
-            ],
             'collaborators' => [
                 'array',
             ],
@@ -110,10 +105,6 @@ class EditCollection extends BaseFormRequest
                 'integer',
                 'distinct',
                 'exists:users,id',
-            ],
-            'team_id' => [
-                'integer',
-                'exists:teams,id',
             ],
             'counter' => [
                 'integer'
@@ -135,20 +126,9 @@ class EditCollection extends BaseFormRequest
                 'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
             ],
             'status' => [
-                'sometimes',
                 'string',
                 'in:ACTIVE,ARCHIVED,DRAFT',
             ],
         ];
-    }
-
-    /**
-     * Add Route parameters to the FormRequest.
-     *
-     * @return void
-     */
-    protected function prepareForValidation()
-    {
-        $this->merge(['id' => $this->route('id')]);
     }
 }

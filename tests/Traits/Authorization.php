@@ -20,7 +20,12 @@ trait Authorization
     public const CFG_NONADMIN_PASSWORD = 'constants.test.non_admin.password';
     public const CFG_NONADMIN_ADMIN = 'constants.test.non_admin.is_admin';
 
-    public function authorisationUser(bool $admin = true): bool
+    public const CFG_NONADMIN2_NAME = 'constants.test.non_admin_2.name';
+    public const CFG_NONADMIN2_EMAIL = 'constants.test.non_admin_2.email';
+    public const CFG_NONADMIN2_PASSWORD = 'constants.test.non_admin_2.password';
+    public const CFG_NONADMIN2_ADMIN = 'constants.test.non_admin_2.is_admin';
+
+    public function authorisationUser(bool $admin = true, int $nonAdminId = 1): bool
     {
         if ($admin) {
             $user = [
@@ -32,7 +37,7 @@ trait Authorization
                 'password' => Hash::make(Config::get(self::CFG_TEST_PASSWORD)),
                 'is_admin' => Config::get(self::CFG_TEST_ADMIN),
             ];
-        } else {
+        } elseif ($nonAdminId === 1) {
             $user = [
                 'name' => Config::get(self::CFG_NONADMIN_NAME),
                 'firstname' => null,
@@ -42,9 +47,19 @@ trait Authorization
                 'password' => Hash::make(Config::get(self::CFG_NONADMIN_PASSWORD)),
                 'is_admin' => Config::get(self::CFG_NONADMIN_ADMIN),
             ];
+        } else {
+            $user = [
+                'name' => Config::get(self::CFG_NONADMIN2_NAME),
+                'firstname' => null,
+                'lastname' => null,
+                'email' => Config::get(self::CFG_NONADMIN2_EMAIL),
+                'provider' => Config::get(self::CFG_PROVIDER_SERVICE),
+                'password' => Hash::make(Config::get(self::CFG_NONADMIN2_PASSWORD)),
+                'is_admin' => Config::get(self::CFG_NONADMIN2_ADMIN),
+            ];
         }
 
-        $userId = $this->checkUserIfExist($admin);
+        $userId = $this->checkUserIfExist($admin, $nonAdminId);
 
         if ($userId) {
             $this->updateUserIfExist($user, $userId);
@@ -57,17 +72,22 @@ trait Authorization
         return true;
     }
 
-    public function getAuthorisationJwt(bool $admin = true): mixed
+    public function getAuthorisationJwt(bool $admin = true, int $nonAdminId = 1): mixed
     {
         if ($admin) {
             $authData = [
                 'email' => Config::get(self::CFG_TEST_EMAIL),
                 'password' => Config::get(self::CFG_TEST_PASSWORD),
             ];
-        } else {
+        } elseif ($nonAdminId === 1) {
             $authData = [
                 'email' => Config::get(self::CFG_NONADMIN_EMAIL),
                 'password' => Config::get(self::CFG_NONADMIN_PASSWORD),
+            ];
+        } else {
+            $authData = [
+                'email' => Config::get(self::CFG_NONADMIN2_EMAIL),
+                'password' => Config::get(self::CFG_NONADMIN2_PASSWORD),
             ];
         }
 
@@ -86,18 +106,20 @@ trait Authorization
         return $userJwt;
     }
 
-    protected function checkUserIfExist(bool $admin): mixed
+    protected function checkUserIfExist(bool $admin, int $nonAdminId = 1): mixed
     {
         if ($admin) {
             $user = User::where(['email' => Config::get(self::CFG_TEST_EMAIL)])->first();
-        } else {
+        } elseif ($nonAdminId === 1) {
             $user = User::where(['email' => Config::get(self::CFG_NONADMIN_EMAIL)])->first();
+        } else {
+            $user = User::where(['email' => Config::get(self::CFG_NONADMIN2_EMAIL)])->first();
         }
 
         return $user !== null ? $user->id : null;
     }
 
-    protected function updateUserIfExist($user, $userId): User
+    protected function updateUserIfExist($user, $userId): int
     {
         return User::where('id', $userId)->update($user);
     }
