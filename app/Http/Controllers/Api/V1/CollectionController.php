@@ -181,10 +181,11 @@ class CollectionController extends Controller
             ->when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
             })
-            ->when($userId, function ($query) use ($userId) {
-                $query->whereHas('users', function ($query) use ($userId) {
-                    $query->where('user_id', $userId);
-                });
+            ->when($userId, function ($query) use ($userId, $teamId) {
+                $query->where('team_id', '=', $teamId)
+                  ->whereHas('users', function ($query) use ($userId) {
+                      $query->where('user_id', $userId);
+                  });
             })
             ->when($filterTitle, function ($query) use ($filterTitle) {
                 return $query->where('name', 'like', '%' . $filterTitle . '%');
@@ -320,10 +321,11 @@ class CollectionController extends Controller
                 ->when($teamId, function ($query) use ($teamId) {
                     return $query->where('team_id', '=', $teamId);
                 })
-                ->when($userId, function ($query) use ($userId) {
-                    $query->whereHas('users', function ($query) use ($userId) {
-                        $query->where('user_id', $userId);
-                    });
+                ->when($userId, function ($query) use ($userId, $teamId) {
+                    $query->where('team_id', '=', $teamId)
+                      ->whereHas('users', function ($query) use ($userId) {
+                          $query->where('user_id', $userId);
+                      });
                 })
                 ->select($field)
                 ->get()
