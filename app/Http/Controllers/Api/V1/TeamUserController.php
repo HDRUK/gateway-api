@@ -52,6 +52,12 @@ class TeamUserController extends Controller
         ],
     ];
 
+    private array $beforeRoleNames = [];
+    private array $afterRoleNames = [];
+    private array $deleteRoleNames = [];
+    private array $addRoleNames = [];
+
+
     public function __construct()
     {
         //
@@ -146,7 +152,7 @@ class TeamUserController extends Controller
 
             $teamHasUsers = $this->teamHasUser($teamId, $userId);
 
-            $this->teamUsersHasRoles($teamHasUsers, $permissions, $teamId, $userId, $jwtUser, $sendEmail);
+            $this->teamUsersHasRoles($teamHasUsers, $permissions, $teamId, $userId, $sendEmail);
 
             $this->storeAuditLog($jwtUser['id'], $input['userId'], $teamId, $input, class_basename($this) . '@' . __FUNCTION__);
 
@@ -285,23 +291,6 @@ class TeamUserController extends Controller
             throw new Exception($e->getMessage());
         }
     }
-
-    // private function updateAuditLog(int $currentUserId, int $teamId, array $payload, string $actionService)
-    // {
-    //     foreach ($payload['roles'] as $role)
-    //     {
-    //         $log = [
-    //             'user_id' => $currentUserId,
-    //             'target_user_id' => $payload['userId'],
-    //             'target_team_id' => $teamId,
-    //             'action_type' => 'ASSIGN',
-    //             'action_name' => $actionService,
-    //             'description' => 'User role "' . $role . '" added',
-    //         ];
-
-    //         Auditor::log($log);
-    //     }
-    // }
 
     /**
      * @OA\Patch(
@@ -646,23 +635,22 @@ class TeamUserController extends Controller
      * @param array $roles
      * @return void
      */
-    private function teamUsersHasRoles(array $teamHasUsers, array $roles, int $teamId, int $userId, array $jwtUser, bool $email): void
+    private function teamUsersHasRoles(array $teamHasUsers, array $roles, int $teamId, int $userId, bool $email): void
     {
         try {
             foreach ($roles as $roleName) {
-                $roles = Role::updateOrCreate([
-                    'name' => $roleName,
-                ]);
+                $role = Role::where(['name' => $roleName])->first();
 
-                TeamUserHasRole::updateOrCreate([
-                    'team_has_user_id' => $teamHasUsers['id'],
-                    'role_id' => $roles->id,
-                ]);
-
-                // send email - add roles
-                if ($email) {
-                    $this->sendEmail($roleName, true, $teamId, $userId, $jwtUser);
+                if (!is_null($role)) {
+                    TeamUserHasRole::updateOrCreate([
+                        'team_has_user_id' => $teamHasUsers['id'],
+                        'role_id' => $role->id,
+                    ]);
                 }
+            }
+
+            if ($email) {
+                $this->sendEmail($teamId, $userId, $roles);
             }
         } catch (Exception $e) {
             Auditor::log([
@@ -689,6 +677,8 @@ class TeamUserController extends Controller
     private function teamUserRoles(int $teamId, int $userId, array $input, array $jwtUser): mixed
     {
         try {
+            $this->emailRoles($teamId, $userId, $input);
+
             $teamHasUsers = TeamHasUser::where([
                 'team_id' => $teamId,
                 'user_id' => $userId,
@@ -712,9 +702,10 @@ class TeamUserController extends Controller
                         ->delete();
                 }
 
-                $this->sendEmail($roleName, $action, $teamId, $userId, $jwtUser);
                 $updatesMade[$roleName] = $action ? true : false;
             }
+
+            $this->sendEmailUpdate($teamId, $userId);
 
             return $updatesMade;
         } catch (Exception $e) {
@@ -730,12 +721,46 @@ class TeamUserController extends Controller
         }
     }
 
-    private function sendEmail(string $role, bool $action, int $teamId, int $userId, array $jwtUser)
+    public function emailRoles(int $teamId, int $userId, array $input)
+    {
+        $this->beforeRoleNames = [];
+
+        $teamHasUsers = TeamHasUser::where([
+            'team_id' => $teamId,
+            'user_id' => $userId,
+        ])->first();
+
+        if (!is_null($teamHasUsers)) {
+            $currRoleIds = TeamUserHasRole::where([
+                'team_has_user_id' => $teamHasUsers->id,
+            ])->get();
+            foreach ($currRoleIds as $currRoleId) {
+                $role = Role::where('id', $currRoleId->role_id)->first();
+                if (!is_null($role)) {
+                    $this->beforeRoleNames[] = $role['name'];
+                }
+            }
+        }
+
+        $this->afterRoleNames = [];
+        $this->deleteRoleNames = [];
+        foreach ($input['roles'] as $roleName => $action) {
+            if ($action) {
+                $this->afterRoleNames[] = $roleName;
+            } else {
+                $this->deleteRoleNames[] = $roleName;
+            }
+
+            if ($action && !in_array($roleName, $this->beforeRoleNames)) {
+                $this->addRoleNames[] = $roleName;
+            }
+        }
+    }
+
+    private function sendEmail(int $teamId, int $userId, array $roles)
     {
         try {
-            $assignRemove = $action ? 'assign' : 'remove';
-            $role = $role . '.' . $assignRemove;
-            $template = EmailTemplate::where('identifier', '=', $role)->first();
+            $template = EmailTemplate::where(['identifier' => 'add.new.user.team'])->first();
             $user = User::where('id', '=', $userId)->first();
             $team = Team::where('id', '=', $teamId)->first();
 
@@ -746,20 +771,12 @@ class TeamUserController extends Controller
                 ],
             ];
 
-            $userAdmins = $this->listOfAdmin($teamId);
-            $userAdminsString = '<ul>';
-            if (count($userAdmins)) {
-                foreach ($userAdmins as $userAdmin) {
-                    $userAdminsString .= '<li>' . $userAdmin . '</li>';
-                }
-            }
-            $userAdminsString .= '</ul>';
             $replacements = [
                 '[[USER_FIRSTNAME]]' => $user['firstname'],
-                '[[ASSIGNER_NAME]]' => $jwtUser['name'],
+                '[[CURRENT_ROLES]]' => $this->stringRoleFullName($roles),
                 '[[TEAM_NAME]]' => $team['name'],
+                '[[TEAM_ID]]' => $teamId,
                 '[[CURRENT_YEAR]]' => date("Y"),
-                '[[LIST_TEAM_ADMINS]]' => $userAdminsString,
             ];
 
             SendEmailJob::dispatch($to, $template, $replacements);
@@ -772,6 +789,46 @@ class TeamUserController extends Controller
 
             throw new Exception($e->getMessage());
         }
+    }
+
+    public function sendEmailUpdate(int $teamId, int $userId)
+    {
+        $template = EmailTemplate::where(['identifier' => 'update.roles.team.user'])->first();
+        $team = Team::where('id', '=', $teamId)->first();
+        $user = User::where('id', '=', $userId)->first();
+        $to = [
+            'to' => [
+                'email' => $user['email'],
+                'name' => $user['name'],
+            ],
+        ];
+
+        $replacements = [
+            '[[USER_FIRSTNAME]]' => $user['firstname'],
+            '[[TEAM_NAME]]' => $team['name'],
+            '[[TEAM_ID]]' => $teamId,
+            '[[CURRENT_YEAR]]' => date("Y"),
+            '[[CURRENT_ROLES]]' => $this->stringRoleFullName($this->afterRoleNames),
+            '[[ADDED_ROLES]]' => $this->stringRoleFullName($this->addRoleNames),
+            '[[REMOVED_ROLES]]' => $this->stringRoleFullName($this->deleteRoleNames),
+        ];
+
+        SendEmailJob::dispatch($to, $template, $replacements);
+    }
+
+    public function stringRoleFullName(array $roleNames)
+    {
+        $return = "";
+        if (count($roleNames)) {
+            $return = '<ul>';
+            foreach ($roleNames as $roleName) {
+                $role = Role::where(['name' => $roleName])->select(['full_name'])->first();
+                $return .= '<li>' . $role->full_name . '</li>';
+            }
+            $return .= '</ul>';
+        }
+
+        return $return;
     }
 
     private function listOfAdmin(int $teamId)
