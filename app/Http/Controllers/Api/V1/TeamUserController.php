@@ -650,7 +650,7 @@ class TeamUserController extends Controller
             }
 
             if ($email) {
-                $this->sendEmail($teamId, $userId, $roles);
+                $this->sendEmailNewUser($teamId, $userId, $roles);
             }
         } catch (Exception $e) {
             Auditor::log([
@@ -757,7 +757,7 @@ class TeamUserController extends Controller
         }
     }
 
-    private function sendEmail(int $teamId, int $userId, array $roles)
+    private function sendEmailNewUser(int $teamId, int $userId, array $roles)
     {
         try {
             $template = EmailTemplate::where(['identifier' => 'add.new.user.team'])->first();
