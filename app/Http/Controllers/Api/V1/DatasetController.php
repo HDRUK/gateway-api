@@ -19,7 +19,6 @@ use App\Http\Traits\IndexElastic;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 
-use App\Http\Traits\TrimPayload;
 use App\Http\Traits\MetadataOnboard;
 use App\Http\Traits\MetadataVersioning;
 use App\Models\Traits\ModelHelpers;
@@ -47,7 +46,6 @@ class DatasetController extends Controller
     use MetadataOnboard;
     use CheckAccess;
     use ModelHelpers;
-    use TrimPayload;
 
     /**
      * @OA\Get(
@@ -245,14 +243,6 @@ class DatasetController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Dataset get all',
             ]);
-
-            foreach ($datasets->toArray() as $d) {
-                dd($d['latest_metadata']);
-                $d['latest_metadata'] = $this->trimDatasets($d['latest_metadata'], [
-                    'required',
-                    'summary',
-                ]);
-            }
 
             return response()->json(
                 $datasets
