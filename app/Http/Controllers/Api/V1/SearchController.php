@@ -683,7 +683,7 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $collectionModels = Collection::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
+            $collectionModels = Collection::whereIn('id', $matchedIds)->get();
 
             foreach ($collectionArray as $i => $collection) {
                 $foundFlag = false;

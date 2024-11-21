@@ -346,7 +346,7 @@ class ToolController extends Controller
     public function show(GetTool $request, int $id): JsonResponse
     {
         try {
-            $tool = $this->getToolById($id);
+            $tool = $this->getToolById($id, true);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -1027,28 +1027,35 @@ class ToolController extends Controller
         }
     }
 
-    private function getToolById(int $toolId)
-    {
-        $tool = Tool::with([
-            'user',
-            'tag',
-            'team',
-            'license',
-            'programmingLanguages',
-            'programmingPackages',
-            'typeCategory',
-            'publications',
-            'durs',
-            'collections',
-            'category',
-        ])
-        ->withTrashed()
-        ->where(['id' => $toolId])
-        ->first();
+    public function getToolById(int $toolId, bool $onlyActiveCollections = false)
+{
 
-        $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
-        return $tool;
-    }
+    $tool = Tool::with([
+        'user',
+        'tag',
+        'team',
+        'license',
+        'programmingLanguages',
+        'programmingPackages',
+        'typeCategory',
+        'publications',
+        'durs',
+        'collections' => function ($query) use ($onlyActiveCollections) {
+            if ($onlyActiveCollections) {
+                $query->where('status', Collection::STATUS_ACTIVE);
+            }
+        },
+        'category',
+    ])
+    ->withTrashed()
+    ->where(['id' => $toolId])
+    ->first();
+
+    $tool?->setAttribute('datasets', $tool->allDatasets ?? []);
+
+    return $tool;
+}
+
 
     /**
      * Creates a new tag if it doesn't exist.
