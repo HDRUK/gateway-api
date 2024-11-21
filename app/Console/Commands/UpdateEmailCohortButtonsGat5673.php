@@ -19,7 +19,7 @@ class UpdateEmailCohortButtonsGat5673 extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Cohort Discovery update email templates';
 
     /**
      * Execute the console command.
