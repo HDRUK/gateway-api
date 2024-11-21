@@ -1027,7 +1027,7 @@ class ToolController extends Controller
         }
     }
 
-    private function getToolById(int $toolId, bool $onlyActiveCollections = false)
+    private function getToolById(int $toolId, bool $onlyActive = false)
     {
         $tool = Tool::with([
             'user',
@@ -1037,10 +1037,18 @@ class ToolController extends Controller
             'programmingLanguages',
             'programmingPackages',
             'typeCategory',
-            'publications',
-            'durs',
-            'collections' => function ($query) use ($onlyActiveCollections) {
-                if ($onlyActiveCollections) {
+            'publications' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
+                    $query->where('status', Publication::STATUS_ACTIVE);
+                }
+            },
+            'durs' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
+                    $query->where('status', Dur::STATUS_ACTIVE);
+                }
+            },
+            'collections' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
                     $query->where('status', Collection::STATUS_ACTIVE);
                 }
             },
