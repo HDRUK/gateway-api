@@ -218,7 +218,7 @@ class UpdateEmailCohortButtonsGat5673 extends Command
                                     Dear [[USER_FIRSTNAME]],
                                 </mj-text>
                                 <mj-text line-height="30px">
-                                    You have been granted access for Cohort Discovery under [[USER_EMAIL]]. Please use buttons below to access Cohort Discovery and watch video on how to use the tool.<br/>Your Cohort Discovery access is valid for a 6-month period after which you will need to re-new your access.<br/>If you require further support raise a support ticket on the Health Data Research Gateway.
+                                    You have been granted access for Cohort Discovery under [[USER_EMAIL]]. Please use the button below to access Cohort Discovery, you can also watch our helpful video on how to use the tool.<br/>Your Cohort Discovery access is valid for a 6-month period after which you will need to re-new your access.<br/>If you require further support, you can raise a support ticket via the Health Data Research Gateway.
                                 </mj-text>
                                 <mj-text>
                                     <mj-text>
