@@ -7,6 +7,7 @@ use Auditor;
 use Exception;
 use App\Models\Tag;
 use App\Models\Dur;
+use App\Models\Collection as CollectionModel;
 use App\Models\Tool;
 use App\Models\Publication;
 use App\Models\Dataset;
@@ -1051,7 +1052,7 @@ class ToolController extends Controller
             },
             'collections' => function ($query) use ($onlyActive) {
                 if ($onlyActive) {
-                    $query->where('status', Collection::STATUS_ACTIVE);
+                    $query->where('status', CollectionModel::STATUS_ACTIVE);
                 }
             },
             'category',
