@@ -1027,35 +1027,32 @@ class ToolController extends Controller
         }
     }
 
-    public function getToolById(int $toolId, bool $onlyActiveCollections = false)
-{
+    private function getToolById(int $toolId, bool $onlyActiveCollections = false)
+    {
+        $tool = Tool::with([
+            'user',
+            'tag',
+            'team',
+            'license',
+            'programmingLanguages',
+            'programmingPackages',
+            'typeCategory',
+            'publications',
+            'durs',
+            'collections' => function ($query) use ($onlyActiveCollections) {
+                if ($onlyActiveCollections) {
+                    $query->where('status', Collection::STATUS_ACTIVE);
+                }
+            },
+            'category',
+        ])
+        ->withTrashed()
+        ->where(['id' => $toolId])
+        ->first();
 
-    $tool = Tool::with([
-        'user',
-        'tag',
-        'team',
-        'license',
-        'programmingLanguages',
-        'programmingPackages',
-        'typeCategory',
-        'publications',
-        'durs',
-        'collections' => function ($query) use ($onlyActiveCollections) {
-            if ($onlyActiveCollections) {
-                $query->where('status', Collection::STATUS_ACTIVE);
-            }
-        },
-        'category',
-    ])
-    ->withTrashed()
-    ->where(['id' => $toolId])
-    ->first();
-
-    $tool?->setAttribute('datasets', $tool->allDatasets ?? []);
-
-    return $tool;
-}
-
+        $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
+        return $tool;
+    }
 
     /**
      * Creates a new tag if it doesn't exist.
