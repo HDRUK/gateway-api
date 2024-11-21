@@ -1569,7 +1569,7 @@ class DurController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/dur/template",
-     *    tags={"Dur"},
+     *    tags={"Data Use Registers"},
      *    summary="DurController@exportTemplate",
      *    description="Export Dur upload template",
      *    security={{"bearerAuth":{}}},
