@@ -10,9 +10,6 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        // Schema::table('dar_app_q_has_enq_threads', function (Blueprint $table) {
-        //     $table->dropIndex('dar_app_q_has_enq_threads_equiry_thread_id_index');
-        // });
         Schema::table('dar_app_q_has_enq_threads', function (Blueprint $table) {
             $table->renameColumn('equiry_thread_id', 'enquiry_thread_id');
             $table->renameIndex('dar_app_q_has_enq_threads_equiry_thread_id_index', 'dar_app_q_has_enq_threads_enquiry_thread_id_index');
