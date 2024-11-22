@@ -926,7 +926,7 @@ class CohortRequestController extends Controller
             ]);
 
             // send email
-            $this->sendEmail($id, 'assing');
+            $this->sendEmail($id, 'assign');
 
             // update HubSpot
             $this->updateOrCreateContact($id);
