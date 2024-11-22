@@ -12,6 +12,8 @@ return new class () extends Migration {
     {
         Schema::table('dar_app_q_has_enq_threads', function (Blueprint $table) {
             $table->renameColumn('equiry_thread_id', 'enquiry_thread_id');
+        });
+        Schema::table('dar_app_q_has_enq_threads', function (Blueprint $table) {
             $table->renameIndex('dar_app_q_has_enq_threads_equiry_thread_id_index', 'dar_app_q_has_enq_threads_enquiry_thread_id_index');
         });
 
@@ -24,6 +26,8 @@ return new class () extends Migration {
     {
         Schema::table('dar_app_q_has_enq_threads', function (Blueprint $table) {
             $table->renameColumn('enquiry_thread_id', 'equiry_thread_id');
+        });
+        Schema::table('dar_app_q_has_enq_threads', function (Blueprint $table) {
             $table->renameIndex('dar_app_q_has_enq_threads_enquiry_thread_id_index', 'dar_app_q_has_enq_threads_equiry_thread_id_index');
         });
     }
