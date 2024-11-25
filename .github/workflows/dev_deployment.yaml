@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - 'dev'
+      - 'update_env_cronjob'
 
 env:
   PROJECT_ID: '${{ secrets.PROJECT_ID }}'
@@ -26,7 +27,7 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: update_env_cronjob
 
       - name: Read VERSION file
         id: getversion
@@ -76,7 +77,7 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: update_env_cronjob
 
       - name: Google Auth
         id: auth
