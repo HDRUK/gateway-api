@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use CloudLogger;
 use Config;
 use Throwable;
 use Illuminate\Http\Request;
@@ -75,6 +76,14 @@ class Handler extends ExceptionHandler
                 'exception' => get_class($e),
                 'trace' => $e->getTrace(),
             ];
+        }
+
+        if (env('GOOGLE_CLOUD_LOGGING_ENABLED')) {
+            CloudLogger::write([
+                'action_type' => 'EXCEPTION',
+                'action_message' => $response['message'],
+                'details' => $response['details'],
+            ]);
         }
 
         return response()->json($response, $statusCode);
