@@ -1094,7 +1094,7 @@ class TeamController extends Controller
             $allFields = collect(Dataset::first())->keys()->toArray();
             if (!$sortOnMetadata && count($allFields) > 0 && !in_array($sortField, $allFields)) {
                 return response()->json([
-                    'message' => '\"' . $sortField . '\" is not a valid fiedl to sort on',
+                    'message' => '\"' . $sortField . '\" is not a valid field to sort on',
                 ], 400);
             }
 
