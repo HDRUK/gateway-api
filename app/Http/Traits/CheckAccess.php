@@ -49,6 +49,37 @@ trait CheckAccess
         throw new UnauthorizedException();
     }
 
+    /**
+     * Check Access Collaborators
+     *
+     * @param array $input
+     * @param array $dbUserIds This is an array of the User Ids coming from database
+     * @return mixed
+     */
+    public function checkAccessCollaborators(
+        array $input = [],
+        array $dbUserIds = null
+    ) {
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        if (!count($jwtUser)) {
+            throw new Exception('Insufficient information');
+        }
+
+        if ($jwtUser['is_admin']) {
+            return true;
+        }
+
+        $jwtUserId = (int)$jwtUser['id'];
+
+        $access = $this->checkAccessCollaborator($jwtUserId, $dbUserIds);
+
+        if ($access) {
+            return true;
+        }
+
+        throw new UnauthorizedException();
+    }
+
     private function checkAccessTeam($jwtUserRolePerms, $jwtUserId, $dbTeamId, $jwtMiddleware)
     {
         $checkTeamHasUser = TeamHasUser::where([
@@ -87,6 +118,8 @@ trait CheckAccess
         }
     }
 
+
+
     private function checkAccessUser($jwtUserId, $dbUserId)
     {
         if ($jwtUserId !== $dbUserId) {
@@ -94,5 +127,10 @@ trait CheckAccess
         }
 
         return true;
+    }
+
+    private function checkAccessCollaborator($jwtUserId, $dbUserIds)
+    {
+        return in_array($jwtUserId, $dbUserIds);
     }
 }

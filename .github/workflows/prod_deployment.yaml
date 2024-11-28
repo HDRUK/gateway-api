@@ -9,6 +9,9 @@ on:
 env:
   PROJECT_ID: "${{ secrets.PROJECT_ID }}"
   GAR_LOCATION: "${{ secrets.GAR_LOCATION }}"
+  SLACK_WEBHOOK_URL: '${{ secrets.SLACK_WEBHOOK_URL}}'
+  SLACK_CHANNEL: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL }}'
+
 
 jobs:
   deploy:
@@ -21,6 +24,7 @@ jobs:
     environment: prod
     steps:
       - name: Checkout
+        id: checkout
         uses: actions/checkout@v4
         with:
           ref: main
@@ -40,6 +44,13 @@ jobs:
             sed -n 's/^appVersion:\(.*\)/\1/p' < chart/gateway-api/Chart.yaml > version
             echo "version=$(sed '/.*\"\(.*\)\".*/ s//\1/g' version)" >> $GITHUB_OUTPUT
 
+      - name: Create the release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: '${{ steps.getversion.outputs.version }}'
+          prerelease: false  
+
       - name: Deploy to Cloud Run
         uses: actions-hub/gcloud@master
         id: deploy
@@ -52,3 +63,13 @@ jobs:
 
         with:
           args: run services update '${{ env.SERVICE_NAME }}' --image='${{ env.GAR_LOCATION }}'-docker.pkg.dev/'${{ env.PROJECT_ID }}'/'${{ env.GAR_NAME }}'/${{ steps.getversion.outputs.version }}:latest --region='${{ env.SERVICE_REGION }}' --project='${{ env.PROJECT_ID }}'
+
+      - name: Run Notification
+        id: runnotificationsent
+        uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+          channel: ${{ env.SLACK_CHANNEL }}
+          message: Deploying {{ env.GITHUB_REF_NAME }} branch to PROD ${{ job.status }}
+        if: always()

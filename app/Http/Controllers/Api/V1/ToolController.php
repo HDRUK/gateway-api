@@ -6,7 +6,10 @@ use Config;
 use Auditor;
 use Exception;
 use App\Models\Tag;
+use App\Models\Dur;
+use App\Models\Collection as CollectionModel;
 use App\Models\Tool;
+use App\Models\Publication;
 use App\Models\Dataset;
 use App\Models\License;
 use App\Models\DurHasTool;
@@ -346,7 +349,7 @@ class ToolController extends Controller
     public function show(GetTool $request, int $id): JsonResponse
     {
         try {
-            $tool = $this->getToolById($id);
+            $tool = $this->getToolById($id, true);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -1027,7 +1030,7 @@ class ToolController extends Controller
         }
     }
 
-    private function getToolById(int $toolId)
+    private function getToolById(int $toolId, bool $onlyActive = false)
     {
         $tool = Tool::with([
             'user',
@@ -1037,9 +1040,21 @@ class ToolController extends Controller
             'programmingLanguages',
             'programmingPackages',
             'typeCategory',
-            'publications',
-            'durs',
-            'collections',
+            'publications' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
+                    $query->where('status', Publication::STATUS_ACTIVE);
+                }
+            },
+            'durs' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
+                    $query->where('status', Dur::STATUS_ACTIVE);
+                }
+            },
+            'collections' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
+                    $query->where('status', CollectionModel::STATUS_ACTIVE);
+                }
+            },
             'category',
         ])
         ->withTrashed()

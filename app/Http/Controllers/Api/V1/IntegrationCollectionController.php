@@ -28,12 +28,11 @@ use App\Models\CollectionHasPublication;
 use App\Http\Traits\RequestTransformation;
 use App\Models\CollectionHasDatasetVersion;
 
-use App\Http\Requests\Collection\GetCollection;
-use App\Http\Requests\Collection\EditCollection;
-
-use App\Http\Requests\Collection\CreateCollection;
-use App\Http\Requests\Collection\DeleteCollection;
-use App\Http\Requests\Collection\UpdateCollection;
+use App\Http\Requests\CollectionIntegration\GetCollectionIntegration;
+use App\Http\Requests\CollectionIntegration\CreateCollectionIntegration;
+use App\Http\Requests\CollectionIntegration\EditCollectionIntegration;
+use App\Http\Requests\CollectionIntegration\UpdateCollectionIntegration;
+use App\Http\Requests\CollectionIntegration\DeleteCollectionIntegration;
 
 class IntegrationCollectionController extends Controller
 {
@@ -244,7 +243,7 @@ class IntegrationCollectionController extends Controller
      *    ),
      * )
      */
-    public function show(GetCollection $request, int $id): JsonResponse
+    public function show(GetCollectionIntegration $request, int $id): JsonResponse
     {
         $input = $request->all();
 
@@ -334,7 +333,7 @@ class IntegrationCollectionController extends Controller
      *    )
      * )
      */
-    public function store(CreateCollection $request): JsonResponse
+    public function store(CreateCollectionIntegration $request): JsonResponse
     {
         $input = $request->all();
 
@@ -516,7 +515,7 @@ class IntegrationCollectionController extends Controller
      *      )
      * )
      */
-    public function update(UpdateCollection $request, int $id): JsonResponse
+    public function update(UpdateCollectionIntegration $request, int $id): JsonResponse
     {
         $input = $request->all();
 
@@ -697,7 +696,7 @@ class IntegrationCollectionController extends Controller
      *      )
      * )
      */
-    public function edit(EditCollection $request, int $id): JsonResponse
+    public function edit(EditCollectionIntegration $request, int $id): JsonResponse
     {
         $input = $request->all();
 
@@ -841,7 +840,7 @@ class IntegrationCollectionController extends Controller
      *    )
      * )
      */
-    public function destroy(DeleteCollection $request, int $id): JsonResponse
+    public function destroy(DeleteCollectionIntegration $request, int $id): JsonResponse
     {
         $input = $request->all();
 

@@ -32,8 +32,13 @@ class CheckAccessMiddleware
         $currentUserRoles = [];
         $currentUserPermissions = [];
         if ($teamId) {
-            $currentUserRoles = array_unique(array_merge($input['jwt_user']['role_perms']['extra']['roles'], $input['jwt_user']['role_perms']['teams'][(string) $teamId]['roles']));
-            $currentUserPermissions = array_unique(array_merge($input['jwt_user']['role_perms']['extra']['perms'], $input['jwt_user']['role_perms']['teams'][(string) $teamId]['perms']));
+            if (isset($input['jwt_user']['role_perms']['teams'][(string) $teamId])) {
+                $currentUserRoles = array_unique(array_merge($input['jwt_user']['role_perms']['extra']['roles'], $input['jwt_user']['role_perms']['teams'][(string) $teamId]['roles']));
+                $currentUserPermissions = array_unique(array_merge($input['jwt_user']['role_perms']['extra']['perms'], $input['jwt_user']['role_perms']['teams'][(string) $teamId]['perms']));
+            } else {
+                $currentUserRoles = array_unique($input['jwt_user']['role_perms']['extra']['roles']);
+                $currentUserPermissions = array_unique($input['jwt_user']['role_perms']['extra']['perms']);
+            }
         } else {
             $currentUserRoles = $input['jwt_user']['role_perms']['summary']['roles'];
             $currentUserPermissions = $input['jwt_user']['role_perms']['summary']['perms'];

@@ -1381,7 +1381,7 @@ return [
     [
         'name' => 'collections',
         'method' => 'post',
-        'path' => '/collections',
+        'path' => '/teams/{teamId}/collections',
         'methodController' => 'CollectionController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
@@ -1394,7 +1394,7 @@ return [
     [
         'name' => 'collections',
         'method' => 'put',
-        'path' => '/collections/{id}',
+        'path' => '/teams/{teamId}/collections/{id}',
         'methodController' => 'CollectionController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
@@ -1409,7 +1409,7 @@ return [
     [
         'name' => 'collections',
         'method' => 'patch',
-        'path' => '/collections/{id}',
+        'path' => '/teams/{teamId}/collections/{id}',
         'methodController' => 'CollectionController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
@@ -1424,7 +1424,7 @@ return [
     [
         'name' => 'collections',
         'method' => 'delete',
-        'path' => '/collections/{id}',
+        'path' => '/teams/{teamId}/collections/{id}',
         'methodController' => 'CollectionController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
@@ -2122,6 +2122,17 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/datasets/export_metadata/{id}',
+        'methodController' => 'DatasetController@exportMetadata',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'datasets',

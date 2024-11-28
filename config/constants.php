@@ -25,6 +25,14 @@ return [
             'password' => 'passw@rdAlic3',
             'is_admin' => 0
         ],
+        'non_admin_2' => [
+            'name' => 'Bob Dylan',
+            'firstname' => 'Bob',
+            'lastname' => 'Dylan',
+            'email' => 'bob.dylan.1234567890@example.com',
+            'password' => 'passw@rdB0bDy1an',
+            'is_admin' => 0
+        ],
     ],
     'per_page' => 25,
 ];

@@ -4,7 +4,7 @@ namespace App\Http\Requests\Collection;
 
 use App\Http\Requests\BaseFormRequest;
 
-class UpdateCollection extends BaseFormRequest
+class EditTeamCollection extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -21,22 +21,18 @@ class UpdateCollection extends BaseFormRequest
             ],
             'name' => [
                 'string',
-                'required',
             ],
             'description' => [
                 'string',
-                'required',
             ],
             'image_link' => [
                 'nullable',
                 'string',
             ],
             'enabled' => [
-                'required',
                 'boolean',
             ],
             'public' => [
-                'required',
                 'boolean',
             ],
             'datasets' => [
@@ -103,10 +99,6 @@ class UpdateCollection extends BaseFormRequest
                 'string',
                 'distinct',
             ],
-            'user_id' => [
-                'integer',
-                'exists:users,id',
-            ],
             'collaborators' => [
                 'array',
             ],
@@ -114,10 +106,6 @@ class UpdateCollection extends BaseFormRequest
                 'integer',
                 'distinct',
                 'exists:users,id',
-            ],
-            'team_id' => [
-                'integer',
-                'exists:teams,id',
             ],
             'counter' => [
                 'integer'
