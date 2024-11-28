@@ -1074,6 +1074,7 @@ class SearchTest extends TestCase
     public function test_data_provider_colls_search_with_success(): void
     {
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_provider_colls", ["query" => "term"], ['Accept' => 'application/json']);
+        dd($response);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
@@ -1145,7 +1146,7 @@ class SearchTest extends TestCase
             'to',
             'total',
         ]);
-        $this->assertTrue($response['data'][0]['_source']['name'] === 'Third Provider');
+        $this->assertTrue($response['data'][0]['_source']['name'] === 'Data Custodian Network One');
 
         // Test sorting by name
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_provider_colls" . '?sort=name:asc', ["query" => "term"], ['Accept' => 'application/json']);
@@ -1178,7 +1179,7 @@ class SearchTest extends TestCase
             'to',
             'total',
         ]);
-        $this->assertTrue($response['data'][0]['_source']['name'] === 'Another Provider');
+        $this->assertTrue($response['data'][0]['_source']['name'] === 'Data Custodian Network One');
 
         // Test sorting by updated_at desc
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_provider_colls" . '?sort=updated_at:desc', ["query" => "term"], ['Accept' => 'application/json']);

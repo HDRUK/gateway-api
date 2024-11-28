@@ -792,7 +792,6 @@ trait IndexElastic
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
-            \Log::info(json_encode($params));
 
             if($returnParams) {
                 return $params;

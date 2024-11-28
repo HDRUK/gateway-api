@@ -1023,70 +1023,77 @@ trait MockExternalApis
         Http::fake([
             env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_custodian_networks*' => Http::response(
                 [
-                    'took' => 11,
+                    'took' => 4,
                     'timed_out' => false,
                     '_shards' => [
-                        "failed" => 0,
-                        "skipped" => 0,
-                        "successful" => 1,
-                        "total" => 1
+                        'total' => 1,
+                        'successful' => 1,
+                        'skipped' => 0,
+                        'failed' => 0
                     ],
                     'hits' => [
                         'total' => [
-                            'relation' => "eq",
-                            'value' => 1
+                            'value' => 3,
+                            'relation' => 'eq'
                         ],
-                        'max_score' => 8.316772,
+                        'max_score' => 1.0,
                         'hits' => [
                             [
-                                '_explanation' => [],
-                                '_id' => '3',
-                                '_score' => 8.316772,
-                                '_source' => [
-                                    'collectionNames' => [
-                                        'Collection Title One',
-                                        'Collection Title Two',
-                                        'Collection Title Three'
-                                    ],
-                                    'datasetTitles' => [
-                                        'Dataset Title One',
-                                        'Dataset Title Two',
-                                        'Dataset Title Three'
-                                    ],
-                                    'durTitles' => [
-                                        'Dur Title One',
-                                        'Dur Title Two',
-                                        'Dur Title Three'
-                                    ],
-                                    'name' => 'Data Custodian Network One',
-                                    'publicationTitles' => [
-                                        'Publication Title One',
-                                        'Publication Title Two',
-                                        'Publication Title Three'
-                                    ],
-                                    'publisherNames' => [
-                                        'Publisher Title One',
-                                        'Publisher Title Two',
-                                        'Publisher Title Three'
-                                    ],
-                                    'summary' => 'Data Custodian Network One Summary',
-                                    'toolNames' => [
-                                        'Tool Name One',
-                                        'Tool Name Two',
-                                        'Tool Name Three'
-                                    ]
+                                '_index' => 'datacustodiannetwork',
+                                '_id' => '1',
+                                '_score' => 1.0,
+                                '_ignored' => [
+                                    'summary.keyword'
                                 ],
-                                'highlight' => [
-                                    'summary' => [
-                                        'Summary One',
-                                        'Summary Two',
-                                        'Summary Three'
-                                    ]
+                                '_source' => [
+                                    'name' => 'Data Custodian Name One',
+                                    'summary' => 'Data Custodian Name One - Summary',
+                                    'publisherNames' => ['Publisher Name One'],
+                                    'datasetTitles' => ['Dataset Title One'],
+                                    'durTitles' => ['Dur Title One'],
+                                    'toolNames' => ['Tool Name One'],
+                                    'publicationTitles' => ['Publication Name One'],
+                                    'collectionNames' => ['Collection Name One']
+                                ]
+                            ],
+                            [
+                                '_index' => 'datacustodiannetwork',
+                                '_id' => '1',
+                                '_score' => 1.0,
+                                '_ignored' => [
+                                    'summary.keyword'
+                                ],
+                                '_source' => [
+                                    'name' => 'Data Custodian Name Two',
+                                    'summary' => 'Data Custodian Name Two - Summary',
+                                    'publisherNames' => ['Publisher Name Two'],
+                                    'datasetTitles' => ['Dataset Title Two'],
+                                    'durTitles' => ['Dur Title Two'],
+                                    'toolNames' => ['Tool Name Two'],
+                                    'publicationTitles' => ['Publication Name Two'],
+                                    'collectionNames' => ['Collection Name Two']
+                                ]
+                            ],
+                            [
+                                '_index' => 'datacustodiannetwork',
+                                '_id' => '1',
+                                '_score' => 1.0,
+                                '_ignored' => [
+                                    'summary.keyword'
+                                ],
+                                '_source' => [
+                                    'name' => 'Data Custodian Name Three',
+                                    'summary' => 'Data Custodian Name Three - Summary',
+                                    'publisherNames' => ['Publisher Name Three'],
+                                    'datasetTitles' => ['Dataset Title Three'],
+                                    'durTitles' => ['Dur Title Three'],
+                                    'toolNames' => ['Tool Name Three'],
+                                    'publicationTitles' => ['Publication Name Three'],
+                                    'collectionNames' => ['Collection Name Three']
                                 ]
                             ]
                         ]
-                    ],
-                    'aggregations' => null
+                    ]
                 ],
                 200,
                 ['application/json']
