@@ -1074,6 +1074,7 @@ class SearchTest extends TestCase
     public function test_data_provider_colls_search_with_success(): void
     {
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_provider_colls", ["query" => "term"], ['Accept' => 'application/json']);
+
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [

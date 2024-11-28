@@ -1019,6 +1019,80 @@ trait MockExternalApis
             )
         ]);
 
+        // Mock the search service - data providers
+        Http::fake([
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_custodian_networks*' => Http::response(
+                [
+                    "took" => 11,
+                    "timed_out" => false,
+                    "_shards" => [
+                        "failed" => 0,
+                        "skipped" => 0,
+                        "successful" => 1,
+                        "total" => 1
+                    ],
+                    "hits" => [
+                        "total" => [
+                            "relation" => "eq",
+                            "value" => 1
+                        ],
+                        "max_score" => 8.316772,
+                        "hits" => [
+                            [
+                                "_explanation" => [],
+                                "_id" => "3",
+                                "_score" => 8.316772,
+                                "_source" => [
+                                    "collectionNames" => [
+                                        "Collection Title One",
+                                        "Collection Title Two",
+                                        "Collection Title Three"
+                                    ],
+                                    "datasetTitles" => [
+                                        "Dataset Title One",
+                                        "Dataset Title Two",
+                                        "Dataset Title Three"
+                                    ],
+                                    "durTitles" => [
+                                        "Dur Title One",
+                                        "Dur Title Two",
+                                        "Dur Title Three"
+                                    ],
+                                    "name" => "Data Custodian Network One",
+                                    "publicationTitles" => [
+                                        "Publication Title One",
+                                        "Publication Title Two",
+                                        "Publication Title Three"
+                                    ],
+                                    "publisherNames" => [
+                                        "Publisher Title One",
+                                        "Publisher Title Two",
+                                        "Publisher Title Three"
+                                    ],
+                                    "summary" => "Data Custodian Network One Summary",
+                                    "toolNames" => [
+                                        "Tool Name One",
+                                        "Tool Name Two",
+                                        "Tool Name Three"
+                                    ]
+                                ],
+                                "highlight" => [
+                                    "summary" => [
+                                        "Summary One",
+                                        "Summary Two",
+                                        "Summary Three"
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    "aggregations" => null
+                ],
+                200,
+                ['application/json']
+            )
+        ]);
+
         Http::fake([
             env('CLAMAV_API_URL', 'http://clamav:3001') . '*' => Http::response(
                 [
