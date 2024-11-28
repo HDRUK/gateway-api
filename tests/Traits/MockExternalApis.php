@@ -1093,7 +1093,8 @@ trait MockExternalApis
                                 ]
                             ]
                         ]
-                    ]
+                    ],
+                    'aggregations' => []
                 ],
                 200,
                 ['application/json']
