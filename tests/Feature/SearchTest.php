@@ -1154,7 +1154,7 @@ class SearchTest extends TestCase
             'data' => [
                 0 => [
                     '_id',
-                    'highlight',
+                    '_index',
                     '_source',
                     'name',
                     'id',
@@ -1187,7 +1187,7 @@ class SearchTest extends TestCase
             'data' => [
                 0 => [
                     '_id',
-                    'highlight',
+                    '_index',
                     '_source',
                     'name',
                     'id',
