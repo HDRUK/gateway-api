@@ -1079,7 +1079,7 @@ class SearchTest extends TestCase
             'data' => [
                 0 => [
                     '_id',
-                    'highlight',
+                    '_index',
                     '_source' => [
                         'name',
                         'datasetTitles',
@@ -1120,8 +1120,8 @@ class SearchTest extends TestCase
         $response->assertJsonStructure([
             'data' => [
                 0 => [
+                    '_index',
                     '_id',
-                    'highlight',
                     '_source',
                     'name',
                     'datasetTitles',
