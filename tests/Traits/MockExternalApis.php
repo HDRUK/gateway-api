@@ -1058,7 +1058,7 @@ trait MockExternalApis
                             ],
                             [
                                 '_index' => 'datacustodiannetwork',
-                                '_id' => '1',
+                                '_id' => '12',
                                 '_score' => 1.0,
                                 '_ignored' => [
                                     'summary.keyword'
@@ -1076,7 +1076,7 @@ trait MockExternalApis
                             ],
                             [
                                 '_index' => 'datacustodiannetwork',
-                                '_id' => '1',
+                                '_id' => '123',
                                 '_score' => 1.0,
                                 '_ignored' => [
                                     'summary.keyword'

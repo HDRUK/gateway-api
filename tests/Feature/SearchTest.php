@@ -1074,7 +1074,6 @@ class SearchTest extends TestCase
     public function test_data_provider_colls_search_with_success(): void
     {
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_provider_colls", ["query" => "term"], ['Accept' => 'application/json']);
-        dd($response);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
@@ -1114,7 +1113,7 @@ class SearchTest extends TestCase
         foreach ($content['data'] as $res) {
             $elasticIds[] = $res['_id'];
         }
-        $this->assertTrue(!in_array('1111', $elasticIds));
+        $this->assertTrue(!in_array('123', $elasticIds));
 
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_provider_colls" . '?sort=score:asc', ["query" => "term"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
