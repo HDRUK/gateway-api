@@ -37,6 +37,13 @@ use ElasticClientController as ECC;
 trait IndexElastic
 {
     use GetValueByPossibleKeys;
+
+    private $datasets = [];
+    private $durs = [];
+    private $tools = [];
+    private $publications = [];
+    private $collections = [];
+
     /**
      * Calls a re-indexing of Elastic search when a dataset is created, updated or added to a collection.
      *
@@ -731,5 +738,130 @@ trait IndexElastic
             return false;
         }
         return count($materialTypes) > 0;
+    }
+
+    /**
+     * Insert tool document into elastic index
+     *
+     * @param integer $dataCustodianNetworkId
+     * @param bool $returnParams Optional flag to return parameters.
+     * @return null|array
+     */
+    public function indexElasticDataCustodianNetwork(int $dataCustodianNetworkId, bool $returnParams = false): null|array
+    {
+        try {
+            $dpc = DataProviderColl::select('id', 'name', 'img_url', 'enabled', 'url', 'service', 'summary')
+                ->with('teams')
+                ->where([
+                    'id' => $dataCustodianNetworkId,
+                    'enabled' => 1,
+            ])->first();
+
+            $teamsResult = $this->getTeams($dpc);
+
+            $durs = Dur::select(['id', 'project_title'])->whereIn('id', $this->durs)->get()->toArray();
+            $tools = Tool::select(['id', 'name'])->with(['user'])->whereIn('id', $this->tools)->get()->toArray();
+            $publications = Publication::select(['id', 'paper_title'])->whereIn('id', $this->publications)->get()->toArray();
+            $collections = Collection::select(['id', 'name'])->whereIn('id', $this->collections)->get()->toArray();
+
+            $toIndex = [
+                'publisherNames' => convertArrayToStringWithKeyName($teamsResult, 'name'),
+                'datasetTitles' => convertArrayToStringWithKeyName($this->datasets, 'title'),
+                'durTitles' => convertArrayToStringWithKeyName($durs, 'project_title'),
+                'toolNames' => convertArrayToStringWithKeyName($tools, 'name'),
+                'publicationTitles' => convertArrayToStringWithKeyName($publications, 'paper_title'),
+                'collectionNames' => convertArrayToStringWithKeyName($collections, 'name'),
+            ];
+            $params = [
+                'index' => ECC::ELASTIC_NAME_DATACUSTODIANNETWORK,
+                'id' => $dataCustodianNetworkId,
+                'body' => $toIndex,
+                'headers' => 'application/json'
+            ];
+
+            if($returnParams) {
+                return $params;
+            }
+
+            ECC::indexDocument($params);
+            return null;
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public function getTeams(DataProviderColl $dp)
+    {
+        $idTeams = DataProviderCollHasTeam::where(['data_provider_coll_id' => $dp->id])->pluck('team_id')->toArray();
+        $teamsResult = [];
+
+        foreach ($idTeams as $idTeam) {
+            $team = Team::select('id', 'name')->where(['id' => $idTeam])->first();
+            $this->getDatasets((int) $team->id);
+            $teamsResult[] = [
+                'name' => $team->name,
+                'id' => $team->id,
+            ];
+        }
+
+        return $teamsResult;
+    }
+
+    public function getDatasets(int $teamId)
+    {
+        $datasetIds = Dataset::where(['team_id' => $teamId])->pluck('id')->toArray();
+
+        foreach ($datasetIds as $datasetId) {
+            $datasetResources = $this->checkingDataset($datasetId);
+        }
+        return true;
+    }
+
+    public function checkingDataset(int $datasetId)
+    {
+        $dataset = Dataset::where(['id' => $datasetId])->first();
+
+        // Accessed through the accessor
+        $durIds = array_column($dataset->allDurs, 'id') ?? [];
+        $collectionIds = array_column($dataset->allCollections, 'id') ?? [];
+        $publicationIds = array_column($dataset->allPublications, 'id') ?? [];
+        $toolIds = array_column($dataset->allTools, 'id') ?? [];
+
+        $version = $dataset->latestVersion();
+        $withLinks = DatasetVersion::where('id', $version['id'])
+            ->with(['linkedDatasetVersions'])
+            ->first();
+
+        $dataset->setAttribute('versions', [$withLinks]);
+
+        $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
+
+        $title = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
+        $populationSize = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
+        $datasetType = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
+
+        $this->datasets[] = [
+            'title' => $title,
+        ];
+
+        $this->durs = array_unique(array_merge($this->durs, $durIds));
+        $this->publications = array_unique(array_merge($this->publications, $publicationIds));
+        $this->tools = array_unique(array_merge($this->tools, $toolIds));
+        $this->collections = array_unique(array_merge($this->collections, $collectionIds));
+
+        $datasetResources = [
+            'durs' => $durIds,
+            'publications' => $publicationIds,
+            'tools' => $toolIds,
+            'collections' => $collectionIds
+        ];
+
+        return $datasetResources;
     }
 }

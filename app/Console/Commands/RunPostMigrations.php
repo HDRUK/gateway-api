@@ -122,6 +122,14 @@ class RunPostMigrations extends Command
                 ],
             ],
             [
+                'command' => 'app:reindex-entities',
+                'arguments' => [
+                    'entity' => 'dataCustodianNetworks',
+                    '--sleep' => $sleep,
+                    '--chunkSize' => 1,
+                ],
+            ],
+            [
                 'command' => 'app:data-custodian-network-post-migration',
                 'arguments' => [],
             ], // update data custodian network with details and relations with teams
