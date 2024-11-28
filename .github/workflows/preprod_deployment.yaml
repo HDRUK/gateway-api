@@ -12,7 +12,6 @@ env:
   SLACK_WEBHOOK_URL: '${{ secrets.SLACK_WEBHOOK_URL}}'
   SLACK_CHANNEL: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL }}'
 
-
 jobs:
   deploy:
     #if: github.event.pull_request.merged == true
