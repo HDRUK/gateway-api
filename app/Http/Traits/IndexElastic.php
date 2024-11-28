@@ -757,7 +757,7 @@ trait IndexElastic
                     'enabled' => 1,
             ])->first();
 
-            $teamsResult = $this->getTeams($dpc);
+            $teamsResult = $this->getInfoTeams($dpc);
 
             $durs = Dur::select(['id', 'project_title'])->whereIn('id', $this->durs)->get()->toArray();
             $tools = Tool::select(['id', 'name'])->with(['user'])->whereIn('id', $this->tools)->get()->toArray();
@@ -765,12 +765,26 @@ trait IndexElastic
             $collections = Collection::select(['id', 'name'])->whereIn('id', $this->collections)->get()->toArray();
 
             $toIndex = [
-                'publisherNames' => convertArrayToStringWithKeyName($teamsResult, 'name'),
-                'datasetTitles' => convertArrayToStringWithKeyName($this->datasets, 'title'),
-                'durTitles' => convertArrayToStringWithKeyName($durs, 'project_title'),
-                'toolNames' => convertArrayToStringWithKeyName($tools, 'name'),
-                'publicationTitles' => convertArrayToStringWithKeyName($publications, 'paper_title'),
-                'collectionNames' => convertArrayToStringWithKeyName($collections, 'name'),
+                'name' => $dpc->name,
+                'summary' => $dpc->summary,
+                'publisherNames' => array_map(function ($item) {
+                    return $item['name'];
+                }, $teamsResult),
+                'datasetTitles' => array_map(function ($item) {
+                    return $item['title'];
+                }, $this->datasets),
+                'durTitles' => array_map(function ($item) {
+                    return $item['project_title'];
+                }, $durs),
+                'toolNames' => array_map(function ($item) {
+                    return $item['name'];
+                }, $tools),
+                'publicationTitles' => array_map(function ($item) {
+                    return $item['paper_title'];
+                }, $publications),
+                'collectionNames' => array_map(function ($item) {
+                    return $item['name'];
+                }, $collections),
             ];
             $params = [
                 'index' => ECC::ELASTIC_NAME_DATACUSTODIANNETWORK,
@@ -778,6 +792,7 @@ trait IndexElastic
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
+            \Log::info(json_encode($params));
 
             if($returnParams) {
                 return $params;
@@ -796,7 +811,7 @@ trait IndexElastic
         }
     }
 
-    public function getTeams(DataProviderColl $dp)
+    public function getInfoTeams(DataProviderColl $dp)
     {
         $idTeams = DataProviderCollHasTeam::where(['data_provider_coll_id' => $dp->id])->pluck('team_id')->toArray();
         $teamsResult = [];

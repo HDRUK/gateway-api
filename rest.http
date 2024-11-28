@@ -2354,6 +2354,17 @@ Authorization: Bearer {{accessToken}}
     "download": true
 }
 
+
+#### search for data provider networks/ data proveder collections
+POST {{baseUrl}}/api/{{apiVersion}}/search/data_provider_colls HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "query": "health"
+}
+
 ### Filters
 #### get all filters
 GET {{baseUrl}}/api/{{apiVersion}}/filters HTTP/1.1
