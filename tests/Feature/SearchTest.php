@@ -1145,7 +1145,6 @@ class SearchTest extends TestCase
             'to',
             'total',
         ]);
-        dd($response['data'][0]['_source']['name']);
         $this->assertTrue($response['data'][0]['_source']['name'] === 'Data Custodian Network One');
 
         // Test sorting by name

@@ -1046,7 +1046,7 @@ trait MockExternalApis
                                     'summary.keyword'
                                 ],
                                 '_source' => [
-                                    'name' => 'Data Custodian Name One',
+                                    'name' => 'Data Custodian Network One',
                                     'summary' => 'Data Custodian Name One - Summary',
                                     'publisherNames' => ['Publisher Name One'],
                                     'datasetTitles' => ['Dataset Title One'],
@@ -1064,7 +1064,7 @@ trait MockExternalApis
                                     'summary.keyword'
                                 ],
                                 '_source' => [
-                                    'name' => 'Data Custodian Name Two',
+                                    'name' => 'Data Custodian Network Two',
                                     'summary' => 'Data Custodian Name Two - Summary',
                                     'publisherNames' => ['Publisher Name Two'],
                                     'datasetTitles' => ['Dataset Title Two'],
@@ -1082,7 +1082,7 @@ trait MockExternalApis
                                     'summary.keyword'
                                 ],
                                 '_source' => [
-                                    'name' => 'Data Custodian Name Three',
+                                    'name' => 'Data Custodian Network Three',
                                     'summary' => 'Data Custodian Name Three - Summary',
                                     'publisherNames' => ['Publisher Name Three'],
                                     'datasetTitles' => ['Dataset Title Three'],
