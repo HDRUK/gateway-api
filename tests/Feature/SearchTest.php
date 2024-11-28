@@ -1083,14 +1083,12 @@ class SearchTest extends TestCase
                     '_source' => [
                         'name',
                         'datasetTitles',
-                        'geographicLocations',
                         'updated_at'
                     ],
                     'id',
                     'name',
                     'img_url',
                     'datasetTitles',
-                    'geographicLocations',
                 ],
             ],
             'aggregations',
