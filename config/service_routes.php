@@ -19,7 +19,7 @@ return [
                 'jwt.verify',
                 'check.access:permissions,question-bank.update',
             ],
-            "get" => [
+            "delete" => [
                 'jwt.verify',
                 'check.access:permissions,question-bank.delete',
             ]
@@ -27,15 +27,31 @@ return [
     ],
     "daras" => [
         "/templates{any?}" => [
-            "any" => [ #note: needs updating when permissions are implemented!!
+            "post" => [
                 'jwt.verify',
-                #'check.access:permissions,....',
+                'check.access:permissions,data-access-template.create',
             ],
+            "get" => [
+                'jwt.verify',
+                'check.access:permissions,data-access-template.read',
+            ],
+            "put" => [
+                'jwt.verify',
+                'check.access:permissions,data-access-template.update',
+            ],
+            "patch" => [
+                'jwt.verify',
+                'check.access:permissions,data-access-template.update',
+            ],
+            "delete" => [
+                'jwt.verify',
+                'check.access:permissions,data-access-template.delete',
+            ]
         ],
         "/applications{any?}" => [
             "post" => [
                 'jwt.verify',
-                'check.access:permissions,application.create',
+                'check.access:permissions,data-access-applications.applicant.create',
             ],
             "any" => [
                 'jwt.verify',
