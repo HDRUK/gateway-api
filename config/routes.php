@@ -476,6 +476,20 @@ return [
             'teamId' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'teams',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/datasets',
+        'methodController' => 'TeamController@datasets',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
 
     // tools
     [
