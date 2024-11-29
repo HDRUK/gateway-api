@@ -51,7 +51,6 @@ class QuestionBankSeeder extends Seeder
                     $questionModel = QuestionBank::create([
                             'section_id' => $subSectionModel->id,
                             'user_id' => 1,
-                            'team_id' => null,
                             'locked' => 0,
                             'archived' => 0,
                             'archived_date' => null,
