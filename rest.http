@@ -12,10 +12,46 @@
 @uEmail2 = "john.for.doe.1234567890@example.com"
 @uPassword = "Watch26Task?"
 @uPasswordDar = "Gateway@123"
+@esUsername = "elastic"
+@esPassword = "otL=+lJ--zSjl_FHnmuh"
+@esBaseUrl = "https://localhost:9200"
+@esSearchServiceUrl = "http://localhost:8080"
 # @accessToken=jwt....
 
 # 'developers@hdruk.ac.uk', 'Watch26Task?'
 # 'hdrmetadatamanager@gmail.com', 'Gateway@123'
+
+# ElasticSearch
+## delete index
+POST {{esBaseUrl}}/datacustodiannetwork/_delete_by_query HTTP/1.1
+Content-Type: application/json
+Authorization: Basic {{esUsername}}:{{esUsername}}
+
+{
+    "query": {
+        "match_all": {}
+    }
+}
+
+####
+## delete index - another way
+DELETE {{esBaseUrl}}/datacustodiannetwork HTTP/1.1
+Content-Type: application/json
+Authorization: Basic ZWxhc3RpYzpvdEw9K2xKLS16U2psX0ZIbm11aA==
+
+
+####
+## create mappings
+POST http://localhost:8080/mappings/data_custodian_networks
+Content-Type: application/json
+Accept: application/json
+
+####
+## create settings
+POST http://localhost:8080/settings/data_custodian_networks
+Content-Type: application/json
+Accept: application/json
+
 
 ### Login
 #### create new auth
@@ -2316,6 +2352,17 @@ Authorization: Bearer {{accessToken}}
 {
     "query": "asthma",
     "download": true
+}
+
+
+#### search for data provider networks/ data proveder collections
+POST {{baseUrl}}/api/{{apiVersion}}/search/data_provider_colls HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "query": "health"
 }
 
 ### Filters

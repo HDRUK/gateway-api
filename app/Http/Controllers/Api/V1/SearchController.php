@@ -1344,7 +1344,7 @@ class SearchController extends Controller
             $aggs = Filter::where('type', 'dataProviderColl')->get()->toArray();
             $input['aggs'] = $aggs;
 
-            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_providers';
+            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_custodian_networks';
             $response = Http::post($urlString, $input);
 
             $dataProviderCollArray = $response['hits']['hits'];
