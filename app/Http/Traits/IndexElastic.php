@@ -183,7 +183,7 @@ trait IndexElastic
                 $durTitles = convertArrayToArrayWithKeyName($durs, 'project_title');
                 $durByTeamIds = Dur::where('team_id', $teamId)->select('project_title')->get();
                 $durByTeamIdTitles = convertArrayToArrayWithKeyName($durByTeamIds, 'project_title');
-                $durTitles = array_unique(array_merge($durTitles, $durByTeamIdTitles));
+                $durTitles = implode(',', array_unique(array_merge($durTitles, $durByTeamIdTitles)));
             }
 
             // tools
@@ -191,7 +191,7 @@ trait IndexElastic
                 $datasetVersionHasTools = DatasetVersionHasTool::whereIn('dataset_version_id', $datasetVersionIds)->select('tool_id')->get();
                 $toolIds = convertArrayToArrayWithKeyName($datasetVersionHasTools, 'tool_id');
                 $tools = Tool::whereIn('id', $toolIds)->select('name')->get();
-                $toolNames = convertArrayToArrayWithKeyName($tools, 'name');
+                $toolNames = convertArrayToStringWithKeyName($tools, 'name');
             }
 
             // publications
@@ -199,7 +199,7 @@ trait IndexElastic
                 $publicationHasDatasetVersions = PublicationHasDatasetVersion::whereIn('dataset_version_id', $datasetVersionIds)->select('publication_id')->get();
                 $publicationIds = convertArrayToArrayWithKeyName($publicationHasDatasetVersions, 'publication_id');
                 $publications = Publication::whereIn('id', $publicationIds)->select('paper_title')->get();
-                $publicationTitles = convertArrayToArrayWithKeyName($publications, 'paper_title');
+                $publicationTitles = convertArrayToStringWithKeyName($publications, 'paper_title');
             }
 
             // collections
@@ -207,7 +207,7 @@ trait IndexElastic
                 $collectionHasDatasetVersions = CollectionHasDatasetVersion::whereIn('dataset_version_id', $datasetVersionIds)->select('collection_id')->get();
                 $collectionIds = convertArrayToArrayWithKeyName($collectionHasDatasetVersions, 'collection_id');
                 $collections = Collection::whereIn('id', $collectionIds)->where('status', 'active')->select('name')->get();
-                $collectionNames = convertArrayToArrayWithKeyName($collections, 'name');
+                $collectionNames = convertArrayToStringWithKeyName($collections, 'name');
             }
 
             $toIndex = [
@@ -215,10 +215,10 @@ trait IndexElastic
                 'datasetTitles' => array_unique($datasetTitles),
                 'geographicLocation' => $locations,
                 'dataType' => $dataTypes,
-                'durTitles' => array_unique($durTitles),
-                'toolNames' => array_unique($toolNames),
-                'publicationTitles' => array_unique($publicationTitles),
-                'collectionNames' => array_unique($collectionNames),
+                'durTitles' => $durTitles,
+                'toolNames' => $toolNames,
+                'publicationTitles' => $publicationTitles,
+                'collectionNames' => $collectionNames,
             ];
 
             $params = [
