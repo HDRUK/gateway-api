@@ -126,20 +126,18 @@ class EnquiriesManagementController
         $something = null;
 
         try {
-            \Log::info('in send email');
             $template = EmailTemplate::where('identifier', $ident)->first();
             $team = Team::where('id', $threadDetail['thread']['team_id'])->first();
             $user = User::where('id', $jwtUser['id'])->first();
 
-            \Log::info('got template, user and team');
             if (array_key_exists('datasets', $threadDetail['thread'])) {
                 $threadDetail['message']['message_body']['[[DATASETS]]'] = $threadDetail['thread']['datasets'];
             }
 
-            \Log::info('got [[DATASETS]]');
             $replacements = [
                 '[[CURRENT_YEAR]]' => $threadDetail['message']['message_body']['[[CURRENT_YEAR]]'],
                 '[[TEAM_NAME]]' => $threadDetail['message']['message_body']['[[TEAM_NAME]]'],
+                '[[SENDER_NAME]]' => $threadDetail['message']['message_body']['[[SENDER_NAME]]'] ?? '',
                 '[[USER_FIRST_NAME]]' => $threadDetail['message']['message_body']['[[USER_FIRST_NAME]]'],
                 '[[USER_LAST_NAME]]' => $threadDetail['message']['message_body']['[[USER_LAST_NAME]]'],
                 '[[USER_ORGANISATION]]' => $threadDetail['message']['message_body']['[[USER_ORGANISATION]]'],
@@ -147,15 +145,14 @@ class EnquiriesManagementController
                 '[[MESSAGE_BODY]]' => $this->convertThreadToBody($threadDetail),
             ];
 
-            \Log::info('replacements defined');
-
             // TODO Add unique key to URL button. Future scope.
             foreach ($usersToNotify as $u) {
+                $replacements['[[RECIPIENT_NAME]]'] = $u['user']['name'];
                 if ($u === null) {
                     Auditor::log([
                         'user_id' => (int)$jwtUser['id'],
                         'action_type' => 'SEND EMAIL',
-                        'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
                         'description' => 'EnquiriesManagementController failed to send email on behalf of ' .
                             $jwtUser['id'] . '. Detail: ' . json_encode($threadDetail),
                     ]);
@@ -171,8 +168,6 @@ class EnquiriesManagementController
 
                 $from = 'devreply+' . $threadDetail['thread']['unique_key'] . '@healthdatagateway.org';
                 $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
-
-                \Log::info('send email job dispatched');
             }
 
             unset(
@@ -185,7 +180,7 @@ class EnquiriesManagementController
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'SEND EMAIL',
-                'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
         }
@@ -197,23 +192,17 @@ class EnquiriesManagementController
         $datasetsStr = '<br/><br/>';
         $dataCustodiansStr = '';
 
-        \Log::info('in convertThreadToBody');
         foreach ($in['thread']['datasets'] as $d) {
             $datasetsStr .= $d['title'] . ' (<a href="' . $d['url'] . '">Direct link</a>)<br/>';
         }
 
-        \Log::info('got datasets');
         foreach ($in['thread']['dataCustodians'] as $d) {
             $dataCustodiansStr .= '<p style="text-indent: 15px">' . $d . '</p>';
         }
 
-        \Log::info('got custodians');
         $str .= 'Name: ' . $in['message']['message_body']['[[USER_FIRST_NAME]]'] . ' ' . $in['message']['message_body']['[[USER_LAST_NAME]]'] . '<br/>';
-        \Log::info('got name');
         $str .= 'Applicant organisation: ' . $in['message']['message_body']['[[USER_ORGANISATION]]'] . '<br/>';
-        \Log::info('org');
         $str .= 'Contact number: ' . $in['message']['message_body']['[[CONTACT_NUMBER]]'] . '<br/>';
-        \Log::info('got contact');
         if ($in['thread']['is_feasibility_enquiry']) {
             $str .= 'Project title: ' . $in['thread']['project_title'] . '<br/>';
             $str .= 'Research aim: ' . $in['message']['message_body']['[[RESEARCH_AIM]]'] . '<br/>';
@@ -222,14 +211,13 @@ class EnquiriesManagementController
             $str .= 'Do you know which parts of the datasets you are interested in? ' . $in['message']['message_body']['[[DATASETS_PARTS_YES_NO]]'] . '<br/>';
             $str .= 'Funding: ' . $in['message']['message_body']['[[FUNDING]]'] . '<br/>';
             $str .= 'Potential research benefits: ' . $in['message']['message_body']['[[PUBLIC_BENEFIT]]'] . '<br/>';
+            $str .= 'This enquiry has also been sent to the following Data Custodians: ' . $dataCustodiansStr . '<br/>';
         } elseif ($in['thread']['is_general_enquiry']) {
             $str .= 'Enquiry: ' . $in['message']['message_body']['[[QUERY]]'] . '<br/>';
+            $str .= 'This enquiry has also been sent to the following Data Custodians: ' . $dataCustodiansStr . '<br/>';
         } elseif ($in['thread']['is_dar_dialogue']) {
-            \Log::info('in is_dar_dialogue');
-            $str .= 'Enquiry: ' . $in['message']['message_body']['[[QUERY]]'] . '<br/>';
+            $str .= $in['message']['message_body']['[[MESSAGE]]'] . '<br/>';
         }
-        $str .= 'This enquiry has also been sent to the following Data Custodians: ' . $dataCustodiansStr . '<br/>';
-        \Log::info('built thread str');
         return $str;
     }
 }

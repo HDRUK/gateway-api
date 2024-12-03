@@ -3634,6 +3634,18 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'enquiry_threads',
+        'method' => 'patch',
+        'path' => '/enquiry_threads/{id}/add_message',
+        'methodController' => 'EnquiryThreadController@addMessage',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
         'name' => 'admin_ctrl',
         'method' => 'post',
         'path' => '/admin_ctrl/trigger_ted',

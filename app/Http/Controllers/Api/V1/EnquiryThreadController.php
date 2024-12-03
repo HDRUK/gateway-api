@@ -6,10 +6,13 @@ use Config;
 use Auditor;
 use Exception;
 
+use App\Models\EnquiryMessage;
+use App\Models\EnquiryThreadHasDatasetVersion;
 use App\Models\Team;
 
 use App\Models\User;
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
@@ -262,7 +265,7 @@ class EnquiryThreadController extends Controller
                             '[[CONTACT_NUMBER]]' => $input['contact_number'],
                             '[[PROJECT_TITLE]]' => $input['project_title'],
                             '[[CURRENT_YEAR]]' => date('Y'),
-                            '[[QUERY]]' => $input['query'],
+                            '[[MESSAGE]]' => $input['message'],
                         ],
                     ],
                 ];
@@ -296,7 +299,6 @@ class EnquiryThreadController extends Controller
                 ];
             }
 
-            \Log::info('payload and message body defined.');
             $payload['thread']['dataCustodians'] = [];
             foreach ($payload['thread']['datasets'] as $d) {
                 $t = Team::where('id', $d['team_id'])->first();
@@ -312,8 +314,6 @@ class EnquiryThreadController extends Controller
                 $enquiryThreadId = EMC::createEnquiryThread($payload['thread']);
                 $enquiryMessageId = EMC::createEnquiryMessage($enquiryThreadId, $payload['message']);
                 $usersToNotify = EMC::determineDARManagersFromTeamId($t->id, $enquiryThreadId);
-
-                \Log::info('thread id, message id and users to notify defined.');
 
                 if (empty($usersToNotify)) {
                     Auditor::log([
@@ -336,7 +336,6 @@ class EnquiryThreadController extends Controller
                 } elseif ($input['is_general_enquiry'] == true) {
                     EMC::sendEmail('generalenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
                 } elseif ($input['is_dar_dialogue'] == true) {
-                    \Log::info('send dar email active');
                     EMC::sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser);
                 }
 
@@ -351,6 +350,154 @@ class EnquiryThreadController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $enquiryThreadId,
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
+                'data' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *      path="/api/v1/enquiry_threads/{id}/add_message",
+     *      summary="Add a message to an EnquiryThread",
+     *      description="Add a message to an EnquiryThread",
+     *      tags={"EnquiryThread"},
+     *      summary="EnquiryThread@addMessage",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="enquiry thread id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="enquiry thread id",
+     *       ),
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="EnquiryThread definition",
+     *          @OA\JsonContent(
+     *              required={"user_id", "team_id", "project_title"},
+     *                  @OA\Property(property="from", type="string", example="someone@example.com"),
+     *                  @OA\Property(property="to", type="string", example="CUSTODIAN"),
+     *                  @OA\Property(property="message", type="string", example="A new message in the thread"),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(property="data", type="integer", example="100")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function addMessage(Request $request, int $id): JsonResponse
+    {
+        $enquiryThread = EnquiryThread::findOrFail($id);
+
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        $user = User::where('id', $jwtUser['id'])->first();
+        $team = Team::where('id', $enquiryThread->team_id)->first();
+
+        try {
+            if ($enquiryThread->is_dar_dialogue) {
+                $payload = [
+                    'thread' => array_merge(
+                        $enquiryThread->toArray(),
+                        array('datasets' => $this->getEnquiryThreadDatasets($id))
+                    ),
+                    'message' => [
+                        'from' => $input['from'],
+                        'message_body' => [
+                            '[[TEAM_NAME]]' => $team->name,
+                            '[[USER_FIRST_NAME]]' => $user->firstname,
+                            '[[USER_LAST_NAME]]' => $user->lastname,
+                            '[[USER_ORGANISATION]]' => isset($user->organisation) ? $user->organisation : $input['organisation'],
+                            '[[CONTACT_NUMBER]]' => '',
+                            '[[CURRENT_YEAR]]' => date('Y'),
+                            '[[PROJECT_TITLE]]' => $enquiryThread->project_title,
+                            '[[MESSAGE]]' => $input['message'] . '<br/><br/>',
+                        ],
+                    ],
+                ];
+            }
+
+            $payload['thread']['dataCustodians'] = [];
+            foreach ($payload['thread']['datasets'] as $d) {
+                $t = Team::where('id', $d['team_id'])->first();
+                $payload['thread']['dataCustodians'][] = $t->name;
+            }
+
+            $enquiryMessageId = EMC::createEnquiryMessage($id, $payload['message']);
+            if ($input['to'] === 'CUSTODIAN') {
+                $usersToNotify = EMC::determineDARManagersFromTeamId($team->id, $id);
+                $payload['message']['message_body']['[[SENDER_NAME]]'] = $user->name;
+            } else {
+                $usersToNotify = [['user' => $user]];
+                $payload['message']['message_body']['[[SENDER_NAME]]'] = $team->name;
+            }
+
+            // Join all previous related enquiry messages to form a thread to include in the email
+            $fullMessage = $input['message'] . '<br/><br/>';
+            $relatedMessages = EnquiryMessage::where('thread_id', $id)->get();
+            foreach ($relatedMessages as $m) {
+                $message = json_decode($m->message_body, true)['[[MESSAGE]]'];
+                $fullMessage .= $m->from . ': ' . $message  . '<br/><br/>';
+            }
+            $payload['message']['message_body']['[[MESSAGE]]'] = $fullMessage;
+
+            if (empty($usersToNotify)) {
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'POST',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'EnquiryThread message was added, but no custodian.dar.managers found to notify for thread ' .
+                        $id,
+                ]);
+
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
+                    'data' => null,
+                ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+            }
+
+            if ($enquiryThread->is_dar_dialogue) {
+                EMC::sendEmail('dar.notifymessage', $payload, $usersToNotify, $jwtUser);
+            }
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'EnquiryThread ' . $id . ' message added',
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $id,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
@@ -393,6 +540,29 @@ class EnquiryThreadController extends Controller
                     'team_id' => $ds->team_id,
                 ];
             }
+        }
+
+        return $arr;
+    }
+
+    private function getEnquiryThreadDatasets(int $id): array
+    {
+        $arr = [];
+        $datasetVersions = EnquiryThreadHasDatasetVersion::where('enquiry_thread_id', $id)->get();
+        foreach ($datasetVersions as $d) {
+            $datasetVersion = DatasetVersion::where('id', $d->dataset_version_id)->select('dataset_id', 'metadata')->first();
+            $title = $datasetVersion['metadata']['metadata']['summary']['shortTitle'];
+            $datasetId = $datasetVersion['dataset_id'];
+            $dataset = Dataset::findOrFail($datasetId);
+            $datasetUrl = env('GATEWAY_URL') . '/dataset/' . $dataset->id . '?section=1';
+            $teamId = $dataset->team_id;
+            $arr[] = [
+                'dataset_id' => $datasetId,
+                'team_id' => $teamId,
+                'interest_type' => $d->interest_type,
+                'title' => $title,
+                'url' => $datasetUrl,
+            ];
         }
 
         return $arr;
