@@ -10,12 +10,14 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 
 use App\Models\Collection;
+use App\Models\CollectionHasDatasetVersion;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasTool;
 use App\Models\DataProviderColl;
 use App\Models\DataProviderCollHasTeam;
 use App\Models\Dur;
+use App\Models\DurHasDatasetVersion;
 use App\Models\License;
 use App\Models\ProgrammingLanguage;
 use App\Models\ProgrammingPackage;
@@ -144,11 +146,17 @@ trait IndexElastic
         try {
             $datasets = Dataset::where('team_id', $teamId)->get();
 
-            $datasetTitles = array();
-            $locations = array();
-            $dataTypes = array();
+            $datasetTitles = [];
+            $datasetVersionIds = [];
+            $locations = [];
+            $dataTypes = [];
+            $publicationTitles = [];
+            $collectionNames = [];
+            $durTitles = [];
+            $toolNames = [];
             foreach ($datasets as $dataset) {
                 $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages);
+                $datasetVersionIds[] = $dataset->latestVersion()->id;
                 $metadata = $dataset->latestVersion()->metadata;
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
                 $types = explode(';,;', $metadata['metadata']['summary']['datasetType']);
@@ -167,11 +175,50 @@ trait IndexElastic
             }
             usort($datasetTitles, 'strcasecmp');
 
+            // dur
+            if (count($datasetVersionIds)) {
+                $durHasDatasetVersions = DurHasDatasetVersion::whereIn('dataset_version_id', $datasetVersionIds)->select('dur_id')->get();
+                $durIds = convertArrayToArrayWithKeyName($durHasDatasetVersions, 'dur_id');
+                $durs = Dur::whereIn('id', $durIds)->select('project_title')->get();
+                $durTitles = convertArrayToArrayWithKeyName($durs, 'project_title');
+                $durByTeamIds = Dur::where('team_id', $teamId)->select('project_title')->get();
+                $durByTeamIdTitles = convertArrayToArrayWithKeyName($durByTeamIds, 'project_title');
+                $durTitles = implode(',', array_unique(array_merge($durTitles, $durByTeamIdTitles)));
+            }
+
+            // tools
+            if (count($datasetVersionIds)) {
+                $datasetVersionHasTools = DatasetVersionHasTool::whereIn('dataset_version_id', $datasetVersionIds)->select('tool_id')->get();
+                $toolIds = convertArrayToArrayWithKeyName($datasetVersionHasTools, 'tool_id');
+                $tools = Tool::whereIn('id', $toolIds)->select('name')->get();
+                $toolNames = convertArrayToStringWithKeyName($tools, 'name');
+            }
+
+            // publications
+            if (count($datasetVersionIds)) {
+                $publicationHasDatasetVersions = PublicationHasDatasetVersion::whereIn('dataset_version_id', $datasetVersionIds)->select('publication_id')->get();
+                $publicationIds = convertArrayToArrayWithKeyName($publicationHasDatasetVersions, 'publication_id');
+                $publications = Publication::whereIn('id', $publicationIds)->select('paper_title')->get();
+                $publicationTitles = convertArrayToStringWithKeyName($publications, 'paper_title');
+            }
+
+            // collections
+            if (count($datasetVersionIds)) {
+                $collectionHasDatasetVersions = CollectionHasDatasetVersion::whereIn('dataset_version_id', $datasetVersionIds)->select('collection_id')->get();
+                $collectionIds = convertArrayToArrayWithKeyName($collectionHasDatasetVersions, 'collection_id');
+                $collections = Collection::whereIn('id', $collectionIds)->where('status', 'active')->select('name')->get();
+                $collectionNames = convertArrayToStringWithKeyName($collections, 'name');
+            }
+
             $toIndex = [
                 'name' => Team::findOrFail($teamId)->name,
-                'datasetTitles' => $datasetTitles,
+                'datasetTitles' => array_unique($datasetTitles),
                 'geographicLocation' => $locations,
                 'dataType' => $dataTypes,
+                'durTitles' => $durTitles,
+                'toolNames' => $toolNames,
+                'publicationTitles' => $publicationTitles,
+                'collectionNames' => $collectionNames,
             ];
 
             $params = [

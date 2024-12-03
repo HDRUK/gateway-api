@@ -13,3 +13,16 @@ if (! function_exists('convertArrayToStringWithKeyName')) {
         return implode($separator, $temp);
     }
 }
+
+if (! function_exists('convertArrayToArrayWithKeyName')) {
+    function convertArrayToArrayWithKeyName($array, $keyname)
+    {
+        $return = [];
+        foreach ($array as $item) {
+            $return[] = $item[$keyname];
+        }
+        $return = array_unique($return);
+
+        return $return;
+    }
+}
