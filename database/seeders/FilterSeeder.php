@@ -28,7 +28,7 @@ class FilterSeeder extends Seeder
             'publisherName',
             'containsTissue',
             'dataType',
-            'datasetSubType',
+            'dataSubType',
             'collectionName',
             'dataUseTitles',
             'dateRange',
