@@ -197,6 +197,17 @@ class SearchController extends Controller
                 }
 
                 $model['metadata'] = $model->latestVersion()['metadata']['metadata'];
+
+                $metadata = $model['metadata'];
+
+                if (isset($metadata['summary']['publisher']['gatewayId'])) {
+                    $id = $metadata['summary']['publisher']['gatewayId'];
+                    $team = Team::where('pid', $id)->first();
+                    if ($team) {
+                        $metadata['summary']['publisher']['gatewayId'] = $team->id;
+                        $model['metadata'] = $metadata;
+                    }
+                }
                 $model = $model->toArray();
 
                 $datasetsArray[$i]['_source']['created_at'] = $model['created_at'];
