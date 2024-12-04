@@ -41,14 +41,7 @@ jobs:
         id: getversion
         run: |
             sed -n 's/^appVersion:\(.*\)/\1/p' < chart/gateway-api/Chart.yaml > version
-            echo "version=$(sed '/.*\"\(.*\)\".*/ s//\1/g' version)" >> $GITHUB_OUTPUT
-
-      - name: Create the release
-        uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: '${{ steps.getversion.outputs.version }}'
-          prerelease: false  
+            echo "version=$(sed '/.*\"\(.*\)\".*/ s//\1/g' version)" >> $GITHUB_OUTPUT 
 
       - name: Deploy to Cloud Run
         uses: actions-hub/gcloud@master
