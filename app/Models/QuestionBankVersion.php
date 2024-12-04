@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QuestionBankVersion extends Model
 {
@@ -24,12 +25,30 @@ class QuestionBankVersion extends Model
 
     protected $table = 'question_bank_versions';
 
+    public $timestamps = true;
+
     protected $fillable = [
-       'default',
-       'required',
-       'question_json',
+        'question_parent_id',
+        'version',
+        'default',
+        'required',
+        'question_json',
     ];
 
-    private $required = '';
+    /**
+     * Specifically requests that Laravel casts the tiny ints as boolean
+     */
+    protected $casts = [
+        'required' => 'boolean',
+        'default' => 'boolean',
+    ];
+
+    /**
+     * The question this version is associated with.
+     */
+    public function question(): belongsTo
+    {
+        return $this->belongsTo(QuestionBank::class, 'question_parent_id');
+    }
 
 }
