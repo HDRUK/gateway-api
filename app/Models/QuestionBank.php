@@ -71,6 +71,6 @@ class QuestionBank extends Model
 
     public function teams(): BelongsToMany
     {
-        return $this->belongsToMant(Team::class, 'qb_question_has_team');
+        return $this->belongsToMany(Team::class, 'qb_question_has_team');
     }
 }

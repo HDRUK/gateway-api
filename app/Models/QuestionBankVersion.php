@@ -48,7 +48,7 @@ class QuestionBankVersion extends Model
      */
     public function question(): belongsTo
     {
-        return $this->belongsTo(Question::class, 'question_parent_id');
+        return $this->belongsTo(QuestionBank::class, 'question_parent_id');
     }
 
 }
