@@ -32,6 +32,7 @@ use App\Http\Requests\Dataset\EditDataset;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Requests\Dataset\CreateDataset;
 use App\Http\Requests\Dataset\DeleteDataset;
+use App\Http\Requests\Dataset\ExportDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
 use App\Exports\DatasetStructuralMetadataExport;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -1186,6 +1187,225 @@ class DatasetController extends Controller
 
         return $response;
     }
+    /**
+     * @OA\Get(
+     *    path="/api/v1/datasets/export_metadata/{id}",
+     *    operationId="export_dataset_metadata",
+     *    tags={"Datasets"},
+     *    summary="DatasetController@exportMetadata",
+     *    description="Export Structural Metadata CSV of a single dataset",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="dataset id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="dataset id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="download_type",
+     *       in="query",
+     *       description="download type",
+     *       required=true,
+     *       example="structural",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="download type",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=200,
+     *       description="CSV file",
+     *       @OA\MediaType(
+     *          mediaType="text/csv",
+     *          @OA\Schema(
+     *             type="string",
+     *             example="",
+     *          )
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=400,
+     *       description="Bad request",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Invalid argument(s)")
+     *       ),
+     *    )
+     * )
+     */
+    public function exportMetadata(ExportDataset $request, int $id): StreamedResponse
+    {
+        $input = $request->all();
+        $download_type = strtolower($input['download_type']);
+
+        $dataset = Dataset::where('id', '=', $id)->first();
+
+        $result = $dataset->latestVersion()['metadata']['metadata'];
+
+        $response = new StreamedResponse(
+            function () use ($result, $download_type) {
+                // Open output stream
+                $handle = fopen('php://output', 'w');
+
+                if ($download_type === 'structural') {
+                    $headerRow = [
+                        'Section',
+                        'Column name',
+                        'Data type',
+                        'Column description',
+                        'Sensitive',
+                    ];
+
+                    // Add CSV headers
+                    fputcsv($handle, $headerRow);
+                    // add the given number of rows to the file.
+                    foreach ($result['structuralMetadata'] as $rowDetails) {
+                        $row = [
+                            $rowDetails['name'] !== null ? $rowDetails['name'] : '',
+                            $rowDetails['columns'][0]['name'] !== null ? $rowDetails['columns'][0]['name'] : '',
+                            $rowDetails['columns'][0]['dataType'] !== null ? $rowDetails['columns'][0]['dataType'] : '',
+                            $rowDetails['columns'][0]['description'] !== null ? str_replace('\n', '', $rowDetails['columns'][0]['description']) : '',
+                            $rowDetails['columns'][0]['sensitive'] !== null ? $rowDetails['columns'][0]['sensitive'] === true ? 'true' : 'false' : '',
+                        ];
+                        fputcsv($handle, $row);
+                    }
+                } elseif ($download_type === 'observations') {
+                    $headerRow = [
+                        'Observed Node',
+                        'Disambiguating Description',
+                        'Measured Value',
+                        'Measured Property',
+                        'Observation Date',
+                    ];
+
+                    // Add CSV headers
+                    fputcsv($handle, $headerRow);
+                    // add the given number of rows to the file.
+                    foreach ($result['observations'] as $rowDetails) {
+                        $row = [
+                            $rowDetails['observedNode'] !== null ? $rowDetails['observedNode'] : '',
+                            $rowDetails['disambiguatingDescription'] !== null ? $rowDetails['disambiguatingDescription'] : '',
+                            $rowDetails['measuredValue'] !== null ? $rowDetails['measuredValue'] : '',
+                            $rowDetails['measuredProperty'] !== null ? $rowDetails['measuredProperty'] : '',
+                            $rowDetails['observationDate'] !== null ? $rowDetails['observationDate'] : '',
+                        ];
+                        fputcsv($handle, $row);
+                    }
+                } elseif ($download_type === 'metadata') {
+                    $headerRow = [
+                        'Section',
+                        'Value',
+                        'Field',
+                    ];
+
+                    // Add CSV headers
+                    fputcsv($handle, $headerRow);
+
+                    // Note that the contents here need to be manually kept up to date with the contents of
+                    // gateway-web-2/src/app/[locale]/(logged-out)/dataset/[datasetId]/config.tsx.
+                    // The 'Summary Demographics' rows match the summary boxes at the top of the dataset landing page
+                    $rows = [
+                        ['Dataset', 'Name', $this->getValueFromPath($result, 'summary/title')],
+                        ['Dataset', 'Gateway URL', $this->getValueFromPath($result, 'required/revisions/0/url')],
+                        ['Dataset', 'Dataset Type', $this->getValueFromPath($result, 'summary/datasetType')],
+                        ['Dataset', 'Dataset Sub-type', $this->getValueFromPath($result, 'summary/datasetSubType')],
+                        ['Dataset', 'Collection Sources', $this->getValueFromPath($result, 'provenance/origin/collectionSituation')],
+
+                        ['Summary Demographics', 'Population Size', $this->getValueFromPath($result, 'summary/populationSize') === "-1" ? "" : $this->getValueFromPath($result, 'summary/populationSize')],
+                        ['Summary Demographics', 'Years', $this->getValueFromPath($result, 'provenance/temporal/startDate')],
+                        ['Summary Demographics', 'Associate BioSamples', $this->getValueFromPath($result, 'coverage/materialType')],
+                        ['Summary Demographics', 'Geographic coverage', $this->getValueFromPath($result, 'coverage/spatial')],
+                        ['Summary Demographics', 'Lead time', $this->getValueFromPath($result, 'accessibility/access/deliveryLeadTime')],
+
+                        ['Summary', 'Abstract', $this->getValueFromPath($result, 'summary/abstract')],
+                        ['Summary', 'DOI for dataset', $this->getValueFromPath($result, 'summary/doiName')],
+
+                        ['Documentation', 'Description', $this->getValueFromPath($result, 'documentation/description')],
+                        ['Documentation', 'Dataset type', $this->getValueFromPath($result, 'provenance/origin/datasetType')],
+                        ['Documentation', 'Dataset sub-type', $this->getValueFromPath($result, 'provenance/origin/datasetSubType')],
+                        ['Documentation', 'Dataset population size', $this->getValueFromPath($result, 'summary/populationSize')],
+                        ['Documentation', 'Associated media', $this->getValueFromPath($result, 'documentation/associatedMedia')],
+                        ['Documentation', 'Synthetic data web link', $this->getValueFromPath($result, 'structuralMetadata/syntheticDataWebLink')],
+
+                        ['Keywords', 'Keywords', $this->getValueFromPath($result, 'summary/keywords')],
+
+                        ['Provenance', 'Purpose of dataset collection', $this->getValueFromPath($result, 'provenance/origin/purpose')],
+                        ['Provenance', 'Source of dataset extraction', $this->getValueFromPath($result, 'provenance/origin/source')],
+                        ['Provenance', 'Collection source setting', $this->getValueFromPath($result, 'provenance/origin/collectionSource')],
+                        ['Provenance', 'Patient pathway description', $this->getValueFromPath($result, 'coverage/pathway')],
+                        ['Provenance', 'Image contrast', $this->getValueFromPath($result, 'provenance/origin/imageContrast')],
+                        ['Provenance', 'Biological sample availability', $this->getValueFromPath($result, 'coverage/materialType')],
+
+                        ['Details', 'Publishing frequency', $this->getValueFromPath($result, 'provenance/temporal/publishingFrequency')],
+                        ['Details', 'Version', $this->getValueFromPath($result, 'version')],
+                        ['Details', 'Modified', $this->getValueFromPath($result, 'modified')],
+                        ['Details', 'Distribution release date', $this->getValueFromPath($result, 'provenance/termporal/distributionReleaseDate')],
+                        ['Details', 'Citation Requirements', implode(',', $this->getValueFromPath($result, 'accessibility/usage/resourceCreator'))],
+
+                        ['Coverage', 'Start date', $this->getValueFromPath($result, 'provenance/temporal/startDate')],
+                        ['Coverage', 'End date', $this->getValueFromPath($result, 'provenance/temporal/endDate')],
+                        ['Coverage', 'Time lag', $this->getValueFromPath($result, 'provenance/temporal/timeLag')],
+                        ['Coverage', 'Geographic coverage', $this->getValueFromPath($result, 'coverage/spatial')],
+                        ['Coverage', 'Minimum age range', $this->getValueFromPath($result, 'coverage/typicalAgeRangeMin')],
+                        ['Coverage', 'Maximum age range', $this->getValueFromPath($result, 'coverage/typicalAgeRangeMax')],
+                        ['Coverage', 'Follow-up', $this->getValueFromPath($result, 'coverage/followUp')],
+                        ['Coverage', 'Dataset completeness', $this->getValueFromPath($result, 'coverage/datasetCompleteness')],
+
+                        ['Omics', 'Assay', $this->getValueFromPath($result, 'omics/assay')],
+                        ['Omics', 'Platform', $this->getValueFromPath($result, 'omics/platform')],
+
+                        ['Accessibility', 'Language', $this->getValueFromPath($result, 'accessibility/formatAndStandards/language')],
+                        ['Accessibility', 'Alignment with standardised data models', $this->getValueFromPath($result, 'accessibility/formatAndStandards/conformsTo')],
+                        ['Accessibility', 'Controlled vocabulary', $this->getValueFromPath($result, 'accessibility/formatAndStandards/vocabularyEncodingScheme')],
+                        ['Accessibility', 'Format', $this->getValueFromPath($result, 'accessibility/formatAndStandards/format')],
+
+                        ['Data Access Request', 'Dataset pipeline status', $this->getValueFromPath($result, 'documentation/inPipeline')],
+                        ['Data Access Request', 'Access rights', $this->getValueFromPath($result, 'accessibility/access/accessRights')],
+                        ['Data Access Request', 'Time to dataset access', $this->getValueFromPath($result, 'accessibility/access/deliveryLeadTime')],
+                        ['Data Access Request', 'Access request cost', $this->getValueFromPath($result, 'accessibility/access/accessRequestCost')],
+                        ['Data Access Request', 'Access method category', $this->getValueFromPath($result, 'accessibility/access/accessServiceCategory')],
+                        ['Data Access Request', 'Access mode', $this->getValueFromPath($result, 'accessibility/access/accessMode')],
+                        ['Data Access Request', 'Access service description', $this->getValueFromPath($result, 'accessibility/access/accessService')],
+                        ['Data Access Request', 'Jurisdiction', $this->getValueFromPath($result, 'accessibility/access/jurisdiction')],
+                        ['Data Access Request', 'Data use limitation', $this->getValueFromPath($result, 'accessibility/usage/dataUseLimitation')],
+                        ['Data Access Request', 'Data use requirements', $this->getValueFromPath($result, 'accessibility/usage/dataUseRequirements')],
+                        ['Data Access Request', 'Data Controller', $this->getValueFromPath($result, 'accessibility/access/dataController')],
+                        ['Data Access Request', 'Data Processor', $this->getValueFromPath($result, 'accessibility/access/dataProcessor')],
+                        ['Data Access Request', 'Investigations', $this->getValueFromPath($result, 'enrichmentAndLinkage/investigations')],
+
+                        ['Demographics', 'Demographic Frequency', $this->getValueFromPath($result, 'demographicFrequency')],
+                    ];
+
+                    foreach ($rows as $row) {
+                        fputcsv($handle, $row);
+                    }
+                }
+
+                // Close the output stream
+                fclose($handle);
+            }
+        );
+
+        $response->headers->set('Content-Type', 'text/csv');
+        $filename = $id . '_' . $result['summary']['title'];
+        if ($download_type === 'structural') {
+            $filename .= '_Structural_Metadata.csv';
+        } elseif ($download_type === 'observations') {
+            $filename .= '_Observations.csv';
+        } elseif ($download_type === 'metadata') {
+            $filename .= '_Metadata.csv';
+        } else {
+            $filename .= '.csv';
+        }
+        $response->headers->set('Content-Disposition', 'attachment;filename="' . $filename . '"');
+        $response->headers->set('Cache-Control', 'max-age=0');
+
+        return $response;
+    }
 
     /**
      * @OA\Get(
@@ -1280,5 +1500,21 @@ class DatasetController extends Controller
             $metadata = $tmpMetadata;
         }
         return $metadata;
+    }
+
+    public function getValueFromPath(array $item, string $path)
+    {
+        $keys = explode('/', $path);
+
+        $return = $item;
+        foreach ($keys as $key) {
+            if (isset($return[$key])) {
+                $return = $return[$key];
+            } else {
+                return null;
+            }
+        }
+
+        return $return;
     }
 }
