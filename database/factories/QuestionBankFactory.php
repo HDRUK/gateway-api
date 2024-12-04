@@ -18,7 +18,6 @@ class QuestionBankFactory extends Factory
     {
         return [
             'user_id' => 1,
-            'team_id' => null,
             'locked' => 0,
             'archived' => 0,
             'archived_date' => null,
