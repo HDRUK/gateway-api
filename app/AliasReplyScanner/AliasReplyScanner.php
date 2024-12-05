@@ -137,6 +137,8 @@ class AliasReplyScanner
             $usersToNotify[] = EMC::determineDARManagersFromTeamId($eqTh->team_id, $eqTh->id);
         }
 
+        \Log::info(json_encode($usersToNotify));
+
         if (empty($usersToNotify)) {
             CloudLogger::write([
                 'action_type' => 'NOTIFY',
@@ -159,6 +161,8 @@ class AliasReplyScanner
         $user = User::where([
             'id' => $enquiryThread->user_id,
         ])->first();
+
+        $usersToNotify[] = $user;
 
         $payload = [
             'thread' => [
@@ -184,6 +188,8 @@ class AliasReplyScanner
         $lines = preg_split('/\r\n|\r|\n/', $messageBody);
         $cleanedText = implode("\n", array_filter($lines));
         $body = trim(str_replace('P {margin-top:0;margin-bottom:0;}', '', str_replace(["\r\n", "\n"], "<br/>", $cleanedText)));
+
+        \Log::info('BODY: ' . $body);
         $this->sendEmail('dar.notifymessage', $payload, $usersToNotify, $enquiryThread->user_id, $body);
 
         unset(
@@ -228,6 +234,7 @@ class AliasReplyScanner
                     ];
 
                     $from = 'devreply+' . $threadDetail['thread']['unique_key'] . '@healthdatagateway.org';
+                    \Log::info('READY TO SEND EMAIL');
                     $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
                 }
             }
