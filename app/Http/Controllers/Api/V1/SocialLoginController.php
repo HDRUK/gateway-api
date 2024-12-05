@@ -241,7 +241,7 @@ class SocialLoginController extends Controller
             Auditor::log([
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
+                'description' => $e,
             ]);
 
             throw new Exception($e->getMessage());
