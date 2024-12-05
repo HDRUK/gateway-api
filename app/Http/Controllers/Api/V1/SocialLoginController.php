@@ -244,7 +244,7 @@ class SocialLoginController extends Controller
                 'description' => $e,
             ]);
 
-            throw new Exception($e->getMessage());
+            throw new Exception($e);
         }
     }
 
