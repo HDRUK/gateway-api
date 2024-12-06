@@ -1,7 +1,7 @@
 <?php
 
 
-if (! function_exists('convertArrayToStringWithKeyName')) {
+if (!function_exists('convertArrayToStringWithKeyName')) {
     function convertArrayToStringWithKeyName($array, $keyname, $separator = ',')
     {
         $temp = [];
@@ -14,7 +14,7 @@ if (! function_exists('convertArrayToStringWithKeyName')) {
     }
 }
 
-if (! function_exists('convertArrayToArrayWithKeyName')) {
+if (!function_exists('convertArrayToArrayWithKeyName')) {
     function convertArrayToArrayWithKeyName($array, $keyname)
     {
         $return = [];
