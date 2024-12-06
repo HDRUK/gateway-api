@@ -163,7 +163,6 @@ class AliasReplyScanner
         $usersToNotify[] = [['user' => $user]];
 
         if ($enquiryThread->is_dar_dialogue) {
-            $messageContent = json_decode($enquiryMessage->message_body);
             $payload = [
                 'thread' => [
                     'user_id' => $enquiryThread->user_id,
@@ -211,7 +210,6 @@ class AliasReplyScanner
         $lines = preg_split('/\r\n|\r|\n/', $messageBody);
         $cleanedText = implode("\n", array_filter($lines));
         $body = trim(str_replace('P {margin-top:0;margin-bottom:0;}', '', str_replace(["\r\n", "\n"], "<br/>", $cleanedText)));
-
         $this->sendEmail('dar.notifymessage', $payload, $usersToNotify, $enquiryThread->user_id, $body);
 
         unset(
