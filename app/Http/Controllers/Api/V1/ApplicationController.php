@@ -791,7 +791,7 @@ class ApplicationController extends Controller
     // send email
     public function sendEmail(int $appId, string $type)
     {
-        $app = Application::with(['team','user','notifications.userNotification'])->where('id', $appId)->first();
+        $app = Application::with(['team','user','notifications.userNotification'])->where('id', $appId)->withTrashed()->first();
         if (is_null($app)) {
             throw new Exception('Application not found!');
         }
