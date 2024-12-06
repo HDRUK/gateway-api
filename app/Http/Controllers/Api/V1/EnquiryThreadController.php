@@ -6,12 +6,10 @@ use Config;
 use Auditor;
 use Exception;
 
-use App\Models\EnquiryThreadHasDatasetVersion;
 use App\Models\Team;
 
 use App\Models\User;
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
@@ -391,29 +389,6 @@ class EnquiryThreadController extends Controller
                     'team_id' => $ds->team_id,
                 ];
             }
-        }
-
-        return $arr;
-    }
-
-    private function getEnquiryThreadDatasets(int $id): array
-    {
-        $arr = [];
-        $datasetVersions = EnquiryThreadHasDatasetVersion::where('enquiry_thread_id', $id)->get();
-        foreach ($datasetVersions as $d) {
-            $datasetVersion = DatasetVersion::where('id', $d->dataset_version_id)->select('dataset_id', 'metadata')->first();
-            $title = $datasetVersion['metadata']['metadata']['summary']['shortTitle'];
-            $datasetId = $datasetVersion['dataset_id'];
-            $dataset = Dataset::findOrFail($datasetId);
-            $datasetUrl = env('GATEWAY_URL') . '/dataset/' . $dataset->id . '?section=1';
-            $teamId = $dataset->team_id;
-            $arr[] = [
-                'dataset_id' => $datasetId,
-                'team_id' => $teamId,
-                'interest_type' => $d->interest_type,
-                'title' => $title,
-                'url' => $datasetUrl,
-            ];
         }
 
         return $arr;

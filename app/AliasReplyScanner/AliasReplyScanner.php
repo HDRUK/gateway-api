@@ -137,8 +137,6 @@ class AliasReplyScanner
             $usersToNotify[] = EMC::determineDARManagersFromTeamId($eqTh->team_id, $eqTh->id);
         }
 
-        \Log::info(json_encode($usersToNotify));
-
         if (empty($usersToNotify)) {
             CloudLogger::write([
                 'action_type' => 'NOTIFY',
@@ -162,34 +160,58 @@ class AliasReplyScanner
             'id' => $enquiryThread->user_id,
         ])->first();
 
-        $usersToNotify[] = $user;
+        $usersToNotify[] = [['user' => $user]];
 
-        $payload = [
-            'thread' => [
-                'user_id' => $enquiryThread->user_id,
-                'team_id' => $enquiryThread->team_id,
-                'project_title' => $enquiryThread->project_title,
-                'unique_key' => $uniqueKey, // Not random, but should be unique
-            ],
-            'message' => [
-                'from' => $enquiryMessage->from,
-                'message_body' => [
-                    '[[TEAM_NAME]]' => $team->name,
-                    '[[USER_FIRST_NAME]]' => $user->firstname,
-                    '[[USER_LAST_NAME]]' => $user->lastname,
-                    '[[USER_ORGANISATION]]' => $user->organisation,
-                    '[[PROJECT_TITLE]]' => $enquiryThread->project_title,
-                    '[[CURRENT_YEAR]]' => date('Y'),
+        if ($enquiryThread->is_dar_dialogue) {
+            $messageContent = json_decode($enquiryMessage->message_body);
+            $payload = [
+                'thread' => [
+                    'user_id' => $enquiryThread->user_id,
+                    'team_id' => $enquiryThread->team_id,
+                    'project_title' => $enquiryThread->project_title,
+                    'unique_key' => $uniqueKey, // Not random, but should be unique,
                 ],
-            ],
-        ];
+                'message' => [
+                    'from' => $enquiryMessage->from,
+                    'message_body' => [
+                        '[[TEAM_NAME]]' => $team->name,
+                        '[[USER_FIRST_NAME]]' => $user->firstname,
+                        '[[USER_LAST_NAME]]' => $user->lastname,
+                        '[[USER_ORGANISATION]]' => $user->organisation,
+                        '[[CURRENT_YEAR]]' => date('Y'),
+                        '[[PROJECT_TITLE]]' => $enquiryThread->project_title,
+                        '[[SENDER_NAME]]' => $enquiryMessage->from,
+                    ],
+                ],
+            ];
+        } else {
+            $payload = [
+                'thread' => [
+                    'user_id' => $enquiryThread->user_id,
+                    'team_id' => $enquiryThread->team_id,
+                    'project_title' => $enquiryThread->project_title,
+                    'unique_key' => $uniqueKey, // Not random, but should be unique
+                ],
+                'message' => [
+                    'from' => $enquiryMessage->from,
+                    'message_body' => [
+                        '[[TEAM_NAME]]' => $team->name,
+                        '[[USER_FIRST_NAME]]' => $user->firstname,
+                        '[[USER_LAST_NAME]]' => $user->lastname,
+                        '[[USER_ORGANISATION]]' => $user->organisation,
+                        '[[PROJECT_TITLE]]' => $enquiryThread->project_title,
+                        '[[CURRENT_YEAR]]' => date('Y'),
+                        '[[SENDER_NAME]]' => $enquiryMessage->from,
+                    ],
+                ],
+            ];
+        }
 
         $messageBody = $enquiryMessage->message_body;
         $lines = preg_split('/\r\n|\r|\n/', $messageBody);
         $cleanedText = implode("\n", array_filter($lines));
         $body = trim(str_replace('P {margin-top:0;margin-bottom:0;}', '', str_replace(["\r\n", "\n"], "<br/>", $cleanedText)));
 
-        \Log::info('BODY: ' . $body);
         $this->sendEmail('dar.notifymessage', $payload, $usersToNotify, $enquiryThread->user_id, $body);
 
         unset(
@@ -213,10 +235,13 @@ class AliasReplyScanner
 
         try {
             $template = EmailTemplate::where('identifier', $ident)->first();
-            $replacements = [
-                '[[CURRENT_YEAR]]' => $threadDetail['message']['message_body']['[[CURRENT_YEAR]]'],
-                '[[DAR_NOTIFY_MESSAGE]]' => $replyMessage,
-            ];
+            $replacements = array_merge(
+                [
+                    '[[CURRENT_YEAR]]' => $threadDetail['message']['message_body']['[[CURRENT_YEAR]]'],
+                    '[[MESSAGE_BODY]]' => $replyMessage,
+                ],
+                $threadDetail['message']['message_body']
+            );
 
             // TODO Add unique key to URL button. Future scope.
             foreach ($usersToNotify as $u) {
@@ -226,6 +251,7 @@ class AliasReplyScanner
 
                 // In case for multiple users to notify, loop again for actual details.
                 foreach ($u as $arr) {
+                    $replacements['[[RECIPIENT_NAME]]'] = $arr['user']['name'];
                     $to = [
                         'to' => [
                             'email' => $arr['user']['email'],
@@ -234,7 +260,6 @@ class AliasReplyScanner
                     ];
 
                     $from = 'devreply+' . $threadDetail['thread']['unique_key'] . '@healthdatagateway.org';
-                    \Log::info('READY TO SEND EMAIL');
                     $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
                 }
             }

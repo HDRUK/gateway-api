@@ -3475,7 +3475,7 @@ class EmailTemplateSeeder extends Seeder
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[RECIPIENT_NAME]],<br><br>
-                                    You have received a response to the dataset access enquiry [[PROJECT_TITLE]] from [[SENDER_NAME]], details of which can be found in the thread below. You can respond by using the reply button at the top right.<br><br>
+                                    You have received a response to the dataset access enquiry [[PROJECT_TITLE]], details of which can be found in the thread below. You can respond by using the reply button at the top right.<br><br>
                                     Submitted information
                                     <div>[[MESSAGE_BODY]]</div>
                                 </mj-text>
