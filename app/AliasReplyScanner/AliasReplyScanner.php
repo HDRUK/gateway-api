@@ -162,49 +162,26 @@ class AliasReplyScanner
 
         $usersToNotify[] = [['user' => $user]];
 
-        if ($enquiryThread->is_dar_dialogue) {
-            $payload = [
-                'thread' => [
-                    'user_id' => $enquiryThread->user_id,
-                    'team_id' => $enquiryThread->team_id,
-                    'project_title' => $enquiryThread->project_title,
-                    'unique_key' => $uniqueKey, // Not random, but should be unique,
+        $payload = [
+            'thread' => [
+                'user_id' => $enquiryThread->user_id,
+                'team_id' => $enquiryThread->team_id,
+                'project_title' => $enquiryThread->project_title,
+                'unique_key' => $uniqueKey, // Not random, but should be unique
+            ],
+            'message' => [
+                'from' => $enquiryMessage->from,
+                'message_body' => [
+                    '[[TEAM_NAME]]' => $team->name,
+                    '[[USER_FIRST_NAME]]' => $user->firstname,
+                    '[[USER_LAST_NAME]]' => $user->lastname,
+                    '[[USER_ORGANISATION]]' => $user->organisation,
+                    '[[PROJECT_TITLE]]' => $enquiryThread->project_title,
+                    '[[CURRENT_YEAR]]' => date('Y'),
+                    '[[SENDER_NAME]]' => $enquiryMessage->from,
                 ],
-                'message' => [
-                    'from' => $enquiryMessage->from,
-                    'message_body' => [
-                        '[[TEAM_NAME]]' => $team->name,
-                        '[[USER_FIRST_NAME]]' => $user->firstname,
-                        '[[USER_LAST_NAME]]' => $user->lastname,
-                        '[[USER_ORGANISATION]]' => $user->organisation,
-                        '[[CURRENT_YEAR]]' => date('Y'),
-                        '[[PROJECT_TITLE]]' => $enquiryThread->project_title,
-                        '[[SENDER_NAME]]' => $enquiryMessage->from,
-                    ],
-                ],
-            ];
-        } else {
-            $payload = [
-                'thread' => [
-                    'user_id' => $enquiryThread->user_id,
-                    'team_id' => $enquiryThread->team_id,
-                    'project_title' => $enquiryThread->project_title,
-                    'unique_key' => $uniqueKey, // Not random, but should be unique
-                ],
-                'message' => [
-                    'from' => $enquiryMessage->from,
-                    'message_body' => [
-                        '[[TEAM_NAME]]' => $team->name,
-                        '[[USER_FIRST_NAME]]' => $user->firstname,
-                        '[[USER_LAST_NAME]]' => $user->lastname,
-                        '[[USER_ORGANISATION]]' => $user->organisation,
-                        '[[PROJECT_TITLE]]' => $enquiryThread->project_title,
-                        '[[CURRENT_YEAR]]' => date('Y'),
-                        '[[SENDER_NAME]]' => $enquiryMessage->from,
-                    ],
-                ],
-            ];
-        }
+            ],
+        ];
 
         $messageBody = $enquiryMessage->message_body;
         $lines = preg_split('/\r\n|\r|\n/', $messageBody);
