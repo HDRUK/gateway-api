@@ -173,7 +173,26 @@ return new class () extends Migration {
     public function down(): void
     {
         DB::table('email_templates')
-            ->where(['identifier' => 'dar.firstmessage', 'identifier' => 'dar.notifymessage'])
+            ->where(['identifier' => 'dar.firstmessage'])
             ->delete();
+
+        DB::table('email_templates')
+            ->where('identifier', 'dar.notifymessage')
+            ->update([
+                'subject' => 'Reply notification message',
+                'body' => '
+                    <mjml>
+                        <mj-body>
+                            <mj-section>
+                                <mj-column>
+                                    <mj-text>
+                                        [[DAR_NOTIFY_MESSAGE]]
+                                    </mj-text>
+                                </mj-column>
+                            </mj-section>
+                        </mj-body>
+                    </mjml>
+                '
+            ]);
     }
 };
