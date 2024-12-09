@@ -14,13 +14,14 @@ return new class () extends Migration {
             $table->boolean('is_child')->default(false);
         });
         Schema::create('question_bank_version_has_child_version', function (Blueprint $table) {
-            $table->id();
             $table->bigInteger('parent_qbv_id')->unsigned();
             $table->bigInteger('child_qbv_id')->unsigned();
             $table->string('condition')->nullable();
-            $table->foreign('parent_qbv_id')->references('id')->on('question_bank_versions');
-            $table->foreign('child_qbv_id')->references('id')->on('question_bank_versions');
+            $table->foreign('parent_qbv_id')->references('id')->on('question_bank_versions')->onDelete('cascade');
+            $table->foreign('child_qbv_id')->references('id')->on('question_bank_versions')->onDelete('cascade');
             $table->index('parent_qbv_id');
+            $table->primary(['parent_qbv_id', 'child_qbv_id']);
+
         });
 
     }
