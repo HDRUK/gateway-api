@@ -59,7 +59,7 @@ class QuestionBankSeeder extends Seeder
                     ]);
 
                     QuestionBankVersion::create([
-                        'question_parent_id' => $questionModel->id,
+                        'question_id' => $questionModel->id,
                         'version' => 1,
                         'required' => $questionModel->force_required,
                         'default' => 0,

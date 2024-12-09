@@ -242,7 +242,7 @@ class QuestionBankController extends Controller
                 'question_json' => json_encode($questionJson),
                 'required' => $input['required'],
                 'default' => $input['default'],
-                'question_parent_id' => $question->id,
+                'question_id' => $question->id,
                 'version' => 1,
             ]);
 
@@ -389,7 +389,7 @@ class QuestionBankController extends Controller
                 'question_json' => json_encode($questionJson),
                 'required' => $input['required'],
                 'default' => $input['default'],
-                'question_parent_id' => $question->id,
+                'question_id' => $question->id,
                 'version' => $latestVersion->version + 1,
             ]);
 
@@ -549,7 +549,7 @@ class QuestionBankController extends Controller
                     'question_json' => json_encode($questionJson),
                     'required' => isset($input['required']) ? $input['required'] : $latestVersion->required,
                     'default' => isset($input['default']) ? $input['default'] : $latestVersion->default,
-                    'question_parent_id' => $id,
+                    'question_id' => $id,
                     'version' => $latestVersion->version + 1,
                 ]);
             }
@@ -649,7 +649,7 @@ class QuestionBankController extends Controller
             //            $question->deleted_at = Carbon::now();
             $question->delete();
 
-            QuestionBankVersion::where('question_parent_id', $id)->delete();
+            QuestionBankVersion::where('question_id', $id)->delete();
             QuestionHasTeam::where('qb_question_id', $id)->delete();
 
             Auditor::log([

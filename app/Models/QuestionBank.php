@@ -56,12 +56,12 @@ class QuestionBank extends Model
      */
     public function versions(): HasMany
     {
-        return $this->hasMany(QuestionBankVersion::class, 'question_parent_id');
+        return $this->hasMany(QuestionBankVersion::class, 'question_id');
     }
 
     public function latestVersion(): HasOne
     {
-        return $this->hasOne(QuestionBankVersion::class, 'question_parent_id')
+        return $this->hasOne(QuestionBankVersion::class, 'question_id')
             ->orderBy('version', 'desc');
     }
 

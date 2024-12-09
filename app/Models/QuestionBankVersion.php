@@ -28,7 +28,7 @@ class QuestionBankVersion extends Model
     public $timestamps = true;
 
     protected $fillable = [
-        'question_parent_id',
+        'question_id',
         'version',
         'default',
         'required',
@@ -48,7 +48,7 @@ class QuestionBankVersion extends Model
      */
     public function question(): belongsTo
     {
-        return $this->belongsTo(QuestionBank::class, 'question_parent_id');
+        return $this->belongsTo(QuestionBank::class, 'question_id');
     }
 
 }
