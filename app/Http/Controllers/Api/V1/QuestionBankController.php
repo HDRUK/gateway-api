@@ -63,7 +63,9 @@ class QuestionBankController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $questions = QuestionBank::paginate(
+            $questions = QuestionBank::with(
+                ['latestVersion', 'versions', 'versions.childVersions']
+            )->paginate(
                 Config::get('constants.per_page'),
                 ['*'],
                 'page'
@@ -276,52 +278,54 @@ class QuestionBankController extends Controller
                 // Create all children questions and question versions as required.
                 // All must by design have the same version number as the parent - parents and children move versions in lockstep
                 if (isset($input['children'])) {
-                    foreach ($input['children'] as $childCondition => $child) {
-                        $childQuestion = QuestionBank::create([
-                            'section_id' => $input['section_id'],
-                            'user_id' => $input['user_id'] ?? $jwtUser['id'],
-                            'force_required' => $child['force_required'],
-                            'allow_guidance_override' => $child['allow_guidance_override'],
-                            'locked' => $input['locked'] ?? false,
-                            'archived' => $input['archived'] ?? false,
-                            'is_child' => true,
-                        ]);
+                    foreach ($input['children'] as $childListCondition => $childList) {
+                        foreach ($childList as $key => $child) {
+                            $childQuestion = QuestionBank::create([
+                                'section_id' => $input['section_id'],
+                                'user_id' => $input['user_id'] ?? $jwtUser['id'],
+                                'force_required' => $child['force_required'],
+                                'allow_guidance_override' => $child['allow_guidance_override'],
+                                'locked' => $input['locked'] ?? false,
+                                'archived' => $input['archived'] ?? false,
+                                'is_child' => true,
+                            ]);
 
-                        $questionJson = [
-                            'field' => $child['field'],
-                            'title' => $child['title'],
-                            'guidance' => $child['guidance'],
-                            'required' => $child['required'],
-                        ];
+                            $questionJson = [
+                                'field' => $child['field'],
+                                'title' => $child['title'],
+                                'guidance' => $child['guidance'],
+                                'required' => $child['required'],
+                            ];
 
-                        $childQuestionVersion = QuestionBankVersion::create([
-                            'question_json' => json_encode($questionJson),
-                            'required' => $child['required'],
-                            'default' => $child['default'],
-                            'question_id' => $childQuestion->id,
-                            'version' => 1,
-                        ]);
+                            $childQuestionVersion = QuestionBankVersion::create([
+                                'question_json' => json_encode($questionJson),
+                                'required' => $child['required'],
+                                'default' => $child['default'],
+                                'question_id' => $childQuestion->id,
+                                'version' => 1,
+                            ]);
 
-                        $questionHasChild = QuestionBankVersionHasChildVersion::create([
-                            'parent_qbv_id' => $questionVersion->id,
-                            'child_qbv_id' => $childQuestionVersion->id,
-                            'condition' => $childCondition,
-                        ]);
+                            $questionHasChild = QuestionBankVersionHasChildVersion::create([
+                                'parent_qbv_id' => $questionVersion->id,
+                                'child_qbv_id' => $childQuestionVersion->id,
+                                'condition' => $childListCondition,
+                            ]);
 
-                        if (isset($input['team_id'])) {
-                            foreach ($input['team_id'] as $t) {
-                                QuestionHasTeam::create([
-                                    'qb_question_id' => $childQuestion->id,
-                                    'team_id' => $t,
-                                ]);
-                            }
-                        } else {
-                            $allTeams = Team::all()->select('id')->pluck('id');
-                            foreach ($allTeams as $t) {
-                                QuestionHasTeam::create([
-                                    'qb_question_id' => $childQuestion->id,
-                                    'team_id' => $t,
-                                ]);
+                            if (isset($input['team_id'])) {
+                                foreach ($input['team_id'] as $t) {
+                                    QuestionHasTeam::create([
+                                        'qb_question_id' => $childQuestion->id,
+                                        'team_id' => $t,
+                                    ]);
+                                }
+                            } else {
+                                $allTeams = Team::all()->select('id')->pluck('id');
+                                foreach ($allTeams as $t) {
+                                    QuestionHasTeam::create([
+                                        'qb_question_id' => $childQuestion->id,
+                                        'team_id' => $t,
+                                    ]);
+                                }
                             }
                         }
                     }
@@ -733,7 +737,7 @@ class QuestionBankController extends Controller
                     // Delete child version's question's versions
                     QuestionBankVersion::where('id', $childVersion->id)->delete();
                     // Delete child version's question
-                    QuestionBank::where('id', $childVersionQuestion)->delete();
+                    QuestionBank::where('id', $childVersion->question_id)->delete();
                 }
                 // delete parent-child records from relationship table
                 QuestionBankVersionHasChildVersion::where('parent_qbv_id', $version->id)->delete();
