@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class QuestionBankVersion extends Model
 {
@@ -51,4 +52,23 @@ class QuestionBankVersion extends Model
         return $this->belongsTo(QuestionBank::class, 'question_id');
     }
 
+    public function childVersions(): belongsToMany
+    {
+        return $this->belongsToMany(
+            QuestionBankVersion::class,
+            'question_bank_version_has_child_version',
+            'parent_qbv_id',
+            'child_qbv_id'
+        );
+    }
+
+    public function parentVersion(): belongsTo
+    {
+        return $this->belongsTo(
+            QuestionBankVersion::class,
+            'question_bank_version_has_child_version',
+            'child_qbv_id',
+            'parent_qbv_id'
+        );
+    }
 }

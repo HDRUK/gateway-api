@@ -58,6 +58,7 @@ class QuestionBankTest extends TestCase
                         'archived_date',
                         'force_required',
                         'allow_guidance_override',
+                        'is_child',
                     ],
                 ],
                 'first_page_url',
@@ -104,7 +105,8 @@ class QuestionBankTest extends TestCase
                 'guidance' => 'Something helpful',
                 'required' => 0,
                 'default' => 0,
-                'version' => 1
+                'version' => 1,
+                'is_child' => 0,
             ],
             $this->header
         );
@@ -131,7 +133,8 @@ class QuestionBankTest extends TestCase
                     'archived',
                     'archived_date',
                     'force_required',
-                    'allow_guidance_override'
+                    'allow_guidance_override',
+                    'is_child',
                 ],
             ]);
     }
@@ -177,7 +180,8 @@ class QuestionBankTest extends TestCase
                 'guidance' => 'Something helpful',
                 'required' => 0,
                 'default' => 0,
-                'version' => 1
+                'version' => 1,
+                'is_child' => 0,
             ],
             $this->header
         );
@@ -255,7 +259,8 @@ class QuestionBankTest extends TestCase
                 'guidance' => 'Something helpful',
                 'required' => 0,
                 'default' => 0,
-                'version' => 1
+                'version' => 1,
+                'is_child' => 0,
             ],
             $this->header
         );
@@ -284,7 +289,8 @@ class QuestionBankTest extends TestCase
                 'guidance' => 'Something helpful',
                 'required' => 0,
                 'default' => 0,
-                'version' => 1
+                'version' => 1,
+                'is_child' => 0,
             ],
             $this->header
         );
@@ -336,7 +342,8 @@ class QuestionBankTest extends TestCase
                 'guidance' => 'Something helpful',
                 'required' => 0,
                 'default' => 0,
-                'version' => 1
+                'version' => 1,
+                'is_child' => 0,
             ],
             $this->header
         );
@@ -433,7 +440,8 @@ class QuestionBankTest extends TestCase
                 'guidance' => 'Something helpful',
                 'required' => 0,
                 'default' => 0,
-                'version' => 1
+                'version' => 1,
+                'is_child' => 0,
             ],
             $this->header
         );
