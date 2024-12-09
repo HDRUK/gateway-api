@@ -11,7 +11,7 @@ return new class () extends Migration {
     public function up()
     {
         Schema::create('omop_matcher_cache', function (Blueprint $table) {
-            $table->increments('id'); // AUTO_INCREMENT PRIMARY KEY
+            $table->id();
             $table->string('search_term', 255);
             $table->string('vocabulary_id', 255)->nullable();
             $table->enum('concept_ancestor', ['y', 'n']);
