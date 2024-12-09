@@ -4,8 +4,12 @@ namespace Tests\Feature;
 
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
+use App\Models\Team;
 use App\Models\QuestionBank;
+use App\Models\QuestionBankVersion;
+use App\Models\QuestionHasTeam;
 use Tests\TestCase;
+use Database\Seeders\TeamSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\QuestionBankSeeder;
 
@@ -28,6 +32,7 @@ class QuestionBankTest extends TestCase
         $this->commonSetUp();
 
         $this->seed([
+            TeamSeeder::class,
             MinimalUserSeeder::class,
             QuestionBankSeeder::class,
         ]);
@@ -59,6 +64,10 @@ class QuestionBankTest extends TestCase
                         'force_required',
                         'allow_guidance_override',
                         'is_child',
+                        'latest_version',
+                        'versions' => [
+                            0 => ['child_versions']
+                        ],
                     ],
                 ],
                 'first_page_url',
@@ -135,6 +144,11 @@ class QuestionBankTest extends TestCase
                     'force_required',
                     'allow_guidance_override',
                     'is_child',
+                    'latest_version',
+                        'latest_version',
+                        'versions' => [
+                            0 => ['child_versions']
+                        ],
                 ],
             ]);
     }
@@ -196,6 +210,111 @@ class QuestionBankTest extends TestCase
             $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
+
+        $this->assertEquals(QuestionHasTeam::all()->count(), Team::all()->count());
+
+        // now test with a nested set of questions
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                "section_id" => 1,
+                "force_required" => false,
+                "allow_guidance_override" => false,
+                "locked" => false,
+                "archived" => false,
+                "is_child" => false,
+                "field" => [
+                    "options" => [
+                        "yes",
+                        "no"
+                    ],
+                    "component" => "RadioGroup",
+                    "validations" => []
+                ],
+                "title" => "Is this a test?",
+                "guidance" => "You tell me",
+                "required" => false,
+                "default" => 0,
+                "children" => [
+                    "yes" => [
+                        [
+                            "force_required" => false,
+                            "allow_guidance_override" => false,
+                            "field" => [
+                                "options" => [
+                                    "yes",
+                                    "no"
+                                ],
+                                "component" => "RadioGroup",
+                                "validations" => []
+                            ],
+                            "title" => "Are you sure it is?",
+                            "guidance" => "Second chance to confirm",
+                            "required" => false,
+                            "default" => 1
+                        ],
+                        [
+                            "force_required" => false,
+                            "allow_guidance_override" => false,
+                            "field" => [
+                                "component" => "TextField",
+                                "validations" => []
+                            ],
+                            "title" => "And why do you say that?",
+                            "guidance" => "Please explain",
+                            "required" => false,
+                            "default" => 1
+                        ]
+                    ],
+                    "no" => [
+                        [
+                            "force_required" => false,
+                            "allow_guidance_override" => false,
+                            "field" => [
+                                "options" => [
+                                    "yes",
+                                    "no"
+                                ],
+                                "component" => "RadioGroup",
+                                "validations" => []
+                            ],
+                            "title" => "Are you sure it isn't?",
+                            "guidance" => "Second chance to deny",
+                            "required" => false,
+                            "default" => 0
+                        ],
+                        [
+                            "force_required" => false,
+                            "allow_guidance_override" => false,
+                            "field" => [
+                                "component" => "TextField",
+                                "validations" => []
+                            ],
+                            "title" => "And why do you say that?",
+                            "guidance" => "Please explain",
+                            "required" => false,
+                            "default" => 1
+                        ]
+                    ]
+                ]
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $this->assertEquals(
+            $content['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+
+        $this->assertEquals(QuestionHasTeam::all()->count(), 6 * Team::all()->count());
+
     }
 
     /**
@@ -228,6 +347,40 @@ class QuestionBankTest extends TestCase
                 'message',
                 'errors',
             ]);
+
+        // Attempt (and fail) to create a child question directly
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'field' => [
+                    'options' => [],
+                    'component' => 'TextArea',
+                    'validations' => [
+                        [
+                            'min' => 1,
+                            'message' => 'Please enter a value'
+                        ]
+                    ]
+                ],
+                'title' => 'Test question',
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 1
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
     }
 
     /**
@@ -237,6 +390,9 @@ class QuestionBankTest extends TestCase
      */
     public function test_the_application_can_update_a_question()
     {
+        $countQuestionsBefore = QuestionBank::all()->count();
+        $countQuestionVersionsBefore = QuestionBankVersion::all()->count();
+
         $response = $this->json(
             'POST',
             'api/v1/questions',
@@ -265,6 +421,10 @@ class QuestionBankTest extends TestCase
             $this->header
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        $this->assertEquals($countQuestionsBefore + 1, QuestionBank::all()->count());
+        $this->assertEquals($countQuestionVersionsBefore + 1, QuestionBankVersion::all()->count());
+
         $content = $response->decodeResponseJson();
 
         $response = $this->json(
@@ -289,7 +449,6 @@ class QuestionBankTest extends TestCase
                 'guidance' => 'Something helpful',
                 'required' => 0,
                 'default' => 0,
-                'version' => 1,
                 'is_child' => 0,
             ],
             $this->header
@@ -311,6 +470,253 @@ class QuestionBankTest extends TestCase
         // Test latest version is 2 and title is updated
         $this->assertEquals($version['version'], 2);
         $this->assertEquals(json_decode($version['question_json'], true)['title'], 'Updated test question');
+
+        $this->assertEquals($countQuestionsBefore + 1, QuestionBank::all()->count());
+        $this->assertEquals($countQuestionVersionsBefore + 2, QuestionBankVersion::all()->count());
+
+        // now test with a nested set of questions - this will add 5 Questions and 5 QBVersions
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                "section_id" => 1,
+                "force_required" => false,
+                "allow_guidance_override" => false,
+                "locked" => false,
+                "archived" => false,
+                "is_child" => false,
+                "field" => [
+                    "options" => [
+                        "yes",
+                        "no"
+                    ],
+                    "component" => "RadioGroup",
+                    "validations" => []
+                ],
+                "title" => "Is this a test?",
+                "guidance" => "You tell me",
+                "required" => false,
+                "default" => 0,
+                "children" => [
+                    "yes" => [
+                        [
+                            "force_required" => false,
+                            "allow_guidance_override" => false,
+                            "field" => [
+                                "options" => [
+                                    "yes",
+                                    "no"
+                                ],
+                                "component" => "RadioGroup",
+                                "validations" => []
+                            ],
+                            "title" => "Are you sure it is?",
+                            "guidance" => "Second chance to confirm",
+                            "required" => false,
+                            "default" => 1
+                        ],
+                        [
+                            "force_required" => false,
+                            "allow_guidance_override" => false,
+                            "field" => [
+                                "component" => "TextField",
+                                "validations" => []
+                            ],
+                            "title" => "And why do you say that?",
+                            "guidance" => "Please explain",
+                            "required" => false,
+                            "default" => 1
+                        ]
+                    ],
+                    "no" => [
+                        [
+                            "force_required" => false,
+                            "allow_guidance_override" => false,
+                            "field" => [
+                                "options" => [
+                                    "yes",
+                                    "no"
+                                ],
+                                "component" => "RadioGroup",
+                                "validations" => []
+                            ],
+                            "title" => "Are you sure it isn't?",
+                            "guidance" => "Second chance to deny",
+                            "required" => false,
+                            "default" => 0
+                        ],
+                        [
+                            "force_required" => false,
+                            "allow_guidance_override" => false,
+                            "field" => [
+                                "component" => "TextField",
+                                "validations" => []
+                            ],
+                            "title" => "And why do you say that?",
+                            "guidance" => "Please explain",
+                            "required" => false,
+                            "default" => 1
+                        ]
+                    ]
+                ]
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $this->assertEquals(
+            $content['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+
+        $this->assertEquals($countQuestionsBefore + 6, QuestionBank::all()->count());
+        $this->assertEquals($countQuestionVersionsBefore + 7, QuestionBankVersion::all()->count());
+
+        // this will add 4 Questions (because the main parent is updated, the others are made new)
+        // and 5 QBVersions (all have their versions bumped)
+        $response = $this->json(
+            'PUT',
+            'api/v1/questions/' . $content['data'],
+            [
+                "section_id" => 1,
+                "force_required" => false,
+                "allow_guidance_override" => false,
+                "locked" => false,
+                "archived" => false,
+                "is_child" => false,
+                "field" => [
+                    "options" => [
+                        "yes",
+                        "no"
+                    ],
+                    "component" => "RadioGroup",
+                    "validations" => []
+                ],
+                "title" => "Is this a test?",
+                "guidance" => "You tell me",
+                "required" => false,
+                "default" => 0,
+                "children" => [
+                    "yes" => [
+                        [
+                            "force_required" => false,
+                            "allow_guidance_override" => false,
+                            "field" => [
+                                "options" => [
+                                    "yes",
+                                    "no"
+                                ],
+                                "component" => "RadioGroup",
+                                "validations" => []
+                            ],
+                            "title" => "Are you sure it is? (updated)",
+                            "guidance" => "Second chance to confirm",
+                            "required" => false,
+                            "default" => 1
+                        ]
+                    ],
+                    "no" => [
+                        [
+                            "force_required" => false,
+                            "allow_guidance_override" => false,
+                            "field" => [
+                                "options" => [
+                                    "yes",
+                                    "no"
+                                ],
+                                "component" => "RadioGroup",
+                                "validations" => []
+                            ],
+                            "title" => "Are you sure it isn't? (updated)",
+                            "guidance" => "Second chance to deny",
+                            "required" => false,
+                            "default" => 0
+                        ],
+                        [
+                            "force_required" => false,
+                            "allow_guidance_override" => false,
+                            "field" => [
+                                "component" => "TextField",
+                                "validations" => []
+                            ],
+                            "title" => "And why do you say that? (updated)",
+                            "guidance" => "Please explain",
+                            "required" => false,
+                            "default" => 1
+                        ],
+                        [
+                            "force_required" => false,
+                            "allow_guidance_override" => false,
+                            "field" => [
+                                "component" => "TextField",
+                                "validations" => []
+                            ],
+                            "title" => "Is that all? (updated)",
+                            "guidance" => "Please explain",
+                            "required" => false,
+                            "default" => 1
+                        ]
+                    ]
+                ]
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $this->assertEquals(
+            $content['message'],
+            Config::get('statuscodes.STATUS_OK.message')
+        );
+
+        $this->assertEquals($countQuestionsBefore + 10, QuestionBank::all()->count());
+        $this->assertEquals($countQuestionVersionsBefore + 12, QuestionBankVersion::all()->count());
+
+        // test that updating a child question fails
+        $childQuestionId = QuestionBank::where('is_child', true)->first()->id;
+
+        $response = $this->json(
+            'PUT',
+            'api/v1/questions/' . $childQuestionId,
+            [
+                "force_required" => false,
+                "allow_guidance_override" => false,
+                "field" => [
+                    "options" => [
+                        "yes",
+                        "no"
+                    ],
+                    "component" => "RadioGroup",
+                    "validations" => []
+                ],
+                "section_id" => 1,
+                "title" => "Testing that updating a child fails",
+                "guidance" => "This should fail",
+                "required" => false,
+                "default" => 1
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+        $content = $response->decodeResponseJson();
+
+        $this->assertEquals(
+            $content['message'],
+            'Cannot update a child question directly'
+        );
     }
 
     /**
@@ -376,8 +782,9 @@ class QuestionBankTest extends TestCase
             ->first()
             ->latestVersion()
             ->first();
-        // Test latest version is 2, title has been edited, and required has not been edited
-        $this->assertEquals($version['version'], 2);
+        // Test latest version is 1 (edit does not increase version, only update does),
+        // title has been edited, and required has not been edited
+        $this->assertEquals($version['version'], 1);
         $questionJson = json_decode($version['question_json'], true);
         $this->assertEquals($questionJson['title'], 'Updated test question');
         $this->assertEquals($questionJson['required'], false);
@@ -406,8 +813,8 @@ class QuestionBankTest extends TestCase
             ->first()
             ->latestVersion()
             ->first();
-        // Test latest version is still 2
-        $this->assertEquals($version['version'], 2);
+        // Test latest version is still 1
+        $this->assertEquals($version['version'], 1);
     }
 
     /**
@@ -417,7 +824,6 @@ class QuestionBankTest extends TestCase
      */
     public function test_it_can_delete_a_question()
     {
-
         $response = $this->json(
             'POST',
             'api/v1/questions',
@@ -448,6 +854,8 @@ class QuestionBankTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
         $content = $response->decodeResponseJson();
 
+        $this->assertEquals(QuestionHasTeam::all()->count(), Team::all()->count());
+
         $response = $this->json(
             'DELETE',
             'api/v1/questions/' . $content['data'],
@@ -459,5 +867,8 @@ class QuestionBankTest extends TestCase
             ->assertJsonStructure([
                 'message',
             ]);
+
+        $this->assertEquals(QuestionHasTeam::all()->count(), 0);
+
     }
 }

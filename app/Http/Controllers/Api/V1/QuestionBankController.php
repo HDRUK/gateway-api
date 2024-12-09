@@ -227,6 +227,12 @@ class QuestionBankController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+            if ($input['is_child'] ?? false) {
+                return response()->json([
+                    'message' => 'Cannot create a child question directly'
+                ], 400);
+            }
+
             $question = QuestionBank::create([
                 'section_id' => $input['section_id'],
                 'user_id' => $input['user_id'] ?? $jwtUser['id'],
@@ -234,7 +240,7 @@ class QuestionBankController extends Controller
                 'allow_guidance_override' => $input['allow_guidance_override'],
                 'locked' => $input['locked'] ?? false,
                 'archived' => $input['archived'] ?? false,
-                'is_child' => $input['is_child'] ?? false,
+                'is_child' => false,
             ]);
 
             $questionJson = [
@@ -435,10 +441,14 @@ class QuestionBankController extends Controller
 
             $question = QuestionBank::findOrFail($id);
             if ($question->is_child) {
-                throw new Exception('Cannot update a child question directly');
+                return response()->json([
+                    'message' => 'Cannot update a child question directly'
+                ], 400);
             }
             if ($input['is_child'] ?? false) {
-                throw new Exception('Cannot update a question to become a child question');
+                return response()->json([
+                    'message' => 'Cannot update a question to become a child question'
+                ], 400);
             }
 
             $question->update([
@@ -650,7 +660,9 @@ class QuestionBankController extends Controller
             $question = QuestionBank::findOrFail($id);
 
             if ($input['is_child'] ?? false) {
-                throw new Exception("Cannot edit a question's 'is_child' field");
+                return response()->json([
+                    'message' => "Cannot edit a question's 'is_child' field"
+                ], 400);
             }
 
             $arrayKeys = [
@@ -683,9 +695,9 @@ class QuestionBankController extends Controller
                     'guidance' => $input['guidance'] ?? $latestJson['guidance'],
                     'required' => $input['required'] ?? $latestJson['required'],
                 ];
+                $questionVersion = QuestionBankVersion::where('id', $latestVersion->id)->first();
 
-                $questionVersion = QuestionBankVersion::update([
-                    'id' => $latestVersion->id,
+                $questionVersion = $questionVersion->update([
                     'question_json' => json_encode($questionJson),
                     'required' => $input['required'] ?? $latestVersion->required,
                     'default' => $input['default'] ?? $latestVersion->default,
@@ -787,7 +799,9 @@ class QuestionBankController extends Controller
 
             $question = QuestionBank::findOrFail($id);
             if ($question->is_child) {
-                throw new Exception('Cannot delete a child question directly');
+                return response()->json([
+                    'message' => 'Cannot delete a child question directly'
+                ], 400);
             }
 
             // For each version of this question, check its children.

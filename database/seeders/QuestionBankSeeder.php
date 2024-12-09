@@ -53,7 +53,6 @@ class QuestionBankSeeder extends Seeder
                             'user_id' => 1,
                             'locked' => 0,
                             'archived' => 0,
-                            'team_id' => 1,
                             'archived_date' => null,
                             'force_required' => $question['required'],
                             'allow_guidance_override' => 1,
