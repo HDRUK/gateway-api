@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use CloudLogger;
 use Config;
 use App\Models\Role;
 use App\Models\User;
@@ -45,7 +46,7 @@ class SyncHubspotContacts extends Command
         $hubspotService = new Hubspot();
 
         // enabled users
-        $users = User::where(['is_admin' => 0])->get();
+        $users = User::where('is_admin', 0)->where('id', '>', 2512)->get();
 
         foreach ($users as $user) {
             $sector = Sector::where([
@@ -61,6 +62,12 @@ class SyncHubspotContacts extends Command
             $email = trim(strtolower($email));
 
             if (!$email) {
+                CloudLogger::write([
+                    'action_type' => 'NOTIFY',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'error :: email is null',
+                    'user' => $user,
+                ]);
                 continue;
             }
 
@@ -83,7 +90,6 @@ class SyncHubspotContacts extends Command
                 'gateway_roles' => 'User' . ($rolesFullNamesByUserId ? ';' . implode(';', $rolesFullNamesByUserId) : ''),
                 'cohort_registered_user' => $cohortRequest ? 'Yes' : 'No',
             ];
-            var_dump($hubspot);
 
             // update contact preferences
             if ($user->hubspot_id) {
@@ -97,7 +103,20 @@ class SyncHubspotContacts extends Command
 
                 if (!$hubspotId) {
                     $createContact = $hubspotService->createContact($hubspot);
-                    var_dump($createContact);
+
+                    if (array_key_exists('status', $createContact) && $createContact['status'] === 'error') {
+                        $this->error('User :: ' . json_encode($hubspot));
+                        $this->error('Response :: ' . json_encode($createContact));
+                        CloudLogger::write([
+                            'action_type' => 'NOTIFY',
+                            'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                            'description' => 'error',
+                            'user' => $hubspot,
+                            'hubspot_error' => $createContact,
+                        ]);
+                        continue;
+                    }
+
                     $hubspotId = $createContact['vid'];
                 }
 
