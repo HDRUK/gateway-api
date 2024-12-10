@@ -450,6 +450,7 @@ class QuestionBankController extends Controller
                     'message' => 'Cannot update a question to become a child question'
                 ], 400);
             }
+            // TODO: handle locking
 
             $question->update([
                 'section_id' => $input['section_id'],
@@ -665,6 +666,8 @@ class QuestionBankController extends Controller
                 ], 400);
             }
 
+            // TODO: handle locking
+
             $arrayKeys = [
                 'section_id',
                 'user_id',
@@ -803,6 +806,8 @@ class QuestionBankController extends Controller
                     'message' => 'Cannot delete a child question directly'
                 ], 400);
             }
+
+            // TODO: handle locking?
 
             // For each version of this question, check its children.
             // - Delete all versions of all child question versions and their associated questions,
