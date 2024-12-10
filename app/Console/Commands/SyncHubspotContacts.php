@@ -68,6 +68,7 @@ class SyncHubspotContacts extends Command
                     'description' => 'error :: email is null',
                     'user' => $user,
                 ]);
+                $this->error('No email :: ' . json_encode($user));
                 continue;
             }
 
