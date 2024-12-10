@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use CloudLogger;
 use Config;
 use App\Models\Role;
 use App\Models\User;
@@ -60,6 +61,17 @@ class SyncHubspotContacts extends Command
             $email = ($user->provider === 'open-athens' || $user->preferred_email === 'secondary') ? $user->secondary_email : $user->email;
             $email = trim(strtolower($email));
 
+            if (!$email) {
+                CloudLogger::write([
+                    'action_type' => 'NOTIFY',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'error :: email is null',
+                    'user' => $user,
+                ]);
+                $this->error('No email :: ' . json_encode($user));
+                continue;
+            }
+
             $cohortRequest = CohortRequest::where([
                 'user_id' => $user->id,
                 'request_status' => 'APPROVED',
@@ -92,6 +104,20 @@ class SyncHubspotContacts extends Command
 
                 if (!$hubspotId) {
                     $createContact = $hubspotService->createContact($hubspot);
+
+                    if (array_key_exists('status', $createContact) && $createContact['status'] === 'error') {
+                        $this->error('User :: ' . json_encode($hubspot));
+                        $this->error('Response :: ' . json_encode($createContact));
+                        CloudLogger::write([
+                            'action_type' => 'NOTIFY',
+                            'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                            'description' => 'error',
+                            'user' => $hubspot,
+                            'hubspot_error' => $createContact,
+                        ]);
+                        continue;
+                    }
+
                     $hubspotId = $createContact['vid'];
                 }
 
