@@ -273,84 +273,9 @@ class QuestionBankController extends Controller
                 'version' => 1,
             ]);
 
-            if (isset($input['team_id'])) {
-                foreach ($input['team_id'] as $t) {
-                    QuestionHasTeam::create([
-                        'qb_question_id' => $question->id,
-                        'team_id' => $t,
-                    ]);
-                }
-            } else {
-                $allTeams = Team::all()->select('id')->pluck('id');
-                foreach ($allTeams as $t) {
-                    QuestionHasTeam::create([
-                        'qb_question_id' => $question->id,
-                        'team_id' => $t,
-                    ]);
-                }
-            }
+            $this->updateQuestionHasTeams($question, $input);
 
-            // Don't allow children to also have children, and only allow certain parent types to have children
-            if (!($input['is_child'] ?? false)
-                && isset($input['children'])
-                && in_array($input['field']['component'], ['RadioGroup', 'CheckboxGroup', 'Autocomplete'])) {
-                // Create all children questions and question versions as required.
-                // All must by design have the same version number as the parent - parents and children move versions in lockstep
-                if (isset($input['children'])) {
-                    foreach ($input['children'] as $childListCondition => $childList) {
-                        foreach ($childList as $child) {
-                            $childQuestion = QuestionBank::create([
-                                'section_id' => $input['section_id'],
-                                'user_id' => $input['user_id'] ?? $jwtUser['id'],
-                                'force_required' => $child['force_required'],
-                                'allow_guidance_override' => $child['allow_guidance_override'],
-                                'locked' => $child['locked'] ?? false,
-                                'archived' => $child['archived'] ?? false,
-                                'archived_date' => ($child['archived'] ?? false) ? Carbon::now() : null,
-                                'is_child' => true,
-                            ]);
-
-                            $questionJson = [
-                                'field' => $child['field'],
-                                'title' => $child['title'],
-                                'guidance' => $child['guidance'],
-                                'required' => $child['required'],
-                            ];
-
-                            $childQuestionVersion = QuestionBankVersion::create([
-                                'question_json' => json_encode($questionJson),
-                                'required' => $child['required'],
-                                'default' => $child['default'],
-                                'question_id' => $childQuestion->id,
-                                'version' => 1,
-                            ]);
-
-                            $questionHasChild = QuestionBankVersionHasChildVersion::create([
-                                'parent_qbv_id' => $questionVersion->id,
-                                'child_qbv_id' => $childQuestionVersion->id,
-                                'condition' => $childListCondition,
-                            ]);
-
-                            if (isset($input['team_id'])) {
-                                foreach ($input['team_id'] as $t) {
-                                    QuestionHasTeam::create([
-                                        'qb_question_id' => $childQuestion->id,
-                                        'team_id' => $t,
-                                    ]);
-                                }
-                            } else {
-                                $allTeams = Team::all()->select('id')->pluck('id');
-                                foreach ($allTeams as $t) {
-                                    QuestionHasTeam::create([
-                                        'qb_question_id' => $childQuestion->id,
-                                        'team_id' => $t,
-                                    ]);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            $this->handleChildren($questionVersion, $input, 1, $jwtUser);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -497,85 +422,10 @@ class QuestionBankController extends Controller
                 'version' =>  $latestVersion->version + 1,
             ]);
 
-            QuestionHasTeam::where('qb_question_id', $id)->delete();
-            if (isset($input['team_id'])) {
-                foreach ($input['team_id'] as $t) {
-                    QuestionHasTeam::create([
-                        'qb_question_id' => $question->id,
-                        'team_id' => $t,
-                    ]);
-                }
-            } else {
-                $allTeams = Team::all()->select('id')->pluck('id');
-                foreach ($allTeams as $t) {
-                    QuestionHasTeam::create([
-                        'qb_question_id' => $question->id,
-                        'team_id' => $t,
-                    ]);
-                }
-            }
 
-            // Don't allow children to also have children, and only allow certain parent types to have children
-            if (!($input['is_child'] ?? false)
-                && isset($input['children'])
-                && in_array($input['field']['component'], ['RadioGroup', 'CheckboxGroup', 'Autocomplete'])) {
-                // Create all children questions and question versions as required.
-                // All must by design have the same version number as the parent - parents and children move versions in lockstep
-                if (isset($input['children'])) {
-                    foreach ($input['children'] as $childListCondition => $childList) {
-                        foreach ($childList as $child) {
-                            $childQuestion = QuestionBank::create([
-                                'section_id' => $input['section_id'],
-                                'user_id' => $input['user_id'] ?? $jwtUser['id'],
-                                'force_required' => $child['force_required'],
-                                'allow_guidance_override' => $child['allow_guidance_override'],
-                                'locked' => $child['locked'] ?? false,
-                                'archived' => $child['archived'] ?? false,
-                                'archived_date' => ($child['archived'] ?? false) ? Carbon::now() : null,
-                                'is_child' => true,
-                            ]);
+            $this->updateQuestionHasTeams($question, $input);
 
-                            $questionJson = [
-                                'field' => $child['field'],
-                                'title' => $child['title'],
-                                'guidance' => $child['guidance'],
-                                'required' => $child['required'],
-                            ];
-
-                            $childQuestionVersion = QuestionBankVersion::create([
-                                'question_json' => json_encode($questionJson),
-                                'required' => $child['required'],
-                                'default' => $child['default'],
-                                'question_id' => $childQuestion->id,
-                                'version' =>  $latestVersion->version + 1,
-                            ]);
-
-                            $questionHasChild = QuestionBankVersionHasChildVersion::create([
-                                'parent_qbv_id' => $questionVersion->id,
-                                'child_qbv_id' => $childQuestionVersion->id,
-                                'condition' => $childListCondition,
-                            ]);
-
-                            if (isset($input['team_id'])) {
-                                foreach ($input['team_id'] as $t) {
-                                    QuestionHasTeam::create([
-                                        'qb_question_id' => $childQuestion->id,
-                                        'team_id' => $t,
-                                    ]);
-                                }
-                            } else {
-                                $allTeams = Team::all()->select('id')->pluck('id');
-                                foreach ($allTeams as $t) {
-                                    QuestionHasTeam::create([
-                                        'qb_question_id' => $childQuestion->id,
-                                        'team_id' => $t,
-                                    ]);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            $this->handleChildren($questionVersion, $input, $latestVersion->version + 1, $jwtUser);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -883,6 +733,78 @@ class QuestionBankController extends Controller
             ]);
 
             throw new Exception($e->getMessage());
+        }
+    }
+
+    private function handleChildren(QuestionBankVersion $questionVersion, array $input, int $versionNumber, array $jwtUser)
+    {
+        // Don't allow children to also have children, and only allow certain parent types to have children
+        if (!($input['is_child'] ?? false)
+        && isset($input['children'])
+        && in_array($input['field']['component'], ['RadioGroup', 'CheckboxGroup', 'Autocomplete'])) {
+            // Create all children questions and question versions as required.
+            // All must by design have the same version number as the parent - parents and children move versions in lockstep
+            if (isset($input['children'])) {
+                foreach ($input['children'] as $childListCondition => $childList) {
+                    foreach ($childList as $child) {
+                        $childQuestion = QuestionBank::create([
+                            'section_id' => $input['section_id'],
+                            'user_id' => $input['user_id'] ?? $jwtUser['id'],
+                            'force_required' => $child['force_required'],
+                            'allow_guidance_override' => $child['allow_guidance_override'],
+                            'locked' => $child['locked'] ?? false,
+                            'archived' => $child['archived'] ?? false,
+                            'archived_date' => ($child['archived'] ?? false) ? Carbon::now() : null,
+                            'is_child' => true,
+                        ]);
+
+                        $questionJson = [
+                            'field' => $child['field'],
+                            'title' => $child['title'],
+                            'guidance' => $child['guidance'],
+                            'required' => $child['required'],
+                        ];
+
+                        $childQuestionVersion = QuestionBankVersion::create([
+                            'question_json' => json_encode($questionJson),
+                            'required' => $child['required'],
+                            'default' => $child['default'],
+                            'question_id' => $childQuestion->id,
+                            'version' =>  $versionNumber,
+                        ]);
+
+                        $questionHasChild = QuestionBankVersionHasChildVersion::create([
+                            'parent_qbv_id' => $questionVersion->id,
+                            'child_qbv_id' => $childQuestionVersion->id,
+                            'condition' => $childListCondition,
+                        ]);
+
+                        $this->updateQuestionHasTeams($childQuestion, $input);
+                    }
+                }
+            }
+        }
+    }
+
+    private function updateQuestionHasTeams(QuestionBank $question, array $input)
+    {
+        QuestionHasTeam::where('qb_question_id', $question->id)->delete();
+
+        if (isset($input['team_id']) && $input['team_id']) {
+            foreach ($input['team_id'] as $t) {
+                QuestionHasTeam::create([
+                    'qb_question_id' => $question->id,
+                    'team_id' => $t,
+                ]);
+            }
+        } else {
+            $allTeams = Team::all()->select('id')->pluck('id');
+            foreach ($allTeams as $t) {
+                QuestionHasTeam::create([
+                    'qb_question_id' => $question->id,
+                    'team_id' => $t,
+                ]);
+            }
         }
     }
 }
