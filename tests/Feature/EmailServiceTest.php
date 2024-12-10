@@ -21,10 +21,11 @@ class EmailServiceTest extends TestCase
 
     public function setUp(): void
     {
-        parent::setUp([
+        parent::setUp();
+
+        $this->seed([
             EmailTemplateSeeder::class,
         ]);
-        $this->seed();
 
         Bus::fake();
     }
