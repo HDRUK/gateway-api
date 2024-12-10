@@ -60,6 +60,10 @@ class SyncHubspotContacts extends Command
             $email = ($user->provider === 'open-athens' || $user->preferred_email === 'secondary') ? $user->secondary_email : $user->email;
             $email = trim(strtolower($email));
 
+            if (!$email) {
+                continue;
+            }
+
             $cohortRequest = CohortRequest::where([
                 'user_id' => $user->id,
                 'request_status' => 'APPROVED',
@@ -79,6 +83,7 @@ class SyncHubspotContacts extends Command
                 'gateway_roles' => 'User' . ($rolesFullNamesByUserId ? ';' . implode(';', $rolesFullNamesByUserId) : ''),
                 'cohort_registered_user' => $cohortRequest ? 'Yes' : 'No',
             ];
+            var_dump($hubspot);
 
             // update contact preferences
             if ($user->hubspot_id) {
@@ -92,6 +97,7 @@ class SyncHubspotContacts extends Command
 
                 if (!$hubspotId) {
                     $createContact = $hubspotService->createContact($hubspot);
+                    var_dump($createContact);
                     $hubspotId = $createContact['vid'];
                 }
 
