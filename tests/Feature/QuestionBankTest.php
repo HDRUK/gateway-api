@@ -172,6 +172,7 @@ class QuestionBankTest extends TestCase
      */
     public function test_the_application_can_create_a_question()
     {
+        $countBefore = QuestionHasTeam::all()->count();
         $response = $this->json(
             'POST',
             'api/v1/questions',
@@ -211,7 +212,7 @@ class QuestionBankTest extends TestCase
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        $this->assertEquals(QuestionHasTeam::all()->count(), Team::all()->count());
+        $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore + Team::all()->count());
 
         // now test with a nested set of questions
         $response = $this->json(
@@ -313,7 +314,7 @@ class QuestionBankTest extends TestCase
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        $this->assertEquals(QuestionHasTeam::all()->count(), 6 * Team::all()->count());
+        $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore + 6 * Team::all()->count());
 
     }
 
@@ -824,6 +825,8 @@ class QuestionBankTest extends TestCase
      */
     public function test_it_can_delete_a_question()
     {
+        $countBefore = QuestionHasTeam::all()->count()
+
         $response = $this->json(
             'POST',
             'api/v1/questions',
@@ -854,7 +857,7 @@ class QuestionBankTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
         $content = $response->decodeResponseJson();
 
-        $this->assertEquals(QuestionHasTeam::all()->count(), Team::all()->count());
+        $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore + Team::all()->count());
 
         $response = $this->json(
             'DELETE',
@@ -868,7 +871,7 @@ class QuestionBankTest extends TestCase
                 'message',
             ]);
 
-        $this->assertEquals(QuestionHasTeam::all()->count(), 0);
+        $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore);
 
     }
 }
