@@ -307,7 +307,7 @@ class FederationController extends Controller
             $secrets_payload = $this->getSecretsPayload($input);
 
             if($secrets_payload) {
-                $auth_secret_key_location = Config::get('gmi.secrets.prependname') . (string)$federation->pid;
+                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . (string)$federation->pid;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
                     "secret_id" => $auth_secret_key_location,
@@ -471,7 +471,7 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
             if($secrets_payload) {
-                $auth_secret_key_location = Config::get('gmi.secrets.prependname') . (string)$federationId;
+                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . (string)$federationId;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
                     "secret_id" => $auth_secret_key_location,
@@ -643,7 +643,7 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
             if($secrets_payload) {
-                $auth_secret_key_location = Config::get('gmi.secrets.prependname') . (string)$federationId;
+                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . (string)$federationId;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
                     "secret_id" => $auth_secret_key_location,
