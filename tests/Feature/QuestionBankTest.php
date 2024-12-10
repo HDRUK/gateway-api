@@ -825,7 +825,7 @@ class QuestionBankTest extends TestCase
      */
     public function test_it_can_delete_a_question()
     {
-        $countBefore = QuestionHasTeam::all()->count()
+        $countBefore = QuestionHasTeam::all()->count();
 
         $response = $this->json(
             'POST',
