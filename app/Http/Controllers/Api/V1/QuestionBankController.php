@@ -12,6 +12,7 @@ use App\Models\QuestionHasTeam;
 use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\QuestionBank\GetQuestionBank;
 use App\Http\Requests\QuestionBank\EditQuestionBank;
@@ -47,9 +48,12 @@ class QuestionBankController extends Controller
      *                      @OA\Property(property="user_id", type="integer", example="1"),
      *                      @OA\Property(property="locked", type="boolean", example="false"),
      *                      @OA\Property(property="archived", type="boolean", example="true"),
+     *                      @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
      *                      @OA\Property(property="force_required", type="boolean", example="false"),
      *                      @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *                      @OA\Property(property="is_child", type="boolean", example="true"),
+     *                      @OA\Property(property="latest_version", type="object", example=""),
+     *                      @OA\Property(property="versions", type="object", example=""),
      *                  )
      *              )
      *          )
@@ -125,9 +129,12 @@ class QuestionBankController extends Controller
      *                  @OA\Property(property="user_id", type="integer", example="1"),
      *                  @OA\Property(property="locked", type="boolean", example="false"),
      *                  @OA\Property(property="archived", type="boolean", example="true"),
+     *                  @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="force_required", type="boolean", example="false"),
      *                  @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *                  @OA\Property(property="is_child", type="boolean", example="true"),
+     *                  @OA\Property(property="latest_version", type="object", example=""),
+     *                  @OA\Property(property="versions", type="object", example=""),
      *              )
      *          ),
      *      ),
@@ -146,7 +153,14 @@ class QuestionBankController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $question = QuestionBank::with(['latestVersion', 'latestVersion.childVersions', 'versions', 'versions.childVersions'])->findOrFail($id);
+            $question = QuestionBank::with(
+                ['latestVersion',
+                 'latestVersion.childVersions',
+                  'versions',
+                  'versions.childVersions'
+                ]
+            )->findOrFail($id);
+
             if ($question) {
 
                 Auditor::log([
@@ -240,6 +254,7 @@ class QuestionBankController extends Controller
                 'allow_guidance_override' => $input['allow_guidance_override'],
                 'locked' => $input['locked'] ?? false,
                 'archived' => $input['archived'] ?? false,
+                'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
                 'is_child' => false,
             ]);
 
@@ -289,8 +304,9 @@ class QuestionBankController extends Controller
                                 'user_id' => $input['user_id'] ?? $jwtUser['id'],
                                 'force_required' => $child['force_required'],
                                 'allow_guidance_override' => $child['allow_guidance_override'],
-                                'locked' => $input['locked'] ?? false,
-                                'archived' => $input['archived'] ?? false,
+                                'locked' => $child['locked'] ?? false,
+                                'archived' => $child['archived'] ?? false,
+                                'archived_date' => ($child['archived'] ?? false) ? Carbon::now() : null,
                                 'is_child' => true,
                             ]);
 
@@ -418,6 +434,7 @@ class QuestionBankController extends Controller
      *                  @OA\Property(property="user_id", type="integer", example="1"),
      *                  @OA\Property(property="locked", type="boolean", example="false"),
      *                  @OA\Property(property="archived", type="boolean", example="true"),
+     *                  @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="is_child", type="boolean", example="false"),
      *                  @OA\Property(property="force_required", type="boolean", example="false"),
      *                  @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
@@ -459,6 +476,7 @@ class QuestionBankController extends Controller
                 'allow_guidance_override' => $input['allow_guidance_override'],
                 'locked' => $input['locked'] ?? false,
                 'archived' => $input['archived'] ?? false,
+                'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
                 'is_child' => false,
             ]);
 
@@ -511,8 +529,9 @@ class QuestionBankController extends Controller
                                 'user_id' => $input['user_id'] ?? $jwtUser['id'],
                                 'force_required' => $child['force_required'],
                                 'allow_guidance_override' => $child['allow_guidance_override'],
-                                'locked' => $input['locked'] ?? false,
-                                'archived' => $input['archived'] ?? false,
+                                'locked' => $child['locked'] ?? false,
+                                'archived' => $child['archived'] ?? false,
+                                'archived_date' => ($child['archived'] ?? false) ? Carbon::now() : null,
                                 'is_child' => true,
                             ]);
 
@@ -638,6 +657,7 @@ class QuestionBankController extends Controller
      *                  @OA\Property(property="user_id", type="integer", example="1"),
      *                  @OA\Property(property="locked", type="boolean", example="false"),
      *                  @OA\Property(property="archived", type="boolean", example="true"),
+     *                  @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="force_required", type="boolean", example="false"),
      *                  @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *              )
@@ -677,6 +697,9 @@ class QuestionBankController extends Controller
                 'archived',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
+            if ($array['archived'] ?? false) {
+                $array['archived_date'] = Carbon::now();
+            }
             $question->update($array);
 
             $versionKeys = [
