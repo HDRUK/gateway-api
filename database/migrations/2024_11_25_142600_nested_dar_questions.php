@@ -14,6 +14,7 @@ return new class () extends Migration {
             $table->boolean('is_child')->default(false);
         });
         Schema::create('question_bank_version_has_child_version', function (Blueprint $table) {
+            $table->softDeletes();
             $table->bigInteger('parent_qbv_id')->unsigned();
             $table->bigInteger('child_qbv_id')->unsigned();
             $table->string('condition')->nullable();
