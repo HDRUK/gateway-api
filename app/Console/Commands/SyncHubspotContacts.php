@@ -46,7 +46,7 @@ class SyncHubspotContacts extends Command
         $hubspotService = new Hubspot();
 
         // enabled users
-        $users = User::where('is_admin', 0)->where('id', '>', 2512)->get();
+        $users = User::where(['is_admin' => 0])->get();
 
         foreach ($users as $user) {
             $sector = Sector::where([
