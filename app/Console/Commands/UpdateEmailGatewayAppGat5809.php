@@ -124,7 +124,7 @@ class UpdateEmailGatewayAppGat5809 extends Command
             'identifier' => 'federation.app.update',
         ], [
             'identifier' => 'federation.app.update',
-            'subject' => 'Congratulations! A new Gateway App has been created.',
+            'subject' => 'Gateway App has been updated.',
             'body' => '
                 <mjml>
                     <mj-head>
