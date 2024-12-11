@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Support\Str;
 
 class Federation extends Model
 {
@@ -16,16 +15,6 @@ class Federation extends Model
     use Notifiable;
     use SoftDeletes;
     use Prunable;
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        //create a pid for this team
-        static::creating(function ($model) {
-            $model->pid = (string) Str::uuid();
-        });
-    }
 
     /**
      * Table associated with this model
