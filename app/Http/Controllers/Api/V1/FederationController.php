@@ -16,9 +16,9 @@ use App\Models\EmailTemplate;
 use App\Models\TeamUserHasRole;
 use App\Models\TeamHasFederation;
 use App\Http\Controllers\Controller;
+
 use Illuminate\Support\Facades\Http;
 use App\Models\FederationHasNotification;
-
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\Federation\GetFederation;
 use App\Http\Requests\Federation\EditFederation;
@@ -299,7 +299,7 @@ class FederationController extends Controller
                 'endpoint_dataset' => $input['endpoint_dataset'],
                 'run_time_hour' => $input['run_time_hour'],
                 'enabled' => $input['enabled'],
-                'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0
+                'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0,
             ];
 
             $federation = Federation::create($payload);
@@ -307,7 +307,7 @@ class FederationController extends Controller
             $secrets_payload = $this->getSecretsPayload($input);
 
             if($secrets_payload) {
-                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . (string)$federation->pid;
+                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . $federation->id;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
                     "secret_id" => $auth_secret_key_location,
@@ -471,12 +471,13 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
             if($secrets_payload) {
-                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . (string)$federationId;
+                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . $federationId;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
                     "secret_id" => $auth_secret_key_location,
                     "payload" => json_encode($secrets_payload)
                 ];
+
                 $response = Http::patch(env('GMI_SERVICE_URL') . '/federation', $payload);
 
                 if (!$response->successful()) {
@@ -643,12 +644,13 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
             if($secrets_payload) {
-                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . (string)$federationId;
+                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . $federationId;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
                     "secret_id" => $auth_secret_key_location,
                     "payload" => json_encode($secrets_payload)
                 ];
+
                 $response = Http::patch(env('GMI_SERVICE_URL') . '/federation', $payload);
 
                 if (!$response->successful()) {
@@ -659,7 +661,6 @@ class FederationController extends Controller
                 }
 
             }
-
 
             if (array_key_exists('notifications', $input)) {
                 $federationNotifications = FederationHasNotification::where([
