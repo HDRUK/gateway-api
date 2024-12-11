@@ -7,10 +7,12 @@ use Config;
 use Exception;
 use App\Models\QuestionBank;
 use App\Models\QuestionBankVersion;
+use App\Models\QuestionBankVersionHasChildVersion;
 use App\Models\QuestionHasTeam;
 use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\QuestionBank\GetQuestionBank;
 use App\Http\Requests\QuestionBank\EditQuestionBank;
@@ -49,6 +51,9 @@ class QuestionBankController extends Controller
      *                      @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
      *                      @OA\Property(property="force_required", type="boolean", example="false"),
      *                      @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
+     *                      @OA\Property(property="is_child", type="boolean", example="true"),
+     *                      @OA\Property(property="latest_version", type="object", example=""),
+     *                      @OA\Property(property="versions", type="object", example=""),
      *                  )
      *              )
      *          )
@@ -61,7 +66,9 @@ class QuestionBankController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $questions = QuestionBank::paginate(
+            $questions = QuestionBank::with(
+                ['latestVersion', 'versions', 'versions.childVersions']
+            )->paginate(
                 Config::get('constants.per_page'),
                 ['*'],
                 'page'
@@ -125,6 +132,9 @@ class QuestionBankController extends Controller
      *                  @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="force_required", type="boolean", example="false"),
      *                  @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
+     *                  @OA\Property(property="is_child", type="boolean", example="true"),
+     *                  @OA\Property(property="latest_version", type="object", example=""),
+     *                  @OA\Property(property="versions", type="object", example=""),
      *              )
      *          ),
      *      ),
@@ -143,8 +153,16 @@ class QuestionBankController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $question = QuestionBank::findOrFail($id);
+            $question = QuestionBank::with(
+                ['latestVersion',
+                 'latestVersion.childVersions',
+                  'versions',
+                  'versions.childVersions'
+                ]
+            )->findOrFail($id);
+
             if ($question) {
+
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'GET',
@@ -197,6 +215,7 @@ class QuestionBankController extends Controller
      *              @OA\Property(property="guidance", type="string", example="Question guidance"),
      *              @OA\Property(property="title", type="string", example="Question title"),
      *              @OA\Property(property="field", type="array", @OA\Items()),
+     *              @OA\Property(property="is_child", type="boolean", example="true"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -222,13 +241,21 @@ class QuestionBankController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+            if ($input['is_child'] ?? false) {
+                return response()->json([
+                    'message' => 'Cannot create a child question directly'
+                ], 400);
+            }
+
             $question = QuestionBank::create([
                 'section_id' => $input['section_id'],
-                'user_id' => isset($input['user_id']) ? $input['user_id'] : $jwtUser->id,
+                'user_id' => $input['user_id'] ?? $jwtUser['id'],
                 'force_required' => $input['force_required'],
                 'allow_guidance_override' => $input['allow_guidance_override'],
-                'locked' => isset($input['locked']) ? $input['locked'] : false,
-                'archived' => isset($input['archived']) ? $input['archived'] : false,
+                'locked' => $input['locked'] ?? false,
+                'archived' => $input['archived'] ?? false,
+                'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
+                'is_child' => false,
             ]);
 
             $questionJson = [
@@ -242,26 +269,13 @@ class QuestionBankController extends Controller
                 'question_json' => json_encode($questionJson),
                 'required' => $input['required'],
                 'default' => $input['default'],
-                'question_parent_id' => $question->id,
+                'question_id' => $question->id,
                 'version' => 1,
             ]);
 
-            if (isset($input['team_id'])) {
-                foreach ($input['team_id'] as $t) {
-                    QuestionHasTeam::create([
-                        'qb_question_id' => $question->id,
-                        'team_id' => $t,
-                    ]);
-                }
-            } else {
-                $allTeams = Team::all()->select('id')->pluck('id');
-                foreach ($allTeams as $t) {
-                    QuestionHasTeam::create([
-                        'qb_question_id' => $question->id,
-                        'team_id' => $t,
-                    ]);
-                }
-            }
+            $this->updateQuestionHasTeams($question, $input);
+
+            $this->handleChildren($questionVersion, $input, 1, $jwtUser);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -289,8 +303,8 @@ class QuestionBankController extends Controller
     /**
      * @OA\Put(
      *      path="/api/v1/questions/{id}",
-     *      summary="Update a system question bank question",
-     *      description="Update a system question bank question",
+     *      summary="Update a system question bank question - children are updated through parents",
+     *      description="Update a system question bank question - children are updated through parents",
      *      tags={"QuestionBank"},
      *      summary="QuestionBank@update",
      *      security={{"bearerAuth":{}}},
@@ -315,6 +329,7 @@ class QuestionBankController extends Controller
      *              @OA\Property(property="team_id", type="array", @OA\Items()),
      *              @OA\Property(property="locked", type="boolean", example="false"),
      *              @OA\Property(property="archived", type="boolean", example="false"),
+     *              @OA\Property(property="is_child", type="boolean", example="false"),
      *              @OA\Property(property="force_required", type="boolean", example="false"),
      *              @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *              @OA\Property(property="default", type="integer", example="1"),
@@ -345,6 +360,7 @@ class QuestionBankController extends Controller
      *                  @OA\Property(property="locked", type="boolean", example="false"),
      *                  @OA\Property(property="archived", type="boolean", example="true"),
      *                  @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="is_child", type="boolean", example="false"),
      *                  @OA\Property(property="force_required", type="boolean", example="false"),
      *                  @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *              )
@@ -366,14 +382,27 @@ class QuestionBankController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $question = QuestionBank::findOrFail($id);
+            if ($question->is_child) {
+                return response()->json([
+                    'message' => 'Cannot update a child question directly'
+                ], 400);
+            }
+            if ($input['is_child'] ?? false) {
+                return response()->json([
+                    'message' => 'Cannot update a question to become a child question'
+                ], 400);
+            }
+            // TODO: handle locking
 
             $question->update([
                 'section_id' => $input['section_id'],
-                'user_id' => isset($input['user_id']) ? $input['user_id'] : $jwtUser->id,
+                'user_id' => $input['user_id'] ?? $jwtUser['id'],
                 'force_required' => $input['force_required'],
                 'allow_guidance_override' => $input['allow_guidance_override'],
-                'locked' => isset($input['locked']) ? $input['locked'] : false,
-                'archived' => isset($input['archived']) ? $input['archived'] : false,
+                'locked' => $input['locked'] ?? false,
+                'archived' => $input['archived'] ?? false,
+                'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
+                'is_child' => false,
             ]);
 
             $questionJson = [
@@ -389,27 +418,14 @@ class QuestionBankController extends Controller
                 'question_json' => json_encode($questionJson),
                 'required' => $input['required'],
                 'default' => $input['default'],
-                'question_parent_id' => $question->id,
+                'question_id' => $question->id,
                 'version' => $latestVersion->version + 1,
             ]);
 
-            QuestionHasTeam::where('qb_question_id', $id)->delete();
-            if (isset($input['team_id'])) {
-                foreach ($input['team_id'] as $t) {
-                    QuestionHasTeam::create([
-                        'qb_question_id' => $question->id,
-                        'team_id' => $t,
-                    ]);
-                }
-            } else {
-                $allTeams = Team::all()->select('id')->pluck('id');
-                foreach ($allTeams as $t) {
-                    QuestionHasTeam::create([
-                        'qb_question_id' => $question->id,
-                        'team_id' => $t,
-                    ]);
-                }
-            }
+
+            $this->updateQuestionHasTeams($question, $input);
+
+            $this->handleChildren($questionVersion, $input, $latestVersion->version + 1, $jwtUser);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -437,8 +453,8 @@ class QuestionBankController extends Controller
     /**
      * @OA\Patch(
      *      path="/api/v1/questions/{id}",
-     *      summary="Edit a system question bank question",
-     *      description="Edit a system question bank question",
+     *      summary="Edit a system question bank question - use this for parents and children separately",
+     *      description="Edit a system question bank question - use this for parents and children separately",
      *      tags={"QuestionBank"},
      *      summary="QuestionBank@update",
      *      security={{"bearerAuth":{}}},
@@ -514,6 +530,14 @@ class QuestionBankController extends Controller
 
             $question = QuestionBank::findOrFail($id);
 
+            if ($input['is_child'] ?? false) {
+                return response()->json([
+                    'message' => "Cannot edit a question's 'is_child' field"
+                ], 400);
+            }
+
+            // TODO: handle locking
+
             $arrayKeys = [
                 'section_id',
                 'user_id',
@@ -523,6 +547,9 @@ class QuestionBankController extends Controller
                 'archived',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
+            if ($array['archived'] ?? false) {
+                $array['archived_date'] = Carbon::now();
+            }
             $question->update($array);
 
             $versionKeys = [
@@ -539,18 +566,19 @@ class QuestionBankController extends Controller
                 $latestJson = json_decode($latestVersion->question_json, true);
 
                 $questionJson = [
-                    'field' => isset($input['field']) ? $input['field'] : $latestJson['field'],
-                    'title' => isset($input['title']) ? $input['title'] : $latestJson['title'],
-                    'guidance' => isset($input['guidance']) ? $input['guidance'] : $latestJson['guidance'],
-                    'required' => isset($input['required']) ? $input['required'] : $latestJson['required'],
+                    'field' => $input['field'] ?? $latestJson['field'],
+                    'title' => $input['title'] ?? $latestJson['title'],
+                    'guidance' => $input['guidance'] ?? $latestJson['guidance'],
+                    'required' => $input['required'] ?? $latestJson['required'],
                 ];
+                $questionVersion = QuestionBankVersion::where('id', $latestVersion->id)->first();
 
-                $questionVersion = QuestionBankVersion::create([
+                $questionVersion = $questionVersion->update([
                     'question_json' => json_encode($questionJson),
-                    'required' => isset($input['required']) ? $input['required'] : $latestVersion->required,
-                    'default' => isset($input['default']) ? $input['default'] : $latestVersion->default,
-                    'question_parent_id' => $id,
-                    'version' => $latestVersion->version + 1,
+                    'required' => $input['required'] ?? $latestVersion->required,
+                    'default' => $input['default'] ?? $latestVersion->default,
+                    'question_id' => $id,
+                    'version' => $latestVersion->version,
                 ]);
             }
 
@@ -646,10 +674,43 @@ class QuestionBankController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $question = QuestionBank::findOrFail($id);
-            //            $question->deleted_at = Carbon::now();
-            $question->delete();
+            if ($question->is_child) {
+                return response()->json([
+                    'message' => 'Cannot delete a child question directly'
+                ], 400);
+            }
 
-            QuestionBankVersion::where('question_parent_id', $id)->delete();
+            // TODO: handle locking?
+
+            // For each version of this question, check its children.
+            // - Delete all versions of all child question versions and their associated questions,
+            //   and their QuestionBankVersionHasChildVersion relationship entries,
+            //   along with the QuestionHasTeam entries
+            //
+            // Then delete each version of the question being requested, then the question
+            //   itself, and its associated QuestionHasTeam entries
+            $questionVersions = $question->versions()->get();
+
+            foreach ($questionVersions as $version) {
+                // delete each version's child question versions and their associated QuestionBank and QuestionHasTeam entries
+                $childVersions = $version->childVersions;
+                foreach ($childVersions as $childVersion) {
+                    // Delete association of child version's question to teams
+                    QuestionHasTeam::where('qb_question_id', $childVersion->question_id)->delete();
+                    // Delete child version's question's versions
+                    QuestionBankVersion::where('id', $childVersion->id)->delete();
+                    // Delete child version's question
+                    QuestionBank::where('id', $childVersion->question_id)->delete();
+                }
+                // delete parent-child records from relationship table
+                QuestionBankVersionHasChildVersion::where('parent_qbv_id', $version->id)->delete();
+                // delete each version
+                QuestionBankVersion::where('id', $version->id)->delete();
+
+            };
+            // delete the requested question
+            QuestionBank::where('id', $id)->delete();
+            // delete QuestionHasTeam entries for the requested question
             QuestionHasTeam::where('qb_question_id', $id)->delete();
 
             Auditor::log([
@@ -672,6 +733,78 @@ class QuestionBankController extends Controller
             ]);
 
             throw new Exception($e->getMessage());
+        }
+    }
+
+    private function handleChildren(QuestionBankVersion $questionVersion, array $input, int $versionNumber, array $jwtUser)
+    {
+        // Don't allow children to also have children, and only allow certain parent types to have children
+        if (!($input['is_child'] ?? false)
+        && isset($input['children'])
+        && in_array($input['field']['component'], ['RadioGroup', 'CheckboxGroup', 'Autocomplete'])) {
+            // Create all children questions and question versions as required.
+            // All must by design have the same version number as the parent - parents and children move versions in lockstep
+            if (isset($input['children'])) {
+                foreach ($input['children'] as $childListCondition => $childList) {
+                    foreach ($childList as $child) {
+                        $childQuestion = QuestionBank::create([
+                            'section_id' => $input['section_id'],
+                            'user_id' => $input['user_id'] ?? $jwtUser['id'],
+                            'force_required' => $child['force_required'],
+                            'allow_guidance_override' => $child['allow_guidance_override'],
+                            'locked' => $child['locked'] ?? false,
+                            'archived' => $child['archived'] ?? false,
+                            'archived_date' => ($child['archived'] ?? false) ? Carbon::now() : null,
+                            'is_child' => true,
+                        ]);
+
+                        $questionJson = [
+                            'field' => $child['field'],
+                            'title' => $child['title'],
+                            'guidance' => $child['guidance'],
+                            'required' => $child['required'],
+                        ];
+
+                        $childQuestionVersion = QuestionBankVersion::create([
+                            'question_json' => json_encode($questionJson),
+                            'required' => $child['required'],
+                            'default' => $child['default'],
+                            'question_id' => $childQuestion->id,
+                            'version' =>  $versionNumber,
+                        ]);
+
+                        $questionHasChild = QuestionBankVersionHasChildVersion::create([
+                            'parent_qbv_id' => $questionVersion->id,
+                            'child_qbv_id' => $childQuestionVersion->id,
+                            'condition' => $childListCondition,
+                        ]);
+
+                        $this->updateQuestionHasTeams($childQuestion, $input);
+                    }
+                }
+            }
+        }
+    }
+
+    private function updateQuestionHasTeams(QuestionBank $question, array $input)
+    {
+        QuestionHasTeam::where('qb_question_id', $question->id)->delete();
+
+        if (isset($input['team_id']) && $input['team_id']) {
+            foreach ($input['team_id'] as $t) {
+                QuestionHasTeam::create([
+                    'qb_question_id' => $question->id,
+                    'team_id' => $t,
+                ]);
+            }
+        } else {
+            $allTeams = Team::all()->select('id')->pluck('id');
+            foreach ($allTeams as $t) {
+                QuestionHasTeam::create([
+                    'qb_question_id' => $question->id,
+                    'team_id' => $t,
+                ]);
+            }
         }
     }
 }
