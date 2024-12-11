@@ -10,7 +10,6 @@ use App\Models\User;
 use App\Jobs\SendEmailJob;
 use App\Models\Federation;
 use App\Models\TeamHasUser;
-use Illuminate\Support\Str;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Models\EmailTemplate;
@@ -289,7 +288,6 @@ class FederationController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $pid = (string) Str::uuid();
 
         try {
             $payload = [
@@ -302,7 +300,6 @@ class FederationController extends Controller
                 'run_time_hour' => $input['run_time_hour'],
                 'enabled' => $input['enabled'],
                 'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0,
-                'pid' => (string) Str::uuid(),
             ];
 
             $federation = Federation::create($payload);
@@ -310,7 +307,7 @@ class FederationController extends Controller
             $secrets_payload = $this->getSecretsPayload($input);
 
             if($secrets_payload) {
-                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . $pid;
+                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . $federation->id;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
                     "secret_id" => $auth_secret_key_location,
@@ -459,8 +456,6 @@ class FederationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $federation = Federation::where('id', $federationId)->first();
-
             $updateArray = [
                 'federation_type' => $input['federation_type'],
                 'auth_type' => $input['auth_type'],
@@ -476,7 +471,7 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
             if($secrets_payload) {
-                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . $federation->pid;
+                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . $federationId;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
                     "secret_id" => $auth_secret_key_location,
@@ -631,8 +626,6 @@ class FederationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $federation = Federation::where('id', $federationId)->first();
-
             $arrayKeys = [
                 'federation_type',
                 'auth_type',
@@ -651,7 +644,7 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
             if($secrets_payload) {
-                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . $federation->pid;
+                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . $federationId;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
                     "secret_id" => $auth_secret_key_location,
