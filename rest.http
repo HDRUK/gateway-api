@@ -18,10 +18,6 @@
 @esSearchServiceUrl = "http://localhost:8080"
 # @accessToken=jwt....
 
-# 'developers@hdruk.ac.uk', 'Watch26Task?'
-# 'hdrmetadatamanager@gmail.com', 'Gateway@123'
-
-
 # ElasticSearch
 ## delete index
 POST {{esBaseUrl}}/datacustodiannetwork/_delete_by_query HTTP/1.1
