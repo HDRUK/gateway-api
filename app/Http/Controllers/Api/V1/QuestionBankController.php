@@ -419,7 +419,7 @@ class QuestionBankController extends Controller
                 'required' => $input['required'],
                 'default' => $input['default'],
                 'question_id' => $question->id,
-                'version' =>  $latestVersion->version + 1,
+                'version' => $latestVersion->version + 1,
             ]);
 
 
