@@ -65,6 +65,7 @@ class Federation extends Model
         'run_time_hour',
         'enabled',
         'tested',
+        'pid',
     ];
 
     /**
