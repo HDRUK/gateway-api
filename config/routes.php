@@ -3654,6 +3654,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,question-bank.read',
         ],
         'constraint' => [],
     ],
@@ -3665,6 +3666,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,question-bank.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3679,6 +3681,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,question-bank.create',
         ],
         'constraint' => [],
     ],
@@ -3691,6 +3694,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,question-bank.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3705,6 +3709,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,question-bank.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3718,6 +3723,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,question-bank.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3812,6 +3818,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,data-access-template.read',
         ],
         'constraint' => [],
     ],
@@ -3823,6 +3830,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,data-access-template.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3837,6 +3845,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,data-access-template.create',
         ],
         'constraint' => [],
     ],
@@ -3849,6 +3858,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,data-access-template.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3863,6 +3873,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,data-access-template.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3876,6 +3887,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,data-access-template.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3891,6 +3903,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,question-bank.read',
         ],
         'constraint' => [],
     ],
@@ -3902,6 +3915,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,question-bank.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3916,6 +3930,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,question-bank.create',
         ],
         'constraint' => [],
     ],
@@ -3928,6 +3943,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,question-bank.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3942,6 +3958,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,question-bank.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3955,6 +3972,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,question-bank.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
