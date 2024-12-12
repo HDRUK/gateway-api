@@ -71,7 +71,10 @@
             "Database\\Seeders\\Omop\\": "database/seeders/omop",
             "Database\\Migrations\\": "database/migrations/",
             "Database\\Beta\\": "database/beta/"
-        }
+        },
+        "files": [
+            "app/Helpers/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

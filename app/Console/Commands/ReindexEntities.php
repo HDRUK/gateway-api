@@ -10,6 +10,7 @@ use App\Models\Tool;
 use App\Models\Collection;
 use App\Jobs\TermExtraction;
 use App\Http\Traits\IndexElastic;
+use App\Models\DataProviderColl;
 use Illuminate\Console\Command;
 
 use ElasticClientController as ECC;
@@ -224,6 +225,26 @@ class ReindexEntities extends Command
         $nIndexed = ECC::countDocuments(ECC::ELASTIC_NAME_COLLECTION);
         echo "--->  ($nIndexed/$nTotal) Documents indexed ! \n";
 
+    }
+
+    private function dataCustodianNetworks()
+    {
+        if ($this->fresh) {
+            $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_DATACUSTODIANNETWORK);
+            echo "---> Deleted $nDeleted documents from the index \n";
+        }
+
+        $nTotal = DataProviderColl::count();
+
+        $dataCustodianNetworkIds = DataProviderColl::select('id')
+            ->pluck('id')
+            ->toArray();
+        $this->sliceIds($dataCustodianNetworkIds);
+
+        $this->bulkProcess($dataCustodianNetworkIds, 'indexElasticDataCustodianNetwork');
+
+        $nIndexed = ECC::countDocuments(ECC::ELASTIC_NAME_DATACUSTODIANNETWORK);
+        echo "--->  ($nIndexed/$nTotal) Documents indexed ! \n";
     }
 
     private function dataProviders()

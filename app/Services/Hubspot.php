@@ -64,7 +64,7 @@ class Hubspot
 
             $responseBody = $response->json();
 
-            return array_key_exists('vid', $responseBody) ? $responseBody['vid'] : null;
+            return (!is_array($responseBody)) ? null : (array_key_exists('vid', $responseBody) ? $responseBody['vid'] : null);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

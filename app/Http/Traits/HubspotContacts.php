@@ -2,6 +2,7 @@
 
 namespace App\Http\Traits;
 
+use CloudLogger;
 use Config;
 use App\Models\Role;
 use App\Models\User;
@@ -39,6 +40,18 @@ trait HubspotContacts
             $email = ($user->provider === 'open-athens' || $user->preferred_email === 'secondary') ? $user->secondary_email : $user->email;
             $email = trim(strtolower($email));
 
+            if (!$email) {
+                CloudLogger::write([
+                    'action_type' => 'NOTIFY',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'error :: email is null',
+                    'user' => $user,
+                ]);
+
+                return;
+            }
+
+
             $cohortRequest = CohortRequest::where([
                 'user_id' => $user->id,
                 'request_status' => 'APPROVED',
@@ -70,6 +83,19 @@ trait HubspotContacts
                 $hubspotId = $hubspotService->getContactByEmail($email);
                 if (!$hubspotId) {
                     $createContact = $hubspotService->createContact($hubspot);
+
+                    if (array_key_exists('status', $createContact) && $createContact['status'] === 'error') {
+                        CloudLogger::write([
+                            'action_type' => 'NOTIFY',
+                            'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                            'description' => 'error',
+                            'user' => $hubspot,
+                            'hubspot_error' => $createContact,
+                        ]);
+
+                        return;
+                    }
+
                     $hubspotId = (is_array($createContact) &&
                         array_key_exists('vid', $createContact)) ? $createContact['vid'] : null;
                 }

@@ -260,8 +260,8 @@ class SocialLoginController extends Controller
         return [
             'providerid' => $data->getId(),
             'name' => $data->getName(),
-            'firstname' => $data->offsetGet('given_name'),
-            'lastname' => $data->offsetGet('family_name'),
+            'firstname' => $data->user['given_name'] ?? '',
+            'lastname' => $data->user['family_name'] ?? '',
             'email' => $data->getEmail(),
             'provider' => $provider,
             'password' => Hash::make(json_encode($data)),

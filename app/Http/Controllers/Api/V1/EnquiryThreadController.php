@@ -238,6 +238,34 @@ class EnquiryThreadController extends Controller
                         ],
                     ],
                 ];
+            } elseif ($input['is_dar_dialogue'] === true) {
+                $payload = [
+                    'thread' => [
+                        'user_id' => $user->id,
+                        'team_id' => "",
+                        'project_title' => $input['project_title'],
+                        'unique_key' => Str::random(8), // 8 chars in length
+                        'is_dar_dialogue' => $input['is_dar_dialogue'],
+                        'is_dar_status' => $input['is_dar_status'],
+                        'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
+                        'is_general_enquiry' => $input['is_general_enquiry'],
+                        'datasets' => $this->mapDatasets($input['datasets']),
+                        'enabled' => true,
+                    ],
+                    'message' => [
+                        'from' => $input['from'],
+                        'message_body' => [
+                            '[[TEAM_NAME]]' => "",
+                            '[[USER_FIRST_NAME]]' => $user->firstname,
+                            '[[USER_LAST_NAME]]' => $user->lastname,
+                            '[[USER_ORGANISATION]]' => isset($user->organisation) ? $user->organisation : $input['organisation'],
+                            '[[CONTACT_NUMBER]]' => $input['contact_number'],
+                            '[[PROJECT_TITLE]]' => $input['project_title'],
+                            '[[CURRENT_YEAR]]' => date('Y'),
+                            '[[MESSAGE]]' => $input['message'],
+                        ],
+                    ],
+                ];
             } else {
                 $payload = [
                     'thread' => [
@@ -304,6 +332,8 @@ class EnquiryThreadController extends Controller
                     EMC::sendEmail('feasibilityenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
                 } elseif ($input['is_general_enquiry'] == true) {
                     EMC::sendEmail('generalenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
+                } elseif ($input['is_dar_dialogue'] == true) {
+                    EMC::sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser);
                 }
 
                 Auditor::log([

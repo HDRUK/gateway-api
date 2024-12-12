@@ -46,13 +46,14 @@ class AddDarModalDetails extends Command
             $team = Team::where('name', 'like', '%' . $item . '%')->first();
 
             if (!is_null($team)) {
-                Team::where('name', $item)->update([
+                $this->info('Updating: ' . $team->name);
+                $team->update([
                     'dar_modal_header' => $darModelHeader,
                     'dar_modal_content' => $darModelContent,
                     'dar_modal_footer' => $darModelFooter,
                     'is_dar' => 1,
                 ]);
-                $this->info($item . ' updated');
+                $this->info($team->name . ' updated successfully');
             } else {
                 $this->warn($item . ' not found for update');
             }

@@ -6,13 +6,17 @@ use Hash;
 use Config;
 use Auditor;
 use Exception;
+use App\Models\Role;
 use App\Models\Team;
+use App\Models\User;
 use App\Jobs\SendEmailJob;
 use App\Models\Application;
+use App\Models\TeamHasUser;
 use Illuminate\Support\Str;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Models\EmailTemplate;
+use App\Models\TeamUserHasRole;
 use App\Http\Traits\CheckAccess;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -791,7 +795,7 @@ class ApplicationController extends Controller
     // send email
     public function sendEmail(int $appId, string $type)
     {
-        $app = Application::with(['team','user','notifications.userNotification'])->where('id', $appId)->first();
+        $app = Application::with(['team','user','notifications.userNotification'])->where('id', $appId)->withTrashed()->first();
         if (is_null($app)) {
             throw new Exception('Application not found!');
         }
@@ -845,35 +849,26 @@ class ApplicationController extends Controller
 
     public function sendEmailTo(Application $app): array
     {
-        $return = [];
+        $teamId = $app->team_id;
+        $userId = $app->user_id;
+        // only for users with the following roles: 'custodian.team.admin', 'developer'
+        $roles = Role::whereIn('name', ['custodian.team.admin', 'developer'])->select('id')->get();
+        $roles = convertArrayToArrayWithKeyName($roles, 'id');
+        $teamHasUsers = TeamHasUser::where('team_id', $teamId)->select('id', 'user_id')->get();
 
-        $return[] = [
-            'email' => $app->user->email,
-            'name' => $app->user->name,
-            'firstname' => $app->user->firstname,
-        ];
-
-        foreach ($app->notifications as $notification) {
-            if ($notification['user_id']) {
-                $return[] = [
-                    'email' => $notification['userNotification']->email,
-                    'name' => $notification['userNotification']->name,
-                    'firstname' => $notification['userNotification']->firstname,
-                ];
-            } else {
-                $return[] = [
-                    'email' => $notification['email'],
-                    'name' => null,
-                    'firstname' => null,
-                ];
+        $notificationuserId = [];
+        foreach ($teamHasUsers as $item) {
+            $teamUserHasRoles = TeamUserHasRole::whereIn('role_id', $roles)->where('team_has_user_id', $item->id)->first();
+            if (!is_null($teamUserHasRoles)) {
+                $notificationuserId[] = $item->user_id;
             }
         }
 
-        $emails = array_column($return, 'email');
-        $uniqueEmails = array_unique($emails);
-        $uniqueArray = array_intersect_key($return, $uniqueEmails);
+        $notificationuserId[] = $userId;
+        $notificationuserId = array_unique($notificationuserId);
+        $return = User::whereIn('id', $notificationuserId)->select(['firstname', 'name', 'email'])->get()->toArray();
 
-        return array_values($uniqueArray);
+        return $return;
     }
 
 }
