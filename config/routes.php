@@ -476,6 +476,20 @@ return [
             'teamId' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'teams',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/datasets',
+        'methodController' => 'TeamController@datasets',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
 
     // tools
     [
@@ -3629,5 +3643,84 @@ return [
             'sanitize.input',
         ],
         'constraint' => [],
+    ],
+
+    // questions
+    [
+        'name' => 'questions',
+        'method' => 'get',
+        'path' => '/questions',
+        'methodController' => 'QuestionBankController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'get',
+        'path' => '/questions/{id}',
+        'methodController' => 'QuestionBankController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'post',
+        'path' => '/questions',
+        'methodController' => 'QuestionBankController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'put',
+        'path' => '/questions/{id}',
+        'methodController' => 'QuestionBankController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'patch',
+        'path' => '/questions/{id}',
+        'methodController' => 'QuestionBankController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'delete',
+        'path' => '/questions/{id}',
+        'methodController' => 'QuestionBankController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
     ],
 ];

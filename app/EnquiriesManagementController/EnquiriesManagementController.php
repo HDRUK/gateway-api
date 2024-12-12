@@ -137,6 +137,7 @@ class EnquiriesManagementController
             $replacements = [
                 '[[CURRENT_YEAR]]' => $threadDetail['message']['message_body']['[[CURRENT_YEAR]]'],
                 '[[TEAM_NAME]]' => $threadDetail['message']['message_body']['[[TEAM_NAME]]'],
+                '[[SENDER_NAME]]' => $threadDetail['message']['message_body']['[[SENDER_NAME]]'] ?? '',
                 '[[USER_FIRST_NAME]]' => $threadDetail['message']['message_body']['[[USER_FIRST_NAME]]'],
                 '[[USER_LAST_NAME]]' => $threadDetail['message']['message_body']['[[USER_LAST_NAME]]'],
                 '[[USER_ORGANISATION]]' => $threadDetail['message']['message_body']['[[USER_ORGANISATION]]'],
@@ -146,11 +147,12 @@ class EnquiriesManagementController
 
             // TODO Add unique key to URL button. Future scope.
             foreach ($usersToNotify as $u) {
+                $replacements['[[RECIPIENT_NAME]]'] = $u['user']['name'];
                 if ($u === null) {
                     Auditor::log([
                         'user_id' => (int)$jwtUser['id'],
                         'action_type' => 'SEND EMAIL',
-                        'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
                         'description' => 'EnquiriesManagementController failed to send email on behalf of ' .
                             $jwtUser['id'] . '. Detail: ' . json_encode($threadDetail),
                     ]);
@@ -178,7 +180,7 @@ class EnquiriesManagementController
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'SEND EMAIL',
-                'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
         }
@@ -209,10 +211,13 @@ class EnquiriesManagementController
             $str .= 'Do you know which parts of the datasets you are interested in? ' . $in['message']['message_body']['[[DATASETS_PARTS_YES_NO]]'] . '<br/>';
             $str .= 'Funding: ' . $in['message']['message_body']['[[FUNDING]]'] . '<br/>';
             $str .= 'Potential research benefits: ' . $in['message']['message_body']['[[PUBLIC_BENEFIT]]'] . '<br/>';
+            $str .= 'This enquiry has also been sent to the following Data Custodians: ' . $dataCustodiansStr . '<br/>';
         } elseif ($in['thread']['is_general_enquiry']) {
             $str .= 'Enquiry: ' . $in['message']['message_body']['[[QUERY]]'] . '<br/>';
+            $str .= 'This enquiry has also been sent to the following Data Custodians: ' . $dataCustodiansStr . '<br/>';
+        } elseif ($in['thread']['is_dar_dialogue']) {
+            $str .= $in['message']['message_body']['[[MESSAGE]]'] . '<br/>';
         }
-        $str .= 'This enquiry has also been sent to the following Data Custodians: ' . $dataCustodiansStr . '<br/>';
         return $str;
     }
 }

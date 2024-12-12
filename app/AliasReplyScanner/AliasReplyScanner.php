@@ -160,6 +160,8 @@ class AliasReplyScanner
             'id' => $enquiryThread->user_id,
         ])->first();
 
+        $usersToNotify[] = [['user' => $user]];
+
         $payload = [
             'thread' => [
                 'user_id' => $enquiryThread->user_id,
@@ -176,6 +178,7 @@ class AliasReplyScanner
                     '[[USER_ORGANISATION]]' => $user->organisation,
                     '[[PROJECT_TITLE]]' => $enquiryThread->project_title,
                     '[[CURRENT_YEAR]]' => date('Y'),
+                    '[[SENDER_NAME]]' => $enquiryMessage->from,
                 ],
             ],
         ];
@@ -207,10 +210,13 @@ class AliasReplyScanner
 
         try {
             $template = EmailTemplate::where('identifier', $ident)->first();
-            $replacements = [
-                '[[CURRENT_YEAR]]' => $threadDetail['message']['message_body']['[[CURRENT_YEAR]]'],
-                '[[DAR_NOTIFY_MESSAGE]]' => $replyMessage,
-            ];
+            $replacements = array_merge(
+                [
+                    '[[CURRENT_YEAR]]' => $threadDetail['message']['message_body']['[[CURRENT_YEAR]]'],
+                    '[[MESSAGE_BODY]]' => $replyMessage,
+                ],
+                $threadDetail['message']['message_body']
+            );
 
             // TODO Add unique key to URL button. Future scope.
             foreach ($usersToNotify as $u) {
@@ -220,6 +226,7 @@ class AliasReplyScanner
 
                 // In case for multiple users to notify, loop again for actual details.
                 foreach ($u as $arr) {
+                    $replacements['[[RECIPIENT_NAME]]'] = $arr['user']['name'];
                     $to = [
                         'to' => [
                             'email' => $arr['user']['email'],

@@ -5,20 +5,24 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
+use App\Models\Role;
+use App\Models\User;
 use App\Jobs\SendEmailJob;
 use App\Models\Federation;
+use App\Models\TeamHasUser;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Models\EmailTemplate;
+use App\Models\TeamUserHasRole;
 use App\Models\TeamHasFederation;
 use App\Http\Controllers\Controller;
+
 use Illuminate\Support\Facades\Http;
 use App\Models\FederationHasNotification;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\Federation\GetFederation;
 use App\Http\Requests\Federation\EditFederation;
 use App\Http\Requests\Federation\CreateFederation;
-
 use App\Http\Requests\Federation\DeleteFederation;
 use App\Http\Requests\Federation\GetAllFederation;
 use App\Http\Requests\Federation\UpdateFederation;
@@ -295,7 +299,7 @@ class FederationController extends Controller
                 'endpoint_dataset' => $input['endpoint_dataset'],
                 'run_time_hour' => $input['run_time_hour'],
                 'enabled' => $input['enabled'],
-                'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0
+                'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0,
             ];
 
             $federation = Federation::create($payload);
@@ -303,7 +307,7 @@ class FederationController extends Controller
             $secrets_payload = $this->getSecretsPayload($input);
 
             if($secrets_payload) {
-                $auth_secret_key_location = Config::get('gmi.secrets.prependname') . (string)$federation->pid;
+                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . $federation->id;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
                     "secret_id" => $auth_secret_key_location,
@@ -467,12 +471,13 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
             if($secrets_payload) {
-                $auth_secret_key_location = Config::get('gmi.secrets.prependname') . (string)$federationId;
+                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . $federationId;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
                     "secret_id" => $auth_secret_key_location,
                     "payload" => json_encode($secrets_payload)
                 ];
+
                 $response = Http::patch(env('GMI_SERVICE_URL') . '/federation', $payload);
 
                 if (!$response->successful()) {
@@ -639,12 +644,13 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
             if($secrets_payload) {
-                $auth_secret_key_location = Config::get('gmi.secrets.prependname') . (string)$federationId;
+                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . $federationId;
                 $payload = [
                     "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
                     "secret_id" => $auth_secret_key_location,
                     "payload" => json_encode($secrets_payload)
                 ];
+
                 $response = Http::patch(env('GMI_SERVICE_URL') . '/federation', $payload);
 
                 if (!$response->successful()) {
@@ -655,7 +661,6 @@ class FederationController extends Controller
                 }
 
             }
-
 
             if (array_key_exists('notifications', $input)) {
                 $federationNotifications = FederationHasNotification::where([
@@ -928,7 +933,7 @@ class FederationController extends Controller
             throw new Exception('Email template not found!');
         }
 
-        $receivers = $this->sendEmailTo($federation);
+        $receivers = $this->sendEmailTo($federationId);
 
         foreach ($receivers as $receiver) {
             $to = [
@@ -942,10 +947,10 @@ class FederationController extends Controller
                 '[[TEAM_ID]]' => $federation->team[0]['id'],
                 '[[TEAM_NAME]]' => $federation->team[0]['name'],
                 '[[USER_FIRSTNAME]]' => $receiver['firstname'],
-                '[[GATEWAY_APP_NAME]]' => 'Integration ' . $federation->federation_type,
-                '[[GATEWAY_APP_CREATED_AT_DATE]]' => $federation->created_at,
-                '[[GATEWAY_APP_UPDATED_AT_DATE]]' => $federation->updated_at,
-                '[[GATEWAY_APP_STATUS]]' => $federation->enabled ? 'enabled' : 'disabled',
+                '[[FEDERATION_NAME]]' => 'Integration ' . $federation->federation_type,
+                '[[FEDERATION_CREATED_AT_DATE]]' => $federation->created_at,
+                '[[FEDERATION_UPDATED_AT_DATE]]' => $federation->updated_at,
+                '[[FEDERATION_STATUS]]' => $federation->enabled ? 'enabled' : 'disabled',
                 '[[CURRENT_YEAR]]' => date('Y'),
             ];
 
@@ -954,31 +959,38 @@ class FederationController extends Controller
 
     }
 
-    public function sendEmailTo(Federation $federation): array
+    public function sendEmailTo(int $federationId): array
     {
         $return = [];
 
-        foreach ($federation->notifications as $notification) {
-            if ($notification['user_id']) {
-                $return[] = [
-                    'email' => $notification['userNotification']->email,
-                    'name' => $notification['userNotification']->name,
-                    'firstname' => $notification['userNotification']->firstname,
-                ];
-            } else {
-                $return[] = [
-                    'email' => $notification['email'],
-                    'name' => null,
-                    'firstname' => null,
-                ];
+        $federation = Federation::where('id', $federationId)->first();
+        if (is_null($federation)) {
+            return $return;
+        }
+
+        $teamHasFederation = TeamHasFederation::where('federation_id', $federationId)->first();
+        if (is_null($teamHasFederation)) {
+            return $return;
+        }
+        $teamId = $teamHasFederation->team_id;
+
+        // only for users with the following roles: 'custodian.team.admin', 'developer'
+        $roles = Role::whereIn('name', ['custodian.team.admin', 'developer'])->select('id')->get();
+        $roles = convertArrayToArrayWithKeyName($roles, 'id');
+        $teamHasUsers = TeamHasUser::where('team_id', $teamId)->select('id', 'user_id')->get();
+
+        $notificationuserId = [];
+        foreach ($teamHasUsers as $item) {
+            $teamUserHasRoles = TeamUserHasRole::whereIn('role_id', $roles)->where('team_has_user_id', $item->id)->first();
+            if (!is_null($teamUserHasRoles)) {
+                $notificationuserId[] = $item->user_id;
             }
         }
 
-        $emails = array_column($return, 'email');
-        $uniqueEmails = array_unique($emails);
-        $uniqueArray = array_intersect_key($return, $uniqueEmails);
+        $notificationuserId = array_unique($notificationuserId);
+        $return = User::whereIn('id', $notificationuserId)->select(['firstname', 'name', 'email'])->get()->toArray();
 
-        return array_values($uniqueArray);
+        return $return;
     }
 
 }

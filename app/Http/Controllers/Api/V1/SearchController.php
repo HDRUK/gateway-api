@@ -197,6 +197,17 @@ class SearchController extends Controller
                 }
 
                 $model['metadata'] = $model->latestVersion()['metadata']['metadata'];
+
+                $metadata = $model['metadata'];
+
+                if (isset($metadata['summary']['publisher']['gatewayId'])) {
+                    $id = $metadata['summary']['publisher']['gatewayId'];
+                    $team = Team::where('pid', $id)->first();
+                    if ($team) {
+                        $metadata['summary']['publisher']['gatewayId'] = $team->id;
+                        $model['metadata'] = $metadata;
+                    }
+                }
                 $model = $model->toArray();
 
                 $datasetsArray[$i]['_source']['created_at'] = $model['created_at'];
@@ -1344,7 +1355,7 @@ class SearchController extends Controller
             $aggs = Filter::where('type', 'dataProviderColl')->get()->toArray();
             $input['aggs'] = $aggs;
 
-            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_providers';
+            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_custodian_networks';
             $response = Http::post($urlString, $input);
 
             $dataProviderCollArray = $response['hits']['hits'];
