@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Prunable;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class DataAccessTemplateHasQuestion extends Model
+class DataAccessApplicationHasQuestion extends Model
 {
     use HasFactory;
     use Notifiable;
@@ -19,16 +19,16 @@ class DataAccessTemplateHasQuestion extends Model
      *
      * @var string
      */
-    protected $table = 'dar_template_has_questions';
+    protected $table = 'dar_application_has_questions';
 
     public $timestamps = false;
 
     protected $fillable = [
-        'template_id',
+        'application_id',
         'question_id',
         'guidance',
         'required',
-        'order'
+        'order',
+        'teams'
     ];
-
 }

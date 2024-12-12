@@ -18,7 +18,8 @@ class DataAccessSection extends Model
 
     protected $fillable = [
         'name',
-        'sub_section',
+        'description',
+        'parent_section',
         'order',
     ];
 }
