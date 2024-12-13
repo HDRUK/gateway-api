@@ -2,20 +2,7 @@
 ### Description: Rest Client in Visual Studio Code
 
 ### Variables
-@baseUrl = http://localhost:8000
-@apiVersion = v1
-@uFirstName = "John"
-@uLastName = "Doe"
-# @uEmail = "hunter59@example.com"
-@uEmailDar = "dan.nita@hdruk.ac.uk"
-@uEmail = "developers@hdruk.ac.uk"
-@uEmail2 = "john.for.doe.1234567890@example.com"
-@uPassword = "Watch26Task?"
-@uPasswordDar = "Gateway@123"
-@esUsername = "elastic"
-@esPassword = "otL=+lJ--zSjl_FHnmuh"
-@esBaseUrl = "https://localhost:9200"
-@esSearchServiceUrl = "http://localhost:8080"
+
 # @accessToken=jwt....
 
 # ElasticSearch
