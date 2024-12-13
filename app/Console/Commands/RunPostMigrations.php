@@ -31,55 +31,55 @@ class RunPostMigrations extends Command
         $termExtraction = $this->option('term-extraction');
 
         $commands = [
-            [
-                'command' => 'app:add-super-admin-to-all-teams',
-                'arguments' => [],
-            ],
-            [
-                'command' => 'app:post-run-update-full-name-role',
-                'arguments' => [
-                    '--no-interaction' => true,
-                ],
-            ],
-            // ['command' => 'app:sync-hubspot-contacts', 'arguments' => []], // What is this?
-            //['command' => 'app:data-providers-post-migration', 'arguments' => []], // seed dataproviders
+            // [
+            //     'command' => 'app:add-super-admin-to-all-teams',
+            //     'arguments' => [],
+            // ],
+            // [
+            //     'command' => 'app:post-run-update-full-name-role',
+            //     'arguments' => [
+            //         '--no-interaction' => true,
+            //     ],
+            // ],
+            // // ['command' => 'app:sync-hubspot-contacts', 'arguments' => []], // What is this?
+            // //['command' => 'app:data-providers-post-migration', 'arguments' => []], // seed dataproviders
 
-            [
-                'command' => 'app:add-data-provider-network',
-                'arguments' => [],
-            ], // seed dataproviders
-            [
-                'command' => 'app:update-eu-licenses',
-                'arguments' => [],
-            ], // add licenses before post-migrating tools? - not working!!!!
-            [
-                'command' => 'app:tools-post-migration-process',
-                'arguments' => [],
-            ], // tools
-            [
-                'command' => 'app:publication-type-post-migration',
-                'arguments' => [],
-            ], // publications
-            [
-                'command' => 'app:dataset-publication-linkage-post-migration',
-                'arguments' => [],
-            ], // dataset linkage
-            [
-                'command' => 'app:upload-images-post-migration-process',
-                'arguments' => [],
-            ], // uploaded images
-            [
-                'command' => 'app:make-collections-active',
-                'arguments' => [],
-            ], // set collections to be active
-            [
-                'command' => 'app:dataset-linkages',
-                'arguments' => [],
-            ], // add dataset version linkages
-            [
-                'command' => 'app:team-dar-modal-content',
-                'arguments' => [],
-            ], // add team dar modal content
+            // [
+            //     'command' => 'app:add-data-provider-network',
+            //     'arguments' => [],
+            // ], // seed dataproviders
+            // [
+            //     'command' => 'app:update-eu-licenses',
+            //     'arguments' => [],
+            // ], // add licenses before post-migrating tools? - not working!!!!
+            // [
+            //     'command' => 'app:tools-post-migration-process',
+            //     'arguments' => [],
+            // ], // tools
+            // [
+            //     'command' => 'app:publication-type-post-migration',
+            //     'arguments' => [],
+            // ], // publications
+            // [
+            //     'command' => 'app:dataset-publication-linkage-post-migration',
+            //     'arguments' => [],
+            // ], // dataset linkage
+            // [
+            //     'command' => 'app:upload-images-post-migration-process',
+            //     'arguments' => [],
+            // ], // uploaded images
+            // [
+            //     'command' => 'app:make-collections-active',
+            //     'arguments' => [],
+            // ], // set collections to be active
+            // [
+            //     'command' => 'app:dataset-linkages',
+            //     'arguments' => [],
+            // ], // add dataset version linkages
+            // [
+            //     'command' => 'app:team-dar-modal-content',
+            //     'arguments' => [],
+            // ], // add team dar modal content
             [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
