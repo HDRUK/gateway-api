@@ -78,10 +78,7 @@ class EnquiriesManagementController
             $enquiryThread,
         );
 
-        return collect($users)
-                    ->keyBy('users.id')
-                    ->values()
-                    ->toArray();
+        return $users;
     }
 
     public function createEnquiryThread(array $input): int
@@ -192,6 +189,7 @@ class EnquiriesManagementController
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
+            throw new Exception($e->getMessage());
         }
     }
 

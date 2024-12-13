@@ -134,7 +134,7 @@ class AliasReplyScanner
         ])->get();
 
         foreach ($enquiryThreads as $eqTh) {
-            $usersToNotify[] = EMC::determineDARManagersFromTeamId($eqTh->team_id, $eqTh->id, $enquiryThreads->user_id);
+            $usersToNotify[] = EMC::determineDARManagersFromTeamId($eqTh->team_id, $eqTh->id, $eqTh->user_id);
         }
 
         if (empty($usersToNotify)) {

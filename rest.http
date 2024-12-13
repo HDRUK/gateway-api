@@ -7,13 +7,13 @@
 @uFirstName = "John"
 @uLastName = "Doe"
 # @uEmail = "hunter59@example.com"
-@uEmailDar = "xxx"
-@uEmail = "xxxx"
-@uEmail2 = "xxx"
-@uPassword = "xxx"
-@uPasswordDar = "xxx"
-@esUsername = "xxx"
-@esPassword = "xxx"
+@uEmailDar = "dan.nita@hdruk.ac.uk"
+@uEmail = "developers@hdruk.ac.uk"
+@uEmail2 = "john.for.doe.1234567890@example.com"
+@uPassword = "Watch26Task?"
+@uPasswordDar = "Gateway@123"
+@esUsername = "elastic"
+@esPassword = "otL=+lJ--zSjl_FHnmuh"
 @esBaseUrl = "https://localhost:9200"
 @esSearchServiceUrl = "http://localhost:8080"
 # @accessToken=jwt....
@@ -2614,10 +2614,12 @@ Authorization: Bearer {{accessToken}}
     "from": "sam.cox@hdruk.ac.uk",
     "team_id": 4,
     "project_title": "project title for test",
-    "is_dar_dialogue": true,
+    "message": "test",
+    "is_dar_dialogue": false,
     "is_dar_review": false,
     "is_feasibility_enquiry": false,
     "is_general_enquiry": true,
+    "is_dar_status": true,
     "datasets": [
         {
             "dataset_id": 4,
