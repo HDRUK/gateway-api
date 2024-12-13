@@ -16,13 +16,3 @@ Route::get('/datasets/{pid}', [ServiceLayerController::class, 'getDatasetFromPid
 Route::post('/audit', [ServiceLayerController::class, 'audit']);
 
 Route::any('/traser', [ServiceLayerController::class, 'traser']);
-
-foreach (config("service_routes") as $service => $paths) {
-    foreach ($paths as $path => $methods) {
-        foreach ($methods as $method => $middlewares) {
-            Route::{$method}($service.$path, [ServiceLayerController::class, $service])
-                ->where('any', '.*')
-                ->middleware($middlewares);
-        }
-    }
-}
