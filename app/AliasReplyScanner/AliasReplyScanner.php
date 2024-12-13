@@ -212,6 +212,7 @@ class AliasReplyScanner
                 [
                     '[[CURRENT_YEAR]]' => $threadDetail['message']['message_body']['[[CURRENT_YEAR]]'],
                     '[[MESSAGE_BODY]]' => $replyMessage,
+                    '[[DAR_NOTIFY_MESSAGE]]' => $replyMessage,
                 ],
                 $threadDetail['message']['message_body']
             );
