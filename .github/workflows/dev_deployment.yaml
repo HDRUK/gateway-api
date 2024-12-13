@@ -27,7 +27,7 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
         with:
-          ref: features/GAT-5962'
+          ref: features/GAT-5962
 
       - name: Read VERSION file
         id: getversion
@@ -77,7 +77,7 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
         with:
-          ref: features/GAT-5962'
+          ref: features/GAT-5962
 
       - name: Google Auth
         id: auth
