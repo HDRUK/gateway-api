@@ -3,7 +3,6 @@
 
 ### Variables
 
-# @accessToken=jwt....
 
 # ElasticSearch
 ## delete index
@@ -2602,7 +2601,7 @@ Authorization: Bearer {{accessToken}}
     "team_id": 4,
     "project_title": "project title for test",
     "message": "test",
-    "is_dar_dialogue": false,
+    "is_dar_dialogue": true,
     "is_dar_review": false,
     "is_feasibility_enquiry": false,
     "is_general_enquiry": true,
