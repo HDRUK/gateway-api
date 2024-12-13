@@ -32,7 +32,10 @@ class EnquiriesManagementController
         // user who open the enquiry
         if ($currUserId) {
             $users[] = [
-                'user' => User::where('id', $currUserId)->first()->toArray(),
+                'user' => User::where('id', $currUserId)
+                            ->select(['id', 'name', 'firstname', 'lastname', 'email', 'secondary_email', 'preferred_email'])
+                            ->first()
+                            ->toArray(),
             ];
         }
 
