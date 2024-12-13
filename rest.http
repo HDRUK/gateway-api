@@ -7,15 +7,48 @@
 @uFirstName = "John"
 @uLastName = "Doe"
 # @uEmail = "hunter59@example.com"
-@uEmailDar = "dan.nita@hdruk.ac.uk"
-@uEmail = "developers@hdruk.ac.uk"
-@uEmail2 = "john.for.doe.1234567890@example.com"
-@uPassword = "Watch26Task?"
-@uPasswordDar = "Gateway@123"
+@uEmailDar = "xxx"
+@uEmail = "xxxx"
+@uEmail2 = "xxx"
+@uPassword = "xxx"
+@uPasswordDar = "xxx"
+@esUsername = "xxx"
+@esPassword = "xxx"
+@esBaseUrl = "https://localhost:9200"
+@esSearchServiceUrl = "http://localhost:8080"
 # @accessToken=jwt....
 
-# 'developers@hdruk.ac.uk', 'Watch26Task?'
-# 'hdrmetadatamanager@gmail.com', 'Gateway@123'
+# ElasticSearch
+## delete index
+POST {{esBaseUrl}}/datacustodiannetwork/_delete_by_query HTTP/1.1
+Content-Type: application/json
+Authorization: Basic {{esUsername}}:{{esUsername}}
+
+{
+    "query": {
+        "match_all": {}
+    }
+}
+
+####
+## delete index - another way
+DELETE {{esBaseUrl}}/datacustodiannetwork HTTP/1.1
+Content-Type: application/json
+Authorization: Basic ZWxhc3RpYzpvdEw9K2xKLS16U2psX0ZIbm11aA==
+
+
+####
+## create mappings
+POST http://localhost:8080/mappings/data_custodian_networks
+Content-Type: application/json
+Accept: application/json
+
+####
+## create settings
+POST http://localhost:8080/settings/data_custodian_networks
+Content-Type: application/json
+Accept: application/json
+
 
 ### Login
 #### create new auth
@@ -51,6 +84,7 @@ Accept: application/json
 
 # ### Variables jwt token
 # @accessToken = {{loginUsernamePassword.response.body.$.access_token}}
+
 
 ### Logout
 POST {{baseUrl}}/api/{{apiVersion}}/logout HTTP/1.1
@@ -2316,6 +2350,17 @@ Authorization: Bearer {{accessToken}}
 {
     "query": "asthma",
     "download": true
+}
+
+
+#### search for data provider networks/ data proveder collections
+POST {{baseUrl}}/api/{{apiVersion}}/search/data_provider_colls HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "query": "health"
 }
 
 ### Filters

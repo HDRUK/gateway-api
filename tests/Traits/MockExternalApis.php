@@ -1019,6 +1019,88 @@ trait MockExternalApis
             )
         ]);
 
+        // Mock the search service - data providers
+        Http::fake([
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_custodian_networks*' => Http::response(
+                [
+                    'took' => 4,
+                    'timed_out' => false,
+                    '_shards' => [
+                        'total' => 1,
+                        'successful' => 1,
+                        'skipped' => 0,
+                        'failed' => 0
+                    ],
+                    'hits' => [
+                        'total' => [
+                            'value' => 3,
+                            'relation' => 'eq'
+                        ],
+                        'max_score' => 1.0,
+                        'hits' => [
+                            [
+                                '_index' => 'datacustodiannetwork',
+                                '_id' => '1',
+                                '_score' => 1.0,
+                                '_ignored' => [
+                                    'summary.keyword'
+                                ],
+                                '_source' => [
+                                    'name' => 'Data Custodian Network One',
+                                    'summary' => 'Data Custodian Name One - Summary',
+                                    'publisherNames' => ['Publisher Name One'],
+                                    'datasetTitles' => ['Dataset Title One'],
+                                    'durTitles' => ['Dur Title One'],
+                                    'toolNames' => ['Tool Name One'],
+                                    'publicationTitles' => ['Publication Name One'],
+                                    'collectionNames' => ['Collection Name One']
+                                ]
+                            ],
+                            [
+                                '_index' => 'datacustodiannetwork',
+                                '_id' => '12',
+                                '_score' => 1.0,
+                                '_ignored' => [
+                                    'summary.keyword'
+                                ],
+                                '_source' => [
+                                    'name' => 'Data Custodian Network Two',
+                                    'summary' => 'Data Custodian Name Two - Summary',
+                                    'publisherNames' => ['Publisher Name Two'],
+                                    'datasetTitles' => ['Dataset Title Two'],
+                                    'durTitles' => ['Dur Title Two'],
+                                    'toolNames' => ['Tool Name Two'],
+                                    'publicationTitles' => ['Publication Name Two'],
+                                    'collectionNames' => ['Collection Name Two']
+                                ]
+                            ],
+                            [
+                                '_index' => 'datacustodiannetwork',
+                                '_id' => '123',
+                                '_score' => 1.0,
+                                '_ignored' => [
+                                    'summary.keyword'
+                                ],
+                                '_source' => [
+                                    'name' => 'Data Custodian Network Three',
+                                    'summary' => 'Data Custodian Name Three - Summary',
+                                    'publisherNames' => ['Publisher Name Three'],
+                                    'datasetTitles' => ['Dataset Title Three'],
+                                    'durTitles' => ['Dur Title Three'],
+                                    'toolNames' => ['Tool Name Three'],
+                                    'publicationTitles' => ['Publication Name Three'],
+                                    'collectionNames' => ['Collection Name Three']
+                                ]
+                            ]
+                        ]
+                    ],
+                    'aggregations' => []
+                ],
+                200,
+                ['application/json']
+            )
+        ]);
+
         Http::fake([
             env('CLAMAV_API_URL', 'http://clamav:3001') . '*' => Http::response(
                 [

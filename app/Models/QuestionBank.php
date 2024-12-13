@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class QuestionBank extends Model
 {
@@ -25,22 +28,50 @@ class QuestionBank extends Model
 
     protected $table = 'question_bank_questions';
 
+    public $timestamps = true;
+
     protected $fillable = [
-       'section_id',
-       'user_id',
-       'team_id',
-       'locked',
-       'force_required',
-       'allow_guidance'
+        'section_id',
+        'user_id',
+        'locked',
+        'archived',
+        'archived_date',
+        'force_required',
+        'allow_guidance_override',
+        'is_child',
     ];
+
+    /**
+     * Specifically requests that Laravel casts the tiny ints as boolean
+     */
+    protected $casts = [
+        'locked' => 'boolean',
+        'archived' => 'boolean',
+        'force_required' => 'boolean',
+        'allow_guidance_override' => 'boolean',
+    ];
+
+    /**
+     * The question versions associated with this question.
+     */
+    public function versions(): HasMany
+    {
+        return $this->hasMany(QuestionBankVersion::class, 'question_id');
+    }
+
+    public function latestVersion(): HasOne
+    {
+        return $this->hasOne(QuestionBankVersion::class, 'question_id')
+            ->orderBy('version', 'desc');
+    }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function team(): BelongsTo
+    public function teams(): BelongsToMany
     {
-        return $this->belongsTo(Team::class);
+        return $this->belongsToMany(Team::class, 'qb_question_has_team');
     }
 }

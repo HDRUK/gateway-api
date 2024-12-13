@@ -19,11 +19,11 @@ use App\Http\Traits\IndexElastic;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 
-
 use App\Http\Traits\MetadataOnboard;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Traits\MetadataVersioning;
 use App\Models\Traits\ModelHelpers;
+
+use Maatwebsite\Excel\Facades\Excel;
 
 use Illuminate\Support\Facades\Storage;
 use MetadataManagementController as MMC;

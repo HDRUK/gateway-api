@@ -1079,18 +1079,16 @@ class SearchTest extends TestCase
             'data' => [
                 0 => [
                     '_id',
-                    'highlight',
+                    '_index',
                     '_source' => [
                         'name',
                         'datasetTitles',
-                        'geographicLocations',
                         'updated_at'
                     ],
                     'id',
                     'name',
                     'img_url',
                     'datasetTitles',
-                    'geographicLocations',
                 ],
             ],
             'aggregations',
@@ -1115,15 +1113,15 @@ class SearchTest extends TestCase
         foreach ($content['data'] as $res) {
             $elasticIds[] = $res['_id'];
         }
-        $this->assertTrue(!in_array('1111', $elasticIds));
+        $this->assertTrue(!in_array('123', $elasticIds));
 
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_provider_colls" . '?sort=score:asc', ["query" => "term"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
                 0 => [
+                    '_index',
                     '_id',
-                    'highlight',
                     '_source',
                     'name',
                     'datasetTitles',
@@ -1147,7 +1145,7 @@ class SearchTest extends TestCase
             'to',
             'total',
         ]);
-        $this->assertTrue($response['data'][0]['_source']['name'] === 'Third Provider');
+        $this->assertTrue($response['data'][0]['_source']['name'] === 'Data Custodian Network One');
 
         // Test sorting by name
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_provider_colls" . '?sort=name:asc', ["query" => "term"], ['Accept' => 'application/json']);
@@ -1156,7 +1154,7 @@ class SearchTest extends TestCase
             'data' => [
                 0 => [
                     '_id',
-                    'highlight',
+                    '_index',
                     '_source',
                     'name',
                     'id',
@@ -1180,7 +1178,7 @@ class SearchTest extends TestCase
             'to',
             'total',
         ]);
-        $this->assertTrue($response['data'][0]['_source']['name'] === 'Another Provider');
+        $this->assertTrue($response['data'][0]['_source']['name'] === 'Data Custodian Network One');
 
         // Test sorting by updated_at desc
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_provider_colls" . '?sort=updated_at:desc', ["query" => "term"], ['Accept' => 'application/json']);
@@ -1189,7 +1187,7 @@ class SearchTest extends TestCase
             'data' => [
                 0 => [
                     '_id',
-                    'highlight',
+                    '_index',
                     '_source',
                     'name',
                     'id',

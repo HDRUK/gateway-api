@@ -32,6 +32,7 @@ use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\RequestTransformation;
+use App\Http\Traits\TrimPayload;
 
 use MetadataManagementController as MMC;
 
@@ -41,6 +42,7 @@ class TeamController extends Controller
     use IndexElastic;
     use TeamTransformation;
     use RequestTransformation;
+    use TrimPayload;
 
     private $datasets = [];
     private $durs = [];
@@ -1071,6 +1073,143 @@ class TeamController extends Controller
             ]);
 
             throw new Exception($e->getMessage());
+        }
+    }
+
+    public function datasets(Request $request, int $teamId): JsonResponse
+    {
+        try {
+            $filterStatus = $request->query('status', null);
+            $datasetId = $request->query('dataset_id', null);
+            $mongoPId = $request->query('mongo_pid', null);
+            $withMetadata = $request->boolean('with_metadata', true);
+
+            $sort = $request->query('sort', 'created:desc');
+
+            $tmp = explode(':', $sort);
+            $sortField = $tmp[0];
+            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
+            $sortOnMetadata = str_starts_with($sortField, 'metadata.');
+            $allFields = collect(Dataset::first())->keys()->toArray();
+            if (!$sortOnMetadata && count($allFields) > 0 && !in_array($sortField, $allFields)) {
+                return response()->json([
+                    'message' => '\"' . $sortField . '\" is not a valid field to sort on',
+                ], 400);
+            }
+
+            $validDirections = ['desc', 'asc'];
+
+            if (!in_array($sortDirection, $validDirections)) {
+                return response()->json([
+                    'message' => 'Sort direction must be either: ' .
+                        implode(' OR ', $validDirections) .
+                        '. Not "' . $sortDirection . '"',
+                ], 400);
+            }
+
+            $filterTitle = $request->query('title', null);
+
+            $matches = [];
+
+            $datasets = Dataset::where('team_id', $teamId)
+                ->when($datasetId, function ($query) use ($datasetId) {
+                    return $query->where('datasetid', '=', $datasetId);
+                })
+                ->when($mongoPId, function ($query) use ($mongoPId) {
+                    return $query->where('mongo_pid', '=', $mongoPId);
+                })
+                // LS - Reworked from original in DatasetsController@index, as
+                // that is incorrect and flawed logic
+                ->when(
+                    $request->has('withTrashed'),
+                    function ($query) {
+                        return $query->withTrashed();
+                    }
+                )
+                // LS - This is how it should be done, other places we currently
+                // use both deleted_at and ARCHIVED as a status field. deleted_at
+                // should denote a record has _actually_ been deleted, and therefore
+                // hidden.
+                ->when($filterStatus, function ($query) use ($filterStatus) {
+                    return $query->where('status', '=', $filterStatus);
+                })
+                ->select(['id'])->get();
+
+            foreach ($datasets as $d) {
+                $matches[] = $d->id;
+            }
+
+            if (!empty($filterTitle)) {
+                $titleMatches = [];
+
+                foreach ($matches as $m) {
+                    $version = DatasetVersion::where('dataset_id', $m)
+                        ->filterTitle($filterTitle)
+                        ->select('dataset_id')
+                        ->when(
+                            $request->has('withTrashed'),
+                            function ($query) {
+                                return $query->withTrashed();
+                            }
+                        )
+                        ->when(
+                            $filterStatus,
+                            function ($query) use ($filterStatus) {
+                                return $query->where('status', '=', $filterStatus);
+                            }
+                        )
+                        ->first();
+
+                    if ($version) {
+                        $titleMatches[] = $version->dataset_id;
+                    }
+                }
+
+                $matches = array_intersect($matches, $titleMatches);
+            }
+
+            $perPage = request('per_page', Config::get('constants.per_page'));
+
+            $datasets = Dataset::whereIn('id', $matches)
+                ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
+                ->when(
+                    $request->has('withTrashed'),
+                    function ($query) {
+                        return $query->withTrashed();
+                    }
+                )
+                ->when($filterStatus, function ($query) use ($filterStatus) {
+                    return $query->where('status', '=', $filterStatus);
+                })
+                ->when(
+                    $sortOnMetadata,
+                    fn ($query) => $query->orderByMetadata($sortField, $sortDirection),
+                    fn ($query) => $query->orderBy($sortField, $sortDirection)
+                )
+                ->paginate($perPage, ['*'], 'page');
+
+            foreach ($datasets as &$d) {
+                $miniMetadata = $this->trimDatasets($d->latestMetadata['metadata'], [
+                    'summary',
+                    'required',
+                ]);
+
+                // latestMetadata is a relation and cannot be assigned at this
+                // level, safely. So, unset all forms of metadata on the object
+                // and overwrite with out minimal version
+                unset($d['latest_metadata']);
+                unset($d['latestMetadata']);
+
+                $d['latest_metadata'] = $miniMetadata;
+            }
+
+            return response()->json([
+                $datasets,
+            ], 200);
+
+        } catch (Exception $e) {
+            throw new Exception($e);
         }
     }
 
