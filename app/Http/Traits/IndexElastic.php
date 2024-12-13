@@ -868,6 +868,7 @@ trait IndexElastic
             if (is_null($team)) {
                 continue;
             }
+
             $this->getDatasets((int) $team->id);
             $teamsResult[] = [
                 'name' => $team->name,
