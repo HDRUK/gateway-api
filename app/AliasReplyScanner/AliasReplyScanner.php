@@ -134,7 +134,7 @@ class AliasReplyScanner
         ])->get();
 
         foreach ($enquiryThreads as $eqTh) {
-            $usersToNotify[] = EMC::determineDARManagersFromTeamId($eqTh->team_id, $eqTh->id);
+            $usersToNotify[] = EMC::determineDARManagersFromTeamId($eqTh->team_id, $eqTh->id, $enquiryThreads->user_id);
         }
 
         if (empty($usersToNotify)) {
@@ -159,8 +159,6 @@ class AliasReplyScanner
         $user = User::where([
             'id' => $enquiryThread->user_id,
         ])->first();
-
-        $usersToNotify[] = [['user' => $user]];
 
         $payload = [
             'thread' => [

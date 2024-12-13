@@ -20,7 +20,7 @@ use App\Models\EnquiryThreadHasDatasetVersion;
 
 class EnquiriesManagementController
 {
-    public function determineDARManagersFromTeamId(int $teamId, int $enquiryThreadId): ?array
+    public function determineDARManagersFromTeamId(int $teamId, int $enquiryThreadId, int $currUserId): ?array
     {
         $team = Team::with('users')->where('id', $teamId)->first();
         $teamHasUserIds = TeamHasUser::where('team_id', $team->id)->get();
@@ -29,6 +29,10 @@ class EnquiriesManagementController
         $enquiryThread = null;
 
         $users = [];
+        // user who open the enquiry
+        $users[] = [
+            'user' => User::where('id', $currUserId)->first()->toArray(),
+        ];
 
         foreach ($teamHasUserIds as $thu) {
             $teamUserHasRoles = TeamUserHasRole::where('team_has_user_id', $thu->id)->get();
@@ -72,7 +76,10 @@ class EnquiriesManagementController
             $enquiryThread,
         );
 
-        return $users;
+        return collect($users)
+                    ->keyBy('users.id')
+                    ->values()
+                    ->toArray();
     }
 
     public function createEnquiryThread(array $input): int
