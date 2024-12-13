@@ -45,18 +45,6 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
         ],
 
-        'ars' => [
-            'imap' => [
-                'host'          => env('ARS_IMAP_HOST'),
-                'port'          => env('ARS_IMAP_PORT'),
-                'encryption'    => env('ARS_IMAP_ENCRYPTION'),
-                'validate_cert' => env('ARS_IMAP_VALIDATE_CERT'),
-                'username'      => env('ARS_IMAP_USERNAME'),
-                'password'      => env('ARS_IMAP_PASSWORD'),
-                'protocol'      => env('ARS_IMAP_PROTOCOL'),
-            ],
-            'inbox' => env('ARS_IMAP_INBOX_NAME'),
-        ],
 
         'ses' => [
             'transport' => 'ses',
