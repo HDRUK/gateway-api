@@ -860,7 +860,6 @@ trait IndexElastic
     public function getInfoTeams(DataProviderColl $dp)
     {
         $idTeams = DataProviderCollHasTeam::where(['data_provider_coll_id' => $dp->id])->pluck('team_id')->toArray();
-        var_dump($idTeams);
         $teamsResult = [];
 
         foreach ($idTeams as $idTeam) {
