@@ -326,4 +326,17 @@ return [
             'teamId' => '[0-9]+',
         ],
     ],
+
+    // v2 datasets
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/datasets/{id}',
+        'methodController' => 'DatasetController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 ];
