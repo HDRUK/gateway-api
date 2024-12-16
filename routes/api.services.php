@@ -7,10 +7,10 @@ use App\Http\Controllers\ServiceLayerController;
 use App\Http\Controllers\Api\V1\DatasetController;
 
 Route::get('/federations', [ServiceLayerController::class, 'getActiveFederationApplications']);
-Route::patch('/federations/{id}', [ServiceLayerController::class, 'setFederationInvalidRunState'])->middleware('jwt.verify');
+Route::patch('/federations/{id}', [ServiceLayerController::class, 'setFederationInvalidRunState']);
 Route::post('/federations', [DatasetController::class, 'store'])->middleware('jwt.verify');
 Route::put('/federations/update/{pid}', [DatasetController::class, 'updateByPid']);
-Route::delete('/federations/delete/{pid}', [DatasetController::class, 'destroyByPid'])->middleware('jwt.verify');
+Route::delete('/federations/delete/{pid}', [DatasetController::class, 'destroyByPid']);
 Route::get('/datasets', [ServiceLayerController::class, 'getDatasets']);
 Route::get('/datasets/{pid}', [ServiceLayerController::class, 'getDatasetFromPid']);
 Route::post('/audit', [ServiceLayerController::class, 'audit']);
