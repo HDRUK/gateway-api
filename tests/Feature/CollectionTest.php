@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Config;
 use App\Models\Dur;
 use Tests\TestCase;
+use App\Http\Enums\TeamMemberOf;
 use App\Models\Tool;
 use App\Models\Dataset;
 use App\Models\Keyword;
@@ -100,6 +101,154 @@ class CollectionTest extends TestCase
             'Authorization' => 'Bearer ' . $this->nonAdmin2Jwt,
         ];
 
+    }
+
+    /**
+     * Get All Collections with success
+     *
+     * @return void
+     */
+    public function test_get_all_collections_with_success(): void
+    {
+        $response = $this->json('GET', self::TEST_URL_V2, [], $this->header);
+
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    'id',
+                    'name',
+                    'description',
+                    'image_link',
+                    'enabled',
+                    'public',
+                    'counter',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'mongo_object_id',
+                    'mongo_id',
+                    'keywords',
+                    'datasets',
+                    'tools',
+                    'dur',
+                    'publications',
+                    'users',
+                    'team',
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',
+        ]);
+        $response->assertStatus(200);
+    }
+
+    /**
+     * Get All Collections counts with success
+     *
+     * @return void
+     */
+    public function test_get_collections_count_with_success(): void
+    {
+        // Ensure we have at least one active and one draft collection
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL_V2,
+            $mockData,
+            $this->headerNonAdmin
+        );
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "DRAFT"
+        ];
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL_V2,
+            $mockData,
+            $this->headerNonAdmin
+        );
+
+        $response = $this->json('GET', self::TEST_URL_V2 . '/count/status', [], $this->header);
+
+        $response->assertJsonStructure([
+            'data' => [
+                'ACTIVE',
+                'DRAFT'
+            ],
+        ]);
+        $response->assertStatus(200);
+    }
+
+    /**
+     * Get Collection by Id with success
+     *
+     * @return void
+     */
+    public function test_get_collection_by_id_with_success(): void
+    {
+        $collectionId = (int) Collection::all()->random()->id;
+        $response = $this->json('GET', self::TEST_URL_V2 . '/' . $collectionId, [], $this->header);
+
+        $response->assertJsonStructure([
+            'message',
+            'data' => [
+                'id',
+                'name',
+                'description',
+                'image_link',
+                'enabled',
+                'public',
+                'counter',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'mongo_object_id',
+                'mongo_id',
+                'keywords',
+                'dataset_versions',
+                'tools',
+                'dur',
+                'publications',
+                'team',
+            ]
+        ]);
+        $response->assertStatus(200);
     }
 
     /**
@@ -826,6 +975,720 @@ class CollectionTest extends TestCase
         $response->assertStatus(401);
     }
 
+
+    // users collections - GET, GET, GET (3 statuses), POST PUT PATVH
+
+    /**
+     * Create new users Collection with success
+     *
+     * @return void
+     */
+    public function test_add_new_users_collection_with_success(): void
+    {
+
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
+                    }
+                )
+            )
+            ->times(1);
+
+        $datasets = $this->generateDatasets();
+        $nActive = Dataset::whereIn("id", array_column($datasets, 'id'))
+            ->where('status', Dataset::STATUS_ACTIVE)
+            ->count();
+
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
+                    }
+                )
+            )
+            ->times($nActive);
+
+
+        $countBefore = Collection::count();
+
+        $collectionOwner = $this->createCollectionOwner();
+        $ownerHeader = $collectionOwner['ownerHeader'];
+        $ownerId = $collectionOwner['userId'];
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $datasets,
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/users/' . $ownerId . '/collections',
+            $mockData,
+            $ownerHeader
+        );
+
+        $countAfter = Collection::count();
+        $countNewRow = $countAfter - $countBefore;
+
+        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+        $response->assertStatus(201);
+
+    }
+
+    /**
+     * Get users Collection with success
+     *
+     * @return void
+     */
+    public function test_get_users_collection_with_success(): void
+    {
+        $countBefore = Collection::count();
+
+        $collectionOwner = $this->createCollectionOwner();
+        $ownerHeader = $collectionOwner['ownerHeader'];
+        $ownerId = $collectionOwner['userId'];
+
+        // Create a collection with each status
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/users/' . $ownerId . '/collections',
+            $mockData,
+            $ownerHeader
+        );
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "DRAFT"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/users/' . $ownerId . '/collections',
+            $mockData,
+            $ownerHeader
+        );
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ARCHIVED"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/users/' . $ownerId . '/collections',
+            $mockData,
+            $ownerHeader
+        );
+
+        // Test get active collections
+        $response = $this->json(
+            'GET',
+            'api/v2/users/' . $ownerId . '/collections',
+            [],
+            $ownerHeader
+        );
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson();
+        $this->assertEquals('ACTIVE', $content['data'][0]['status']);
+
+        // Test get draft collections
+        $response = $this->json(
+            'GET',
+            'api/v2/users/' . $ownerId . '/collections/status/draft',
+            [],
+            $ownerHeader
+        );
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson();
+        $this->assertEquals('DRAFT', $content['data'][0]['status']);
+
+        // Test get active collections
+        $response = $this->json(
+            'GET',
+            'api/v2/users/' . $ownerId . '/collections/status/archived',
+            [],
+            $ownerHeader
+        );
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson();
+        $this->assertEquals('ARCHIVED', $content['data'][0]['status']);
+
+    }
+
+    /**
+     * Update users Collection with success
+     *
+     * @return void
+     */
+    public function test_update_users_collection_with_success(): void
+    {
+
+        $collectionOwner = $this->createCollectionOwner();
+        $ownerHeader = $collectionOwner['ownerHeader'];
+        $ownerId = $collectionOwner['userId'];
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/users/' . $ownerId . '/collections',
+            $mockData,
+            $ownerHeader
+        );
+
+        $response->assertStatus(201);
+        $collectionId = $response->decodeResponseJson()['data'];
+
+        $updateData = [
+            "name" => "updated name",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "DRAFT"
+        ];
+
+        $response = $this->json(
+            'PUT',
+            'api/v2/users/' . $ownerId . '/collections/' . $collectionId,
+            $updateData,
+            $ownerHeader
+        );
+
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson();
+
+        $this->assertEquals('updated name', $content['data']['name']);
+        $this->assertEquals('DRAFT', $content['data']['status']);
+    }
+
+    /**
+     * Edit users Collection with success
+     *
+     * @return void
+     */
+    public function test_edit_users_collection_with_success(): void
+    {
+
+        $collectionOwner = $this->createCollectionOwner();
+        $ownerHeader = $collectionOwner['ownerHeader'];
+        $ownerId = $collectionOwner['userId'];
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/users/' . $ownerId . '/collections',
+            $mockData,
+            $ownerHeader
+        );
+
+        $response->assertStatus(201);
+        $collectionId = $response->decodeResponseJson()['data'];
+
+        $editData = [
+            "name" => "edited name",
+            "status" => "DRAFT"
+        ];
+
+        $response = $this->json(
+            'PATCH',
+            'api/v2/users/' . $ownerId . '/collections/' . $collectionId,
+            $editData,
+            $ownerHeader
+        );
+
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson();
+
+        $this->assertEquals('edited name', $content['data']['name']);
+        $this->assertEquals('DRAFT', $content['data']['status']);
+    }
+
+    /**
+     * Delete users Collection with success
+     *
+     * @return void
+     */
+    public function test_delete_users_collection_with_success(): void
+    {
+
+        $collectionOwner = $this->createCollectionOwner();
+        $ownerHeader = $collectionOwner['ownerHeader'];
+        $ownerId = $collectionOwner['userId'];
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/users/' . $ownerId . '/collections',
+            $mockData,
+            $ownerHeader
+        );
+
+        $response->assertStatus(201);
+        $collectionId = $response->decodeResponseJson()['data'];
+
+        $response = $this->json(
+            'DELETE',
+            'api/v2/users/' . $ownerId . '/collections/' . $collectionId,
+            [],
+            $ownerHeader
+        );
+
+        $response->assertStatus(200);
+    }
+
+
+    // teams collections - GET, GET, GET (3 statuses), POST PUT PATVH
+
+    /**
+     * Create new teams Collection with success
+     *
+     * @return void
+     */
+    public function test_add_new_teams_collection_with_success(): void
+    {
+
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
+                    }
+                )
+            )
+            ->times(1);
+
+        $datasets = $this->generateDatasets();
+        $nActive = Dataset::whereIn("id", array_column($datasets, 'id'))
+            ->where('status', Dataset::STATUS_ACTIVE)
+            ->count();
+
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
+                    }
+                )
+            )
+            ->times($nActive);
+
+
+        $countBefore = Collection::count();
+
+        $collectionTeam = $this->createCollectionTeam();
+        $memberHeader = $collectionTeam['memberHeader'];
+        $teamId = $collectionTeam['teamId'];
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $datasets,
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/teams/' . $teamId . '/collections',
+            $mockData,
+            $memberHeader
+        );
+
+        $countAfter = Collection::count();
+        $countNewRow = $countAfter - $countBefore;
+
+        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+        $response->assertStatus(201);
+
+    }
+
+    /**
+     * Get teams Collection with success
+     *
+     * @return void
+     */
+    public function test_get_teams_collection_with_success(): void
+    {
+        $countBefore = Collection::count();
+
+        $collectionTeam = $this->createCollectionTeam();
+        $memberHeader = $collectionTeam['memberHeader'];
+        $teamId = $collectionTeam['teamId'];
+
+        // Create a collection with each status
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/teams/' . $teamId . '/collections',
+            $mockData,
+            $memberHeader
+        );
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "DRAFT"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/teams/' . $teamId . '/collections',
+            $mockData,
+            $memberHeader
+        );
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ARCHIVED"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/teams/' . $teamId . '/collections',
+            $mockData,
+            $memberHeader
+        );
+
+        // Test get active collections
+        $response = $this->json(
+            'GET',
+            'api/v2/teams/' . $teamId . '/collections',
+            [],
+            $memberHeader
+        );
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson();
+        $this->assertEquals('ACTIVE', $content['data'][0]['status']);
+
+        // Test get draft collections
+        $response = $this->json(
+            'GET',
+            'api/v2/teams/' . $teamId . '/collections/status/draft',
+            [],
+            $memberHeader
+        );
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson();
+        $this->assertEquals('DRAFT', $content['data'][0]['status']);
+
+        // Test get active collections
+        $response = $this->json(
+            'GET',
+            'api/v2/teams/' . $teamId . '/collections/status/archived',
+            [],
+            $memberHeader
+        );
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson();
+        $this->assertEquals('ARCHIVED', $content['data'][0]['status']);
+
+    }
+
+    /**
+     * Update teams Collection with success
+     *
+     * @return void
+     */
+    public function test_update_teams_collection_with_success(): void
+    {
+
+        $collectionTeam = $this->createCollectionTeam();
+        $memberHeader = $collectionTeam['memberHeader'];
+        $teamId = $collectionTeam['teamId'];
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/teams/' . $teamId . '/collections',
+            $mockData,
+            $memberHeader
+        );
+
+        $response->assertStatus(201);
+        $collectionId = $response->decodeResponseJson()['data'];
+
+        $updateData = [
+            "name" => "updated name",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "DRAFT"
+        ];
+
+        $response = $this->json(
+            'PUT',
+            'api/v2/teams/' . $teamId . '/collections/' . $collectionId,
+            $updateData,
+            $memberHeader
+        );
+
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson();
+
+        $this->assertEquals('updated name', $content['data']['name']);
+        $this->assertEquals('DRAFT', $content['data']['status']);
+    }
+
+    /**
+     * Edit teams Collection with success
+     *
+     * @return void
+     */
+    public function test_edit_teams_collection_with_success(): void
+    {
+
+        $collectionTeam = $this->createCollectionTeam();
+        $memberHeader = $collectionTeam['memberHeader'];
+        $teamId = $collectionTeam['teamId'];
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/teams/' . $teamId . '/collections',
+            $mockData,
+            $memberHeader
+        );
+
+        $response->assertStatus(201);
+        $collectionId = $response->decodeResponseJson()['data'];
+
+        $editData = [
+            "name" => "edited name",
+            "status" => "DRAFT"
+        ];
+
+        $response = $this->json(
+            'PATCH',
+            'api/v2/teams/' . $teamId . '/collections/' . $collectionId,
+            $editData,
+            $memberHeader
+        );
+
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson();
+
+        $this->assertEquals('edited name', $content['data']['name']);
+        $this->assertEquals('DRAFT', $content['data']['status']);
+    }
+
+    /**
+     * Delete teams Collection with success
+     *
+     * @return void
+     */
+    public function test_delete_teams_collection_with_success(): void
+    {
+
+        $collectionTeam = $this->createCollectionTeam();
+        $memberHeader = $collectionTeam['memberHeader'];
+        $teamId = $collectionTeam['teamId'];
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/teams/' . $teamId . '/collections',
+            $mockData,
+            $memberHeader
+        );
+
+        $response->assertStatus(201);
+        $collectionId = $response->decodeResponseJson()['data'];
+
+        $response = $this->json(
+            'DELETE',
+            'api/v2/teams/' . $teamId . '/collections/' . $collectionId,
+            [],
+            $memberHeader
+        );
+
+        $response->assertStatus(200);
+    }
+
     private function generateKeywords()
     {
         $return = [];
@@ -896,5 +1759,130 @@ class CollectionTest extends TestCase
         }
 
         return $return;
+    }
+
+    private function createCollectionOwner()
+    {
+        // create a user to own this collection
+        $responseUser = $this->json(
+            'POST',
+            '/api/v1/users',
+            [
+                'firstname' => 'XXXXXXXXXX',
+                'lastname' => 'XXXXXXXXXX',
+                'email' => 'just.test.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/12345678",
+                'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",
+            ],
+            $this->header
+        );
+        $responseUser->assertStatus(201);
+        $uniqueUserId = $responseUser->decodeResponseJson()['data'];
+        $response = $this->json(
+            'POST',
+            '/api/v1/auth',
+            [
+                'email' => 'just.test.123456789@test.com',
+                'password' => 'Passw@rd1!',
+            ],
+            ['Accept' => 'application/json']
+        );
+        $jwt = $response['access_token'];
+        $ownerHeader = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwt,
+        ];
+
+        return [
+            'ownerHeader' => $ownerHeader,
+            'userId' => $uniqueUserId
+        ];
+    }
+
+    private function createCollectionTeam()
+    {
+        // create a user to be in the team
+        $responseUser = $this->json(
+            'POST',
+            '/api/v1/users',
+            [
+                'firstname' => 'XXXXXXXXXX',
+                'lastname' => 'XXXXXXXXXX',
+                'email' => 'just.test.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/12345678",
+                'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",
+            ],
+            $this->header
+        );
+        $responseUser->assertStatus(201);
+        $uniqueUserId = $responseUser->decodeResponseJson()['data'];
+        $response = $this->json(
+            'POST',
+            '/api/v1/auth',
+            [
+                'email' => 'just.test.123456789@test.com',
+                'password' => 'Passw@rd1!',
+            ],
+            ['Accept' => 'application/json']
+        );
+        $jwt = $response['access_token'];
+        $userHeader = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwt,
+        ];
+
+        // Create team for the user to belong to
+        $responseTeam = $this->json(
+            'POST',
+            'api/v1/teams',
+            [
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => TeamMemberOf::HUB,
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'is_question_bank' => 1,
+                'users' => [$uniqueUserId],
+                'notifications' => [],
+                'url' => 'https://fakeimg.pl/350x200/ff0000/000',
+                'introduction' => fake()->sentence(),
+                'dar_modal_content' => fake()->sentence(),
+                'service' => 'https://service.local/test',
+            ],
+            $this->header
+        );
+        $responseTeam->assertStatus(200);
+
+        $content = $responseTeam->decodeResponseJson();
+        $teamId = $content['data'];
+
+        return [
+            'memberHeader' => $userHeader,
+            'teamId' => $teamId
+        ];
     }
 }
