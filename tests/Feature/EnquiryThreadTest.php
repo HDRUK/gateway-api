@@ -220,7 +220,6 @@ class EnquiryThreadTest extends TestCase
             $body,
             $this->header
         );
-
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'message',
