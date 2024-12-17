@@ -46,15 +46,14 @@ class ChangeMetaPublisher extends Command
             917,
         ];
 
-        // Target Publisher ID
-        $targetPublisherId = 99;
+        // Target Team
+        $targetTeamId = 99;
 
-
-        $team = Team::where('name', 'like', '%' . $targetPublisherId . '%')->first();
+        $team = Team::where('id', $targetTeamId)->first();
 
         if ($team) {
-            $this->info($team->name . ' is what will be used for Publisher Name');
-
+            $this->info($team->name . ' is what will be used for publisher.name');
+            $this->info($targetTeamId . ' is what will be used for publisher.gatewayId');
             // Loop through each dataset
             foreach ($items as $item) {
                 $dataset = Dataset::where('id', $item)->first();
@@ -63,11 +62,12 @@ class ChangeMetaPublisher extends Command
                       $latestVersion = $dataset->latestVersion();
 
                     if ($latestVersion) {
-                        $metadata = json_decode($latestVersion->metadata, true);
+
+                        $metadata = $latestVersion->metadata;
 
                         if (isset($metadata['metadata']['summary']['publisher'])) {
                             $metadata['metadata']['summary']['publisher']['name'] = $team->name;
-                            $metadata['metadata']['summary']['publisher']['gatewayId'] = $targetPublisherId;
+                            $metadata['metadata']['summary']['publisher']['gatewayId'] = $targetTeamId;
                             $latestVersion->metadata = $metadata;
                             $latestVersion->save();
 
@@ -83,7 +83,7 @@ class ChangeMetaPublisher extends Command
                 }
             }
         } else {
-            $this->warn('Team not found for Publisher ID ' . $targetPublisherId);
+            $this->warn('Team not found for ID ' . $targetTeamId);
         }
     }
 }
