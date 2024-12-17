@@ -38,7 +38,8 @@ class AliasReplyScanner
         $messages = $this->getNewMessages();
         return $messages->filter(function ($msg) {
             $body = $this->getSanitisedBody($msg);
-            return $this->checkBodyIsSensible($body);
+            // 17/12/2024 - temporary turn off
+            return true; //$this->checkBodyIsSensible($body);
         });
     }
 
@@ -206,6 +207,9 @@ class AliasReplyScanner
     {
         $something = null;
 
+        $imapUsername = env('ARS_IMAP_USERNAME', 'devreply@healthdatagateway.org');
+        list($username, $domain) = explode('@', $imapUsername);
+
         try {
             $template = EmailTemplate::where('identifier', $ident)->first();
             $replacements = array_merge(
@@ -233,7 +237,7 @@ class AliasReplyScanner
                         ],
                     ];
 
-                    $from = 'devreply+' . $threadDetail['thread']['unique_key'] . '@healthdatagateway.org';
+                    $from = $username . '+' . $threadDetail['thread']['unique_key'] . '@' . $domain;
                     $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
                 }
             }
