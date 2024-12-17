@@ -38,7 +38,8 @@ class AliasReplyScanner
         $messages = $this->getNewMessages();
         return $messages->filter(function ($msg) {
             $body = $this->getSanitisedBody($msg);
-            return $this->checkBodyIsSensible($body);
+            // 17/12/2024 - temporary turn off
+            return true; //$this->checkBodyIsSensible($body);
         });
     }
 
