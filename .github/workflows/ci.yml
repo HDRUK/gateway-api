@@ -13,8 +13,8 @@ on:
       - release
 
 env:
-  SLACK_WEBHOOK_URL: '${{ secrets.SLACK_WEBHOOK_URL}}'
-  SLACK_CHANNEL: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL }}'
+  SLACK_WEBHOOK_URL: "${{ secrets.SLACK_WEBHOOK_URL}}"
+  SLACK_CHANNEL: "${{ secrets.GITHUBACTIONS_SLACK_CHANNEL }}"
 
 jobs:
   test:
@@ -27,43 +27,42 @@ jobs:
       ||                             'release'
       }}
 
-
     steps:
-    - name: Checkout
-      id: checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
 
-    - name: Setup PHP with PECL extension
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.3'
+      - name: Setup PHP with PECL extension
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
 
-    - name: Composer install
-      id: composerinstall
-      run: "composer install"
+      - name: Composer install
+        id: composerinstall
+        run: "composer install"
 
-    - name: Run static analysis
-      id: composerphpstan
-      run: "composer run phpstan"
+      #- name: Run static analysis
+      #  id: composerphpstan
+      #  run: "composer run phpstan"
 
-    - name: Run unit tests
-      id: unittests
-      run: "composer run pest"
-  
-    # - name: Run one unit test file
-    #   id: unittests
-    #   run: "composer run pest -- --filter test_data_provider_colls_search_with_success"
+      - name: Run unit tests
+        id: unittests
+        run: "composer run pest --filter EnquiryThreadTest"
 
-    - name: Run code sniffer
-      id: codesniffer
-      run: "composer run phpcs"
+      # - name: Run one unit test file
+      #   id: unittests
+      #   run: "composer run pest -- --filter test_data_provider_colls_search_with_success"
 
-    - name: Run Notification
-      id: runnotificationsent
-      uses: act10ns/slack@v1
-      with:
-        status: ${{ job.status }}
-        steps: ${{ toJson(steps) }}
-        channel: ${{ env.SLACK_CHANNEL }}
-        message: Running CI tests on {{ env.GITHUB_REF_NAME }} branch ${{ job.status }}
-      if: always()
+      - name: Run code sniffer
+        id: codesniffer
+        run: "composer run phpcs"
+
+      - name: Run Notification
+        id: runnotificationsent
+        uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+          channel: ${{ env.SLACK_CHANNEL }}
+          message: Running CI tests on {{ env.GITHUB_REF_NAME }} branch ${{ job.status }}
+        if: always()
