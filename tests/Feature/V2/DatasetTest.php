@@ -18,7 +18,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use App\Jobs\LinkageExtraction;
 
-class DatasetTest extends TestCase
+class DatasetTestV2 extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
@@ -26,7 +26,7 @@ class DatasetTest extends TestCase
         setUp as commonSetUp;
     }
 
-    public const TEST_URL_DATASET = '/api/v1/datasets';
+    public const TEST_URL_DATASET_V2 = '/api/v2/datasets';
     public const TEST_URL_TEAM = '/api/v1/teams';
     public const TEST_URL_NOTIFICATION = '/api/v1/notifications';
     public const TEST_URL_USER = '/api/v1/users';
@@ -55,7 +55,7 @@ class DatasetTest extends TestCase
      */
     public function test_get_all_datasets_with_success(): void
     {
-        $response = $this->json('GET', self::TEST_URL_DATASET, [], $this->header);
+        $response = $this->json('GET', self::TEST_URL_DATASET_V2, [], $this->header);
         $response->assertJsonStructure([
             'current_page',
             'data',
@@ -208,7 +208,7 @@ class DatasetTest extends TestCase
         $labelDataset1 = 'XYZ DATASET';
         $responseCreateDataset = $this->json(
             'POST',
-            self::TEST_URL_DATASET,
+            self::TEST_URL_DATASET_V2,
             [
                 'team_id' => $teamId1,
                 'user_id' => $userId,
@@ -229,7 +229,7 @@ class DatasetTest extends TestCase
         $labelDataset2 = 'ABC DATASET';
         $responseCreateDataset2 = $this->json(
             'POST',
-            self::TEST_URL_DATASET,
+            self::TEST_URL_DATASET_V2,
             [
                 'team_id' => $teamId1,
                 'user_id' => $userId,
@@ -248,7 +248,7 @@ class DatasetTest extends TestCase
         $labelDataset3 = 'Other Team DATASET';
         $responseCreateDataset3 = $this->json(
             'POST',
-            self::TEST_URL_DATASET,
+            self::TEST_URL_DATASET_V2,
             [
                 'team_id' => $teamId2,
                 'user_id' => $userId,
@@ -263,7 +263,7 @@ class DatasetTest extends TestCase
 
         $response = $this->json(
             'GET',
-            self::TEST_URL_DATASET,
+            self::TEST_URL_DATASET_V2,
             [],
             $this->header
         );
@@ -300,7 +300,7 @@ class DatasetTest extends TestCase
                 This is know about and is being resolved...
         */
         /*
-        $response = $this->json('GET', self::TEST_URL_DATASET .
+        $response = $this->json('GET', self::TEST_URL_DATASET_V2 .
             '?title=ABC',
             [], $this->header
         );
@@ -313,7 +313,7 @@ class DatasetTest extends TestCase
         */
         $response = $this->json(
             'GET',
-            self::TEST_URL_DATASET .
+            self::TEST_URL_DATASET_V2 .
             '?team_id=' . $teamId1 .
             '&sort=created:desc',
             [],
@@ -332,7 +332,7 @@ class DatasetTest extends TestCase
         $labelDataset2 = 'Archived ABC DATASET';
         $responseCreateDatasetArchived = $this->json(
             'POST',
-            self::TEST_URL_DATASET,
+            self::TEST_URL_DATASET_V2,
             [
                 'team_id' => $teamId1,
                 'user_id' => $userId,
@@ -345,11 +345,11 @@ class DatasetTest extends TestCase
         $responseCreateDatasetArchived->assertStatus(201);
 
         /*
-        * use the endpoint /api/v1/datasets/count to find unique values of the field 'status'
+        * use the endpoint /api/v2/datasets/count to find unique values of the field 'status'
         */
         $responseCount = $this->json(
             'GET',
-            self::TEST_URL_DATASET .
+            self::TEST_URL_DATASET_V2 .
             '/count/status?team_id=' . $teamId1,
             [],
             $this->header
@@ -365,7 +365,7 @@ class DatasetTest extends TestCase
 
         $responseActiveDatasets = $this->json(
             'GET',
-            self::TEST_URL_DATASET .
+            self::TEST_URL_DATASET_V2 .
             '?team_id=' . $teamId1 .
             '&status=ACTIVE',
             [],
@@ -379,7 +379,7 @@ class DatasetTest extends TestCase
 
         $responseDraftDatasets = $this->json(
             'GET',
-            self::TEST_URL_DATASET .
+            self::TEST_URL_DATASET_V2 .
             '?team_id=' . $teamId1 .
             '&status=DRAFT',
             [],
@@ -393,7 +393,7 @@ class DatasetTest extends TestCase
 
         $responseArchivedDatasets = $this->json(
             'GET',
-            self::TEST_URL_DATASET .
+            self::TEST_URL_DATASET_V2 .
             '?team_id=' . $teamId1 .
             '&status=ARCHIVED',
             [],
@@ -411,7 +411,7 @@ class DatasetTest extends TestCase
         */
         $response = $this->json(
             'GET',
-            self::TEST_URL_DATASET .
+            self::TEST_URL_DATASET_V2 .
             '?team_id=' . $teamId1 .
             '&sort=created:asc',
             [],
@@ -427,7 +427,7 @@ class DatasetTest extends TestCase
         */
         $response = $this->json(
             'GET',
-            self::TEST_URL_DATASET .
+            self::TEST_URL_DATASET_V2 .
             '?team_id=' . $teamId1 .
             '&sort=label:asc',
             [],
@@ -439,7 +439,7 @@ class DatasetTest extends TestCase
         */
         $response = $this->json(
             'GET',
-            self::TEST_URL_DATASET .
+            self::TEST_URL_DATASET_V2 .
             '?team_id=' . $teamId1 .
             '&sort=label:desc',
             [],
@@ -451,7 +451,7 @@ class DatasetTest extends TestCase
         */
         $response = $this->json(
             'GET',
-            self::TEST_URL_DATASET .
+            self::TEST_URL_DATASET_V2 .
             '?team_id=' . $teamId1 .
             '&sort=properties/summary/title:desc',
             [],
@@ -463,7 +463,7 @@ class DatasetTest extends TestCase
         */
         $response = $this->json(
             'GET',
-            self::TEST_URL_DATASET .
+            self::TEST_URL_DATASET_V2 .
             '?team_id=' . $teamId1 .
             '&sort=created:blah',
             [],
@@ -476,7 +476,7 @@ class DatasetTest extends TestCase
             // delete dataset
             $responseDeleteDataset = $this->json(
                 'DELETE',
-                self::TEST_URL_DATASET . '/' . ${'datasetId' . $i} . '?deletePermanently=true',
+                self::TEST_URL_DATASET_V2 . '/' . ${'datasetId' . $i},
                 [],
                 $this->header
             );
@@ -511,7 +511,7 @@ class DatasetTest extends TestCase
      *
      * @return void
      */
-    public function test_get_one_dataset_by_id_with_success(): void
+    public function test_get_one_dataset_by_id(): void
     {
         // create team
         // First create a notification to be used by the new team
@@ -597,7 +597,7 @@ class DatasetTest extends TestCase
         // create active dataset
         $responseCreateActiveDataset = $this->json(
             'POST',
-            self::TEST_URL_DATASET,
+            self::TEST_URL_DATASET_V2,
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
@@ -612,8 +612,8 @@ class DatasetTest extends TestCase
         $contentCreateActiveDataset = $responseCreateActiveDataset->decodeResponseJson();
         $activeDatasetId = $contentCreateActiveDataset['data'];
 
-        // get one active dataset
-        $responseGetOneActive = $this->json('GET', self::TEST_URL_DATASET . '/' . $activeDatasetId, [], $this->header);
+        // get one active dataset via V2 endpoint
+        $responseGetOneActive = $this->json('GET', self::TEST_URL_DATASET_V2 . '/' . $activeDatasetId, [], $this->header);
 
         $responseGetOneActive->assertJsonStructure([
             'message',
@@ -650,8 +650,6 @@ class DatasetTest extends TestCase
             $this->assertEquals($namedEntity->name, $entity['name'], 'The name in the response does not match the name in the database.');
         }
 
-
-
         /*
         // - need to temporary disable - this wont be filled because TED runs as a job
         if(config('ted.enabled')) {
@@ -666,7 +664,7 @@ class DatasetTest extends TestCase
         // delete active dataset
         $responseDeleteActiveDataset = $this->json(
             'DELETE',
-            self::TEST_URL_DATASET . '/' . $activeDatasetId . '?deletePermanently=true',
+            self::TEST_URL_DATASET_V2 . '/' . $activeDatasetId,
             [],
             $this->header
         );
@@ -678,7 +676,7 @@ class DatasetTest extends TestCase
         // create draft dataset
         $responseCreateDraftDataset = $this->json(
             'POST',
-            self::TEST_URL_DATASET,
+            self::TEST_URL_DATASET_V2,
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
@@ -693,35 +691,17 @@ class DatasetTest extends TestCase
         $contentCreateDraftDataset = $responseCreateDraftDataset->decodeResponseJson();
         $draftDatasetId = $contentCreateDraftDataset['data'];
 
-        // get one draft dataset
-        $responseGetOneDraft = $this->json('GET', self::TEST_URL_DATASET . '/' . $draftDatasetId, [], $this->header);
+        // fail to get draft dataset via V2 endpoint because only active are returned
+        $responseGetOneDraftV2 = $this->json('GET', self::TEST_URL_DATASET_V2 . '/' . $draftDatasetId, [], $this->header);
 
-        $responseGetOneDraft->assertJsonStructure([
-            'message',
-            'data' => [
-                'named_entities',
-                'collections',
-                'publications',
-                'versions',
-                'durs_count',
-                'publications_count',
-            ]
-        ]);
-        $responseGetOneDraft->assertStatus(200);
+        $responseGetOneDraftV2->assertStatus(404);
+        $responseGetOneDraftV2->assertJson(['message' => 'Dataset not found']);
 
-        $respArrayDraft = $responseGetOneDraft->decodeResponseJson();
-        $this->assertArrayHasKey('named_entities', $respArrayDraft['data']);
-
-        // The named_entities field is empty for draft datasets.
-        // The TermExtraction job is responsible for populating the named_entities field,
-        // is not run for draft datasets, thus the field remains empty and the following breaks the code.
-
-        $this->assertEmpty($respArrayDraft['data']['named_entities']);
 
         // delete draft dataset
         $responseDeleteDraftDataset = $this->json(
             'DELETE',
-            self::TEST_URL_DATASET . '/' . $draftDatasetId . '?deletePermanently=true',
+            self::TEST_URL_DATASET_V2 . '/' . $draftDatasetId,
             [],
             $this->header
         );
@@ -848,7 +828,7 @@ class DatasetTest extends TestCase
         $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         $responseCreateDataset = $this->json(
             'POST',
-            self::TEST_URL_DATASET,
+            self::TEST_URL_DATASET_V2,
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
@@ -865,9 +845,11 @@ class DatasetTest extends TestCase
 
         // archive dataset
         $responseArchiveDataset = $this->json(
-            'DELETE',
-            self::TEST_URL_DATASET . '/' . $datasetId,
-            [],
+            'PATCH',
+            self::TEST_URL_DATASET_V2 . '/' . $datasetId,
+            [
+                'status' => Dataset::STATUS_ARCHIVED,
+            ],
             $this->header
         );
         $responseArchiveDataset->assertJsonStructure([
@@ -878,7 +860,7 @@ class DatasetTest extends TestCase
         // unarchive dataset
         $responseUnarchiveDataset = $this->json(
             'PATCH',
-            self::TEST_URL_DATASET . '/' . $datasetId . '?unarchive',
+            self::TEST_URL_DATASET_V2 . '/' . $datasetId,
             [
                 'status' => Dataset::STATUS_ACTIVE,
             ],
@@ -893,7 +875,7 @@ class DatasetTest extends TestCase
         // change dataset status
         $responseChangeStatusDataset = $this->json(
             'PATCH',
-            self::TEST_URL_DATASET . '/' . $datasetId,
+            self::TEST_URL_DATASET_V2 . '/' . $datasetId,
             [
                 'status' => Dataset::STATUS_DRAFT,
             ],
@@ -904,10 +886,10 @@ class DatasetTest extends TestCase
         ]);
         $responseChangeStatusDataset->assertStatus(200);
 
-        // permanent delete dataset
+        // delete dataset
         $responseDeleteDataset = $this->json(
             'DELETE',
-            self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
+            self::TEST_URL_DATASET_V2 . '/' . $datasetId,
             [],
             $this->header
         );
@@ -1032,7 +1014,7 @@ class DatasetTest extends TestCase
         $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         $responseCreateDataset = $this->json(
             'POST',
-            self::TEST_URL_DATASET,
+            self::TEST_URL_DATASET_V2,
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
@@ -1050,7 +1032,7 @@ class DatasetTest extends TestCase
         // update dataset
         $responseUpdateDataset = $this->json(
             'PUT',
-            self::TEST_URL_DATASET . '/' . $datasetId,
+            self::TEST_URL_DATASET_V2 . '/' . $datasetId,
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
@@ -1064,10 +1046,10 @@ class DatasetTest extends TestCase
         $contentUpdateDataset = $responseUpdateDataset->decodeResponseJson();
         $responseUpdateDataset->assertStatus(200);
 
-        // permanent delete dataset
+        // delete dataset
         $responseDeleteDataset = $this->json(
             'DELETE',
-            self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
+            self::TEST_URL_DATASET_V2 . '/' . $datasetId,
             [],
             $this->header
         );
@@ -1186,7 +1168,7 @@ class DatasetTest extends TestCase
         // create dataset
         $responseCreateDataset = $this->json(
             'POST',
-            self::TEST_URL_DATASET,
+            self::TEST_URL_DATASET_V2,
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
@@ -1325,7 +1307,7 @@ class DatasetTest extends TestCase
         $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         $responseCreateDataset = $this->json(
             'POST',
-            self::TEST_URL_DATASET,
+            self::TEST_URL_DATASET_V2,
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
@@ -1341,7 +1323,7 @@ class DatasetTest extends TestCase
 
         $responseDownload = $this->json(
             'GET',
-            self::TEST_URL_DATASET . '/export',
+            self::TEST_URL_DATASET_V2 . '/export',
             [],
             $this->header,
         );
@@ -1356,7 +1338,7 @@ class DatasetTest extends TestCase
         // test dataset_id query parameter
         $responseDownload = $this->json(
             'GET',
-            self::TEST_URL_DATASET . '/export?dataset_id=' . $datasetId,
+            self::TEST_URL_DATASET_V2 . '/export?dataset_id=' . $datasetId,
             [],
             $this->header,
         );
@@ -1368,10 +1350,10 @@ class DatasetTest extends TestCase
             "Title"
         );
 
-        // permanent delete dataset
+        // delete dataset
         $responseDeleteDataset = $this->json(
             'DELETE',
-            self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
+            self::TEST_URL_DATASET_V2 . '/' . $datasetId,
             [],
             $this->header
         );
@@ -1426,7 +1408,7 @@ class DatasetTest extends TestCase
         Config::set('statuscodes.STATUS_OK.code', 200);
 
         // Make the request
-        $response = $this->get('/api/v1/datasets/export/mock?type=template_dataset_structural_metadata');
+        $response = $this->get('/api/v2/datasets/export/mock?type=template_dataset_structural_metadata');
 
         // Assert the file is downloaded
         $response->assertStatus(200);
@@ -1456,7 +1438,7 @@ class DatasetTest extends TestCase
         Config::set('statuscodes.STATUS_OK.code', 200);
 
         // Make the request
-        $response = $this->get('/api/v1/datasets/export/mock?type=dataset_metadata');
+        $response = $this->get('/api/v2/datasets/export/mock?type=dataset_metadata');
 
         // Assert the file is downloaded
         $response->assertStatus(200);
@@ -1478,7 +1460,7 @@ class DatasetTest extends TestCase
         Config::set('mock_data.dataset_structural_metadata', 'non_existent_file.json');
 
         // Make the request
-        $response = $this->get('/api/v1/datasets/export/mock?type=dataset_structural_metadata');
+        $response = $this->get('/api/v2/datasets/export/mock?type=dataset_structural_metadata');
 
         // Assert the file is not found
         $response->assertStatus(404);
@@ -1571,7 +1553,7 @@ class DatasetTest extends TestCase
         $labelDataset = 'label dataset test title';
         $responseCreateDataset = $this->json(
             'POST',
-            self::TEST_URL_DATASET,
+            self::TEST_URL_DATASET_V2,
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
@@ -1590,7 +1572,7 @@ class DatasetTest extends TestCase
         // update dataset
         $responseUpdateDataset = $this->json(
             'PUT',
-            self::TEST_URL_DATASET . '/' . $datasetId,
+            self::TEST_URL_DATASET_V2 . '/' . $datasetId,
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,

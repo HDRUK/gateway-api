@@ -162,7 +162,8 @@ class MetadataManagementController
                 throw new Exception('Dataset with id=' . $id . ' cannot be found');
             }
             $dataset->deleted_at = Carbon::now();
-            $dataset->status = Dataset::STATUS_ARCHIVED;
+            // TO DISCUSS BEFORE MERGING: does MMC need versioning?
+            // $dataset->status = Dataset::STATUS_ARCHIVED;
             $dataset->save();
 
             foreach ($dataset->versions as $metadata) {

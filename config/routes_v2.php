@@ -331,6 +331,24 @@ return [
     [
         'name' => 'datasets',
         'method' => 'get',
+        'path' => '/datasets',
+        'methodController' => 'DatasetController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'datasets-count-field',
+        'method' => 'get',
+        'path' => '/datasets/count/{field}',
+        'methodController' => 'DatasetController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
         'path' => '/datasets/{id}',
         'methodController' => 'DatasetController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
@@ -338,5 +356,90 @@ return [
         'constraint' => [
             'id' => '[0-9]+',
         ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'post',
+        'path' => '/datasets',
+        'methodController' => 'DatasetController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            //'sanitize.input',
+            'check.access:permissions,datasets.create',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'put',
+        'path' => '/datasets/{id}',
+        'methodController' => 'DatasetController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            //'sanitize.input',
+            'check.access:permissions,datasets.update',
+        ],
+        'constraint' => [
+            'id', '[0-9]+'
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'patch',
+        'path' => '/datasets/{id}',
+        'methodController' => 'DatasetController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,datasets.update',
+        ],
+        'constraint' => [
+            'id', '[0-9]+'
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'delete',
+        'path' => '/datasets/{id}',
+        'methodController' => 'DatasetController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,datasets.delete',
+        ],
+        'constraint' => [
+            'id', '[0-9]+'
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/datasets/export',
+        'methodController' => 'DatasetController@export',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/datasets/export_metadata/{id}',
+        'methodController' => 'DatasetController@exportMetadata',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/datasets/export/mock',
+        'methodController' => 'DatasetController@exportMock',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
     ],
 ];
