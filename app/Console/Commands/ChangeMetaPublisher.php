@@ -68,26 +68,22 @@ class ChangeMetaPublisher extends Command
                         if (isset($metadata['metadata']['summary']['publisher'])) {
                             $metadata['metadata']['summary']['publisher']['name'] = $team->name;
                             $metadata['metadata']['summary']['publisher']['gatewayId'] = $targetPublisherId;
-
-    
                             $latestVersion->metadata = json_encode($metadata);
-
-
                             $latestVersion->save();
 
                             $this->info('Metadata updated for Dataset ID ' . $dataset->id);
                         } else {
-                            $this->error('Publisher field not found in metadata for Dataset ID ' . $dataset->id);
+                            $this->warn('Publisher field not found in metadata for Dataset ID ' . $dataset->id);
                         }
                     } else {
-                        $this->error('Latest version not found for Dataset ID ' . $dataset->id);
+                        $this->warn('Latest version not found for Dataset ID ' . $dataset->id);
                     }
                 } else {
-                    $this->error('Dataset not found for ID ' . $item);
+                    $this->warn('Dataset not found for ID ' . $item);
                 }
             }
         } else {
-            $this->error('Team not found for Publisher ID ' . $targetPublisherId);
+            $this->warn('Team not found for Publisher ID ' . $targetPublisherId);
         }
     }
 }
