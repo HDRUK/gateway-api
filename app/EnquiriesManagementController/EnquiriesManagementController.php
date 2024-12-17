@@ -133,7 +133,7 @@ class EnquiriesManagementController
     public function sendEmail(string $ident, array $threadDetail, array $usersToNotify, array $jwtUser): void
     {
         $something = null;
-        $imapUsername = env('ARS_IMAP_USERNAME');
+        $imapUsername = env('ARS_IMAP_USERNAME', 'devreply@healthdatagateway.org');
         list($username, $domain) = explode('@', $imapUsername);
 
         try {
