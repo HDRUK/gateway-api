@@ -68,7 +68,7 @@ class ChangeMetaPublisher extends Command
                         if (isset($metadata['metadata']['summary']['publisher'])) {
                             $metadata['metadata']['summary']['publisher']['name'] = $team->name;
                             $metadata['metadata']['summary']['publisher']['gatewayId'] = $targetPublisherId;
-                            $latestVersion->metadata = json_encode($metadata);
+                            $latestVersion->metadata = $metadata;
                             $latestVersion->save();
 
                             $this->info('Metadata updated for Dataset ID ' . $dataset->id);
