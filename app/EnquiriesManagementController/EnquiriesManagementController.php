@@ -133,6 +133,8 @@ class EnquiriesManagementController
     public function sendEmail(string $ident, array $threadDetail, array $usersToNotify, array $jwtUser): void
     {
         $something = null;
+        $imapUsername = env('ARS_IMAP_USERNAME');
+        list($username, $domain) = explode('@', $imapUsername);
 
         try {
             $template = EmailTemplate::where('identifier', $ident)->first();
@@ -175,7 +177,7 @@ class EnquiriesManagementController
                     ],
                 ];
 
-                $from = 'devreply+' . $threadDetail['thread']['unique_key'] . '@healthdatagateway.org';
+                $from = $username . '+' . $threadDetail['thread']['unique_key'] . '@' . $domain;
                 $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
             }
 

@@ -206,6 +206,9 @@ class AliasReplyScanner
     {
         $something = null;
 
+        $imapUsername = env('ARS_IMAP_USERNAME');
+        list($username, $domain) = explode('@', $imapUsername);
+
         try {
             $template = EmailTemplate::where('identifier', $ident)->first();
             $replacements = array_merge(
@@ -233,7 +236,7 @@ class AliasReplyScanner
                         ],
                     ];
 
-                    $from = 'devreply+' . $threadDetail['thread']['unique_key'] . '@healthdatagateway.org';
+                    $from = $username . '+' . $threadDetail['thread']['unique_key'] . '@' . $domain;
                     $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
                 }
             }
