@@ -1204,9 +1204,9 @@ class TeamController extends Controller
                 $d['latest_metadata'] = $miniMetadata;
             }
 
-            return response()->json([
-                $datasets,
-            ], 200);
+            return response()->json(
+                $datasets
+            );
 
         } catch (Exception $e) {
             throw new Exception($e);
