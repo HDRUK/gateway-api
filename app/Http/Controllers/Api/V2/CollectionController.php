@@ -468,7 +468,7 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = $input['jwt_user'] ?? [];
-
+        
         // Allow access only to collaborators
         $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
         $this->checkAccessCollaborators($input, array_column($collHasUsers, 'user_id'));
@@ -522,6 +522,10 @@ class CollectionController extends Controller
                     'status',
                 ];
                 $array = $this->checkEditArray($input, $arrayKeys);
+                
+                if (array_key_exists('name', $input)) {
+                    $array['name'] = html_entity_decode($input['name']);
+                }
 
                 // Handle the 'deleted_at' field based on 'status'
                 if (isset($input['status']) && ($input['status'] === Collection::STATUS_ARCHIVED)) {
