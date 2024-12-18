@@ -528,7 +528,7 @@ class CollectionController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             if (array_key_exists('name', $input)) {
-                $array['name'] = html_entity_decode($input['name']);
+                $array['name'] = sanitize_input($input['name']);
             }
 
             $collection = Collection::create($array);
