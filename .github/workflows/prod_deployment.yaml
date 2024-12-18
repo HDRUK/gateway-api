@@ -44,6 +44,17 @@ jobs:
             sed -n 's/^appVersion:\(.*\)/\1/p' < chart/gateway-api/Chart.yaml > version
             echo "version=$(sed '/.*\"\(.*\)\".*/ s//\1/g' version)" >> $GITHUB_OUTPUT
 
+      - name: Create the release
+        id: create_release
+        uses: comnoco/create-release-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: '${{ steps.getversion.outputs.version }}'
+          release_name: Release '${{ steps.getversion.outputs.version }}'
+          draft: false
+          prerelease: false
+
       - name: Deploy to Cloud Run
         uses: actions-hub/gcloud@master
         id: deploy
