@@ -1,25 +1,21 @@
 <?php
-
 namespace Tests\Feature;
 
 use Tests\TestCase;
-use App\Services\InputSanitizer;
 
-class InputSanitizerServiceTest extends TestCase
+class InputSanitizerTest extends TestCase
 {
     /**
-     * Test that the InputSanitizer service decodes HTML entities and sanitizes input.
+     * Test that the sanitize_input helper function decodes HTML entities and sanitizes input.
      *
      * @return void
      */
-    public function test_sanitize_input_service()
+    public function test_sanitize_input()
     {
-
-        $sanitizer = new InputSanitizer();
-        
         $input = "<script>alert('XSS Attack')</script>Jamie B Tester&#039;s";
-        
-        $sanitized_input = $sanitizer->sanitizeInput($input);
+
+        $sanitized_input = sanitize_input($input);
+
         $this->assertStringNotContainsString('<script>', $sanitized_input);
         $this->assertStringContainsString("Jamie's", $sanitized_input);
         $this->assertEquals("Jamie B Tester's", $sanitized_input);
