@@ -484,7 +484,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
