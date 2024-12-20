@@ -17,7 +17,7 @@ return new class () extends Migration {
             $table->enum('concept_ancestor', ['y', 'n']);
             $table->enum('concept_relationship', ['y', 'n']);
             $table->enum('concept_synonym', ['y', 'n']);
-            $table->string('concept_synonym_types', 255)->nullable());
+            $table->string('concept_synonym_types', 255)->nullable();
             $table->float('search_threshold');
             $table->integer('max_separation_descendant');
             $table->integer('max_separation_ancestor');
