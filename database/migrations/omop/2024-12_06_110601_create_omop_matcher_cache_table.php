@@ -35,7 +35,7 @@ return new class () extends Migration {
             'concept_synonym',
             'concept_synonym_types',
             'concept_ancestor',
-            'concept_relationship'
+            'concept_relationship',
             'max_separation_descendant',
             'max_separation_ancestor'
         ], 'param_cache');
