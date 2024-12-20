@@ -23,19 +23,22 @@ return new class () extends Migration {
             $table->integer('max_separation_ancestor');
             $table->mediumText('result');
             
-            // Unique key constraint
-            $table->unique([
-                'search_term',
-                'vocabulary_id',
-                'concept_ancestor',
-                'concept_relationship',
-                'concept_synonym',
-                'concept_synonym_types',          
-                'search_threshold',
-                'max_separation_descendant',
-                'max_separation_ancestor'
-            ], 'unique_cache');
-        });
+        // First part of the unique index
+        $table->unique([
+            'search_term',
+            'vocabulary_id',
+            'search_threshold',
+        ], 'term_cache');
+
+        // Second part of the unique index
+        $table->unique([
+            'concept_synonym',
+            'concept_synonym_types',
+            'concept_ancestor',
+            'concept_relationship'
+            'max_separation_descendant',
+            'max_separation_ancestor'
+        ], 'param_cache');
     }
 
     /**
