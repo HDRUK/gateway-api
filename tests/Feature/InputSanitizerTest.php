@@ -17,7 +17,7 @@ class InputSanitizerTest extends TestCase
         $sanitized_input = sanitize_input($input);
 
         $this->assertStringNotContainsString('<script>', $sanitized_input);
-        $this->assertStringContainsString("Jamie's", $sanitized_input);
+        $this->assertStringContainsString("Jamie", $sanitized_input);
         $this->assertEquals("Jamie B Tester's", $sanitized_input);
     }
 }
