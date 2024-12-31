@@ -21,7 +21,7 @@ if (!function_exists('sanitize_input')) {
         $config = HTMLPurifier_Config::createDefault();
         $purifier = new HTMLPurifier($config);
         $sanitized_input = $purifier->purify($decoded_input);
-        
+
         return $sanitized_input;
     }
 }
