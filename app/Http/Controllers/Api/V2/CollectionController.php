@@ -522,7 +522,7 @@ class CollectionController extends Controller
                     'status',
                 ];
                 $array = $this->checkEditArray($input, $arrayKeys);
-                
+
                 if (array_key_exists('name', $input)) {
                     $array['name'] = sanitize_input($input['name']);
                 }
