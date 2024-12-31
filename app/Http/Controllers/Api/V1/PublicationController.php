@@ -864,8 +864,6 @@ class PublicationController extends Controller
                 DurHasPublication::where(['publication_id' => $id])->delete();
                 CollectionHasPublication::where(['publication_id' => $id])->delete();
 
-                $originalStatus = $publication->status;
-
                 $publication->deleted_at = Carbon::now();
                 $publication->status = Publication::STATUS_ARCHIVED;
                 $publication->save();
