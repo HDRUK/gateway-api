@@ -18,7 +18,6 @@ use App\Models\DatasetVersion;
 use Illuminate\Support\Carbon;
 use App\Http\Traits\CheckAccess;
 use App\Http\Requests\Dur\GetDur;
-use App\Http\Traits\IndexElastic;
 use App\Models\DurHasPublication;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Dur\EditDur;
@@ -37,7 +36,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DurController extends Controller
 {
-    use IndexElastic;
     use RequestTransformation;
     use MapOrganisationSector;
     use CheckAccess;
@@ -1611,7 +1609,6 @@ class DurController extends Controller
 
             if (!$checking) {
                 $this->addDurHasDatasetVersion($durId, $dataset, $datasetVersionId, $userId);
-                $this->reindexElastic($dataset['id']);
             }
         }
     }

@@ -13,7 +13,6 @@ use App\Models\Application;
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
 use App\Models\CollectionHasDur;
-use App\Http\Traits\IndexElastic;
 use App\Models\CollectionHasTool;
 
 use App\Models\CollectionHasUser;
@@ -36,7 +35,6 @@ use App\Http\Requests\CollectionIntegration\DeleteCollectionIntegration;
 
 class IntegrationCollectionController extends Controller
 {
-    use IndexElastic;
     use RequestTransformation;
     use IntegrationOverride;
     use IntegrationOverride;
@@ -896,7 +894,6 @@ class IntegrationCollectionController extends Controller
 
             if (!$checking) {
                 $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId, $appId);
-                $this->reindexElastic($dataset['id']);
             }
         }
     }
