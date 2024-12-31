@@ -83,6 +83,7 @@ class SearchTest extends TestCase
             DataProviderCollsSeeder::class,
             DurHasToolSeeder::class,
             CollectionHasUserSeeder::class,
+            DatasetVersionSeeder::class,
         ]);
 
         $this->metadata = $this->getMetadata();
@@ -118,7 +119,7 @@ class SearchTest extends TestCase
                     'team' => [
                         'id',
                         'is_question_bank',
-                    ]
+                    ],
                 ],
             ],
             'aggregations',
@@ -823,7 +824,12 @@ class SearchTest extends TestCase
                     'year_of_publication',
                     'full_text_url',
                     'url',
-                    'datasetLinkTypes'
+                    'datasetLinkTypes',
+                    'datasetVersions',
+                    'collections',
+                    'tools',
+                    'durs',
+
                 ],
             ],
             'aggregations',

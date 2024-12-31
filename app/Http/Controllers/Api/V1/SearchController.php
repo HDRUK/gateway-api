@@ -47,7 +47,10 @@ use App\Models\ToolHasProgrammingLanguage;
 use Illuminate\Database\Eloquent\Casts\Json;
 use App\Http\Requests\Search\DOISearch;
 use App\Http\Requests\Search\PublicationSearch;
+use App\Models\CollectionHasPublication;
 use App\Models\DataProviderColl;
+use App\Models\DurHasPublication;
+use App\Models\PublicationHasTool;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SearchController extends Controller
@@ -1085,19 +1088,35 @@ class SearchController extends Controller
                             $pubArray[$i]['year_of_publication'] = $model['year_of_publication'];
                             $pubArray[$i]['full_text_url'] = 'https://doi.org/' . $model['paper_doi'];
                             $pubArray[$i]['url'] = $model['url'];
+                            $pubArray[$i]['publication_type'] = $model['publication_type'];
 
                             // Use accessor to get datasets and their link types
                             $datasets = $model->allDatasets;
                             $datasetLinkTypes = [];
+                            $datasetVersions = [];
                             foreach ($datasets as $dataset) {
                                 $linkType = PublicationHasDatasetVersion::where([
                                     ['publication_id', '=', $model['id']],
                                     ['dataset_version_id', '=', $dataset['id']]
                                 ])->value('link_type') ?? 'UNKNOWN';
                                 $datasetLinkTypes[] = $linkType;
+                                $getDatasetversions = DatasetVersion::where('id', $dataset['id'])->select(['id', 'dataset_id', 'metadata'])->first();
+                                if (!is_null($getDatasetversions)) {
+                                    $datasetVersions[] = [
+                                        'id' => $getDatasetversions->id,
+                                        'dataset_id' => $getDatasetversions->dataset_id,
+                                        'metadata' => $getDatasetversions->metadata,
+                                    ];
+                                }
                             }
 
                             $pubArray[$i]['datasetLinkTypes'] = $datasetLinkTypes;
+
+                            $pubArray[$i]['datasetVersions'] = $datasetVersions;
+                            $pubArray[$i]['collections'] = $this->getCollectionsByPublicationId($model['id']);
+                            $pubArray[$i]['tools'] = $this->getToolsByPublicationId($model['id']);
+                            $pubArray[$i]['durs'] = $this->getDursByPublicationId($model['id']);
+
 
                             $foundFlag = true;
                             break;
@@ -1109,7 +1128,6 @@ class SearchController extends Controller
                     }
                 }
             } else {
-
                 if (isset($input['query']) && is_array($input['query'])) {
                     $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search/array';
                 } else {
@@ -1125,6 +1143,7 @@ class SearchController extends Controller
                 $pubArray = $response['resultList']['result'];
                 $totalResults = $response['hitCount'];
                 foreach ($pubArray as $i => $paper) {
+                    $pubArray[$i]['testid'] = $paper;
                     $pubArray[$i]['_source']['year_of_publication'] = $paper['pubYear'];
                     $pubArray[$i]['_source']['title'] = $paper['title'];
                     $pubArray[$i]['paper_title'] = $paper['title'];
@@ -1178,6 +1197,45 @@ class SearchController extends Controller
 
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function getCollectionsByPublicationId(int $publicationId)
+    {
+        $collectionHasPublications = CollectionHasPublication::where([
+            'publication_id' => $publicationId
+        ])->select('collection_id')->get();
+        $collectionIds = convertArrayToArrayWithKeyName($collectionHasPublications, 'collection_id');
+        if (!count($collectionIds)) {
+            return [];
+        }
+
+        return Collection::whereIn('id', $collectionIds)->where('status', 'ACTIVE')->select(['id', 'name', 'description'])->get();
+    }
+
+    private function getToolsByPublicationId(int $publicationId)
+    {
+        $publicationHasTools = PublicationHasTool::where([
+            'publication_id' => $publicationId
+        ])->select('tool_id')->get();
+        $toolIds = convertArrayToArrayWithKeyName($publicationHasTools, 'tool_id');
+        if (!count($toolIds)) {
+            return [];
+        }
+
+        return Tool::whereId('id', $toolIds)->where('status', 'ACTIVE')->select(['id', 'name', 'description'])->get();
+    }
+
+    private function getDursByPublicationId(int $publicationId)
+    {
+        $durHasPublications = DurHasPublication::where([
+            'publication_id' => $publicationId
+        ])->select('dur_id')->get();
+        $durIds = convertArrayToArrayWithKeyName($durHasPublications, 'dur_id');
+        if (!count($durIds)) {
+            return [];
+        }
+
+        return Dur::whereId('id', $durIds)->where('status', 'ACTIVE')->select(['id', 'project_title'])->get();
     }
 
     /**
