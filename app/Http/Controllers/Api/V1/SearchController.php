@@ -199,14 +199,19 @@ class SearchController extends Controller
                 $model['metadata'] = $model->latestVersion()['metadata']['metadata'];
 
                 $metadata = $model['metadata'];
-
-                if (isset($metadata['summary']['publisher']['gatewayId'])) {
+                
+                if (isset($metadata['summary']['publisher']['gatewayId']) && strpos($metadata['summary']['publisher']['gatewayId'], '-') !== false) {
+                    // then we're in pid land
                     $id = $metadata['summary']['publisher']['gatewayId'];
                     $team = Team::where('pid', $id)->first();
                     if ($team) {
                         $metadata['summary']['publisher']['gatewayId'] = $team->id;
                         $model['metadata'] = $metadata;
                     }
+                } else {
+                    // were in id land but we be a string
+                    $gatewayId = $metadata['summary']['publisher']['gatewayId'];
+                    $metadata['summary']['publisher']['gatewayId'] = (int)$gatewayId;
                 }
                 $model = $model->toArray();
 
