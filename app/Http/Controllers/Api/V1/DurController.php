@@ -590,11 +590,6 @@ class DurController extends Controller
                 Dur::where('id', $durId)->update(['updated_at' => $input['updated_at']]);
             }
 
-            $currentDur = Dur::where('id', $durId)->first();
-            if($currentDur->status === Dur::STATUS_ACTIVE) {
-                $this->indexElasticDur($durId);
-            }
-
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
@@ -861,13 +856,6 @@ class DurController extends Controller
             // for migration from mongo database
             if (array_key_exists('updated_at', $input)) {
                 Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
-            }
-
-            $currentDur = Dur::where('id', $id)->first();
-            if($currentDur->status === Dur::STATUS_ACTIVE) {
-                $this->indexElasticDur($id);
-            } elseif($initDur->status === Dur::STATUS_ACTIVE) {
-                $this->deleteDurFromElastic((int) $id);
             }
 
             Auditor::log([
@@ -1178,11 +1166,6 @@ class DurController extends Controller
                     Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
                 }
 
-                $currentDur = Dur::where('id', $id)->first();
-                if($currentDur->status === Dur::STATUS_ACTIVE) {
-                    $this->indexElasticDur($id);
-                }
-
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'UPDATE',
@@ -1265,9 +1248,6 @@ class DurController extends Controller
             $dur->status = Dur::STATUS_ARCHIVED;
             $dur->save();
 
-            if($initDur->status === Dur::STATUS_ACTIVE) {
-                $this->deleteDurFromElastic($id);
-            }
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',

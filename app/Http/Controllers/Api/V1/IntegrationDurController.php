@@ -31,13 +31,11 @@ use App\Http\Requests\Dur\DeleteDur;
 use App\Http\Requests\Dur\UpdateDur;
 
 use App\Exceptions\NotFoundException;
-use App\Http\Traits\IndexElastic;
 use App\Http\Traits\IntegrationOverride;
 use App\Http\Traits\RequestTransformation;
 
 class IntegrationDurController extends Controller
 {
-    use IndexElastic;
     use RequestTransformation;
     use IntegrationOverride;
 
@@ -564,11 +562,6 @@ class IntegrationDurController extends Controller
                 Dur::where('id', $durId)->update(['updated_at' => $input['updated_at']]);
             }
 
-            $currentDurStatus = Dur::where('id', $durId)->first();
-            if($currentDurStatus->status === 'ACTIVE') {
-                $this->indexElasticDur($durId);
-            }
-
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                     $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
@@ -861,9 +854,6 @@ class IntegrationDurController extends Controller
             }
 
             $currentDurStatus = Dur::where('id', $id)->first();
-            if($currentDurStatus->status === 'ACTIVE') {
-                $this->indexElasticDur($id);
-            }
 
             if ($currentDurStatus->status === 'ARCHIVED') {
                 Dur::where('id', $id)->delete();
@@ -1146,11 +1136,6 @@ class IntegrationDurController extends Controller
             // for migration from mongo database
             if (array_key_exists('updated_at', $input)) {
                 Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
-            }
-
-            $currentDurStatus = Dur::where('id', $id)->first();
-            if($currentDurStatus->status === 'ACTIVE') {
-                $this->indexElasticDur($id);
             }
 
             Auditor::log([
