@@ -427,11 +427,6 @@ class PublicationController extends Controller
             $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
             $this->checkDurs($publicationId, $durs, (int)$jwtUser['id']);
 
-            $currentPublication = Publication::where('id', $publicationId)->first();
-            if($currentPublication->status === Publication::STATUS_ACTIVE) {
-                $this->indexElasticPublication($publicationId);
-            }
-
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
@@ -578,13 +573,6 @@ class PublicationController extends Controller
 
             $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
             $this->checkDurs($id, $durs, (int)$jwtUser['id']);
-
-            $currentPublication = Publication::where('id', $id)->first();
-            if($currentPublication->status === Publication::STATUS_ACTIVE) {
-                $this->indexElasticPublication((int) $id);
-            } elseif ($initPublication['status'] === Publication::STATUS_ACTIVE) {
-                $this->deletePublicationFromElastic($id);
-            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -734,12 +722,6 @@ class PublicationController extends Controller
                             'description' => "Publication " . $id . " unarchived and marked as " . strtoupper($request['status']),
                         ]);
                     }
-
-                    if($publicationModel->status === Publication::STATUS_ACTIVE) {
-                        $this->indexElasticPublication($id);
-                    } elseif ($originalStatus === Publication::STATUS_ACTIVE) {
-                        $this->deletePublicationFromElastic($id);
-                    }
                 }
 
                 return response()->json([
@@ -792,11 +774,6 @@ class PublicationController extends Controller
 
                     $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
                     $this->checkDurs($id, $durs, (int)$jwtUser['id']);
-
-                    // Index the updated publication in Elasticsearch
-                    $this->indexElasticPublication((int) $id);
-                } elseif ($originalStatus === Publication::STATUS_ACTIVE) {
-                    $this->deletePublicationFromElastic($id);
                 }
 
                 Auditor::log([
@@ -892,10 +869,6 @@ class PublicationController extends Controller
                 $publication->deleted_at = Carbon::now();
                 $publication->status = Publication::STATUS_ARCHIVED;
                 $publication->save();
-
-                if ($originalStatus === Publication::STATUS_ACTIVE) {
-                    $this->deletePublicationFromElastic($id);
-                }
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],

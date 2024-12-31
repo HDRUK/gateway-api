@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use App\Http\Traits\DatasetFetch;
+use App\Observers\PublicationObserver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+#[ObservedBy([PublicationObserver::class])]
 class Publication extends Model
 {
     use HasFactory;
@@ -20,6 +23,7 @@ class Publication extends Model
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
     public const STATUS_ARCHIVED = 'ARCHIVED';
+    public $prevStatus;
 
     /**
      * The table associated with this model.
