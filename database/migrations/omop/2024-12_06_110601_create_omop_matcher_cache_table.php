@@ -10,6 +10,8 @@ return new class () extends Migration {
      */
     public function up()
     {
+        Schema::dropIfExists('omop_matcher_cache');
+        
         Schema::create('omop_matcher_cache', function (Blueprint $table) {
             $table->id();
             $table->string('search_term', 255);
