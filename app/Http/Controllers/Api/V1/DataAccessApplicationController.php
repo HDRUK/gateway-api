@@ -15,6 +15,11 @@ use App\Http\Requests\DataAccessApplication\CreateDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\DeleteDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\UpdateDataAccessApplication;
 use App\Models\DataAccessApplication;
+use App\Models\DataAccessApplicationHasDataset;
+use App\Models\DataAccessApplicationHasQuestion;
+use App\Models\DataAccessTemplate;
+use App\Models\Dataset;
+use App\Models\Team;
 
 class DataAccessApplicationController extends Controller
 {
@@ -180,6 +185,7 @@ class DataAccessApplicationController extends Controller
      *              @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
      *              @OA\Property(property="approval_status", type="string", example="APPROVED"),
      *              @OA\Property(property="team_ids", type="array", @OA\Items()),
+     *              @OA\Property(property="dataset_ids", type="array", @OA\Items()),
      *          ),
      *      ),
      *      @OA\Response(
@@ -210,8 +216,69 @@ class DataAccessApplicationController extends Controller
                 'submission_status' => isset($input['submission_status']) ? $input['submission_status'] : 'DRAFT',
             ]);
 
-            // application has questions
-            // TODO update with template merging logic
+            // find data provider for each dataset
+            $teams = array();
+            foreach ($input['dataset_ids'] as $d) {
+                $metadata = Dataset::findOrFail($d)->lastMetadata();
+                DataAccessApplicationHasDataset::create([
+                    'dataset_id' => $d,
+                    'dar_application_id' => $application->id
+                ]);
+
+                $gatewayId = $metadata['metadata']['summary']['publisher']['gatewayId'];
+                // check for primary key or pid match...
+                $team = Team::where('id', $gatewayId)->first();
+                if (!$team) {
+                    $team = Team::where('pid', $gatewayId)->first();
+                    if (!$team) {
+                        // throw a warning?
+                        continue;
+                    }
+                }
+                $teams[] = $team->id;
+            }
+
+            $questions = array();
+            foreach ($teams as $team) {
+                $template = DataAccessTemplate::where([
+                    'team_id' => $team,
+                    'published' => true,
+                    'locked' => false
+                ])->first();
+                if ($template) {
+                    $templateQuestions = $template->questions()->get();
+                    foreach ($templateQuestions as $q) {
+                        if (!isset($questions[$q->question_id])) {
+                            \Log::info('q key not found');
+                            $q['teams'] = [$team];
+                            $questions[$q->question_id] = $q;
+                        } else {
+                            // merge guidance
+                            $a = $questions[$q->question_id]['guidance'];
+                            $b = $q->guidance;
+                            if ($a !== $b) {
+                                // ??? better logic here
+                                // If guidances are not identical - merge them
+                                // else leave as is (assuming default guidance is required)
+                                $questions[$q->question_id]['guidance'] = $a . '  ' . $b;
+                            }
+                            $questions[$q->question_id]['teams'][] = $team;
+                            // handle order???
+                        }
+                    }
+                }
+            }
+
+            foreach ($questions as $question) {
+                DataAccessApplicationHasQuestion::create([
+                    'application_id' => $application->id,
+                    'question_id' => $question->question_id,
+                    'guidance' => $question->guidance,
+                    'required' => $question->required,
+                    'order' => $question->order,
+                    'teams' => implode(',', $question->teams)
+                ]);
+            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
