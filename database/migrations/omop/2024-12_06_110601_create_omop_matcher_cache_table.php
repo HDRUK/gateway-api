@@ -35,8 +35,8 @@ return new class () extends Migration {
             // Second part of the unique index
             $table->unique([
                 'concept_synonym',
-                'concept_synonym_types',
                 'concept_ancestor',
+                'concept_relationship_types',
                 'concept_relationship',
                 'max_separation_descendant',
                 'max_separation_ancestor'
