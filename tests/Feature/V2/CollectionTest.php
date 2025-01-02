@@ -975,9 +975,6 @@ class CollectionTest extends TestCase
         $response->assertStatus(401);
     }
 
-
-    // users collections - GET, GET, GET (3 statuses), POST PUT PATVH
-
     /**
      * Create new users Collection with success
      *
@@ -1227,6 +1224,18 @@ class CollectionTest extends TestCase
 
         $this->assertEquals('updated name', $content['data']['name']);
         $this->assertEquals('DRAFT', $content['data']['status']);
+
+        // Test a different user cannot update
+        $otherUser = $this->createCollectionOwner();
+        $otherUserHeader = $otherUser['ownerHeader'];
+
+        $response = $this->json(
+            'PUT',
+            'api/v2/users/' . $ownerId . '/collections/' . $collectionId,
+            $updateData,
+            $otherUserHeader
+        );
+        $response->assertStatus(401);
     }
 
     /**
@@ -1283,6 +1292,18 @@ class CollectionTest extends TestCase
 
         $this->assertEquals('edited name', $content['data']['name']);
         $this->assertEquals('DRAFT', $content['data']['status']);
+
+        // Test a different user cannot edit
+        $otherUser = $this->createCollectionOwner();
+        $otherUserHeader = $otherUser['ownerHeader'];
+
+        $response = $this->json(
+            'PATCH',
+            'api/v2/users/' . $ownerId . '/collections/' . $collectionId,
+            $editData,
+            $otherUserHeader
+        );
+        $response->assertStatus(401);
     }
 
     /**
@@ -1330,6 +1351,55 @@ class CollectionTest extends TestCase
         );
 
         $response->assertStatus(200);
+    }
+
+    /**
+     * Delete users Collection without success
+     *
+     * @return void
+     */
+    public function test_delete_users_collection_without_success(): void
+    {
+
+        $collectionOwner = $this->createCollectionOwner();
+        $ownerHeader = $collectionOwner['ownerHeader'];
+        $ownerId = $collectionOwner['userId'];
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/users/' . $ownerId . '/collections',
+            $mockData,
+            $ownerHeader
+        );
+
+        $response->assertStatus(201);
+        $collectionId = $response->decodeResponseJson()['data'];
+
+        $otherUser = $this->createCollectionOwner();
+        $otherUserHeader = $otherUser['ownerHeader'];
+
+        $response = $this->json(
+            'DELETE',
+            'api/v2/users/' . $ownerId . '/collections/' . $collectionId,
+            [],
+            $otherUserHeader
+        );
+        $response->assertStatus(401);
     }
 
 
@@ -1584,6 +1654,18 @@ class CollectionTest extends TestCase
 
         $this->assertEquals('updated name', $content['data']['name']);
         $this->assertEquals('DRAFT', $content['data']['status']);
+
+        // Test a different team cannot update
+        $otherTeam = $this->createCollectionTeam();
+        $otherTeamHeader = $otherTeam['memberHeader'];
+
+        $response = $this->json(
+            'PUT',
+            'api/v2/teams/' . $teamId . '/collections/' . $collectionId,
+            $updateData,
+            $otherTeamHeader
+        );
+        $response->assertStatus(401);
     }
 
     /**
@@ -1640,6 +1722,18 @@ class CollectionTest extends TestCase
 
         $this->assertEquals('edited name', $content['data']['name']);
         $this->assertEquals('DRAFT', $content['data']['status']);
+
+        // Test a different team cannot edit
+        $otherTeam = $this->createCollectionTeam();
+        $otherTeamHeader = $otherTeam['memberHeader'];
+
+        $response = $this->json(
+            'PATCH',
+            'api/v2/teams/' . $teamId . '/collections/' . $collectionId,
+            $editData,
+            $otherTeamHeader
+        );
+        $response->assertStatus(401);
     }
 
     /**
@@ -1687,6 +1781,56 @@ class CollectionTest extends TestCase
         );
 
         $response->assertStatus(200);
+    }
+
+    /**
+     * Delete teams Collection without success
+     *
+     * @return void
+     */
+    public function test_delete_teams_collection_without_success(): void
+    {
+
+        $collectionTeam = $this->createCollectionTeam();
+        $memberHeader = $collectionTeam['memberHeader'];
+        $teamId = $collectionTeam['teamId'];
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/teams/' . $teamId . '/collections',
+            $mockData,
+            $memberHeader
+        );
+
+        $response->assertStatus(201);
+        $collectionId = $response->decodeResponseJson()['data'];
+
+        $otherTeam = $this->createCollectionTeam();
+        $otherTeamHeader = $otherTeam['memberHeader'];
+
+        $response = $this->json(
+            'DELETE',
+            'api/v2/teams/' . $teamId . '/collections/' . $collectionId,
+            [],
+            $otherTeamHeader
+        );
+
+        $response->assertStatus(401);
     }
 
     private function generateKeywords()
@@ -1763,6 +1907,7 @@ class CollectionTest extends TestCase
 
     private function createCollectionOwner()
     {
+        $email = fake()->regexify('[A-Z]{5}[0-4]{1}') . '@test.com';
         // create a user to own this collection
         $responseUser = $this->json(
             'POST',
@@ -1770,7 +1915,7 @@ class CollectionTest extends TestCase
             [
                 'firstname' => 'XXXXXXXXXX',
                 'lastname' => 'XXXXXXXXXX',
-                'email' => 'just.test.123456789@test.com',
+                'email' => $email,
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
                 'contact_feedback' => 1,
@@ -1791,7 +1936,7 @@ class CollectionTest extends TestCase
             'POST',
             '/api/v1/auth',
             [
-                'email' => 'just.test.123456789@test.com',
+                'email' => $email,
                 'password' => 'Passw@rd1!',
             ],
             ['Accept' => 'application/json']
@@ -1810,6 +1955,7 @@ class CollectionTest extends TestCase
 
     private function createCollectionTeam()
     {
+        $email = fake()->regexify('[A-Z]{5}[0-4]{1}') . '@test.com';
         // create a user to be in the team
         $responseUser = $this->json(
             'POST',
@@ -1817,7 +1963,7 @@ class CollectionTest extends TestCase
             [
                 'firstname' => 'XXXXXXXXXX',
                 'lastname' => 'XXXXXXXXXX',
-                'email' => 'just.test.123456789@test.com',
+                'email' => $email,
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
                 'contact_feedback' => 1,
@@ -1838,7 +1984,7 @@ class CollectionTest extends TestCase
             'POST',
             '/api/v1/auth',
             [
-                'email' => 'just.test.123456789@test.com',
+                'email' => $email,
                 'password' => 'Passw@rd1!',
             ],
             ['Accept' => 'application/json']

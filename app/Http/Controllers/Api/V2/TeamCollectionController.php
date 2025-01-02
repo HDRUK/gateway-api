@@ -17,6 +17,7 @@ use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\UnauthorizedException;
 use App\Models\CollectionHasKeyword;
 use App\Models\CollectionHasPublication;
 use App\Http\Traits\RequestTransformation;
@@ -636,6 +637,10 @@ class TeamCollectionController extends Controller
                 'message' => 'success',
                 'data' => $this->getCollectionActiveById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -829,6 +834,10 @@ class TeamCollectionController extends Controller
                 'message' => 'success',
                 'data' => $this->getCollectionActiveById($id),
             ], 200);
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -928,6 +937,10 @@ class TeamCollectionController extends Controller
             }
 
             throw new NotFoundException();
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

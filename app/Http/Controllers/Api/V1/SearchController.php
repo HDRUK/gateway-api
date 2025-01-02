@@ -202,7 +202,7 @@ class SearchController extends Controller
                 $model['metadata'] = $model->latestVersion()['metadata']['metadata'];
 
                 $metadata = $model['metadata'];
-                
+
                 if (isset($metadata['summary']['publisher']['gatewayId']) && strpos($metadata['summary']['publisher']['gatewayId'], '-') !== false) {
                     // then we're in pid land
                     $id = $metadata['summary']['publisher']['gatewayId'];
