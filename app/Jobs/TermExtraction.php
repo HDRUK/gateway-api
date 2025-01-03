@@ -110,13 +110,7 @@ class TermExtraction implements ShouldQueue
 
                     if ($existingRecord) {
                         if ($existingRecord->trashed()) {
-                            $existingRecord->restore();
-                            Auditor::log([
-                                'action_type' => 'INFO',
-                                'action_name' => 'Restored Soft-Deleted Entry',
-                                'dataset_version_id' => $this->datasetVersionId,
-                                'named_entities_id' => $namedEntity->id,
-                            ]);
+                            $existingRecord->restore(); 
                         }
                     } else {
                         DatasetVersionHasNamedEntities::create([
@@ -164,12 +158,6 @@ class TermExtraction implements ShouldQueue
                     if ($existingRecord) {
                         if ($existingRecord->trashed()) {
                             $existingRecord->restore();
-                            Auditor::log([
-                                'action_type' => 'INFO',
-                                'action_name' => 'Restored Soft-Deleted Entry',
-                                'dataset_version_id' => $this->datasetVersionId,
-                                'named_entities_id' => $namedEntity->id,
-                            ]);
                         }
                     } else {
                         DatasetVersionHasNamedEntities::create([
