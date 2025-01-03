@@ -18,6 +18,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
 
 class TermExtraction implements ShouldQueue
 {
@@ -72,8 +73,7 @@ class TermExtraction implements ShouldQueue
         ]);
 
         $data = json_decode(gzdecode(gzuncompress(base64_decode($this->data))), true);
-        if($this->usePartialExtraction) {
-            //data is partial - summary data only
+        if ($this->usePartialExtraction) {
             $this->postSummaryToTermExtractionDirector(json_encode($data));
         } else {
             $this->postToTermExtractionDirector(json_encode($data));
@@ -87,14 +87,13 @@ class TermExtraction implements ShouldQueue
     /**
      * Passes the incoming metadata summary to TED for extraction
      *
-     * @param string $summary   The summary json passed to this process
+     * @param string $summary The summary json passed to this process
      *
      * @return void
      */
     private function postSummaryToTermExtractionDirector(string $summary): void
     {
         try {
-
             $response = Http::timeout($this->timeout * 2)->withBody(
                 $summary,
                 'application/json'
@@ -102,16 +101,31 @@ class TermExtraction implements ShouldQueue
 
             if ($response->successful() && array_key_exists('extracted_terms', $response->json())) {
                 foreach ($response->json()['extracted_terms'] as $term) {
-                    // Check if the named entity already exists
                     $namedEntity = NamedEntities::firstOrCreate(['name' => $term]);
 
-                    DatasetVersionHasNamedEntities::firstOrCreate([
-                        'dataset_version_id' => $this->datasetVersionId,
-                        'named_entities_id' => $namedEntity->id
-                    ]);
+                    $existingRecord = DatasetVersionHasNamedEntities::withTrashed()
+                        ->where('dataset_version_id', $this->datasetVersionId)
+                        ->where('named_entities_id', $namedEntity->id)
+                        ->first();
+
+                    if ($existingRecord) {
+                        if ($existingRecord->trashed()) {
+                            $existingRecord->restore();
+                            Auditor::log([
+                                'action_type' => 'INFO',
+                                'action_name' => 'Restored Soft-Deleted Entry',
+                                'dataset_version_id' => $this->datasetVersionId,
+                                'named_entities_id' => $namedEntity->id,
+                            ]);
+                        }
+                    } else {
+                        DatasetVersionHasNamedEntities::create([
+                            'dataset_version_id' => $this->datasetVersionId,
+                            'named_entities_id' => $namedEntity->id,
+                        ]);
+                    }
                 }
             }
-
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -124,32 +138,47 @@ class TermExtraction implements ShouldQueue
     }
 
     /**
-    * Passes the incoming dataset to TED for extraction
-    *
-    * @param string $dataset   The dataset json passed to this process
-    *
-    * @return void
-    */
+     * Passes the incoming dataset to TED for extraction
+     *
+     * @param string $dataset The dataset json passed to this process
+     *
+     * @return void
+     */
     private function postToTermExtractionDirector(string $dataset): void
     {
         try {
             $response = Http::timeout($this->timeout * 2)->withBody(
                 $dataset,
                 'application/json'
-            )->post($this->tedUrl  . '/datasets');
+            )->post($this->tedUrl . '/datasets');
 
             if ($response->successful() && array_key_exists('extracted_terms', $response->json())) {
                 foreach ($response->json()['extracted_terms'] as $term) {
-                    // Check if the named entity already exists
                     $namedEntity = NamedEntities::firstOrCreate(['name' => $term]);
 
-                    DatasetVersionHasNamedEntities::firstOrCreate([
-                        'dataset_version_id' => $this->datasetVersionId,
-                        'named_entities_id' => $namedEntity->id
-                    ]);
+                    $existingRecord = DatasetVersionHasNamedEntities::withTrashed()
+                        ->where('dataset_version_id', $this->datasetVersionId)
+                        ->where('named_entities_id', $namedEntity->id)
+                        ->first();
+
+                    if ($existingRecord) {
+                        if ($existingRecord->trashed()) {
+                            $existingRecord->restore();
+                            Auditor::log([
+                                'action_type' => 'INFO',
+                                'action_name' => 'Restored Soft-Deleted Entry',
+                                'dataset_version_id' => $this->datasetVersionId,
+                                'named_entities_id' => $namedEntity->id,
+                            ]);
+                        }
+                    } else {
+                        DatasetVersionHasNamedEntities::create([
+                            'dataset_version_id' => $this->datasetVersionId,
+                            'named_entities_id' => $namedEntity->id,
+                        ]);
+                    }
                 }
             }
-
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
