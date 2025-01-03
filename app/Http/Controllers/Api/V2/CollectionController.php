@@ -100,11 +100,6 @@ class CollectionController extends Controller
         try {
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
 
-            $sort = $request->query('sort', 'name:desc');
-            $tmp = explode(":", $sort);
-            $sortField = $tmp[0];
-            $sortDirection = array_key_exists(1, $tmp) ? $tmp[1] : 'desc';
-
             $collections = Collection::with([
                 'keywords',
                 'tools',
@@ -113,18 +108,11 @@ class CollectionController extends Controller
                 'team',
                 'users',
             ])
-            ->when(
-                $sort,
-                fn ($query) => $query->orderBy($sortField, $sortDirection)
-            )
+            ->applySorting()
             ->paginate((int) $perPage, ['*'], 'page');
 
             $collections->getCollection()->transform(function ($collection) {
-                if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
-                    $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
-                }
-
-                return $collection;
+                return $this->prependUrl($collection);
             });
 
             $collections->getCollection()->transform(function ($collection) {
@@ -186,10 +174,7 @@ class CollectionController extends Controller
     public function count(Request $request, string $field): JsonResponse
     {
         try {
-            $counts = Collection::select($field)
-                ->get()
-                ->groupBy($field)
-                ->map->count();
+            $counts = Collection::applyCount();
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -275,7 +260,6 @@ class CollectionController extends Controller
         try {
             $viewType = $request->query('view_type', 'full');
             $trimmed = $viewType === 'mini';
-            $withTrashed = false;
 
             $collection = $this->getCollectionActiveById($id, $trimmed);
 
@@ -399,17 +383,6 @@ class CollectionController extends Controller
             $collaborators = $input['collaborators'] ?? [];
 
             $this->createCollectionUsers((int)$collectionId, $userId, $collaborators);
-
-            // for migration from mongo database
-            if (array_key_exists('created_at', $input)) {
-                $collection->update(['created_at' => $input['created_at']]);
-            }
-
-            // for migration from mongo database
-            if (array_key_exists('updated_at', $input)) {
-                $collection->update(['updated_at' => $input['updated_at']]);
-
-            }
 
             // updated_on
             if (array_key_exists('updated_on', $input)) {
@@ -579,16 +552,6 @@ class CollectionController extends Controller
             // users
             $collaborators = $input['collaborators'] ?? [];
             $this->updateCollectionUsers((int)$id, $collaborators);
-
-            // for migration from mongo database
-            if (array_key_exists('created_at', $input)) {
-                Collection::where('id', $id)->update(['created_at' => $input['created_at']]);
-            }
-
-            // for migration from mongo database
-            if (array_key_exists('updated_at', $input)) {
-                Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
-            }
 
             // updated_on
             if (array_key_exists('updated_on', $input)) {
@@ -839,16 +802,6 @@ class CollectionController extends Controller
                 if (array_key_exists('keywords', $input)) {
                     $keywords = $input['keywords'];
                     $this->checkKeywords($id, $keywords);
-                }
-
-                // for migration from mongo database
-                if (array_key_exists('created_at', $input)) {
-                    Collection::where('id', $id)->update(['created_at' => $input['created_at']]);
-                }
-
-                // for migration from mongo database
-                if (array_key_exists('updated_at', $input)) {
-                    Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
                 }
 
                 // add in a team

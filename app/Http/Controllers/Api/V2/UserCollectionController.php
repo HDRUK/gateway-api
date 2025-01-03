@@ -97,17 +97,9 @@ class UserCollectionController extends Controller
         try {
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
 
-            $sort = $request->query('sort', 'name:desc');
-            $tmp = explode(":", $sort);
-            $sortField = $tmp[0];
-            $sortDirection = array_key_exists(1, $tmp) ? $tmp[1] : 'desc';
-
             $collections = $this->indexUserCollection(
                 $userId,
                 'ACTIVE',
-                $sort,
-                $sortField,
-                $sortDirection,
                 $perPage
             );
 
@@ -188,17 +180,9 @@ class UserCollectionController extends Controller
         try {
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
 
-            $sort = $request->query('sort', 'name:desc');
-            $tmp = explode(":", $sort);
-            $sortField = $tmp[0];
-            $sortDirection = array_key_exists(1, $tmp) ? $tmp[1] : 'desc';
-
             $collections = $this->indexUserCollection(
                 $userId,
                 'DRAFT',
-                $sort,
-                $sortField,
-                $sortDirection,
                 $perPage
             );
 
@@ -279,17 +263,9 @@ class UserCollectionController extends Controller
         try {
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
 
-            $sort = $request->query('sort', 'name:desc');
-            $tmp = explode(":", $sort);
-            $sortField = $tmp[0];
-            $sortDirection = array_key_exists(1, $tmp) ? $tmp[1] : 'desc';
-
             $collections = $this->indexUserCollection(
                 $userId,
                 'ARCHIVED',
-                $sort,
-                $sortField,
-                $sortDirection,
                 $perPage
             );
 
@@ -410,17 +386,6 @@ class UserCollectionController extends Controller
             $collaborators = $input['collaborators'] ?? [];
 
             $this->createCollectionUsers((int)$collectionId, $userId, $collaborators);
-
-            // for migration from mongo database
-            if (array_key_exists('created_at', $input)) {
-                $collection->update(['created_at' => $input['created_at']]);
-            }
-
-            // for migration from mongo database
-            if (array_key_exists('updated_at', $input)) {
-                $collection->update(['updated_at' => $input['updated_at']]);
-
-            }
 
             // updated_on
             if (array_key_exists('updated_on', $input)) {
@@ -594,16 +559,6 @@ class UserCollectionController extends Controller
             // users
             $collaborators = $input['collaborators'] ?? [];
             $this->updateCollectionUsers((int)$id, $collaborators);
-
-            // for migration from mongo database
-            if (array_key_exists('created_at', $input)) {
-                Collection::where('id', $id)->update(['created_at' => $input['created_at']]);
-            }
-
-            // for migration from mongo database
-            if (array_key_exists('updated_at', $input)) {
-                Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
-            }
 
             // updated_on
             if (array_key_exists('updated_on', $input)) {
@@ -803,16 +758,6 @@ class UserCollectionController extends Controller
                 $this->checkKeywords($id, $keywords);
             }
 
-            // for migration from mongo database
-            if (array_key_exists('created_at', $input)) {
-                Collection::where('id', $id)->update(['created_at' => $input['created_at']]);
-            }
-
-            // for migration from mongo database
-            if (array_key_exists('updated_at', $input)) {
-                Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
-            }
-
             // add in a team
             if (array_key_exists('team_id', $input)) {
                 Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
@@ -950,7 +895,7 @@ class UserCollectionController extends Controller
         }
     }
 
-    private function indexUserCollection(int $userId, string $status, bool $sort, string $sortField, string $sortDirection, int $perPage)
+    private function indexUserCollection(int $userId, string $status, int $perPage)
     {
         $collHasUsers = CollectionHasUser::where('user_id', $userId)->select(['collection_id'])->get()->toArray();
         $collections = Collection::whereIn('id', $collHasUsers)
@@ -963,18 +908,11 @@ class UserCollectionController extends Controller
                 'team',
                 'users',
             ])
-            ->when(
-                $sort,
-                fn ($query) => $query->orderBy($sortField, $sortDirection)
-            )
+            ->applySorting()
             ->paginate((int) $perPage, ['*'], 'page');
 
         $collections->getCollection()->transform(function ($collection) {
-            if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
-                $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
-            }
-
-            return $collection;
+            return $this->prependUrl($collection);
         });
 
         $collections->getCollection()->transform(function ($collection) {
