@@ -25,22 +25,18 @@ return new class () extends Migration {
             $table->integer('max_separation_ancestor');
             $table->mediumText('result');
             
-            // First part of the unique index
+            // Single composite unique index
             $table->unique([
                 'search_term',
                 'vocabulary_id',
-                'search_threshold',
-            ], 'term_cache');
-
-            // Second part of the unique index
-            $table->unique([
-                'concept_synonym',
                 'concept_ancestor',
-                'concept_relationship_types',
                 'concept_relationship',
+                'concept_relationship_types',
+                'concept_synonym',
+                'search_threshold',
                 'max_separation_descendant',
                 'max_separation_ancestor'
-            ], 'param_cache');
+            ], 'omop_matcher_cache_unique');
         });
     }
 
@@ -52,3 +48,4 @@ return new class () extends Migration {
         Schema::dropIfExists('omop_matcher_cache');
     }
 };
+
