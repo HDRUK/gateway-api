@@ -95,7 +95,7 @@ class TermExtraction implements ShouldQueue
     {
         try {
 
-            $response = Http::timeout($this->timeout * 2)->withBody(
+            $response = Http::timeout(6000)->withBody(
                 $summary,
                 'application/json'
             )->post($this->tedUrl . '/summary');
@@ -133,7 +133,7 @@ class TermExtraction implements ShouldQueue
     private function postToTermExtractionDirector(string $dataset): void
     {
         try {
-            $response = Http::timeout($this->timeout * 2)->withBody(
+            $response = Http::timeout(6000)->withBody(
                 $dataset,
                 'application/json'
             )->post($this->tedUrl  . '/datasets');
