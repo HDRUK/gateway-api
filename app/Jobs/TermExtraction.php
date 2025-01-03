@@ -105,7 +105,7 @@ class TermExtraction implements ShouldQueue
                     // Check if the named entity already exists
                     $namedEntity = NamedEntities::firstOrCreate(['name' => $term]);
 
-                    DatasetVersionHasNamedEntities::withTrashed()->updateOrCreate([
+                    DatasetVersionHasNamedEntities::withTrashed()->firstOrCreate([
                         'dataset_version_id' => $this->datasetVersionId,
                         'named_entities_id' => $namedEntity->id
                     ]);
@@ -143,7 +143,7 @@ class TermExtraction implements ShouldQueue
                     // Check if the named entity already exists
                     $namedEntity = NamedEntities::firstOrCreate(['name' => $term]);
 
-                    DatasetVersionHasNamedEntities::withTrashed()->updateOrCreate([
+                    DatasetVersionHasNamedEntities::withTrashed()->firstOrCreate([
                         'dataset_version_id' => $this->datasetVersionId,
                         'named_entities_id' => $namedEntity->id
                     ]);
