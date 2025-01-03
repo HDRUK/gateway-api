@@ -98,7 +98,7 @@ class TermExtraction implements ShouldQueue
             $response = Http::timeout($this->timeout * 2)->withBody(
                 $summary,
                 'application/json'
-            )->post(env('TED_SERVICE_URL') . '/summary');
+            )->post($this->tedUrl . '/summary');
 
             if ($response->successful() && array_key_exists('extracted_terms', $response->json())) {
                 foreach ($response->json()['extracted_terms'] as $term) {
@@ -136,7 +136,7 @@ class TermExtraction implements ShouldQueue
             $response = Http::timeout($this->timeout * 2)->withBody(
                 $dataset,
                 'application/json'
-            )->post(env('TED_SERVICE_URL') . '/datasets');
+            )->post($this->tedUrl  . '/datasets');
 
             if ($response->successful() && array_key_exists('extracted_terms', $response->json())) {
                 foreach ($response->json()['extracted_terms'] as $term) {

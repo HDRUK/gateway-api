@@ -297,7 +297,6 @@ class ReindexEntities extends Command
                 $this->allTerms === false,
             );
 
-            usleep($this->sleepTimeInMicroseconds);
             $progressbar->advance(1);
         }
         $progressbar->finish();
