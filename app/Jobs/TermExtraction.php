@@ -105,16 +105,10 @@ class TermExtraction implements ShouldQueue
                     // Check if the named entity already exists
                     $namedEntity = NamedEntities::firstOrCreate(['name' => $term]);
 
-                    $exists = DatasetVersionHasNamedEntities::where('dataset_version_id', $this->datasetVersionId)
-                        ->where('named_entities_id', $namedEntity->id)
-                        ->exists();
-
-                    if (!$exists) {
-                        DatasetVersionHasNamedEntities::create([
-                            'dataset_version_id' => $this->datasetVersionId,
-                            'named_entities_id' => $namedEntity->id
-                        ]);
-                    }
+                    DatasetVersionHasNamedEntities::updateOrCreate([
+                        'dataset_version_id' => $this->datasetVersionId,
+                        'named_entities_id' => $namedEntity->id
+                    ]);
                 }
             }
 
@@ -149,16 +143,10 @@ class TermExtraction implements ShouldQueue
                     // Check if the named entity already exists
                     $namedEntity = NamedEntities::firstOrCreate(['name' => $term]);
 
-                    $exists = DatasetVersionHasNamedEntities::where('dataset_version_id', $this->datasetVersionId)
-                        ->where('named_entities_id', $namedEntity->id)
-                        ->exists();
-
-                    if (!$exists) {
-                        DatasetVersionHasNamedEntities::create([
-                            'dataset_version_id' => $this->datasetVersionId,
-                            'named_entities_id' => $namedEntity->id
-                        ]);
-                    }
+                    DatasetVersionHasNamedEntities::updateOrCreate([
+                        'dataset_version_id' => $this->datasetVersionId,
+                        'named_entities_id' => $namedEntity->id
+                    ]);
                 }
             }
 
