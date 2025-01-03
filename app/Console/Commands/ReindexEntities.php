@@ -283,7 +283,8 @@ class ReindexEntities extends Command
         foreach ($ids as $id) {
             $dataset = Dataset::where('id', $id)->first();
             $latestMetadata = $dataset->latestMetadata()->first();
-            $datasetVersionId = $dataset->lastMetadataVersionNumber()->version;
+            $datasetVersionId = $latestMetadata->id;
+            $versionNumber = $dataset->lastMetadataVersionNumber()->version;
             $elasticIndexing = true;
 
             $tedData = $this->allTerms ? $latestMetadata->metadata['metadata'] : $latestMetadata->metadata['metadata']['summary'];
@@ -291,7 +292,7 @@ class ReindexEntities extends Command
             TermExtraction::dispatch(
                 $id,
                 $datasetVersionId,
-                0,
+                $versionNumber,
                 base64_encode(gzcompress(gzencode(json_encode($tedData)))),
                 $elasticIndexing,
                 $this->allTerms === false,
