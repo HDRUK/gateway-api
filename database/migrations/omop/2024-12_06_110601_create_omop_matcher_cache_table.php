@@ -14,18 +14,17 @@ return new class () extends Migration {
         
         Schema::create('omop_matcher_cache', function (Blueprint $table) {
             $table->id();
-            $table->string('search_term', 255);
-            $table->string('vocabulary_id', 255)->nullable();
+            $table->string('search_term', 191); // Reduced to fit within the key limit
+            $table->string('vocabulary_id', 191)->nullable();
             $table->enum('concept_ancestor', ['y', 'n']);
             $table->enum('concept_relationship', ['y', 'n']);
             $table->enum('concept_synonym', ['y', 'n']);
-            $table->string('concept_relationship_types', 255)->nullable();
+            $table->string('concept_relationship_types', 191)->nullable(); 
             $table->float('search_threshold');
             $table->integer('max_separation_descendant');
             $table->integer('max_separation_ancestor');
             $table->mediumText('result');
-            
-            // Single composite unique index
+        
             $table->unique([
                 'search_term',
                 'vocabulary_id',
@@ -37,7 +36,7 @@ return new class () extends Migration {
                 'max_separation_descendant',
                 'max_separation_ancestor'
             ], 'omop_matcher_cache_unique');
-        });
+        });        
     }
 
     /**
