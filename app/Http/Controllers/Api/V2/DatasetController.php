@@ -55,30 +55,8 @@ class DatasetController extends Controller
      *    operationId="fetch_all_datasets_v2",
      *    tags={"Datasets"},
      *    summary="DatasetController@index",
-     *    description="Get All Datasets",
+     *    description="Returns a list of all datasets",
      *    security={{"bearerAuth":{}}},
-     *    @OA\Parameter(
-     *       name="team_id",
-     *       in="query",
-     *       description="team id",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema(
-     *          type="integer",
-     *          description="team id",
-     *       ),
-     *    ),
-     *    @OA\Parameter(
-     *       name="pid",
-     *       in="query",
-     *       description="get based on a pid",
-     *       required=false,
-     *       example="aa588d1c-21e7-42d9-9b60-48e3d6b784a9",
-     *       @OA\Schema(
-     *          type="string",
-     *          description="retrieve based on pid",
-     *       ),
-     *    ),
      *    @OA\Parameter(
      *       name="sort",
      *       in="query",
@@ -134,10 +112,8 @@ class DatasetController extends Controller
     {
         try {
             $matches = [];
-            $teamId = $request->query('team_id', null);
             $filterStatus = $request->query('status', null);
             $datasetId = $request->query('dataset_id', null);
-            $mongoPId = $request->query('mongo_pid', null);
             $withMetadata = $request->boolean('with_metadata', true);
 
             $sort = $request->query('sort', 'created:desc');
@@ -169,12 +145,8 @@ class DatasetController extends Controller
             // apply any initial filters to get initial datasets
             $filterTitle = $request->query('title', null);
 
-            $initialDatasets = Dataset::when($teamId, function ($query) use ($teamId) {
-                return $query->where('team_id', '=', $teamId);
-            })->when($datasetId, function ($query) use ($datasetId) {
+            $initialDatasets = Dataset::when($datasetId, function ($query) use ($datasetId) {
                 return $query->where('datasetid', '=', $datasetId);
-            })->when($mongoPId, function ($query) use ($mongoPId) {
-                return $query->where('mongo_pid', '=', $mongoPId);
             })->when($filterStatus, function ($query) use ($filterStatus) {
                 return $query->where('status', '=', $filterStatus);
             })->select(['id'])->get();
