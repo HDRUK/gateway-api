@@ -22,7 +22,9 @@ return [
         'middleware' => [
             'sanitize.input',
         ],
-        'constraint' => [],
+        'constraint' => [
+            'field' => '[A-Za-z]+',
+        ],
     ],
     [
         'name' => 'collections',
@@ -33,7 +35,9 @@ return [
         'middleware' => [
             'sanitize.input',
         ],
-        'constraint' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'collections',
@@ -100,7 +104,9 @@ return [
             'jwt.verify',
             'sanitize.input',
         ],
-        'constraint' => [],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'collections',
@@ -112,7 +118,9 @@ return [
             'jwt.verify',
             'sanitize.input',
         ],
-        'constraint' => [],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'collections',
@@ -124,7 +132,9 @@ return [
             'jwt.verify',
             'sanitize.input',
         ],
-        'constraint' => [],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'collections',
@@ -136,7 +146,9 @@ return [
             'jwt.verify',
             'sanitize.input',
         ],
-        'constraint' => [],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'collections',
@@ -150,6 +162,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
+            'userId' => '[0-9]+',
         ],
     ],
     [
@@ -164,6 +177,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
+            'userId' => '[0-9]+',
         ],
     ],
     [
@@ -177,6 +191,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
+            'userId' => '[0-9]+',
         ],
     ],
 
@@ -191,7 +206,9 @@ return [
             'jwt.verify',
             'sanitize.input',
         ],
-        'constraint' => [],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'collections',
@@ -203,7 +220,9 @@ return [
             'jwt.verify',
             'sanitize.input',
         ],
-        'constraint' => [],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'collections',
@@ -215,7 +234,9 @@ return [
             'jwt.verify',
             'sanitize.input',
         ],
-        'constraint' => [],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'collections',
@@ -227,7 +248,9 @@ return [
             'jwt.verify',
             'sanitize.input',
         ],
-        'constraint' => [],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'collections',
@@ -241,6 +264,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
@@ -255,6 +279,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
@@ -268,6 +293,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
 ];
