@@ -6,6 +6,7 @@ namespace Tests\Feature;
 use Config;
 use App\Models\Dataset;
 use App\Models\Team;
+use App\Http\Enums\TeamMemberOf;
 use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\DataAccessApplicationSeeder;
@@ -196,14 +197,15 @@ class DataAccessApplicationTest extends TestCase
     public function test_the_application_can_create_a_dar_application_with_template_merging()
     {
         // Create templates for two teams
-        $teams = Team::all()->select('id')->pluck('id');
+        $t1 = $this->createTeam();
+        $t2 = $this->createTeam();
 
         $q1 = $this->createQuestion('Test Question One');
         $q2 = $this->createQuestion('Test Question Two');
         $q3 = $this->createQuestion('Test Question Three');
 
         // Create template and datasets owned by teams
-        $team1 = Team::where('id', $teams[0])->first();
+        $team1 = Team::where('id', $t1)->first();
 
         $response = $this->json(
             'POST',
@@ -211,7 +213,7 @@ class DataAccessApplicationTest extends TestCase
             [
                 'team_id' => $team1->id,
                 'published' => true,
-                'locked' => true,
+                'locked' => false,
                 'questions' => [
                     0 => [
                         'id' => $q1,
@@ -251,7 +253,7 @@ class DataAccessApplicationTest extends TestCase
         $responseDataset1->assertStatus(201);
         $datasetId1 = $responseDataset1['data'];
 
-        $team2 = Team::where('id', $teams[1])->first();
+        $team2 = Team::where('id', $t2)->first();
 
         $response = $this->json(
             'POST',
@@ -259,7 +261,7 @@ class DataAccessApplicationTest extends TestCase
             [
                 'team_id' => $team2->id,
                 'published' => true,
-                'locked' => true,
+                'locked' => false,
                 'questions' => [
                     0 => [
                         'id' => $q2,
@@ -331,10 +333,10 @@ class DataAccessApplicationTest extends TestCase
 
         $allGuidance = implode('\n', array_column($questions, 'guidance'));
 
-        $this->assertContains($team1->name, $allGuidance);
-        $this->assertContains($team2->name, $allGuidance);
-        $this->assertContains('Question Two Guidance', $allGuidance);
-        $this->assertContains('Question Two Template Two Guidance', $allGuidance);
+        $this->assertStringContainsString($team1->name, $allGuidance);
+        $this->assertStringContainsString($team2->name, $allGuidance);
+        $this->assertStringContainsString('Question Two Guidance', $allGuidance);
+        $this->assertStringContainsString('Question Two Template Two Guidance', $allGuidance);
     }
 
     /**
@@ -528,5 +530,40 @@ class DataAccessApplicationTest extends TestCase
         $questionId = $response->decodeResponseJson()['data'];
 
         return $questionId;
+    }
+
+    private function createTeam(): int
+    {
+        // Create team for the user to belong to
+        $responseTeam = $this->json(
+            'POST',
+            'api/v1/teams',
+            [
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => TeamMemberOf::HUB,
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'is_question_bank' => 1,
+                'users' => [],
+                'notifications' => [],
+                'url' => 'https://fakeimg.pl/350x200/ff0000/000',
+                'introduction' => fake()->sentence(),
+                'dar_modal_content' => fake()->sentence(),
+                'service' => 'https://service.local/test',
+            ],
+            $this->header
+        );
+        $responseTeam->assertStatus(200);
+
+        $content = $responseTeam->decodeResponseJson();
+        $teamId = $content['data'];
+        return $teamId;
     }
 }
