@@ -138,6 +138,21 @@ return [
     ],
     [
         'name' => 'collections',
+        'method' => 'get',
+        'path' => '/users/{userId}/collections/{id}',
+        'methodController' => 'UserCollectionController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'collections',
         'method' => 'post',
         'path' => '/users/{userId}/collections',
         'methodController' => 'UserCollectionController@store',
@@ -236,6 +251,21 @@ return [
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'collections',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/collections/{id}',
+        'methodController' => 'TeamCollectionController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
         ],
     ],
     [

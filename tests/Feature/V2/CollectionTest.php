@@ -1161,6 +1161,84 @@ class CollectionTest extends TestCase
     }
 
     /**
+     * Get users Collection by id with success
+     *
+     * @return void
+     */
+    public function test_get_users_collection_by_id_with_success(): void
+    {
+        $countBefore = Collection::count();
+
+        $collectionOwner = $this->createCollectionOwner();
+        $ownerHeader = $collectionOwner['ownerHeader'];
+        $ownerId = $collectionOwner['userId'];
+
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/users/' . $ownerId . '/collections',
+            $mockData,
+            $ownerHeader
+        );
+        $collectionId = $response->decodeResponseJson()['data'];
+
+        // Test get collection by id
+        $response = $this->json(
+            'GET',
+            'api/v2/users/' . $ownerId . '/collections/' . $collectionId,
+            [],
+            $ownerHeader
+        );
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'name',
+                'description',
+                'image_link',
+                'enabled',
+                'public',
+                'counter',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'mongo_object_id',
+                'mongo_id',
+                'keywords',
+                'dataset_versions',
+                'tools',
+                'dur',
+                'publications',
+                'users',
+                'team',
+            ],
+        ]);
+        $response->assertStatus(200);
+
+        // Try to get collection through incorrect user endpoint
+        $response = $this->json(
+            'GET',
+            'api/v2/users/' . $ownerId + 1 . '/collections/' . $collectionId,
+            [],
+            $ownerHeader
+        );
+        $response->assertStatus(401);
+    }
+
+    /**
      * Update users Collection with success
      *
      * @return void
@@ -1588,6 +1666,85 @@ class CollectionTest extends TestCase
         $content = $response->decodeResponseJson();
         $this->assertEquals('ARCHIVED', $content['data'][0]['status']);
 
+    }
+
+    /**
+     * Get teams Collection by id with success
+     *
+     * @return void
+     */
+    public function test_get_teams_collection_by_id_with_success(): void
+    {
+        $countBefore = Collection::count();
+
+        $collectionTeam = $this->createCollectionTeam();
+        $memberHeader = $collectionTeam['memberHeader'];
+        $teamId = $collectionTeam['teamId'];
+
+        // Create a collection with each status
+        $mockData = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v2/teams/' . $teamId . '/collections',
+            $mockData,
+            $memberHeader
+        );
+        $collectionId = $response->decodeResponseJson()['data'];
+
+        // Test get active collections
+        $response = $this->json(
+            'GET',
+            'api/v2/teams/' . $teamId . '/collections/' . $collectionId,
+            [],
+            $memberHeader
+        );
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'name',
+                'description',
+                'image_link',
+                'enabled',
+                'public',
+                'counter',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'mongo_object_id',
+                'mongo_id',
+                'keywords',
+                'dataset_versions',
+                'tools',
+                'dur',
+                'publications',
+                'users',
+                'team',
+            ],
+        ]);
+        $response->assertStatus(200);
+
+        // Try to get collection through incorrect team
+        $response = $this->json(
+            'GET',
+            'api/v2/teams/' . $teamId + 1 . '/collections/' . $collectionId,
+            [],
+            $memberHeader
+        );
+        $response->assertStatus(401);
     }
 
     /**
