@@ -4,9 +4,16 @@ namespace Tests\Feature;
 
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
+use App\Models\Dataset;
+use App\Models\Team;
 use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\DataAccessApplicationSeeder;
+use Database\Seeders\DataAccessTemplateSeeder;
+use Database\Seeders\DatasetSeeder;
+use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\QuestionBankSeeder;
+use Database\Seeders\SpatialCoverageSeeder;
 
 use Tests\Traits\MockExternalApis;
 
@@ -21,6 +28,7 @@ class DataAccessApplicationTest extends TestCase
     }
 
     protected $header = [];
+    protected $metadata;
 
     public function setUp(): void
     {
@@ -28,8 +36,15 @@ class DataAccessApplicationTest extends TestCase
 
         $this->seed([
             MinimalUserSeeder::class,
+            QuestionBankSeeder::class,
             DataAccessApplicationSeeder::class,
+            DataAccessTemplateSeeder::class,
+            SpatialCoverageSeeder::class,
+            DatasetSeeder::class,
+            DatasetVersionSeeder::class,
         ]);
+
+        $this->metadata = $this->getMetadata();
     }
 
     /**
@@ -83,7 +98,8 @@ class DataAccessApplicationTest extends TestCase
             [
                 'applicant_id' => 1,
                 'submission_status' => 'DRAFT',
-                'approval_status' => 'APPROVED_COMMENTS'
+                'approval_status' => 'APPROVED_COMMENTS',
+                'dataset_ids' => [1,2]
             ],
             $this->header
         );
@@ -107,6 +123,7 @@ class DataAccessApplicationTest extends TestCase
                     'applicant_id',
                     'submission_status',
                     'approval_status',
+                    'questions',
                 ],
             ]);
     }
@@ -136,7 +153,8 @@ class DataAccessApplicationTest extends TestCase
             [
                 'applicant_id' => 1,
                 'submission_status' => 'DRAFT',
-                'approval_status' => 'APPROVED_COMMENTS'
+                'approval_status' => 'APPROVED_COMMENTS',
+                'dataset_ids' => [1,2],
             ],
             $this->header
         );
@@ -151,7 +169,9 @@ class DataAccessApplicationTest extends TestCase
         $response = $this->json(
             'POST',
             'api/v1/dar/applications',
-            [],
+            [
+                'dataset_ids' => [1,2],
+            ],
             $this->header
         );
 
@@ -166,6 +186,155 @@ class DataAccessApplicationTest extends TestCase
 
         $this->assertEquals('DRAFT', $response['data']['submission_status']);
         $this->assertNull($response['data']['approval_status']);
+    }
+
+    /**
+     * Creates a new dar application with merged template
+     *
+     * @return void
+     */
+    public function test_the_application_can_create_a_dar_application_with_template_merging()
+    {
+        // Create templates for two teams
+        $teams = Team::all()->select('id')->pluck('id');
+
+        $q1 = $this->createQuestion('Test Question One');
+        $q2 = $this->createQuestion('Test Question Two');
+        $q3 = $this->createQuestion('Test Question Three');
+
+        // Create template and datasets owned by teams
+        $team1 = Team::where('id', $teams[0])->first();
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/templates',
+            [
+                'team_id' => $team1->id,
+                'published' => true,
+                'locked' => true,
+                'questions' => [
+                    0 => [
+                        'id' => $q1,
+                        'required' => true,
+                        'guidance' => 'Question One Guidance',
+                        'order' => 1,
+                    ],
+                    1 => [
+                        'id' => $q2,
+                        'required' => true,
+                        'guidance' => 'Question Two Guidance',
+                        'order' => 2,
+                    ]
+                ]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        $metadata1 = $this->getMetadata();
+        $metadata1['metadata']['summary']['publisher'] = [
+            'name' => $team1->name,
+            'gatewayId' => $team1->id
+        ];
+        $responseDataset1 = $this->json(
+            'POST',
+            'api/v1/datasets',
+            [
+                'team_id' => $team1->id,
+                'user_id' => 1,
+                'metadata' => $metadata1,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseDataset1->assertStatus(201);
+        $datasetId1 = $responseDataset1['data'];
+
+        $team2 = Team::where('id', $teams[1])->first();
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/templates',
+            [
+                'team_id' => $team2->id,
+                'published' => true,
+                'locked' => true,
+                'questions' => [
+                    0 => [
+                        'id' => $q2,
+                        'required' => true,
+                        'guidance' => 'Question Two Template Two Guidance',
+                        'order' => 1,
+                    ],
+                    1 => [
+                        'id' => $q3,
+                        'required' => true,
+                        'guidance' => 'Question Three Guidance',
+                        'order' => 2,
+                    ]
+                ]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        $metadata2 = $this->metadata;
+        $metadata2['metadata']['summary']['publisher'] = [
+            'name' => $team2->name,
+            'gatewayId' => $team2->pid
+        ];
+        $responseDataset2 = $this->json(
+            'POST',
+            'api/v1/datasets',
+            [
+                'team_id' => $team2->id,
+                'user_id' => 1,
+                'metadata' => $metadata2,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseDataset2->assertStatus(201);
+        $datasetId2 = $responseDataset2['data'];
+
+        // Create DAR application for those datasets
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'DRAFT',
+                'approval_status' => 'APPROVED_COMMENTS',
+                'dataset_ids' => [$datasetId1, $datasetId2],
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+
+        // Test questions are merged
+        $applicationId = $response->decodeResponseJson()['data'];
+        $response = $this->get('api/v1/dar/applications/' . $applicationId, $this->header);
+        $questions = $response->decodeResponseJson()['data']['questions'];
+
+        $allTeams = array_column($questions, 'teams');
+
+        $this->assertContains($team1->name, $allTeams);
+        $this->assertContains($team2->name, $allTeams);
+        $this->assertContains($team1->name . ',' . $team2->name, $allTeams);
+
+        $allGuidance = implode('\n', array_column($questions, 'guidance'));
+
+        $this->assertContains($team1->name, $allGuidance);
+        $this->assertContains($team2->name, $allGuidance);
+        $this->assertContains('Question Two Guidance', $allGuidance);
+        $this->assertContains('Question Two Template Two Guidance', $allGuidance);
     }
 
     /**
@@ -207,6 +376,7 @@ class DataAccessApplicationTest extends TestCase
             [
                 'applicant_id' => 1,
                 'submission_status' => 'DRAFT',
+                'dataset_ids' => [1,2],
             ],
             $this->header
         );
@@ -246,6 +416,7 @@ class DataAccessApplicationTest extends TestCase
             [
                 'applicant_id' => 1,
                 'submission_status' => 'DRAFT',
+                'dataset_ids' => [1,2],
             ],
             $this->header
         );
@@ -305,6 +476,7 @@ class DataAccessApplicationTest extends TestCase
             [
                 'applicant_id' => 1,
                 'submission_status' => 'DRAFT',
+                'dataset_ids' => [1,2],
             ],
             $this->header
         );
@@ -322,5 +494,39 @@ class DataAccessApplicationTest extends TestCase
             ->assertJsonStructure([
                 'message',
             ]);
+    }
+
+    private function createQuestion(string $title): int
+    {
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'field' => [
+                    'options' => [],
+                    'component' => 'TextArea',
+                    'validations' => [
+                        [
+                            'min' => 1,
+                            'message' => 'Please enter a value'
+                        ]
+                    ]
+                ],
+                'title' => $title,
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $questionId = $response->decodeResponseJson()['data'];
+
+        return $questionId;
     }
 }

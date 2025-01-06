@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DataAccessApplication extends Model
@@ -33,5 +34,10 @@ class DataAccessApplication extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'applicant_id');
+    }
+
+    public function questions(): HasMany
+    {
+        return $this->hasMany(DataAccessApplicationHasQuestion::class, 'application_id');
     }
 }

@@ -137,7 +137,7 @@ class DataAccessApplicationController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $application = DataAccessApplication::findOrFail($id);
+            $application = DataAccessApplication::where('id', $id)->with('questions')->first();
 
             if ($application) {
                 Auditor::log([
@@ -235,49 +235,56 @@ class DataAccessApplicationController extends Controller
                         continue;
                     }
                 }
-                $teams[] = $team->id;
+                $teams[] = $team;
             }
 
             $questions = array();
             foreach ($teams as $team) {
                 $template = DataAccessTemplate::where([
-                    'team_id' => $team,
+                    'team_id' => $team->id,
                     'published' => true,
                     'locked' => false
                 ])->first();
                 if ($template) {
                     $templateQuestions = $template->questions()->get();
                     foreach ($templateQuestions as $q) {
+                        $q['team'] = $team->name;
                         if (!isset($questions[$q->question_id])) {
-                            \Log::info('q key not found');
-                            $q['teams'] = [$team];
-                            $questions[$q->question_id] = $q;
+                            $questions[$q->question_id] = [$q];
                         } else {
-                            // merge guidance
-                            $a = $questions[$q->question_id]['guidance'];
-                            $b = $q->guidance;
-                            if ($a !== $b) {
-                                // ??? better logic here
-                                // If guidances are not identical - merge them
-                                // else leave as is (assuming default guidance is required)
-                                $questions[$q->question_id]['guidance'] = $a . '  ' . $b;
-                            }
-                            $questions[$q->question_id]['teams'][] = $team;
-                            // handle order???
+                            $questions[$q->question_id][] = $q;
                         }
                     }
                 }
             }
 
-            foreach ($questions as $question) {
+            $order = 1;
+            foreach ($questions as $qId => $question) {
+                $required = in_array(true, $question) ? true : false;
+                $teams = implode(',', array_column($question, 'team'));
+
+                $guidanceArray = array();
+                foreach($question as $q) {
+                    if (isset($guidanceArray[$q['guidance']])) {
+                        $guidanceArray[$q['guidance']][] = $q['team'];
+                    } else {
+                        $guidanceArray[$q['guidance']] = [$q['team']];
+                    }
+                }
+                $guidance = '';
+                foreach($guidanceArray as $g => $t) {
+                    $guidance .= implode(',', $t) . '\n\n' . $g . '\n\n';
+                }
+
                 DataAccessApplicationHasQuestion::create([
                     'application_id' => $application->id,
-                    'question_id' => $question->question_id,
-                    'guidance' => $question->guidance,
-                    'required' => $question->required,
-                    'order' => $question->order,
-                    'teams' => implode(',', $question->teams)
+                    'question_id' => $qId,
+                    'guidance' => $guidance,
+                    'required' => $required,
+                    'order' => $order,
+                    'teams' => $teams
                 ]);
+                $order += 1;
             }
 
             Auditor::log([
