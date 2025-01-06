@@ -14,9 +14,9 @@ return new class () extends Migration {
         
         Schema::create('omop_matcher_cache', function (Blueprint $table) {
             $table->id();
-            $table->string('search_term', 255); // Reduced to fit within the key limit
-            $table->string('search_parameters', 255)->nullable();
-            $table->mediumText('result');
+            $table->string('search_term', 255);
+            $table->string('search_parameters', 255);
+            $table->mediumText('result')->nullable();
         
             $table->unique([
                 'search_term',
