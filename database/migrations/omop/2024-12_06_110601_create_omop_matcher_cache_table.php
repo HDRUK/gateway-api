@@ -10,11 +10,11 @@ return new class () extends Migration {
      */
     public function up()
     {
-        Schema::create('omop_matcher_cache', function (Blueprint $table) {
+        Schema::create('SAVED_MVCM_RESULTS', function (Blueprint $table) {
             $table->id();
-            $table->string('search_term', 255);
-            $table->string('search_parameters', 255);
-            $table->mediumText('result')->nullable();
+            $table->string('search_term', 255); // Reduced to fit within the key limit
+            $table->string('search_parameters', 255)->nullable();
+            $table->mediumText('result');
         
             $table->unique([
                 'search_term',
@@ -28,7 +28,7 @@ return new class () extends Migration {
      */
     public function down()
     {
-        Schema::dropIfExists('omop_matcher_cache');
+        Schema::dropIfExists('SAVED_MVCM_RESULTS');
     }
 };
 
