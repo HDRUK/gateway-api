@@ -91,6 +91,16 @@ class DatasetController extends Controller
      *          description="Dataset status to filter by",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="with_metadata",
+     *       in="query",
+     *       description="Boolean whether to return dataset metadata",
+     *       example="true",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="Boolean whether to return dataset metadata",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -113,7 +123,6 @@ class DatasetController extends Controller
         try {
             $matches = [];
             $filterStatus = $request->query('status', null);
-            $datasetId = $request->query('dataset_id', null);
             $withMetadata = $request->boolean('with_metadata', true);
 
             $sort = $request->query('sort', 'created:desc');
@@ -122,32 +131,8 @@ class DatasetController extends Controller
             $sortField = $tmp[0];
             $sortDirection = $tmp[1] ?? 'asc';
 
-            $sortOnMetadata = str_starts_with($sortField, 'metadata.');
-
-            $allFields = collect(Dataset::first())->keys()->toArray();
-            if (!$sortOnMetadata && count($allFields) > 0 && !in_array($sortField, $allFields)) {
-                return response()->json([
-                    'message' => '\"' . $sortField .'\" is not a valid field to sort on'
-                ], 400);
-            }
-
-            $validDirections = ['desc', 'asc'];
-
-            if (!in_array($sortDirection, $validDirections)) {
-                //if the sort direction is not desc or asc then return a bad request
-                return response()->json([
-                    "message" => 'Sort direction must be either: ' .
-                        implode(' OR ', $validDirections) .
-                        '. Not "' . $sortDirection .'"'
-                    ], 400);
-            }
-
             // apply any initial filters to get initial datasets
-            $filterTitle = $request->query('title', null);
-
-            $initialDatasets = Dataset::when($datasetId, function ($query) use ($datasetId) {
-                return $query->where('datasetid', '=', $datasetId);
-            })->when($filterStatus, function ($query) use ($filterStatus) {
+            $initialDatasets = Dataset::when($filterStatus, function ($query) use ($filterStatus) {
                 return $query->where('status', '=', $filterStatus);
             })->select(['id'])->get();
 
@@ -155,6 +140,8 @@ class DatasetController extends Controller
             foreach ($initialDatasets as $ds) {
                 $matches[] = $ds->id;
             }
+
+            $filterTitle = $request->query('title', null);
 
             if (!empty($filterTitle)) {
                 // If we've received a 'title' for the search, then only return
@@ -185,11 +172,7 @@ class DatasetController extends Controller
             // perform query for the matching datasets with ordering and pagination.
             $datasets = Dataset::whereIn('id', $matches)
                 ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
-                ->when(
-                    $sortOnMetadata,
-                    fn ($query) => $query->orderByMetadata($sortField, $sortDirection),
-                    fn ($query) => $query->orderBy($sortField, $sortDirection)
-                )
+                ->applySorting()
                 ->paginate($perPage, ['*'], 'page');
 
             Auditor::log([
