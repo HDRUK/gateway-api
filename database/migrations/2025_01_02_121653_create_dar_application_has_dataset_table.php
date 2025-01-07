@@ -11,7 +11,6 @@ return new class () extends Migration {
     public function up(): void
     {
         Schema::create('dar_application_has_dataset', function (Blueprint $table) {
-            $table->id();
             $table->bigInteger('dar_application_id')->unsigned();
             $table->bigInteger('dataset_id')->unsigned();
 

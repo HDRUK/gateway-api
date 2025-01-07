@@ -56,10 +56,10 @@ class DataAccessApplicationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $applications = DataAccessApplication::paginate(
                 Config::get('constants.per_page'),
                 ['*'],
@@ -134,10 +134,10 @@ class DataAccessApplicationController extends Controller
      */
     public function show(GetDataAccessApplication $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $application = DataAccessApplication::where('id', $id)->with('questions')->first();
 
             if ($application) {
@@ -208,10 +208,10 @@ class DataAccessApplicationController extends Controller
      */
     public function store(CreateDataAccessApplication $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $application = DataAccessApplication::create([
                 'applicant_id' => isset($input['applicant_id']) ? $input['applicant_id'] : $jwtUser['id'],
                 'submission_status' => isset($input['submission_status']) ? $input['submission_status'] : 'DRAFT',
@@ -377,10 +377,10 @@ class DataAccessApplicationController extends Controller
      */
     public function update(UpdateDataAccessApplication $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $application = DataAccessApplication::findOrFail($id);
 
             $application->update([
@@ -471,10 +471,10 @@ class DataAccessApplicationController extends Controller
      */
     public function edit(EditDataAccessApplication $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $application = DataAccessApplication::findOrFail($id);
 
             $arrayKeys = [
@@ -552,10 +552,10 @@ class DataAccessApplicationController extends Controller
      */
     public function destroy(DeleteDataAccessApplication $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $application = DataAccessApplication::findOrFail($id);
             $application->delete();
 
