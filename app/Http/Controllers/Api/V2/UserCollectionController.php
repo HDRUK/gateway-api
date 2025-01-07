@@ -183,7 +183,7 @@ class UserCollectionController extends Controller
 
             $collections = $this->indexUserCollection(
                 $userId,
-                'DRAFT',
+                Collection::STATUS_DRAFT,
                 $perPage
             );
 
@@ -266,7 +266,7 @@ class UserCollectionController extends Controller
 
             $collections = $this->indexUserCollection(
                 $userId,
-                'ARCHIVED',
+                Collection::STATUS_ARCHIVED,
                 $perPage
             );
 

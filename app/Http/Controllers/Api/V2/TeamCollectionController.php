@@ -183,7 +183,7 @@ class TeamCollectionController extends Controller
 
             $collections = $this->indexTeamCollection(
                 $teamId,
-                'DRAFT',
+                Collection::STATUS_DRAFT,
                 $perPage
             );
 
@@ -266,7 +266,7 @@ class TeamCollectionController extends Controller
 
             $collections = $this->indexTeamCollection(
                 $teamId,
-                'ARCHIVED',
+                Collection::STATUS_ARCHIVED,
                 $perPage
             );
 
