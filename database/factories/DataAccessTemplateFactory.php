@@ -20,7 +20,7 @@ class DataAccessTemplateFactory extends Factory
         return [
             'team_id' => Team::all()->random()->id,
             'user_id' => 1,
-            'published' => 1,
+            'published' => fake()->randomElement([0, 1]),
             'locked' => 0,
         ];
     }

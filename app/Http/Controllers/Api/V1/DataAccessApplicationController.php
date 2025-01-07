@@ -231,13 +231,18 @@ class DataAccessApplicationController extends Controller
                 if (!$team) {
                     $team = Team::where('pid', $gatewayId)->first();
                     if (!$team) {
-                        // throw a warning?
+                        CloudLogger::write([
+                            'action_type' => 'CREATE',
+                            'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                            'description' => 'Unable to create data access application for dataset with id ' . $d . ', no matching team found.',
+                        ]);
                         continue;
                     }
                 }
                 $teams[] = $team;
             }
 
+            // compile questions from each teams template
             $questions = array();
             foreach ($teams as $team) {
                 $template = DataAccessTemplate::where([
@@ -258,6 +263,7 @@ class DataAccessApplicationController extends Controller
                 }
             }
 
+            // merge the templates including merging of guidance
             $order = 1;
             foreach ($questions as $qId => $question) {
                 $required = in_array(true, $question) ? true : false;
