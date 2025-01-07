@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\V2;
 
 use Config;
 use App\Models\Dur;
@@ -17,7 +17,6 @@ use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
-// use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
 use ElasticClientController as ECC;
@@ -49,6 +48,11 @@ class CollectionTest extends TestCase
     public const TEST_URL_V2 = '/api/v2/collections';
 
     protected $header = [];
+    protected $nonAdminJwt;
+    protected $nonAdmin2Jwt;
+    protected $headerNonAdmin;
+    protected $headerNonAdmin2;
+    protected $nonAdmin2User;
 
     /**
      * Set up the database

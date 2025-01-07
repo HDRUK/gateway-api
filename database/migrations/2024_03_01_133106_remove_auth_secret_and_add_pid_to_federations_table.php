@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class RemoveAuthSecretAndAddPidToFederationsTable extends Migration
-{
+return new class () extends Migration {
     public function up()
     {
         Schema::table('federations', function (Blueprint $table) {
@@ -35,4 +34,4 @@ class RemoveAuthSecretAndAddPidToFederationsTable extends Migration
             $table->dropColumn('pid');
         });
     }
-}
+};
