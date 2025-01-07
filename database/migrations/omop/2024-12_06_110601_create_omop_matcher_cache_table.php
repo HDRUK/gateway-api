@@ -10,7 +10,7 @@ return new class () extends Migration {
      */
     public function up()
     {
-        Schema::create('SAVED_MVCM_RESULTS', function (Blueprint $table) {
+        Schema::create('saved_mvcm_results', function (Blueprint $table) {
             $table->id();
             $table->string('search_term', 255); // Reduced to fit within the key limit
             $table->string('search_parameters', 255)->nullable();
@@ -28,7 +28,7 @@ return new class () extends Migration {
      */
     public function down()
     {
-        Schema::dropIfExists('SAVED_MVCM_RESULTS');
+        Schema::dropIfExists('saved_mvcm_results');
     }
 };
 
