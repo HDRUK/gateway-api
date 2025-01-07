@@ -98,7 +98,7 @@ class CollectionController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
+            $perPage = $request->has('per_page') ? (int) $request->get('per_page') : Config::get('constants.per_page');
 
             $collections = Collection::with([
                 'keywords',

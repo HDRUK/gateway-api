@@ -96,7 +96,7 @@ class TeamCollectionController extends Controller
     public function indexActive(Request $request, int $teamId): JsonResponse
     {
         try {
-            $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
+            $perPage = $request->has('per_page') ? (int) $request->get('per_page') : Config::get('constants.per_page');
 
             $collections = $this->indexTeamCollection(
                 $teamId,
@@ -179,7 +179,7 @@ class TeamCollectionController extends Controller
     public function indexDraft(Request $request, int $teamId): JsonResponse
     {
         try {
-            $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
+            $perPage = $request->has('per_page') ? (int) $request->get('per_page') : Config::get('constants.per_page');
 
             $collections = $this->indexTeamCollection(
                 $teamId,
@@ -262,7 +262,7 @@ class TeamCollectionController extends Controller
     public function indexArchived(Request $request, int $teamId): JsonResponse
     {
         try {
-            $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
+            $perPage = $request->has('per_page') ? (int) $request->get('per_page') : Config::get('constants.per_page');
 
             $collections = $this->indexTeamCollection(
                 $teamId,
