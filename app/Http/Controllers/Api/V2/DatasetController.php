@@ -178,7 +178,7 @@ class DatasetController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'Dataset get all',
+                'description' => 'Dataset index v2',
             ]);
 
             return response()->json(
