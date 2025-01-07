@@ -199,7 +199,7 @@ class DatasetController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v2/datasets/count/{field}",
-     *    operationId="count_unique_fields_v2",
+     *    operationId="count_unique_fields_datasets_v2",
      *    tags={"Datasets"},
      *    summary="DatasetController@count",
      *    description="Get Counts for distinct entries of a field in the model",
@@ -213,17 +213,6 @@ class DatasetController extends Controller
      *       @OA\Schema(
      *          type="string",
      *          description="status field",
-     *       ),
-     *    ),
-     *    @OA\Parameter(
-     *       name="team_id",
-     *       in="query",
-     *       description="team id",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema(
-     *          type="integer",
-     *          description="team id",
      *       ),
      *    ),
      *    @OA\Response(
@@ -241,13 +230,7 @@ class DatasetController extends Controller
     public function count(Request $request, string $field): JsonResponse
     {
         try {
-            $teamId = $request->query('team_id', null);
-            $counts = Dataset::when($teamId, function ($query) use ($teamId) {
-                return $query->where('team_id', '=', $teamId);
-            })->select($field)
-                ->get()
-                ->groupBy($field)
-                ->map->count();
+            $counts = Dataset::applyCount();
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -488,7 +471,6 @@ class DatasetController extends Controller
      *             @OA\Property(property="mongo_object_id", type="string", example="abc123"),
      *             @OA\Property(property="mongo_id", type="string", example="456"),
      *             @OA\Property(property="mongo_pid", type="string", example="def789"),
-     *             @OA\Property(property="datasetid", type="string", example="xyz1011"),
      *             @OA\Property(property="metadata", type="array", @OA\Items())
      *          )
      *       )
