@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Config;
 use App\Http\Traits\DatasetFetch;
+use App\Models\Traits\SortManager;
+use App\Models\Traits\EntityCounter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Validator;
@@ -22,6 +24,8 @@ class Collection extends Model
     use SoftDeletes;
     use Prunable;
     use DatasetFetch;
+    use SortManager;
+    use EntityCounter;
 
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
@@ -53,6 +57,15 @@ class Collection extends Model
 
     protected $casts = [
         'enabled' => 'boolean',
+    ];
+
+    protected static array $sortableColumns = [
+        'name',
+        'updated_at',
+    ];
+
+    protected static array $countableColumns = [
+        'status',
     ];
 
     protected static function boot()
