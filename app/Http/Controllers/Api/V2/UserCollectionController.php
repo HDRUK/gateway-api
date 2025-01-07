@@ -100,7 +100,7 @@ class UserCollectionController extends Controller
 
             $collections = $this->indexUserCollection(
                 $userId,
-                'ACTIVE',
+                Collection::STATUS_ACTIVE,
                 $perPage
             );
 

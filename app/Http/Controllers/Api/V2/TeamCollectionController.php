@@ -100,7 +100,7 @@ class TeamCollectionController extends Controller
 
             $collections = $this->indexTeamCollection(
                 $teamId,
-                'ACTIVE',
+                Collection::STATUS_ACTIVE,
                 $perPage
             );
 
