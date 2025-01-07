@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use CloudLogger;
 use Config;
 use Auditor;
 use Exception;
