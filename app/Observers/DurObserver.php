@@ -36,7 +36,7 @@ class DurObserver
 
         if($dur->status === Dur::STATUS_ACTIVE) {
             $this->indexElasticDur($dur->id);
-        } elseif($prevStatus === Dur::STATUS_ACTIVE) {
+        } elseif ($prevStatus === Dur::STATUS_ACTIVE) {
             $this->deleteDurFromElastic((int) $dur->id);
         }
     }
