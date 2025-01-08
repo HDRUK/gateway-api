@@ -85,6 +85,8 @@ class Email extends Mailable
             if ($response->successful()) {
                 return $response->json()['html'];
             }
+
+            throw new MailSendException('Unable to contact MJML API - aborting');
         } catch (Exception $e) {
             CloudLogger::write([
                 'action_type' => 'MJML',
@@ -92,7 +94,7 @@ class Email extends Mailable
                 'description' => $e->getMessage(),
                 'full_stack' => json_encode($e),
             ]);
-            throw new MailSendException('unable to contact mjml api - aborting');
+            throw new MailSendException('Error rendering MJML to HTML. Please check logs for details.');
         }
     }
 
