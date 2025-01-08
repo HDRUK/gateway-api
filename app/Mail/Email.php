@@ -2,9 +2,10 @@
 
 namespace App\Mail;
 
+use CloudLogger;
 use App\Models\EmailTemplate;
 use App\Exceptions\MailSendException;
-
+use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -69,22 +70,30 @@ class Email extends Mailable
 
     public function mjmlToHtml(): string
     {
-        $this->replaceBodyText();
+        try {
+            $this->replaceBodyText();
 
-        $response = Http::withBasicAuth(
-            env('MJML_API_APPLICATION_KEY', ''),
-            env('MJML_API_KEY', '')
-        )
-            ->post(env('MJML_RENDER_URL', ''), [
-                'mjml' => $this->template['body'],
+            $response = Http::withBasicAuth(
+                env('MJML_API_APPLICATION_KEY', ''),
+                env('MJML_API_KEY', '')
+            )
+                ->post(env('MJML_RENDER_URL', ''), [
+                    'mjml' => $this->template['body'],
+                ]);
+
+
+            if ($response->successful()) {
+                return $response->json()['html'];
+            }
+        } catch (Exception $e) {
+            CloudLogger::write([
+                'action_type' => 'MJML',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+                'full_stack' => json_encode($e),
             ]);
-
-
-        if ($response->successful()) {
-            return $response->json()['html'];
+            throw new MailSendException('unable to contact mjml api - aborting');
         }
-
-        throw new MailSendException('unable to contact mjml api - aborting');
     }
 
     private function replaceBodyText(): void
