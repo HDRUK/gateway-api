@@ -92,7 +92,6 @@ class Email extends Mailable
                 'action_type' => 'MJML',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
-                'full_stack' => json_encode($e),
             ]);
             throw new MailSendException('Error rendering MJML to HTML. Please check logs for details.');
         }
