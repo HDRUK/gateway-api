@@ -604,6 +604,7 @@ class TeamController extends Controller
         $arrayTeam = array_filter($input, function ($key) {
             return $key !== 'notifications' || $key !== 'users';
         }, ARRAY_FILTER_USE_KEY);
+        $arrayTeam['name'] = sanitize_input($input['name']);
         $arrayTeamNotification = $input['notifications'];
         $arrayTeamUsers = $input['users'];
         $superAdminIds = User::where('is_admin', true)->pluck('id');
@@ -793,7 +794,9 @@ class TeamController extends Controller
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
-
+            if (array_key_exists('name', $input)) {
+                $array['name'] = sanitize_input($input['name']);
+            }
             Team::where('id', $teamId)->update($array);
 
             $arrayTeamNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
@@ -950,7 +953,9 @@ class TeamController extends Controller
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
-
+            if (array_key_exists('name', $input)) {
+                $array['name'] = sanitize_input($input['name']);
+            }
             Team::where('id', $teamId)->update($array);
 
             $arrayTeamNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
