@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use CloudLogger;
 use Config;
 use Auditor;
 use Exception;
@@ -15,6 +16,11 @@ use App\Http\Requests\DataAccessApplication\CreateDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\DeleteDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\UpdateDataAccessApplication;
 use App\Models\DataAccessApplication;
+use App\Models\DataAccessApplicationHasDataset;
+use App\Models\DataAccessApplicationHasQuestion;
+use App\Models\DataAccessTemplate;
+use App\Models\Dataset;
+use App\Models\Team;
 
 class DataAccessApplicationController extends Controller
 {
@@ -50,10 +56,10 @@ class DataAccessApplicationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $applications = DataAccessApplication::paginate(
                 Config::get('constants.per_page'),
                 ['*'],
@@ -128,11 +134,11 @@ class DataAccessApplicationController extends Controller
      */
     public function show(GetDataAccessApplication $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $application = DataAccessApplication::findOrFail($id);
+        try {
+            $application = DataAccessApplication::where('id', $id)->with('questions')->first();
 
             if ($application) {
                 Auditor::log([
@@ -180,6 +186,7 @@ class DataAccessApplicationController extends Controller
      *              @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
      *              @OA\Property(property="approval_status", type="string", example="APPROVED"),
      *              @OA\Property(property="team_ids", type="array", @OA\Items()),
+     *              @OA\Property(property="dataset_ids", type="array", @OA\Items()),
      *          ),
      *      ),
      *      @OA\Response(
@@ -201,17 +208,91 @@ class DataAccessApplicationController extends Controller
      */
     public function store(CreateDataAccessApplication $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $application = DataAccessApplication::create([
                 'applicant_id' => isset($input['applicant_id']) ? $input['applicant_id'] : $jwtUser['id'],
                 'submission_status' => isset($input['submission_status']) ? $input['submission_status'] : 'DRAFT',
             ]);
 
-            // application has questions
-            // TODO update with template merging logic
+            // find data provider for each dataset
+            $teams = array();
+            foreach ($input['dataset_ids'] as $d) {
+                $metadata = Dataset::findOrFail($d)->lastMetadata();
+                DataAccessApplicationHasDataset::create([
+                    'dataset_id' => $d,
+                    'dar_application_id' => $application->id
+                ]);
+
+                $gatewayId = $metadata['metadata']['summary']['publisher']['gatewayId'];
+                // check for primary key or pid match...
+                $team = Team::where('id', $gatewayId)->first();
+                if (!$team) {
+                    $team = Team::where('pid', $gatewayId)->first();
+                    if (!$team) {
+                        CloudLogger::write([
+                            'action_type' => 'CREATE',
+                            'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                            'description' => 'Unable to create data access application for dataset with id ' . $d . ', no matching team found.',
+                        ]);
+                        continue;
+                    }
+                }
+                $teams[] = $team;
+            }
+
+            // compile questions from each teams template
+            $questions = array();
+            foreach ($teams as $team) {
+                $template = DataAccessTemplate::where([
+                    'team_id' => $team->id,
+                    'published' => true,
+                    'locked' => false
+                ])->first();
+                if ($template) {
+                    $templateQuestions = $template->questions()->get();
+                    foreach ($templateQuestions as $q) {
+                        $q['team'] = $team->name;
+                        if (!isset($questions[$q->question_id])) {
+                            $questions[$q->question_id] = [$q];
+                        } else {
+                            $questions[$q->question_id][] = $q;
+                        }
+                    }
+                }
+            }
+
+            // merge the templates including merging of guidance
+            $order = 1;
+            foreach ($questions as $qId => $question) {
+                $required = in_array(true, $question) ? true : false;
+                $teams = implode(',', array_column($question, 'team'));
+
+                $guidanceArray = array();
+                foreach($question as $q) {
+                    if (isset($guidanceArray[$q['guidance']])) {
+                        $guidanceArray[$q['guidance']][] = $q['team'];
+                    } else {
+                        $guidanceArray[$q['guidance']] = [$q['team']];
+                    }
+                }
+                $guidance = '';
+                foreach($guidanceArray as $g => $t) {
+                    $guidance .= implode(',', $t) . '\n\n' . $g . '\n\n';
+                }
+
+                DataAccessApplicationHasQuestion::create([
+                    'application_id' => $application->id,
+                    'question_id' => $qId,
+                    'guidance' => $guidance,
+                    'required' => $required,
+                    'order' => $order,
+                    'teams' => $teams
+                ]);
+                $order += 1;
+            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -296,10 +377,10 @@ class DataAccessApplicationController extends Controller
      */
     public function update(UpdateDataAccessApplication $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $application = DataAccessApplication::findOrFail($id);
 
             $application->update([
@@ -390,10 +471,10 @@ class DataAccessApplicationController extends Controller
      */
     public function edit(EditDataAccessApplication $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $application = DataAccessApplication::findOrFail($id);
 
             $arrayKeys = [
@@ -471,10 +552,10 @@ class DataAccessApplicationController extends Controller
      */
     public function destroy(DeleteDataAccessApplication $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $application = DataAccessApplication::findOrFail($id);
             $application->delete();
 

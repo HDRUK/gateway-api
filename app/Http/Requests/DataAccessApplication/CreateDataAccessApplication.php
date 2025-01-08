@@ -22,6 +22,13 @@ class CreateDataAccessApplication extends BaseFormRequest
                 'string',
                 'in:DRAFT,SUBMITTED,FEEDBACK'
             ],
+            'dataset_ids' => [
+                'required',
+                'array',
+            ],
+            'dataset_ids.*' => [
+                'integer'
+            ]
         ];
     }
 }
