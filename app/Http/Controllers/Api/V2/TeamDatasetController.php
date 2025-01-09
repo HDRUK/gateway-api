@@ -31,6 +31,7 @@ use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Requests\V2\Dataset\GetDataset;
 use App\Http\Requests\V2\Dataset\CreateTeamDataset;
 use App\Http\Requests\V2\Dataset\DeleteTeamDataset;
+use App\Http\Requests\V2\Dataset\UpdateTeamDataset;
 use App\Exports\DatasetStructuralMetadataExport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -790,7 +791,7 @@ class TeamDatasetController extends Controller
      *      )
      * )
      */
-    public function update(UpdateDataset $request, int $teamId, int $id)
+    public function update(UpdateTeamDataset $request, int $teamId, int $id)
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -804,6 +805,8 @@ class TeamDatasetController extends Controller
             $team = Team::where('id', $teamId)->first();
             $currDataset = Dataset::where('id', $id)->first();
             $currentPid = $currDataset->pid;
+
+            $input['team_id'] = $teamId;
 
             $payload = $this->extractMetadata($input['metadata']);
             $payload['extra'] = [

@@ -497,7 +497,7 @@ return [
     [
         'name' => 'datasets',
         'method' => 'put',
-        'path' => '/teams/{teamId}/datasets{id}',
+        'path' => '/teams/{teamId}/datasets/{id}',
         'methodController' => 'TeamDatasetController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
