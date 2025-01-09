@@ -29,8 +29,9 @@ use MetadataManagementController as MMC;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Requests\V2\Dataset\GetDataset;
+use App\Http\Requests\V2\Dataset\DeleteDataset;
+use App\Http\Requests\V2\Dataset\EditTeamDataset;
 use App\Http\Requests\V2\Dataset\CreateTeamDataset;
-use App\Http\Requests\V2\Dataset\DeleteTeamDataset;
 use App\Http\Requests\V2\Dataset\UpdateTeamDataset;
 use App\Exports\DatasetStructuralMetadataExport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -685,6 +686,7 @@ class TeamDatasetController extends Controller
             }
 
             $input['team_id'] = $teamId;
+            $input['user_id'] = $jwtUser['id'];
 
             $metadataResult = $this->metadataOnboard(
                 $input,
@@ -1072,7 +1074,7 @@ class TeamDatasetController extends Controller
      *      )
      * )
      */
-    public function destroy(DeleteTeamDataset $request, int $teamId, int $id) // softdelete
+    public function destroy(DeleteDataset $request, int $teamId, int $id) // softdelete
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
