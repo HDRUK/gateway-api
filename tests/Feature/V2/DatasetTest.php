@@ -1090,7 +1090,7 @@ class DatasetTest extends TestCase
         // change dataset status
         $responseChangeStatusDataset = $this->json(
             'PATCH',
-            self::TEST_URL_DATASET_V2 . '/' . $datasetId,
+            $this->team_datasets_url($teamId) . '/' . $datasetId,
             [
                 'status' => Dataset::STATUS_DRAFT,
             ],
@@ -1104,7 +1104,7 @@ class DatasetTest extends TestCase
         // delete dataset
         $responseDeleteDataset = $this->json(
             'DELETE',
-            self::TEST_URL_DATASET_V2 . '/' . $datasetId,
+            $this->team_datasets_url($teamId) . '/' . $datasetId,
             [],
             $this->header
         );
