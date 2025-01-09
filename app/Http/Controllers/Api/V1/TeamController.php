@@ -604,6 +604,9 @@ class TeamController extends Controller
         $arrayTeam = array_filter($input, function ($key) {
             return $key !== 'notifications' || $key !== 'users';
         }, ARRAY_FILTER_USE_KEY);
+
+        $arrayTeam['name'] = format_clean_input($input['name']);
+
         $arrayTeamNotification = $input['notifications'];
         $arrayTeamUsers = $input['users'];
         $superAdminIds = User::where('is_admin', true)->pluck('id');

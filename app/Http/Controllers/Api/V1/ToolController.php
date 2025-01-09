@@ -476,6 +476,7 @@ class ToolController extends Controller
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
+            $array['name'] = format_clean_input($input['name']);
             $tool = Tool::create($array);
             $toolId = $tool->id;
 
