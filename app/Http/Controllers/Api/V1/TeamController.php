@@ -605,9 +605,7 @@ class TeamController extends Controller
             return $key !== 'notifications' || $key !== 'users';
         }, ARRAY_FILTER_USE_KEY);
 
-        if (array_key_exists('name', $input)) {
-            $arrayTeam['name'] = format_clean_input($input['name']);
-        }
+        $arrayTeam['name'] = format_clean_input($input['name']);
 
         $arrayTeamNotification = $input['notifications'];
         $arrayTeamUsers = $input['users'];
