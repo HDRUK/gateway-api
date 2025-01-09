@@ -2614,10 +2614,12 @@ Authorization: Bearer {{accessToken}}
     "from": "sam.cox@hdruk.ac.uk",
     "team_id": 4,
     "project_title": "project title for test",
+    "message": "test",
     "is_dar_dialogue": true,
     "is_dar_review": false,
     "is_feasibility_enquiry": false,
     "is_general_enquiry": true,
+    "is_dar_status": true,
     "datasets": [
         {
             "dataset_id": 4,

@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\User;
+use App\Models\Team;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\DataAccessTemplate>
@@ -18,7 +18,7 @@ class DataAccessTemplateFactory extends Factory
     public function definition(): array
     {
         return [
-            'team_id' => User::all()->random()->id,
+            'team_id' => Team::all()->random()->id,
             'user_id' => 1,
             'published' => fake()->randomElement([0, 1]),
             'locked' => 0,

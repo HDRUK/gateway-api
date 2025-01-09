@@ -864,6 +864,10 @@ trait IndexElastic
 
         foreach ($idTeams as $idTeam) {
             $team = Team::select('id', 'name')->where(['id' => $idTeam])->first();
+            if (is_null($team)) {
+                continue;
+            }
+
             $this->getDatasets((int) $team->id);
             $teamsResult[] = [
                 'name' => $team->name,
