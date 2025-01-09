@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DataAccessTemplate extends Model
@@ -39,5 +40,10 @@ class DataAccessTemplate extends Model
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
+    }
+
+    public function questions(): HasMany
+    {
+        return $this->hasMany(DataAccessTemplateHasQuestion::class, 'template_id');
     }
 }

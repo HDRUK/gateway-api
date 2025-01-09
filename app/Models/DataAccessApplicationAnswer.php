@@ -33,4 +33,14 @@ class DataAccessApplicationAnswer extends Model
     {
         return $this->belongsTo(User::class, 'contributor_id');
     }
+
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(DataAccessApplication::class, 'application_id');
+    }
+
+    public function question(): BelongsTo
+    {
+        return $this->belongsTo(QuestionBank::class, 'question_id');
+    }
 }

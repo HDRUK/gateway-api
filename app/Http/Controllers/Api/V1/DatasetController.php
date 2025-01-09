@@ -1058,12 +1058,20 @@ class DatasetController extends Controller
 
     public function destroyByPid(Request $request, string $pid) // softdelete
     {
+        $input = $request->all();
+        $teamId = (int)$input['team_id'];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $this->checkAccess($input, $teamId, null, 'team');
         $dataset = Dataset::where('pid', "=", $pid)->first();
         return $this->destroy($request, $dataset->id);
     }
 
     public function updateByPid(UpdateDataset $request, string $pid)
     {
+        $input = $request->all();
+        $teamId = (int)$input['team_id'];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $this->checkAccess($input, $teamId, null, 'team');
         $dataset = Dataset::where('pid', "=", $pid)->first();
         return $this->update($request, $dataset->id);
     }

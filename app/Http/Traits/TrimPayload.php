@@ -14,6 +14,7 @@ trait TrimPayload
             }
         }
 
+        $miniMetadata['gwdmVersion'] = $input['gwdmVersion'];
         return $miniMetadata;
     }
 }
