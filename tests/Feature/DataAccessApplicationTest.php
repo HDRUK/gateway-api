@@ -323,6 +323,33 @@ class DataAccessApplicationTest extends TestCase
         // Test questions are merged
         $applicationId = $response->decodeResponseJson()['data'];
         $response = $this->get('api/v1/dar/applications/' . $applicationId, $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'applicant_id',
+                    'submission_status',
+                    'approval_status',
+                    'questions' => [
+                        0 => [
+                            'application_id',
+                            'question_id',
+                            'required',
+                            'order',
+                            'teams',
+                            'latest_version' => [
+                                'question_json',
+                                'child_versions'
+                            ],
+                        ]
+                    ],
+                ],
+            ]);
+
         $questions = $response->decodeResponseJson()['data']['questions'];
 
         $allTeams = array_column($questions, 'teams');
@@ -384,13 +411,22 @@ class DataAccessApplicationTest extends TestCase
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
         $content = $response->decodeResponseJson();
+        $applicationId = $content['data'];
 
         $response = $this->json(
             'PUT',
-            'api/v1/dar/applications/' . $content['data'],
+            'api/v1/dar/applications/' . $applicationId,
             [
                 'applicant_id' => 1,
-                'submission_status' => 'SUBMITTED',
+                'submission_status' => 'DRAFT',
+                'answers' => [
+                    0 => [
+                        'question_id' => 1,
+                        'answer' => [
+                            'value' => 'an answer'
+                        ]
+                    ],
+                ]
             ],
             $this->header
         );
@@ -402,7 +438,7 @@ class DataAccessApplicationTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['data']['submission_status'], 'SUBMITTED');
+        $this->assertEquals($content['data']['submission_status'], 'DRAFT');
     }
 
     /**
@@ -430,7 +466,15 @@ class DataAccessApplicationTest extends TestCase
             'PATCH',
             'api/v1/dar/applications/' . $applicationId,
             [
-                'submission_status' => 'SUBMITTED',
+                'submission_status' => 'DRAFT',
+                'answers' => [
+                    0 => [
+                        'question_id' => 1,
+                        'answer' => [
+                            'value' => 'an answer'
+                        ]
+                    ],
+                ]
             ],
             $this->header
         );
@@ -442,7 +486,7 @@ class DataAccessApplicationTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['data']['submission_status'], 'SUBMITTED');
+        $this->assertEquals($content['data']['submission_status'], 'DRAFT');
         $this->assertNull($content['data']['approval_status']);
 
         $response = $this->json(
@@ -462,6 +506,67 @@ class DataAccessApplicationTest extends TestCase
 
         $content = $response->decodeResponseJson();
         $this->assertEquals($content['data']['approval_status'], 'APPROVED');
+    }
+
+    /**
+     * Tests that a dar application record cannot be updated when status is submitted
+     *
+     * @return void
+     */
+    public function test_the_application_fails_to_update_a_dar_application()
+    {
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'DRAFT',
+                'dataset_ids' => [1,2],
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $content = $response->decodeResponseJson();
+        $applicationId = $content['data'];
+
+        $response = $this->json(
+            'PUT',
+            'api/v1/dar/applications/' . $applicationId,
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'SUBMITTED',
+                'answers' => [
+                    0 => [
+                        'question_id' => 1,
+                        'answer' => [
+                            'value' => 'an answer'
+                        ]
+                    ],
+                ]
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/dar/applications/' . $applicationId,
+            [
+                'submission_status' => 'SUBMITTED',
+                'answers' => [
+                    0 => [
+                        'question_id' => 1,
+                        'answer' => [
+                            'value' => 'an answer'
+                        ]
+                    ],
+                ]
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     }
 
     /**

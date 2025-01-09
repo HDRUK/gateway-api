@@ -29,6 +29,10 @@ class DataAccessApplicationAnswer extends Model
         'contributor_id',
     ];
 
+    protected $casts = [
+        'answer' => 'array',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'contributor_id');

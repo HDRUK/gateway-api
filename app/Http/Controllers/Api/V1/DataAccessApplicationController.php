@@ -16,10 +16,12 @@ use App\Http\Requests\DataAccessApplication\CreateDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\DeleteDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\UpdateDataAccessApplication;
 use App\Models\DataAccessApplication;
+use App\Models\DataAccessApplicationAnswer;
 use App\Models\DataAccessApplicationHasDataset;
 use App\Models\DataAccessApplicationHasQuestion;
 use App\Models\DataAccessTemplate;
 use App\Models\Dataset;
+use App\Models\QuestionBank;
 use App\Models\Team;
 
 class DataAccessApplicationController extends Controller
@@ -139,6 +141,15 @@ class DataAccessApplicationController extends Controller
 
         try {
             $application = DataAccessApplication::where('id', $id)->with('questions')->first();
+            foreach ($application['questions'] as $i => $q) {
+                $version = QuestionBank::with([
+                    'latestVersion',
+                    'latestVersion.childVersions',
+                ])->where('id', $q->question_id)
+                    ->first()
+                    ->toArray();
+                $application['questions'][$i]['latest_version'] = $version['latest_version'];
+            }
 
             if ($application) {
                 Auditor::log([
@@ -345,6 +356,12 @@ class DataAccessApplicationController extends Controller
      *              @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
      *              @OA\Property(property="approval_status", type="string", example="APPROVED"),
      *              @OA\Property(property="team_ids", type="array", @OA\Items()),
+     *              @OA\Property(property="answers", type="array", @OA\Items(
+     *                  @OA\Property(property="question_id", type="integer", example="123"),
+     *                  @OA\Property(property="answer", type="object",
+     *                      @OA\Property(property="value", type="string", example="an answer"),
+     *                  ),
+     *              ))
      *          ),
      *      ),
      *      @OA\Response(
@@ -388,6 +405,23 @@ class DataAccessApplicationController extends Controller
                 'submission_status' => $input['submission_status'],
                 'approval_status' => isset($input['approval_status']) ? $input['approval_status'] : $application->approval_status,
             ]);
+
+            $answers = $input['answers'] ?? [];
+            if (count($answers)) {
+                if ($application->submission_status !== 'SUBMITTED') {
+                    DataAccessApplicationAnswer::where('application_id', $id)->delete();
+                    foreach ($answers as $answer) {
+                        DataAccessApplicationAnswer::create([
+                            'question_id' => $answer['question_id'],
+                            'application_id' => $id,
+                            'answer' => $answer['answer'],
+                            'contributor_id' => $input['applicant_id'],
+                        ]);
+                    }
+                } else {
+                    throw new Exception('DAR form answers cannot be updated after submission.');
+                }
+            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -484,6 +518,23 @@ class DataAccessApplicationController extends Controller
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             $application->update($array);
+
+            $answers = $input['answers'] ?? [];
+            if (count($answers)) {
+                if ($application->submission_status !== 'SUBMITTED') {
+                    DataAccessApplicationAnswer::where('application_id', $id)->delete();
+                    foreach ($answers as $answer) {
+                        DataAccessApplicationAnswer::create([
+                            'question_id' => $answer['question_id'],
+                            'application_id' => $id,
+                            'answer' => $answer['answer'],
+                            'contributor_id' => $application->applicant_id,
+                        ]);
+                    }
+                } else {
+                    throw new Exception('DAR form answers cannot be updated after submission.');
+                }
+            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
