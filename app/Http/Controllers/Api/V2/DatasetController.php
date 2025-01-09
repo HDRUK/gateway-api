@@ -30,6 +30,7 @@ use MetadataManagementController as MMC;
 use App\Http\Requests\V2\Dataset\GetDataset;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Traits\GetValueByPossibleKeys;
+use App\Http\Requests\V2\Dataset\EditDataset;
 use App\Http\Requests\V2\Dataset\CreateDataset;
 use App\Http\Requests\V2\Dataset\DeleteDataset;
 use App\Http\Requests\V2\Dataset\UpdateDataset;
@@ -319,7 +320,7 @@ class DatasetController extends Controller
             $exportStructuralMetadata = $request->query('export', null);
 
             // Retrieve the dataset with collections, publications, and counts
-            $dataset = Dataset::with("team")->where("status", DATASET::STATUS_ACTIVE)->find($id);
+            $dataset = Dataset::with("team")->where("status", Dataset::STATUS_ACTIVE)->find($id);
 
             if (!$dataset) {
                 return response()->json(['message' => 'Dataset not found'], 404);
@@ -870,7 +871,7 @@ class DatasetController extends Controller
      *      )
      * )
      */
-    public function destroy(DeleteDataset $request, int $teamId, int $id) // softdelete
+    public function destroy(DeleteDataset $request, int $id) // softdelete
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];

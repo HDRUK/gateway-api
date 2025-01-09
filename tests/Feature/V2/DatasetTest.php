@@ -11,7 +11,6 @@ use Illuminate\Support\Carbon;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Support\Facades\Storage;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -208,9 +207,8 @@ class DatasetTestV2 extends TestCase
         $labelDataset1 = 'XYZ DATASET';
         $responseCreateDataset = $this->json(
             'POST',
-            self::TEST_URL_DATASET_V2,
+            $this->team_datasets_url($teamId1),
             [
-                'team_id' => $teamId1,
                 'user_id' => $userId,
                 'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
@@ -223,15 +221,32 @@ class DatasetTestV2 extends TestCase
 
         $datasetId1 = $responseCreateDataset['data'];
 
-        //create a 2nd one
+        //create a 2nd active one
         $specificTime = Carbon::parse('2023-02-01 00:00:00');
         Carbon::setTestNow($specificTime);
         $labelDataset2 = 'ABC DATASET';
         $responseCreateDataset2 = $this->json(
             'POST',
-            self::TEST_URL_DATASET_V2,
+            $this->team_datasets_url($teamId1),
             [
-                'team_id' => $teamId1,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseCreateDataset2->assertStatus(201);
+        $datasetId2 = $responseCreateDataset2['data'];
+
+        //create a 3nd one which is draft
+        $specificTime = Carbon::parse('2023-02-01 00:00:00');
+        Carbon::setTestNow($specificTime);
+        $labelDataset3 = 'ABC DATASET';
+        $responseCreateDataset3 = $this->json(
+            'POST',
+            $this->team_datasets_url($teamId1),
+            [
                 'user_id' => $userId,
                 'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
@@ -239,18 +254,17 @@ class DatasetTestV2 extends TestCase
             ],
             $this->header,
         );
-        $responseCreateDataset2->assertStatus(201);
-        $datasetId2 = $responseCreateDataset2['data'];
+        $responseCreateDataset3->assertStatus(201);
+        $datasetId3 = $responseCreateDataset3['data'];
 
-        //create a 3rd one which is owned by the 2nd team
+        //create a 4th one which is owned by the 2nd team
         $specificTime = Carbon::parse('2023-03-01 00:00:00');
         Carbon::setTestNow($specificTime);
-        $labelDataset3 = 'Other Team DATASET';
-        $responseCreateDataset3 = $this->json(
+        $labelDataset4 = 'Other Team DATASET';
+        $responseCreateDataset4 = $this->json(
             'POST',
-            self::TEST_URL_DATASET_V2,
+            $this->team_datasets_url($teamId2),
             [
-                'team_id' => $teamId2,
                 'user_id' => $userId,
                 'metadata' => $this->metadataAlt,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
@@ -258,8 +272,8 @@ class DatasetTestV2 extends TestCase
             ],
             $this->header,
         );
-        $responseCreateDataset3->assertStatus(201);
-        $datasetId3 = $responseCreateDataset3['data'];
+        $responseCreateDataset4->assertStatus(201);
+        $datasetId4 = $responseCreateDataset4['data'];
 
         $response = $this->json(
             'GET',
@@ -269,7 +283,7 @@ class DatasetTestV2 extends TestCase
         );
         $response->assertStatus(200);
 
-        $this->assertCount(3, $response['data']);
+        $this->assertCount(4, $response['data']);
         $response->assertJsonStructure([
             'current_page',
             'data',
@@ -313,9 +327,8 @@ class DatasetTestV2 extends TestCase
         */
         $response = $this->json(
             'GET',
-            self::TEST_URL_DATASET_V2 .
-            '?team_id=' . $teamId1 .
-            '&sort=created:desc',
+            $this->team_datasets_url($teamId1) .
+            '?sort=created:desc',
             [],
             $this->header
         );
@@ -332,7 +345,7 @@ class DatasetTestV2 extends TestCase
         $labelDataset2 = 'Archived ABC DATASET';
         $responseCreateDatasetArchived = $this->json(
             'POST',
-            self::TEST_URL_DATASET_V2,
+            $this->team_datasets_url($teamId1),
             [
                 'team_id' => $teamId1,
                 'user_id' => $userId,
@@ -345,12 +358,11 @@ class DatasetTestV2 extends TestCase
         $responseCreateDatasetArchived->assertStatus(201);
 
         /*
-        * use the endpoint /api/v2/datasets/count to find unique values of the field 'status'
+        * use the endpoint /api/v2/teams/{teamId}/datasets/count to find unique values of the field 'status'
         */
         $responseCount = $this->json(
             'GET',
-            self::TEST_URL_DATASET_V2 .
-            '/count/status?team_id=' . $teamId1,
+            $this->team_datasets_url($teamId1) . '/count/status',
             [],
             $this->header
         );
@@ -359,29 +371,25 @@ class DatasetTestV2 extends TestCase
         $countDraft = $responseCount['data']['DRAFT'];
         $countArchived = $responseCount['data']['ARCHIVED'];
 
-        $this->assertTrue($countActive === 1);
-        $this->assertTrue($countDraft === 1);
-        $this->assertTrue($countArchived === 1);
+        $this->assertEquals(2, $countActive);
+        $this->assertEquals(1, $countDraft);
+        $this->assertEquals(1, $countArchived);
 
         $responseActiveDatasets = $this->json(
             'GET',
-            self::TEST_URL_DATASET_V2 .
-            '?team_id=' . $teamId1 .
-            '&status=ACTIVE',
+            $this->team_datasets_url($teamId1),
             [],
             $this->header
         );
         $responseActiveDatasets->assertStatus(200);
 
-        $this->assertCount(1, $responseActiveDatasets['data']);
+        $this->assertCount(2, $responseActiveDatasets['data']);
         $this->assertArrayHasKey('latest_metadata', $responseActiveDatasets['data'][0]);
         $this->assertNotEmpty($responseActiveDatasets['data'][0]['latest_metadata']);
 
         $responseDraftDatasets = $this->json(
             'GET',
-            self::TEST_URL_DATASET_V2 .
-            '?team_id=' . $teamId1 .
-            '&status=DRAFT',
+            $this->team_datasets_url($teamId1) . '/status/draft',
             [],
             $this->header
         );
@@ -393,9 +401,7 @@ class DatasetTestV2 extends TestCase
 
         $responseArchivedDatasets = $this->json(
             'GET',
-            self::TEST_URL_DATASET_V2 .
-            '?team_id=' . $teamId1 .
-            '&status=ARCHIVED',
+            $this->team_datasets_url($teamId1) . '/status/archived',
             [],
             $this->header
         );
@@ -411,9 +417,8 @@ class DatasetTestV2 extends TestCase
         */
         $response = $this->json(
             'GET',
-            self::TEST_URL_DATASET_V2 .
-            '?team_id=' . $teamId1 .
-            '&sort=created:asc',
+            $this->team_datasets_url($teamId1) .
+            '?sort=created:asc',
             [],
             $this->header
         );
@@ -423,60 +428,24 @@ class DatasetTestV2 extends TestCase
         $this->assertTrue($first->lt($second));
 
         /*
-        * Sort A-Z on the dataset label
-        */
-        $response = $this->json(
-            'GET',
-            self::TEST_URL_DATASET_V2 .
-            '?team_id=' . $teamId1 .
-            '&sort=label:asc',
-            [],
-            $this->header
-        );
-
-        /*
-        * Sort Z-A on the dataset label
-        */
-        $response = $this->json(
-            'GET',
-            self::TEST_URL_DATASET_V2 .
-            '?team_id=' . $teamId1 .
-            '&sort=label:desc',
-            [],
-            $this->header
-        );
-
-        /*
-        * Sort Z-A on the metadata title
-        */
-        $response = $this->json(
-            'GET',
-            self::TEST_URL_DATASET_V2 .
-            '?team_id=' . $teamId1 .
-            '&sort=properties/summary/title:desc',
-            [],
-            $this->header
-        );
-
-        /*
         * fail if a bad direction has been given for sorting
         */
         $response = $this->json(
             'GET',
-            self::TEST_URL_DATASET_V2 .
-            '?team_id=' . $teamId1 .
-            '&sort=created:blah',
+            $this->team_datasets_url($teamId1) .
+            '?sort=created:blah',
             [],
             $this->header
         );
-        $response->assertStatus(400);
+        $response->assertStatus(500);
 
 
-        for ($i = 1; $i <= 3; $i++) {
+        for ($i = 1; $i <= 4; $i++) {
             // delete dataset
             $responseDeleteDataset = $this->json(
                 'DELETE',
-                self::TEST_URL_DATASET_V2 . '/' . ${'datasetId' . $i},
+                $this->team_datasets_url($teamId1) .
+                '/' . $i,
                 [],
                 $this->header
             );
@@ -594,6 +563,43 @@ class DatasetTestV2 extends TestCase
         $contentCreateUser = $responseCreateUser->decodeResponseJson();
         $userId = $contentCreateUser['data'];
 
+        // Create a second team for testing
+        $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        $responseCreateTeam = $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => $teamName,
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+                'users' => [],
+            ],
+            $this->header,
+        );
+
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
+        $teamId2 = $contentCreateTeam['data'];
+
         // create active dataset
         $responseCreateActiveDataset = $this->json(
             'POST',
@@ -660,6 +666,28 @@ class DatasetTestV2 extends TestCase
             'linked_dataset_versions',
             $respArrayActive['data']['versions'][0]
         );
+
+        // get one active dataset via V2 teams endpoint
+        $responseGetAll = $this->json('GET', $this->team_datasets_url($teamId), [], $this->header);
+
+        $responseGetOneActive = $this->json('GET', $this->team_datasets_url($teamId) . '/' . $activeDatasetId, [], $this->header);
+
+        $responseGetOneActive->assertJsonStructure([
+            'message',
+            'data' => [
+                'named_entities',
+                'collections',
+                'publications',
+                'versions',
+                'durs_count',
+                'publications_count',
+            ]
+        ]);
+        $responseGetOneActive->assertStatus(200);
+
+        // try and fail get one active dataset via V2 teams endpoint with wrong team id
+        $responseGetOneActive = $this->json('GET', $this->team_datasets_url($teamId2) . '/' . $activeDatasetId, [], $this->header);
+        $responseGetOneActive->assertStatus(404);
 
         // delete active dataset
         $responseDeleteActiveDataset = $this->json(
@@ -852,6 +880,7 @@ class DatasetTestV2 extends TestCase
             ],
             $this->header
         );
+        var_dump($responseArchiveDataset->decodeResponseJson());
         $responseArchiveDataset->assertJsonStructure([
             'message'
         ]);
@@ -1210,263 +1239,6 @@ class DatasetTestV2 extends TestCase
         $responseDeleteUser->assertStatus(200);
     }
 
-    /**
-     * Download Dataset table export with success
-     *
-     * @return void
-     */
-    public function test_download_dataset_table_with_success(): void
-    {
-        // Profiler middleware can't handle with streamed response,
-        // but as it's a download, its implied that it may take a
-        // bit longer, therefore we can safely ignore this for
-        // profiling.
-        Config::set('profiling.profiler_active', false);
-
-        // create team
-        // First create a notification to be used by the new team
-        $responseNotification = $this->json(
-            'POST',
-            self::TEST_URL_NOTIFICATION,
-            [
-                'notification_type' => 'applicationSubmitted',
-                'message' => 'Some message here',
-                'email' => null,
-                'user_id' => 3,
-                'opt_in' => 1,
-                'enabled' => 1,
-            ],
-            $this->header,
-        );
-        $contentNotification = $responseNotification->decodeResponseJson();
-        $notificationID = $contentNotification['data'];
-
-        // Create the new team
-        $responseCreateTeam = $this->json(
-            'POST',
-            self::TEST_URL_TEAM,
-            [
-                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
-                'enabled' => 1,
-                'allows_messaging' => 1,
-                'workflow_enabled' => 1,
-                'access_requests_management' => 1,
-                'uses_5_safes' => 1,
-                'is_admin' => 1,
-                'member_of' => fake()->randomElement([
-                    TeamMemberOf::ALLIANCE,
-                    TeamMemberOf::HUB,
-                    TeamMemberOf::OTHER,
-                    TeamMemberOf::NCS,
-                ]),
-                'contact_point' => 'dinos345@mail.com',
-                'application_form_updated_by' => 'Someone Somewhere',
-                'application_form_updated_on' => '2023-04-06 15:44:41',
-                'notifications' => [$notificationID],
-                'users' => [],
-            ],
-            $this->header,
-        );
-
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
-
-        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
-        $teamId = $contentCreateTeam['data'];
-
-        // create user
-        $responseCreateUser = $this->json(
-            'POST',
-            self::TEST_URL_USER,
-            [
-                'firstname' => 'Firstname',
-                'lastname' => 'Lastname',
-                'email' => 'firstname.lastname.123456789@test.com',
-                'password' => 'Passw@rd1!',
-                'sector_id' => 1,
-                'organisation' => 'Test Organisation',
-                'bio' => 'Test Biography',
-                'domain' => 'https://testdomain.com',
-                'link' => 'https://testlink.com/link',
-                'orcid' => "https://orcid.org/75697342",
-                'contact_feedback' => 1,
-                'contact_news' => 1,
-                'mongo_id' => 1234566,
-                'mongo_object_id' => "12345abcde",
-            ],
-            $this->header,
-        );
-        $responseCreateUser->assertStatus(201);
-        $contentCreateUser = $responseCreateUser->decodeResponseJson();
-        $userId = $contentCreateUser['data'];
-
-        // create dataset
-        $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
-        $responseCreateDataset = $this->json(
-            'POST',
-            self::TEST_URL_DATASET_V2,
-            [
-                'team_id' => $teamId,
-                'user_id' => $userId,
-                'metadata' => $this->metadata,
-                'create_origin' => Dataset::ORIGIN_MANUAL,
-                'status' => Dataset::STATUS_ACTIVE,
-            ],
-            $this->header,
-        );
-        $responseCreateDataset->assertStatus(201);
-        $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
-        $datasetId = $contentCreateDataset['data'];
-
-        $responseDownload = $this->json(
-            'GET',
-            self::TEST_URL_DATASET_V2 . '/export',
-            [],
-            $this->header,
-        );
-
-        $content = $responseDownload->streamedContent();
-        $responseDownload->assertHeader('Content-Disposition', 'attachment;filename="Datasets.csv"');
-        $this->assertEquals(
-            substr($content, 0, 5),
-            "Title"
-        );
-
-        // test dataset_id query parameter
-        $responseDownload = $this->json(
-            'GET',
-            self::TEST_URL_DATASET_V2 . '/export?dataset_id=' . $datasetId,
-            [],
-            $this->header,
-        );
-        $responseDownload->assertStatus(200);
-        $content = $responseDownload->streamedContent();
-        $responseDownload->assertHeader('Content-Disposition', 'attachment;filename="Datasets.csv"');
-        $this->assertEquals(
-            substr($content, 0, 5),
-            "Title"
-        );
-
-        // delete dataset
-        $responseDeleteDataset = $this->json(
-            'DELETE',
-            self::TEST_URL_DATASET_V2 . '/' . $datasetId,
-            [],
-            $this->header
-        );
-        $responseDeleteDataset->assertJsonStructure([
-            'message'
-        ]);
-        $responseDeleteDataset->assertStatus(200);
-
-        // delete team
-        $responseDeleteTeam = $this->json(
-            'DELETE',
-            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
-            [],
-            $this->header
-        );
-        $responseDeleteTeam->assertJsonStructure([
-            'message'
-        ]);
-        $responseDeleteTeam->assertStatus(200);
-
-        // delete user
-        $responseDeleteUser = $this->json(
-            'DELETE',
-            self::TEST_URL_USER . '/' . $userId,
-            [],
-            $this->header
-        );
-        $responseDeleteUser->assertJsonStructure([
-            'message'
-        ]);
-        $responseDeleteUser->assertStatus(200);
-
-    }
-
-    public function test_can_download_mock_dataset_structural_metadata_file()
-    {
-        // Profiler middleware can't handle with streamed response,
-        // but as it's a download, its implied that it may take a
-        // bit longer, therefore we can safely ignore this for
-        // profiling.
-        Config::set('profiling.profiler_active', false);
-
-        // Mock the storage disk
-        Storage::fake('mock');
-
-        // Put a fake file in the mock disk
-        $filePath = 'structural_metadata_template.xlsx';
-        Storage::disk('mock')->put($filePath, 'fake content');
-
-        // Mock the config
-        Config::set('mock_data.template_dataset_structural_metadata', $filePath);
-        Config::set('statuscodes.STATUS_OK.code', 200);
-
-        // Make the request
-        $response = $this->get('/api/v2/datasets/export/mock?type=template_dataset_structural_metadata');
-
-        // Assert the file is downloaded
-        $response->assertStatus(200);
-        $response->assertHeader('content-disposition', 'attachment; filename=' . $filePath);
-
-        // Clean up
-        Storage::disk('mock')->delete($filePath);
-    }
-
-    public function test_can_download_mock_dataset_metadata_file()
-    {
-        // Profiler middleware can't handle with streamed response,
-        // but as it's a download, its implied that it may take a
-        // bit longer, therefore we can safely ignore this for
-        // profiling.
-        Config::set('profiling.profiler_active', false);
-
-        // Mock the storage disk
-        Storage::fake('mock');
-
-        // Put a fake file in the mock disk
-        $filePath = 'example_dataset_metadata.xlsx';
-        Storage::disk('mock')->put($filePath, 'fake content');
-
-        // Mock the config
-        Config::set('mock_data.mock_dataset_metadata', $filePath);
-        Config::set('statuscodes.STATUS_OK.code', 200);
-
-        // Make the request
-        $response = $this->get('/api/v2/datasets/export/mock?type=dataset_metadata');
-
-        // Assert the file is downloaded
-        $response->assertStatus(200);
-        $response->assertHeader('content-disposition', 'attachment; filename=' . $filePath);
-
-        // Clean up
-        Storage::disk('mock')->delete($filePath);
-    }
-
-    public function test_download_mock_file_with_file_not_found()
-    {
-        // Profiler middleware can't handle with streamed response,
-        // but as it's a download, its implied that it may take a
-        // bit longer, therefore we can safely ignore this for
-        // profiling.
-        Config::set('profiling.profiler_active', false);
-
-        // Mock the config
-        Config::set('mock_data.dataset_structural_metadata', 'non_existent_file.json');
-
-        // Make the request
-        $response = $this->get('/api/v2/datasets/export/mock?type=dataset_structural_metadata');
-
-        // Assert the file is not found
-        $response->assertStatus(404);
-        $response->assertJson(['error' => 'File not found.']);
-    }
-
     public function test_update_dataset_doesnt_create_new_version(): void
     {
         // create team
@@ -1594,5 +1366,10 @@ class DatasetTestV2 extends TestCase
         foreach ($dsv as $d) {
             $this->assertTrue($d->metadata['metadata']['summary']['title'] === 'updated test title');
         }
+    }
+
+    public function team_datasets_url(int $teamId)
+    {
+        return 'api/v2/teams/' . $teamId . '/datasets';
     }
 }

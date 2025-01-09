@@ -413,35 +413,6 @@ return [
             'id', '[0-9]+'
         ],
     ],
-    [
-        'name' => 'datasets',
-        'method' => 'get',
-        'path' => '/datasets/export',
-        'methodController' => 'DatasetController@export',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'datasets',
-        'method' => 'get',
-        'path' => '/datasets/export_metadata/{id}',
-        'methodController' => 'DatasetController@exportMetadata',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'datasets',
-        'method' => 'get',
-        'path' => '/datasets/export/mock',
-        'methodController' => 'DatasetController@exportMock',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [],
-        'constraint' => [],
-    ],
 
     // v2 teams/datasets
     [
@@ -563,17 +534,6 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
-            'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'datasets',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/datasets/export/mock',
-        'methodController' => 'TeamDatasetController@exportMock',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [],
-        'constraint' => [
             'teamId' => '[0-9]+',
         ],
     ],

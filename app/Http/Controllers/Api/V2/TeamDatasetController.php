@@ -25,7 +25,6 @@ use App\Models\Traits\ModelHelpers;
 
 use Maatwebsite\Excel\Facades\Excel;
 
-use Illuminate\Support\Facades\Storage;
 use MetadataManagementController as MMC;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Traits\GetValueByPossibleKeys;
@@ -369,7 +368,7 @@ class TeamDatasetController extends Controller
      *    )
      * )
      */
-    public function count(Request $request, string $field, int $teamId): JsonResponse
+    public function count(Request $request, int $teamId, string $field): JsonResponse
     {
         try {
             $counts = Dataset::where('team_id', $teamId)->applyCount();
@@ -409,7 +408,7 @@ class TeamDatasetController extends Controller
      *       required=true,
      *       example="1",
      *       @OA\Schema(
-     *          type="string",
+     *          type="integer",
      *          description="team id",
      *       ),
      *    ),
@@ -475,13 +474,13 @@ class TeamDatasetController extends Controller
      * )
      *
      */
-    public function show(GetDataset $request, int $id, int $teamId): JsonResponse|BinaryFileResponse
+    public function show(GetDataset $request, int $teamId, int $id): JsonResponse|BinaryFileResponse
     {
         try {
             $exportStructuralMetadata = $request->query('export', null);
 
             // Retrieve the dataset with collections, publications, and counts
-            $dataset = Dataset::where("team", $teamId)->where("status", DATASET::STATUS_ACTIVE)->find($id);
+            $dataset = Dataset::with("team")->whereRelation("team", "id", $teamId)->where("status", Dataset::STATUS_ACTIVE)->find($id);
 
             if (!$dataset) {
                 return response()->json(['message' => 'Dataset not found'], 404);
@@ -683,6 +682,8 @@ class TeamDatasetController extends Controller
                     'message' => 'Title is required to save a dataset',
                 ], 400);
             }
+
+            $input['team_id'] = $teamId;
 
             $metadataResult = $this->metadataOnboard(
                 $input,
@@ -1118,81 +1119,6 @@ class TeamDatasetController extends Controller
         return $this->update($request, $dataset->id);
     }
 
-    /**
-     * @OA\Get(
-     *    path="/api/v2/teams/{teamId}/datasets/export/mock",
-     *    operationId="export_mock_team_dataset_v2",
-     *    tags={"Datasets"},
-     *    summary="TeamDatasetController@exportMock",
-     *    description="Export Mock",
-     *    security={{"bearerAuth":{}}},
-     *    @OA\Parameter(
-     *       name="type",
-     *       in="query",
-     *       description="type export",
-     *       required=true,
-     *       @OA\Schema(
-     *          type="string",
-     *          description="type export",
-     *          enum={"template_dataset_structural_metadata", "dataset_metadata"}
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *       response=200,
-     *       description="CSV file",
-     *       @OA\MediaType(
-     *          mediaType="text/csv",
-     *          @OA\Schema(
-     *             type="string",
-     *             example="Title,""Publisher name"",Version,""Last Activity"",""Method of dataset creation"",Status,""Metadata detail""\n""Publications mentioning HDRUK"",""Health Data Research UK"",2.0.0,""2023-04-21T11:31:00.000Z"",MANUAL,ACTIVE,""{""properties\/accessibility\/usage\/dataUseRequirements"":{""id"":""95c37b03-54c4-468b-bda4-4f53f9aaaadd"",""namespace"":""hdruk.profile"",""key"":""properties\/accessibility\/usage\/dataUseRequirements"",""value"":""N\/A"",""lastUpdated"":""2023-12-14T11:31:11.312Z""},""properties\/required\/gatewayId"":{""id"":""8214d549-db98-453f-93e8-d88c6195ad93"",""namespace"":""hdruk.profile"",""key"":""properties\/required\/gatewayId"",""value"":""1234"",""lastUpdated"":""2023-12-14T11:31:11.311Z""}""",
-     *          )
-     *       )
-     *    ),
-     *    @OA\Response(
-     *       response=401,
-     *       description="Unauthorized",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="unauthorized")
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *       response=404,
-     *       description="File Not Found",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="file_not_found")
-     *       ),
-     *    ),
-     * )
-     */
-    public function exportMock(Request $request)
-    {
-        try {
-            $exportType = $request->query('type', null);
-            $file = '';
-
-            switch (strtolower($exportType)) {
-                case 'template_dataset_structural_metadata':
-                    $file = Config::get('mock_data.template_dataset_structural_metadata');
-                    break;
-                case 'dataset_metadata':
-                    $file = Config::get('mock_data.mock_dataset_metadata');
-                    break;
-                default:
-                    return response()->json(['error' => 'File not found.'], 404);
-            }
-
-            if (!Storage::disk('mock')->exists($file)) {
-                return response()->json(['error' => 'File not found.'], 404);
-            }
-
-            return Storage::disk('mock')
-                ->download($file)
-                ->setStatusCode(Config::get('statuscodes.STATUS_OK.code'));
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
-    }
-
     private function extractMetadata(Mixed $metadata)
     {
 
@@ -1211,5 +1137,15 @@ class TeamDatasetController extends Controller
             $metadata = $tmpMetadata;
         }
         return $metadata;
+    }
+
+    private function indexTeamDataset(int $teamId, string $status, int $perPage, int $withMetadata)
+    {
+        $datasets = Dataset::where(['team_id' => $teamId, 'status' => $status])
+            ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
+            ->applySorting()
+            ->paginate((int) $perPage, ['*'], 'page');
+
+        return $datasets;
     }
 }
