@@ -15,12 +15,12 @@ return new class () extends Migration {
             $table->string('search_term', 255); // Reduced to fit within the key limit
             $table->string('search_parameters', 255)->nullable();
             $table->mediumText('result');
-        
+
             $table->unique([
                 'search_term',
                 'search_parameters'
             ], 'omop_matcher_cache_unique');
-        });        
+        });
     }
 
     /**
@@ -31,4 +31,3 @@ return new class () extends Migration {
         Schema::dropIfExists('saved_mvcm_results');
     }
 };
-
