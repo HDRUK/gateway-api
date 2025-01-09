@@ -880,7 +880,6 @@ class DatasetTestV2 extends TestCase
             ],
             $this->header
         );
-        var_dump($responseArchiveDataset->decodeResponseJson());
         $responseArchiveDataset->assertJsonStructure([
             'message'
         ]);
