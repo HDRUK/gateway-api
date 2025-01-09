@@ -1785,7 +1785,10 @@ class SearchController extends Controller
     {
         $datasetTitles = array();
         foreach ($provider['teams'] as $team) {
-            $datasets = Dataset::where('team_id', $team['id'])->with('versions')->get();
+            $datasets = Dataset::where([
+                'team_id' => $team['id'],
+                'status' => 'ACTIVE',
+                ])->with('versions')->select(['id'])->get();
             foreach ($datasets as $dataset) {
                 $metadata = $dataset['versions'][0];
                 $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
