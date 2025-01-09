@@ -746,10 +746,6 @@ class CollectionController extends Controller
                 ];
                 $array = $this->checkEditArray($input, $arrayKeys);
 
-                if (array_key_exists('name', $input)) {
-                    $array['name'] = sanitize_input($input['name']);
-                }
-
                 // Handle the 'deleted_at' field based on 'status'
                 if (isset($input['status']) && ($input['status'] === Collection::STATUS_ARCHIVED)) {
                     $array['deleted_at'] = Carbon::now();
