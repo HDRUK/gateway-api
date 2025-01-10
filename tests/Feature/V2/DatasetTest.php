@@ -100,22 +100,7 @@ class DatasetTest extends TestCase
     public function test_get_all_team_datasets_with_success(): void
     {
         // First create a notification to be used by the new team
-        $responseNotification = $this->json(
-            'POST',
-            self::TEST_URL_NOTIFICATION,
-            [
-                'notification_type' => 'applicationSubmitted',
-                'message' => 'Some message here',
-                'email' => null,
-                'user_id' => 3,
-                'opt_in' => 1,
-                'enabled' => 1,
-            ],
-            $this->header,
-        );
-
-        $contentNotification = $responseNotification->decodeResponseJson();
-        $notificationID = $contentNotification['data'];
+        $notificationID = $this->create_notification();
 
         // Create the new team
         $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
@@ -421,21 +406,7 @@ class DatasetTest extends TestCase
     {
         // create team
         // First create a notification to be used by the new team
-        $responseNotification = $this->json(
-            'POST',
-            self::TEST_URL_NOTIFICATION,
-            [
-                'notification_type' => 'applicationSubmitted',
-                'message' => 'Some message here',
-                'email' => null,
-                'user_id' => 3,
-                'opt_in' => 1,
-                'enabled' => 1,
-            ],
-            $this->header,
-        );
-        $contentNotification = $responseNotification->decodeResponseJson();
-        $notificationID = $contentNotification['data'];
+        $notificationID = $this->create_notification();
 
         // Create the new team
         $responseCreateTeam = $this->create_team([], [$notificationID]);
@@ -661,21 +632,7 @@ class DatasetTest extends TestCase
 
         // create team
         // First create a notification to be used by the new team
-        $responseNotification = $this->json(
-            'POST',
-            self::TEST_URL_NOTIFICATION,
-            [
-                'notification_type' => 'applicationSubmitted',
-                'message' => 'Some message here',
-                'email' => null,
-                'user_id' => 3,
-                'opt_in' => 1,
-                'enabled' => 1,
-            ],
-            $this->header,
-        );
-        $contentNotification = $responseNotification->decodeResponseJson();
-        $notificationID = $contentNotification['data'];
+        $notificationID = $this->create_notification();
 
         // Create the new team
         $responseCreateTeam = $this->create_team([], [$notificationID]);
@@ -851,21 +808,7 @@ class DatasetTest extends TestCase
 
         // create team
         // First create a notification to be used by the new team
-        $responseNotification = $this->json(
-            'POST',
-            self::TEST_URL_NOTIFICATION,
-            [
-                'notification_type' => 'applicationSubmitted',
-                'message' => 'Some message here',
-                'email' => null,
-                'user_id' => 3,
-                'opt_in' => 1,
-                'enabled' => 1,
-            ],
-            $this->header,
-        );
-        $contentNotification = $responseNotification->decodeResponseJson();
-        $notificationID = $contentNotification['data'];
+        $notificationID = $this->create_notification();
 
         // Create the new team
         $responseCreateTeam = $this->create_team([], [$notificationID]);
@@ -1035,25 +978,10 @@ class DatasetTest extends TestCase
     {
         // create team
         // First create a notification to be used by the new team
-        $responseNotification = $this->json(
-            'POST',
-            self::TEST_URL_NOTIFICATION,
-            [
-                'notification_type' => 'applicationSubmitted',
-                'message' => 'Some message here',
-                'email' => null,
-                'user_id' => 3,
-                'opt_in' => 1,
-                'enabled' => 1,
-            ],
-            $this->header,
-        );
-        $contentNotification = $responseNotification->decodeResponseJson();
-        $notificationID = $contentNotification['data'];
+        $notificationID = $this->create_notification();
 
         // Create the new team
         $responseCreateTeam = $this->create_team([], [$notificationID]);
-
 
         $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
@@ -1141,21 +1069,7 @@ class DatasetTest extends TestCase
     {
         // create team
         // First create a notification to be used by the new team
-        $responseNotification = $this->json(
-            'POST',
-            self::TEST_URL_NOTIFICATION,
-            [
-                'notification_type' => 'applicationSubmitted',
-                'message' => 'Some message here',
-                'email' => null,
-                'user_id' => 3,
-                'opt_in' => 1,
-                'enabled' => 1,
-            ],
-            $this->header,
-        );
-        $contentNotification = $responseNotification->decodeResponseJson();
-        $notificationID = $contentNotification['data'];
+        $notificationID = $this->create_notification();
 
         // Create the new team
         $responseCreateTeam = $this->create_team([], [$notificationID]);
@@ -1240,9 +1154,29 @@ class DatasetTest extends TestCase
         }
     }
 
-    public function team_datasets_url(int $teamId)
+    private function team_datasets_url(int $teamId)
     {
         return 'api/v2/teams/' . $teamId . '/datasets';
+    }
+
+    private function create_notification()
+    {
+        $responseNotification = $this->json(
+            'POST',
+            self::TEST_URL_NOTIFICATION,
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'email' => null,
+                'user_id' => 3,
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header,
+        );
+
+        $contentNotification = $responseNotification->decodeResponseJson();
+        return $contentNotification['data'];
     }
 
     private function create_team(array $userIds, array $notificationIds)
