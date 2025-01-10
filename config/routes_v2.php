@@ -365,8 +365,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
-            //'sanitize.input',
-            'check.access:permissions,datasets.create',
+            'sanitize.input',
         ],
         'constraint' => [],
     ],
@@ -378,8 +377,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
-            //'sanitize.input',
-            'check.access:permissions,datasets.update',
+            'sanitize.input',
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -393,7 +391,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
-            'check.access:permissions,datasets.update',
+            'sanitize.input',
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -407,7 +405,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
-            'check.access:permissions,datasets.delete',
         ],
         'constraint' => [
             'id', '[0-9]+'

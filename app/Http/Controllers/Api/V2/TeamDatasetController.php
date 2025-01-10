@@ -204,6 +204,8 @@ class TeamDatasetController extends Controller
      */
     public function indexDraft(Request $request, int $teamId): JsonResponse
     {
+        $this->checkAccess($request->all(), $teamId, null, 'team');
+
         try {
             $withMetadata = $request->boolean('with_metadata', true);
 
@@ -298,6 +300,8 @@ class TeamDatasetController extends Controller
      */
     public function indexArchived(Request $request, int $teamId): JsonResponse
     {
+        $this->checkAccess($request->all(), $teamId, null, 'team');
+
         try {
             $withMetadata = $request->boolean('with_metadata', true);
 

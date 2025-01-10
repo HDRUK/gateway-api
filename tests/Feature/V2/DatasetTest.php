@@ -100,15 +100,15 @@ class DatasetTest extends TestCase
     public function test_get_all_team_datasets_with_success(): void
     {
         // First create a notification to be used by the new team
-        $notificationID = $this->create_notification();
+        $notificationID = $this->createNotification();
 
         // Create the new team
         $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
 
-        $teamId1 = $this->create_team([$this->nonAdminUser['id']], [$notificationID]);
+        $teamId1 = $this->createTeam([$this->nonAdminUser['id']], [$notificationID]);
 
         //create a 2nd team
-        $teamId2 = $this->create_team([$this->nonAdmin2User['id']], [$notificationID]);
+        $teamId2 = $this->createTeam([$this->nonAdmin2User['id']], [$notificationID]);
 
         $specificTime = Carbon::parse('2023-01-01 00:00:00');
         Carbon::setTestNow($specificTime);
@@ -126,7 +126,7 @@ class DatasetTest extends TestCase
             $this->headerNonAdmin,
         );
 
-        $responseCreateDataset->assertStatus(201);
+        $responseCreateDataset->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
 
         $datasetId1 = $responseCreateDataset['data'];
 
@@ -144,7 +144,7 @@ class DatasetTest extends TestCase
             ],
             $this->headerNonAdmin,
         );
-        $responseCreateDataset2->assertStatus(201);
+        $responseCreateDataset2->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
         $datasetId2 = $responseCreateDataset2['data'];
 
         //create a 3nd one which is draft
@@ -161,7 +161,7 @@ class DatasetTest extends TestCase
             ],
             $this->headerNonAdmin,
         );
-        $responseCreateDataset3->assertStatus(201);
+        $responseCreateDataset3->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
         $datasetId3 = $responseCreateDataset3['data'];
 
         //create a 4th one which is owned by the 2nd team
@@ -178,7 +178,7 @@ class DatasetTest extends TestCase
             ],
             $this->headerNonAdmin2,
         );
-        $responseCreateDataset4->assertStatus(201);
+        $responseCreateDataset4->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
         $datasetId4 = $responseCreateDataset4['data'];
 
         $response = $this->json(
@@ -259,7 +259,7 @@ class DatasetTest extends TestCase
             ],
             $this->headerNonAdmin,
         );
-        $responseCreateDatasetArchived->assertStatus(201);
+        $responseCreateDatasetArchived->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
 
         /*
         * use the endpoint /api/v2/teams/{teamId}/datasets/count to find unique values of the field 'status'
@@ -279,6 +279,7 @@ class DatasetTest extends TestCase
         $this->assertEquals(1, $countDraft);
         $this->assertEquals(1, $countArchived);
 
+        // get active datsets in this team
         $responseActiveDatasets = $this->json(
             'GET',
             $this->team_datasets_url($teamId1),
@@ -291,6 +292,7 @@ class DatasetTest extends TestCase
         $this->assertArrayHasKey('latest_metadata', $responseActiveDatasets['data'][0]);
         $this->assertNotEmpty($responseActiveDatasets['data'][0]['latest_metadata']);
 
+        // get draft datsets in this team
         $responseDraftDatasets = $this->json(
             'GET',
             $this->team_datasets_url($teamId1) . '/status/draft',
@@ -303,6 +305,7 @@ class DatasetTest extends TestCase
         $this->assertArrayHasKey('latest_metadata', $responseDraftDatasets['data'][0]);
         $this->assertNotEmpty($responseDraftDatasets['data'][0]['latest_metadata']);
 
+        // get archived datsets in this team
         $responseArchivedDatasets = $this->json(
             'GET',
             $this->team_datasets_url($teamId1) . '/status/archived',
@@ -315,6 +318,43 @@ class DatasetTest extends TestCase
         $this->assertArrayHasKey('latest_metadata', $responseArchivedDatasets['data'][0]);
         $this->assertNotEmpty($responseArchivedDatasets['data'][0]['latest_metadata']);
 
+        /*
+        * nonAdmin2 is not in this team, so count and active shoudl pass, but draft and archived should fail
+        */
+        $responseCount = $this->json(
+            'GET',
+            $this->team_datasets_url($teamId1) . '/count/status',
+            [],
+            $this->headerNonAdmin2
+        );
+        $responseCount->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // get active datsets in this team
+        $responseActiveDatasets = $this->json(
+            'GET',
+            $this->team_datasets_url($teamId1),
+            [],
+            $this->headerNonAdmin2
+        );
+        $responseActiveDatasets->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // (fail to) get draft datsets in this team
+        $responseDraftDatasets = $this->json(
+            'GET',
+            $this->team_datasets_url($teamId1) . '/status/draft',
+            [],
+            $this->headerNonAdmin2
+        );
+        $responseDraftDatasets->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+
+        // (fail to) get archived datsets in this team
+        $responseArchivedDatasets = $this->json(
+            'GET',
+            $this->team_datasets_url($teamId1) . '/status/archived',
+            [],
+            $this->headerNonAdmin2
+        );
+        $responseArchivedDatasets->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
 
         /*
         * reverse this sorting
@@ -341,9 +381,9 @@ class DatasetTest extends TestCase
             [],
             $this->headerNonAdmin
         );
-        $response->assertStatus(500);
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
 
-
+        // test deletion with various permissions combinations
         for ($i = 1; $i <= 5; $i++) {
             if ($i !== 4) {
                 // delete dataset
@@ -418,24 +458,9 @@ class DatasetTest extends TestCase
 
         for ($i = 1; $i <= 2; $i++) {
             // delete team
-            $responseDeleteTeam = $this->json(
-                'DELETE',
-                self::TEST_URL_TEAM . '/' . ${'teamId' . $i} . '?deletePermanently=true',
-                [],
-                $this->header
-            );
-
-            $responseDeleteTeam->assertJsonStructure([
-                'message'
-            ]);
-            $responseDeleteTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+            $this->deleteTeam($i);
         }
-
     }
-
-
-
-
 
     /**
      * Get Dataset by Id with success
@@ -446,39 +471,16 @@ class DatasetTest extends TestCase
     {
         // create team
         // First create a notification to be used by the new team
-        $notificationID = $this->create_notification();
+        $notificationID = $this->createNotification();
 
         // Create the new team
-        $teamId = $this->create_team([], [$notificationID]);
+        $teamId = $this->createTeam([], [$notificationID]);
 
         // create user
-        $responseCreateUser = $this->json(
-            'POST',
-            self::TEST_URL_USER,
-            [
-                'firstname' => 'Firstname',
-                'lastname' => 'Lastname',
-                'email' => 'firstname.lastname.123456789@test.com',
-                'password' => 'Passw@rd1!',
-                'sector_id' => 1,
-                'organisation' => 'Test Organisation',
-                'bio' => 'Test Biography',
-                'domain' => 'https://testdomain.com',
-                'link' => 'https://testlink.com/link',
-                'orcid' => " https://orcid.org/75697342",
-                'contact_feedback' => 1,
-                'contact_news' => 1,
-                'mongo_id' => 1234566,
-                'mongo_object_id' => "12345abcde",
-            ],
-            $this->header,
-        );
-        $responseCreateUser->assertStatus(201);
-        $contentCreateUser = $responseCreateUser->decodeResponseJson();
-        $userId = $contentCreateUser['data'];
+        $userId = $this->createUser();
 
         // Create a second team for testing
-        $teamId2 = $this->create_team([], [$notificationID]);
+        $teamId2 = $this->createTeam([], [$notificationID]);
 
         // create active dataset
         $responseCreateActiveDataset = $this->json(
@@ -494,12 +496,17 @@ class DatasetTest extends TestCase
             $this->header,
         );
 
-        $responseCreateActiveDataset->assertStatus(201);
+        $responseCreateActiveDataset->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
         $contentCreateActiveDataset = $responseCreateActiveDataset->decodeResponseJson();
         $activeDatasetId = $contentCreateActiveDataset['data'];
 
         // get one active dataset via V2 endpoint
-        $responseGetOneActive = $this->json('GET', self::TEST_URL_DATASET_V2 . '/' . $activeDatasetId, [], $this->header);
+        $responseGetOneActive = $this->json(
+            'GET',
+            self::TEST_URL_DATASET_V2 . '/' . $activeDatasetId,
+            [],
+            $this->header
+        );
 
         $responseGetOneActive->assertJsonStructure([
             'message',
@@ -566,7 +573,12 @@ class DatasetTest extends TestCase
         $responseGetOneActive->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // try and fail get one active dataset via V2 teams endpoint with wrong team id
-        $responseGetOneActive = $this->json('GET', $this->team_datasets_url($teamId2) . '/' . $activeDatasetId, [], $this->header);
+        $responseGetOneActive = $this->json(
+            'GET',
+            $this->team_datasets_url($teamId2) . '/' . $activeDatasetId,
+            [],
+            $this->header
+        );
         $responseGetOneActive->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
 
         // delete active dataset
@@ -595,12 +607,17 @@ class DatasetTest extends TestCase
             $this->header,
         );
 
-        $responseCreateDraftDataset->assertStatus(201);
+        $responseCreateDraftDataset->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
         $contentCreateDraftDataset = $responseCreateDraftDataset->decodeResponseJson();
         $draftDatasetId = $contentCreateDraftDataset['data'];
 
         // fail to get draft dataset via V2 endpoint because only active are returned
-        $responseGetOneDraftV2 = $this->json('GET', self::TEST_URL_DATASET_V2 . '/' . $draftDatasetId, [], $this->header);
+        $responseGetOneDraftV2 = $this->json(
+            'GET',
+            self::TEST_URL_DATASET_V2 . '/' . $draftDatasetId,
+            [],
+            $this->header
+        );
 
         $responseGetOneDraftV2->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         $responseGetOneDraftV2->assertJson(['message' => 'Dataset not found']);
@@ -619,29 +636,10 @@ class DatasetTest extends TestCase
         $responseDeleteDraftDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // delete team
-        $responseDeleteTeam = $this->json(
-            'DELETE',
-            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
-            [],
-            $this->header
-        );
-        $responseDeleteTeam->assertJsonStructure([
-            'message'
-        ]);
-
-        $responseDeleteTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->deleteTeam($teamId);
 
         // delete user
-        $responseDeleteUser = $this->json(
-            'DELETE',
-            self::TEST_URL_USER . '/' . $userId,
-            [],
-            $this->header
-        );
-        $responseDeleteUser->assertJsonStructure([
-            'message'
-        ]);
-        $responseDeleteUser->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->deleteUser($userId);
     }
 
     /**
@@ -654,36 +652,13 @@ class DatasetTest extends TestCase
 
         // create team
         // First create a notification to be used by the new team
-        $notificationID = $this->create_notification();
+        $notificationID = $this->createNotification();
 
         // Create the new team
-        $teamId = $this->create_team([], [$notificationID]);
+        $teamId = $this->createTeam([], [$notificationID]);
 
         // create user
-        $responseCreateUser = $this->json(
-            'POST',
-            self::TEST_URL_USER,
-            [
-                'firstname' => 'Firstname',
-                'lastname' => 'Lastname',
-                'email' => 'firstname.lastname.123456789@test.com',
-                'password' => 'Passw@rd1!',
-                'sector_id' => 1,
-                'organisation' => 'Test Organisation',
-                'bio' => 'Test Biography',
-                'domain' => 'https://testdomain.com',
-                'link' => 'https://testlink.com/link',
-                'orcid' => "https://orcid.org/75697342",
-                'contact_feedback' => 1,
-                'contact_news' => 1,
-                'mongo_id' => 1234566,
-                'mongo_object_id' => "12345abcde",
-            ],
-            $this->header,
-        );
-        $responseCreateUser->assertStatus(201);
-        $contentCreateUser = $responseCreateUser->decodeResponseJson();
-        $userId = $contentCreateUser['data'];
+        $userId = $this->createUser();
 
         // create dataset
         $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
@@ -700,7 +675,7 @@ class DatasetTest extends TestCase
             $this->header,
         );
         Queue::assertNotPushed(LinkageExtraction::class);
-        $responseCreateDataset->assertStatus(201);
+        $responseCreateDataset->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
         $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
         $datasetId = $contentCreateDataset['data'];
 
@@ -764,6 +739,7 @@ class DatasetTest extends TestCase
         $contentUpdateDataset = $responseUpdateDataset->decodeResponseJson();
         $responseUpdateDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
+        // check status has updated correctly
         $responseGetDataset = $this->json(
             'GET',
             self::TEST_URL_DATASET_V2 . '/' . $datasetId,
@@ -787,28 +763,10 @@ class DatasetTest extends TestCase
         $responseDeleteDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // delete team
-        $responseDeleteTeam = $this->json(
-            'DELETE',
-            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
-            [],
-            $this->header
-        );
-        $responseDeleteTeam->assertJsonStructure([
-            'message'
-        ]);
-        $responseDeleteTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->deleteTeam($teamId);
 
         // delete user
-        $responseDeleteUser = $this->json(
-            'DELETE',
-            self::TEST_URL_USER . '/' . $userId,
-            [],
-            $this->header
-        );
-        $responseDeleteUser->assertJsonStructure([
-            'message'
-        ]);
-        $responseDeleteUser->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->deleteUser($userId);
     }
 
     /**
@@ -821,36 +779,13 @@ class DatasetTest extends TestCase
 
         // create team
         // First create a notification to be used by the new team
-        $notificationID = $this->create_notification();
+        $notificationID = $this->createNotification();
 
         // Create the new team
-        $teamId = $this->create_team([], [$notificationID]);
+        $teamId = $this->createTeam([], [$notificationID]);
 
         // create user
-        $responseCreateUser = $this->json(
-            'POST',
-            self::TEST_URL_USER,
-            [
-                'firstname' => 'Firstname',
-                'lastname' => 'Lastname',
-                'email' => 'firstname.lastname.123456789@test.com',
-                'password' => 'Passw@rd1!',
-                'sector_id' => 1,
-                'organisation' => 'Test Organisation',
-                'bio' => 'Test Biography',
-                'domain' => 'https://testdomain.com',
-                'link' => 'https://testlink.com/link',
-                'orcid' => "https://orcid.org/75697342",
-                'contact_feedback' => 1,
-                'contact_news' => 1,
-                'mongo_id' => 1234566,
-                'mongo_object_id' => "12345abcde",
-            ],
-            $this->header,
-        );
-        $responseCreateUser->assertStatus(201);
-        $contentCreateUser = $responseCreateUser->decodeResponseJson();
-        $userId = $contentCreateUser['data'];
+        $userId = $this->createUser();
 
         // create dataset
         $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
@@ -867,7 +802,7 @@ class DatasetTest extends TestCase
             $this->header,
         );
         Queue::assertNotPushed(LinkageExtraction::class);
-        $responseCreateDataset->assertStatus(201);
+        $responseCreateDataset->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
         $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
         $datasetId = $contentCreateDataset['data'];
 
@@ -954,64 +889,23 @@ class DatasetTest extends TestCase
         $responseDeleteDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // delete team
-        $responseDeleteTeam = $this->json(
-            'DELETE',
-            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
-            [],
-            $this->header
-        );
-        $responseDeleteTeam->assertJsonStructure([
-            'message'
-        ]);
-        $responseDeleteTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->deleteTeam($teamId);
 
         // delete user
-        $responseDeleteUser = $this->json(
-            'DELETE',
-            self::TEST_URL_USER . '/' . $userId,
-            [],
-            $this->header
-        );
-        $responseDeleteUser->assertJsonStructure([
-            'message'
-        ]);
-        $responseDeleteUser->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->deleteUser($userId);
     }
 
     public function test_update_dataset_doesnt_create_new_version(): void
     {
         // create team
         // First create a notification to be used by the new team
-        $notificationID = $this->create_notification();
+        $notificationID = $this->createNotification();
 
         // Create the new team
-        $teamId = $this->create_team([], [$notificationID]);
+        $teamId = $this->createTeam([], [$notificationID]);
 
         // create user
-        $responseCreateUser = $this->json(
-            'POST',
-            self::TEST_URL_USER,
-            [
-                'firstname' => 'Firstname',
-                'lastname' => 'Lastname',
-                'email' => 'firstname.lastname.123456789@test.com',
-                'password' => 'Passw@rd1!',
-                'sector_id' => 1,
-                'organisation' => 'Test Organisation',
-                'bio' => 'Test Biography',
-                'domain' => 'https://testdomain.com',
-                'link' => 'https://testlink.com/link',
-                'orcid' => "https://orcid.org/75697342",
-                'contact_feedback' => 1,
-                'contact_news' => 1,
-                'mongo_id' => 1234566,
-                'mongo_object_id' => "12345abcde",
-            ],
-            $this->header,
-        );
-        $responseCreateUser->assertStatus(201);
-        $contentCreateUser = $responseCreateUser->decodeResponseJson();
-        $userId = $contentCreateUser['data'];
+        $userId = $this->createUser();
 
         // create dataset
         $labelDataset = 'label dataset test title';
@@ -1027,7 +921,7 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
-        $responseCreateDataset->assertStatus(201);
+        $responseCreateDataset->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
         $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
         $datasetId = $contentCreateDataset['data'];
 
@@ -1064,36 +958,13 @@ class DatasetTest extends TestCase
     {
         // create team
         // First create a notification to be used by the new team
-        $notificationID = $this->create_notification();
+        $notificationID = $this->createNotification();
 
         // Create the new team
-        $teamId = $this->create_team([], [$notificationID]);
+        $teamId = $this->createTeam([], [$notificationID]);
 
         // create user
-        $responseCreateUser = $this->json(
-            'POST',
-            self::TEST_URL_USER,
-            [
-                'firstname' => 'Firstname',
-                'lastname' => 'Lastname',
-                'email' => 'firstname.lastname.123456789@test.com',
-                'password' => 'Passw@rd1!',
-                'sector_id' => 1,
-                'organisation' => 'Test Organisation',
-                'bio' => 'Test Biography',
-                'domain' => 'https://testdomain.com',
-                'link' => 'https://testlink.com/link',
-                'orcid' => "https://orcid.org/75697342",
-                'contact_feedback' => 1,
-                'contact_news' => 1,
-                'mongo_id' => 1234566,
-                'mongo_object_id' => "12345abcde",
-            ],
-            $this->header,
-        );
-        $responseCreateUser->assertStatus(201);
-        $contentCreateUser = $responseCreateUser->decodeResponseJson();
-        $userId = $contentCreateUser['data'];
+        $userId = $this->createUser();
 
         // create dataset
         $labelDataset = 'label dataset test title';
@@ -1108,7 +979,7 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
-        $responseCreateDataset->assertStatus(201);
+        $responseCreateDataset->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
         $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
         $datasetId = $contentCreateDataset['data'];
 
@@ -1145,7 +1016,7 @@ class DatasetTest extends TestCase
         return 'api/v2/teams/' . $teamId . '/datasets';
     }
 
-    private function create_notification()
+    private function createNotification()
     {
         $responseNotification = $this->json(
             'POST',
@@ -1165,7 +1036,7 @@ class DatasetTest extends TestCase
         return $contentNotification['data'];
     }
 
-    private function create_team(array $userIds, array $notificationIds)
+    private function createTeam(array $userIds, array $notificationIds)
     {
         $responseCreateTeam = $this->json(
             'POST',
@@ -1201,5 +1072,61 @@ class DatasetTest extends TestCase
 
         $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
         return $contentCreateTeam['data'];
+    }
+
+    private function deleteTeam(int $teamId)
+    {
+        $responseDeleteTeam = $this->json(
+            'DELETE',
+            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteTeam->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+    }
+
+    private function createUser()
+    {
+        $responseCreateUser = $this->json(
+            'POST',
+            self::TEST_URL_USER,
+            [
+                'firstname' => 'Firstname',
+                'lastname' => 'Lastname',
+                'email' => 'firstname.lastname.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => " https://orcid.org/75697342",
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'mongo_id' => 1234566,
+                'mongo_object_id' => "12345abcde",
+            ],
+            $this->header,
+        );
+        $responseCreateUser->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $contentCreateUser = $responseCreateUser->decodeResponseJson();
+        return $contentCreateUser['data'];
+    }
+
+    private function deleteUser(int $userId)
+    {
+        $responseDeleteUser = $this->json(
+            'DELETE',
+            self::TEST_URL_USER . '/' . $userId,
+            [],
+            $this->header
+        );
+        $responseDeleteUser->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteUser->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
     }
 }
