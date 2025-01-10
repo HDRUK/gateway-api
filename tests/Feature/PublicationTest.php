@@ -134,6 +134,7 @@ class PublicationTest extends TestCase
                 'status',
                 'datasets',
                 'tools',
+                'collections',
             ]
         ]);
         $response->assertStatus(200);
