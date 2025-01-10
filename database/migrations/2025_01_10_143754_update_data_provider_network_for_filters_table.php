@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 return new class () extends Migration {
@@ -8,7 +9,21 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE `filters` CHANGE `type` `type` VARCHAR2(255) NOT NULL");
+        Schema::table('filters', function (Blueprint $table) {
+            $table->string('type_temp', 255)->nullable();
+        });
+
+        DB::statement('UPDATE filters SET type_temp = type');
+
+        Schema::table('filters', function (Blueprint $table) {
+            $table->dropUnique(['type', 'keys']);
+            $table->dropColumn('type');
+        });
+
+        Schema::table('filters', function (Blueprint $table) {
+            $table->renameColumn('type_temp', 'type');
+            $table->unique(['type', 'keys']);
+        });
     }
 
     /**
@@ -16,6 +31,8 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE `filters` CHANGE `type` `type` ENUM('dataset','collection','tool','course','project','paper','dataUseRegister','dataProvider') NOT NULL");
+        Schema::table('filters', function (Blueprint $table) {
+            $table->enum('type', ['dataset','collection','tool','course','project','paper','dataUseRegister','dataProvider'])->nullable();
+        });
     }
 };
