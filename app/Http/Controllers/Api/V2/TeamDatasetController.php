@@ -1112,18 +1112,6 @@ class TeamDatasetController extends Controller
         }
     }
 
-    public function destroyByPid(Request $request, string $pid) // softdelete
-    {
-        $dataset = Dataset::where('pid', "=", $pid)->first();
-        return $this->destroy($request, $dataset->id);
-    }
-
-    public function updateByPid(UpdateDataset $request, string $pid)
-    {
-        $dataset = Dataset::where('pid', "=", $pid)->first();
-        return $this->update($request, $dataset->id);
-    }
-
     private function extractMetadata(Mixed $metadata)
     {
 
