@@ -79,4 +79,15 @@ class Publication extends Model
         return $this->belongsToMany(Dur::class, 'dur_has_publications')
             ->withPivot('dur_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at')->whereNull('dur_has_publications.deleted_at');
     }
+
+    public function collections(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Publication::class,
+            'collection_has_publications',
+            'publication_id',
+            'collection_id'
+        )
+        ->whereNull('collection_has_publications.deleted_at');
+    }
 }
