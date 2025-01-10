@@ -105,28 +105,10 @@ class DatasetTest extends TestCase
         // Create the new team
         $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
 
-        $responseCreateTeam = $this->create_team([$this->nonAdminUser['id']], [$notificationID]);
-
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
-
-        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
-        $teamId1 = $contentCreateTeam['data'];
+        $teamId1 = $this->create_team([$this->nonAdminUser['id']], [$notificationID]);
 
         //create a 2nd team
-        $responseCreateTeam = $this->create_team([$this->nonAdmin2User['id']], [$notificationID]);
-
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
-
-        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
-        $teamId2 = $contentCreateTeam['data'];
+        $teamId2 = $this->create_team([$this->nonAdmin2User['id']], [$notificationID]);
 
         $specificTime = Carbon::parse('2023-01-01 00:00:00');
         Carbon::setTestNow($specificTime);
@@ -409,16 +391,7 @@ class DatasetTest extends TestCase
         $notificationID = $this->create_notification();
 
         // Create the new team
-        $responseCreateTeam = $this->create_team([], [$notificationID]);
-
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
-
-        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
-        $teamId = $contentCreateTeam['data'];
+        $teamId = $this->create_team([], [$notificationID]);
 
         // create user
         $responseCreateUser = $this->json(
@@ -447,16 +420,7 @@ class DatasetTest extends TestCase
         $userId = $contentCreateUser['data'];
 
         // Create a second team for testing
-        $responseCreateTeam = $this->create_team([], [$notificationID]);
-
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
-
-        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
-        $teamId2 = $contentCreateTeam['data'];
+        $teamId2 = $this->create_team([], [$notificationID]);
 
         // create active dataset
         $responseCreateActiveDataset = $this->json(
@@ -635,16 +599,7 @@ class DatasetTest extends TestCase
         $notificationID = $this->create_notification();
 
         // Create the new team
-        $responseCreateTeam = $this->create_team([], [$notificationID]);
-
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
-
-        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
-        $teamId = $contentCreateTeam['data'];
+        $teamId = $this->create_team([], [$notificationID]);
 
         // create user
         $responseCreateUser = $this->json(
@@ -811,16 +766,7 @@ class DatasetTest extends TestCase
         $notificationID = $this->create_notification();
 
         // Create the new team
-        $responseCreateTeam = $this->create_team([], [$notificationID]);
-
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
-
-        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
-        $teamId = $contentCreateTeam['data'];
+        $teamId = $this->create_team([], [$notificationID]);
 
         // create user
         $responseCreateUser = $this->json(
@@ -981,16 +927,7 @@ class DatasetTest extends TestCase
         $notificationID = $this->create_notification();
 
         // Create the new team
-        $responseCreateTeam = $this->create_team([], [$notificationID]);
-
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
-
-        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
-        $teamId = $contentCreateTeam['data'];
+        $teamId = $this->create_team([], [$notificationID]);
 
         // create user
         $responseCreateUser = $this->json(
@@ -1072,16 +1009,7 @@ class DatasetTest extends TestCase
         $notificationID = $this->create_notification();
 
         // Create the new team
-        $responseCreateTeam = $this->create_team([], [$notificationID]);
-
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
-
-        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
-        $teamId = $contentCreateTeam['data'];
+        $teamId = $this->create_team([], [$notificationID]);
 
         // create user
         $responseCreateUser = $this->json(
@@ -1181,7 +1109,7 @@ class DatasetTest extends TestCase
 
     private function create_team(array $userIds, array $notificationIds)
     {
-        return $this->json(
+        $responseCreateTeam = $this->json(
             'POST',
             self::TEST_URL_TEAM,
             [
@@ -1206,5 +1134,14 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
+
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
+        return $contentCreateTeam['data'];
     }
 }
