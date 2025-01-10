@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class () extends Migration {
     /**
@@ -10,9 +8,7 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::table('filters', function (Blueprint $table) {
-            DB::statement("ALTER TABLE `filters` CHANGE `type` `type` VARCHAR(255) NOT NULL");
-        });
+        DB::statement("ALTER TABLE `filters` CHANGE `type` `type` VARCHAR2(255) NOT NULL");
     }
 
     /**
