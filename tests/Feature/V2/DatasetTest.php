@@ -120,31 +120,7 @@ class DatasetTest extends TestCase
         // Create the new team
         $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
 
-        $responseCreateTeam = $this->json(
-            'POST',
-            self::TEST_URL_TEAM,
-            [
-                'name' => $teamName,
-                'enabled' => 1,
-                'allows_messaging' => 1,
-                'workflow_enabled' => 1,
-                'access_requests_management' => 1,
-                'uses_5_safes' => 1,
-                'is_admin' => 1,
-                'member_of' => fake()->randomElement([
-                    TeamMemberOf::ALLIANCE,
-                    TeamMemberOf::HUB,
-                    TeamMemberOf::OTHER,
-                    TeamMemberOf::NCS,
-                ]),
-                'contact_point' => 'dinos345@mail.com',
-                'application_form_updated_by' => 'Someone Somewhere',
-                'application_form_updated_on' => '2023-04-06 15:44:41',
-                'notifications' => [$notificationID],
-                'users' => [$this->nonAdminUser['id']],
-            ],
-            $this->header,
-        );
+        $responseCreateTeam = $this->create_team([$this->nonAdminUser['id']], [$notificationID]);
 
         $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
@@ -156,32 +132,7 @@ class DatasetTest extends TestCase
         $teamId1 = $contentCreateTeam['data'];
 
         //create a 2nd team
-        $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
-        $responseCreateTeam = $this->json(
-            'POST',
-            self::TEST_URL_TEAM,
-            [
-                'name' => $teamName,
-                'enabled' => 1,
-                'allows_messaging' => 1,
-                'workflow_enabled' => 1,
-                'access_requests_management' => 1,
-                'uses_5_safes' => 1,
-                'is_admin' => 1,
-                'member_of' => fake()->randomElement([
-                    TeamMemberOf::ALLIANCE,
-                    TeamMemberOf::HUB,
-                    TeamMemberOf::OTHER,
-                    TeamMemberOf::NCS,
-                ]),
-                'contact_point' => 'dinos345@mail.com',
-                'application_form_updated_by' => 'Someone Somewhere',
-                'application_form_updated_on' => '2023-04-06 15:44:41',
-                'notifications' => [$notificationID],
-                'users' => [$this->nonAdmin2User['id']],
-            ],
-            $this->header,
-        );
+        $responseCreateTeam = $this->create_team([$this->nonAdmin2User['id']], [$notificationID]);
 
         $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
@@ -191,33 +142,6 @@ class DatasetTest extends TestCase
 
         $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
         $teamId2 = $contentCreateTeam['data'];
-
-        // // create user
-        // $responseCreateUser = $this->json(
-        //     'POST',
-        //     self::TEST_URL_USER,
-        //     [
-        //         'firstname' => 'Firstname',
-        //         'lastname' => 'Lastname',
-        //         'email' => 'firstname.lastname.123456789@test.com',
-        //         'password' => 'Passw@rd1!',
-        //         'sector_id' => 1,
-        //         'organisation' => 'Test Organisation',
-        //         'bio' => 'Test Biography',
-        //         'domain' => 'https://testdomain.com',
-        //         'link' => 'https://testlink.com/link',
-        //         'orcid' => " https://orcid.org/75697342",
-        //         'contact_feedback' => 1,
-        //         'contact_news' => 1,
-        //         'mongo_id' => 1234566,
-        //         'mongo_object_id' => "12345abcde",
-        //     ],
-        //     $this->header,
-        // );
-
-        // $responseCreateUser->assertStatus(201);
-        // $contentCreateUser = $responseCreateUser->decodeResponseJson();
-        // $userId = $contentCreateUser['data'];
 
         $specificTime = Carbon::parse('2023-01-01 00:00:00');
         Carbon::setTestNow($specificTime);
@@ -514,32 +438,7 @@ class DatasetTest extends TestCase
         $notificationID = $contentNotification['data'];
 
         // Create the new team
-        $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
-        $responseCreateTeam = $this->json(
-            'POST',
-            self::TEST_URL_TEAM,
-            [
-                'name' => $teamName,
-                'enabled' => 1,
-                'allows_messaging' => 1,
-                'workflow_enabled' => 1,
-                'access_requests_management' => 1,
-                'uses_5_safes' => 1,
-                'is_admin' => 1,
-                'member_of' => fake()->randomElement([
-                    TeamMemberOf::ALLIANCE,
-                    TeamMemberOf::HUB,
-                    TeamMemberOf::OTHER,
-                    TeamMemberOf::NCS,
-                ]),
-                'contact_point' => 'dinos345@mail.com',
-                'application_form_updated_by' => 'Someone Somewhere',
-                'application_form_updated_on' => '2023-04-06 15:44:41',
-                'notifications' => [$notificationID],
-                'users' => [],
-            ],
-            $this->header,
-        );
+        $responseCreateTeam = $this->create_team([], [$notificationID]);
 
         $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
@@ -577,32 +476,7 @@ class DatasetTest extends TestCase
         $userId = $contentCreateUser['data'];
 
         // Create a second team for testing
-        $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
-        $responseCreateTeam = $this->json(
-            'POST',
-            self::TEST_URL_TEAM,
-            [
-                'name' => $teamName,
-                'enabled' => 1,
-                'allows_messaging' => 1,
-                'workflow_enabled' => 1,
-                'access_requests_management' => 1,
-                'uses_5_safes' => 1,
-                'is_admin' => 1,
-                'member_of' => fake()->randomElement([
-                    TeamMemberOf::ALLIANCE,
-                    TeamMemberOf::HUB,
-                    TeamMemberOf::OTHER,
-                    TeamMemberOf::NCS,
-                ]),
-                'contact_point' => 'dinos345@mail.com',
-                'application_form_updated_by' => 'Someone Somewhere',
-                'application_form_updated_on' => '2023-04-06 15:44:41',
-                'notifications' => [$notificationID],
-                'users' => [],
-            ],
-            $this->header,
-        );
+        $responseCreateTeam = $this->create_team([], [$notificationID]);
 
         $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
@@ -804,31 +678,7 @@ class DatasetTest extends TestCase
         $notificationID = $contentNotification['data'];
 
         // Create the new team
-        $responseCreateTeam = $this->json(
-            'POST',
-            self::TEST_URL_TEAM,
-            [
-                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
-                'enabled' => 1,
-                'allows_messaging' => 1,
-                'workflow_enabled' => 1,
-                'access_requests_management' => 1,
-                'uses_5_safes' => 1,
-                'is_admin' => 1,
-                'member_of' => fake()->randomElement([
-                    TeamMemberOf::ALLIANCE,
-                    TeamMemberOf::HUB,
-                    TeamMemberOf::OTHER,
-                    TeamMemberOf::NCS,
-                ]),
-                'contact_point' => 'dinos345@mail.com',
-                'application_form_updated_by' => 'Someone Somewhere',
-                'application_form_updated_on' => '2023-04-06 15:44:41',
-                'notifications' => [$notificationID],
-                'users' => [],
-            ],
-            $this->header,
-        );
+        $responseCreateTeam = $this->create_team([], [$notificationID]);
 
         $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
@@ -1018,31 +868,7 @@ class DatasetTest extends TestCase
         $notificationID = $contentNotification['data'];
 
         // Create the new team
-        $responseCreateTeam = $this->json(
-            'POST',
-            self::TEST_URL_TEAM,
-            [
-                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
-                'enabled' => 1,
-                'allows_messaging' => 1,
-                'workflow_enabled' => 1,
-                'access_requests_management' => 1,
-                'uses_5_safes' => 1,
-                'is_admin' => 1,
-                'member_of' => fake()->randomElement([
-                    TeamMemberOf::ALLIANCE,
-                    TeamMemberOf::HUB,
-                    TeamMemberOf::OTHER,
-                    TeamMemberOf::NCS,
-                ]),
-                'contact_point' => 'dinos345@mail.com',
-                'application_form_updated_by' => 'Someone Somewhere',
-                'application_form_updated_on' => '2023-04-06 15:44:41',
-                'notifications' => [$notificationID],
-                'users' => [],
-            ],
-            $this->header,
-        );
+        $responseCreateTeam = $this->create_team([], [$notificationID]);
 
         $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
@@ -1226,31 +1052,8 @@ class DatasetTest extends TestCase
         $notificationID = $contentNotification['data'];
 
         // Create the new team
-        $responseCreateTeam = $this->json(
-            'POST',
-            self::TEST_URL_TEAM,
-            [
-                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
-                'enabled' => 1,
-                'allows_messaging' => 1,
-                'workflow_enabled' => 1,
-                'access_requests_management' => 1,
-                'uses_5_safes' => 1,
-                'is_admin' => 1,
-                'member_of' => fake()->randomElement([
-                    TeamMemberOf::ALLIANCE,
-                    TeamMemberOf::HUB,
-                    TeamMemberOf::OTHER,
-                    TeamMemberOf::NCS,
-                ]),
-                'contact_point' => 'dinos345@mail.com',
-                'application_form_updated_by' => 'Someone Somewhere',
-                'application_form_updated_on' => '2023-04-06 15:44:41',
-                'notifications' => [$notificationID],
-                'users' => [],
-            ],
-            $this->header,
-        );
+        $responseCreateTeam = $this->create_team([], [$notificationID]);
+
 
         $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
@@ -1355,31 +1158,7 @@ class DatasetTest extends TestCase
         $notificationID = $contentNotification['data'];
 
         // Create the new team
-        $responseCreateTeam = $this->json(
-            'POST',
-            self::TEST_URL_TEAM,
-            [
-                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
-                'enabled' => 1,
-                'allows_messaging' => 1,
-                'workflow_enabled' => 1,
-                'access_requests_management' => 1,
-                'uses_5_safes' => 1,
-                'is_admin' => 1,
-                'member_of' => fake()->randomElement([
-                    TeamMemberOf::ALLIANCE,
-                    TeamMemberOf::HUB,
-                    TeamMemberOf::OTHER,
-                    TeamMemberOf::NCS,
-                ]),
-                'contact_point' => 'dinos345@mail.com',
-                'application_form_updated_by' => 'Someone Somewhere',
-                'application_form_updated_on' => '2023-04-06 15:44:41',
-                'notifications' => [$notificationID],
-                'users' => [],
-            ],
-            $this->header,
-        );
+        $responseCreateTeam = $this->create_team([], [$notificationID]);
 
         $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
@@ -1464,5 +1243,34 @@ class DatasetTest extends TestCase
     public function team_datasets_url(int $teamId)
     {
         return 'api/v2/teams/' . $teamId . '/datasets';
+    }
+
+    private function create_team(array $userIds, array $notificationIds)
+    {
+        return $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => $notificationIds,
+                'users' => $userIds,
+            ],
+            $this->header,
+        );
     }
 }
