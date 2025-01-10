@@ -499,10 +499,10 @@ class LicenseController extends Controller
      */
     public function destroy(DeleteLicense $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             License::where(['id' => $id])->delete();
 
             Auditor::log([
