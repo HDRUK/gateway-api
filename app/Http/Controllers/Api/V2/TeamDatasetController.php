@@ -1016,7 +1016,13 @@ class TeamDatasetController extends Controller
         $this->checkAccess($input, $initDataset->team_id, null, 'team');
 
         try {
-            $dataset = Dataset::where('id', $id)->first();
+            $dataset = Dataset::where(['id' => $id, 'team_id' => $teamId])->first();
+            if (!$dataset) {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_UNAUTHORIZED.message'),
+                ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+            }
+
             $deleteFromElastic = ($dataset->status === Dataset::STATUS_ACTIVE);
 
             MMC::deleteDataset($id);

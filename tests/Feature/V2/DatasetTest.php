@@ -89,7 +89,7 @@ class DatasetTest extends TestCase
             'to',
             'total',
         ]);
-        $response->assertStatus(200);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
     }
 
     /**
@@ -187,7 +187,7 @@ class DatasetTest extends TestCase
             [],
             $this->headerNonAdmin
         );
-        $response->assertStatus(200);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $this->assertCount(4, $response['data']);
         $response->assertJsonStructure([
@@ -224,7 +224,7 @@ class DatasetTest extends TestCase
             '?title=ABC',
             [], $this->header
         );
-        $response->assertStatus(200);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $this->assertCount(1,$response['data']);
         */
 
@@ -270,7 +270,7 @@ class DatasetTest extends TestCase
             [],
             $this->headerNonAdmin
         );
-        $responseCount->assertStatus(200);
+        $responseCount->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $countActive = $responseCount['data']['ACTIVE'];
         $countDraft = $responseCount['data']['DRAFT'];
         $countArchived = $responseCount['data']['ARCHIVED'];
@@ -285,7 +285,7 @@ class DatasetTest extends TestCase
             [],
             $this->headerNonAdmin
         );
-        $responseActiveDatasets->assertStatus(200);
+        $responseActiveDatasets->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $this->assertCount(2, $responseActiveDatasets['data']);
         $this->assertArrayHasKey('latest_metadata', $responseActiveDatasets['data'][0]);
@@ -297,7 +297,7 @@ class DatasetTest extends TestCase
             [],
             $this->headerNonAdmin
         );
-        $responseDraftDatasets->assertStatus(200);
+        $responseDraftDatasets->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $this->assertCount(1, $responseDraftDatasets['data']);
         $this->assertArrayHasKey('latest_metadata', $responseDraftDatasets['data'][0]);
@@ -309,7 +309,7 @@ class DatasetTest extends TestCase
             [],
             $this->headerNonAdmin
         );
-        $responseArchivedDatasets->assertStatus(200);
+        $responseArchivedDatasets->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $this->assertCount(1, $responseArchivedDatasets['data']);
         $this->assertArrayHasKey('latest_metadata', $responseArchivedDatasets['data'][0]);
@@ -344,18 +344,76 @@ class DatasetTest extends TestCase
         $response->assertStatus(500);
 
 
-        for ($i = 1; $i <= 4; $i++) {
-            // delete dataset
-            $responseDeleteDataset = $this->json(
-                'DELETE',
-                $this->team_datasets_url($teamId1) . //TODO: this shouldn't be able to delete the dataset belonging to the other team
-                '/' . $i,
-                [],
-                $this->headerNonAdmin
-            );
-            $responseDeleteDataset->assertJsonStructure([
-                'message'
-            ]);
+        for ($i = 1; $i <= 5; $i++) {
+            if ($i !== 4) {
+                // delete dataset
+                $responseDeleteDataset = $this->json(
+                    'DELETE',
+                    $this->team_datasets_url($teamId1) .
+                    '/' . $i,
+                    [],
+                    $this->headerNonAdmin
+                );
+                $responseDeleteDataset->assertJsonStructure([
+                    'message'
+                ]);
+                // var_dump($responseDeleteDataset->decodeResponseJson());
+                $responseDeleteDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+            } else {
+                // attempt to
+                // 1) delete with incorrect team (1), and incorrect user (1)
+                // 2) delete with correct team (2) but incorrect user (1)
+                // 3) delete with incorrect team (1) but correct user (2)
+                //
+                // then complete the deletion with team 2 and user 2
+                $responseDeleteDataset = $this->json(
+                    'DELETE',
+                    $this->team_datasets_url($teamId1) .
+                    '/' . $i,
+                    [],
+                    $this->headerNonAdmin
+                );
+                $responseDeleteDataset->assertJsonStructure([
+                    'message'
+                ]);
+                $responseDeleteDataset->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+
+                $responseDeleteDataset = $this->json(
+                    'DELETE',
+                    $this->team_datasets_url($teamId2) .
+                    '/' . $i,
+                    [],
+                    $this->headerNonAdmin
+                );
+                $responseDeleteDataset->assertJsonStructure([
+                    'message'
+                ]);
+                $responseDeleteDataset->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+
+                $responseDeleteDataset = $this->json(
+                    'DELETE',
+                    $this->team_datasets_url($teamId1) .
+                    '/' . $i,
+                    [],
+                    $this->headerNonAdmin2
+                );
+                $responseDeleteDataset->assertJsonStructure([
+                    'message'
+                ]);
+                $responseDeleteDataset->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+
+                $responseDeleteDataset = $this->json(
+                    'DELETE',
+                    $this->team_datasets_url($teamId2) .
+                    '/' . $i,
+                    [],
+                    $this->headerNonAdmin2
+                );
+                $responseDeleteDataset->assertJsonStructure([
+                    'message'
+                ]);
+                $responseDeleteDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+            }
         }
 
         for ($i = 1; $i <= 2; $i++) {
@@ -370,7 +428,7 @@ class DatasetTest extends TestCase
             $responseDeleteTeam->assertJsonStructure([
                 'message'
             ]);
-            $responseDeleteTeam->assertStatus(200);
+            $responseDeleteTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         }
 
     }
@@ -454,7 +512,7 @@ class DatasetTest extends TestCase
                 'publications_count',
             ]
         ]);
-        $responseGetOneActive->assertStatus(200);
+        $responseGetOneActive->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $respArrayActive = $responseGetOneActive->decodeResponseJson();
         $this->assertArrayHasKey('named_entities', $respArrayActive['data']);
@@ -505,11 +563,11 @@ class DatasetTest extends TestCase
                 'publications_count',
             ]
         ]);
-        $responseGetOneActive->assertStatus(200);
+        $responseGetOneActive->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // try and fail get one active dataset via V2 teams endpoint with wrong team id
         $responseGetOneActive = $this->json('GET', $this->team_datasets_url($teamId2) . '/' . $activeDatasetId, [], $this->header);
-        $responseGetOneActive->assertStatus(404);
+        $responseGetOneActive->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
 
         // delete active dataset
         $responseDeleteActiveDataset = $this->json(
@@ -521,7 +579,7 @@ class DatasetTest extends TestCase
         $responseDeleteActiveDataset->assertJsonStructure([
             'message'
         ]);
-        $responseDeleteActiveDataset->assertStatus(200);
+        $responseDeleteActiveDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // create draft dataset
         $responseCreateDraftDataset = $this->json(
@@ -544,7 +602,7 @@ class DatasetTest extends TestCase
         // fail to get draft dataset via V2 endpoint because only active are returned
         $responseGetOneDraftV2 = $this->json('GET', self::TEST_URL_DATASET_V2 . '/' . $draftDatasetId, [], $this->header);
 
-        $responseGetOneDraftV2->assertStatus(404);
+        $responseGetOneDraftV2->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         $responseGetOneDraftV2->assertJson(['message' => 'Dataset not found']);
 
 
@@ -558,7 +616,7 @@ class DatasetTest extends TestCase
         $responseDeleteDraftDataset->assertJsonStructure([
             'message'
         ]);
-        $responseDeleteDraftDataset->assertStatus(200);
+        $responseDeleteDraftDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // delete team
         $responseDeleteTeam = $this->json(
@@ -571,7 +629,7 @@ class DatasetTest extends TestCase
             'message'
         ]);
 
-        $responseDeleteTeam->assertStatus(200);
+        $responseDeleteTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // delete user
         $responseDeleteUser = $this->json(
@@ -583,7 +641,7 @@ class DatasetTest extends TestCase
         $responseDeleteUser->assertJsonStructure([
             'message'
         ]);
-        $responseDeleteUser->assertStatus(200);
+        $responseDeleteUser->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
     }
 
     /**
@@ -658,7 +716,7 @@ class DatasetTest extends TestCase
         $responseArchiveDataset->assertJsonStructure([
             'message'
         ]);
-        $responseArchiveDataset->assertStatus(200);
+        $responseArchiveDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // unarchive dataset
         $responseUnarchiveDataset = $this->json(
@@ -673,7 +731,7 @@ class DatasetTest extends TestCase
             'message'
         ]);
         Queue::assertPushed(LinkageExtraction::class);
-        $responseUnarchiveDataset->assertStatus(200);
+        $responseUnarchiveDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // change dataset status
         $responseChangeStatusDataset = $this->json(
@@ -687,7 +745,7 @@ class DatasetTest extends TestCase
         $responseChangeStatusDataset->assertJsonStructure([
             'message'
         ]);
-        $responseChangeStatusDataset->assertStatus(200);
+        $responseChangeStatusDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // update dataset
         $responseUpdateDataset = $this->json(
@@ -704,7 +762,7 @@ class DatasetTest extends TestCase
         );
 
         $contentUpdateDataset = $responseUpdateDataset->decodeResponseJson();
-        $responseUpdateDataset->assertStatus(200);
+        $responseUpdateDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $responseGetDataset = $this->json(
             'GET',
@@ -713,7 +771,7 @@ class DatasetTest extends TestCase
             $this->header,
         );
         $contentGetDataset = $responseGetDataset->decodeResponseJson();
-        $responseGetDataset->assertStatus(200);
+        $responseGetDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $this->assertEquals(Dataset::STATUS_ACTIVE, $contentGetDataset['data']['status']);
 
         // delete dataset
@@ -726,7 +784,7 @@ class DatasetTest extends TestCase
         $responseDeleteDataset->assertJsonStructure([
             'message'
         ]);
-        $responseDeleteDataset->assertStatus(200);
+        $responseDeleteDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // delete team
         $responseDeleteTeam = $this->json(
@@ -738,7 +796,7 @@ class DatasetTest extends TestCase
         $responseDeleteTeam->assertJsonStructure([
             'message'
         ]);
-        $responseDeleteTeam->assertStatus(200);
+        $responseDeleteTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // delete user
         $responseDeleteUser = $this->json(
@@ -750,7 +808,7 @@ class DatasetTest extends TestCase
         $responseDeleteUser->assertJsonStructure([
             'message'
         ]);
-        $responseDeleteUser->assertStatus(200);
+        $responseDeleteUser->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
     }
 
     /**
@@ -825,7 +883,7 @@ class DatasetTest extends TestCase
         $responseArchiveDataset->assertJsonStructure([
             'message'
         ]);
-        $responseArchiveDataset->assertStatus(200);
+        $responseArchiveDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // unarchive dataset
         $responseUnarchiveDataset = $this->json(
@@ -840,7 +898,7 @@ class DatasetTest extends TestCase
             'message'
         ]);
         Queue::assertPushed(LinkageExtraction::class);
-        $responseUnarchiveDataset->assertStatus(200);
+        $responseUnarchiveDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // change dataset status
         $responseChangeStatusDataset = $this->json(
@@ -854,7 +912,7 @@ class DatasetTest extends TestCase
         $responseChangeStatusDataset->assertJsonStructure([
             'message'
         ]);
-        $responseChangeStatusDataset->assertStatus(200);
+        $responseChangeStatusDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // update dataset
         $responseUpdateDataset = $this->json(
@@ -871,7 +929,7 @@ class DatasetTest extends TestCase
         );
 
         $contentUpdateDataset = $responseUpdateDataset->decodeResponseJson();
-        $responseUpdateDataset->assertStatus(200);
+        $responseUpdateDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $responseGetDataset = $this->json(
             'GET',
@@ -880,7 +938,7 @@ class DatasetTest extends TestCase
             $this->header,
         );
         $contentGetDataset = $responseGetDataset->decodeResponseJson();
-        $responseGetDataset->assertStatus(200);
+        $responseGetDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $this->assertEquals(Dataset::STATUS_ACTIVE, $contentGetDataset['data']['status']);
 
         // delete dataset
@@ -893,7 +951,7 @@ class DatasetTest extends TestCase
         $responseDeleteDataset->assertJsonStructure([
             'message'
         ]);
-        $responseDeleteDataset->assertStatus(200);
+        $responseDeleteDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // delete team
         $responseDeleteTeam = $this->json(
@@ -905,7 +963,7 @@ class DatasetTest extends TestCase
         $responseDeleteTeam->assertJsonStructure([
             'message'
         ]);
-        $responseDeleteTeam->assertStatus(200);
+        $responseDeleteTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // delete user
         $responseDeleteUser = $this->json(
@@ -917,7 +975,7 @@ class DatasetTest extends TestCase
         $responseDeleteUser->assertJsonStructure([
             'message'
         ]);
-        $responseDeleteUser->assertStatus(200);
+        $responseDeleteUser->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
     }
 
     public function test_update_dataset_doesnt_create_new_version(): void
@@ -990,7 +1048,7 @@ class DatasetTest extends TestCase
         );
 
         $contentUpdateDataset = $responseUpdateDataset->decodeResponseJson();
-        $responseUpdateDataset->assertStatus(200);
+        $responseUpdateDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $dsv = DatasetVersion::where('dataset_id', $datasetId)->get();
         $this->assertTrue(count($dsv) === 1);
@@ -1070,7 +1128,7 @@ class DatasetTest extends TestCase
         );
 
         $contentUpdateDataset = $responseUpdateDataset->decodeResponseJson();
-        $responseUpdateDataset->assertStatus(200);
+        $responseUpdateDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $dsv = DatasetVersion::where('dataset_id', $datasetId)->get();
         $this->assertTrue(count($dsv) === 1);
