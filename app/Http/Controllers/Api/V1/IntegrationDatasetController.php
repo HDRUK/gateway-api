@@ -1029,7 +1029,7 @@ class IntegrationDatasetController extends Controller
             $dataset = Dataset::findOrFail($id);
             $this->checkAppCanHandleDataset($dataset->team_id, $request);
 
-            MMC::deleteDataset($id);
+            MMC::deleteDataset($id, true);
             $this->deleteDatasetFromElastic($id);
 
             Auditor::log([

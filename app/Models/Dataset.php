@@ -4,6 +4,7 @@ namespace App\Models;
 
 use DB;
 
+use App\Models\Traits\EntityCounter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,6 +21,7 @@ class Dataset extends Model
     use Notifiable;
     use SoftDeletes;
     use Prunable;
+    use EntityCounter;
 
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
@@ -65,6 +67,16 @@ class Dataset extends Model
         'is_cohort_discovery' => 'boolean',
     ];
 
+    protected static array $sortableColumns = [
+        'created',
+        'updated',
+        // we can also sort by 'metadata.summary.title', but treat this
+        // separately within scopeApplySorting() rather than confuse the meaning of `$sortableColumns`
+    ];
+
+    protected static array $countableColumns = [
+        'status',
+    ];
 
     /**
      * The version history of metadata that respond to this dataset.
@@ -166,6 +178,40 @@ class Dataset extends Model
      */
     public function scopeOrderByMetadata(Builder $query, string $field, string $direction): Builder
     {
+        return $query->orderBy(DatasetVersion::selectRaw("JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.".$field."')")
+            ->whereColumn('datasets.id', 'dataset_versions.dataset_id')
+            ->latest()->limit(1), $direction);
+    }
+
+    /**
+     * Apply sorting
+     */
+    public function scopeApplySorting($query): mixed
+    {
+        // This function closely mirrors the SortManager Trait, but is separate to handle the special case of metadata.summary.title.
+
+        $input = \request()->all();
+        // If no sort option passed, then always default to the first element
+        // of our sortableColumns array on the model
+        $sort = isset($input['sort']) ? $input['sort'] : static::$sortableColumns[0] . ':desc';
+
+        $tmp = explode(':', $sort);
+        $field = strtolower($tmp[0]);
+
+        if (isset(static::$sortableColumns)
+            && (!in_array(strtolower($field), static::$sortableColumns) && (strtolower($field) !== 'metadata.summary.title'))) {
+            throw new \InvalidArgumentException('field ' . $field . ' is not sortable.');
+        }
+
+        $direction = strtolower($tmp[1]);
+        if (!in_array($direction, ['asc', 'desc'])) {
+            throw new \InvalidArgumentException('invalid sort direction ' . $direction);
+        }
+
+        if ($field !== 'metadata.summary.title') {
+            return $query->orderBy($field, $direction);
+        }
+
         return $query->orderBy(DatasetVersion::selectRaw("JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.".$field."')")
             ->whereColumn('datasets.id', 'dataset_versions.dataset_id')
             ->latest()->limit(1), $direction);

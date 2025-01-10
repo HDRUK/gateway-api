@@ -326,4 +326,214 @@ return [
             'teamId' => '[0-9]+',
         ],
     ],
+
+    // v2 datasets
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/datasets',
+        'methodController' => 'DatasetController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/datasets/count/{field}',
+        'methodController' => 'DatasetController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/datasets/{id}',
+        'methodController' => 'DatasetController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'post',
+        'path' => '/datasets',
+        'methodController' => 'DatasetController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'put',
+        'path' => '/datasets/{id}',
+        'methodController' => 'DatasetController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id', '[0-9]+'
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'patch',
+        'path' => '/datasets/{id}',
+        'methodController' => 'DatasetController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id', '[0-9]+'
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'delete',
+        'path' => '/datasets/{id}',
+        'methodController' => 'DatasetController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id', '[0-9]+'
+        ],
+    ],
+
+    // v2 teams/datasets
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/datasets',
+        'methodController' => 'TeamDatasetController@indexActive',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/datasets/status/draft',
+        'methodController' => 'TeamDatasetController@indexDraft',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/datasets/status/archived',
+        'methodController' => 'TeamDatasetController@indexArchived',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/datasets/{id}',
+        'methodController' => 'TeamDatasetController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/datasets/count/{field}',
+        'methodController' => 'TeamDatasetController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'post',
+        'path' => '/teams/{teamId}/datasets',
+        'methodController' => 'TeamDatasetController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'put',
+        'path' => '/teams/{teamId}/datasets/{id}',
+        'methodController' => 'TeamDatasetController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'patch',
+        'path' => '/teams/{teamId}/datasets/{id}',
+        'methodController' => 'TeamDatasetController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'delete',
+        'path' => '/teams/{teamId}/datasets/{id}',
+        'methodController' => 'TeamDatasetController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
+        ],
+    ],
 ];

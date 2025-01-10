@@ -1029,7 +1029,7 @@ class DatasetController extends Controller
             $dataset = Dataset::where('id', $id)->first();
             $deleteFromElastic = ($dataset->status === Dataset::STATUS_ACTIVE);
 
-            MMC::deleteDataset($id);
+            MMC::deleteDataset($id, true);
 
             if ($deleteFromElastic) {
                 $this->deleteDatasetFromElastic($id);
