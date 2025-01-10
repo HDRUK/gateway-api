@@ -114,7 +114,7 @@ class FilterSeeder extends Seeder
             'publisherNames',
         ];
 
-        $this->seed_filter("dataCustodianNetwork", $filters);
+        $this->seed_filter("datacustodiannetwork", $filters);
     }
 
     public function seed_filter(string $type, array $filters): void

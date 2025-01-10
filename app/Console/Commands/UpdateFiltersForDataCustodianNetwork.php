@@ -27,11 +27,11 @@ class UpdateFiltersForDataCustodianNetwork extends Command
     public function handle()
     {
         Filter::updateOrCreate([
-            'type' => 'dataCustodianNetwork',
+            'type' => 'datacustodiannetwork',
             'keys' => 'datasetTitles',
         ]);
         Filter::updateOrCreate([
-            'type' => 'dataCustodianNetwork',
+            'type' => 'datacustodiannetwork',
             'keys' => 'publisherNames',
         ]);
     }
