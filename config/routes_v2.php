@@ -464,6 +464,7 @@ return [
             'jwt.verify',
         ],
         'constraint' => [
+            'id' => '[0-9]+',
             'teamId' => '[0-9]+',
         ],
     ],
@@ -505,6 +506,7 @@ return [
             'sanitize.input',
         ],
         'constraint' => [
+            'id' => '[0-9]+',
             'teamId' => '[0-9]+',
         ],
     ],
