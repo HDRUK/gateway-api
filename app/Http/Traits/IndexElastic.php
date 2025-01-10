@@ -87,7 +87,7 @@ trait IndexElastic
                 'startDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.startDate'], null),
                 'endDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.endDate'], Carbon::now()->addYears(5)),
                 'dataType' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], '')),
-                'dataSubType' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetSubType'], '')),
+                'dataSubType' => array_filter(explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetSubType'], ''))),
                 'containsTissue' => $containsTissue,
                 'sampleAvailability' => $materialTypes,
                 'conformsTo' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
