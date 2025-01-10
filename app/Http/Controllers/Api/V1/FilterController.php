@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 use App\Models\Filter;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Http;
+use App\Http\Traits\PaginateFromArray;
 use App\Http\Requests\Filter\GetFilter;
 use App\Http\Requests\Filter\EditFilter;
 use App\Http\Requests\Filter\CreateFilter;
 use App\Http\Requests\Filter\DeleteFilter;
 use App\Http\Requests\Filter\UpdateFilter;
 use App\Http\Traits\RequestTransformation;
-use App\Http\Traits\PaginateFromArray;
 
 class FilterController extends Controller
 {
@@ -517,14 +517,7 @@ class FilterController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $filter = Filter::findOrFail($id);
-            if ($filter) {
-                $filter->delete();
-
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                ], Config::get('statuscodes.STATUS_OK.code'));
-            }
+            Filter::where(['id' => $id])->delete();
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -533,7 +526,9 @@ class FilterController extends Controller
                 'description' => 'Filter ' . $id . ' deleted',
             ]);
 
-            throw new NotFoundException();
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
