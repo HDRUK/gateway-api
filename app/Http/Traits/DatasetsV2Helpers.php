@@ -7,6 +7,7 @@ use Exception;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Dur;
+use MetadataManagementController as MMC;
 use App\Http\Requests\V2\Dataset\GetDataset;
 
 trait DatasetsV2Helpers
