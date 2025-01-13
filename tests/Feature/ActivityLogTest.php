@@ -26,8 +26,6 @@ class ActivityLogTest extends TestCase
 
     public const TEST_URL = '/api/v1/activity_logs';
 
-    protected $header = [];
-
     public function setUp(): void
     {
         $this->commonSetUp();
