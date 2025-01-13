@@ -21,7 +21,7 @@ class ActivityLogTest extends TestCase
         setUp as commonSetUp;
     }
 
-    public const TEST_URL = '/api/v1/users';
+    public const TEST_URL = '/api/v1/activity_logs';
 
     protected $header = [];
 
@@ -44,7 +44,7 @@ class ActivityLogTest extends TestCase
      */
     public function test_the_application_can_list_activity_logs()
     {
-        $response = $this->get('api/v1/activity_logs', $this->header);
+        $response = $this->get(self::TEST_URL, $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -88,7 +88,7 @@ class ActivityLogTest extends TestCase
     {
         $response = $this->json(
             'POST',
-            'api/v1/activity_logs',
+            self::TEST_URL,
             [
                 'event_type' => 'test_case',
                 'user_type_id' => 1,
@@ -111,7 +111,7 @@ class ActivityLogTest extends TestCase
 
         $content = $response->decodeResponseJson();
 
-        $response = $this->get('api/v1/activity_logs/' . $content['data'], $this->header);
+        $response = $this->get(self::TEST_URL . '/' . $content['data'], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -141,7 +141,7 @@ class ActivityLogTest extends TestCase
     {
         $response = $this->json(
             'POST',
-            'api/v1/activity_logs',
+            self::TEST_URL,
             [
                 'event_type' => 'test_case',
                 'user_type_id' => 1,
@@ -180,7 +180,7 @@ class ActivityLogTest extends TestCase
         // within this test case
         $response = $this->json(
             'POST',
-            'api/v1/activity_logs',
+            self::TEST_URL,
             [
                 'event_type' => 'test_case',
                 'user_type_id' => 1,
@@ -211,7 +211,7 @@ class ActivityLogTest extends TestCase
         // prove functionality
         $response = $this->json(
             'PUT',
-            'api/v1/activity_logs/' . $content['data'],
+            self::TEST_URL . '/' . $content['data'],
             [
                 'event_type' => 'updated_test_case',
                 'user_type_id' => 2,
@@ -245,7 +245,7 @@ class ActivityLogTest extends TestCase
         // Start by creating a new activity log record for updating
         $response = $this->json(
             'POST',
-            'api/v1/activity_logs',
+            self::TEST_URL,
             [
                 'event_type' => 'test_case',
                 'user_type_id' => 1,
@@ -278,7 +278,7 @@ class ActivityLogTest extends TestCase
         // update
         $response = $this->json(
             'PUT',
-            'api/v1/activity_logs/' . $id,
+            self::TEST_URL . '/' . $id,
             [
                 'event_type' => 'updated_test_case',
                 'user_type_id' => 2,
@@ -304,7 +304,7 @@ class ActivityLogTest extends TestCase
         // edit/patch
         $responsePatch1 = $this->json(
             'PATCH',
-            'api/v1/activity_logs/' . $id,
+            self::TEST_URL . '/' . $id,
             [
                 'event_type' => 'updated_test_case_edit',
             ],
@@ -318,7 +318,7 @@ class ActivityLogTest extends TestCase
         // edit/patch
         $responsePatch2 = $this->json(
             'PATCH',
-            'api/v1/activity_logs/' . $id,
+            self::TEST_URL . '/' . $id,
             [
                 'event_type' => 'updated_test_case_edit_another',
                 'user_type_id' => 1,
@@ -334,7 +334,7 @@ class ActivityLogTest extends TestCase
         // edit/patch
         $responsePatch3 = $this->json(
             'PATCH',
-            'api/v1/activity_logs/' . $id,
+            self::TEST_URL . '/' . $id,
             [
                 'event_type' => 'updated_test_case',
                 'user_type_id' => 1,
@@ -371,7 +371,7 @@ class ActivityLogTest extends TestCase
         // within this test case
         $response = $this->json(
             'POST',
-            'api/v1/activity_logs',
+            self::TEST_URL,
             [
                 'event_type' => 'test_case',
                 'user_type_id' => 1,
@@ -402,7 +402,7 @@ class ActivityLogTest extends TestCase
         // prove functionality
         $response = $this->json(
             'DELETE',
-            'api/v1/activity_logs/' . $content['data'],
+            self::TEST_URL . '/' . $content['data'],
             [],
             $this->header,
         );
