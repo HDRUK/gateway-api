@@ -5,6 +5,9 @@ namespace Tests\Feature;
 use Config;
 
 use Tests\TestCase;
+use App\Models\User;
+use App\Models\ActivityLogType;
+use App\Models\ActivityLogUserType;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ActivityLogTypeSeeder;
 use Database\Seeders\ActivityLogUserTypeSeeder;
@@ -91,9 +94,9 @@ class ActivityLogTest extends TestCase
             self::TEST_URL,
             [
                 'event_type' => 'test_case',
-                'user_type_id' => 1,
-                'log_type_id' => 1,
-                'user_id' => 1,
+                'user_type_id' => ActivityLogUserType::all()->random()->id,
+                'log_type_id' => ActivityLogType::all()->random()->id,
+                'user_id' => User::all()->random()->id,
                 'version' => '2.1.0',
                 'html' => '<b>something</b>',
                 'plain_text' => 'something',
@@ -144,9 +147,9 @@ class ActivityLogTest extends TestCase
             self::TEST_URL,
             [
                 'event_type' => 'test_case',
-                'user_type_id' => 1,
-                'log_type_id' => 1,
-                'user_id' => 1,
+                'user_type_id' => ActivityLogUserType::all()->random()->id,
+                'log_type_id' => ActivityLogType::all()->random()->id,
+                'user_id' => User::all()->random()->id,
                 'version' => '2.1.0',
                 'html' => '<b>something</b>',
                 'plain_text' => 'something',
@@ -183,9 +186,9 @@ class ActivityLogTest extends TestCase
             self::TEST_URL,
             [
                 'event_type' => 'test_case',
-                'user_type_id' => 1,
-                'log_type_id' => 1,
-                'user_id' => 1,
+                'user_type_id' => ActivityLogUserType::all()->random()->id,
+                'log_type_id' => ActivityLogType::all()->random()->id,
+                'user_id' => User::all()->random()->id,
                 'version' => '2.1.0',
                 'html' => '<b>something</b>',
                 'plain_text' => 'something',
@@ -209,14 +212,17 @@ class ActivityLogTest extends TestCase
 
         // Finally, update the last entered activity log to
         // prove functionality
+        $user_type_id = ActivityLogUserType::all()->random()->id;
+        $log_type_id = ActivityLogType::all()->random()->id;
+        $user_id = User::all()->random()->id;
         $response = $this->json(
             'PUT',
             self::TEST_URL . '/' . $content['data'],
             [
                 'event_type' => 'updated_test_case',
-                'user_type_id' => 2,
-                'log_type_id' => 2,
-                'user_id' => 2,
+                'user_type_id' => $user_type_id,
+                'log_type_id' => $log_type_id,
+                'user_id' => $user_id,
                 'version' => '1.0.0',
                 'html' => '<b>something</b>',
                 'plain_text' => 'something',
@@ -229,9 +235,9 @@ class ActivityLogTest extends TestCase
         $content = $response->decodeResponseJson();
 
         $this->assertEquals($content['data']['event_type'], 'updated_test_case');
-        $this->assertEquals($content['data']['user_type_id'], 2);
-        $this->assertEquals($content['data']['log_type_id'], 2);
-        $this->assertEquals($content['data']['user_id'], 2);
+        $this->assertEquals($content['data']['user_type_id'], $user_type_id);
+        $this->assertEquals($content['data']['log_type_id'], $log_type_id);
+        $this->assertEquals($content['data']['user_id'], $user_id);
         $this->assertEquals($content['data']['version'], '1.0.0');
     }
 
@@ -248,9 +254,9 @@ class ActivityLogTest extends TestCase
             self::TEST_URL,
             [
                 'event_type' => 'test_case',
-                'user_type_id' => 1,
-                'log_type_id' => 1,
-                'user_id' => 1,
+                'user_type_id' => ActivityLogUserType::all()->random()->id,
+                'log_type_id' => ActivityLogType::all()->random()->id,
+                'user_id' => User::all()->random()->id,
                 'version' => '2.1.0',
                 'html' => '<b>something</b>',
                 'plain_text' => 'something',
@@ -276,14 +282,17 @@ class ActivityLogTest extends TestCase
         $id = $content['data'];
 
         // update
+        $user_type_id = ActivityLogUserType::all()->random()->id;
+        $log_type_id = ActivityLogType::all()->random()->id;
+        $user_id = User::all()->random()->id;
         $response = $this->json(
             'PUT',
             self::TEST_URL . '/' . $id,
             [
                 'event_type' => 'updated_test_case',
-                'user_type_id' => 2,
-                'log_type_id' => 2,
-                'user_id' => 2,
+                'user_type_id' => $user_type_id,
+                'log_type_id' => $log_type_id,
+                'user_id' => $user_id,
                 'version' => '1.0.0',
                 'html' => '<b>something</b>',
                 'plain_text' => 'something',
@@ -296,9 +305,9 @@ class ActivityLogTest extends TestCase
         $content = $response->decodeResponseJson();
 
         $this->assertEquals($content['data']['event_type'], 'updated_test_case');
-        $this->assertEquals($content['data']['user_type_id'], 2);
-        $this->assertEquals($content['data']['log_type_id'], 2);
-        $this->assertEquals($content['data']['user_id'], 2);
+        $this->assertEquals($content['data']['user_type_id'], $user_type_id);
+        $this->assertEquals($content['data']['log_type_id'], $log_type_id);
+        $this->assertEquals($content['data']['user_id'], $user_id);
         $this->assertEquals($content['data']['version'], '1.0.0');
 
         // edit/patch
@@ -332,14 +341,17 @@ class ActivityLogTest extends TestCase
         $this->assertEquals($contentPatch2['data']['user_type_id'], 1);
 
         // edit/patch
+        $user_type_id = ActivityLogUserType::all()->random()->id;
+        $log_type_id = ActivityLogType::all()->random()->id;
+        $user_id = User::all()->random()->id;
         $responsePatch3 = $this->json(
             'PATCH',
             self::TEST_URL . '/' . $id,
             [
                 'event_type' => 'updated_test_case',
-                'user_type_id' => 1,
-                'log_type_id' => 1,
-                'user_id' => 1,
+                'user_type_id' => $user_type_id,
+                'log_type_id' => $log_type_id,
+                'user_id' => $user_id,
                 'version' => '1.0.1',
                 'html' => '<b>something else</b>',
                 'plain_text' => 'something else',
@@ -352,9 +364,9 @@ class ActivityLogTest extends TestCase
         $contentPatch3 = $responsePatch3->decodeResponseJson();
 
         $this->assertEquals($contentPatch3['data']['event_type'], 'updated_test_case');
-        $this->assertEquals($contentPatch3['data']['user_type_id'], 1);
-        $this->assertEquals($contentPatch3['data']['log_type_id'], 1);
-        $this->assertEquals($contentPatch3['data']['user_id'], 1);
+        $this->assertEquals($contentPatch3['data']['user_type_id'], $user_type_id);
+        $this->assertEquals($contentPatch3['data']['log_type_id'], $log_type_id);
+        $this->assertEquals($contentPatch3['data']['user_id'], $user_id);
         $this->assertEquals($contentPatch3['data']['version'], '1.0.1');
         $this->assertEquals($contentPatch3['data']['user_id_mongo'], 'user_id_mongo-new');
         $this->assertEquals($contentPatch3['data']['version_id_mongo'], 'version_id_mongo-new');
@@ -374,9 +386,9 @@ class ActivityLogTest extends TestCase
             self::TEST_URL,
             [
                 'event_type' => 'test_case',
-                'user_type_id' => 1,
-                'log_type_id' => 1,
-                'user_id' => 1,
+                'user_type_id' => ActivityLogUserType::all()->random()->id,
+                'log_type_id' => ActivityLogType::all()->random()->id,
+                'user_id' => User::all()->random()->id,
                 'version' => '2.1.0',
                 'html' => '<b>something</b>',
                 'plain_text' => 'something',
