@@ -259,7 +259,7 @@ class QuestionBankController extends Controller
                 'archived' => $input['archived'] ?? false,
                 'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
                 'is_child' => false,
-                'question_type' => $input['question_type'] ?? 'STANDARD',
+                'question_type' => $input['question_type'] ?? QuestionBank::STANDARD_TYPE,
             ]);
 
             $questionJson = [
@@ -592,7 +592,7 @@ class QuestionBankController extends Controller
                 ]);
             }
 
-            if ($question->question_type === 'CUSTOM') {
+            if ($question->question_type === QuestionBank::CUSTOM_TYPE) {
                 QuestionHasTeam::where('qb_question_id', $id)->delete();
                 if ($input['team_id']) {
                     foreach ($input['team_id'] as $t) {
@@ -790,7 +790,7 @@ class QuestionBankController extends Controller
 
     private function updateQuestionHasTeams(QuestionBank $question, array $input)
     {
-        if ($question->question_type === 'CUSTOM') {
+        if ($question->question_type === QuestionBank::CUSTOM_TYPE) {
             QuestionHasTeam::where('qb_question_id', $question->id)->delete();
             if (isset($input['team_id']) && $input['team_id']) {
                 foreach ($input['team_id'] as $t) {

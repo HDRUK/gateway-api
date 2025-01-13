@@ -546,7 +546,7 @@ class DataAccessTemplateController extends Controller
                 'qb_question_id' => $q['id']
             ])->get();
 
-            if (($question->question_type === 'CUSTOM') && (!count($teams))) {
+            if (($question->question_type === QuestionBank::CUSTOM_TYPE) && (!count($teams))) {
                 throw new Exception('Question with id ' . $q['id'] . ' is not accessible by this team.');
             }
 
