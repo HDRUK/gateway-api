@@ -78,4 +78,9 @@ class QuestionBank extends Model
     {
         return $this->belongsToMany(Team::class, 'qb_question_has_team');
     }
+
+    public function section(): BelongsTo
+    {
+        return $this->belongsTo(DataAccessSection::class);
+    }
 }

@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\QuestionBank\GetQuestionBank;
+use App\Http\Requests\QuestionBank\GetQuestionBankVersion;
 use App\Http\Requests\QuestionBank\EditQuestionBank;
 use App\Http\Requests\QuestionBank\CreateQuestionBank;
 use App\Http\Requests\QuestionBank\DeleteQuestionBank;
@@ -116,6 +117,28 @@ class QuestionBankController extends Controller
      *            description="question bank question id",
      *         ),
      *      ),
+     *      @OA\Parameter(
+     *         name="with_versions",
+     *         in="query",
+     *         description="include all versions",
+     *         required=false,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="include all versions flag",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="with_section",
+     *         in="query",
+     *         description="include section information",
+     *         required=false,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="include section information flag",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -151,17 +174,24 @@ class QuestionBankController extends Controller
      */
     public function show(GetQuestionBank $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $question = QuestionBank::with(
-                ['latestVersion',
-                 'latestVersion.childVersions',
-                  'versions',
-                  'versions.childVersions'
-                ]
-            )->findOrFail($id);
+        try {
+            $withVersions = $request->boolean('with_versions', true);
+            $withSection = $request->boolean('with_section', true);
+            $withFields = [
+                'latestVersion',
+                'latestVersion.childVersions',
+            ];
+            if ($withVersions) {
+                $withFields = array_merge($withFields, ['versions', 'versions.childVersions']);
+            }
+            if ($withSection) {
+                $withFields = array_merge($withFields, ['section']);
+            }
+
+            $question = QuestionBank::with($withFields)->findOrFail($id);
 
             if ($question) {
 
@@ -175,6 +205,90 @@ class QuestionBankController extends Controller
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                     'data' => $question,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/questions/version/{id}",
+     *      summary="Return a single system question bank question version",
+     *      description="Return a single system question bank question version",
+     *      tags={"QuestionBank"},
+     *      summary="QuestionBank@showVersion",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="question bank question version id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="question bank question version id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="question_id", type="integer", example="1"),
+     *                  @OA\Property(property="version", type="integer", example="1"),
+     *                  @OA\Property(property="default", type="boolean", example="false"),
+     *                  @OA\Property(property="required", type="boolean", example="true"),
+     *                  @OA\Property(property="question_json", type="object", example=""),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function showVersion(GetQuestionBankVersion $request, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $questionVersion = QuestionBankVersion::findOrFail($id);
+
+            if ($questionVersion) {
+
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'QuestionBank get ' . $id,
+                ]);
+
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $questionVersion,
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
 

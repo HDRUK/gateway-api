@@ -146,12 +146,99 @@ class QuestionBankTest extends TestCase
                     'question_type',
                     'is_child',
                     'latest_version',
-                        'latest_version',
-                        'versions' => [
-                            0 => ['child_versions']
-                        ],
+                    'versions' => [
+                        0 => ['child_versions']
+                    ],
+                    'section',
                 ],
             ]);
+
+        $response = $this->get('api/v1/questions/' . $content['data'] . '?with_section=0&with_versions=0', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'section_id',
+                    'user_id',
+                    'locked',
+                    'archived',
+                    'archived_date',
+                    'force_required',
+                    'allow_guidance_override',
+                    'question_type',
+                    'is_child',
+                    'latest_version',
+                ],
+            ]);
+    }
+
+    /**
+     * Returns a single question version
+     *
+     * @return void
+     */
+    public function test_the_application_can_list_a_single_question_version()
+    {
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'field' => [
+                    'options' => [],
+                    'component' => 'TextArea',
+                    'validations' => [
+                        [
+                            'min' => 1,
+                            'message' => 'Please enter a value'
+                        ]
+                    ]
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $content = $response->decodeResponseJson();
+
+        $response = $this->get('api/v1/questions/' . $content['data'], $this->header);
+        $questionVersionId = $response->decodeResponseJson()['data']['latest_version']['id'];
+
+        $response = $this->get('api/v1/questions/version/' . $questionVersionId, $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'question_id',
+                    'version',
+                    'default',
+                    'required',
+                    'question_json',
+                ],
+            ]);
+
+
     }
 
     /**
