@@ -154,7 +154,6 @@ class DataProviderCollController extends Controller
                 'teams',
                 ])->where('id', $id)->firstOrFail();
 
-
             $mediaBaseUrl = Config::get('services.media.base_url');
             $dpc->img_url = (is_null($dpc->img_url) || strlen(trim($dpc->img_url)) === 0) ? null : (filter_var($dpc->img_url, FILTER_VALIDATE_URL) ? $dpc->img_url : $mediaBaseUrl . $dpc->img_url);
 
@@ -264,7 +263,7 @@ class DataProviderCollController extends Controller
                 'status',
                 'created_at',
                 'updated_at'
-            )->whereIn('id', $this->durs)->get()->toArray();
+            )->whereIn('id', $this->durs)->where('status', 'ACTIVE')->get()->toArray();
             $tools = Tool::select(
                 'id',
                 'name',
@@ -272,7 +271,7 @@ class DataProviderCollController extends Controller
                 'status',
                 'created_at',
                 'updated_at'
-            )->with(['user'])->whereIn('id', $this->tools)->get()->toArray();
+            )->with(['user'])->whereIn('id', $this->tools)->where('status', 'ACTIVE')->get()->toArray();
             $publications = Publication::select(
                 'id',
                 'paper_title',
@@ -282,7 +281,7 @@ class DataProviderCollController extends Controller
                 'status',
                 'created_at',
                 'updated_at'
-            )->whereIn('id', $this->publications)->get()->toArray();
+            )->whereIn('id', $this->publications)->where('status', 'ACTIVE')->get()->toArray();
             $collections = Collection::select(
                 'id',
                 'name',
@@ -290,7 +289,7 @@ class DataProviderCollController extends Controller
                 'status',
                 'created_at',
                 'updated_at'
-            )->whereIn('id', $this->collections)->get()->toArray();
+            )->whereIn('id', $this->collections)->where('status', 'ACTIVE')->get()->toArray();
             $collections = array_map(function ($collection) {
                 if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
                     $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
@@ -748,7 +747,7 @@ class DataProviderCollController extends Controller
         foreach ($idTeams as $idTeam) {
             $team = Team::select('id', 'name')->where(['id' => $idTeam])->first();
             $counts = $this->getDatasets((int) $team->id);
-            $teamCollections = Collection::where(['team_id' => $idTeam])->pluck('id')->toArray();
+            $teamCollections = Collection::where(['team_id' => $idTeam])->where('status', 'ACTIVE')->pluck('id')->toArray();
 
             $this->collections = array_unique([...$this->collections, ...$teamCollections]);
 
@@ -763,7 +762,7 @@ class DataProviderCollController extends Controller
 
     public function getDatasets(int $teamId)
     {
-        $datasetIds = Dataset::where(['team_id' => $teamId])->pluck('id')->toArray();
+        $datasetIds = Dataset::where(['team_id' => $teamId])->where('status', 'ACTIVE')->pluck('id')->toArray();
 
         $teamResourceIds = [
             'durs' => [],

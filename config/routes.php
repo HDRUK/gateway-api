@@ -484,7 +484,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
@@ -3654,6 +3653,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,question-bank.read',
         ],
         'constraint' => [],
     ],
@@ -3665,6 +3665,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,question-bank.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3679,6 +3680,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,question-bank.create',
         ],
         'constraint' => [],
     ],
@@ -3691,6 +3693,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,question-bank.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3705,6 +3708,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,question-bank.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3718,6 +3722,256 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,question-bank.delete',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
+    // dar/applications
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/dar/applications',
+        'methodController' => 'DataAccessApplicationController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/dar/applications/{id}',
+        'methodController' => 'DataAccessApplicationController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'post',
+        'path' => '/dar/applications',
+        'methodController' => 'DataAccessApplicationController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'put',
+        'path' => '/dar/applications/{id}',
+        'methodController' => 'DataAccessApplicationController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'patch',
+        'path' => '/dar/applications/{id}',
+        'methodController' => 'DataAccessApplicationController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'delete',
+        'path' => '/dar/applications/{id}',
+        'methodController' => 'DataAccessApplicationController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
+    // dar/templates
+    [
+        'name' => 'dar/templates',
+        'method' => 'get',
+        'path' => '/dar/templates',
+        'methodController' => 'DataAccessTemplateController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-template.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dar/templates',
+        'method' => 'get',
+        'path' => '/dar/templates/{id}',
+        'methodController' => 'DataAccessTemplateController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-template.read',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/templates',
+        'method' => 'post',
+        'path' => '/dar/templates',
+        'methodController' => 'DataAccessTemplateController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:permissions,data-access-template.create',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dar/templates',
+        'method' => 'put',
+        'path' => '/dar/templates/{id}',
+        'methodController' => 'DataAccessTemplateController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:permissions,data-access-template.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/templates',
+        'method' => 'patch',
+        'path' => '/dar/templates/{id}',
+        'methodController' => 'DataAccessTemplateController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:permissions,data-access-template.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/templates',
+        'method' => 'delete',
+        'path' => '/dar/templates/{id}',
+        'methodController' => 'DataAccessTemplateController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-template.delete',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
+    // dar/sections
+    [
+        'name' => 'dar/sections',
+        'method' => 'get',
+        'path' => '/dar/sections',
+        'methodController' => 'DataAccessSectionController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dar/sections',
+        'method' => 'get',
+        'path' => '/dar/sections/{id}',
+        'methodController' => 'DataAccessSectionController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.read',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/sections',
+        'method' => 'post',
+        'path' => '/dar/sections',
+        'methodController' => 'DataAccessSectionController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:permissions,question-bank.create',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dar/sections',
+        'method' => 'put',
+        'path' => '/dar/sections/{id}',
+        'methodController' => 'DataAccessSectionController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:permissions,question-bank.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/sections',
+        'method' => 'patch',
+        'path' => '/dar/sections/{id}',
+        'methodController' => 'DataAccessSectionController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:permissions,question-bank.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/sections',
+        'method' => 'delete',
+        'path' => '/dar/sections/{id}',
+        'methodController' => 'DataAccessSectionController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
