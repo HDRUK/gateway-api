@@ -36,6 +36,10 @@ class UpdateQuestionBank extends BaseFormRequest
                 'required',
                 'boolean',
             ],
+            'question_type' => [
+                'string',
+                'in:STANDARD,CUSTOM',
+            ],
             'field' => [
                 'required',
                 'array',

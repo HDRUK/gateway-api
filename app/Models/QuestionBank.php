@@ -39,6 +39,7 @@ class QuestionBank extends Model
         'force_required',
         'allow_guidance_override',
         'is_child',
+        'question_type',
     ];
 
     /**

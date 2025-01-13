@@ -33,6 +33,10 @@ class EditQuestionBank extends BaseFormRequest
             'allow_guidance_override' => [
                 'boolean',
             ],
+            'question_type' => [
+                'string',
+                'in:STANDARD,CUSTOM',
+            ],
             'field' => [
                 'array',
             ],
