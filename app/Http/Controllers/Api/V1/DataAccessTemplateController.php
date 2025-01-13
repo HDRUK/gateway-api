@@ -544,7 +544,7 @@ class DataAccessTemplateController extends Controller
             $teams = QuestionHasTeam::where([
                 'team_id' => $teamId,
                 'qb_question_id' => $q['id']
-            ])->first();
+            ])->get();
 
             if (($question->question_type === 'CUSTOM') && (!count($teams))) {
                 throw new Exception('Question with id ' . $q['id'] . ' is not accessible by this team.');

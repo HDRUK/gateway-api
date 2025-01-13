@@ -303,7 +303,12 @@ class DataAccessTemplateTest extends TestCase
             ],
             $this->header
         );
-        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+        $content = $response->decodeResponseJson();
+        $this->assertStringContainsString('not accessible by this team', $content['message']);
     }
 
     /**
