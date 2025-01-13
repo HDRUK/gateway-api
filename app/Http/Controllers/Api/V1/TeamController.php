@@ -796,7 +796,9 @@ class TeamController extends Controller
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
-
+            if (array_key_exists('name', $input)) {
+                $array['name'] = format_clean_input($input['name']);
+            }
             Team::where('id', $teamId)->update($array);
 
             $arrayTeamNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
@@ -953,7 +955,9 @@ class TeamController extends Controller
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
-
+            if (array_key_exists('name', $input)) {
+                $array['name'] = format_clean_input($input['name']);
+            }
             Team::where('id', $teamId)->update($array);
 
             $arrayTeamNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
