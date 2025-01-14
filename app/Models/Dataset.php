@@ -308,15 +308,15 @@ class Dataset extends Model
 
         // Step 2: Use the version IDs to find all related entityIDs through the linkage table
         $linkageRecords = $linkageTable::whereIn('dataset_version_id', $versionIds)
-        ->when(
-            $includeIntermediate,
-            function ($query) {
-                return $query->get();
-            },
-            function ($query) use ($foreignTableId, $filterActive) {
-                return $query->get([$foreignTableId, 'dataset_version_id']);
-            }
-        );
+            ->when(
+                $includeIntermediate,
+                function ($query) {
+                    return $query->get();
+                },
+                function ($query) use ($foreignTableId) {
+                    return $query->get([$foreignTableId, 'dataset_version_id']);
+                }
+            );
     
 
         $entityIds = $linkageRecords->pluck($foreignTableId)->unique()->toArray();
