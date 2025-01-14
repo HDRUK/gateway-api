@@ -317,7 +317,7 @@ class Dataset extends Model
                     return $query->get([$foreignTableId, 'dataset_version_id']);
                 }
             );
-    
+
 
         $entityIds = $linkageRecords->pluck($foreignTableId)->unique()->toArray();
 
@@ -331,7 +331,7 @@ class Dataset extends Model
         // Iterate through each entity and add associated dataset versions
         foreach ($entities as $entity) {
             // Retrieve dataset version IDs associated with the current entity
-            
+
             $filteredLinkage = $linkageRecords->where($foreignTableId, $entity->id);
 
             if($includeIntermediate) {

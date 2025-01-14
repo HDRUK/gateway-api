@@ -442,7 +442,7 @@ class DatasetController extends Controller
             $dataset->setAttribute('publications', $dataset->allActivePublications  ?? []);
             $dataset->setAttribute('named_entities', $dataset->allNamedEntities  ?? []);
             $dataset->setAttribute('collections', $dataset->allCollections  ?? []);
-            
+
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
 
@@ -455,10 +455,10 @@ class DatasetController extends Controller
                     $dataset->setAttribute('versions', [$withLinks]);
                 }
             }
-            
+
             if ($outputSchemaModel && $outputSchemaModelVersion) {
                 $latestVersion = $dataset->latestVersion();
-                
+
                 $translated = MMC::translateDataModelType(
                     json_encode($latestVersion->metadata),
                     $outputSchemaModel,
