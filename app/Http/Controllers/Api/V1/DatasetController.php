@@ -439,7 +439,7 @@ class DatasetController extends Controller
             $dataset->setAttribute('collections_count', count($dataset->allCollections));
             $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
             $dataset->setAttribute('durs', $dataset->allDurs  ?? []);
-            $dataset->setAttribute('publications', $dataset->allActivePublicationsAttribute  ?? []);
+            $dataset->setAttribute('publications', $dataset->allActivePublications  ?? []);
             $dataset->setAttribute('named_entities', $dataset->allNamedEntities  ?? []);
             $dataset->setAttribute('collections', $dataset->allCollections  ?? []);
             
