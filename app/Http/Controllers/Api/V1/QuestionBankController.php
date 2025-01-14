@@ -15,10 +15,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\QuestionBank\GetQuestionBank;
+use App\Http\Requests\QuestionBank\GetQuestionBankSection;
 use App\Http\Requests\QuestionBank\GetQuestionBankVersion;
 use App\Http\Requests\QuestionBank\EditQuestionBank;
 use App\Http\Requests\QuestionBank\CreateQuestionBank;
 use App\Http\Requests\QuestionBank\DeleteQuestionBank;
+use App\Http\Requests\QuestionBank\LockingQuestionBank;
 use App\Http\Requests\QuestionBank\UpdateQuestionBank;
 use App\Http\Traits\RequestTransformation;
 
@@ -70,7 +72,8 @@ class QuestionBankController extends Controller
 
             $questions = QuestionBank::with(
                 ['latestVersion', 'versions', 'versions.childVersions']
-            )->paginate(
+            )->where('archived', false)
+            ->paginate(
                 Config::get('constants.per_page'),
                 ['*'],
                 'page'
@@ -81,6 +84,153 @@ class QuestionBankController extends Controller
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'QuestionBank get all',
+            ]);
+
+            return response()->json(
+                $questions
+            );
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/questions/archived",
+     *      summary="List of archived question bank questions",
+     *      description="List of archived question bank questions",
+     *      tags={"QuestionBank"},
+     *      summary="QuestionBank@indexArchived",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="array",
+     *                  @OA\Items(
+     *                      @OA\Property(property="id", type="integer", example="123"),
+     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="section_id", type="integer", example="1"),
+     *                      @OA\Property(property="user_id", type="integer", example="1"),
+     *                      @OA\Property(property="locked", type="boolean", example="false"),
+     *                      @OA\Property(property="archived", type="boolean", example="true"),
+     *                      @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="force_required", type="boolean", example="false"),
+     *                      @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
+     *                      @OA\Property(property="is_child", type="boolean", example="true"),
+     *                      @OA\Property(property="question_type", type="string", example="STANDARD"),
+     *                      @OA\Property(property="latest_version", type="object", example=""),
+     *                      @OA\Property(property="versions", type="object", example=""),
+     *                  )
+     *              )
+     *          )
+     *      )
+     * )
+     */
+    public function indexArchived(Request $request): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $questions = QuestionBank::with([
+                'latestVersion', 'versions', 'versions.childVersions'
+            ])->where('archived', true)
+                ->paginate(
+                    Config::get('constants.per_page'),
+                    ['*'],
+                    'page'
+                );
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'QuestionBank get all archived',
+            ]);
+
+            return response()->json(
+                $questions
+            );
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/questions/section/{sectionId}",
+     *      summary="List of question bank questions by section",
+     *      description="List of question bank questions by section",
+     *      tags={"QuestionBank"},
+     *      summary="QuestionBank@indexBySection",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="array",
+     *                  @OA\Items(
+     *                      @OA\Property(property="id", type="integer", example="123"),
+     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="section_id", type="integer", example="1"),
+     *                      @OA\Property(property="user_id", type="integer", example="1"),
+     *                      @OA\Property(property="locked", type="boolean", example="false"),
+     *                      @OA\Property(property="archived", type="boolean", example="true"),
+     *                      @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="force_required", type="boolean", example="false"),
+     *                      @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
+     *                      @OA\Property(property="is_child", type="boolean", example="true"),
+     *                      @OA\Property(property="question_type", type="string", example="STANDARD"),
+     *                      @OA\Property(property="latest_version", type="object", example=""),
+     *                      @OA\Property(property="versions", type="object", example=""),
+     *                  )
+     *              )
+     *          )
+     *      )
+     * )
+     */
+    public function indexBySection(GetQuestionBankSection $request, int $sectionId): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $questions = QuestionBank::with([
+                'latestVersion', 'versions', 'versions.childVersions'
+            ])->where('archived', false)
+            ->where('section_id', $sectionId)
+            ->paginate(
+                Config::get('constants.per_page'),
+                ['*'],
+                'page'
+            );
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'QuestionBank get all by section',
             ]);
 
             return response()->json(
@@ -728,6 +878,97 @@ class QuestionBankController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => QuestionBank::where('id', $id)->first(),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *      path="/api/v1/questions/{id}/{locking}",
+     *      summary="Lock or unlock a question bank question",
+     *      description="Lock or unlock a question bank question",
+     *      tags={"QuestionBank"},
+     *      summary="QuestionBank@locking",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="question bank question id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="question bank question id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="locking",
+     *         in="path",
+     *         description="lock or unlock",
+     *         required=true,
+     *         example="lock",
+     *         @OA\Schema(
+     *            type="string",
+     *            description="lock | unlock",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function locking(LockingQuestionBank $request, int $id, string $locking): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $question = QuestionBank::findOrFail($id)->with('latestVersion.childVersions')->get();
+
+            $locked = $locking === 'lock' ? true : false;
+            $question->update(['locked' => $locked]);
+
+            // lock children too
+            foreach ($question['latest_version']['child_versions'] as $v) {
+                QuestionBank::where('id', $v['question_id'])->update(['locked' => $locked]);
+            }
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'QuestionBank ' . $id . ' updated',
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([

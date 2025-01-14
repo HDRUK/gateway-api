@@ -86,6 +86,171 @@ class QuestionBankTest extends TestCase
     }
 
     /**
+     * List all archived questions.
+     *
+     * @return void
+     */
+    public function test_the_application_can_list_archived_questions()
+    {
+        // Create an archived question to list
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'archived' => 1,
+                'field' => [
+                    'options' => [],
+                    'component' => 'TextArea',
+                    'validations' => [
+                        [
+                            'min' => 1,
+                            'message' => 'Please enter a value'
+                        ]
+                    ]
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $response = $this->get('api/v1/questions/archived', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'current_page',
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                        'section_id',
+                        'user_id',
+                        'locked',
+                        'archived',
+                        'archived_date',
+                        'force_required',
+                        'allow_guidance_override',
+                        'question_type',
+                        'is_child',
+                        'latest_version',
+                        'versions' => [
+                            0 => ['child_versions']
+                        ],
+                    ],
+                ],
+                'first_page_url',
+                'from',
+                'last_page',
+                'last_page_url',
+                'links',
+                'next_page_url',
+                'path',
+                'per_page',
+                'prev_page_url',
+                'to',
+                'total',
+            ]);
+
+    }
+
+    /**
+     * List all questions from a section.
+     *
+     * @return void
+     */
+    public function test_the_application_can_list_questions_by_section()
+    {
+        // Create a question in section 1 to list
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'field' => [
+                    'options' => [],
+                    'component' => 'TextArea',
+                    'validations' => [
+                        [
+                            'min' => 1,
+                            'message' => 'Please enter a value'
+                        ]
+                    ]
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $response = $this->get('api/v1/questions/section/1', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'current_page',
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                        'section_id',
+                        'user_id',
+                        'locked',
+                        'archived',
+                        'archived_date',
+                        'force_required',
+                        'allow_guidance_override',
+                        'question_type',
+                        'is_child',
+                        'latest_version',
+                        'versions' => [
+                            0 => ['child_versions']
+                        ],
+                    ],
+                ],
+                'first_page_url',
+                'from',
+                'last_page',
+                'last_page_url',
+                'links',
+                'next_page_url',
+                'path',
+                'per_page',
+                'prev_page_url',
+                'to',
+                'total',
+            ]);
+
+    }
+
+    /**
      * Returns a single question
      *
      * @return void
