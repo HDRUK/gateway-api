@@ -138,7 +138,6 @@ trait CollectionsV2Helpers
 
             if (!$checking) {
                 $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId);
-                $this->reindexElastic($dataset['id']);
             } else {
                 if ($checking['deleted_at']) {
                     CollectionHasDatasetVersion::withTrashed()->where([
