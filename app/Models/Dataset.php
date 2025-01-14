@@ -286,10 +286,22 @@ class Dataset extends Model
         );
     }
 
+    // Accessor for all ACTIVE publications
+    public function getAllActivePublicationsAttribute()
+    {
+        return $this->getRelationsViaDatasetVersion(
+            PublicationHasDatasetVersion::class,
+            Publication::class,
+            'publication_id',
+            true,
+            true
+        );
+    }
+
     /**
      * Helper function to get stuff linked by datasetVersionHasX
      */
-    public function getRelationsViaDatasetVersion($linkageTable, $targetTable, $foreignTableId, $includeIntermediate = false)
+    public function getRelationsViaDatasetVersion($linkageTable, $targetTable, $foreignTableId, $includeIntermediate = false, $filterActive = false)
     {
         // Step 1: Get the dataset version IDs
         $versionIds = $this->versions()->pluck('id')->toArray();
@@ -310,7 +322,11 @@ class Dataset extends Model
         $entityIds = $linkageRecords->pluck($foreignTableId)->unique()->toArray();
 
         // Step 3: Retrieve all entities using the collected entities IDs
-        $entities = $targetTable::whereIn('id', $entityIds)->get();
+        $entities = $targetTable::whereIn('id', $entityIds)
+            ->when($filterActive, function ($query) {
+                return $query->where('status', self::STATUS_ACTIVE);
+            })
+            ->get();
 
         // Iterate through each entity and add associated dataset versions
         foreach ($entities as $entity) {
