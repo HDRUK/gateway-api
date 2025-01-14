@@ -19,7 +19,7 @@ class GetQuestionBankSection extends BaseFormRequest
                 'required',
                 'exists:dar_sections,id',
             ],
-            'sectionId' => [
+            'teamId' => [
                 'int',
                 'required',
                 'exists:teams,id',
