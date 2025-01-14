@@ -59,7 +59,7 @@ class QuestionBankVersion extends Model
             'question_bank_version_has_child_version',
             'parent_qbv_id',
             'child_qbv_id'
-        );
+        )->withPivot('condition');
     }
 
     public function parentVersion(): belongsTo
