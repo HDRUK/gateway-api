@@ -46,13 +46,13 @@ jobs:
       id: composerphpstan
       run: "composer run phpstan"
 
-    - name: Run unit tests
-      id: unittests
-      run: "composer run pest"
-  
-    # - name: Run one unit test file
+    # - name: Run unit tests
     #   id: unittests
-    #   run: "composer run pest -- --filter test_data_provider_colls_search_with_success"
+    #   run: "composer run pest"
+  
+    - name: Run one unit test file
+      id: unittests
+      run: "composer run pest -- --filter testCreatedEvent"
 
     - name: Run code sniffer
       id: codesniffer
