@@ -311,7 +311,7 @@ class Dataset extends Model
             ->when(
                 $filterActive,
                 function ($query) {
-                    return $query->where('status', STATUS_ACTIVE);
+                    return $query->where('status', $this->STATUS_ACTIVE);
                 }
             )
             ->when(
