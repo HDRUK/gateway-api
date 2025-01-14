@@ -314,9 +314,6 @@ class Dataset extends Model
                 return $query->get();
             },
             function ($query) use ($foreignTableId, $filterActive) {
-                if ($filterActive) {
-                    $query->where('status', self::STATUS_ACTIVE);
-                }
                 return $query->get([$foreignTableId, 'dataset_version_id']);
             }
         );
@@ -325,7 +322,11 @@ class Dataset extends Model
         $entityIds = $linkageRecords->pluck($foreignTableId)->unique()->toArray();
 
         // Step 3: Retrieve all entities using the collected entities IDs
-        $entities = $targetTable::whereIn('id', $entityIds)->get();
+        $entities = $targetTable::whereIn('id', $entityIds)
+            ->when($filterActive, function ($query) {
+                return $query->where('status', self::STATUS_ACTIVE);
+            })
+            ->get();
 
         // Iterate through each entity and add associated dataset versions
         foreach ($entities as $entity) {
