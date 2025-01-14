@@ -17,6 +17,7 @@ use App\Http\Requests\DataAccessTemplate\UpdateDataAccessTemplate;
 use App\Models\DataAccessTemplate;
 use App\Models\DataAccessTemplateHasQuestion;
 use App\Models\QuestionBank;
+use App\Models\QuestionHasTeam;
 
 class DataAccessTemplateController extends Controller
 {
@@ -225,7 +226,7 @@ class DataAccessTemplateController extends Controller
             ]);
 
             if (isset($input['questions'])) {
-                $this->insertTemplateHasQuestions($input['questions'], $template);
+                $this->insertTemplateHasQuestions($input['questions'], $template, $input['team_id']);
             }
 
             Auditor::log([
@@ -331,7 +332,7 @@ class DataAccessTemplateController extends Controller
 
             if (isset($input['questions'])) {
                 DataAccessTemplateHasQuestion::where('template_id', $id)->delete();
-                $this->insertTemplateHasQuestions($input['questions'], $template);
+                $this->insertTemplateHasQuestions($input['questions'], $template, $input['team_id']);
             }
 
             Auditor::log([
@@ -433,7 +434,7 @@ class DataAccessTemplateController extends Controller
 
             if (isset($input['questions'])) {
                 DataAccessTemplateHasQuestion::where('template_id', $id)->delete();
-                $this->insertTemplateHasQuestions($input['questions'], $template);
+                $this->insertTemplateHasQuestions($input['questions'], $template, $input['team_id']);
             }
 
             Auditor::log([
@@ -534,11 +535,21 @@ class DataAccessTemplateController extends Controller
         }
     }
 
-    private function insertTemplateHasQuestions(array $questions, DataAccessTemplate $template): void
+    private function insertTemplateHasQuestions(array $questions, DataAccessTemplate $template, int $teamId): void
     {
         $count = 1;
         foreach ($questions as $q) {
             $question = QuestionBank::where('id', $q['id'])->with('latestVersion')->first();
+            // check access to question
+            $teams = QuestionHasTeam::where([
+                'team_id' => $teamId,
+                'qb_question_id' => $q['id']
+            ])->get();
+
+            if (($question->question_type === QuestionBank::CUSTOM_TYPE) && (!count($teams))) {
+                throw new Exception('Question with id ' . $q['id'] . ' is not accessible by this team.');
+            }
+
             $isRequired = $question->force_required ? true : $q['required'] ?? false;
             if (($question->allow_guidance_override) && isset($q['guidance'])) {
                 $guidance = $q['guidance'];

@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
-use App\Models\Team;
 use App\Models\QuestionBank;
 use App\Models\QuestionBankVersion;
 use App\Models\QuestionHasTeam;
@@ -63,6 +62,7 @@ class QuestionBankTest extends TestCase
                         'archived_date',
                         'force_required',
                         'allow_guidance_override',
+                        'question_type',
                         'is_child',
                         'latest_version',
                         'versions' => [
@@ -143,6 +143,7 @@ class QuestionBankTest extends TestCase
                     'archived_date',
                     'force_required',
                     'allow_guidance_override',
+                    'question_type',
                     'is_child',
                     'latest_version',
                         'latest_version',
@@ -212,7 +213,42 @@ class QuestionBankTest extends TestCase
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore + Team::all()->count());
+        // Test creation of a custom question
+        $countBefore = QuestionHasTeam::all()->count();
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'team_id' => [1],
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'question_type' => 'CUSTOM',
+                'field' => [
+                    'options' => [],
+                    'component' => 'TextArea',
+                    'validations' => [
+                        [
+                            'min' => 1,
+                            'message' => 'Please enter a value'
+                        ]
+                    ]
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+        $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore + 1);
 
         // now test with a nested set of questions
         $response = $this->json(
@@ -313,8 +349,6 @@ class QuestionBankTest extends TestCase
             $content['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
-
-        $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore + 6 * Team::all()->count());
 
     }
 
@@ -833,8 +867,10 @@ class QuestionBankTest extends TestCase
             [
                 'section_id' => 1,
                 'user_id' => 1,
+                'team_id' => [1],
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
+                'question_type' => 'CUSTOM',
                 'field' => [
                     'options' => [],
                     'component' => 'TextArea',
@@ -857,7 +893,7 @@ class QuestionBankTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
         $content = $response->decodeResponseJson();
 
-        $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore + Team::all()->count());
+        $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore + 1);
 
         $response = $this->json(
             'DELETE',

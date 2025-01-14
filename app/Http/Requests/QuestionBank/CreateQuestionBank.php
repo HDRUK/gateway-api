@@ -51,6 +51,10 @@ class CreateQuestionBank extends BaseFormRequest
                 'required',
                 'integer',
             ],
+            'question_type' => [
+                'string',
+                'in:STANDARD,CUSTOM',
+            ],
             'team_id' => [
                 'array'
             ],

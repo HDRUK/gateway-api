@@ -52,6 +52,7 @@ class QuestionBankController extends Controller
      *                      @OA\Property(property="force_required", type="boolean", example="false"),
      *                      @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *                      @OA\Property(property="is_child", type="boolean", example="true"),
+     *                      @OA\Property(property="question_type", type="string", example="STANDARD"),
      *                      @OA\Property(property="latest_version", type="object", example=""),
      *                      @OA\Property(property="versions", type="object", example=""),
      *                  )
@@ -133,6 +134,7 @@ class QuestionBankController extends Controller
      *                  @OA\Property(property="force_required", type="boolean", example="false"),
      *                  @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *                  @OA\Property(property="is_child", type="boolean", example="true"),
+     *                  @OA\Property(property="question_type", type="string", example="STANDARD"),
      *                  @OA\Property(property="latest_version", type="object", example=""),
      *                  @OA\Property(property="versions", type="object", example=""),
      *              )
@@ -216,6 +218,7 @@ class QuestionBankController extends Controller
      *              @OA\Property(property="title", type="string", example="Question title"),
      *              @OA\Property(property="field", type="array", @OA\Items()),
      *              @OA\Property(property="is_child", type="boolean", example="true"),
+     *              @OA\Property(property="question_type", type="string", example="STANDARD"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -256,6 +259,7 @@ class QuestionBankController extends Controller
                 'archived' => $input['archived'] ?? false,
                 'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
                 'is_child' => false,
+                'question_type' => $input['question_type'] ?? QuestionBank::STANDARD_TYPE,
             ]);
 
             $questionJson = [
@@ -330,6 +334,7 @@ class QuestionBankController extends Controller
      *              @OA\Property(property="locked", type="boolean", example="false"),
      *              @OA\Property(property="archived", type="boolean", example="false"),
      *              @OA\Property(property="is_child", type="boolean", example="false"),
+     *              @OA\Property(property="question_type", type="string", example="STANDARD"),
      *              @OA\Property(property="force_required", type="boolean", example="false"),
      *              @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *              @OA\Property(property="default", type="integer", example="1"),
@@ -361,6 +366,7 @@ class QuestionBankController extends Controller
      *                  @OA\Property(property="archived", type="boolean", example="true"),
      *                  @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="is_child", type="boolean", example="false"),
+     *                  @OA\Property(property="question_type", type="string", example="STANDARD"),
      *                  @OA\Property(property="force_required", type="boolean", example="false"),
      *                  @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *              )
@@ -403,6 +409,7 @@ class QuestionBankController extends Controller
                 'archived' => $input['archived'] ?? false,
                 'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
                 'is_child' => false,
+                'question_type' => $input['question_type'] ?? 'STANDARD',
             ]);
 
             $questionJson = [
@@ -480,6 +487,7 @@ class QuestionBankController extends Controller
      *              @OA\Property(property="archived", type="boolean", example="false"),
      *              @OA\Property(property="force_required", type="boolean", example="false"),
      *              @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
+     *              @OA\Property(property="question_type", type="string", example="STANDARD"),
      *              @OA\Property(property="default", type="integer", example="1"),
      *              @OA\Property(property="guidance", type="string", example="Question guidance"),
      *              @OA\Property(property="title", type="string", example="Question title"),
@@ -510,6 +518,7 @@ class QuestionBankController extends Controller
      *                  @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="force_required", type="boolean", example="false"),
      *                  @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
+     *                  @OA\Property(property="question_type", type="string", example="STANDARD"),
      *              )
      *          ),
      *      ),
@@ -545,6 +554,7 @@ class QuestionBankController extends Controller
                 'allow_guidance_override',
                 'locked',
                 'archived',
+                'question_type',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             if ($array['archived'] ?? false) {
@@ -582,18 +592,10 @@ class QuestionBankController extends Controller
                 ]);
             }
 
-            if (isset($input['team_id'])) {
+            if ($question->question_type === QuestionBank::CUSTOM_TYPE) {
                 QuestionHasTeam::where('qb_question_id', $id)->delete();
                 if ($input['team_id']) {
                     foreach ($input['team_id'] as $t) {
-                        QuestionHasTeam::create([
-                            'qb_question_id' => $question->id,
-                            'team_id' => $t,
-                        ]);
-                    }
-                } else {
-                    $allTeams = Team::all()->select('id')->pluck('id');
-                    foreach ($allTeams as $t) {
                         QuestionHasTeam::create([
                             'qb_question_id' => $question->id,
                             'team_id' => $t,
@@ -788,22 +790,15 @@ class QuestionBankController extends Controller
 
     private function updateQuestionHasTeams(QuestionBank $question, array $input)
     {
-        QuestionHasTeam::where('qb_question_id', $question->id)->delete();
-
-        if (isset($input['team_id']) && $input['team_id']) {
-            foreach ($input['team_id'] as $t) {
-                QuestionHasTeam::create([
-                    'qb_question_id' => $question->id,
-                    'team_id' => $t,
-                ]);
-            }
-        } else {
-            $allTeams = Team::all()->select('id')->pluck('id');
-            foreach ($allTeams as $t) {
-                QuestionHasTeam::create([
-                    'qb_question_id' => $question->id,
-                    'team_id' => $t,
-                ]);
+        if ($question->question_type === QuestionBank::CUSTOM_TYPE) {
+            QuestionHasTeam::where('qb_question_id', $question->id)->delete();
+            if (isset($input['team_id']) && $input['team_id']) {
+                foreach ($input['team_id'] as $t) {
+                    QuestionHasTeam::create([
+                        'qb_question_id' => $question->id,
+                        'team_id' => $t,
+                    ]);
+                }
             }
         }
     }

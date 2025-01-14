@@ -251,6 +251,64 @@ class DataAccessTemplateTest extends TestCase
                 'message',
                 'errors',
             ]);
+
+        // Attempt to create a template using a custom question from another team
+        // Create a question for team 2
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'team_id' => [2],
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'question_type' => 'CUSTOM',
+                'field' => [
+                    'options' => [],
+                    'component' => 'TextArea',
+                    'validations' => [
+                        [
+                            'min' => 1,
+                            'message' => 'Please enter a value'
+                        ]
+                    ]
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $questionId = $response->decodeResponseJson()['data'];
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/templates',
+            [
+                'team_id' => 1,
+                'published' => true,
+                'locked' => true,
+                'questions' => [
+                    0 => [
+                        'id' => $questionId,
+                        'required' => true,
+                        'guidance' => 'Custom guidance',
+                        'order' => 2,
+                    ]
+                ]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+        $content = $response->decodeResponseJson();
+        $this->assertStringContainsString('not accessible by this team', $content['message']);
     }
 
     /**

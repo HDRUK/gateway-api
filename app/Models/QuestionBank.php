@@ -20,6 +20,9 @@ class QuestionBank extends Model
     use SoftDeletes;
     use Prunable;
 
+    public const STANDARD_TYPE = 'STANDARD';
+    public const CUSTOM_TYPE = 'CUSTOM';
+
     /**
      * The table associated with the model
      *
@@ -39,6 +42,7 @@ class QuestionBank extends Model
         'force_required',
         'allow_guidance_override',
         'is_child',
+        'question_type',
     ];
 
     /**
