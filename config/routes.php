@@ -3660,6 +3660,30 @@ return [
     [
         'name' => 'questions',
         'method' => 'get',
+        'path' => '/questions/standard',
+        'methodController' => 'QuestionBankController@indexStandard',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'get',
+        'path' => '/questions/custom',
+        'methodController' => 'QuestionBankController@indexCustom',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'get',
         'path' => '/questions/archived',
         'methodController' => 'QuestionBankController@indexArchived',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
@@ -3672,8 +3696,8 @@ return [
     [
         'name' => 'questions',
         'method' => 'get',
-        'path' => '/questions/section/{sectionId}',
-        'methodController' => 'QuestionBankController@indexBySection',
+        'path' => '/teams/{teamId}/questions/section/{sectionId}',
+        'methodController' => 'TeamQuestionBankController@indexBySection',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3755,8 +3779,8 @@ return [
     [
         'name' => 'questions',
         'method' => 'patch',
-        'path' => '/questions/{id}/{locking}',
-        'methodController' => 'QuestionBankController@locking',
+        'path' => '/questions/{id}/{status}',
+        'methodController' => 'QuestionBankController@updateStatus',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',

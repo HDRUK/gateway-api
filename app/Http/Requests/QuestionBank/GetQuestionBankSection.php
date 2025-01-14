@@ -19,6 +19,11 @@ class GetQuestionBankSection extends BaseFormRequest
                 'required',
                 'exists:dar_sections,id',
             ],
+            'sectionId' => [
+                'int',
+                'required',
+                'exists:teams,id',
+            ],
         ];
     }
 
@@ -29,6 +34,9 @@ class GetQuestionBankSection extends BaseFormRequest
      */
     protected function prepareForValidation()
     {
-        $this->merge(['sectionId' => $this->route('sectionId')]);
+        $this->merge([
+            'sectionId' => $this->route('sectionId'),
+            'teamId' => $this->route('teamId'),
+        ]);
     }
 }

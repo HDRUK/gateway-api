@@ -86,6 +86,172 @@ class QuestionBankTest extends TestCase
     }
 
     /**
+     * List all standard questions.
+     *
+     * @return void
+     */
+    public function test_the_application_can_list_standard_questions()
+    {
+        // Create a standard question to list
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'question_type' => 'STANDARD',
+                'field' => [
+                    'options' => [],
+                    'component' => 'TextArea',
+                    'validations' => [
+                        [
+                            'min' => 1,
+                            'message' => 'Please enter a value'
+                        ]
+                    ]
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $response = $this->get('api/v1/questions/standard', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'current_page',
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                        'section_id',
+                        'user_id',
+                        'locked',
+                        'archived',
+                        'archived_date',
+                        'force_required',
+                        'allow_guidance_override',
+                        'question_type',
+                        'is_child',
+                        'latest_version',
+                        'versions' => [
+                            0 => ['child_versions']
+                        ],
+                    ],
+                ],
+                'first_page_url',
+                'from',
+                'last_page',
+                'last_page_url',
+                'links',
+                'next_page_url',
+                'path',
+                'per_page',
+                'prev_page_url',
+                'to',
+                'total',
+            ]);
+
+    }
+
+    /**
+     * List all custom questions.
+     *
+     * @return void
+     */
+    public function test_the_application_can_list_custom_questions()
+    {
+        // Create a custom question to list
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'question_type' => 'CUSTOM',
+                'field' => [
+                    'options' => [],
+                    'component' => 'TextArea',
+                    'validations' => [
+                        [
+                            'min' => 1,
+                            'message' => 'Please enter a value'
+                        ]
+                    ]
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $response = $this->get('api/v1/questions/custom', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'current_page',
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                        'section_id',
+                        'user_id',
+                        'locked',
+                        'archived',
+                        'archived_date',
+                        'force_required',
+                        'allow_guidance_override',
+                        'question_type',
+                        'is_child',
+                        'latest_version',
+                        'versions' => [
+                            0 => ['child_versions']
+                        ],
+                    ],
+                ],
+                'first_page_url',
+                'from',
+                'last_page',
+                'last_page_url',
+                'links',
+                'next_page_url',
+                'path',
+                'per_page',
+                'prev_page_url',
+                'to',
+                'total',
+            ]);
+
+    }
+
+    /**
      * List all archived questions.
      *
      * @return void
@@ -182,6 +348,8 @@ class QuestionBankTest extends TestCase
             [
                 'section_id' => 1,
                 'user_id' => 1,
+                'team_id' => [1],
+                'question_type' => 'CUSTOM',
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
                 'field' => [
@@ -208,12 +376,12 @@ class QuestionBankTest extends TestCase
             ->assertJsonStructure([
                 'message',
             ]);
+        $questionId = $response->decodeResponseJson()['data'];
 
-        $response = $this->get('api/v1/questions/section/1', $this->header);
+        $response = $this->get('api/v1/teams/1/questions/section/1', $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
-                'current_page',
                 'data' => [
                     0 => [
                         'id',
@@ -233,21 +401,14 @@ class QuestionBankTest extends TestCase
                         'versions' => [
                             0 => ['child_versions']
                         ],
-                    ],
+                    ]
                 ],
-                'first_page_url',
-                'from',
-                'last_page',
-                'last_page_url',
-                'links',
-                'next_page_url',
-                'path',
-                'per_page',
-                'prev_page_url',
-                'to',
-                'total',
             ]);
 
+        $content = $response->decodeResponseJson();
+        $ids = array_column($content['data'], 'id');
+
+        $this->assertContains($questionId, $ids);
     }
 
     /**
@@ -1105,11 +1266,228 @@ class QuestionBankTest extends TestCase
     }
 
     /**
+     * Test if can update the status of a question
+     *
+     * @return void
+     */
+    public function test_the_application_can_update_the_status_of_a_question()
+    {
+        // create a question with children
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'force_required' => false,
+                'allow_guidance_override' => false,
+                'locked' => false,
+                'archived' => false,
+                'is_child' => false,
+                'field' => [
+                    'options' => [
+                        'yes',
+                        'no'
+                    ],
+                    'component' => 'RadioGroup',
+                    'validations' => []
+                ],
+                'title' => 'Is this a test?',
+                'guidance' => 'You tell me',
+                'required' => false,
+                'default' => 0,
+                'children' => [
+                    'yes' => [
+                        [
+                            'force_required' => false,
+                            'allow_guidance_override' => false,
+                            'field' => [
+                                'options' => [
+                                    'yes',
+                                    'no'
+                                ],
+                                'component' => 'RadioGroup',
+                                'validations' => []
+                            ],
+                            'title' => 'Are you sure it is?',
+                            'guidance' => 'Second chance to confirm',
+                            'required' => false,
+                            'default' => 1
+                        ],
+                    ],
+                    'no' => [
+                        [
+                            'force_required' => false,
+                            'allow_guidance_override' => false,
+                            'field' => [
+                                'component' => 'TextField',
+                                'validations' => []
+                            ],
+                            'title' => 'And why do you say that?',
+                            'guidance' => 'Please explain',
+                            'required' => false,
+                            'default' => 1
+                        ]
+                    ]
+                ]
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $questionId = $content['data'];
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/questions/' . $questionId . '/lock',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $response = $this->json(
+            'GET',
+            'api/v1/questions/' . $questionId,
+            [],
+            $this->header
+        );
+
+        $content = $response->decodeResponseJson();
+        $this->assertTrue($content['data']['locked']);
+
+        // get children ids and check they are also locked
+        $childIds = array_column($content['data']['latest_version']['child_versions'], 'question_id');
+        foreach ($childIds as $id) {
+            $response = $this->json(
+                'GET',
+                'api/v1/questions/' . $id,
+                [],
+                $this->header
+            );
+            $content = $response->decodeResponseJson();
+            $this->assertTrue($content['data']['locked']);
+        }
+
+        // Test unlocking the same way
+        $response = $this->json(
+            'PATCH',
+            'api/v1/questions/' . $questionId . '/unlock',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $response = $this->json(
+            'GET',
+            'api/v1/questions/' . $questionId,
+            [],
+            $this->header
+        );
+
+        $content = $response->decodeResponseJson();
+        $this->assertTrue(!$content['data']['locked']);
+
+        // get children ids and check they are also locked
+        $childIds = array_column($content['data']['latest_version']['child_versions'], 'question_id');
+        foreach ($childIds as $id) {
+            $response = $this->json(
+                'GET',
+                'api/v1/questions/' . $id,
+                [],
+                $this->header
+            );
+            $content = $response->decodeResponseJson();
+            $this->assertTrue(!$content['data']['locked']);
+        }
+
+        // test archiving
+        $response = $this->json(
+            'PATCH',
+            'api/v1/questions/' . $questionId . '/archive',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $response = $this->json(
+            'GET',
+            'api/v1/questions/' . $questionId,
+            [],
+            $this->header
+        );
+
+        $content = $response->decodeResponseJson();
+        $this->assertTrue($content['data']['archived']);
+
+        // get children ids and check they are also archived
+        $childIds = array_column($content['data']['latest_version']['child_versions'], 'question_id');
+        foreach ($childIds as $id) {
+            $response = $this->json(
+                'GET',
+                'api/v1/questions/' . $id,
+                [],
+                $this->header
+            );
+            $content = $response->decodeResponseJson();
+            $this->assertTrue($content['data']['archived']);
+        }
+
+        // Test unarchiving the same way
+        $response = $this->json(
+            'PATCH',
+            'api/v1/questions/' . $questionId . '/unarchive',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $response = $this->json(
+            'GET',
+            'api/v1/questions/' . $questionId,
+            [],
+            $this->header
+        );
+
+        $content = $response->decodeResponseJson();
+        $this->assertTrue(!$content['data']['archived']);
+
+        // get children ids and check they are also archived
+        $childIds = array_column($content['data']['latest_version']['child_versions'], 'question_id');
+        foreach ($childIds as $id) {
+            $response = $this->json(
+                'GET',
+                'api/v1/questions/' . $id,
+                [],
+                $this->header
+            );
+            $content = $response->decodeResponseJson();
+            $this->assertTrue(!$content['data']['archived']);
+        }
+
+        // test updating a child question's status fails
+        $response = $this->json(
+            'PATCH',
+            'api/v1/questions/' . $childIds[0] . '/lock',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+    }
+
+    /**
      * Tests it can delete a question
      *
      * @return void
      */
-    public function test_it_can_delete_a_question()
+    public function test_the_application_can_delete_a_question()
     {
         $countBefore = QuestionHasTeam::all()->count();
 

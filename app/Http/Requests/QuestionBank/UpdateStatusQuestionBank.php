@@ -4,7 +4,7 @@ namespace App\Http\Requests\QuestionBank;
 
 use App\Http\Requests\BaseFormRequest;
 
-class LockingQuestionBank extends BaseFormRequest
+class UpdateStatusQuestionBank extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -19,10 +19,10 @@ class LockingQuestionBank extends BaseFormRequest
                 'required',
                 'exists:question_bank_questions,id',
             ],
-            'locking' => [
+            'status' => [
                 'required',
                 'string',
-                'in:lock,unlock',
+                'in:lock,unlock,archive,unarchive',
             ],
         ];
     }
@@ -36,7 +36,7 @@ class LockingQuestionBank extends BaseFormRequest
     {
         $this->merge([
             'id' => $this->route('id'),
-            'locking' => $this->route('locking'),
+            'status' => $this->route('status'),
         ]);
     }
 }
