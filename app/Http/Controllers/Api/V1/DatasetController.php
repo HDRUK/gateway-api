@@ -792,8 +792,6 @@ class DatasetController extends Controller
                         Config::get('ted.use_partial')
                     );
                 }
-            } elseif($initDataset->status === Dataset::STATUS_ACTIVE) {
-                $this->deleteDatasetFromElastic($currDataset->id);
             }
 
             Auditor::log([
@@ -1022,13 +1020,8 @@ class DatasetController extends Controller
 
         try {
             $dataset = Dataset::where('id', $id)->first();
-            $deleteFromElastic = ($dataset->status === Dataset::STATUS_ACTIVE);
 
             MMC::deleteDataset($id, true);
-
-            if ($deleteFromElastic) {
-                $this->deleteDatasetFromElastic($id);
-            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
