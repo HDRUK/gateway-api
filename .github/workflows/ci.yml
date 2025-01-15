@@ -52,7 +52,7 @@ jobs:
   
     - name: Run one unit test file
       id: unittests
-      run: "composer run pest -- --filter test_form_hydration_schema"
+      run: "composer run pest -- --filter FormHydrationTest"
 
     - name: Run code sniffer
       id: codesniffer
