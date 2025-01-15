@@ -61,22 +61,20 @@ class TeamQuestionBankController extends Controller
                 ->select('qb_question_id')
                 ->pluck('qb_question_id');
 
-            $questionsCustom = QuestionBank::with([
+            $query = QuestionBank::with([
                 'latestVersion', 'versions', 'versions.childVersions'
             ])->where('archived', false)
-            ->whereIn('id', $teamQuestions)
-            ->where('section_id', $sectionId)
-            ->get()
-            ->toArray();
+            ->where('section_id', $sectionId);
 
+            $questionsCustom = (clone $query)
+                ->whereIn('id', $teamQuestions)
+                ->get()
+                ->toArray();
 
-            $questionsStandard = QuestionBank::with([
-                'latestVersion', 'versions', 'versions.childVersions'
-            ])->where('archived', false)
-            ->where('question_type', 'STANDARD')
-            ->where('section_id', $sectionId)
-            ->get()
-            ->toArray();
+            $questionsStandard = (clone $query)
+                ->where('question_type', 'STANDARD')
+                ->get()
+                ->toArray();
 
             $questions = array_merge($questionsCustom, $questionsStandard);
 
