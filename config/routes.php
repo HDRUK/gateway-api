@@ -3926,6 +3926,18 @@ return [
     [
         'name' => 'dar/templates',
         'method' => 'get',
+        'path' => '/teams/{teamId}/dar/templates',
+        'methodController' => 'TeamDataAccessTemplateController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-template.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dar/templates',
+        'method' => 'get',
         'path' => '/dar/templates/{id}',
         'methodController' => 'DataAccessTemplateController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
