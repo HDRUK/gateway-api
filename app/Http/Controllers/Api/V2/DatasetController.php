@@ -633,8 +633,6 @@ class DatasetController extends Controller
                         Config::get('ted.use_partial')
                     );
                 }
-            } elseif($initDataset->status === Dataset::STATUS_ACTIVE) {
-                $this->deleteDatasetFromElastic($currDataset->id);
             }
 
             Auditor::log([
