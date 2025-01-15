@@ -18,9 +18,10 @@ class DatasetVersionObserver
         $datasetId = $datasetVersion->dataset_id;
         $dataset = Dataset::where([
             'id' => $datasetId,
+            'status' => Dataset::STATUS_ACTIVE,
         ])->first();
 
-        if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
+        if (!is_null($dataset)) {
             $this->reindexElastic($dataset->id);
         }
     }
@@ -33,6 +34,7 @@ class DatasetVersionObserver
         $datasetId = $datasetVersion->dataset_id;
         $dataset = Dataset::where([
             'id' => $datasetId,
+            'status' => Dataset::STATUS_ACTIVE,
         ])->first();
 
         if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
@@ -48,6 +50,7 @@ class DatasetVersionObserver
         $datasetId = $datasetVersion->dataset_id;
         $dataset = Dataset::where([
             'id' => $datasetId,
+            'status' => Dataset::STATUS_ACTIVE,
         ])->first();
 
         if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
