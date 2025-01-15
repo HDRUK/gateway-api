@@ -276,8 +276,6 @@ class DatasetIntegrationTest extends TestCase
      */
     public function test_create_delete_dataset_with_success(): void
     {
-
-
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -411,7 +409,6 @@ class DatasetIntegrationTest extends TestCase
 
     public function test_cannot_delete_dataset_from_another_team(): void
     {
-
         $dataset = Dataset::where("team_id", "!=", $this->integration->team_id)->first();
         $responseDeleteDataset = $this->json(
             'DELETE',
@@ -423,9 +420,9 @@ class DatasetIntegrationTest extends TestCase
                               ->assertSeeText("This Application is not allowed to interact with datasets from another team!");
 
     }
+
     public function test_cannot_update_dataset_from_another_team(): void
     {
-
         $dataset = Dataset::where("team_id", "!=", $this->integration->team_id)->first();
         $responseDeleteDataset = $this->json(
             'PUT',
@@ -440,7 +437,6 @@ class DatasetIntegrationTest extends TestCase
 
     public function test_cannot_get_without_correct_auth_and_permissions(): void
     {
-
         $responseCreateDataset = $this->json(
             'POST',
             self::TEST_URL_DATASET,
@@ -510,8 +506,6 @@ class DatasetIntegrationTest extends TestCase
         );
         $responseGetDataset->assertStatus(400)
             ->assertSeeText("Application has not been enabled!");
-
-
     }
 
 }

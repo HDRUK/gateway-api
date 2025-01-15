@@ -5,6 +5,8 @@ namespace App\Models;
 use DB;
 
 use App\Models\Traits\EntityCounter;
+use App\Observers\DatasetObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+#[ObservedBy(DatasetObserver::class)]
 class Dataset extends Model
 {
     use HasFactory;
@@ -30,6 +33,8 @@ class Dataset extends Model
     public const ORIGIN_MANUAL = 'MANUAL';
     public const ORIGIN_API = 'API';
     public const ORIGIN_GMI = 'GMI';
+
+    public $prevStatus;
 
     /**
      * Table associated with this model

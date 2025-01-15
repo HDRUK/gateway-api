@@ -32,6 +32,12 @@ class DatasetTest extends TestCase
 
     protected $metadata;
     protected $metadataAlt;
+    protected $nonAdminJwt;
+    protected $nonAdminUser;
+    protected $headerNonAdmin;
+    protected $nonAdmin2User;
+    protected $nonAdmin2Jwt;
+    protected $headerNonAdmin2;
 
     public function setUp(): void
     {
