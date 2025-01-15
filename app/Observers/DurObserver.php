@@ -20,16 +20,26 @@ class DurObserver
     }
 
     /**
+     * Handle the Dur "updating" event.
+     */
+    public function updating(Dur $dur)
+    {
+        $dur->prevStatus = $dur->getOriginal('status'); // 'status' before updating
+    }
+
+    /**
      * Handle the Dur "updated" event.
      */
     public function updated(Dur $dur): void
     {
-        if($dur->status === Dur::STATUS_ACTIVE) {
-            $this->indexElasticDur($dur->id);
+        $prevStatus = $dur->prevStatus;
+
+        if ($prevStatus === Dur::STATUS_ACTIVE && $dur->status !== Dur::STATUS_ACTIVE) {
+            $this->deleteDurFromElastic($dur->id);
         }
 
-        if ($dur->status !== Dur::STATUS_ACTIVE) {
-            $this->deleteDurFromElastic((int) $dur->id);
+        if($dur->status === Dur::STATUS_ACTIVE) {
+            $this->indexElasticDur($dur->id);
         }
     }
 

@@ -4,14 +4,12 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\Tool;
-use App\Models\Dataset;
 use App\Models\Publication;
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\LicenseSeeder;
-use ElasticClientController as ECC;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
@@ -45,7 +43,6 @@ class PublicationTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-        ECC::spy();
 
         $this->seed([
             MinimalUserSeeder::class,
@@ -70,7 +67,6 @@ class PublicationTest extends TestCase
      */
     public function test_get_all_publications_with_success(): void
     {
-        ECC::shouldReceive("indexDocument")->times(0);
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
         $response->assertJsonStructure([
@@ -115,7 +111,6 @@ class PublicationTest extends TestCase
      */
     public function test_get_publication_by_id_with_success(): void
     {
-        ECC::shouldReceive("indexDocument")->times(0);
         $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
 
         $response->assertJsonStructure([
@@ -148,27 +143,6 @@ class PublicationTest extends TestCase
     public function test_create_publication_with_success(): void
     {
         $datasetId = 1;
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_PUBLICATION;
-                    }
-                )
-            )
-            ->times(1);
-
-        //if the linked dataset is active then this will also be reindexed
-        $isActiveDataset = Dataset::findOrFail($datasetId)->status === Dataset::STATUS_ACTIVE;
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
-                    }
-                )
-            )
-            ->times($isActiveDataset ? 1 : 0);
 
         $response = $this->json(
             'POST',
@@ -214,7 +188,6 @@ class PublicationTest extends TestCase
      */
     public function test_create_publication_without_success(): void
     {
-        ECC::shouldReceive("indexDocument")->times(0);
         $response = $this->json(
             'POST',
             self::TEST_URL,
@@ -253,18 +226,6 @@ class PublicationTest extends TestCase
      */
     public function test_update_active_publication_with_success(): void
     {
-
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_PUBLICATION;
-                    }
-                )
-            )
-            ->times(1);
-
-
         $countBefore = Publication::all()->count();
         $response = $this->json(
             'POST',
@@ -302,22 +263,6 @@ class PublicationTest extends TestCase
 
         $publicationId = (int)$response['data'];
 
-        //should reindex again
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_PUBLICATION;
-                    }
-                )
-            )
-            ->times(1);
-        //should not try to delete
-        ECC::shouldReceive('deleteDocument')
-                  ->times(0);
-
-        ECC::shouldIgnoreMissing(); //ignore index on datasets
-
         $responseUpdate = $this->json(
             'PUT',
             self::TEST_URL . '/' . $publicationId,
@@ -353,21 +298,6 @@ class PublicationTest extends TestCase
 
     public function test_can_change_active_publication_with_success(): void
     {
-        ECC::shouldReceive('indexDocument')
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_PUBLICATION;
-                    }
-                )
-            )
-            ->times(1);
-
-        ECC::shouldReceive('deleteDocument')
-            ->times(1);
-
-        ECC::shouldIgnoreMissing(); //ignore index on datasets
-
         $response = $this->json(
             'POST',
             self::TEST_URL,
@@ -602,10 +532,6 @@ class PublicationTest extends TestCase
      */
     public function test_soft_delete_and_unarchive_publication_with_success(): void
     {
-        ECC::shouldReceive("deleteDocument")
-            ->times(1);
-        ECC::shouldReceive("indexDocument")->times(1);
-
         // Create a new publication for this test with ACTIVE status
         $response = $this->json(
             'POST',

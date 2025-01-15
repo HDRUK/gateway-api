@@ -20,16 +20,26 @@ class CollectionObserver
     }
 
     /**
+     * Handle the Collection "updating" event.
+     */
+    public function updating(Collection $collection)
+    {
+        $collection->prevStatus = $collection->getOriginal('status'); // 'status' before updating
+    }
+
+    /**
      * Handle the Collection "updated" event.
      */
     public function updated(Collection $collection): void
     {
-        if ($collection->status === Collection::STATUS_ACTIVE) {
-            $this->indexElasticCollections((int) $collection->id);
+        $prevStatus = $collection->prevStatus;
+
+        if ($prevStatus === Collection::STATUS_ACTIVE && $collection->status !== Collection::STATUS_ACTIVE) {
+            $this->deleteCollectionFromElastic((int) $collection->id);
         }
 
-        if ($collection->status !== Collection::STATUS_ACTIVE) {
-            $this->deleteCollectionFromElastic((int) $collection->id);
+        if($collection->status === Collection::STATUS_ACTIVE) {
+            $this->indexElasticCollections((int) $collection->id);
         }
     }
 

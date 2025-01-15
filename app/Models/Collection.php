@@ -34,6 +34,8 @@ class Collection extends Model
     public const STATUS_DRAFT = 'DRAFT';
     public const STATUS_ARCHIVED = 'ARCHIVED';
 
+    public $prevStatus;
+
     /**
      * The table associated with the model.
      *

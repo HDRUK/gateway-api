@@ -7,7 +7,10 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Observers\PublicationHasDatasetVersionObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 
+#[ObservedBy([PublicationHasDatasetVersionObserver::class])]
 class PublicationHasDatasetVersion extends Model
 {
     use HasFactory;
