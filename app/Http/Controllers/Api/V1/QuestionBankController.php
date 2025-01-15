@@ -790,6 +790,119 @@ class QuestionBankController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *      path="/api/v1/questions/latest",
+     *      summary="Create a new system question bank question with FE-helpful input syntax",
+     *      description="Creates a new system question bank question",
+     *      tags={"QuestionBank"},
+     *      summary="QuestionBank@storeLatest",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="QuestionBank definition",
+     *          @OA\JsonContent(
+     *              required={"field", "section_id", "required", "guidance", "title", "force_required", "allow_guidance_override"},
+     *              @OA\Property(property="section_id", type="integer", example="1"),
+     *              @OA\Property(property="user_id", type="integer", example="1"),
+     *              @OA\Property(property="team_id", type="array", @OA\Items()),
+     *              @OA\Property(property="locked", type="boolean", example="false"),
+     *              @OA\Property(property="archived", type="boolean", example="false"),
+     *              @OA\Property(property="force_required", type="boolean", example="false"),
+     *              @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
+     *              @OA\Property(property="default", type="integer", example="1"),
+     *              @OA\Property(property="guidance", type="string", example="Question guidance"),
+     *              @OA\Property(property="title", type="string", example="Question title"),
+     *              @OA\Property(property="field", type="array", @OA\Items()),
+     *              @OA\Property(property="is_child", type="boolean", example="true"),
+     *              @OA\Property(property="question_type", type="string", example="STANDARD"),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(property="data", type="integer", example="100")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function storeLatest(CreateQuestionBank $request): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            if ($input['is_child'] ?? false) {
+                return response()->json([
+                    'message' => 'Cannot create a child question directly'
+                ], 400);
+            }
+
+            $question = QuestionBank::create([
+                'section_id' => $input['section_id'],
+                'user_id' => $input['user_id'] ?? $jwtUser['id'],
+                'force_required' => $input['force_required'],
+                'allow_guidance_override' => $input['allow_guidance_override'],
+                'locked' => $input['locked'] ?? false,
+                'archived' => $input['archived'] ?? false,
+                'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
+                'is_child' => false,
+                'question_type' => $input['question_type'] ?? 'STANDARD',
+            ]);
+
+            $questionJson = [
+                'field' => $input['field'],
+                'title' => $input['title'],
+                'guidance' => $input['guidance'],
+                'required' => $input['required'],
+            ];
+
+            $questionVersion = QuestionBankVersion::create([
+                'question_json' => json_encode($questionJson),
+                'required' => $input['required'],
+                'default' => $input['default'],
+                'question_id' => $question->id,
+                'version' => 1,
+            ]);
+
+
+            $this->updateQuestionHasTeams($question, $input);
+
+            $this->handleReformattedChildren($questionVersion, $input, 1, $jwtUser);
+
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'QuestionBank ' . $question->id . ' created',
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_CREATED.message'),
+                'data' => $question->id,
+            ], Config::get('statuscodes.STATUS_CREATED.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
      * @OA\Put(
      *      path="/api/v1/questions/{id}",
      *      summary="Update a system question bank question - children are updated through parents",
@@ -1007,6 +1120,26 @@ class QuestionBankController extends Controller
      *                  @OA\Property(property="question_type", type="string", example="STANDARD"),
      *                  @OA\Property(property="force_required", type="boolean", example="false"),
      *                  @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
+     *                  @OA\Property(property=options, type="array",
+     *                      @OA\Items(type="object",
+     *                          @OA\Property(property="label", type="string", example="yes"),
+     *                          @OA\Property(property="children", type="array",
+     *                              @OA\Items(type="object",
+     *                                  @OA\Property(property="label", type="string", "yes"),
+     *                                  @OA\Property(property="field", type="array",
+     *                                      @OA\Items(type="object",
+     *                                          @OA\Property(property="options", type="array", example=["yes", "no"]),
+     *                                          @OA\Property(property="component", type="string", example="yes"),
+     *                                          @OA\Property(property="validations", type="array", example=[]),
+     *                                      )
+     *                                  ),
+     *                                  @OA\Property(property="title", type="string", "This is my nested question"),
+     *                                  @OA\Property(property="guidance", type="string", "This is how you should answer this nested question"),
+     *                                  @OA\Property(property="required", type="boolean", "false")
+     *                              )
+     *                          )
+     *                      ),
+     *                  )
      *              )
      *          ),
      *      ),
