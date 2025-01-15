@@ -531,6 +531,138 @@ class QuestionBankController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *      path="/api/v1/questions/{id}/latest",
+     *      summary="Return the latest question bank question version for the supplied question id",
+     *      description="Return the latest question bank question version for the supplied question id",
+     *      tags={"QuestionBank"},
+     *      summary="QuestionBank@showLatest",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="question bank question id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="question bank question id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="question_id", type="integer", example="1"),
+     *                  @OA\Property(property="version", type="integer", example="1"),
+     *                  @OA\Property(property="default", type="boolean", example="false"),
+     *                  @OA\Property(property="required", type="boolean", example="true"),
+     *                  @OA\Property(property="question_json", type="object", example=""),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function showLatest(GetQuestionBankVersion $request, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $question = QuestionBank::with([
+                'latestVersion',
+                'latestVersion.childVersions',
+            ])->findOrFail($id);
+
+            if ($question) {
+                $questionVersion = $question['latestVersion'];
+
+                $options = [];
+
+                foreach ($questionVersion['childVersions'] as $child) {
+                    // get its option value
+                    $option = $child['pivot']['condition'];
+                    // append its value to the correct option (handling creation of the key if not already extant)
+                    if (!array_key_exists($option, $options)) {
+                        $options[$option] = [];
+                    }
+                    array_push($options[$option], $child);
+                }
+                unset($questionVersion['childVersions']);
+
+                // now rejig so it's a non-associative array with labels in the values
+                $newOptions = [];
+                foreach ($options as $optionKey => $option) {
+                    $childVersionArray = [];
+                    foreach ($option as $childQuestionVersion) {
+                        array_push(
+                            $childVersionArray,
+                            [
+                                'label' => $optionKey,
+                                ...json_decode($childQuestionVersion['question_json'], true)
+                            ]
+                        );
+                    }
+
+                    array_push(
+                        $newOptions,
+                        [
+                            'label' => $optionKey,
+                            'children' => $childVersionArray
+                        ]
+                    );
+
+                }
+                $questionVersion['options'] = $newOptions;
+
+                // decode json for the FE to easily digest
+                foreach (json_decode($questionVersion['question_json'], true) as $key => $value) {
+                    $questionVersion[$key] = $value;
+                }
+                unset($questionVersion['question_json']);
+
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'QuestionBank get ' . $id,
+                ]);
+
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $questionVersion,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
      * @OA\Post(
      *      path="/api/v1/questions",
      *      summary="Create a new system question bank question",

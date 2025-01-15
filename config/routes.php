@@ -3735,6 +3735,20 @@ return [
     ],
     [
         'name' => 'questions',
+        'method' => 'get',
+        'path' => '/questions/{id}/latest',
+        'methodController' => 'QuestionBankController@showLatest',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.read',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'questions',
         'method' => 'post',
         'path' => '/questions',
         'methodController' => 'QuestionBankController@store',
