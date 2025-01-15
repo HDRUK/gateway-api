@@ -17,30 +17,7 @@ class CollectionHasDatasetVersionObserver
      */
     public function created(CollectionHasDatasetVersion $collectionHasDatasetVersion): void
     {
-        $collectionId = $collectionHasDatasetVersion->collection_id;
-        $collection = Collection::where([
-            'id' => $collectionId,
-            'status' => Collection::STATUS_ACTIVE,
-        ])->first();
-        if (!is_null($collection)) {
-            $this->indexElasticCollections((int) $collectionId);
-        }
-
-        $datasetVersionId = $collectionHasDatasetVersion->dataset_version_id;
-        $datasetVersion = DatasetVersion::where([
-            'id' => $datasetVersionId
-        ])->first();
-
-        if (!is_null($datasetVersion)) {
-            $dataset = Dataset::where([
-                'id' => $datasetVersion->dataset_id,
-                'status' => Dataset::STATUS_ACTIVE,
-                ])->first();
-
-            if (!is_null($dataset)) {
-                $this->reindexElastic($dataset->id);
-            }
-        }
+        $this->elasticCollectionHasDatasetVersion($collectionHasDatasetVersion);
     }
 
     /**
@@ -48,30 +25,7 @@ class CollectionHasDatasetVersionObserver
      */
     public function updated(CollectionHasDatasetVersion $collectionHasDatasetVersion): void
     {
-        $collectionId = $collectionHasDatasetVersion->collection_id;
-        $collection = Collection::where([
-            'id' => $collectionId,
-            'status' => Collection::STATUS_ACTIVE,
-        ])->first();
-        if (!is_null($collection)) {
-            $this->indexElasticCollections((int) $collectionId);
-        }
-
-        $datasetVersionId = $collectionHasDatasetVersion->dataset_version_id;
-        $datasetVersion = DatasetVersion::where([
-            'id' => $datasetVersionId
-        ])->first();
-
-        if (!is_null($datasetVersion)) {
-            $dataset = Dataset::where([
-                'id' => $datasetVersion->dataset_id,
-                'status' => Dataset::STATUS_ACTIVE,
-                ])->first();
-
-            if (!is_null($dataset)) {
-                $this->reindexElastic($dataset->id);
-            }
-        }
+        $this->elasticCollectionHasDatasetVersion($collectionHasDatasetVersion);
     }
 
     /**
@@ -79,30 +33,7 @@ class CollectionHasDatasetVersionObserver
      */
     public function deleted(CollectionHasDatasetVersion $collectionHasDatasetVersion): void
     {
-        $collectionId = $collectionHasDatasetVersion->collection_id;
-        $collection = Collection::where([
-            'id' => $collectionId,
-            'status' => Collection::STATUS_ACTIVE,
-        ])->first();
-        if (!is_null($collection)) {
-            $this->indexElasticCollections((int) $collectionId);
-        }
-
-        $datasetVersionId = $collectionHasDatasetVersion->dataset_version_id;
-        $datasetVersion = DatasetVersion::where([
-            'id' => $datasetVersionId
-        ])->first();
-
-        if (!is_null($datasetVersion)) {
-            $dataset = Dataset::where([
-                'id' => $datasetVersion->dataset_id,
-                'status' => Dataset::STATUS_ACTIVE,
-                ])->first();
-
-            if (!is_null($dataset)) {
-                $this->reindexElastic($dataset->id);
-            }
-        }
+        $this->elasticCollectionHasDatasetVersion($collectionHasDatasetVersion);
     }
 
     /**
@@ -119,5 +50,33 @@ class CollectionHasDatasetVersionObserver
     public function forceDeleted(CollectionHasDatasetVersion $collectionHasDatasetVersion): void
     {
         //
+    }
+
+    public function elasticCollectionHasDatasetVersion(CollectionHasDatasetVersion $collectionHasDatasetVersion)
+    {
+        $collectionId = $collectionHasDatasetVersion->collection_id;
+        $collection = Collection::where([
+            'id' => $collectionId,
+            'status' => Collection::STATUS_ACTIVE,
+        ])->first();
+        if (!is_null($collection)) {
+            $this->indexElasticCollections((int) $collectionId);
+        }
+
+        $datasetVersionId = $collectionHasDatasetVersion->dataset_version_id;
+        $datasetVersion = DatasetVersion::where([
+            'id' => $datasetVersionId
+        ])->first();
+
+        if (!is_null($datasetVersion)) {
+            $dataset = Dataset::where([
+                'id' => $datasetVersion->dataset_id,
+                'status' => Dataset::STATUS_ACTIVE,
+                ])->first();
+
+            if (!is_null($dataset)) {
+                $this->reindexElastic($dataset->id);
+            }
+        }
     }
 }

@@ -15,15 +15,7 @@ class DatasetVersionObserver
      */
     public function created(DatasetVersion $datasetVersion): void
     {
-        $datasetId = $datasetVersion->dataset_id;
-        $dataset = Dataset::where([
-            'id' => $datasetId,
-            'status' => Dataset::STATUS_ACTIVE,
-        ])->first();
-
-        if (!is_null($dataset)) {
-            $this->reindexElastic($dataset->id);
-        }
+        $this->elasticDatasetVersion($datasetVersion);
     }
 
     /**
@@ -31,15 +23,7 @@ class DatasetVersionObserver
      */
     public function updated(DatasetVersion $datasetVersion): void
     {
-        $datasetId = $datasetVersion->dataset_id;
-        $dataset = Dataset::where([
-            'id' => $datasetId,
-            'status' => Dataset::STATUS_ACTIVE,
-        ])->first();
-
-        if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
-            $this->reindexElastic($dataset->id);
-        }
+        $this->elasticDatasetVersion($datasetVersion);
     }
 
     /**
@@ -47,15 +31,7 @@ class DatasetVersionObserver
      */
     public function deleted(DatasetVersion $datasetVersion): void
     {
-        $datasetId = $datasetVersion->dataset_id;
-        $dataset = Dataset::where([
-            'id' => $datasetId,
-            'status' => Dataset::STATUS_ACTIVE,
-        ])->first();
-
-        if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
-            $this->reindexElastic($dataset->id);
-        }
+        $this->elasticDatasetVersion($datasetVersion);
     }
 
     /**
@@ -72,5 +48,18 @@ class DatasetVersionObserver
     public function forceDeleted(DatasetVersion $datasetVersion): void
     {
         //
+    }
+
+    public function elasticDatasetVersion(DatasetVersion $datasetVersion)
+    {
+        $datasetId = $datasetVersion->dataset_id;
+        $dataset = Dataset::where([
+            'id' => $datasetId,
+            'status' => Dataset::STATUS_ACTIVE,
+        ])->first();
+
+        if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
+            $this->reindexElastic($dataset->id);
+        }
     }
 }
