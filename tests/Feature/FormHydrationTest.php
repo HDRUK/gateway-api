@@ -2,23 +2,24 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use MetadataManagementController as MMC;
 use Config;
 
-use App\Http\Enums\TeamMemberOf;
-use App\Models\Dataset;
+use Tests\TestCase;
 use App\Models\Team;
+use App\Models\Dataset;
+
+use App\Models\DatasetVersion;
+use Tests\Traits\Authorization;
+use App\Http\Enums\TeamMemberOf;
+use Database\Seeders\SectorSeeder;
+use Database\Seeders\DatasetSeeder;
+use Database\Seeders\KeywordSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\TeamHasUserSeeder;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\SectorSeeder;
+use MetadataManagementController as MMC;
 
-use Tests\Traits\Authorization;
+use Database\Seeders\DatasetVersionSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class FormHydrationTest extends TestCase
 {
@@ -38,7 +39,7 @@ class FormHydrationTest extends TestCase
     {
         parent::setUp();
 
-        $this->withoutModelEvents();
+        DatasetVersion::flushEventListeners();
 
         $this->seed([
             SectorSeeder::class,
