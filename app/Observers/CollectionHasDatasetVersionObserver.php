@@ -21,7 +21,7 @@ class CollectionHasDatasetVersionObserver
         $collection = Collection::where([
             'id' => $collectionId,
             'status' => Collection::STATUS_ACTIVE,
-        ])->fist();
+        ])->first();
         if (!is_null($collection)) {
             $this->indexElasticCollections((int) $collectionId);
         }
@@ -52,7 +52,7 @@ class CollectionHasDatasetVersionObserver
         $collection = Collection::where([
             'id' => $collectionId,
             'status' => Collection::STATUS_ACTIVE,
-        ])->fist();
+        ])->first();
         if (!is_null($collection)) {
             $this->indexElasticCollections((int) $collectionId);
         }
@@ -83,7 +83,7 @@ class CollectionHasDatasetVersionObserver
         $collection = Collection::where([
             'id' => $collectionId,
             'status' => Collection::STATUS_ACTIVE,
-        ])->fist();
+        ])->first();
         if (!is_null($collection)) {
             $this->indexElasticCollections((int) $collectionId);
         }
