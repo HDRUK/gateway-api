@@ -3660,8 +3660,70 @@ return [
     [
         'name' => 'questions',
         'method' => 'get',
+        'path' => '/questions/standard',
+        'methodController' => 'QuestionBankController@indexStandard',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'get',
+        'path' => '/questions/custom',
+        'methodController' => 'QuestionBankController@indexCustom',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'get',
+        'path' => '/questions/archived',
+        'methodController' => 'QuestionBankController@indexArchived',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/questions/section/{sectionId}',
+        'methodController' => 'TeamQuestionBankController@indexBySection',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'get',
         'path' => '/questions/{id}',
         'methodController' => 'QuestionBankController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.read',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'get',
+        'path' => '/questions/version/{id}',
+        'methodController' => 'QuestionBankController@showVersion',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3704,6 +3766,21 @@ return [
         'method' => 'patch',
         'path' => '/questions/{id}',
         'methodController' => 'QuestionBankController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:permissions,question-bank.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'patch',
+        'path' => '/questions/{id}/{status}',
+        'methodController' => 'QuestionBankController@updateStatus',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
