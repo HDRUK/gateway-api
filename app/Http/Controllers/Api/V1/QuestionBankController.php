@@ -590,6 +590,22 @@ class QuestionBankController extends Controller
             if ($question) {
                 $questionVersion = $question['latestVersion'];
 
+                $keys = [
+                    'section_id',
+                    'user_id',
+                    'locked',
+                    'archived',
+                    'archived_date',
+                    'force_required',
+                    'allow_guidance_override',
+                    'is_child',
+                    'question_type',
+                ];
+
+                foreach ($keys as $key) {
+                    $questionVersion[$key] = $question[$key];
+                }
+
                 $options = [];
 
                 foreach ($questionVersion['childVersions'] as $child) {
@@ -902,6 +918,159 @@ class QuestionBankController extends Controller
             $this->updateQuestionHasTeams($question, $input);
 
             $this->handleChildren($questionVersion, $input, $latestVersion->version + 1, $jwtUser);
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'QuestionBank ' . $id . ' updated',
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => QuestionBank::where('id', $id)->first(),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Put(
+     *      path="/api/v1/questions/{id}/latest",
+     *      summary="Update a system question bank question - children and their version are updated through parents",
+     *      description="Update a system question bank question - children and their versions are updated through parents",
+     *      tags={"QuestionBank"},
+     *      summary="QuestionBank@update",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="question bank question id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="question bank question id",
+     *         ),
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="QuestionBank definition",
+     *          @OA\JsonContent(
+     *              required={"field", "section_id", "required", "guidance", "title", "force_required", "allow_guidance_override"},
+     *              @OA\Property(property="section_id", type="integer", example="1"),
+     *              @OA\Property(property="user_id", type="integer", example="1"),
+     *              @OA\Property(property="team_id", type="array", @OA\Items()),
+     *              @OA\Property(property="locked", type="boolean", example="false"),
+     *              @OA\Property(property="archived", type="boolean", example="false"),
+     *              @OA\Property(property="is_child", type="boolean", example="false"),
+     *              @OA\Property(property="question_type", type="string", example="STANDARD"),
+     *              @OA\Property(property="force_required", type="boolean", example="false"),
+     *              @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
+     *              @OA\Property(property="default", type="integer", example="1"),
+     *              @OA\Property(property="guidance", type="string", example="Question guidance"),
+     *              @OA\Property(property="title", type="string", example="Question title"),
+     *              @OA\Property(property="field", type="array", @OA\Items()),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="section_id", type="integer", example="1"),
+     *                  @OA\Property(property="user_id", type="integer", example="1"),
+     *                  @OA\Property(property="locked", type="boolean", example="false"),
+     *                  @OA\Property(property="archived", type="boolean", example="true"),
+     *                  @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="is_child", type="boolean", example="false"),
+     *                  @OA\Property(property="question_type", type="string", example="STANDARD"),
+     *                  @OA\Property(property="force_required", type="boolean", example="false"),
+     *                  @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function updateLatest(UpdateQuestionBank $request, int $id): JsonResponse // TODO: change to UpdateQuestionBank or similar
+    {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $question = QuestionBank::findOrFail($id);
+            if ($question->is_child) {
+                return response()->json([
+                    'message' => 'Cannot update a child question directly'
+                ], 400);
+            }
+            if ($input['is_child'] ?? false) {
+                return response()->json([
+                    'message' => 'Cannot update a question to become a child question'
+                ], 400);
+            }
+            // TODO: handle locking
+
+            $question->update([
+                'section_id' => $input['section_id'],
+                'user_id' => $input['user_id'] ?? $jwtUser['id'],
+                'force_required' => $input['force_required'],
+                'allow_guidance_override' => $input['allow_guidance_override'],
+                'locked' => $input['locked'] ?? false,
+                'archived' => $input['archived'] ?? false,
+                'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
+                'is_child' => false,
+                'question_type' => $input['question_type'] ?? 'STANDARD',
+            ]);
+
+            $questionJson = [
+                'field' => $input['field'],
+                'title' => $input['title'],
+                'guidance' => $input['guidance'],
+                'required' => $input['required'],
+            ];
+
+            $latestVersion = $question->latestVersion()->first();
+
+            $questionVersion = QuestionBankVersion::create([
+                'question_json' => json_encode($questionJson),
+                'required' => $input['required'],
+                'default' => $input['default'],
+                'question_id' => $question->id,
+                'version' => $latestVersion->version + 1,
+            ]);
+
+
+            $this->updateQuestionHasTeams($question, $input);
+
+            $this->handleReformattedChildren($questionVersion, $input, $latestVersion->version + 1, $jwtUser);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1351,6 +1520,64 @@ class QuestionBankController extends Controller
                             'parent_qbv_id' => $questionVersion->id,
                             'child_qbv_id' => $childQuestionVersion->id,
                             'condition' => $childListCondition,
+                        ]);
+
+                        $this->updateQuestionHasTeams($childQuestion, $input);
+                    }
+                }
+            }
+        }
+    }
+
+    private function handleReformattedChildren(QuestionBankVersion $questionVersion, array $input, int $versionNumber, array $jwtUser)
+    {
+        // Don't allow children to also have children, and only allow certain parent types to have children
+        if (!($input['is_child'] ?? false)
+        && isset($input['options'])
+        && in_array($input['field']['component'], ['RadioGroup', 'CheckboxGroup', 'Autocomplete'])) {
+            // Create all children questions and question versions as required.
+            // All must by design have the same version number as the parent - parents and children move versions in lockstep
+            if (isset($input['options'])) {
+                foreach ($input['options'] as $option) {
+                    var_dump($option['label']);
+                    $label = $option['label'];
+                    $children = $option['children'];
+
+                    foreach ($children as $child) {
+                        if ($option['label'] !== $child['label']) {
+                            throw new Exception("option label and child label must match");
+                        }
+
+                        $childQuestion = QuestionBank::create([
+                            'section_id' => $input['section_id'],
+                            'user_id' => $input['user_id'] ?? $jwtUser['id'],
+                            'force_required' => $input['force_required'],
+                            'allow_guidance_override' => $input['allow_guidance_override'],
+                            'locked' => $child['locked'] ?? false,
+                            'archived' => $child['archived'] ?? false,
+                            'archived_date' => ($child['archived'] ?? false) ? Carbon::now() : null,
+                            'is_child' => true,
+                        ]);
+
+                        $questionJson = [
+                            'field' => $child['field'],
+                            'title' => $child['title'],
+                            'guidance' => $child['guidance'],
+                            'required' => $child['required'],
+                        ];
+
+                        $childQuestionVersion = QuestionBankVersion::create([
+                            'question_json' => json_encode($questionJson),
+                            'required' => $child['required'],
+                            'default' => $input['default'],
+                            'question_id' => $childQuestion->id,
+                            'version' =>  $versionNumber,
+                        ]);
+
+                        $questionHasChild = QuestionBankVersionHasChildVersion::create([
+                            'parent_qbv_id' => $questionVersion->id,
+                            'child_qbv_id' => $childQuestionVersion->id,
+                            'condition' => $label,
                         ]);
 
                         $this->updateQuestionHasTeams($childQuestion, $input);

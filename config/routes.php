@@ -3777,9 +3777,39 @@ return [
     ],
     [
         'name' => 'questions',
+        'method' => 'put',
+        'path' => '/questions/{id}/latest',
+        'methodController' => 'QuestionBankController@updateLatest',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:permissions,question-bank.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'questions',
         'method' => 'patch',
         'path' => '/questions/{id}',
         'methodController' => 'QuestionBankController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:permissions,question-bank.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'patch',
+        'path' => '/questions/{id}/latest',
+        'methodController' => 'QuestionBankController@editLatest',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
