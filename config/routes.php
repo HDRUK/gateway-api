@@ -3833,9 +3833,34 @@ return [
     ],
     [
         'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/dar/applications/{id}/answers',
+        'methodController' => 'DataAccessApplicationController@showAnswers',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
         'method' => 'post',
         'path' => '/dar/applications',
         'methodController' => 'DataAccessApplicationController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'put',
+        'path' => '/dar/applications/{id}/answers',
+        'methodController' => 'DataAccessApplicationController@storeAnswers',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
