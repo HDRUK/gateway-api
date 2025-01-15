@@ -19,7 +19,6 @@ class Publication extends Model
     use Prunable;
     use DatasetFetch;
 
-
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
     public const STATUS_ARCHIVED = 'ARCHIVED';
