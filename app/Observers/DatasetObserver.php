@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Dataset;
 use App\Http\Traits\IndexElastic;
+use App\Models\DatasetVersion;
 
 class DatasetObserver
 {
@@ -14,7 +15,10 @@ class DatasetObserver
      */
     public function created(Dataset $dataset): void
     {
-        if($dataset->status === Dataset::STATUS_ACTIVE) {
+        $datasetVersion = DatasetVersion::where([
+            'dataset_id' => $dataset->id
+        ])->first();
+        if($dataset->status === Dataset::STATUS_ACTIVE && !is_null($datasetVersion)) {
             $this->reindexElastic($dataset->id);
         }
     }
@@ -33,12 +37,15 @@ class DatasetObserver
     public function updated(Dataset $dataset): void
     {
         $prevStatus = $dataset->prevStatus;
+        $datasetVersion = DatasetVersion::where([
+            'dataset_id' => $dataset->id
+        ])->first();
 
         if ($prevStatus === Dataset::STATUS_ACTIVE && $dataset->status !== Dataset::STATUS_ACTIVE) {
             $this->deleteDatasetFromElastic($dataset->id);
         }
 
-        if($dataset->status === Dataset::STATUS_ACTIVE) {
+        if($dataset->status === Dataset::STATUS_ACTIVE && !is_null($datasetVersion)) {
             $this->reindexElastic($dataset->id);
         }
     }
