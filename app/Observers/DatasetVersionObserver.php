@@ -23,10 +23,6 @@ class DatasetVersionObserver
         if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
             $this->reindexElastic($dataset->id);
         }
-
-        if (!is_null($dataset) && $dataset->status !== Dataset::STATUS_ACTIVE) {
-            $this->deleteDatasetFromElastic($dataset->id);
-        }
     }
 
     /**
@@ -42,10 +38,6 @@ class DatasetVersionObserver
         if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
             $this->reindexElastic($dataset->id);
         }
-
-        if (!is_null($dataset) && $dataset->status !== Dataset::STATUS_ACTIVE) {
-            $this->deleteDatasetFromElastic($dataset->id);
-        }
     }
 
     /**
@@ -60,10 +52,6 @@ class DatasetVersionObserver
 
         if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
             $this->reindexElastic($dataset->id);
-        }
-
-        if (!is_null($dataset) && $dataset->status !== Dataset::STATUS_ACTIVE) {
-            $this->deleteDatasetFromElastic($dataset->id);
         }
     }
 

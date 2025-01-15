@@ -26,6 +26,8 @@ class FormHydrationTest extends TestCase
     use Authorization;
 
     protected $header = [];
+    protected $metadata;
+    protected $currentUser;
 
     /**
      * Set up the database
