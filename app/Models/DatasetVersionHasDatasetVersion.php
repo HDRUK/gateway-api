@@ -3,11 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Observers\DurHasDatasetVersionObserver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 
-#[ObservedBy([DurHasDatasetVersionObserver::class])]
 class DatasetVersionHasDatasetVersion extends Model
 {
     use HasFactory;
