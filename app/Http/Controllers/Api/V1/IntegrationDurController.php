@@ -31,13 +31,11 @@ use App\Http\Requests\Dur\DeleteDur;
 use App\Http\Requests\Dur\UpdateDur;
 
 use App\Exceptions\NotFoundException;
-use App\Http\Traits\IndexElastic;
 use App\Http\Traits\IntegrationOverride;
 use App\Http\Traits\RequestTransformation;
 
 class IntegrationDurController extends Controller
 {
-    use IndexElastic;
     use RequestTransformation;
     use IntegrationOverride;
 
@@ -463,10 +461,9 @@ class IntegrationDurController extends Controller
      */
     public function store(CreateDur $request): JsonResponse
     {
+        $input = $request->all();
+        $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
         try {
-            $input = $request->all();
-            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
-
             $userId = null;
             $appId = null;
             $teamId = null;
@@ -562,11 +559,6 @@ class IntegrationDurController extends Controller
             // for migration from mongo database
             if (array_key_exists('updated_at', $input)) {
                 Dur::where('id', $durId)->update(['updated_at' => $input['updated_at']]);
-            }
-
-            $currentDurStatus = Dur::where('id', $durId)->first();
-            if($currentDurStatus->status === 'ACTIVE') {
-                $this->indexElasticDur($durId);
             }
 
             Auditor::log([
@@ -755,11 +747,11 @@ class IntegrationDurController extends Controller
      */
     public function update(UpdateDur $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
-            $initDur = Dur::withTrashed()->where('id', $id)->first();
+        $input = $request->all();
+        $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+        $initDur = Dur::withTrashed()->where('id', $id)->first();
 
+        try {
             $userId = null;
             $appId = null;
             if (array_key_exists('user_id', $input)) {
@@ -861,10 +853,6 @@ class IntegrationDurController extends Controller
             }
 
             $currentDurStatus = Dur::where('id', $id)->first();
-            if($currentDurStatus->status === 'ACTIVE') {
-                $this->indexElasticDur($id);
-            }
-
             if ($currentDurStatus->status === 'ARCHIVED') {
                 Dur::where('id', $id)->delete();
                 DurHasDatasetVersion::where('dur_id', $id)->delete();
@@ -1055,10 +1043,10 @@ class IntegrationDurController extends Controller
      */
     public function edit(EditDur $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+        $input = $request->all();
+        $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
+        try {
             $userId = null;
             $appId = null;
             if (array_key_exists('user_id', $input)) {
@@ -1146,11 +1134,6 @@ class IntegrationDurController extends Controller
             // for migration from mongo database
             if (array_key_exists('updated_at', $input)) {
                 Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
-            }
-
-            $currentDurStatus = Dur::where('id', $id)->first();
-            if($currentDurStatus->status === 'ACTIVE') {
-                $this->indexElasticDur($id);
             }
 
             Auditor::log([
@@ -1271,7 +1254,6 @@ class IntegrationDurController extends Controller
 
             if (!$checking) {
                 $this->addDurHasDatasetVersion($durId, $dataset, $datasetVersionId, $userId, $appId);
-                $this->reindexElastic($dataset['id']);
             }
         }
     }

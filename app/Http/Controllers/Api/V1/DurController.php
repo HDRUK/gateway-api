@@ -7,18 +7,15 @@ use Auditor;
 use Exception;
 use App\Models\Dur;
 use App\Models\Tool;
-use App\Models\Sector;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\DurHasTool;
-use App\Models\Application;
 use Illuminate\Http\Request;
 use App\Models\DurHasKeyword;
 use App\Models\DatasetVersion;
 use Illuminate\Support\Carbon;
 use App\Http\Traits\CheckAccess;
 use App\Http\Requests\Dur\GetDur;
-use App\Http\Traits\IndexElastic;
 use App\Models\DurHasPublication;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Dur\EditDur;
@@ -37,7 +34,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DurController extends Controller
 {
-    use IndexElastic;
     use RequestTransformation;
     use MapOrganisationSector;
     use CheckAccess;
@@ -146,9 +142,9 @@ class DurController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
+        $input = $request->all();
 
+        try {
             $sort = [];
             $sortArray = $request->has('sort') ? explode(',', $request->query('sort', '')) : [];
             foreach ($sortArray as $item) {
@@ -590,11 +586,6 @@ class DurController extends Controller
                 Dur::where('id', $durId)->update(['updated_at' => $input['updated_at']]);
             }
 
-            $currentDur = Dur::where('id', $durId)->first();
-            if($currentDur->status === Dur::STATUS_ACTIVE) {
-                $this->indexElasticDur($durId);
-            }
-
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
@@ -861,13 +852,6 @@ class DurController extends Controller
             // for migration from mongo database
             if (array_key_exists('updated_at', $input)) {
                 Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
-            }
-
-            $currentDur = Dur::where('id', $id)->first();
-            if($currentDur->status === Dur::STATUS_ACTIVE) {
-                $this->indexElasticDur($id);
-            } elseif($initDur->status === Dur::STATUS_ACTIVE) {
-                $this->deleteDurFromElastic((int) $id);
             }
 
             Auditor::log([
@@ -1176,11 +1160,6 @@ class DurController extends Controller
                 // for migration from mongo database
                 if (array_key_exists('updated_at', $input)) {
                     Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
-                }
-
-                $currentDur = Dur::where('id', $id)->first();
-                if($currentDur->status === Dur::STATUS_ACTIVE) {
-                    $this->indexElasticDur($id);
                 }
 
                 Auditor::log([
@@ -1631,7 +1610,6 @@ class DurController extends Controller
 
             if (!$checking) {
                 $this->addDurHasDatasetVersion($durId, $dataset, $datasetVersionId, $userId);
-                $this->reindexElastic($dataset['id']);
             }
         }
     }
