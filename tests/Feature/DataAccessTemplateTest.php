@@ -74,11 +74,11 @@ class DataAccessTemplateTest extends TestCase
     }
 
     /**
-     * Returns a single dar application
+     * Returns a single dar template
      *
      * @return void
      */
-    public function test_the_application_can_list_a_single_dar_application()
+    public function test_the_application_can_list_a_single_dar_template()
     {
         $response = $this->json(
             'POST',
@@ -114,6 +114,67 @@ class DataAccessTemplateTest extends TestCase
                     'questions',
                 ],
             ]);
+    }
+
+    /**
+     * Test listing dar templates by team
+     *
+     * @return void
+     */
+    public function test_the_application_can_list_dar_templates_by_team()
+    {
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/templates',
+            [
+                'team_id' => 1,
+                'published' => false,
+                'locked' => false,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $templateId = $content['data'];
+
+        $response = $this->get('api/v1/teams/' . 1 . '/dar/templates/', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'current_page',
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                        'user_id',
+                        'team_id',
+                        'published',
+                        'locked',
+                    ],
+                ],
+                'first_page_url',
+                'from',
+                'last_page',
+                'last_page_url',
+                'links',
+                'next_page_url',
+                'path',
+                'per_page',
+                'prev_page_url',
+                'to',
+                'total',
+            ]);
+        $templates = $response->decodeResponseJson()['data'];
+
+        $this->assertContains($templateId, array_column($templates, 'id'));
     }
 
     /**

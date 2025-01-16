@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Auditor;
+use Config;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\QuestionBank\GetTeamDataAccessTemplate;
+use App\Http\Requests\DataAccessTemplate\GetTeamDataAccessTemplate;
 use App\Http\Traits\RequestTransformation;
+use App\Models\DataAccessTemplate;
 
 class TeamDataAccessTemplateController extends Controller
 {
@@ -63,9 +65,9 @@ class TeamDataAccessTemplateController extends Controller
                 'description' => 'DataAccessTemplate get all by team',
             ]);
 
-            return response()->json([
-                'data' => $templates
-            ]);
+            return response()->json(
+                $templates
+            );
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
