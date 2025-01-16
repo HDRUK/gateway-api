@@ -190,6 +190,82 @@ class DataAccessApplicationTest extends TestCase
     }
 
     /**
+     * Adds answers to a dar application
+     *
+     * @return void
+     */
+    public function test_the_application_can_add_answers_to_a_dar_application()
+    {
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'DRAFT',
+                'approval_status' => 'APPROVED_COMMENTS',
+                'dataset_ids' => [1,2],
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+        $applicationId = $response->decodeResponseJson()['data'];
+
+        $response = $this->json(
+            'PUT',
+            'api/v1/dar/applications/' . $applicationId . '/answers',
+            [
+                'answers' => [
+                    0 => [
+                        'question_id' => 1,
+                        'answer' => [
+                            'value' => 'an answer'
+                        ]
+                    ],
+                    1 => [
+                        'question_id' => 2,
+                        'answer' => [
+                            'value' => 'another answer'
+                        ]
+                    ],
+                ]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        // Test it can retrieve the answers
+        $response = $this->json(
+            'GET',
+            'api/v1/dar/applications/' . $applicationId . '/answers',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'question_id',
+                        'application_id',
+                        'answer' => [
+                            'value'
+                        ],
+                        'contributor_id',
+                    ]
+                ]
+            ]);
+
+    }
+
+    /**
      * Creates a new dar application with merged template
      *
      * @return void

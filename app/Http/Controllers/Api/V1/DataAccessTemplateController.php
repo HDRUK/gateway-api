@@ -31,6 +31,17 @@ class DataAccessTemplateController extends Controller
      *      tags={"DataAccessTemplate"},
      *      summary="DataAccessTemplate@index",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="with_questions",
+     *         in="query",
+     *         description="Include questions in response",
+     *         required=false,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Include questions in response",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -54,11 +65,15 @@ class DataAccessTemplateController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $templates = DataAccessTemplate::paginate(
+        try {
+
+            $withQuestions = $request->boolean('with_questions', false);
+
+            $templates = DataAccessTemplate::when($withQuestions, fn ($query) => $query->with('questions'))
+            ->paginate(
                 Config::get('constants.per_page'),
                 ['*'],
                 'page'
@@ -137,7 +152,16 @@ class DataAccessTemplateController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $template = DataAccessTemplate::with('questions')->findOrFail($id);
+            $template = DataAccessTemplate::where('id', $id)->with('questions')->first();
+            foreach ($template['questions'] as $i => $q) {
+                $version = QuestionBank::with([
+                    'latestVersion',
+                    'latestVersion.childVersions',
+                ])->where('id', $q->question_id)
+                    ->first()
+                    ->toArray();
+                $template['questions'][$i]['latest_version'] = $version['latest_version'];
+            }
 
             if ($template) {
                 Auditor::log([
