@@ -58,7 +58,7 @@ class DurHasDatasetVersionObserver
         $dur = Dur::where([
             'id' => $durId,
             'status' => Dur::STATUS_ACTIVE,
-        ])->first();
+        ])->select('id')->first();
         if (!is_null($dur)) {
             $this->indexElasticDur($dur->id);
         }
@@ -66,13 +66,13 @@ class DurHasDatasetVersionObserver
         $datasetVersionId = $durHasDatasetVersion->dataset_version_id;
         $datasetVersion = DatasetVersion::where([
             'id' => $datasetVersionId
-        ])->first();
+        ])->select('dataset_id')->first();
 
         if (!is_null($datasetVersion)) {
             $dataset = Dataset::where([
                 'id' => $datasetVersion->dataset_id,
                 'status' => Dataset::STATUS_ACTIVE,
-            ])->first();
+            ])->select('id')->first();
 
             if (!is_null($dataset)) {
                 $this->reindexElastic($dataset->id);

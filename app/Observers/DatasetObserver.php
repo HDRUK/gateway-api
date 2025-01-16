@@ -17,7 +17,7 @@ class DatasetObserver
     {
         $datasetVersion = DatasetVersion::where([
             'dataset_id' => $dataset->id
-        ])->first();
+        ])->select('id')->first();
         if($dataset->status === Dataset::STATUS_ACTIVE && !is_null($datasetVersion)) {
             $this->reindexElastic($dataset->id);
         }
@@ -39,7 +39,7 @@ class DatasetObserver
         $prevStatus = $dataset->prevStatus;
         $datasetVersion = DatasetVersion::where([
             'dataset_id' => $dataset->id
-        ])->first();
+        ])->select('id')->first();
 
         if ($prevStatus === Dataset::STATUS_ACTIVE && $dataset->status !== Dataset::STATUS_ACTIVE) {
             $this->deleteDatasetFromElastic($dataset->id);

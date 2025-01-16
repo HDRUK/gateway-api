@@ -56,7 +56,7 @@ class DatasetVersionObserver
         $dataset = Dataset::where([
             'id' => $datasetId,
             'status' => Dataset::STATUS_ACTIVE,
-        ])->first();
+        ])->select('id', 'status')->first();
 
         if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
             $this->reindexElastic($dataset->id);

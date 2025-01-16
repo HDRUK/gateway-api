@@ -58,7 +58,7 @@ class CollectionHasDatasetVersionObserver
         $collection = Collection::where([
             'id' => $collectionId,
             'status' => Collection::STATUS_ACTIVE,
-        ])->first();
+        ])->select('id')->first();
         if (!is_null($collection)) {
             $this->indexElasticCollections((int) $collectionId);
         }
