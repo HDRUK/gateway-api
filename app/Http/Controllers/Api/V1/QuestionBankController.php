@@ -606,6 +606,12 @@ class QuestionBankController extends Controller
                     $questionVersion[$key] = $question[$key];
                 }
 
+                // decode json for the FE to easily digest
+                foreach (json_decode($questionVersion['question_json'], true) as $key => $value) {
+                    $questionVersion[$key] = $value;
+                }
+                unset($questionVersion['question_json']);
+
                 $options = [];
 
                 foreach ($questionVersion['childVersions'] as $child) {
@@ -642,13 +648,22 @@ class QuestionBankController extends Controller
                     );
 
                 }
-                $questionVersion['options'] = $newOptions;
 
-                // decode json for the FE to easily digest
-                foreach (json_decode($questionVersion['question_json'], true) as $key => $value) {
-                    $questionVersion[$key] = $value;
+                // add in any options that don't have any children
+                foreach ($questionVersion['field']['options'] as $option) {
+                    if (!in_array($option, array_column($newOptions, 'label'))) {
+                        array_push(
+                            $newOptions,
+                            [
+                                'label' => $option,
+                                'children' => []
+                            ]
+                        );
+                    }
+
                 }
-                unset($questionVersion['question_json']);
+
+                $questionVersion['options'] = $newOptions;
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
