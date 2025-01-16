@@ -32,8 +32,7 @@ class QuestionBankSeeder extends Seeder
 
         $count = 0;
         foreach ($jsonData as $section) {
-
-            $sectionModel = DataAccessSection::create([
+            $sectionModel = DataAccessSection::updateOrCreate([
                 'name' => $section['title'],
                 'description' => $section['description'],
                 'parent_section' => null,
@@ -41,7 +40,7 @@ class QuestionBankSeeder extends Seeder
             ]);
 
             foreach ($section['subSections'] as $subSection) {
-                $subSectionModel = DataAccessSection::create([
+                $subSectionModel = DataAccessSection::updateOrCreate([
                     'name' => $subSection['name'],
                     'description' => $subSection['description'],
                     'parent_section' => $sectionModel->id,
@@ -66,12 +65,23 @@ class QuestionBankSeeder extends Seeder
                         'team_id' => 1,
                     ]);
 
+                    $questionForJson = [
+                        'field' => [
+                            'options' => array_column($question['field']['options'], 'value'),
+                            'component' => $question['field']['component'],
+                            'validations' => $question['field']['validations'],
+                        ],
+                        'title' => $question['title'],
+                        'guidance' => $question['guidance'],
+                        'required' => $question['required'],
+                    ];
+
                     $questionVersionModel = QuestionBankVersion::create([
                         'question_id' => $questionModel->id,
                         'version' => 1,
                         'required' => $questionModel->force_required,
                         'default' => 0,
-                        'question_json' => json_encode($question),
+                        'question_json' => json_encode($questionForJson),
                         'deleted_at' => null,
                     ]);
 
@@ -90,11 +100,15 @@ class QuestionBankSeeder extends Seeder
                                         'is_child' => 1,
                                     ]);
 
-                                    $subquestionJson = [
-                                        'field' => $subquestion,
-                                        'title' => $subquestion['question'] ?? '',
-                                        'guidance' => '',
-                                        'required' => $question['required'],
+                                    $subquestionForJson = [
+                                        'field' => [
+                                            'options' => array_column($subquestion['field']['options'] ?? [], 'value'),
+                                            'component' => $subquestion['input']['type'],
+                                            'validations' => $subquestion['validations'] ?? [],
+                                        ],
+                                        'title' => $subquestion['question'] ?? "",
+                                        'guidance' => $subquestion['guidance'] ?? "",
+                                        'required' => $subquestion['required'] ?? $question['required'],
                                     ];
 
                                     $subquestionVersionModel = QuestionBankVersion::create([
@@ -102,7 +116,7 @@ class QuestionBankSeeder extends Seeder
                                         'version' => 1,
                                         'required' => $subquestionModel->force_required,
                                         'default' => 0,
-                                        'question_json' => json_encode($subquestionJson),
+                                        'question_json' => json_encode($subquestionForJson),
                                         'deleted_at' => null,
                                     ]);
                                     QuestionBankVersionHasChildVersion::create([
