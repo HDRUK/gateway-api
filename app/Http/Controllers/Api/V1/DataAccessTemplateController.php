@@ -152,7 +152,16 @@ class DataAccessTemplateController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $template = DataAccessTemplate::with('questions')->findOrFail($id);
+            $template = DataAccessTemplate::where('id', $id)->with('questions')->first();
+            foreach ($template['questions'] as $i => $q) {
+                $version = QuestionBank::with([
+                    'latestVersion',
+                    'latestVersion.childVersions',
+                ])->where('id', $q->question_id)
+                    ->first()
+                    ->toArray();
+                $template['questions'][$i]['latest_version'] = $version['latest_version'];
+            }
 
             if ($template) {
                 Auditor::log([

@@ -80,13 +80,51 @@ class DataAccessTemplateTest extends TestCase
      */
     public function test_the_application_can_list_a_single_dar_template()
     {
+        // Create a question to associate with the template
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'field' => [
+                    'options' => [],
+                    'component' => 'TextArea',
+                    'validations' => [
+                        [
+                            'min' => 1,
+                            'message' => 'Please enter a value'
+                        ]
+                    ]
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $questionId = $response->decodeResponseJson()['data'];
+
         $response = $this->json(
             'POST',
             'api/v1/dar/templates',
             [
                 'team_id' => 1,
-                'published' => false,
+                'published' => true,
                 'locked' => false,
+                'questions' => [
+                    0 => [
+                        'id' => $questionId,
+                        'required' => true,
+                        'guidance' => 'Custom guidance',
+                        'order' => 2,
+                    ]
+                ]
             ],
             $this->header
         );
@@ -111,7 +149,19 @@ class DataAccessTemplateTest extends TestCase
                     'team_id',
                     'published',
                     'locked',
-                    'questions',
+                    'questions' => [
+                        0 => [
+                            'template_id',
+                            'question_id',
+                            'guidance',
+                            'required',
+                            'order',
+                            'latest_version' => [
+                                'question_json',
+                                'child_versions'
+                            ],
+                        ]
+                    ],
                 ],
             ]);
     }
