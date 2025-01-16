@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use CloudLogger;
 use Config;
 use Auditor;
 use Exception;
+use CloudLogger;
 use App\Models\Dur;
 use App\Models\Team;
 use App\Models\Tool;
@@ -16,21 +16,23 @@ use App\Models\License;
 use App\Models\Collection;
 use App\Models\DurHasTool;
 use App\Models\Publication;
-use App\Models\PublicationHasDatasetVersion;
 use App\Models\TypeCategory;
-
 use Illuminate\Http\Request;
+
+use Illuminate\Http\Response;
 use App\Exports\DataUseExport;
-use App\Models\DatasetVersionHasTool;
 use App\Models\DatasetVersion;
 use App\Exports\ToolListExport;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
+use App\Models\CollectionHasDur;
+use App\Models\DataProviderColl;
+use App\Http\Traits\IndexElastic;
 
+use App\Models\DurHasPublication;
+use Illuminate\Http\JsonResponse;
 use App\Exports\DatasetListExport;
 use App\Exports\PublicationExport;
 use App\Models\ProgrammingPackage;
-use App\Exports\DataProviderCollExport;
+use App\Models\PublicationHasTool;
 use App\Exports\DataProviderExport;
 use App\Exports\DatasetTableExport;
 use App\Models\ProgrammingLanguage;
@@ -38,19 +40,18 @@ use App\Models\ToolHasTypeCategory;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Http\Traits\GetValueByPossibleKeys;
-use App\Http\Traits\IndexElastic;
+use App\Models\DatasetVersionHasTool;
 use App\Http\Traits\PaginateFromArray;
+use App\Exports\DataProviderCollExport;
+use App\Http\Requests\Search\DOISearch;
 use App\Models\DataProviderCollHasTeam;
+use App\Models\CollectionHasPublication;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
+use App\Http\Traits\GetValueByPossibleKeys;
+use App\Models\PublicationHasDatasetVersion;
 use Illuminate\Database\Eloquent\Casts\Json;
-use App\Http\Requests\Search\DOISearch;
 use App\Http\Requests\Search\PublicationSearch;
-use App\Models\CollectionHasPublication;
-use App\Models\DataProviderColl;
-use App\Models\DurHasPublication;
-use App\Models\PublicationHasTool;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SearchController extends Controller
@@ -885,6 +886,8 @@ class SearchController extends Controller
                         $durArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $durArray[$i]['toolNames'] = $this->durToolNames($model['id']);
                         $durArray[$i]['non_gateway_datasets'] = $model['non_gateway_datasets'];
+                        $durArray[$i]['collectionNames'] = $this->durCollectionNames($model['id']);
+
                         $foundFlag = true;
                         break;
                     }
@@ -1685,6 +1688,29 @@ class SearchController extends Controller
         return $datasetTitles;
     }
 
+    private function durCollectionNames(int $durId): array
+    {
+        $collectionNames = [];
+
+        $collectionHasDurs = CollectionHasDur::where([
+                'dur_id' => $durId,
+            ])
+            ->select('collection_id')
+            ->get()
+            ->toArray();
+        if (count($collectionHasDurs)) {
+            return $collectionNames;
+        }
+
+        $collectionIds = convertArrayToArrayWithKeyName($collectionHasDurs, 'collection_id');
+        $collectionNames = Collection::where('status', Collection::STATUS_ACTIVE)
+                            ->whereIn('id', $collectionIds)
+                            ->select('name')
+                            ->get()
+                            ->toArray();
+
+        return $collectionNames;
+    }
 
     /**
      * Sorts results returned by the search service according to sort field and direction
