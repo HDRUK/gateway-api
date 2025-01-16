@@ -1128,9 +1128,9 @@ class QuestionBankController extends Controller
      *                                  @OA\Property(property="label", type="string", example="yes"),
      *                                  @OA\Property(property="field", type="array",
      *                                      @OA\Items(type="object",
-     *                                          @OA\Property(property="options", type="array", example="['yes', 'no']"),
+     *                                          @OA\Property(property="options", type="array", example="['yes', 'no']", @OA\Items()),
      *                                          @OA\Property(property="component", type="string", example="yes"),
-     *                                          @OA\Property(property="validations", type="array", example=[]),
+     *                                          @OA\Property(property="validations", type="array", example="[]", @OA\Items()),
      *                                      )
      *                                  ),
      *                                  @OA\Property(property="title", type="string", example="This is my nested question"),
