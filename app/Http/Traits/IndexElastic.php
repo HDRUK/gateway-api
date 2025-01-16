@@ -430,20 +430,6 @@ trait IndexElastic
                 ->pluck('name')
                 ->all();
 
-            // collections
-            $collectionHasDurs = CollectionHasDur::where([
-                    'dur_id' => $id,
-                ])
-                ->select('collection_id')
-                ->get()
-                ->toArray();
-            $collectionIds = convertArrayToArrayWithKeyName($collectionHasDurs, 'collection_id');
-            $collectionNames = Collection::where('status', Collection::STATUS_ACTIVE)
-                                ->whereIn('id', $collectionIds)
-                                ->select('name')
-                                ->get()
-                                ->toArray();
-
             $toIndex = [
                 'projectTitle' => $durMatch['project_title'],
                 'laySummary' => $durMatch['lay_summary'],
