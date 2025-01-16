@@ -456,7 +456,7 @@ trait IndexElastic
                 'keywords' => $keywords,
                 'sector' => $sector,
                 'dataProvider' => $dataProvider,
-                'collectionNames' => convertArrayToArrayWithKeyName($collectionNames, 'name'),
+                'collectionNames' => $this->getCollectionNamesByDurId($id),
             ];
 
             $params = [
@@ -944,5 +944,29 @@ trait IndexElastic
         ];
 
         return $datasetResources;
+    }
+
+    public function getCollectionNamesByDurId(int $durId): array
+    {
+        $collectionNames = [];
+
+        $collectionHasDurs = CollectionHasDur::where([
+                'dur_id' => $durId,
+            ])
+            ->select('collection_id')
+            ->get()
+            ->toArray();
+        if (count($collectionHasDurs)) {
+            return $collectionNames;
+        }
+
+        $collectionIds = convertArrayToArrayWithKeyName($collectionHasDurs, 'collection_id');
+        $collectionNames = Collection::where('status', Collection::STATUS_ACTIVE)
+                            ->whereIn('id', $collectionIds)
+                            ->select('name')
+                            ->get()
+                            ->toArray();
+
+        return convertArrayToArrayWithKeyName($collectionNames, 'name');
     }
 }

@@ -23,7 +23,6 @@ use Illuminate\Http\Response;
 use App\Exports\DataUseExport;
 use App\Models\DatasetVersion;
 use App\Exports\ToolListExport;
-use App\Models\CollectionHasDur;
 use App\Models\DataProviderColl;
 use App\Http\Traits\IndexElastic;
 
@@ -886,7 +885,7 @@ class SearchController extends Controller
                         $durArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $durArray[$i]['toolNames'] = $this->durToolNames($model['id']);
                         $durArray[$i]['non_gateway_datasets'] = $model['non_gateway_datasets'];
-                        $durArray[$i]['collectionNames'] = $this->durCollectionNames($model['id']);
+                        $durArray[$i]['collectionNames'] = $this->getCollectionNamesByDurId($model['id']);
 
                         $foundFlag = true;
                         break;
@@ -1686,30 +1685,6 @@ class SearchController extends Controller
         });
 
         return $datasetTitles;
-    }
-
-    private function durCollectionNames(int $durId): array
-    {
-        $collectionNames = [];
-
-        $collectionHasDurs = CollectionHasDur::where([
-                'dur_id' => $durId,
-            ])
-            ->select('collection_id')
-            ->get()
-            ->toArray();
-        if (count($collectionHasDurs)) {
-            return $collectionNames;
-        }
-
-        $collectionIds = convertArrayToArrayWithKeyName($collectionHasDurs, 'collection_id');
-        $collectionNames = Collection::where('status', Collection::STATUS_ACTIVE)
-                            ->whereIn('id', $collectionIds)
-                            ->select('name')
-                            ->get()
-                            ->toArray();
-
-        return $collectionNames;
     }
 
     /**
