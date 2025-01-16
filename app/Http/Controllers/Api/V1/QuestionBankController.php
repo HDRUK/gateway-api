@@ -1120,28 +1120,28 @@ class QuestionBankController extends Controller
      *                  @OA\Property(property="question_type", type="string", example="STANDARD"),
      *                  @OA\Property(property="force_required", type="boolean", example="false"),
      *                  @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
-     *                  @OA\Property(property=options, type="array",
+     *                  @OA\Property(property="options", type="array",
      *                      @OA\Items(type="object",
      *                          @OA\Property(property="label", type="string", example="yes"),
      *                          @OA\Property(property="children", type="array",
      *                              @OA\Items(type="object",
-     *                                  @OA\Property(property="label", type="string", "yes"),
+     *                                  @OA\Property(property="label", type="string", example="yes"),
      *                                  @OA\Property(property="field", type="array",
      *                                      @OA\Items(type="object",
-     *                                          @OA\Property(property="options", type="array", example=["yes", "no"]),
+     *                                          @OA\Property(property="options", type="array", example="['yes', 'no']"),
      *                                          @OA\Property(property="component", type="string", example="yes"),
      *                                          @OA\Property(property="validations", type="array", example=[]),
      *                                      )
      *                                  ),
-     *                                  @OA\Property(property="title", type="string", "This is my nested question"),
-     *                                  @OA\Property(property="guidance", type="string", "This is how you should answer this nested question"),
-     *                                  @OA\Property(property="required", type="boolean", "false")
+     *                                  @OA\Property(property="title", type="string", example="This is my nested question"),
+     *                                  @OA\Property(property="guidance", type="string", example="This is how you should answer this nested question"),
+     *                                  @OA\Property(property="required", type="boolean", example="false")
      *                              )
      *                          )
-     *                      ),
+     *                      )
      *                  )
      *              )
-     *          ),
+     *          )
      *      ),
      *      @OA\Response(
      *          response=500,
@@ -1152,7 +1152,7 @@ class QuestionBankController extends Controller
      *      )
      * )
      */
-    public function updateLatest(UpdateQuestionBank $request, int $id): JsonResponse // TODO: change to UpdateQuestionBank or similar
+    public function updateLatest(UpdateQuestionBank $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
