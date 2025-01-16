@@ -60,7 +60,7 @@ class CollectionHasDatasetVersionObserver
             'status' => Collection::STATUS_ACTIVE,
         ])->select('id')->first();
         if (!is_null($collection)) {
-            $this->indexElasticCollections((int) $collectionId);
+            $this->indexElasticCollections((int) $collection->id);
         }
 
         $datasetVersionId = $collectionHasDatasetVersion->dataset_version_id;
