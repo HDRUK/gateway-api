@@ -53,7 +53,6 @@ class UpdateQuestionBank extends BaseFormRequest
                 'string',
             ],
             'required' => [
-                'required',
                 'boolean',
             ],
             'default' => [

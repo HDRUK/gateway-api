@@ -705,12 +705,13 @@ class QuestionBankController extends Controller
      *          required=true,
      *          description="QuestionBank definition",
      *          @OA\JsonContent(
-     *              required={"field", "section_id", "required", "guidance", "title", "force_required", "allow_guidance_override"},
+     *              required={"field", "section_id", "guidance", "title", "force_required", "allow_guidance_override"},
      *              @OA\Property(property="section_id", type="integer", example="1"),
      *              @OA\Property(property="user_id", type="integer", example="1"),
      *              @OA\Property(property="team_id", type="array", @OA\Items()),
      *              @OA\Property(property="locked", type="boolean", example="false"),
      *              @OA\Property(property="archived", type="boolean", example="false"),
+     *              @OA\Property(property="required", type="boolean", example="false"),
      *              @OA\Property(property="force_required", type="boolean", example="false"),
      *              @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *              @OA\Property(property="default", type="integer", example="1"),
@@ -766,12 +767,12 @@ class QuestionBankController extends Controller
                 'field' => $input['field'],
                 'title' => $input['title'],
                 'guidance' => $input['guidance'],
-                'required' => $input['required'],
+                'required' => $input['required'] ?? false,
             ];
 
             $questionVersion = QuestionBankVersion::create([
                 'question_json' => json_encode($questionJson),
-                'required' => $input['required'],
+                'required' => $input['required'] ?? false,
                 'default' => $input['default'],
                 'question_id' => $question->id,
                 'version' => 1,
@@ -816,12 +817,13 @@ class QuestionBankController extends Controller
      *          required=true,
      *          description="QuestionBank definition",
      *          @OA\JsonContent(
-     *              required={"field", "section_id", "required", "guidance", "title", "force_required", "allow_guidance_override"},
+     *              required={"field", "section_id", "guidance", "title", "force_required", "allow_guidance_override"},
      *              @OA\Property(property="section_id", type="integer", example="1"),
      *              @OA\Property(property="user_id", type="integer", example="1"),
      *              @OA\Property(property="team_id", type="array", @OA\Items()),
      *              @OA\Property(property="locked", type="boolean", example="false"),
      *              @OA\Property(property="archived", type="boolean", example="false"),
+     *              @OA\Property(property="required", type="boolean", example="false"),
      *              @OA\Property(property="force_required", type="boolean", example="false"),
      *              @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *              @OA\Property(property="default", type="integer", example="1"),
@@ -877,12 +879,12 @@ class QuestionBankController extends Controller
                 'field' => $input['field'],
                 'title' => $input['title'],
                 'guidance' => $input['guidance'],
-                'required' => $input['required'],
+                'required' => $input['required'] ?? false,
             ];
 
             $questionVersion = QuestionBankVersion::create([
                 'question_json' => json_encode($questionJson),
-                'required' => $input['required'],
+                'required' => $input['required'] ?? false,
                 'default' => $input['default'],
                 'question_id' => $question->id,
                 'version' => 1,
@@ -940,7 +942,7 @@ class QuestionBankController extends Controller
      *          required=true,
      *          description="QuestionBank definition",
      *          @OA\JsonContent(
-     *              required={"field", "section_id", "required", "guidance", "title", "force_required", "allow_guidance_override"},
+     *              required={"field", "section_id", "guidance", "title", "force_required", "allow_guidance_override"},
      *              @OA\Property(property="section_id", type="integer", example="1"),
      *              @OA\Property(property="user_id", type="integer", example="1"),
      *              @OA\Property(property="team_id", type="array", @OA\Items()),
@@ -948,6 +950,7 @@ class QuestionBankController extends Controller
      *              @OA\Property(property="archived", type="boolean", example="false"),
      *              @OA\Property(property="is_child", type="boolean", example="false"),
      *              @OA\Property(property="question_type", type="string", example="STANDARD"),
+     *              @OA\Property(property="required", type="boolean", example="false"),
      *              @OA\Property(property="force_required", type="boolean", example="false"),
      *              @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *              @OA\Property(property="default", type="integer", example="1"),
@@ -1029,14 +1032,14 @@ class QuestionBankController extends Controller
                 'field' => $input['field'],
                 'title' => $input['title'],
                 'guidance' => $input['guidance'],
-                'required' => $input['required'],
+                'required' => $input['required'] ?? false,
             ];
 
             $latestVersion = $question->latestVersion()->first();
 
             $questionVersion = QuestionBankVersion::create([
                 'question_json' => json_encode($questionJson),
-                'required' => $input['required'],
+                'required' => $input['required'] ?? false,
                 'default' => $input['default'],
                 'question_id' => $question->id,
                 'version' => $latestVersion->version + 1,
@@ -1093,7 +1096,7 @@ class QuestionBankController extends Controller
      *          required=true,
      *          description="QuestionBank definition",
      *          @OA\JsonContent(
-     *              required={"field", "section_id", "required", "guidance", "title", "force_required", "allow_guidance_override"},
+     *              required={"field", "section_id", "guidance", "title", "force_required", "allow_guidance_override"},
      *              @OA\Property(property="section_id", type="integer", example="1"),
      *              @OA\Property(property="user_id", type="integer", example="1"),
      *              @OA\Property(property="team_id", type="array", @OA\Items()),
@@ -1101,6 +1104,7 @@ class QuestionBankController extends Controller
      *              @OA\Property(property="archived", type="boolean", example="false"),
      *              @OA\Property(property="is_child", type="boolean", example="false"),
      *              @OA\Property(property="question_type", type="string", example="STANDARD"),
+     *              @OA\Property(property="required", type="boolean", example="false"),
      *              @OA\Property(property="force_required", type="boolean", example="false"),
      *              @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *              @OA\Property(property="default", type="integer", example="1"),
@@ -1202,14 +1206,14 @@ class QuestionBankController extends Controller
                 'field' => $input['field'],
                 'title' => $input['title'],
                 'guidance' => $input['guidance'],
-                'required' => $input['required'],
+                'required' => $input['required'] ?? false,
             ];
 
             $latestVersion = $question->latestVersion()->first();
 
             $questionVersion = QuestionBankVersion::create([
                 'question_json' => json_encode($questionJson),
-                'required' => $input['required'],
+                'required' => $input['required'] ?? false,
                 'default' => $input['default'],
                 'question_id' => $question->id,
                 'version' => $latestVersion->version + 1,
@@ -1653,12 +1657,12 @@ class QuestionBankController extends Controller
                             'field' => $child['field'],
                             'title' => $child['title'],
                             'guidance' => $child['guidance'],
-                            'required' => $child['required'],
+                            'required' => $child['required'] ?? false,
                         ];
 
                         $childQuestionVersion = QuestionBankVersion::create([
                             'question_json' => json_encode($questionJson),
-                            'required' => $child['required'],
+                            'required' => $child['required'] ?? false,
                             'default' => $child['default'],
                             'question_id' => $childQuestion->id,
                             'version' =>  $versionNumber,
@@ -1707,12 +1711,12 @@ class QuestionBankController extends Controller
                             'field' => $child['field'],
                             'title' => $child['title'],
                             'guidance' => $child['guidance'],
-                            'required' => $child['required'],
+                            'required' => $child['required'] ?? false,
                         ];
 
                         $childQuestionVersion = QuestionBankVersion::create([
                             'question_json' => json_encode($questionJson),
-                            'required' => $child['required'],
+                            'required' => $child['required'] ?? false,
                             'default' => $input['default'],
                             'question_id' => $childQuestion->id,
                             'version' =>  $versionNumber,
