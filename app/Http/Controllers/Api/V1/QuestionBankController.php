@@ -635,7 +635,10 @@ class QuestionBankController extends Controller
                         // move all items from `field` field to one level up
                         $toAdd = json_decode($childQuestionVersion['question_json'], true);
                         $toAdd['component'] = $toAdd['field']['component'];
-                        $toAdd['options'] = $toAdd['field']['options'];
+                        $toAdd['options'] = array_map(
+                            fn ($elem) => ['label' => $elem],
+                            $toAdd['field']['options']
+                        );
                         $toAdd['validations'] = $toAdd['field']['validations'] ?? [];
                         unset($toAdd['field']);
 
