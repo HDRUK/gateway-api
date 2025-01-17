@@ -639,6 +639,13 @@ class QuestionBankController extends Controller
                         $toAdd['validations'] = $toAdd['field']['validations'] ?? [];
                         unset($toAdd['field']);
 
+                        $qbFields = QuestionBank::where('id', $childQuestionVersion['question_id'])
+                            ->select('id', 'force_required', 'allow_guidance_override')
+                            ->get()
+                            ->first();
+                        $toAdd['force_required'] = $qbFields->force_required;
+                        $toAdd['allow_guidance_override'] = $qbFields->allow_guidance_override;
+
                         array_push(
                             $childVersionArray,
                             [
@@ -1724,8 +1731,8 @@ class QuestionBankController extends Controller
                         $childQuestion = QuestionBank::create([
                             'section_id' => $input['section_id'],
                             'user_id' => $input['user_id'] ?? $jwtUser['id'],
-                            'force_required' => $input['force_required'],
-                            'allow_guidance_override' => $input['allow_guidance_override'],
+                            'force_required' => $child['force_required'],
+                            'allow_guidance_override' => $child['allow_guidance_override'],
                             'locked' => $child['locked'] ?? false,
                             'archived' => $child['archived'] ?? false,
                             'archived_date' => ($child['archived'] ?? false) ? Carbon::now() : null,
