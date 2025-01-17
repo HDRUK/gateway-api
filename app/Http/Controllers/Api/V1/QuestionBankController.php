@@ -1692,10 +1692,6 @@ class QuestionBankController extends Controller
                     $children = $option['children'];
 
                     foreach ($children as $child) {
-                        if ($option['label'] !== $child['label']) {
-                            throw new Exception("option label and child label must match");
-                        }
-
                         $childQuestion = QuestionBank::create([
                             'section_id' => $input['section_id'],
                             'user_id' => $input['user_id'] ?? $jwtUser['id'],
