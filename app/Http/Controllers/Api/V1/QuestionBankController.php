@@ -1735,7 +1735,7 @@ class QuestionBankController extends Controller
                         $field = [
                             'component' => $child['component'],
                             'validations' => $child['validations'],
-                            'options' => array_keys($child['options']),
+                            'options' => array_column($child['options'], 'label'),
                         ];
 
                         $questionJson = [
