@@ -317,7 +317,7 @@ class DataAccessApplicationController extends Controller
      *      )
      * )
      */
-    public function downloadFile(GetDataAccessApplicationFile $request, int $id, int $fileId): StreamedResponse
+    public function downloadFile(GetDataAccessApplicationFile $request, int $id, int $fileId): StreamedResponse | JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
