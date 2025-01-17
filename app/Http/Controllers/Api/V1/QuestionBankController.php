@@ -21,6 +21,8 @@ use App\Http\Requests\QuestionBank\GetQuestionBank;
 use App\Http\Requests\QuestionBank\GetQuestionBankVersion;
 use App\Http\Requests\QuestionBank\UpdateQuestionBank;
 use App\Http\Requests\QuestionBank\UpdateStatusQuestionBank;
+use App\Http\Requests\QuestionBank\CreateLatestQuestionBank;
+use App\Http\Requests\QuestionBank\UpdateLatestQuestionBank;
 use App\Http\Traits\RequestTransformation;
 
 class QuestionBankController extends Controller
@@ -630,11 +632,18 @@ class QuestionBankController extends Controller
                 foreach ($options as $optionKey => $option) {
                     $childVersionArray = [];
                     foreach ($option as $childQuestionVersion) {
+                        // move all items from `field` field to one level up
+                        $toAdd = json_decode($childQuestionVersion['question_json'], true);
+                        $toAdd['component'] = $toAdd['field']['component'];
+                        $toAdd['options'] = $toAdd['field']['options'];
+                        $toAdd['validations'] = $toAdd['field']['validations'] ?? [];
+                        unset($toAdd['field']);
+
                         array_push(
                             $childVersionArray,
                             [
                                 'label' => $optionKey,
-                                ...json_decode($childQuestionVersion['question_json'], true)
+                                ...$toAdd,
                             ]
                         );
                     }
@@ -664,6 +673,11 @@ class QuestionBankController extends Controller
                 }
 
                 $questionVersion['options'] = $newOptions;
+
+                // Move 2 entries up to the root
+                $questionVersion['component'] = $questionVersion['field']['component'];
+                $questionVersion['validations'] = $questionVersion['field']['validations'] ?? [];
+                unset($questionVersion['field']);
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
@@ -851,7 +865,7 @@ class QuestionBankController extends Controller
      *      )
      * )
      */
-    public function storeLatest(CreateQuestionBank $request): JsonResponse
+    public function storeLatest(CreateLatestQuestionBank $request): JsonResponse
     {
         try {
             $input = $request->all();
@@ -875,8 +889,14 @@ class QuestionBankController extends Controller
                 'question_type' => $input['question_type'] ?? 'STANDARD',
             ]);
 
+            $field = [
+                'component' => $input['component'],
+                'validations' => $input['validations'],
+                'options' => array_keys($input['options']),
+            ];
+
             $questionJson = [
-                'field' => $input['field'],
+                'field' => $field,
                 'title' => $input['title'],
                 'guidance' => $input['guidance'],
                 'required' => $input['required'] ?? false,
@@ -1171,7 +1191,7 @@ class QuestionBankController extends Controller
      *      )
      * )
      */
-    public function updateLatest(UpdateQuestionBank $request, int $id): JsonResponse
+    public function updateLatest(UpdateLatestQuestionBank $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -1202,8 +1222,14 @@ class QuestionBankController extends Controller
                 'question_type' => $input['question_type'] ?? 'STANDARD',
             ]);
 
+            $field = [
+                'component' => $input['component'],
+                'validations' => $input['validations'],
+                'options' => array_column($input['options'], 'label'),
+            ];
+
             $questionJson = [
-                'field' => $input['field'],
+                'field' => $field,
                 'title' => $input['title'],
                 'guidance' => $input['guidance'],
                 'required' => $input['required'] ?? false,
@@ -1686,7 +1712,7 @@ class QuestionBankController extends Controller
         // Don't allow children to also have children, and only allow certain parent types to have children
         if (!($input['is_child'] ?? false)
         && isset($input['options'])
-        && in_array($input['field']['component'], ['RadioGroup', 'CheckboxGroup', 'Autocomplete'])) {
+        && in_array($input['component'], ['RadioGroup', 'CheckboxGroup', 'Autocomplete'])) {
             // Create all children questions and question versions as required.
             // All must by design have the same version number as the parent - parents and children move versions in lockstep
             if (isset($input['options'])) {
@@ -1707,8 +1733,14 @@ class QuestionBankController extends Controller
                             'is_child' => true,
                         ]);
 
+                        $field = [
+                            'component' => $child['component'],
+                            'validations' => $child['validations'],
+                            'options' => array_keys($child['options']),
+                        ];
+
                         $questionJson = [
-                            'field' => $child['field'],
+                            'field' => $field,
                             'title' => $child['title'],
                             'guidance' => $child['guidance'],
                             'required' => $child['required'] ?? false,
