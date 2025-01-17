@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
 
 use App\Models\Collection;
 use App\Models\CollectionHasDatasetVersion;
+use App\Models\CollectionHasDur;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasTool;
@@ -440,7 +441,8 @@ trait IndexElastic
                 'datasetTitles' => $datasetTitles,
                 'keywords' => $keywords,
                 'sector' => $sector,
-                'dataProvider' => $dataProvider
+                'dataProvider' => $dataProvider,
+                'collectionNames' => $this->getCollectionNamesByDurId($id),
             ];
 
             $params = [
@@ -928,5 +930,29 @@ trait IndexElastic
         ];
 
         return $datasetResources;
+    }
+
+    public function getCollectionNamesByDurId(int $durId): array
+    {
+        $collectionNames = [];
+
+        $collectionHasDurs = CollectionHasDur::where([
+                'dur_id' => $durId,
+            ])
+            ->select('collection_id')
+            ->get()
+            ->toArray();
+        if (count($collectionHasDurs)) {
+            return $collectionNames;
+        }
+
+        $collectionIds = convertArrayToArrayWithKeyName($collectionHasDurs, 'collection_id');
+        $collectionNames = Collection::where('status', Collection::STATUS_ACTIVE)
+                            ->whereIn('id', $collectionIds)
+                            ->select('name')
+                            ->get()
+                            ->toArray();
+
+        return convertArrayToArrayWithKeyName($collectionNames, 'name');
     }
 }

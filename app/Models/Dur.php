@@ -250,4 +250,16 @@ class Dur extends Model
     {
         return $this->hasMany(DurHasDatasetVersion::class, 'dur_id');
     }
+
+
+    public function collections(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Collection::class,
+            'collection_has_durs',
+            'dur_id',
+            'collection_id',
+        );
+    }
+
 }
