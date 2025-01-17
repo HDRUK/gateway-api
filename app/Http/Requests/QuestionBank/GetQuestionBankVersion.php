@@ -17,7 +17,7 @@ class GetQuestionBankVersion extends BaseFormRequest
             'id' => [
                 'int',
                 'required',
-                'exists:question_bank_versions,id',
+                'exists:question_bank_questions,id',
             ],
         ];
     }
