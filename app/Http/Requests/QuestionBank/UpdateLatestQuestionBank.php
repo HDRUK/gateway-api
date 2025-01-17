@@ -62,7 +62,6 @@ class UpdateLatestQuestionBank extends BaseFormRequest
                 'integer'
             ],
             'options' => [
-                'required',
                 'array',
             ],
             'component' => [
