@@ -892,7 +892,7 @@ class QuestionBankController extends Controller
             $field = [
                 'component' => $input['component'],
                 'validations' => $input['validations'],
-                'options' => array_keys($input['options']),
+                'options' => array_column($input['options'], 'label'),
             ];
 
             $questionJson = [
@@ -1717,7 +1717,6 @@ class QuestionBankController extends Controller
             // All must by design have the same version number as the parent - parents and children move versions in lockstep
             if (isset($input['options'])) {
                 foreach ($input['options'] as $option) {
-                    var_dump($option['label']);
                     $label = $option['label'];
                     $children = $option['children'];
 

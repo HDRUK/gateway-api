@@ -65,7 +65,6 @@ class CreateLatestQuestionBank extends BaseFormRequest
                 'string',
             ],
             'validations' => [
-                'required',
                 'array',
             ],
         ];

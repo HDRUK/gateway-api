@@ -60,7 +60,18 @@ class UpdateLatestQuestionBank extends BaseFormRequest
             ],
             'team_id.*' => [
                 'integer'
-            ]
+            ],
+            'options' => [
+                'required',
+                'array',
+            ],
+            'component' => [
+                'required',
+                'string',
+            ],
+            'validations' => [
+                'array',
+            ],
         ];
     }
 
