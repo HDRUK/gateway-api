@@ -5,6 +5,7 @@ namespace Tests\Feature;
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
 use App\Models\Dataset;
+use App\Models\QuestionBank;
 use App\Models\Team;
 use App\Http\Enums\TeamMemberOf;
 use Tests\TestCase;
@@ -19,6 +20,7 @@ use Database\Seeders\SpatialCoverageSeeder;
 use Tests\Traits\MockExternalApis;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 class DataAccessApplicationTest extends TestCase
@@ -127,6 +129,97 @@ class DataAccessApplicationTest extends TestCase
                     'questions',
                 ],
             ]);
+    }
+
+    /**
+     * Test files associated with a dar application can be listed and downloaded
+     *
+     * @return void
+     */
+    public function test_the_application_can_list_and_download_dar_application_files()
+    {
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'DRAFT',
+                'approval_status' => 'APPROVED_COMMENTS',
+                'dataset_ids' => [1,2]
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $applicationId = $content['data'];
+        $questionId = QuestionBank::all()->random()->id;
+
+        $file = UploadedFile::fake()->create('test_dar_application.pdf');
+        $response = $this->json(
+            'POST',
+            'api/v1/files?entity_flag=dar-application-upload&application_id=' . $applicationId . '&question_id=' . $questionId,
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        $response->assertStatus(200);
+
+        // test it can list files
+        $response = $this->json(
+            'GET',
+            'api/v1/dar/applications/' . $applicationId . '/files',
+            [],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'filename',
+                        'file_location',
+                        'user_id',
+                        'status',
+                        'entity_id',
+                        'question_id',
+                        'error',
+                    ],
+                ]
+            ]);
+
+        $fileId = $response->decodeResponseJson()['data'][0]['id'];
+
+        // test downloading a file associated with the dar application
+        $response = $this->json(
+            'GET',
+            'api/v1/dar/applications/' . $applicationId . '/files/' . $fileId . '/download',
+            [],
+            $this->header,
+        );
+        $response->assertStatus(200);
+
+        // test deleting the file
+        $response = $this->json(
+            'DELETE',
+            'api/v1/dar/applications/' . $applicationId . '/files/' . $fileId,
+            [],
+            $this->header,
+        );
+        $response->assertStatus(200);
+
     }
 
     /**

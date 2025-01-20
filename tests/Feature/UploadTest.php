@@ -9,6 +9,8 @@ use App\Models\Team;
 use App\Models\Upload;
 use App\Models\Dataset;
 use App\Models\Collection;
+use App\Models\DataAccessApplication;
+use App\Models\QuestionBank;
 use Tests\Traits\Authorization;
 
 use Illuminate\Http\UploadedFile;
@@ -21,6 +23,8 @@ use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
 use Database\Seeders\CollectionHasUserSeeder;
+use Database\Seeders\QuestionBankSeeder;
+use Database\Seeders\DataAccessApplicationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class UploadTest extends TestCase
@@ -51,6 +55,8 @@ class UploadTest extends TestCase
             DatasetVersionSeeder::class,
             CollectionSeeder::class,
             CollectionHasUserSeeder::class,
+            QuestionBankSeeder::class,
+            DataAccessApplicationSeeder::class,
         ]);
     }
 
@@ -575,5 +581,52 @@ class UploadTest extends TestCase
 
         $this->assertEquals($content['data']['status'], 'FAILED');
         $this->assertNotNull($content['data']['error']);
+    }
+
+    /**
+     * Upload a file for a dar application with success
+     *
+     * @return void
+     */
+    public function test_dar_application_upload_with_success(): void
+    {
+        $applicationId = DataAccessApplication::all()->random()->id;
+        $questionId = QuestionBank::all()->random()->id;
+        $file = UploadedFile::fake()->create('test_dar_application.pdf');
+        // post file to files endpoint
+        $response = $this->json(
+            'POST',
+            self::TEST_URL . '?entity_flag=dar-application-upload&application_id=' . $applicationId . '&question_id=' . $questionId,
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'created_at',
+                'updated_at',
+                'filename',
+                'file_location',
+                'user_id',
+                'status',
+                'entity_id',
+                'question_id',
+                'error',
+            ]
+        ]);
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson();
+        $entityId = $content['data']['entity_id'];
+        $questionIdResp = $content['data']['question_id'];
+
+        $this->assertTrue($entityId === $applicationId);
+        $this->assertTrue($questionIdResp === $questionId);
     }
 }

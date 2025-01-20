@@ -53,6 +53,8 @@ class ScanFileUpload implements ShouldQueue
     private bool $elasticIndexing = true;
     private ?int $datasetId = null;
     private ?int $collectionId = null;
+    private ?int $applicationId = null;
+    private ?int $questionId = null;
     private bool $isLocalOrTestEnv = false;
 
     public $timeout = 180; // default timeout is 60
@@ -72,7 +74,9 @@ class ScanFileUpload implements ShouldQueue
         ?string $outputVersion,
         bool $elasticIndexing,
         ?int $datasetId,
-        ?int $collectionId
+        ?int $collectionId,
+        ?int $applicationId,
+        ?int $questionId,
     ) {
         $this->uploadId = $uploadId;
         $this->fileSystem = $fileSystem;
@@ -86,6 +90,8 @@ class ScanFileUpload implements ShouldQueue
         $this->elasticIndexing = $elasticIndexing;
         $this->datasetId = $datasetId;
         $this->collectionId = $collectionId;
+        $this->applicationId = $applicationId;
+        $this->questionId = $questionId;
         $this->isLocalOrTestEnv = (strtoupper(config('app.env')) === 'TESTING' || strtoupper(config('app.env')) === 'LOCAL');
     }
 
@@ -175,6 +181,9 @@ class ScanFileUpload implements ShouldQueue
                         break;
                     case 'collections-media':
                         $this->uploadCollectionMedia($loc, $upload, $this->collectionId);
+                        break;
+                    case 'dar-application-upload':
+                        $this->darApplicationUpload($loc, $upload);
                         break;
                 }
 
@@ -476,6 +485,37 @@ class ScanFileUpload implements ShouldQueue
     {
         $collection = Collection::findOrFail($collectionId);
         $this->uploadMedia($loc, $upload, $collection, 'collections', 'image_link');
+    }
+
+    private function darApplicationUpload(string $loc, Upload $upload): void
+    {
+        try {
+            $upload->update([
+                'status' => 'PROCESSED',
+                'file_location' => $loc,
+                'entity_type' => 'dataAccessApplication',
+                'entity_id' => $this->applicationId,
+                'question_id' => $this->questionId,
+            ]);
+
+            CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
+
+        } catch (Exception $e) {
+            // Record exception in uploads table
+            $upload->update([
+                'status' => 'FAILED',
+                'file_location' => $loc,
+                'error' => $e->getMessage()
+            ]);
+
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
     }
 
     private function uploadMedia(string $loc, Upload $upload, $entity, string $entityName, string $imageCol): void
