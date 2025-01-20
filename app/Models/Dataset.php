@@ -34,7 +34,7 @@ class Dataset extends Model
     public const ORIGIN_API = 'API';
     public const ORIGIN_GMI = 'GMI';
 
-    public $prevStatus;
+    public string $prevStatus = '';
 
     /**
      * Table associated with this model

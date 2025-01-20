@@ -23,7 +23,7 @@ class Publication extends Model
     public const STATUS_DRAFT = 'DRAFT';
     public const STATUS_ARCHIVED = 'ARCHIVED';
 
-    public $prevStatus;
+    public string $prevStatus = '';
 
     /**
      * The table associated with this model.
