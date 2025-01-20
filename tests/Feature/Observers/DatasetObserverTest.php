@@ -37,7 +37,7 @@ class DatasetObserverTest extends TestCase
         $this->metadata = $this->getMetadata();
     }
 
-    public function test_reindexes_elastic_on_created_event_if_active_and_has_version()
+    public function testReindexesElasticOnCreatedEeventIfActiveAndHasVersion()
     {
         $observer = Mockery::mock(DatasetObserver::class)->makePartial();
         $observer->shouldReceive('reindexElastic')->once()->with(1);
