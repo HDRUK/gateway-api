@@ -1160,12 +1160,6 @@ class TeamController extends Controller
                                 return $query->withTrashed();
                             }
                         )
-                        ->when(
-                            $filterStatus,
-                            function ($query) use ($filterStatus) {
-                                return $query->where('status', '=', $filterStatus);
-                            }
-                        )
                         ->first();
 
                     if ($version) {
