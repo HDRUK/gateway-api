@@ -40,10 +40,6 @@ class UpdateQuestionBank extends BaseFormRequest
                 'string',
                 'in:STANDARD,CUSTOM',
             ],
-            'field' => [
-                'required',
-                'array',
-            ],
             'title' => [
                 'required',
                 'string',
@@ -64,7 +60,17 @@ class UpdateQuestionBank extends BaseFormRequest
             ],
             'team_id.*' => [
                 'integer'
-            ]
+            ],
+            'options' => [
+                'array',
+            ],
+            'component' => [
+                'required',
+                'string',
+            ],
+            'validations' => [
+                'array',
+            ],
         ];
     }
 

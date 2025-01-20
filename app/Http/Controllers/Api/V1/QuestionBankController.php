@@ -14,15 +14,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\QuestionBank\EditQuestionBank;
 use App\Http\Requests\QuestionBank\CreateQuestionBank;
 use App\Http\Requests\QuestionBank\DeleteQuestionBank;
-use App\Http\Requests\QuestionBank\EditQuestionBank;
-use App\Http\Requests\QuestionBank\GetQuestionBank;
-use App\Http\Requests\QuestionBank\GetQuestionBankVersion;
 use App\Http\Requests\QuestionBank\UpdateQuestionBank;
+use App\Http\Requests\QuestionBank\GetQuestionBankVersion;
 use App\Http\Requests\QuestionBank\UpdateStatusQuestionBank;
-use App\Http\Requests\QuestionBank\CreateLatestQuestionBank;
-use App\Http\Requests\QuestionBank\UpdateLatestQuestionBank;
 use App\Http\Traits\RequestTransformation;
 
 class QuestionBankController extends Controller
@@ -326,217 +323,8 @@ class QuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/questions/{id}",
-     *      summary="Return a single system question bank question",
-     *      description="Return a single system question bank question",
-     *      tags={"QuestionBank"},
-     *      summary="QuestionBank@show",
-     *      security={{"bearerAuth":{}}},
-     *      @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         description="question bank question id",
-     *         required=true,
-     *         example="1",
-     *         @OA\Schema(
-     *            type="integer",
-     *            description="question bank question id",
-     *         ),
-     *      ),
-     *      @OA\Parameter(
-     *         name="with_versions",
-     *         in="query",
-     *         description="include all versions",
-     *         required=false,
-     *         example="1",
-     *         @OA\Schema(
-     *            type="integer",
-     *            description="include all versions flag",
-     *         ),
-     *      ),
-     *      @OA\Parameter(
-     *         name="with_section",
-     *         in="query",
-     *         description="include section information",
-     *         required=false,
-     *         example="1",
-     *         @OA\Schema(
-     *            type="integer",
-     *            description="include section information flag",
-     *         ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Success",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="section_id", type="integer", example="1"),
-     *                  @OA\Property(property="user_id", type="integer", example="1"),
-     *                  @OA\Property(property="locked", type="boolean", example="false"),
-     *                  @OA\Property(property="archived", type="boolean", example="true"),
-     *                  @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="force_required", type="boolean", example="false"),
-     *                  @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
-     *                  @OA\Property(property="is_child", type="boolean", example="true"),
-     *                  @OA\Property(property="question_type", type="string", example="STANDARD"),
-     *                  @OA\Property(property="latest_version", type="object", example=""),
-     *                  @OA\Property(property="versions", type="object", example=""),
-     *              )
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=404,
-     *          description="Not found response",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="not found"),
-     *          )
-     *      )
-     * )
-     */
-    public function show(GetQuestionBank $request, int $id): JsonResponse
-    {
-        $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
-        try {
-            $withVersions = $request->boolean('with_versions', true);
-            $withSection = $request->boolean('with_section', true);
-            $withFields = [
-                'latestVersion',
-                'latestVersion.childVersions',
-            ];
-            if ($withVersions) {
-                $withFields = array_merge($withFields, ['versions', 'versions.childVersions']);
-            }
-            if ($withSection) {
-                $withFields = array_merge($withFields, ['section']);
-            }
-
-            $question = QuestionBank::with($withFields)->findOrFail($id);
-
-            if ($question) {
-
-                Auditor::log([
-                    'user_id' => (int)$jwtUser['id'],
-                    'action_type' => 'GET',
-                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'QuestionBank get ' . $id,
-                ]);
-
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                    'data' => $question,
-                ], Config::get('statuscodes.STATUS_OK.code'));
-            }
-
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
-            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
-        } catch (Exception $e) {
-            Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Get(
-     *      path="/api/v1/questions/version/{id}",
-     *      summary="Return a single system question bank question version",
-     *      description="Return a single system question bank question version",
-     *      tags={"QuestionBank"},
-     *      summary="QuestionBank@showVersion",
-     *      security={{"bearerAuth":{}}},
-     *      @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         description="question bank question version id",
-     *         required=true,
-     *         example="1",
-     *         @OA\Schema(
-     *            type="integer",
-     *            description="question bank question version id",
-     *         ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Success",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="question_id", type="integer", example="1"),
-     *                  @OA\Property(property="version", type="integer", example="1"),
-     *                  @OA\Property(property="default", type="boolean", example="false"),
-     *                  @OA\Property(property="required", type="boolean", example="true"),
-     *                  @OA\Property(property="question_json", type="object", example=""),
-     *              )
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=404,
-     *          description="Not found response",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="not found"),
-     *          )
-     *      )
-     * )
-     */
-    public function showVersion(GetQuestionBankVersion $request, int $id): JsonResponse
-    {
-        $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
-        try {
-            $questionVersion = QuestionBankVersion::findOrFail($id);
-
-            if ($questionVersion) {
-
-                Auditor::log([
-                    'user_id' => (int)$jwtUser['id'],
-                    'action_type' => 'GET',
-                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'QuestionBank get ' . $id,
-                ]);
-
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                    'data' => $questionVersion,
-                ], Config::get('statuscodes.STATUS_OK.code'));
-            }
-
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
-            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
-        } catch (Exception $e) {
-            Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Get(
-     *      path="/api/v1/questions/{id}/latest",
-     *      summary="Return the latest question bank question version for the supplied question id",
-     *      description="Return the latest question bank question version for the supplied question id",
+     *      summary="Return the latest question bank question version for the supplied question id, in an FE-friendly format",
+     *      description="Return the latest question bank question version for the supplied question id, in an FE-friendly format",
      *      tags={"QuestionBank"},
      *      summary="QuestionBank@showLatest",
      *      security={{"bearerAuth":{}}},
@@ -578,7 +366,7 @@ class QuestionBankController extends Controller
      *      )
      * )
      */
-    public function showLatest(GetQuestionBankVersion $request, int $id): JsonResponse
+    public function show(GetQuestionBankVersion $request, int $id): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -718,105 +506,77 @@ class QuestionBankController extends Controller
     }
 
     /**
-     * @OA\Post(
-     *      path="/api/v1/questions",
-     *      summary="Create a new system question bank question",
-     *      description="Creates a new system question bank question",
+     * @OA\Get(
+     *      path="/api/v1/questions/version/{id}",
+     *      summary="Return a single system question bank question version",
+     *      description="Return a single system question bank question version",
      *      tags={"QuestionBank"},
-     *      summary="QuestionBank@store",
+     *      summary="QuestionBank@showVersion",
      *      security={{"bearerAuth":{}}},
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="QuestionBank definition",
-     *          @OA\JsonContent(
-     *              required={"field", "section_id", "guidance", "title", "force_required", "allow_guidance_override"},
-     *              @OA\Property(property="section_id", type="integer", example="1"),
-     *              @OA\Property(property="user_id", type="integer", example="1"),
-     *              @OA\Property(property="team_id", type="array", @OA\Items()),
-     *              @OA\Property(property="locked", type="boolean", example="false"),
-     *              @OA\Property(property="archived", type="boolean", example="false"),
-     *              @OA\Property(property="required", type="boolean", example="false"),
-     *              @OA\Property(property="force_required", type="boolean", example="false"),
-     *              @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
-     *              @OA\Property(property="default", type="integer", example="1"),
-     *              @OA\Property(property="guidance", type="string", example="Question guidance"),
-     *              @OA\Property(property="title", type="string", example="Question title"),
-     *              @OA\Property(property="field", type="array", @OA\Items()),
-     *              @OA\Property(property="is_child", type="boolean", example="true"),
-     *              @OA\Property(property="question_type", type="string", example="STANDARD"),
-     *          ),
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="question bank question version id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="question bank question version id",
+     *         ),
      *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
      *          @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="success"),
-     *             @OA\Property(property="data", type="integer", example="100")
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="question_id", type="integer", example="1"),
+     *                  @OA\Property(property="version", type="integer", example="1"),
+     *                  @OA\Property(property="default", type="boolean", example="false"),
+     *                  @OA\Property(property="required", type="boolean", example="true"),
+     *                  @OA\Property(property="question_json", type="object", example=""),
+     *              )
      *          ),
      *      ),
      *      @OA\Response(
-     *          response=500,
-     *          description="Error",
+     *          response=404,
+     *          description="Not found response",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="error")
+     *              @OA\Property(property="message", type="string", example="not found"),
      *          )
      *      )
      * )
      */
-    public function store(CreateQuestionBank $request): JsonResponse
+    public function showVersion(GetQuestionBankVersion $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            if ($input['is_child'] ?? false) {
+        try {
+            $questionVersion = QuestionBankVersion::findOrFail($id);
+
+            if ($questionVersion) {
+
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'QuestionBank get ' . $id,
+                ]);
+
                 return response()->json([
-                    'message' => 'Cannot create a child question directly'
-                ], 400);
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $questionVersion,
+                ], Config::get('statuscodes.STATUS_OK.code'));
             }
 
-            $question = QuestionBank::create([
-                'section_id' => $input['section_id'],
-                'user_id' => $input['user_id'] ?? $jwtUser['id'],
-                'force_required' => $input['force_required'],
-                'allow_guidance_override' => $input['allow_guidance_override'],
-                'locked' => $input['locked'] ?? false,
-                'archived' => $input['archived'] ?? false,
-                'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
-                'is_child' => false,
-                'question_type' => $input['question_type'] ?? QuestionBank::STANDARD_TYPE,
-            ]);
-
-            $questionJson = [
-                'field' => $input['field'],
-                'title' => $input['title'],
-                'guidance' => $input['guidance'],
-                'required' => $input['required'] ?? false,
-            ];
-
-            $questionVersion = QuestionBankVersion::create([
-                'question_json' => json_encode($questionJson),
-                'required' => $input['required'] ?? false,
-                'default' => $input['default'],
-                'question_id' => $question->id,
-                'version' => 1,
-            ]);
-
-            $this->updateQuestionHasTeams($question, $input);
-
-            $this->handleChildren($questionVersion, $input, 1, $jwtUser);
-
-            Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
-                'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'QuestionBank ' . $question->id . ' created',
-            ]);
-
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $question->id,
-            ], Config::get('statuscodes.STATUS_CREATED.code'));
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -831,9 +591,9 @@ class QuestionBankController extends Controller
 
     /**
      * @OA\Post(
-     *      path="/api/v1/questions/latest",
-     *      summary="Create a new system question bank question with FE-helpful input syntax",
-     *      description="Creates a new system question bank question",
+     *      path="/api/v1/questions",
+     *      summary="Create a new system question bank question with FE-helpful input format",
+     *      description="Create a new system question bank question with FE-helpful input format",
      *      tags={"QuestionBank"},
      *      summary="QuestionBank@storeLatest",
      *      security={{"bearerAuth":{}}},
@@ -875,7 +635,7 @@ class QuestionBankController extends Controller
      *      )
      * )
      */
-    public function storeLatest(CreateLatestQuestionBank $request): JsonResponse
+    public function store(CreateQuestionBank $request): JsonResponse
     {
         try {
             $input = $request->all();
@@ -952,160 +712,6 @@ class QuestionBankController extends Controller
     /**
      * @OA\Put(
      *      path="/api/v1/questions/{id}",
-     *      summary="Update a system question bank question - children are updated through parents",
-     *      description="Update a system question bank question - children are updated through parents",
-     *      tags={"QuestionBank"},
-     *      summary="QuestionBank@update",
-     *      security={{"bearerAuth":{}}},
-     *      @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         description="question bank question id",
-     *         required=true,
-     *         example="1",
-     *         @OA\Schema(
-     *            type="integer",
-     *            description="question bank question id",
-     *         ),
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="QuestionBank definition",
-     *          @OA\JsonContent(
-     *              required={"field", "section_id", "guidance", "title", "force_required", "allow_guidance_override"},
-     *              @OA\Property(property="section_id", type="integer", example="1"),
-     *              @OA\Property(property="user_id", type="integer", example="1"),
-     *              @OA\Property(property="team_id", type="array", @OA\Items()),
-     *              @OA\Property(property="locked", type="boolean", example="false"),
-     *              @OA\Property(property="archived", type="boolean", example="false"),
-     *              @OA\Property(property="is_child", type="boolean", example="false"),
-     *              @OA\Property(property="question_type", type="string", example="STANDARD"),
-     *              @OA\Property(property="required", type="boolean", example="false"),
-     *              @OA\Property(property="force_required", type="boolean", example="false"),
-     *              @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
-     *              @OA\Property(property="default", type="integer", example="1"),
-     *              @OA\Property(property="guidance", type="string", example="Question guidance"),
-     *              @OA\Property(property="title", type="string", example="Question title"),
-     *              @OA\Property(property="field", type="array", @OA\Items()),
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=404,
-     *          description="Not found response",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="not found")
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Success",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="section_id", type="integer", example="1"),
-     *                  @OA\Property(property="user_id", type="integer", example="1"),
-     *                  @OA\Property(property="locked", type="boolean", example="false"),
-     *                  @OA\Property(property="archived", type="boolean", example="true"),
-     *                  @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="is_child", type="boolean", example="false"),
-     *                  @OA\Property(property="question_type", type="string", example="STANDARD"),
-     *                  @OA\Property(property="force_required", type="boolean", example="false"),
-     *                  @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
-     *              )
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=500,
-     *          description="Error",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="error")
-     *          )
-     *      )
-     * )
-     */
-    public function update(UpdateQuestionBank $request, int $id): JsonResponse
-    {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
-            $question = QuestionBank::findOrFail($id);
-            if ($question->is_child) {
-                return response()->json([
-                    'message' => 'Cannot update a child question directly'
-                ], 400);
-            }
-            if ($input['is_child'] ?? false) {
-                return response()->json([
-                    'message' => 'Cannot update a question to become a child question'
-                ], 400);
-            }
-            // TODO: handle locking
-
-            $question->update([
-                'section_id' => $input['section_id'],
-                'user_id' => $input['user_id'] ?? $jwtUser['id'],
-                'force_required' => $input['force_required'],
-                'allow_guidance_override' => $input['allow_guidance_override'],
-                'locked' => $input['locked'] ?? false,
-                'archived' => $input['archived'] ?? false,
-                'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
-                'is_child' => false,
-                'question_type' => $input['question_type'] ?? 'STANDARD',
-            ]);
-
-            $questionJson = [
-                'field' => $input['field'],
-                'title' => $input['title'],
-                'guidance' => $input['guidance'],
-                'required' => $input['required'] ?? false,
-            ];
-
-            $latestVersion = $question->latestVersion()->first();
-
-            $questionVersion = QuestionBankVersion::create([
-                'question_json' => json_encode($questionJson),
-                'required' => $input['required'] ?? false,
-                'default' => $input['default'],
-                'question_id' => $question->id,
-                'version' => $latestVersion->version + 1,
-            ]);
-
-
-            $this->updateQuestionHasTeams($question, $input);
-
-            $this->handleChildren($questionVersion, $input, $latestVersion->version + 1, $jwtUser);
-
-            Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
-                'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'QuestionBank ' . $id . ' updated',
-            ]);
-
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => QuestionBank::where('id', $id)->first(),
-            ], Config::get('statuscodes.STATUS_OK.code'));
-        } catch (Exception $e) {
-            Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Put(
-     *      path="/api/v1/questions/{id}/latest",
      *      summary="Update a system question bank question - children and their version are updated through parents",
      *      description="Update a system question bank question - children and their versions are updated through parents",
      *      tags={"QuestionBank"},
@@ -1201,7 +807,7 @@ class QuestionBankController extends Controller
      *      )
      * )
      */
-    public function updateLatest(UpdateLatestQuestionBank $request, int $id): JsonResponse
+    public function update(UpdateQuestionBank $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();

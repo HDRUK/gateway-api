@@ -3735,36 +3735,9 @@ return [
     ],
     [
         'name' => 'questions',
-        'method' => 'get',
-        'path' => '/questions/{id}/latest',
-        'methodController' => 'QuestionBankController@showLatest',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,question-bank.read',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'questions',
         'method' => 'post',
         'path' => '/questions',
         'methodController' => 'QuestionBankController@store',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.access:permissions,question-bank.create',
-        ],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'questions',
-        'method' => 'post',
-        'path' => '/questions/latest',
-        'methodController' => 'QuestionBankController@storeLatest',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3790,39 +3763,9 @@ return [
     ],
     [
         'name' => 'questions',
-        'method' => 'put',
-        'path' => '/questions/{id}/latest',
-        'methodController' => 'QuestionBankController@updateLatest',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.access:permissions,question-bank.update',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'questions',
         'method' => 'patch',
         'path' => '/questions/{id}',
         'methodController' => 'QuestionBankController@edit',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.access:permissions,question-bank.update',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'questions',
-        'method' => 'patch',
-        'path' => '/questions/{id}/latest',
-        'methodController' => 'QuestionBankController@editLatest',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',

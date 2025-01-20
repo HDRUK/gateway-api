@@ -31,10 +31,6 @@ class CreateQuestionBank extends BaseFormRequest
                 'required',
                 'boolean',
             ],
-            'field' => [
-                'required',
-                'array',
-            ],
             'title' => [
                 'required',
                 'string',
@@ -59,7 +55,17 @@ class CreateQuestionBank extends BaseFormRequest
             ],
             'team_id.*' => [
                 'integer'
-            ]
+            ],
+            'options' => [
+                'array',
+            ],
+            'component' => [
+                'required',
+                'string',
+            ],
+            'validations' => [
+                'array',
+            ],
         ];
     }
 }
