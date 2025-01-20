@@ -52,7 +52,7 @@ jobs:
   
     # - name: Run one unit test file
     #   id: unittests
-    #   run: "composer run pest -- --filter DatasetObserverTest"
+    #   run: "composer run pest -- --filter test_data_provider_colls_search_with_success"
 
     - name: Run code sniffer
       id: codesniffer
