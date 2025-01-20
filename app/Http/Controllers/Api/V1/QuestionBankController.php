@@ -432,7 +432,6 @@ class QuestionBankController extends Controller
 
                         $qbFields = QuestionBank::where('id', $childQuestionVersion['question_id'])
                             ->select('id', 'force_required', 'allow_guidance_override')
-                            ->get()
                             ->first();
                         $toAdd['force_required'] = $qbFields->force_required;
                         $toAdd['allow_guidance_override'] = $qbFields->allow_guidance_override;
