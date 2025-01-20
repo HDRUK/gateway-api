@@ -7,17 +7,16 @@ use Tests\TestCase;
 use App\Models\Dataset;
 use App\Models\TeamHasUser;
 use App\Models\DatasetVersion;
-use Tests\Traits\Authorization;
 use App\Observers\DatasetObserver;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use ElasticClientController as ECC;
 
 class DatasetObserverTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -29,23 +28,31 @@ class DatasetObserverTest extends TestCase
     {
         $this->commonSetUp();
 
-        Dataset::flushEventListeners();
-        DatasetVersion::flushEventListeners();
-
         $this->seed([
             MinimalUserSeeder::class,
             SpatialCoverageSeeder::class,
         ]);
 
         $this->metadata = $this->getMetadata();
-        $this->metadataAlt = $this->metadata;
-        $this->metadataAlt['metadata']['summary']['title'] = 'ABC title';
     }
 
     public function test_reindexes_elastic_on_created_event_if_active_and_has_version()
     {
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
+                    }
+                )
+            )
+            ->times(1);
+
+        ECC::shouldIgnoreMissing();
+
         $observer = Mockery::mock(DatasetObserver::class)->makePartial();
         $observer->shouldReceive('reindexElastic')->once()->with(1);
+        app()->instance(DatasetObserver::class, $observer);
 
         $teamHasUser = TeamHasUser::all()->random();
         $dataset = Dataset::create([
@@ -56,8 +63,6 @@ class DatasetObserverTest extends TestCase
             'status' => Dataset::STATUS_ACTIVE,
         ]);
 
-        DatasetVersion::factory()->create(['dataset_id' => 1]);
-
         DatasetVersion::factory()->create([
             'dataset_id' => $dataset->id,
             'provider_team_id' => $dataset->team_id,
@@ -67,12 +72,30 @@ class DatasetObserverTest extends TestCase
 
         $observer->created($dataset);
 
-        $this->assertDatabaseHas('datasets', ['id' => 1, 'status' => Dataset::STATUS_ACTIVE]);
+        $this->assertDatabaseHas('datasets', [
+            'id' => 1,
+            'user_id' => $teamHasUser->user_id,
+            'team_id' => $teamHasUser->team_id,
+            'create_origin' => Dataset::ORIGIN_MANUAL,
+            'status' => Dataset::STATUS_ACTIVE,
+        ]);
         $this->assertDatabaseHas('dataset_versions', ['dataset_id' => 1]);
+
     }
 
     public function test_sets_previous_status_on_updating_event()
     {
+        ECC::shouldReceive('indexDocument')
+            ->with(Mockery::on(function ($params) {
+                return $params['index'] === ECC::ELASTIC_NAME_DATASET && $params['id'] === 1;
+            }));
+
+        ECC::shouldIgnoreMissing();
+
+        $observer = Mockery::mock(DatasetObserver::class)->makePartial();
+        $observer->shouldReceive('reindexElastic')->with(1);
+        app()->instance(DatasetObserver::class, $observer);
+
         $teamHasUser = TeamHasUser::all()->random();
         $dataset = Dataset::create([
             'id' => 1,
@@ -83,7 +106,7 @@ class DatasetObserverTest extends TestCase
         ]);
 
         $observer = new DatasetObserver();
-        $dataset->status = 'active';
+        $dataset->status = Dataset::STATUS_ACTIVE;
         $observer->updating($dataset);
 
         $this->assertEquals(Dataset::STATUS_DRAFT, $dataset->prevStatus);
@@ -91,6 +114,18 @@ class DatasetObserverTest extends TestCase
 
     public function test_reindexes_or_deletes_from_elastic_on_updated_event_based_on_status_change()
     {
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
+                    }
+                )
+            )
+            ->times(1);
+
+        ECC::shouldIgnoreMissing();
+
         $observer = Mockery::mock(DatasetObserver::class)->makePartial();
         $observer->shouldReceive('reindexElastic')->with(1);
         $observer->shouldReceive('deleteDatasetFromElastic')->once()->with(1);
@@ -116,6 +151,18 @@ class DatasetObserverTest extends TestCase
 
     public function test_reindexes_elastic_on_deleted_event()
     {
+        ECC::shouldReceive("indexDocument")
+            ->with(
+                \Mockery::on(
+                    function ($params) {
+                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
+                    }
+                )
+            )
+            ->times(2);
+
+        ECC::shouldIgnoreMissing();
+
         $observer = Mockery::mock(DatasetObserver::class)->makePartial();
         $observer->shouldReceive('reindexElastic')->with(1);
 
