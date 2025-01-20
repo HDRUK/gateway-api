@@ -441,6 +441,8 @@ class QuestionBankController extends Controller
                             $childVersionArray,
                             [
                                 'label' => $optionKey,
+                                'version_id' => $childQuestionVersion['id'],
+                                'question_id' => $childQuestionVersion['question_id'],
                                 ...$toAdd,
                             ]
                         );
