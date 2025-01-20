@@ -782,21 +782,20 @@ class DataAccessApplicationTest extends TestCase
                 'user_id' => 1,
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
-                'field' => [
-                    'options' => [],
-                    'component' => 'TextArea',
-                    'validations' => [
-                        [
-                            'min' => 1,
-                            'message' => 'Please enter a value'
-                        ]
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
                     ]
                 ],
                 'title' => $title,
                 'guidance' => 'Something helpful',
                 'required' => 0,
                 'default' => 0,
-                'version' => 1
+                'version' => 1,
+                'is_child' => 0,
             ],
             $this->header
         );
