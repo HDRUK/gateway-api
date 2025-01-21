@@ -37,7 +37,7 @@ class DatasetObserverTest extends TestCase
         $this->metadata = $this->getMetadata();
     }
 
-    public function testReindexesElasticOnCreatedEeventIfActiveAndHasVersion()
+    public function testDatasetReindexesElasticOnCreatedEeventIfActiveAndHasVersion()
     {
         $observer = Mockery::mock(DatasetObserver::class)->makePartial();
         $observer->shouldReceive('reindexElastic')->once()->with(1);
@@ -71,7 +71,7 @@ class DatasetObserverTest extends TestCase
 
     }
 
-    public function test_sets_previous_status_on_updating_event()
+    public function testDatasetSetsPreviousStatusOnUpdatingEvent()
     {
         $observer = Mockery::mock(DatasetObserver::class)->makePartial();
         $observer->shouldReceive('reindexElastic')->with(1);
@@ -92,7 +92,7 @@ class DatasetObserverTest extends TestCase
         $this->assertEquals(Dataset::STATUS_DRAFT, $dataset->prevStatus);
     }
 
-    public function test_reindexes_or_deletes_from_elastic_on_updated_event_based_on_status_change()
+    public function testDatasetReindexesOrDeletesFromElasticOnUpdatedEventBasedOnStatusChange()
     {
         $observer = Mockery::mock(DatasetObserver::class)->makePartial();
         $observer->shouldReceive('reindexElastic')->with(1);
@@ -117,7 +117,7 @@ class DatasetObserverTest extends TestCase
         $this->assertEquals(Dataset::STATUS_ARCHIVED, $dataset->status);
     }
 
-    public function test_reindexes_elastic_on_deleted_event()
+    public function testDatasetReindexesElasticOnDeletedEvent()
     {
         $observer = Mockery::mock(DatasetObserver::class)->makePartial();
         $observer->shouldReceive('reindexElastic')->with(1);

@@ -51,11 +51,23 @@ class DatasetObserver
     }
 
     /**
+     * Handle the Dataset "updating" event.
+     */
+    public function deleting(Dataset $dataset)
+    {
+        $dataset->prevStatus = $dataset->getOriginal('status'); // 'status' before updating
+    }
+
+    /**
      * Handle the Dataset "deleted" event.
      */
     public function deleted(Dataset $dataset): void
     {
-        $this->reindexElastic($dataset->id);
+        $prevStatus = $dataset->prevStatus;
+
+        if($prevStatus === Dataset::STATUS_ACTIVE) {
+            $this->deleteDatasetFromElastic($dataset->id);
+        }
     }
 
     /**

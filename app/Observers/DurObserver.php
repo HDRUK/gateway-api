@@ -44,11 +44,21 @@ class DurObserver
     }
 
     /**
+     * Handle the Collection "deleting" event.
+     */
+    public function deleting(Dur $dur)
+    {
+        $dur->prevStatus = $dur->getOriginal('status'); // 'status' before deleting
+    }
+
+    /**
      * Handle the Dur "deleted" event.
      */
     public function deleted(Dur $dur): void
     {
-        if($dur->status === Dur::STATUS_ACTIVE) {
+        $prevStatus = $dur->prevStatus;
+
+        if($prevStatus === Dur::STATUS_ACTIVE) {
             $this->deleteDurFromElastic($dur->id);
         }
     }

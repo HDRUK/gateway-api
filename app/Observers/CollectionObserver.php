@@ -48,7 +48,9 @@ class CollectionObserver
      */
     public function deleted(Collection $collection): void
     {
-        $this->deleteCollectionFromElastic((int) $collection->id);
+        if($collection->status === Collection::STATUS_ACTIVE) {
+            $this->deleteCollectionFromElastic((int) $collection->id);
+        }
     }
 
     /**
