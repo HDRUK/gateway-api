@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Publication;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -26,6 +27,11 @@ class PublicationFactory extends Factory
             'journal_name' => fake()->sentence(),
             'abstract' => fake()->paragraph(),
             'url' => fake()->url(),
+            'status' => fake()->randomElement([
+                Publication::STATUS_ACTIVE,
+                Publication::STATUS_ARCHIVED,
+                Publication::STATUS_DRAFT,
+            ]),
         ];
     }
 }

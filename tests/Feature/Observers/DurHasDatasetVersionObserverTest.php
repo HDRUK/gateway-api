@@ -102,7 +102,7 @@ class DurHasDatasetVersionObserverTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testDurHasDatasetVersionElasticMethodOnUpdatedEvent()
+    public function testDurHasDatasetVersionObserverElasticMethodOnUpdatedEvent()
     {
         $observer = Mockery::mock(DurHasDatasetVersionObserver::class)->makePartial();
         app()->instance(DurHasDatasetVersionObserver::class, $observer);
@@ -135,7 +135,7 @@ class DurHasDatasetVersionObserverTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testDurHasDatasetVersionCallsElasticMethodOnDeletedEvent()
+    public function testDurHasDatasetVersionObserverCallsElasticMethodOnDeletedEvent()
     {
         $observer = Mockery::mock(DurHasDatasetVersionObserver::class)->makePartial();
         app()->instance(DurHasDatasetVersionObserver::class, $observer);

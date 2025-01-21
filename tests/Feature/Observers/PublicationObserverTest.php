@@ -20,9 +20,6 @@ class PublicationObserverTest extends TestCase
         setUp as commonSetUp;
     }
 
-    protected $metadata;
-    protected $metadataSecondary;
-
     public function setUp(): void
     {
         $this->commonSetUp();
@@ -34,10 +31,6 @@ class PublicationObserverTest extends TestCase
             MinimalUserSeeder::class,
             SpatialCoverageSeeder::class,
         ]);
-
-        $this->metadata = $this->getMetadata();
-        $this->metadataSecondary = $this->metadata;
-        $this->metadataSecondary['metadata']['summary']['title'] = 'ABC title';
     }
 
     public function testPublicationObserverCreatedEventIndexesPublicationIfActive()
