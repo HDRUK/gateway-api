@@ -82,7 +82,7 @@ class CollectionHasDatasetVersionObserverTest extends TestCase
 
     }
 
-    public function testCreatedEventTriggersElasticIndexing()
+    public function testCollectionHasDatasetVersionObserverCreatedEventTriggersElasticIndexing()
     {
         $collection = Collection::create([
             'name' => fake()->unique()->word,
@@ -108,7 +108,7 @@ class CollectionHasDatasetVersionObserverTest extends TestCase
         $this->assertNotNull($collectionHasDatasetVersion);
     }
 
-    public function testUpdatedEventTriggersElasticIndexing()
+    public function testCollectionHasDatasetVersionObserverUpdatedEventTriggersElasticIndexing()
     {
         $observer = Mockery::mock(CollectionHasDatasetVersionObserver::class)->makePartial();
         $observer->shouldReceive('elasticCollectionHasDatasetVersion')->once();
@@ -158,7 +158,7 @@ class CollectionHasDatasetVersionObserverTest extends TestCase
         Mockery::close();
     }
 
-    public function testDeletedEventTriggersElasticIndexing()
+    public function testCollectionHasDatasetVersionObserverDeletedEventTriggersElasticIndexing()
     {
         // Mock the observer
         $observer = Mockery::mock(CollectionHasDatasetVersionObserver::class)->makePartial();

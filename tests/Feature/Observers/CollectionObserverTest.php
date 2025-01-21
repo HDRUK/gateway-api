@@ -42,7 +42,7 @@ class CollectionObserverTest extends TestCase
         app()->instance(CollectionObserver::class, $this->observer);
     }
 
-    public function testCreatedEeventIndexesActiveCollection()
+    public function testCollectionObserverCreatedEeventIndexesActiveCollection()
     {
         $this->observer->shouldReceive('indexElasticCollections')
             ->once()
@@ -61,7 +61,7 @@ class CollectionObserverTest extends TestCase
         ]);
     }
 
-    public function testUpdatingEventSetsPrevStatus()
+    public function testCollectionObserverUpdatingEventSetsPrevStatus()
     {
         $observer = new CollectionObserver();
 
@@ -77,7 +77,7 @@ class CollectionObserverTest extends TestCase
         $this->assertEquals(Collection::STATUS_ARCHIVED, $collection->prevStatus);
     }
 
-    public function testUpdatedEventHandlesStatusChangesCorrectly()
+    public function testCollectionObserverUpdatedEventHandlesStatusChangesCorrectly()
     {
         ECC::shouldReceive("indexDocument")
             ->with(
@@ -121,7 +121,7 @@ class CollectionObserverTest extends TestCase
         $this->assertNotEquals(Collection::STATUS_ACTIVE, $collection->status);
     }
 
-    public function testDeletedEventRemovesCollectionFromElastic()
+    public function testCollectionObserverDeletedEventRemovesCollectionFromElastic()
     {
         ECC::shouldReceive("indexDocument")
         ->with(

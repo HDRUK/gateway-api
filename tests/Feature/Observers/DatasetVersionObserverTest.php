@@ -39,7 +39,7 @@ class DatasetVersionObserverTest extends TestCase
         $this->metadataAlt['metadata']['summary']['title'] = 'ABC title';
     }
 
-    public function testCreatedEventTriggersElasticDatasetVersion()
+    public function testDatasetVersionObserverCreatedEventTriggersElasticDatasetVersion()
     {
         // Create a mock for the observer
         $observerMock = Mockery::mock(DatasetVersionObserver::class)->makePartial();
@@ -86,7 +86,7 @@ class DatasetVersionObserverTest extends TestCase
         Mockery::close();
     }
 
-    public function testUpdatedEventTriggersElasticDatasetVersion()
+    public function testDatasetVersionObserverUpdatedEventTriggersElasticDatasetVersion()
     {
         // Create a mock for the observer
         $observerMock = Mockery::mock(DatasetVersionObserver::class)->makePartial();
@@ -138,7 +138,7 @@ class DatasetVersionObserverTest extends TestCase
         Mockery::close();
     }
 
-    public function testDeletedEventTriggersElasticDatasetVersion()
+    public function testDatasetVersionObserverDeletedEventTriggersElasticDatasetVersion()
     {
         // Create a mock for the observer
         $observerMock = Mockery::mock(DatasetVersionObserver::class)->makePartial();

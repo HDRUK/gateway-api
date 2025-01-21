@@ -40,7 +40,7 @@ class PublicationObserverTest extends TestCase
         $this->metadataSecondary['metadata']['summary']['title'] = 'ABC title';
     }
 
-    public function testPublicationCreatedEventIndexesPublicationIfActive()
+    public function testPublicationObserverCreatedEventIndexesPublicationIfActive()
     {
         $observer = Mockery::mock(PublicationObserver::class)->makePartial();
         app()->instance(PublicationObserver::class, $observer);
@@ -63,7 +63,7 @@ class PublicationObserverTest extends TestCase
         $this->assertEquals(Publication::STATUS_ACTIVE, $publication->status);
     }
 
-    public function testPublicationCreatedEventDoesNotIndexPublicationIfNotActive()
+    public function testPublicationObserverCreatedEventDoesNotIndexPublicationIfNotActive()
     {
         $observer = Mockery::mock(PublicationObserver::class)->makePartial();
         app()->instance(PublicationObserver::class, $observer);
@@ -86,7 +86,7 @@ class PublicationObserverTest extends TestCase
         $this->assertEquals(Publication::STATUS_DRAFT, $publication->status);
     }
 
-    public function testPublicationUpdatingEventSetsPrevStatus()
+    public function testPublicationObserverUpdatingEventSetsPrevStatus()
     {
         $observer = Mockery::mock(PublicationObserver::class)->makePartial();
         app()->instance(PublicationObserver::class, $observer);
@@ -113,7 +113,7 @@ class PublicationObserverTest extends TestCase
         $this->assertEquals(Dataset::STATUS_DRAFT, $publication->prevStatus);
     }
 
-    public function testPublicationDeletedEventRemovesFromElasticIfStatusWasActive()
+    public function testPublicationObserverDeletedEventRemovesFromElasticIfStatusWasActive()
     {
         $observer = Mockery::mock(PublicationObserver::class)->makePartial();
         app()->instance(PublicationObserver::class, $observer);
@@ -142,7 +142,7 @@ class PublicationObserverTest extends TestCase
         $this->assertEquals(Dataset::STATUS_ARCHIVED, $publication->status);
     }
 
-    public function testPublicationDeletedEventDoesNotRemoveFromElasticIfStatusWasNotActive()
+    public function testPublicationObserverDeletedEventDoesNotRemoveFromElasticIfStatusWasNotActive()
     {
         $observer = Mockery::mock(PublicationObserver::class)->makePartial();
         app()->instance(PublicationObserver::class, $observer);
