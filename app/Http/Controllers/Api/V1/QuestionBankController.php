@@ -397,7 +397,7 @@ class QuestionBankController extends Controller
                 }
 
                 // decode json for the FE to easily digest
-                foreach (json_decode($questionVersion['question_json'], true) as $key => $value) {
+                foreach ($questionVersion['question_json'] as $key => $value) {
                     $questionVersion[$key] = $value;
                 }
                 unset($questionVersion['question_json']);
@@ -421,7 +421,7 @@ class QuestionBankController extends Controller
                     $childVersionArray = [];
                     foreach ($option as $childQuestionVersion) {
                         // move all items from `field` field to one level up
-                        $toAdd = json_decode($childQuestionVersion['question_json'], true);
+                        $toAdd = $childQuestionVersion['question_json'];
                         $toAdd['component'] = $toAdd['field']['component'];
                         $toAdd['options'] = array_map(
                             fn ($elem) => ['label' => $elem],
@@ -682,7 +682,7 @@ class QuestionBankController extends Controller
             ];
 
             $questionVersion = QuestionBankVersion::create([
-                'question_json' => json_encode($questionJson),
+                'question_json' => $questionJson,
                 'required' => $input['required'] ?? false,
                 'default' => $input['default'],
                 'question_id' => $question->id,
@@ -863,7 +863,7 @@ class QuestionBankController extends Controller
             $latestVersion = $question->latestVersion()->first();
 
             $questionVersion = QuestionBankVersion::create([
-                'question_json' => json_encode($questionJson),
+                'question_json' => $questionJson,
                 'required' => $input['required'] ?? false,
                 'default' => $input['default'],
                 'question_id' => $question->id,
@@ -1025,7 +1025,7 @@ class QuestionBankController extends Controller
                 $questionVersion = QuestionBankVersion::where('id', $latestVersion->id)->first();
 
                 $questionVersion = $questionVersion->update([
-                    'question_json' => json_encode($questionJson),
+                    'question_json' => $questionJson,
                     'required' => $input['required'] ?? $latestVersion->required,
                     'default' => $input['default'] ?? $latestVersion->default,
                     'question_id' => $id,
@@ -1312,7 +1312,7 @@ class QuestionBankController extends Controller
                         ];
 
                         $childQuestionVersion = QuestionBankVersion::create([
-                            'question_json' => json_encode($questionJson),
+                            'question_json' => $questionJson,
                             'required' => $child['required'] ?? false,
                             'default' => $child['default'],
                             'question_id' => $childQuestion->id,
@@ -1371,7 +1371,7 @@ class QuestionBankController extends Controller
                         ];
 
                         $childQuestionVersion = QuestionBankVersion::create([
-                            'question_json' => json_encode($questionJson),
+                            'question_json' => $questionJson,
                             'required' => $child['required'] ?? false,
                             'default' => $input['default'],
                             'question_id' => $childQuestion->id,
