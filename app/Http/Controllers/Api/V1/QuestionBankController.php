@@ -1021,7 +1021,7 @@ class QuestionBankController extends Controller
 
             if (!empty($versionArray)) {
                 $latestVersion = $question->latestVersion()->first();
-                $latestJson = json_decode($latestVersion->question_json, true);
+                $latestJson = $latestVersion->question_json;
 
                 $questionJson = [
                     'field' => $input['field'] ?? $latestJson['field'],

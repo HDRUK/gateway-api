@@ -578,7 +578,7 @@ class DataAccessTemplateController extends Controller
             if (($question->allow_guidance_override) && isset($q['guidance'])) {
                 $guidance = $q['guidance'];
             } else {
-                $questionContent = json_decode($question['latestVersion']['question_json'], true);
+                $questionContent = $question['latestVersion']['question_json'];
                 $guidance = $questionContent['guidance'];
             }
             DataAccessTemplateHasQuestion::create([

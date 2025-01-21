@@ -983,7 +983,7 @@ class QuestionBankTest extends TestCase
             ->first();
         // Test latest version is 2 and title is updated
         $this->assertEquals($version['version'], 2);
-        $this->assertEquals(json_decode($version['question_json'], true)['title'], 'Updated test question');
+        $this->assertEquals($version['question_json']['title'], 'Updated test question');
 
         $this->assertEquals($countQuestionsBefore + 1, QuestionBank::all()->count());
         $this->assertEquals($countQuestionVersionsBefore + 2, QuestionBankVersion::all()->count());
@@ -1304,9 +1304,8 @@ class QuestionBankTest extends TestCase
         // Test latest version is 1 (edit does not increase version, only update does),
         // title has been edited, and required has not been edited
         $this->assertEquals($version['version'], 1);
-        $questionJson = json_decode($version['question_json'], true);
-        $this->assertEquals($questionJson['title'], 'Updated test question');
-        $this->assertEquals($questionJson['required'], false);
+        $this->assertEquals($version['question_json']['title'], 'Updated test question');
+        $this->assertEquals($version['question_json']['required'], false);
 
         // Test that a new version is not created when question content is not updated
         // e.g. when a question is locked

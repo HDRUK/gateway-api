@@ -81,7 +81,7 @@ class QuestionBankSeeder extends Seeder
                         'version' => 1,
                         'required' => $questionModel->force_required,
                         'default' => 0,
-                        'question_json' => json_encode($questionForJson),
+                        'question_json' => $questionForJson,
                         'deleted_at' => null,
                     ]);
 
@@ -116,7 +116,7 @@ class QuestionBankSeeder extends Seeder
                                         'version' => 1,
                                         'required' => $subquestionModel->force_required,
                                         'default' => 0,
-                                        'question_json' => json_encode($subquestionForJson),
+                                        'question_json' => $subquestionForJson,
                                         'deleted_at' => null,
                                     ]);
                                     QuestionBankVersionHasChildVersion::create([
