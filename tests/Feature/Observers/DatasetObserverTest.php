@@ -51,7 +51,7 @@ class DatasetObserverTest extends TestCase
             'status' => Dataset::STATUS_ACTIVE,
         ]);
 
-        DatasetVersion::factory()->create([
+        DatasetVersion::create([
             'dataset_id' => $dataset->id,
             'provider_team_id' => $dataset->team_id,
             'version' => 1,
