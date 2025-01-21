@@ -423,12 +423,19 @@ class QuestionBankController extends Controller
                         // move all items from `field` field to one level up
                         $toAdd = $childQuestionVersion['question_json'];
                         $toAdd['component'] = $toAdd['field']['component'];
-                        $toAdd['options'] = array_map(
-                            fn ($elem) => ['label' => $elem],
-                            $toAdd['field']['options']
-                        );
-                        $toAdd['validations'] = $toAdd['field']['validations'] ?? [];
-                        unset($toAdd['field']);
+                        if (isset($toAdd['field'])) {
+
+                            if (isset($toAdd['field']['options'])) {
+                                $toAdd['options'] = array_map(
+                                    fn ($elem) => ['label' => $elem],
+                                    $toAdd['field']['options']
+                                );
+                            }
+                            if (isset($toAdd['field']['validations'])) {
+                                $toAdd['validations'] = $toAdd['field']['validations'] ?? [];
+                            }
+                            unset($toAdd['field']);
+                        }
 
                         $qbFields = QuestionBank::where('id', $childQuestionVersion['question_id'])
                             ->select('id', 'force_required', 'allow_guidance_override')
