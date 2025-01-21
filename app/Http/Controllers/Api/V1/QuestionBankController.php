@@ -478,6 +478,11 @@ class QuestionBankController extends Controller
                 $questionVersion['validations'] = $questionVersion['field']['validations'] ?? [];
                 unset($questionVersion['field']);
 
+                // And, because we're really returning a modified form of the QuestionVersion in response
+                // to a query about a Question, we need to make it clear that the id is the version id
+                $questionVersion['version_id'] = $questionVersion['id'];
+                unset($questionVersion['id']);
+
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'GET',
@@ -602,7 +607,7 @@ class QuestionBankController extends Controller
      *          required=true,
      *          description="QuestionBank definition",
      *          @OA\JsonContent(
-     *              required={"field", "section_id", "guidance", "title", "force_required", "allow_guidance_override"},
+     *              required={"field", "section_id", "guidance", "title", "force_required", "allow_guidance_override", "component", "validations", "options"},
      *              @OA\Property(property="section_id", type="integer", example="1"),
      *              @OA\Property(property="user_id", type="integer", example="1"),
      *              @OA\Property(property="team_id", type="array", @OA\Items()),
@@ -615,6 +620,9 @@ class QuestionBankController extends Controller
      *              @OA\Property(property="guidance", type="string", example="Question guidance"),
      *              @OA\Property(property="title", type="string", example="Question title"),
      *              @OA\Property(property="field", type="array", @OA\Items()),
+     *              @OA\Property(property="component", type="string", example="RadioGroup"),
+     *              @OA\Property(property="validations", type="array", @OA\Items()),
+     *              @OA\Property(property="options", type="array", @OA\Items()),
      *              @OA\Property(property="is_child", type="boolean", example="true"),
      *              @OA\Property(property="question_type", type="string", example="STANDARD"),
      *          ),
@@ -657,7 +665,7 @@ class QuestionBankController extends Controller
                 'archived' => $input['archived'] ?? false,
                 'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
                 'is_child' => false,
-                'question_type' => $input['question_type'] ?? 'STANDARD',
+                'question_type' => $input['question_type'] ?? QuestionBank::STANDARD_TYPE,
             ]);
 
             $field = [
@@ -836,7 +844,7 @@ class QuestionBankController extends Controller
                 'archived' => $input['archived'] ?? false,
                 'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
                 'is_child' => false,
-                'question_type' => $input['question_type'] ?? 'STANDARD',
+                'question_type' => $input['question_type'] ?? QuestionBank::STANDARD_TYPE,
             ]);
 
             $field = [
