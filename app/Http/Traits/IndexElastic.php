@@ -942,17 +942,16 @@ trait IndexElastic
             ->select('collection_id')
             ->get()
             ->toArray();
-        if (count($collectionHasDurs)) {
+
+        if (!count($collectionHasDurs)) {
             return $collectionNames;
         }
-
         $collectionIds = convertArrayToArrayWithKeyName($collectionHasDurs, 'collection_id');
         $collectionNames = Collection::where('status', Collection::STATUS_ACTIVE)
                             ->whereIn('id', $collectionIds)
                             ->select('name')
                             ->get()
                             ->toArray();
-
         return convertArrayToArrayWithKeyName($collectionNames, 'name');
     }
 }
