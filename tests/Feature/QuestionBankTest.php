@@ -448,7 +448,6 @@ class QuestionBankTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [
-                    'id',
                     'created_at',
                     'updated_at',
                     'deleted_at',
@@ -470,6 +469,7 @@ class QuestionBankTest extends TestCase
                     'options',
                     'component',
                     'validations',
+                    'version_id',
                 ],
             ]);
     }
@@ -515,7 +515,7 @@ class QuestionBankTest extends TestCase
         $content = $response->decodeResponseJson();
 
         $response = $this->get('api/v1/questions/' . $content['data'], $this->header);
-        $questionVersionId = $response->decodeResponseJson()['data']['id']; // the endpoint returns the version ID in the 'id' field, and the question id in the 'question_id' field.
+        $questionVersionId = $response->decodeResponseJson()['data']['version_id'];
 
         $response = $this->get('api/v1/questions/version/' . $questionVersionId, $this->header);
 

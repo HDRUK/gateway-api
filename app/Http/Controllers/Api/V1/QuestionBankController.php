@@ -326,7 +326,7 @@ class QuestionBankController extends Controller
      *      summary="Return the latest question bank question version for the supplied question id, in an FE-friendly format",
      *      description="Return the latest question bank question version for the supplied question id, in an FE-friendly format",
      *      tags={"QuestionBank"},
-     *      summary="QuestionBank@showLatest",
+     *      summary="QuestionBank@show",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -601,7 +601,7 @@ class QuestionBankController extends Controller
      *      summary="Create a new system question bank question with FE-helpful input format",
      *      description="Create a new system question bank question with FE-helpful input format",
      *      tags={"QuestionBank"},
-     *      summary="QuestionBank@storeLatest",
+     *      summary="QuestionBank@store",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
