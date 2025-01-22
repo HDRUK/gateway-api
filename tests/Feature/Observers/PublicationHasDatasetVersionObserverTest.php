@@ -53,7 +53,19 @@ class PublicationHasDatasetVersionObserverTest extends TestCase
         $latestMetadata = $dataset->latestMetadata()->first();
         $datasetVersionId = $latestMetadata->id;
 
-        $publication = Publication::where('status', Publication::STATUS_ACTIVE)->select('id')->first();
+        $publication = Publication::create([
+            'id' => 1,
+            'paper_title' => fake()->words(5, true),
+            'authors' => 'Author One, Author Two, Author Three, Author Four',
+            'year_of_publication' => fake()->year(),
+            'paper_doi' => '10.1000/182',
+            'publication_type' => fake()->words(1, true),
+            'publication_type_mk1' => fake()->words(4, true),
+            'journal_name' => fake()->sentence(),
+            'abstract' => fake()->paragraph(),
+            'url' => fake()->url(),
+            'status' => Publication::STATUS_ACTIVE,
+        ]);
 
         $publicationHasDatasetVersion = PublicationHasDatasetVersion::create([
             'publication_id' => $publication->id,
@@ -79,7 +91,19 @@ class PublicationHasDatasetVersionObserverTest extends TestCase
         $latestMetadata = $dataset->latestMetadata()->first();
         $datasetVersionId = $latestMetadata->id;
 
-        $publication = Publication::where('status', Publication::STATUS_ACTIVE)->select('id')->first();
+        $publication = Publication::create([
+            'id' => 1,
+            'paper_title' => fake()->words(5, true),
+            'authors' => 'Author One, Author Two, Author Three, Author Four',
+            'year_of_publication' => fake()->year(),
+            'paper_doi' => '10.1000/182',
+            'publication_type' => fake()->words(1, true),
+            'publication_type_mk1' => fake()->words(4, true),
+            'journal_name' => fake()->sentence(),
+            'abstract' => fake()->paragraph(),
+            'url' => fake()->url(),
+            'status' => Publication::STATUS_ACTIVE,
+        ]);
 
         $publicationHasDatasetVersion = PublicationHasDatasetVersion::create([
             'publication_id' => $publication->id,
@@ -107,7 +131,19 @@ class PublicationHasDatasetVersionObserverTest extends TestCase
         $latestMetadata = $dataset->latestMetadata()->first();
         $datasetVersionId = $latestMetadata->id;
 
-        $publication = Publication::where('status', Publication::STATUS_ACTIVE)->select('id')->first();
+        $publication = Publication::create([
+            'id' => 1,
+            'paper_title' => fake()->words(5, true),
+            'authors' => 'Author One, Author Two, Author Three, Author Four',
+            'year_of_publication' => fake()->year(),
+            'paper_doi' => '10.1000/182',
+            'publication_type' => fake()->words(1, true),
+            'publication_type_mk1' => fake()->words(4, true),
+            'journal_name' => fake()->sentence(),
+            'abstract' => fake()->paragraph(),
+            'url' => fake()->url(),
+            'status' => Publication::STATUS_ACTIVE,
+        ]);
 
         $publicationHasDatasetVersion = PublicationHasDatasetVersion::create([
             'publication_id' => $publication->id,
