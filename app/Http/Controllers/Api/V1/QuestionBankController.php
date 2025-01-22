@@ -34,11 +34,55 @@ class QuestionBankController extends Controller
      *      tags={"QuestionBank"},
      *      summary="QuestionBank@index",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="section_id",
+     *          in="query",
+     *          description="section id",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="section id",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="is_child",
+     *          in="query",
+     *          description="filter on is_child field",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="filter on is_child field",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="per page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="per page",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="page",
+     *          in="query",
+     *          description="page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="page",
+     *          ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="current_page", type="integer", example="1"),
      *              @OA\Property(property="data", type="array",
      *                  @OA\Items(
      *                      @OA\Property(property="id", type="integer", example="123"),
@@ -57,7 +101,18 @@ class QuestionBankController extends Controller
      *                      @OA\Property(property="latest_version", type="object", example=""),
      *                      @OA\Property(property="versions", type="object", example=""),
      *                  )
-     *              )
+     *              ),
+     *              @OA\Property(property="first_page_url", type="string", example="http://localhost:8000/api/v1/questions?page=1"),
+     *              @OA\Property(property="from", type="integer", example="1"),
+     *              @OA\Property(property="last_page", type="integer", example="1"),
+     *              @OA\Property(property="last_page_url", type="string", example="http://localhost:8000/api/v1/questions?page=1"),
+     *              @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="next_page_url", type="string", example="null"),
+     *              @OA\Property(property="path", type="string", example="http://localhost:8000/api/v1/questions"),
+     *              @OA\Property(property="per_page", type="integer", example="25"),
+     *              @OA\Property(property="prev_page_url", type="string", example="null"),
+     *              @OA\Property(property="to", type="integer", example="3"),
+     *              @OA\Property(property="total", type="integer", example="3"),
      *          )
      *      )
      * )
@@ -68,11 +123,164 @@ class QuestionBankController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+            $sectionId = $input['section_id'] ?? null;
+            $isChild = $input['is_child'] ?? null;
+            $perPage = request('per_page', Config::get('constants.per_page'));
+
             $questions = QuestionBank::with(
                 ['latestVersion', 'versions', 'versions.childVersions']
             )->where('archived', false)
+            ->when(
+                $sectionId,
+                function ($query) use ($sectionId) {
+                    return $query->where('section_id', '=', $sectionId);
+                }
+            )
+            ->when(
+                !is_null($isChild),
+                function ($query) use ($isChild) {
+                    return $query->where('is_child', '=', $isChild);
+                }
+            )
             ->paginate(
-                Config::get('constants.per_page'),
+                function ($total) use ($perPage) {
+                    if($perPage === -1) {
+                        return $total;
+                    }
+                    return $perPage;
+                },
+                ['*'],
+                'page'
+            );
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'QuestionBank get all',
+            ]);
+
+            return response()->json(
+                $questions
+            );
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/questions/nonchild",
+     *      summary="List of question bank questions",
+     *      description="List of question bank questions",
+     *      tags={"QuestionBank"},
+     *      summary="QuestionBank@indexNonChild",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="section_id",
+     *          in="query",
+     *          description="section id",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="section id",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="per page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="per page",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="page",
+     *          in="query",
+     *          description="page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="page",
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="current_page", type="integer", example="1"),
+     *              @OA\Property(property="data", type="array",
+     *                  @OA\Items(
+     *                      @OA\Property(property="id", type="integer", example="123"),
+     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="section_id", type="integer", example="1"),
+     *                      @OA\Property(property="user_id", type="integer", example="1"),
+     *                      @OA\Property(property="locked", type="boolean", example="false"),
+     *                      @OA\Property(property="archived", type="boolean", example="true"),
+     *                      @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="force_required", type="boolean", example="false"),
+     *                      @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
+     *                      @OA\Property(property="is_child", type="boolean", example="true"),
+     *                      @OA\Property(property="question_type", type="string", example="STANDARD"),
+     *                      @OA\Property(property="latest_version", type="object", example=""),
+     *                      @OA\Property(property="versions", type="object", example=""),
+     *                  )
+     *              ),
+     *              @OA\Property(property="first_page_url", type="string", example="http://localhost:8000/api/v1/questions?page=1"),
+     *              @OA\Property(property="from", type="integer", example="1"),
+     *              @OA\Property(property="last_page", type="integer", example="1"),
+     *              @OA\Property(property="last_page_url", type="string", example="http://localhost:8000/api/v1/questions?page=1"),
+     *              @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="next_page_url", type="string", example="null"),
+     *              @OA\Property(property="path", type="string", example="http://localhost:8000/api/v1/questions"),
+     *              @OA\Property(property="per_page", type="integer", example="25"),
+     *              @OA\Property(property="prev_page_url", type="string", example="null"),
+     *              @OA\Property(property="to", type="integer", example="3"),
+     *              @OA\Property(property="total", type="integer", example="3"),
+     *          )
+     *      )
+     * )
+     */
+    public function indexNonChild(Request $request): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $sectionId = $input['section_id'] ?? null;
+            $perPage = request('per_page', Config::get('constants.per_page'));
+
+            $questions = QuestionBank::with(
+                ['latestVersion', 'versions', 'versions.childVersions']
+            )->where('archived', false)
+            ->where('is_child', false)
+            ->when(
+                $sectionId,
+                function ($query) use ($sectionId) {
+                    return $query->where('section_id', '=', $sectionId);
+                }
+            )
+            ->paginate(
+                function ($total) use ($perPage) {
+                    if($perPage === -1) {
+                        return $total;
+                    }
+                    return $perPage;
+                },
                 ['*'],
                 'page'
             );
