@@ -42,6 +42,7 @@ class QuestionBankVersion extends Model
     protected $casts = [
         'required' => 'boolean',
         'default' => 'boolean',
+        'question_json' => 'array',
     ];
 
     /**
