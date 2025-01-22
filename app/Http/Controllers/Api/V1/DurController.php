@@ -388,6 +388,21 @@ class DurController extends Controller
         try {
             $dur = $this->getDurById($id);
 
+            if (!empty($dur['user'])) {
+                $dur['user'] = array_intersect_key($dur['user'], array_flip(['id', 'firstname', 'lastname']));
+            }
+
+            if (!empty($dur['users']) && is_array($dur['users'])) {
+                foreach ($dur['users'] as &$user) {
+                    $user = array_intersect_key($user, array_flip(['id', 'firstname', 'lastname']));
+                }
+                unset($user);
+            }
+
+            if (!empty($dur['team'])) {
+                $dur['team'] = array_intersect_key($dur['team'], array_flip(['id', 'name', 'team_logo', 'member_of', 'contact_point']));
+            }
+
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
