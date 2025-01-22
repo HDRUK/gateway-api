@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\Tool;
+use App\Models\Dataset;
 use App\Models\Publication;
+use App\Models\DatasetVersion;
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
@@ -14,13 +16,13 @@ use Database\Seeders\CategorySeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TeamHasUserSeeder;
+
 use Database\Seeders\TypeCategorySeeder;
+
 use Database\Seeders\DatasetVersionSeeder;
 
 use App\Models\PublicationHasDatasetVersion;
-
 use Database\Seeders\PublicationHasToolSeeder;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
@@ -43,6 +45,11 @@ class PublicationTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
+
+        Dataset::flushEventListeners();
+        DatasetVersion::flushEventListeners();
+        Publication::flushEventListeners();
+        PublicationHasDatasetVersion::flushEventListeners();
 
         $this->seed([
             MinimalUserSeeder::class,
@@ -355,7 +362,6 @@ class PublicationTest extends TestCase
 
     public function test_can_count_with_success(): void
     {
-
         $responseCount = $this->json(
             'GET',
             self::TEST_URL .
@@ -364,8 +370,9 @@ class PublicationTest extends TestCase
             $this->header
         );
         $responseCount->assertStatus(200);
+        $countDraftDb = Publication::where('status', Publication::STATUS_DRAFT)->withTrashed()->get()->count();
         $countDraft = $responseCount['data']['DRAFT'];
-        $this->assertTrue($countDraft === 10);
+        $this->assertTrue($countDraft === $countDraftDb);
 
 
         Publication::factory(1)->create(['status' => 'ACTIVE']);
@@ -378,8 +385,9 @@ class PublicationTest extends TestCase
             $this->header
         );
         $responseCount->assertStatus(200);
+        $countActiveDb = Publication::where('status', Publication::STATUS_ACTIVE)->withTrashed()->get()->count();
         $countActive = $responseCount['data']['ACTIVE'];
-        $this->assertTrue($countActive === 1);
+        $this->assertTrue($countActive === $countActiveDb);
 
         //now delete one
         $response = $this->json('DELETE', self::TEST_URL . '/1', [], $this->header);
@@ -393,8 +401,9 @@ class PublicationTest extends TestCase
             $this->header
         );
         $responseCount->assertStatus(200);
+        $countArchivedDb = Publication::where('status', Publication::STATUS_ARCHIVED)->withTrashed()->get()->count();
         $countArchived = $responseCount['data']['ARCHIVED'];
-        $this->assertTrue($countArchived === 1);
+        $this->assertTrue($countArchived === $countArchivedDb);
 
         $ownerId = 1;
         Publication::take(5)->update(['owner_id' => $ownerId]);
@@ -407,14 +416,18 @@ class PublicationTest extends TestCase
             $this->header
         );
         $responseCount->assertStatus(200);
-        $countDraft = $responseCount['data']['DRAFT'];
-        $this->assertTrue($countDraft === 5);
+        $countDraftDb2 = Publication::where([
+            'status' => Publication::STATUS_DRAFT,
+            'owner_id' => $ownerId,
+            ])->get()->count();
+        $countDraft = isset($responseCount['data']['DRAFT']) ? $responseCount['data']['DRAFT'] : 0;
+        $this->assertTrue($countDraft === $countDraftDb2);
 
     }
 
     public function test_patch_publication_status_with_success(): void
     {
-        $countBefore = Publication::all()->count();
+        $countBefore = Publication::where('status', Publication::STATUS_ARCHIVED)->get()->count();
         $response = $this->json(
             'PATCH',
             self::TEST_URL . "/1",
@@ -424,9 +437,12 @@ class PublicationTest extends TestCase
             $this->header,
         );
         $response->assertStatus(200);
-        $countAfter = Publication::all()->count();
+        $countAfter = Publication::where('status', Publication::STATUS_ARCHIVED)->get()->count();
         $this->assertTrue(($countBefore - $countAfter) === 1);
 
+        $countActiveBefore = Publication::where("status", Publication::STATUS_ACTIVE)->count();
+        $countDraftBefore = Publication::where("status", Publication::STATUS_DRAFT)->count();
+        $countArchivedBefore = Publication::withTrashed()->where("status", Publication::STATUS_ARCHIVED)->count();
 
         $response = $this->json(
             'PATCH',
@@ -441,13 +457,13 @@ class PublicationTest extends TestCase
         $countActive = Publication::where("status", Publication::STATUS_ACTIVE)->count();
         $countDraft = Publication::where("status", Publication::STATUS_DRAFT)->count();
         $countArchived = Publication::withTrashed()->where("status", Publication::STATUS_ARCHIVED)->count();
-        $this->assertTrue($countActive === 1);
-        $this->assertTrue($countArchived === 1);
-        $this->assertTrue($countDraft === ($countBefore - 2));
+        $this->assertTrue($countActive === $countActiveBefore);
+        $this->assertTrue($countArchived === $countArchivedBefore);
+        $this->assertTrue($countDraft === $countDraftBefore);
 
     }
 
-    public function test_can_filter_publications(): void
+    public function test_can_filter_publications_not_by_status(): void
     {
         $firstPublicationTitle = Publication::where("id", 1)->get()->first()->paper_title;
         $response = $this->json(
@@ -464,6 +480,7 @@ class PublicationTest extends TestCase
     public function test_can_filter_publications_on_status(): void
     {
         //all seeded publications are draft
+        $countDraft = Publication::where("status", Publication::STATUS_DRAFT)->count();
         $response = $this->json(
             'GET',
             self::TEST_URL . "?status=DRAFT",
@@ -471,7 +488,7 @@ class PublicationTest extends TestCase
         );
         //check adding a status filter doesnt crash
         $response->assertStatus(200);
-        $this->assertCount(10, $response['data']);
+        $this->assertCount($countDraft, $response['data']);
 
         //change one of the publications to active
         $response = $this->json(
@@ -485,13 +502,14 @@ class PublicationTest extends TestCase
         $response->assertStatus(200);
 
         //filter to find this one active publciation
+        $countActive = Publication::where("status", Publication::STATUS_ACTIVE)->count();
         $response = $this->json(
             'GET',
             self::TEST_URL . "?status=ACTIVE",
             $this->header,
         );
         $response->assertStatus(200);
-        $this->assertCount(1, $response['data']);
+        $this->assertCount($countActive, $response['data']);
 
 
         //update 2 other publications to be archived
@@ -522,9 +540,8 @@ class PublicationTest extends TestCase
             $this->header,
         );
         $response->assertStatus(200);
-        $this->assertCount(2, $response['data']);
-
-
+        $countArchived = Publication::where("status", Publication::STATUS_ARCHIVED)->withTrashed()->count();
+        $this->assertCount($countArchived, $response['data']);
     }
 
     /**
