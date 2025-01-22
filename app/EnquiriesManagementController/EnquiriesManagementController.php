@@ -209,7 +209,7 @@ class EnquiriesManagementController
         }
 
         foreach ($in['thread']['dataCustodians'] as $d) {
-            $dataCustodiansStr .= '<p style="text-indent: 15px">' . $d . '</p>';
+            $dataCustodiansStr .= '<p><b>' . $d . '</b></p>';
         }
 
         $str .= 'Name: ' . $in['message']['message_body']['[[USER_FIRST_NAME]]'] . ' ' . $in['message']['message_body']['[[USER_LAST_NAME]]'] . '<br/>';

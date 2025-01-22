@@ -154,7 +154,7 @@ class MetadataManagementController
      *
      * @return void
      */
-    public function deleteDataset(string $id): void
+    public function deleteDataset(string $id, bool $setToArchived = false): void
     {
         try {
             $dataset = Dataset::with('versions')->where('id', (int)$id)->first();
@@ -162,7 +162,11 @@ class MetadataManagementController
                 throw new Exception('Dataset with id=' . $id . ' cannot be found');
             }
             $dataset->deleted_at = Carbon::now();
-            $dataset->status = Dataset::STATUS_ARCHIVED;
+
+            // maintain compatibility with v1 (set status to archived) while supporting v2 (don't set status)
+            if ($setToArchived) {
+                $dataset->status = Dataset::STATUS_ARCHIVED;
+            }
             $dataset->save();
 
             foreach ($dataset->versions as $metadata) {

@@ -925,7 +925,7 @@ class PublicationController extends Controller
     private function getPublicationById(int $publicationId)
     {
 
-        $publication = Publication::with(['tools', 'durs'])
+        $publication = Publication::with(['tools', 'durs', 'collections'])
         ->withTrashed()
         ->where(['id' => $publicationId])
         ->first();

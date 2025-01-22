@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
-use App\Models\Team;
 use App\Models\QuestionBank;
 use App\Models\QuestionBankVersion;
 use App\Models\QuestionHasTeam;
@@ -63,6 +62,7 @@ class QuestionBankTest extends TestCase
                         'archived_date',
                         'force_required',
                         'allow_guidance_override',
+                        'question_type',
                         'is_child',
                         'latest_version',
                         'versions' => [
@@ -86,6 +86,324 @@ class QuestionBankTest extends TestCase
     }
 
     /**
+     * List all standard questions.
+     *
+     * @return void
+     */
+    public function test_the_application_can_list_standard_questions()
+    {
+        // Create a standard question to list
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'question_type' => 'STANDARD',
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
+                    ]
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $response = $this->get('api/v1/questions/standard', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'current_page',
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                        'section_id',
+                        'user_id',
+                        'locked',
+                        'archived',
+                        'archived_date',
+                        'force_required',
+                        'allow_guidance_override',
+                        'question_type',
+                        'is_child',
+                        'latest_version',
+                        'versions' => [
+                            0 => ['child_versions']
+                        ],
+                    ],
+                ],
+                'first_page_url',
+                'from',
+                'last_page',
+                'last_page_url',
+                'links',
+                'next_page_url',
+                'path',
+                'per_page',
+                'prev_page_url',
+                'to',
+                'total',
+            ]);
+
+    }
+
+    /**
+     * List all custom questions.
+     *
+     * @return void
+     */
+    public function test_the_application_can_list_custom_questions()
+    {
+        // Create a custom question to list
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'question_type' => 'CUSTOM',
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
+                    ]
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $response = $this->get('api/v1/questions/custom', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'current_page',
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                        'section_id',
+                        'user_id',
+                        'locked',
+                        'archived',
+                        'archived_date',
+                        'force_required',
+                        'allow_guidance_override',
+                        'question_type',
+                        'is_child',
+                        'latest_version',
+                        'versions' => [
+                            0 => ['child_versions']
+                        ],
+                    ],
+                ],
+                'first_page_url',
+                'from',
+                'last_page',
+                'last_page_url',
+                'links',
+                'next_page_url',
+                'path',
+                'per_page',
+                'prev_page_url',
+                'to',
+                'total',
+            ]);
+
+    }
+
+    /**
+     * List all archived questions.
+     *
+     * @return void
+     */
+    public function test_the_application_can_list_archived_questions()
+    {
+        // Create an archived question to list
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'archived' => 1,
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
+                    ]
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $response = $this->get('api/v1/questions/archived', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'current_page',
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                        'section_id',
+                        'user_id',
+                        'locked',
+                        'archived',
+                        'archived_date',
+                        'force_required',
+                        'allow_guidance_override',
+                        'question_type',
+                        'is_child',
+                        'latest_version',
+                        'versions' => [
+                            0 => ['child_versions']
+                        ],
+                    ],
+                ],
+                'first_page_url',
+                'from',
+                'last_page',
+                'last_page_url',
+                'links',
+                'next_page_url',
+                'path',
+                'per_page',
+                'prev_page_url',
+                'to',
+                'total',
+            ]);
+
+    }
+
+    /**
+     * List all questions from a section.
+     *
+     * @return void
+     */
+    public function test_the_application_can_list_questions_by_section()
+    {
+        // Create a question in section 1 to list
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'team_id' => [1],
+                'question_type' => 'CUSTOM',
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
+                    ]
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+        $questionId = $response->decodeResponseJson()['data'];
+
+        $response = $this->get('api/v1/teams/1/questions/section/1', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                        'section_id',
+                        'user_id',
+                        'locked',
+                        'archived',
+                        'archived_date',
+                        'force_required',
+                        'allow_guidance_override',
+                        'question_type',
+                        'is_child',
+                        'latest_version',
+                        'versions' => [
+                            0 => ['child_versions']
+                        ],
+                    ]
+                ],
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $ids = array_column($content['data'], 'id');
+
+        $this->assertContains($questionId, $ids);
+    }
+
+    /**
      * Returns a single question
      *
      * @return void
@@ -100,14 +418,12 @@ class QuestionBankTest extends TestCase
                 'user_id' => 1,
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
-                'field' => [
-                    'options' => [],
-                    'component' => 'TextArea',
-                    'validations' => [
-                        [
-                            'min' => 1,
-                            'message' => 'Please enter a value'
-                        ]
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
                     ]
                 ],
                 'title' => 'Test question',
@@ -132,10 +448,10 @@ class QuestionBankTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [
-                    'id',
                     'created_at',
                     'updated_at',
                     'deleted_at',
+                    'question_id',
                     'section_id',
                     'user_id',
                     'locked',
@@ -143,14 +459,82 @@ class QuestionBankTest extends TestCase
                     'archived_date',
                     'force_required',
                     'allow_guidance_override',
+                    'question_type',
                     'is_child',
-                    'latest_version',
-                        'latest_version',
-                        'versions' => [
-                            0 => ['child_versions']
-                        ],
+                    'version',
+                    'default',
+                    'required',
+                    'title',
+                    'guidance',
+                    'options',
+                    'component',
+                    'validations',
+                    'version_id',
                 ],
             ]);
+    }
+
+    /**
+     * Returns a single question version
+     *
+     * @return void
+     */
+    public function test_the_application_can_list_a_single_question_version()
+    {
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
+                    ]
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $content = $response->decodeResponseJson();
+
+        $response = $this->get('api/v1/questions/' . $content['data'], $this->header);
+        $questionVersionId = $response->decodeResponseJson()['data']['version_id'];
+
+        $response = $this->get('api/v1/questions/version/' . $questionVersionId, $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'question_id',
+                    'version',
+                    'default',
+                    'required',
+                    'question_json',
+                ],
+            ]);
+
+
     }
 
     /**
@@ -181,14 +565,12 @@ class QuestionBankTest extends TestCase
                 'user_id' => 1,
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
-                'field' => [
-                    'options' => [],
-                    'component' => 'TextArea',
-                    'validations' => [
-                        [
-                            'min' => 1,
-                            'message' => 'Please enter a value'
-                        ]
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
                     ]
                 ],
                 'title' => 'Test question',
@@ -212,93 +594,144 @@ class QuestionBankTest extends TestCase
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore + Team::all()->count());
+        // Test creation of a custom question
+        $countBefore = QuestionHasTeam::all()->count();
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'team_id' => [1],
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'question_type' => 'CUSTOM',
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
+                    ]
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+        $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore + 1);
 
         // now test with a nested set of questions
         $response = $this->json(
             'POST',
             'api/v1/questions',
             [
-                "section_id" => 1,
-                "force_required" => false,
-                "allow_guidance_override" => false,
+                "default" => 0,
+                "required" => false,
+                "section_id" => 17,
+                "user_id" => 1,
                 "locked" => false,
                 "archived" => false,
-                "is_child" => false,
-                "field" => [
-                    "options" => [
-                        "yes",
-                        "no"
-                    ],
-                    "component" => "RadioGroup",
-                    "validations" => []
-                ],
-                "title" => "Is this a test?",
-                "guidance" => "You tell me",
-                "required" => false,
-                "default" => 0,
-                "children" => [
-                    "yes" => [
-                        [
-                            "force_required" => false,
-                            "allow_guidance_override" => false,
-                            "field" => [
-                                "options" => [
-                                    "yes",
-                                    "no"
-                                ],
-                                "component" => "RadioGroup",
+                "archived_date" => null,
+                "force_required" => false,
+                "allow_guidance_override" => true,
+                "is_child" => 0,
+                "question_type" => "STANDARD",
+                "title" => "Please provide the legal basis to process confidential information",
+                "guidance" => "Please confirm if consent is in place or underway for all disclosures of confidential information, if you have Section 251 exemption, or any other legal basis that you require for the project.\n\nFor England and Wales, please specify if Section 251 exemption is currently being sought and if so, please provide a Confidentiality Advisory group reference code.\n\nIn Scotland applications are required for the consented and unconsented use of data.\n",
+                "options" => [
+                    [
+                        "label" => "Informed consent",
+                        "children" => [
+                            [
+                                "label" => "Informed consent",
+                                "title" => "Informed consent evidence",
+                                "guidance" => "Please ensure a copy of the consent form(s) and patient information sheet have been provided. Documents can be uploaded in the Additional Files section of this form.",
+                                "required" => false,
+                                "component" => "checkboxOptionsInput",
+                                "options" => [],
+                                "force_required" => true,
+                                "allow_guidance_override" => false,
                                 "validations" => []
-                            ],
-                            "title" => "Are you sure it is?",
-                            "guidance" => "Second chance to confirm",
-                            "required" => false,
-                            "default" => 1
-                        ],
-                        [
-                            "force_required" => false,
-                            "allow_guidance_override" => false,
-                            "field" => [
-                                "component" => "TextField",
-                                "validations" => []
-                            ],
-                            "title" => "And why do you say that?",
-                            "guidance" => "Please explain",
-                            "required" => false,
-                            "default" => 1
+                            ]
                         ]
                     ],
-                    "no" => [
-                        [
-                            "force_required" => false,
-                            "allow_guidance_override" => false,
-                            "field" => [
+                    [
+                        "label" => "Section 251 support",
+                        "children" => [
+                            [
+                                "label" => "Section 251 support",
+                                "title" => "Section 251 exemption evidence",
+                                "guidance" => "Please ensure a copy of the Section 251 exemption has been provided. Documents can be uploaded in the Additional Files section of this form.",
+                                "required" => false,
+                                "component" => "checkboxOptionsInput",
                                 "options" => [
-                                    "yes",
-                                    "no"
+                                    [
+                                        "label" => "Yes"
+                                    ],
+                                    [
+                                        "label" => "No"
+                                    ]
                                 ],
-                                "component" => "RadioGroup",
+                                "force_required" => false,
+                                "allow_guidance_override" => false,
                                 "validations" => []
                             ],
-                            "title" => "Are you sure it isn't?",
-                            "guidance" => "Second chance to deny",
-                            "required" => false,
-                            "default" => 0
-                        ],
-                        [
-                            "force_required" => false,
-                            "allow_guidance_override" => false,
-                            "field" => [
-                                "component" => "TextField",
+                            [
+                                "label" => "Section 251 support",
+                                "title" => "CAG reference",
+                                "guidance" => "",
+                                "required" => false,
+                                "component" => "textInput",
+                                "options" => [],
+                                "force_required" => true,
+                                "allow_guidance_override" => true,
                                 "validations" => []
                             ],
-                            "title" => "And why do you say that?",
-                            "guidance" => "Please explain",
-                            "required" => false,
-                            "default" => 1
+                            [
+                                "label" => "Section 251 support",
+                                "title" => "The section 251 approval enables the applicant to",
+                                "guidance" => "Please indicate what the Section 251 exemption permits you to do as part of your project.",
+                                "required" => false,
+                                "component" => "checkboxOptionsInput",
+                                "options" => [],
+                                "validations" => [],
+                                "force_required" => false,
+                                "allow_guidance_override" => true
+                            ]
                         ]
+                    ],
+                    [
+                        "label" => "Other",
+                        "children" => [
+                            [
+                                "label" => "Other",
+                                "title" => "If other, please specify",
+                                "guidance" => "",
+                                "required" => false,
+                                "component" => "textInput",
+                                "options" => [],
+                                "force_required" => false,
+                                "allow_guidance_override" => true,
+                                "validations" => []
+                            ]
+                        ]
+                    ],
+                    [
+                        "label" => "Not applicable",
+                        "children" => []
                     ]
-                ]
+                ],
+                "component" => "RadioGroup",
+                "validations" => []
             ],
             $this->header
         );
@@ -314,8 +747,6 @@ class QuestionBankTest extends TestCase
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore + 6 * Team::all()->count());
-
     }
 
     /**
@@ -325,19 +756,107 @@ class QuestionBankTest extends TestCase
      */
     public function test_the_application_fails_to_create_a_question()
     {
-        // Attempt to create question missing field and title
+        // Attempt to create question missing component and title
         $response = $this->json(
             'POST',
             'api/v1/questions',
             [
-                'section_id' => 1,
-                'user_id' => 1,
-                'force_required' => 0,
-                'allow_guidance_override' => 1,
-                'guidance' => 'Something helpful',
-                'required' => 0,
-                'default' => 0,
-                'version' => 1
+                "default" => 0,
+                "required" => false,
+                "section_id" => 17,
+                "user_id" => 1,
+                "locked" => false,
+                "archived" => false,
+                "archived_date" => null,
+                "force_required" => false,
+                "allow_guidance_override" => true,
+                "is_child" => 0,
+                "question_type" => "STANDARD",
+                "guidance" => "Please confirm if consent is in place or underway for all disclosures of confidential information, if you have Section 251 exemption, or any other legal basis that you require for the project.\n\nFor England and Wales, please specify if Section 251 exemption is currently being sought and if so, please provide a Confidentiality Advisory group reference code.\n\nIn Scotland applications are required for the consented and unconsented use of data.\n",
+                "options" => [
+                    [
+                        "label" => "Informed consent",
+                        "children" => [
+                            [
+                                "label" => "Informed consent",
+                                "title" => "Informed consent evidence",
+                                "guidance" => "Please ensure a copy of the consent form(s) and patient information sheet have been provided. Documents can be uploaded in the Additional Files section of this form.",
+                                "required" => false,
+                                "component" => "checkboxOptionsInput",
+                                "options" => [],
+                                "force_required" => true,
+                                "allow_guidance_override" => false,
+                                "validations" => []
+                            ]
+                        ]
+                    ],
+                    [
+                        "label" => "Section 251 support",
+                        "children" => [
+                            [
+                                "label" => "Section 251 support",
+                                "title" => "Section 251 exemption evidence",
+                                "guidance" => "Please ensure a copy of the Section 251 exemption has been provided. Documents can be uploaded in the Additional Files section of this form.",
+                                "required" => false,
+                                "component" => "checkboxOptionsInput",
+                                "options" => [
+                                    [
+                                        "label" => "Yes"
+                                    ],
+                                    [
+                                        "label" => "No"
+                                    ]
+                                ],
+                                "force_required" => false,
+                                "allow_guidance_override" => false,
+                                "validations" => []
+                            ],
+                            [
+                                "label" => "Section 251 support",
+                                "title" => "CAG reference",
+                                "guidance" => "",
+                                "required" => false,
+                                "component" => "textInput",
+                                "options" => [],
+                                "force_required" => true,
+                                "allow_guidance_override" => true,
+                                "validations" => []
+                            ],
+                            [
+                                "label" => "Section 251 support",
+                                "title" => "The section 251 approval enables the applicant to",
+                                "guidance" => "Please indicate what the Section 251 exemption permits you to do as part of your project.",
+                                "required" => false,
+                                "component" => "checkboxOptionsInput",
+                                "options" => [],
+                                "validations" => [],
+                                "force_required" => false,
+                                "allow_guidance_override" => true
+                            ]
+                        ]
+                    ],
+                    [
+                        "label" => "Other",
+                        "children" => [
+                            [
+                                "label" => "Other",
+                                "title" => "If other, please specify",
+                                "guidance" => "",
+                                "required" => false,
+                                "component" => "textInput",
+                                "options" => [],
+                                "force_required" => false,
+                                "allow_guidance_override" => true,
+                                "validations" => []
+                            ]
+                        ]
+                    ],
+                    [
+                        "label" => "Not applicable",
+                        "children" => []
+                    ]
+                ],
+                "validations" => []
             ],
             $this->header
         );
@@ -354,14 +873,12 @@ class QuestionBankTest extends TestCase
             'POST',
             'api/v1/questions',
             [
-                'field' => [
-                    'options' => [],
-                    'component' => 'TextArea',
-                    'validations' => [
-                        [
-                            'min' => 1,
-                            'message' => 'Please enter a value'
-                        ]
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
                     ]
                 ],
                 'title' => 'Test question',
@@ -402,14 +919,12 @@ class QuestionBankTest extends TestCase
                 'user_id' => 1,
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
-                'field' => [
-                    'options' => [],
-                    'component' => 'TextArea',
-                    'validations' => [
-                        [
-                            'min' => 1,
-                            'message' => 'Please enter a value'
-                        ]
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
                     ]
                 ],
                 'title' => 'Test question',
@@ -436,14 +951,12 @@ class QuestionBankTest extends TestCase
                 'user_id' => 1,
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
-                'field' => [
-                    'options' => [],
-                    'component' => 'TextArea',
-                    'validations' => [
-                        [
-                            'min' => 1,
-                            'message' => 'Please enter a value'
-                        ]
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
                     ]
                 ],
                 'title' => 'Updated test question',
@@ -470,96 +983,114 @@ class QuestionBankTest extends TestCase
             ->first();
         // Test latest version is 2 and title is updated
         $this->assertEquals($version['version'], 2);
-        $this->assertEquals(json_decode($version['question_json'], true)['title'], 'Updated test question');
+        $this->assertEquals($version['question_json']['title'], 'Updated test question');
 
         $this->assertEquals($countQuestionsBefore + 1, QuestionBank::all()->count());
         $this->assertEquals($countQuestionVersionsBefore + 2, QuestionBankVersion::all()->count());
 
-        // now test with a nested set of questions - this will add 5 Questions and 5 QBVersions
+        // now test with a nested set of questions - this will add 6 Questions and 6 QBVersions
         $response = $this->json(
             'POST',
             'api/v1/questions',
             [
-                "section_id" => 1,
-                "force_required" => false,
-                "allow_guidance_override" => false,
+                "default" => 0,
+                "required" => false,
+                "section_id" => 17,
+                "user_id" => 1,
                 "locked" => false,
                 "archived" => false,
-                "is_child" => false,
-                "field" => [
-                    "options" => [
-                        "yes",
-                        "no"
-                    ],
-                    "component" => "RadioGroup",
-                    "validations" => []
-                ],
-                "title" => "Is this a test?",
-                "guidance" => "You tell me",
-                "required" => false,
-                "default" => 0,
-                "children" => [
-                    "yes" => [
-                        [
-                            "force_required" => false,
-                            "allow_guidance_override" => false,
-                            "field" => [
-                                "options" => [
-                                    "yes",
-                                    "no"
-                                ],
-                                "component" => "RadioGroup",
+                "archived_date" => null,
+                "force_required" => false,
+                "allow_guidance_override" => true,
+                "is_child" => 0,
+                "question_type" => "STANDARD",
+                "title" => "Please provide the legal basis to process confidential information",
+                "guidance" => "Please confirm if consent is in place or underway for all disclosures of confidential information, if you have Section 251 exemption, or any other legal basis that you require for the project.\n\nFor England and Wales, please specify if Section 251 exemption is currently being sought and if so, please provide a Confidentiality Advisory group reference code.\n\nIn Scotland applications are required for the consented and unconsented use of data.\n",
+                "options" => [
+                    [
+                        "label" => "Informed consent",
+                        "children" => [
+                            [
+                                "label" => "Informed consent",
+                                "title" => "Informed consent evidence",
+                                "guidance" => "Please ensure a copy of the consent form(s) and patient information sheet have been provided. Documents can be uploaded in the Additional Files section of this form.",
+                                "required" => false,
+                                "component" => "checkboxOptionsInput",
+                                "options" => [],
+                                "force_required" => true,
+                                "allow_guidance_override" => false,
                                 "validations" => []
-                            ],
-                            "title" => "Are you sure it is?",
-                            "guidance" => "Second chance to confirm",
-                            "required" => false,
-                            "default" => 1
-                        ],
-                        [
-                            "force_required" => false,
-                            "allow_guidance_override" => false,
-                            "field" => [
-                                "component" => "TextField",
-                                "validations" => []
-                            ],
-                            "title" => "And why do you say that?",
-                            "guidance" => "Please explain",
-                            "required" => false,
-                            "default" => 1
+                            ]
                         ]
                     ],
-                    "no" => [
-                        [
-                            "force_required" => false,
-                            "allow_guidance_override" => false,
-                            "field" => [
+                    [
+                        "label" => "Section 251 support",
+                        "children" => [
+                            [
+                                "label" => "Section 251 support",
+                                "title" => "Section 251 exemption evidence",
+                                "guidance" => "Please ensure a copy of the Section 251 exemption has been provided. Documents can be uploaded in the Additional Files section of this form.",
+                                "required" => false,
+                                "component" => "checkboxOptionsInput",
                                 "options" => [
-                                    "yes",
-                                    "no"
+                                    [
+                                        "label" => "Yes"
+                                    ],
+                                    [
+                                        "label" => "No"
+                                    ]
                                 ],
-                                "component" => "RadioGroup",
+                                "force_required" => false,
+                                "allow_guidance_override" => false,
                                 "validations" => []
                             ],
-                            "title" => "Are you sure it isn't?",
-                            "guidance" => "Second chance to deny",
-                            "required" => false,
-                            "default" => 0
-                        ],
-                        [
-                            "force_required" => false,
-                            "allow_guidance_override" => false,
-                            "field" => [
-                                "component" => "TextField",
+                            [
+                                "label" => "Section 251 support",
+                                "title" => "CAG reference",
+                                "guidance" => "",
+                                "required" => false,
+                                "component" => "textInput",
+                                "options" => [],
+                                "force_required" => true,
+                                "allow_guidance_override" => true,
                                 "validations" => []
                             ],
-                            "title" => "And why do you say that?",
-                            "guidance" => "Please explain",
-                            "required" => false,
-                            "default" => 1
+                            [
+                                "label" => "Section 251 support",
+                                "title" => "The section 251 approval enables the applicant to",
+                                "guidance" => "Please indicate what the Section 251 exemption permits you to do as part of your project.",
+                                "required" => false,
+                                "component" => "checkboxOptionsInput",
+                                "options" => [],
+                                "validations" => [],
+                                "force_required" => false,
+                                "allow_guidance_override" => true
+                            ]
                         ]
+                    ],
+                    [
+                        "label" => "Other",
+                        "children" => [
+                            [
+                                "label" => "Other",
+                                "title" => "If other, please specify",
+                                "guidance" => "",
+                                "required" => false,
+                                "component" => "textInput",
+                                "options" => [],
+                                "force_required" => false,
+                                "allow_guidance_override" => true,
+                                "validations" => []
+                            ]
+                        ]
+                    ],
+                    [
+                        "label" => "Not applicable",
+                        "children" => []
                     ]
-                ]
+                ],
+                "component" => "RadioGroup",
+                "validations" => []
             ],
             $this->header
         );
@@ -575,8 +1106,8 @@ class QuestionBankTest extends TestCase
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        $this->assertEquals($countQuestionsBefore + 6, QuestionBank::all()->count());
-        $this->assertEquals($countQuestionVersionsBefore + 7, QuestionBankVersion::all()->count());
+        $this->assertEquals($countQuestionsBefore + 7, QuestionBank::all()->count());
+        $this->assertEquals($countQuestionVersionsBefore + 8, QuestionBankVersion::all()->count());
 
         // this will add 4 Questions (because the main parent is updated, the others are made new)
         // and 5 QBVersions (all have their versions bumped)
@@ -584,86 +1115,77 @@ class QuestionBankTest extends TestCase
             'PUT',
             'api/v1/questions/' . $content['data'],
             [
-                "section_id" => 1,
-                "force_required" => false,
-                "allow_guidance_override" => false,
+                "default" => 0,
+                "required" => false,
+                "section_id" => 17,
+                "user_id" => 1,
                 "locked" => false,
                 "archived" => false,
-                "is_child" => false,
-                "field" => [
-                    "options" => [
-                        "yes",
-                        "no"
-                    ],
-                    "component" => "RadioGroup",
-                    "validations" => []
-                ],
-                "title" => "Is this a test?",
-                "guidance" => "You tell me",
-                "required" => false,
-                "default" => 0,
-                "children" => [
-                    "yes" => [
-                        [
-                            "force_required" => false,
-                            "allow_guidance_override" => false,
-                            "field" => [
-                                "options" => [
-                                    "yes",
-                                    "no"
-                                ],
-                                "component" => "RadioGroup",
+                "archived_date" => null,
+                "force_required" => false,
+                "allow_guidance_override" => true,
+                "is_child" => 0,
+                "question_type" => "STANDARD",
+                "title" => "Please provide the legal basis to process confidential information",
+                "guidance" => "Please confirm if consent is in place or underway for all disclosures of confidential information, if you have Section 251 exemption, or any other legal basis that you require for the project.\n\nFor England and Wales, please specify if Section 251 exemption is currently being sought and if so, please provide a Confidentiality Advisory group reference code.\n\nIn Scotland applications are required for the consented and unconsented use of data.\n",
+                "options" => [
+                    [
+                        "label" => "Informed consent",
+                        "children" => [
+                            [
+                                "label" => "Informed consent",
+                                "title" => "Informed consent evidence",
+                                "guidance" => "Please ensure a copy of the consent form(s) and patient information sheet have been provided. Documents can be uploaded in the Additional Files section of this form.",
+                                "required" => false,
+                                "component" => "checkboxOptionsInput",
+                                "options" => [],
+                                "force_required" => true,
+                                "allow_guidance_override" => false,
                                 "validations" => []
-                            ],
-                            "title" => "Are you sure it is? (updated)",
-                            "guidance" => "Second chance to confirm",
-                            "required" => false,
-                            "default" => 1
+                            ]
                         ]
                     ],
-                    "no" => [
-                        [
-                            "force_required" => false,
-                            "allow_guidance_override" => false,
-                            "field" => [
+                    [
+                        "label" => "Section 251 support",
+                        "children" => [
+                            [
+                                "label" => "Section 251 support",
+                                "title" => "Section 251 exemption evidence",
+                                "guidance" => "Please ensure a copy of the Section 251 exemption has been provided. Documents can be uploaded in the Additional Files section of this form.",
+                                "required" => false,
+                                "component" => "checkboxOptionsInput",
                                 "options" => [
-                                    "yes",
-                                    "no"
+                                    [
+                                        "label" => "Yes"
+                                    ],
+                                    [
+                                        "label" => "No"
+                                    ]
                                 ],
-                                "component" => "RadioGroup",
+                                "force_required" => false,
+                                "allow_guidance_override" => false,
                                 "validations" => []
                             ],
-                            "title" => "Are you sure it isn't? (updated)",
-                            "guidance" => "Second chance to deny",
-                            "required" => false,
-                            "default" => 0
-                        ],
-                        [
-                            "force_required" => false,
-                            "allow_guidance_override" => false,
-                            "field" => [
-                                "component" => "TextField",
-                                "validations" => []
-                            ],
-                            "title" => "And why do you say that? (updated)",
-                            "guidance" => "Please explain",
-                            "required" => false,
-                            "default" => 1
-                        ],
-                        [
-                            "force_required" => false,
-                            "allow_guidance_override" => false,
-                            "field" => [
-                                "component" => "TextField",
-                                "validations" => []
-                            ],
-                            "title" => "Is that all? (updated)",
-                            "guidance" => "Please explain",
-                            "required" => false,
-                            "default" => 1
+                            [
+                                "label" => "Section 251 support",
+                                "title" => "The section 251 approval enables the applicant to",
+                                "guidance" => "Please indicate what the Section 251 exemption permits you to do as part of your project.",
+                                "required" => false,
+                                "component" => "checkboxOptionsInput",
+                                "options" => [],
+                                "validations" => [],
+                                "force_required" => false,
+                                "allow_guidance_override" => true
+                            ]
                         ]
+                    ],
+                    [
+                        "label" => "Not applicable",
+                        "children" => []
                     ]
-                ]
+                ],
+                "component" => "RadioGroup",
+                "validations" => []
             ],
             $this->header
         );
@@ -691,14 +1213,12 @@ class QuestionBankTest extends TestCase
             [
                 "force_required" => false,
                 "allow_guidance_override" => false,
-                "field" => [
-                    "options" => [
-                        "yes",
-                        "no"
-                    ],
-                    "component" => "RadioGroup",
-                    "validations" => []
+                "options" => [
+                    "yes",
+                    "no"
                 ],
+                "component" => "RadioGroup",
+                "validations" => [],
                 "section_id" => 1,
                 "title" => "Testing that updating a child fails",
                 "guidance" => "This should fail",
@@ -735,14 +1255,12 @@ class QuestionBankTest extends TestCase
                 'user_id' => 1,
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
-                'field' => [
-                    'options' => [],
-                    'component' => 'TextArea',
-                    'validations' => [
-                        [
-                            'min' => 1,
-                            'message' => 'Please enter a value'
-                        ]
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
                     ]
                 ],
                 'title' => 'Test question',
@@ -786,9 +1304,8 @@ class QuestionBankTest extends TestCase
         // Test latest version is 1 (edit does not increase version, only update does),
         // title has been edited, and required has not been edited
         $this->assertEquals($version['version'], 1);
-        $questionJson = json_decode($version['question_json'], true);
-        $this->assertEquals($questionJson['title'], 'Updated test question');
-        $this->assertEquals($questionJson['required'], false);
+        $this->assertEquals($version['question_json']['title'], 'Updated test question');
+        $this->assertEquals($version['question_json']['required'], false);
 
         // Test that a new version is not created when question content is not updated
         // e.g. when a question is locked
@@ -819,11 +1336,271 @@ class QuestionBankTest extends TestCase
     }
 
     /**
+     * Test if can update the status of a question
+     *
+     * @return void
+     */
+    public function test_the_application_can_update_the_status_of_a_question()
+    {
+        // create a question with children
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                "default" => 0,
+                "required" => false,
+                "section_id" => 17,
+                "user_id" => 1,
+                "locked" => false,
+                "archived" => false,
+                "archived_date" => null,
+                "force_required" => false,
+                "allow_guidance_override" => true,
+                "is_child" => 0,
+                "question_type" => "STANDARD",
+                "title" => "Please provide the legal basis to process confidential information",
+                "guidance" => "Please confirm if consent is in place or underway for all disclosures of confidential information, if you have Section 251 exemption, or any other legal basis that you require for the project.\n\nFor England and Wales, please specify if Section 251 exemption is currently being sought and if so, please provide a Confidentiality Advisory group reference code.\n\nIn Scotland applications are required for the consented and unconsented use of data.\n",
+                "options" => [
+                    [
+                        "label" => "Informed consent",
+                        "children" => [
+                            [
+                                "label" => "Informed consent",
+                                "title" => "Informed consent evidence",
+                                "guidance" => "Please ensure a copy of the consent form(s) and patient information sheet have been provided. Documents can be uploaded in the Additional Files section of this form.",
+                                "required" => false,
+                                "component" => "checkboxOptionsInput",
+                                "options" => [],
+                                "force_required" => true,
+                                "allow_guidance_override" => false,
+                                "validations" => []
+                            ]
+                        ]
+                    ],
+                    [
+                        "label" => "Section 251 support",
+                        "children" => [
+                            [
+                                "label" => "Section 251 support",
+                                "title" => "Section 251 exemption evidence",
+                                "guidance" => "Please ensure a copy of the Section 251 exemption has been provided. Documents can be uploaded in the Additional Files section of this form.",
+                                "required" => false,
+                                "component" => "checkboxOptionsInput",
+                                "options" => [
+                                    [
+                                        "label" => "Yes"
+                                    ],
+                                    [
+                                        "label" => "No"
+                                    ]
+                                ],
+                                "force_required" => false,
+                                "allow_guidance_override" => false,
+                                "validations" => []
+                            ],
+                            [
+                                "label" => "Section 251 support",
+                                "title" => "The section 251 approval enables the applicant to",
+                                "guidance" => "Please indicate what the Section 251 exemption permits you to do as part of your project.",
+                                "required" => false,
+                                "component" => "checkboxOptionsInput",
+                                "options" => [],
+                                "validations" => [],
+                                "force_required" => false,
+                                "allow_guidance_override" => true
+                            ]
+                        ]
+                    ],
+                    [
+                        "label" => "Not applicable",
+                        "children" => []
+                    ]
+                ],
+                "component" => "RadioGroup",
+                "validations" => []
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $questionId = $content['data'];
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/questions/' . $questionId . '/lock',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $response = $this->json(
+            'GET',
+            'api/v1/questions/' . $questionId,
+            [],
+            $this->header
+        );
+
+        $content = $response->decodeResponseJson();
+        $this->assertTrue($content['data']['locked']);
+
+        // get children ids and check they are also locked
+        $childIds = [];
+        foreach ($content['data']['options'] as $option) {
+            foreach ($option['children'] as $child) {
+                $childIds[] = $child['question_id'];
+            }
+        }
+
+        foreach ($childIds as $id) {
+            $response = $this->json(
+                'GET',
+                'api/v1/questions/' . $id,
+                [],
+                $this->header
+            );
+            $content = $response->decodeResponseJson();
+            $this->assertTrue($content['data']['locked']);
+        }
+
+        // Test unlocking the same way
+        $response = $this->json(
+            'PATCH',
+            'api/v1/questions/' . $questionId . '/unlock',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $response = $this->json(
+            'GET',
+            'api/v1/questions/' . $questionId,
+            [],
+            $this->header
+        );
+
+        $content = $response->decodeResponseJson();
+        $this->assertTrue(!$content['data']['locked']);
+
+        // get children ids and check they are also locked
+        $childIds = [];
+        foreach ($content['data']['options'] as $option) {
+            foreach ($option['children'] as $child) {
+                $childIds[] = $child['question_id'];
+            }
+        }
+
+        foreach ($childIds as $id) {
+            $response = $this->json(
+                'GET',
+                'api/v1/questions/' . $id,
+                [],
+                $this->header
+            );
+            $content = $response->decodeResponseJson();
+            $this->assertTrue(!$content['data']['locked']);
+        }
+
+        // test archiving
+        $response = $this->json(
+            'PATCH',
+            'api/v1/questions/' . $questionId . '/archive',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $response = $this->json(
+            'GET',
+            'api/v1/questions/' . $questionId,
+            [],
+            $this->header
+        );
+
+        $content = $response->decodeResponseJson();
+        $this->assertTrue($content['data']['archived']);
+
+        // get children ids and check they are also archived
+        $childIds = [];
+        foreach ($content['data']['options'] as $option) {
+            foreach ($option['children'] as $child) {
+                $childIds[] = $child['question_id'];
+            }
+        }
+
+        foreach ($childIds as $id) {
+            $response = $this->json(
+                'GET',
+                'api/v1/questions/' . $id,
+                [],
+                $this->header
+            );
+            $content = $response->decodeResponseJson();
+            $this->assertTrue($content['data']['archived']);
+        }
+
+        // Test unarchiving the same way
+        $response = $this->json(
+            'PATCH',
+            'api/v1/questions/' . $questionId . '/unarchive',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $response = $this->json(
+            'GET',
+            'api/v1/questions/' . $questionId,
+            [],
+            $this->header
+        );
+
+        $content = $response->decodeResponseJson();
+        $this->assertTrue(!$content['data']['archived']);
+
+        // get children ids and check they are also archived
+        $childIds = [];
+        foreach ($content['data']['options'] as $option) {
+            foreach ($option['children'] as $child) {
+                $childIds[] = $child['question_id'];
+            }
+        }
+
+        foreach ($childIds as $id) {
+            $response = $this->json(
+                'GET',
+                'api/v1/questions/' . $id,
+                [],
+                $this->header
+            );
+            $content = $response->decodeResponseJson();
+            $this->assertTrue(!$content['data']['archived']);
+        }
+
+        // test updating a child question's status fails
+        $response = $this->json(
+            'PATCH',
+            'api/v1/questions/' . $childIds[0] . '/lock',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+    }
+
+    /**
      * Tests it can delete a question
      *
      * @return void
      */
-    public function test_it_can_delete_a_question()
+    public function test_the_application_can_delete_a_question()
     {
         $countBefore = QuestionHasTeam::all()->count();
 
@@ -833,16 +1610,16 @@ class QuestionBankTest extends TestCase
             [
                 'section_id' => 1,
                 'user_id' => 1,
+                'team_id' => [1],
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
-                'field' => [
-                    'options' => [],
-                    'component' => 'TextArea',
-                    'validations' => [
-                        [
-                            'min' => 1,
-                            'message' => 'Please enter a value'
-                        ]
+                'question_type' => 'CUSTOM',
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
                     ]
                 ],
                 'title' => 'Test question',
@@ -857,7 +1634,7 @@ class QuestionBankTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
         $content = $response->decodeResponseJson();
 
-        $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore + Team::all()->count());
+        $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore + 1);
 
         $response = $this->json(
             'DELETE',

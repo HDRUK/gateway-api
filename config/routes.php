@@ -3660,8 +3660,70 @@ return [
     [
         'name' => 'questions',
         'method' => 'get',
+        'path' => '/questions/standard',
+        'methodController' => 'QuestionBankController@indexStandard',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'get',
+        'path' => '/questions/custom',
+        'methodController' => 'QuestionBankController@indexCustom',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'get',
+        'path' => '/questions/archived',
+        'methodController' => 'QuestionBankController@indexArchived',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/questions/section/{sectionId}',
+        'methodController' => 'TeamQuestionBankController@indexBySection',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'get',
         'path' => '/questions/{id}',
         'methodController' => 'QuestionBankController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.read',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'questions',
+        'method' => 'get',
+        'path' => '/questions/version/{id}',
+        'methodController' => 'QuestionBankController@showVersion',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3716,6 +3778,21 @@ return [
     ],
     [
         'name' => 'questions',
+        'method' => 'patch',
+        'path' => '/questions/{id}/{status}',
+        'methodController' => 'QuestionBankController@updateStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:permissions,question-bank.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'questions',
         'method' => 'delete',
         'path' => '/questions/{id}',
         'methodController' => 'QuestionBankController@destroy',
@@ -3756,9 +3833,61 @@ return [
     ],
     [
         'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/dar/applications/{id}/files',
+        'methodController' => 'DataAccessApplicationController@showFiles',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/dar/applications/{id}/files/{fileId}/download',
+        'methodController' => 'DataAccessApplicationController@downloadFile',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'fileId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/dar/applications/{id}/answers',
+        'methodController' => 'DataAccessApplicationController@showAnswers',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
         'method' => 'post',
         'path' => '/dar/applications',
         'methodController' => 'DataAccessApplicationController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'put',
+        'path' => '/dar/applications/{id}/answers',
+        'methodController' => 'DataAccessApplicationController@storeAnswers',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3807,6 +3936,20 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'delete',
+        'path' => '/dar/applications/{id}/files/{fileId}',
+        'methodController' => 'DataAccessApplicationController@destroyFile',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'fileId' => '[0-9]+',
+        ],
+    ],
 
     // dar/templates
     [
@@ -3814,6 +3957,18 @@ return [
         'method' => 'get',
         'path' => '/dar/templates',
         'methodController' => 'DataAccessTemplateController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-template.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dar/templates',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/dar/templates',
+        'methodController' => 'TeamDataAccessTemplateController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',

@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
 
 use App\Models\Collection;
 use App\Models\CollectionHasDatasetVersion;
+use App\Models\CollectionHasDur;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasTool;
@@ -87,7 +88,7 @@ trait IndexElastic
                 'startDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.startDate'], null),
                 'endDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.endDate'], Carbon::now()->addYears(5)),
                 'dataType' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], '')),
-                'dataSubType' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetSubType'], '')),
+                'dataSubType' => array_filter(explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetSubType'], ''))),
                 'containsTissue' => $containsTissue,
                 'sampleAvailability' => $materialTypes,
                 'conformsTo' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
@@ -440,7 +441,8 @@ trait IndexElastic
                 'datasetTitles' => $datasetTitles,
                 'keywords' => $keywords,
                 'sector' => $sector,
-                'dataProvider' => $dataProvider
+                'dataProvider' => $dataProvider,
+                'collectionNames' => $this->getCollectionNamesByDurId($id),
             ];
 
             $params = [
@@ -928,5 +930,28 @@ trait IndexElastic
         ];
 
         return $datasetResources;
+    }
+
+    public function getCollectionNamesByDurId(int $durId): array
+    {
+        $collectionNames = [];
+
+        $collectionHasDurs = CollectionHasDur::where([
+                'dur_id' => $durId,
+            ])
+            ->select('collection_id')
+            ->get()
+            ->toArray();
+
+        if (!count($collectionHasDurs)) {
+            return $collectionNames;
+        }
+        $collectionIds = convertArrayToArrayWithKeyName($collectionHasDurs, 'collection_id');
+        $collectionNames = Collection::where('status', Collection::STATUS_ACTIVE)
+                            ->whereIn('id', $collectionIds)
+                            ->select('name')
+                            ->get()
+                            ->toArray();
+        return convertArrayToArrayWithKeyName($collectionNames, 'name');
     }
 }

@@ -96,11 +96,11 @@ class UserCollectionController extends Controller
     public function indexActive(Request $request, int $userId): JsonResponse
     {
         try {
-            $perPage = $request->has('per_page') ? (int) $request->get('per_page') : Config::get('constants.per_page');
+            $perPage = request('per_page', Config::get('constants.per_page'));
 
             $collections = $this->indexUserCollection(
                 $userId,
-                'ACTIVE',
+                Collection::STATUS_ACTIVE,
                 $perPage
             );
 
@@ -179,11 +179,11 @@ class UserCollectionController extends Controller
     public function indexDraft(Request $request, int $userId): JsonResponse
     {
         try {
-            $perPage = $request->has('per_page') ? (int) $request->get('per_page') : Config::get('constants.per_page');
+            $perPage = request('per_page', Config::get('constants.per_page'));
 
             $collections = $this->indexUserCollection(
                 $userId,
-                'DRAFT',
+                Collection::STATUS_DRAFT,
                 $perPage
             );
 
@@ -262,11 +262,11 @@ class UserCollectionController extends Controller
     public function indexArchived(Request $request, int $userId): JsonResponse
     {
         try {
-            $perPage = $request->has('per_page') ? (int) $request->get('per_page') : Config::get('constants.per_page');
+            $perPage = request('per_page', Config::get('constants.per_page'));
 
             $collections = $this->indexUserCollection(
                 $userId,
-                'ARCHIVED',
+                Collection::STATUS_ARCHIVED,
                 $perPage
             );
 

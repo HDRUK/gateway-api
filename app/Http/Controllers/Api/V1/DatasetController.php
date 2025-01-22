@@ -439,7 +439,7 @@ class DatasetController extends Controller
             $dataset->setAttribute('collections_count', count($dataset->allCollections));
             $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
             $dataset->setAttribute('durs', $dataset->allDurs  ?? []);
-            $dataset->setAttribute('publications', $dataset->allPublications  ?? []);
+            $dataset->setAttribute('publications', $dataset->allActivePublications  ?? []);
             $dataset->setAttribute('named_entities', $dataset->allNamedEntities  ?? []);
             $dataset->setAttribute('collections', $dataset->allCollections  ?? []);
 
@@ -1029,7 +1029,7 @@ class DatasetController extends Controller
             $dataset = Dataset::where('id', $id)->first();
             $deleteFromElastic = ($dataset->status === Dataset::STATUS_ACTIVE);
 
-            MMC::deleteDataset($id);
+            MMC::deleteDataset($id, true);
 
             if ($deleteFromElastic) {
                 $this->deleteDatasetFromElastic($id);

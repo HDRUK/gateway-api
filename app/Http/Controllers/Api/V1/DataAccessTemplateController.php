@@ -17,6 +17,7 @@ use App\Http\Requests\DataAccessTemplate\UpdateDataAccessTemplate;
 use App\Models\DataAccessTemplate;
 use App\Models\DataAccessTemplateHasQuestion;
 use App\Models\QuestionBank;
+use App\Models\QuestionHasTeam;
 
 class DataAccessTemplateController extends Controller
 {
@@ -30,6 +31,17 @@ class DataAccessTemplateController extends Controller
      *      tags={"DataAccessTemplate"},
      *      summary="DataAccessTemplate@index",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="with_questions",
+     *         in="query",
+     *         description="Include questions in response",
+     *         required=false,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Include questions in response",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -53,11 +65,15 @@ class DataAccessTemplateController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $templates = DataAccessTemplate::paginate(
+        try {
+
+            $withQuestions = $request->boolean('with_questions', false);
+
+            $templates = DataAccessTemplate::when($withQuestions, fn ($query) => $query->with('questions'))
+            ->paginate(
                 Config::get('constants.per_page'),
                 ['*'],
                 'page'
@@ -136,7 +152,16 @@ class DataAccessTemplateController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $template = DataAccessTemplate::with('questions')->findOrFail($id);
+            $template = DataAccessTemplate::where('id', $id)->with('questions')->first();
+            foreach ($template['questions'] as $i => $q) {
+                $version = QuestionBank::with([
+                    'latestVersion',
+                    'latestVersion.childVersions',
+                ])->where('id', $q->question_id)
+                    ->first()
+                    ->toArray();
+                $template['questions'][$i]['latest_version'] = $version['latest_version'];
+            }
 
             if ($template) {
                 Auditor::log([
@@ -225,7 +250,7 @@ class DataAccessTemplateController extends Controller
             ]);
 
             if (isset($input['questions'])) {
-                $this->insertTemplateHasQuestions($input['questions'], $template);
+                $this->insertTemplateHasQuestions($input['questions'], $template, $input['team_id']);
             }
 
             Auditor::log([
@@ -331,7 +356,7 @@ class DataAccessTemplateController extends Controller
 
             if (isset($input['questions'])) {
                 DataAccessTemplateHasQuestion::where('template_id', $id)->delete();
-                $this->insertTemplateHasQuestions($input['questions'], $template);
+                $this->insertTemplateHasQuestions($input['questions'], $template, $input['team_id']);
             }
 
             Auditor::log([
@@ -433,7 +458,7 @@ class DataAccessTemplateController extends Controller
 
             if (isset($input['questions'])) {
                 DataAccessTemplateHasQuestion::where('template_id', $id)->delete();
-                $this->insertTemplateHasQuestions($input['questions'], $template);
+                $this->insertTemplateHasQuestions($input['questions'], $template, $input['team_id']);
             }
 
             Auditor::log([
@@ -534,16 +559,26 @@ class DataAccessTemplateController extends Controller
         }
     }
 
-    private function insertTemplateHasQuestions(array $questions, DataAccessTemplate $template): void
+    private function insertTemplateHasQuestions(array $questions, DataAccessTemplate $template, int $teamId): void
     {
         $count = 1;
         foreach ($questions as $q) {
             $question = QuestionBank::where('id', $q['id'])->with('latestVersion')->first();
+            // check access to question
+            $teams = QuestionHasTeam::where([
+                'team_id' => $teamId,
+                'qb_question_id' => $q['id']
+            ])->get();
+
+            if (($question->question_type === QuestionBank::CUSTOM_TYPE) && (!count($teams))) {
+                throw new Exception('Question with id ' . $q['id'] . ' is not accessible by this team.');
+            }
+
             $isRequired = $question->force_required ? true : $q['required'] ?? false;
             if (($question->allow_guidance_override) && isset($q['guidance'])) {
                 $guidance = $q['guidance'];
             } else {
-                $questionContent = json_decode($question['latestVersion']['question_json'], true);
+                $questionContent = $question['latestVersion']['question_json'];
                 $guidance = $questionContent['guidance'];
             }
             DataAccessTemplateHasQuestion::create([

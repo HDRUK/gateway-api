@@ -98,7 +98,7 @@ class CollectionController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $perPage = $request->has('per_page') ? (int) $request->get('per_page') : Config::get('constants.per_page');
+            $perPage = request('per_page', Config::get('constants.per_page'));
 
             $collections = Collection::with([
                 'keywords',
@@ -358,7 +358,9 @@ class CollectionController extends Controller
                 'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
-
+            if (array_key_exists('name', $input)) {
+                $array['name'] = format_clean_input($input['name']);
+            }
             $collection = Collection::create($array);
             $collectionId = (int) $collection->id;
 
@@ -747,7 +749,7 @@ class CollectionController extends Controller
                 $array = $this->checkEditArray($input, $arrayKeys);
 
                 if (array_key_exists('name', $input)) {
-                    $array['name'] = sanitize_input($input['name']);
+                    $array['name'] = format_clean_input($input['name']);
                 }
 
                 // Handle the 'deleted_at' field based on 'status'

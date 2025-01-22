@@ -10,6 +10,7 @@ use App\Models\Tool;
 use App\Models\Sector;
 use App\Models\Dataset;
 use App\Models\Keyword;
+use App\Models\Collection;
 use App\Models\DurHasTool;
 use App\Models\Application;
 use Illuminate\Http\Request;
@@ -28,8 +29,8 @@ use App\Http\Requests\Dur\DeleteDur;
 use App\Http\Requests\Dur\UpdateDur;
 use App\Http\Requests\Dur\UploadDur;
 use App\Models\DurHasDatasetVersion;
-use App\Exceptions\NotFoundException;
 
+use App\Exceptions\NotFoundException;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Traits\MapOrganisationSector;
 use App\Http\Traits\RequestTransformation;
@@ -2009,6 +2010,9 @@ class DurController extends Controller
                 },
                 'user',
                 'team',
+                'collections' => function ($query) {
+                    $query->where('status', Collection::STATUS_ACTIVE);
+                },
             ])->first();
 
         $userDatasets = $dur->userDatasets;

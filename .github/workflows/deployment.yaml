@@ -1,31 +1,42 @@
-name: Deploy to PREPROD
-run-name: ${{ github.actor }} triggered deploy to PREPROD pipeline
+name: Deploy Release
+run-name: ${{ github.actor }} triggered deploy to ${{ github.event.inputs.env }} pipeline
 
 on:
-  push:
-    branches:
-      - "preprod"
+  workflow_dispatch:
+    inputs:
+      env:
+        description: 'Select environment to deploy'
+        required: true
+        default: 'preprod'
+        type: choice
+        options:
+          - preprod
+          - prod
+      tag_version:
+        description: 'Tag version to be deployed'
+        required: true
+        default: ''
 
 env:
   PROJECT_ID: "${{ secrets.PROJECT_ID }}"
   GAR_LOCATION: "${{ secrets.GAR_LOCATION }}"
-  SLACK_WEBHOOK_URL: '${{ secrets.SLACK_WEBHOOK_URL}}'
-  SLACK_CHANNEL: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL }}'
+  SLACK_WEBHOOK_URL: "${{ secrets.SLACK_WEBHOOK_URL}}"
+  SLACK_CHANNEL: "${{ secrets.GITHUBACTIONS_SLACK_CHANNEL }}"
 
 jobs:
   deploy:
-    #if: github.event.pull_request.merged == true
     permissions:
       contents: write
       id-token: write
 
     runs-on: ubuntu-latest
-    environment: preprod
+    environment:  ${{ github.event.inputs.env }}
     steps:
       - name: Checkout
+        id: checkout
         uses: actions/checkout@v4
         with:
-          ref: preprod
+          ref: main
 
       - name: Google Auth
         id: auth
@@ -36,25 +47,18 @@ jobs:
           workload_identity_provider: "${{ secrets.WIF_PROVIDER }}"
           service_account: "${{ secrets.WIF_SERVICE_ACCOUNT }}"
 
-      - name: Read VERSION file
-        id: getversion
-        run: |
-            sed -n 's/^appVersion:\(.*\)/\1/p' < chart/gateway-api/Chart.yaml > version
-            echo "version=$(sed '/.*\"\(.*\)\".*/ s//\1/g' version)" >> $GITHUB_OUTPUT
-
       - name: Deploy to Cloud Run
         uses: actions-hub/gcloud@master
         id: deploy
         env:
           PROJECT_ID: ${{ secrets.PROJECT_ID }}
-          PROD_PROJECT_ID: ${{secrets.PROD_PROJECT_ID}}
+          PROD_PROJECT_ID: ${{ secrets.PROD_PROJECT_ID }}
           GAR_LOCATION: ${{ secrets.GAR_LOCATION }}
           GAR_NAME: ${{ secrets.GAR_NAME }}
           SERVICE_NAME: "${{ secrets.SERVICE_NAME }}"
           SERVICE_REGION: "${{ secrets.SERVICE_REGION }}"
-
         with:
-          args: run services update '${{ env.SERVICE_NAME }}' --image='${{ env.GAR_LOCATION }}'-docker.pkg.dev/'${{ env.PROD_PROJECT_ID }}'/'${{ env.GAR_NAME }}'/${{ steps.getversion.outputs.version }}:latest --region='${{ env.SERVICE_REGION }}' --project='${{ env.PROJECT_ID }}'
+          args: run services update '${{ env.SERVICE_NAME }}' --image='${{ env.GAR_LOCATION }}'-docker.pkg.dev/'${{ env.PROD_PROJECT_ID }}'/'${{ env.GAR_NAME }}'/${{ github.event.inputs.tag_version }}:latest --region='${{ env.SERVICE_REGION }}' --project='${{ env.PROJECT_ID }}'
 
       - name: Run Notification
         id: runnotificationsent
@@ -63,5 +67,5 @@ jobs:
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
           channel: ${{ env.SLACK_CHANNEL }}
-          message: Deploying {{ env.GITHUB_REF_NAME }} branch to PREPROD ${{ job.status }}
+          message: Deploying tag ${{ github.event.inputs.tag_version }} to ENV ${{ github.event.inputs.env }} ${{ job.status }}
         if: always()

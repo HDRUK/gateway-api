@@ -20,6 +20,7 @@ class FilterSeeder extends Seeder
         $this->seed_collection_filters();
         $this->seed_publication_filters();
         $this->seed_data_provider_filters();
+        $this->seed_data_provider_network_filters();
     }
 
     public function seed_dataset_filters(): void
@@ -104,6 +105,16 @@ class FilterSeeder extends Seeder
         ];
 
         $this->seed_filter("dataProvider", $filters);
+    }
+
+    public function seed_data_provider_network_filters(): void
+    {
+        $filters = [
+            'datasetTitles',
+            'publisherNames',
+        ];
+
+        $this->seed_filter("datacustodiannetwork", $filters);
     }
 
     public function seed_filter(string $type, array $filters): void

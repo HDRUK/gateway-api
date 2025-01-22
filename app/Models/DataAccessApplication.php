@@ -40,4 +40,9 @@ class DataAccessApplication extends Model
     {
         return $this->hasMany(DataAccessApplicationHasQuestion::class, 'application_id');
     }
+
+    public function answers(): HasMany
+    {
+        return $this->hasMany(DataAccessApplicationAnswer::class, 'application_id');
+    }
 }

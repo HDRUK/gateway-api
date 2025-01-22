@@ -41,6 +41,26 @@ class UploadController extends Controller
      *              description="Id of team associated with the file upload if applicable",
      *          ),
      *      ),
+     *      @OA\Parameter(
+     *          name="application_id",
+     *          in="query",
+     *          description="Id of dar application associated with the file upload",
+     *          example="10",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="Id of dar application associated with the file upload",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="question_id",
+     *          in="query",
+     *          description="Id of the question in the dar application associated with the file upload",
+     *          example="10",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="Id of the question in the dar application associated with the file upload",
+     *          ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Upload complete",
@@ -66,6 +86,8 @@ class UploadController extends Controller
             $elasticIndexing = $request->boolean('elastic_indexing', true);
             $datasetId = $request->query('dataset_id', null);
             $collectionId = $request->query('collection_id', null);
+            $applicationId = $request->query('application_id', null);
+            $questionId = $request->query('question_id', null);
 
             // store unscanned
             $storedFilename = time() . '_' . $file->getClientOriginalName();
@@ -103,6 +125,8 @@ class UploadController extends Controller
                 $elasticIndexing,
                 $datasetId,
                 (int)$collectionId,
+                (int)$applicationId,
+                (int)$questionId,
             );
 
             // audit log

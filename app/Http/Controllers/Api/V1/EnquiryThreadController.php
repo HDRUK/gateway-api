@@ -206,95 +206,39 @@ class EnquiryThreadController extends Controller
         $user = User::where('id', $jwtUser['id'])->first();
 
         try {
-            if ($input['is_feasibility_enquiry'] === true && $input['is_general_enquiry'] === false) {
-                $payload = [
-                    'thread' => [
-                        'user_id' => $user->id,
-                        'team_id' => "",
-                        'project_title' => $input['project_title'],
-                        'unique_key' => Str::random(8), // 8 chars in length
-                        'is_dar_dialogue' => $input['is_dar_dialogue'],
-                        'is_dar_status' => $input['is_dar_status'],
-                        'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
-                        'is_general_enquiry' => $input['is_general_enquiry'],
-                        'datasets' => $this->mapDatasets($input['datasets']),
-                        'enabled' => true,
+            $payload = [
+                'thread' => [
+                    'user_id' => $user->id,
+                    'team_id' => "",
+                    'project_title' => isset($input['project_title']) ? $input['project_title'] : "",
+                    'unique_key' => Str::random(8), // 8 chars in length
+                    'is_dar_dialogue' => $input['is_dar_dialogue'],
+                    'is_dar_status' => $input['is_dar_status'],
+                    'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
+                    'is_general_enquiry' => $input['is_general_enquiry'],
+                    'datasets' => $this->mapDatasets($input['datasets']),
+                    'enabled' => true,
+                ],
+                'message' => [
+                    'from' => $input['from'],
+                    'message_body' => [
+                        '[[TEAM_NAME]]' => "",
+                        '[[USER_FIRST_NAME]]' => $user->firstname,
+                        '[[USER_LAST_NAME]]' => $user->lastname,
+                        '[[USER_ORGANISATION]]' => isset($user->organisation) ? $user->organisation : $input['organisation'],
+                        '[[CONTACT_NUMBER]]' => isset($input['contact_number']) ? $input['contact_number'] : "",
+                        '[[PROJECT_TITLE]]' => isset($input['project_title']) ? $input['project_title'] : "",
+                        '[[RESEARCH_AIM]]' => isset($input['research_aim']) ? $input['research_aim'] : "",
+                        '[[OTHER_DATASETS_YES_NO]]' => isset($input['other_datasets']) ? $input['other_datasets'] : "",
+                        '[[DATASETS_PARTS_YES_NO]]' => isset($input['dataset_parts_known']) ? $input['dataset_parts_known'] : "",
+                        '[[FUNDING]]' => isset($input['funding']) ? $input['funding'] : "",
+                        '[[PUBLIC_BENEFIT]]' => isset($input['potential_research_benefit']) ? $input['potential_research_benefit'] : "",
+                        '[[QUERY]]' => isset($input['query']) ? $input['query'] : "",
+                        '[[MESSAGE]]' => isset($input['message']) ? $input['message'] : "",
+                        '[[CURRENT_YEAR]]' => date('Y'),
                     ],
-                    'message' => [
-                        'from' => $input['from'],
-                        'message_body' => [
-                            '[[TEAM_NAME]]' => "",
-                            '[[USER_FIRST_NAME]]' => $user->firstname,
-                            '[[USER_LAST_NAME]]' => $user->lastname,
-                            '[[USER_ORGANISATION]]' => isset($user->organisation) ? $user->organisation : $input['organisation'],
-                            '[[CONTACT_NUMBER]]' => $input['contact_number'],
-                            '[[PROJECT_TITLE]]' => $input['project_title'],
-                            '[[RESEARCH_AIM]]' => $input['research_aim'],
-                            '[[OTHER_DATASETS_YES_NO]]' => $input['other_datasets'],
-                            '[[DATASETS_PARTS_YES_NO]]' => $input['dataset_parts_known'],
-                            '[[FUNDING]]' => $input['funding'],
-                            '[[PUBLIC_BENEFIT]]' => $input['potential_research_benefit'],
-                            '[[CURRENT_YEAR]]' => date('Y'),
-                        ],
-                    ],
-                ];
-            } elseif ($input['is_dar_dialogue'] === true) {
-                $payload = [
-                    'thread' => [
-                        'user_id' => $user->id,
-                        'team_id' => "",
-                        'project_title' => $input['project_title'],
-                        'unique_key' => Str::random(8), // 8 chars in length
-                        'is_dar_dialogue' => $input['is_dar_dialogue'],
-                        'is_dar_status' => $input['is_dar_status'],
-                        'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
-                        'is_general_enquiry' => $input['is_general_enquiry'],
-                        'datasets' => $this->mapDatasets($input['datasets']),
-                        'enabled' => true,
-                    ],
-                    'message' => [
-                        'from' => $input['from'],
-                        'message_body' => [
-                            '[[TEAM_NAME]]' => "",
-                            '[[USER_FIRST_NAME]]' => $user->firstname,
-                            '[[USER_LAST_NAME]]' => $user->lastname,
-                            '[[USER_ORGANISATION]]' => isset($user->organisation) ? $user->organisation : $input['organisation'],
-                            '[[CONTACT_NUMBER]]' => $input['contact_number'],
-                            '[[PROJECT_TITLE]]' => $input['project_title'],
-                            '[[CURRENT_YEAR]]' => date('Y'),
-                            '[[MESSAGE]]' => $input['message'],
-                        ],
-                    ],
-                ];
-            } else {
-                $payload = [
-                    'thread' => [
-                        'user_id' => $user->id,
-                        'team_id' => "",
-                        'project_title' => "",
-                        'unique_key' => Str::random(8), // 8 chars in length
-                        'is_dar_dialogue' => $input['is_dar_dialogue'],
-                        'is_dar_status' => $input['is_dar_status'],
-                        'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
-                        'is_general_enquiry' => $input['is_general_enquiry'],
-                        'datasets' => $this->mapDatasets($input['datasets']),
-                        'enabled' => true,
-                    ],
-                    'message' => [
-                        'from' => $input['from'],
-                        'message_body' => [
-                            '[[TEAM_NAME]]' => "",
-                            '[[USER_FIRST_NAME]]' => $user->firstname,
-                            '[[USER_LAST_NAME]]' => $user->lastname,
-                            '[[USER_ORGANISATION]]' => $user->organisation,
-                            '[[CONTACT_NUMBER]]' => $input['contact_number'],
-                            '[[PROJECT_TITLE]]' => $input['project_title'],
-                            '[[QUERY]]' => $input['query'],
-                            '[[CURRENT_YEAR]]' => date('Y'),
-                        ],
-                    ],
-                ];
-            }
+                ],
+            ];
 
             $payload['thread']['dataCustodians'] = [];
             foreach ($payload['thread']['datasets'] as $d) {

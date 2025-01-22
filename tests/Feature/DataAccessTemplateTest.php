@@ -74,19 +74,56 @@ class DataAccessTemplateTest extends TestCase
     }
 
     /**
-     * Returns a single dar application
+     * Returns a single dar template
      *
      * @return void
      */
-    public function test_the_application_can_list_a_single_dar_application()
+    public function test_the_application_can_list_a_single_dar_template()
     {
+        // Create a question to associate with the template
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
+                    ]
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $questionId = $response->decodeResponseJson()['data'];
+
         $response = $this->json(
             'POST',
             'api/v1/dar/templates',
             [
                 'team_id' => 1,
-                'published' => false,
+                'published' => true,
                 'locked' => false,
+                'questions' => [
+                    0 => [
+                        'id' => $questionId,
+                        'required' => true,
+                        'guidance' => 'Custom guidance',
+                        'order' => 2,
+                    ]
+                ]
             ],
             $this->header
         );
@@ -111,9 +148,82 @@ class DataAccessTemplateTest extends TestCase
                     'team_id',
                     'published',
                     'locked',
-                    'questions',
+                    'questions' => [
+                        0 => [
+                            'template_id',
+                            'question_id',
+                            'guidance',
+                            'required',
+                            'order',
+                            'latest_version' => [
+                                'question_json',
+                                'child_versions'
+                            ],
+                        ]
+                    ],
                 ],
             ]);
+    }
+
+    /**
+     * Test listing dar templates by team
+     *
+     * @return void
+     */
+    public function test_the_application_can_list_dar_templates_by_team()
+    {
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/templates',
+            [
+                'team_id' => 1,
+                'published' => false,
+                'locked' => false,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $templateId = $content['data'];
+
+        $response = $this->get('api/v1/teams/' . 1 . '/dar/templates/', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'current_page',
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                        'user_id',
+                        'team_id',
+                        'published',
+                        'locked',
+                    ],
+                ],
+                'first_page_url',
+                'from',
+                'last_page',
+                'last_page_url',
+                'links',
+                'next_page_url',
+                'path',
+                'per_page',
+                'prev_page_url',
+                'to',
+                'total',
+            ]);
+        $templates = $response->decodeResponseJson()['data'];
+
+        $this->assertContains($templateId, array_column($templates, 'id'));
     }
 
     /**
@@ -144,21 +254,20 @@ class DataAccessTemplateTest extends TestCase
                 'user_id' => 1,
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
-                'field' => [
-                    'options' => [],
-                    'component' => 'TextArea',
-                    'validations' => [
-                        [
-                            'min' => 1,
-                            'message' => 'Please enter a value'
-                        ]
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
                     ]
                 ],
                 'title' => 'Test question',
                 'guidance' => 'Something helpful',
                 'required' => 0,
                 'default' => 0,
-                'version' => 1
+                'version' => 1,
+                'is_child' => 0,
             ],
             $this->header
         );
@@ -251,6 +360,63 @@ class DataAccessTemplateTest extends TestCase
                 'message',
                 'errors',
             ]);
+
+        // Attempt to create a template using a custom question from another team
+        // Create a question for team 2
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'team_id' => [2],
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'question_type' => 'CUSTOM',
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
+                    ]
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $questionId = $response->decodeResponseJson()['data'];
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/templates',
+            [
+                'team_id' => 1,
+                'published' => true,
+                'locked' => true,
+                'questions' => [
+                    0 => [
+                        'id' => $questionId,
+                        'required' => true,
+                        'guidance' => 'Custom guidance',
+                        'order' => 2,
+                    ]
+                ]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+        $content = $response->decodeResponseJson();
+        $this->assertStringContainsString('not accessible by this team', $content['message']);
     }
 
     /**
@@ -269,21 +435,20 @@ class DataAccessTemplateTest extends TestCase
                 'user_id' => 1,
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
-                'field' => [
-                    'options' => [],
-                    'component' => 'TextArea',
-                    'validations' => [
-                        [
-                            'min' => 1,
-                            'message' => 'Please enter a value'
-                        ]
+                'options' => [],
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
                     ]
                 ],
                 'title' => 'Test question',
                 'guidance' => 'Something helpful',
                 'required' => 0,
                 'default' => 0,
-                'version' => 1
+                'version' => 1,
+                'is_child' => 0,
             ],
             $this->header
         );

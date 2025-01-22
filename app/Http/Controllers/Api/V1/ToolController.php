@@ -476,6 +476,7 @@ class ToolController extends Controller
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
+            $array['name'] = format_clean_input($input['name']);
             $tool = Tool::create($array);
             $toolId = $tool->id;
 
@@ -644,7 +645,9 @@ class ToolController extends Controller
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
-
+            if (array_key_exists('name', $input)) {
+                $array['name'] = format_clean_input($input['name']);
+            }
             Tool::where('id', $id)->first()->update($array);
 
             ToolHasTag::where('tool_id', $id)->delete();
@@ -861,7 +864,9 @@ class ToolController extends Controller
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
-
+            if (array_key_exists('name', $input)) {
+                $array['name'] = format_clean_input($input['name']);
+            }
             $initTool = Tool::withTrashed()->where('id', $id)->first();
 
             if ($initTool['status'] === Tool::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
