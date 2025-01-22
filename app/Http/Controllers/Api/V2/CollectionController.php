@@ -358,7 +358,9 @@ class CollectionController extends Controller
                 'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
-
+            if (array_key_exists('name', $input)) {
+                $array['name'] = format_clean_input($input['name']);
+            }
             $collection = Collection::create($array);
             $collectionId = (int) $collection->id;
 
