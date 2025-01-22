@@ -91,7 +91,6 @@ class QuestionBankTest extends TestCase
         $response = $this->get('api/v1/questions?section_id=3&is_child=0', $this->header);
 
         $content = $response->decodeResponseJson();
-        var_dump($content);
 
         foreach ($content['data'] as $question) {
             $this->assertEquals(3, $question['section_id']);
@@ -390,10 +389,10 @@ class QuestionBankTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     0 => [
-                        'id',
                         'created_at',
                         'updated_at',
                         'deleted_at',
+                        'question_id',
                         'section_id',
                         'user_id',
                         'locked',
@@ -403,16 +402,21 @@ class QuestionBankTest extends TestCase
                         'allow_guidance_override',
                         'question_type',
                         'is_child',
-                        'latest_version',
-                        'versions' => [
-                            0 => ['child_versions']
-                        ],
-                    ]
+                        'version',
+                        'default',
+                        'required',
+                        'title',
+                        'guidance',
+                        'options',
+                        'component',
+                        'validations',
+                        'version_id',
+                    ],
                 ],
             ]);
 
         $content = $response->decodeResponseJson();
-        $ids = array_column($content['data'], 'id');
+        $ids = array_column($content['data'], 'question_id');
 
         $this->assertContains($questionId, $ids);
     }

@@ -20,11 +20,13 @@ use App\Http\Requests\QuestionBank\DeleteQuestionBank;
 use App\Http\Requests\QuestionBank\UpdateQuestionBank;
 use App\Http\Requests\QuestionBank\GetQuestionBankVersion;
 use App\Http\Requests\QuestionBank\UpdateStatusQuestionBank;
+use App\Http\Traits\QuestionBankHelpers;
 use App\Http\Traits\RequestTransformation;
 
 class QuestionBankController extends Controller
 {
     use RequestTransformation;
+    use QuestionBankHelpers;
 
     /**
      * @OA\Get(
@@ -1369,123 +1371,6 @@ class QuestionBankController extends Controller
             'question_id' => $question->id,
             'version' => $version,
         ]);
-
-        return $questionVersion;
-    }
-
-    private function getVersion($question)
-    {
-        $questionVersion = $question['latestVersion'];
-
-        $keys = [
-            'section_id',
-            'user_id',
-            'locked',
-            'archived',
-            'archived_date',
-            'force_required',
-            'allow_guidance_override',
-            'is_child',
-            'question_type',
-        ];
-
-        foreach ($keys as $key) {
-            $questionVersion[$key] = $question[$key];
-        }
-
-        // decode json for the FE to easily digest
-        foreach ($questionVersion['question_json'] as $key => $value) {
-            $questionVersion[$key] = $value;
-        }
-        unset($questionVersion['question_json']);
-
-        $options = [];
-
-        foreach ($questionVersion['childVersions'] as $child) {
-            // get its option value
-            $option = $child['pivot']['condition'];
-            // append its value to the correct option (handling creation of the key if not already extant)
-            if (!array_key_exists($option, $options)) {
-                $options[$option] = [];
-            }
-            array_push($options[$option], $child);
-        }
-        unset($questionVersion['childVersions']);
-
-        // now rejig so it's a non-associative array with labels in the values
-        $newOptions = [];
-        foreach ($options as $optionKey => $option) {
-            $childVersionArray = [];
-            foreach ($option as $childQuestionVersion) {
-                // move all items from `field` field to one level up
-                $toAdd = $childQuestionVersion['question_json'];
-                $toAdd['component'] = $toAdd['field']['component'];
-                if (isset($toAdd['field'])) {
-
-                    if (isset($toAdd['field']['options'])) {
-                        $toAdd['options'] = array_map(
-                            fn ($elem) => ['label' => $elem],
-                            $toAdd['field']['options']
-                        );
-                    }
-                    if (isset($toAdd['field']['validations'])) {
-                        $toAdd['validations'] = $toAdd['field']['validations'] ?? [];
-                    }
-                    unset($toAdd['field']);
-                }
-
-                $qbFields = QuestionBank::where('id', $childQuestionVersion['question_id'])
-                    ->select('id', 'force_required', 'allow_guidance_override')
-                    ->first();
-                $toAdd['force_required'] = $qbFields->force_required;
-                $toAdd['allow_guidance_override'] = $qbFields->allow_guidance_override;
-
-                array_push(
-                    $childVersionArray,
-                    [
-                        'label' => $optionKey,
-                        'version_id' => $childQuestionVersion['id'],
-                        'question_id' => $childQuestionVersion['question_id'],
-                        ...$toAdd,
-                    ]
-                );
-            }
-
-            array_push(
-                $newOptions,
-                [
-                    'label' => $optionKey,
-                    'children' => $childVersionArray
-                ]
-            );
-
-        }
-
-        // add in any options that don't have any children
-        foreach ($questionVersion['field']['options'] as $option) {
-            if (!in_array($option, array_column($newOptions, 'label'))) {
-                array_push(
-                    $newOptions,
-                    [
-                        'label' => $option,
-                        'children' => []
-                    ]
-                );
-            }
-
-        }
-
-        $questionVersion['options'] = $newOptions;
-
-        // Move 2 entries up to the root
-        $questionVersion['component'] = $questionVersion['field']['component'];
-        $questionVersion['validations'] = $questionVersion['field']['validations'] ?? [];
-        unset($questionVersion['field']);
-
-        // And, because we're really returning a modified form of the QuestionVersion in response
-        // to a query about a Question, we need to make it clear that the id is the version id
-        $questionVersion['version_id'] = $questionVersion['id'];
-        unset($questionVersion['id']);
 
         return $questionVersion;
     }
