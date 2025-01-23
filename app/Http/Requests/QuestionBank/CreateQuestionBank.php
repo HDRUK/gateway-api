@@ -44,7 +44,7 @@ class CreateQuestionBank extends BaseFormRequest
             ],
             'default' => [
                 'required',
-                'integer',
+                'boolean',
             ],
             'question_type' => [
                 'string',
