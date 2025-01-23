@@ -1231,7 +1231,6 @@ class QuestionBankController extends Controller
                     'field' => $input['field'] ?? $latestJson['field'],
                     'title' => $input['title'] ?? $latestJson['title'],
                     'guidance' => $input['guidance'] ?? $latestJson['guidance'],
-                    'required' => $input['required'] ?? $latestJson['required'],
                 ];
                 $questionVersion = QuestionBankVersion::where('id', $latestVersion->id)->first();
 
@@ -1504,7 +1503,6 @@ class QuestionBankController extends Controller
                 ],
                 'title' => $input['title'],
                 'guidance' => $input['guidance'],
-                'required' => $input['required'] ?? false,
             ],
             'required' => $input['required'] ?? false,
             'default' => $input['default'],
@@ -1550,7 +1548,6 @@ class QuestionBankController extends Controller
                             'field' => $field,
                             'title' => $child['title'],
                             'guidance' => $child['guidance'],
-                            'required' => $child['required'] ?? false,
                         ];
 
                         $childQuestionVersion = QuestionBankVersion::create([

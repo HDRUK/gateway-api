@@ -83,7 +83,6 @@ class QuestionBankSeeder extends Seeder
                         ],
                         'title' => $question['title'],
                         'guidance' => $question['guidance'],
-                        'required' => $question['required'],
                     ];
 
                     $questionVersionModel = QuestionBankVersion::create([
@@ -123,7 +122,6 @@ class QuestionBankSeeder extends Seeder
                                         ],
                                         'title' => $subquestion['question'] ?? "",
                                         'guidance' => $subquestion['guidance'] ?? "",
-                                        'required' => $subquestion['required'] ?? 0,
                                     ];
 
                                     $subquestionVersionModel = QuestionBankVersion::create([

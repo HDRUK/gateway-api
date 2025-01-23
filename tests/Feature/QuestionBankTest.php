@@ -1338,7 +1338,7 @@ class QuestionBankTest extends TestCase
         // title has been edited, and required has not been edited
         $this->assertEquals($version['version'], 1);
         $this->assertEquals($version['question_json']['title'], 'Updated test question');
-        $this->assertEquals($version['question_json']['required'], false);
+        $this->assertEquals($version['required'], false);
 
         // Test that a new version is not created when question content is not updated
         // e.g. when a question is locked
