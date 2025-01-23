@@ -99,17 +99,18 @@ trait QuestionBankHelpers
         }
 
         // add in any options that don't have any children
-        foreach ($questionVersion['field']['options'] as $option) {
-            if (!in_array($option, array_column($newOptions, 'label'))) {
-                array_push(
-                    $newOptions,
-                    [
-                        'label' => $option,
-                        'children' => []
-                    ]
-                );
+        if (isset($questionVersion['field']['options'])) {
+            foreach ($questionVersion['field']['options'] as $option) {
+                if (!in_array($option, array_column($newOptions, 'label'))) {
+                    array_push(
+                        $newOptions,
+                        [
+                            'label' => $option,
+                            'children' => []
+                        ]
+                    );
+                }
             }
-
         }
 
         $questionVersion['options'] = $newOptions;
