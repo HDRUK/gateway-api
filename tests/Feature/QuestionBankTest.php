@@ -51,10 +51,10 @@ class QuestionBankTest extends TestCase
                 'current_page',
                 'data' => [
                     0 => [
-                        'id',
                         'created_at',
                         'updated_at',
                         'deleted_at',
+                        'question_id',
                         'section_id',
                         'user_id',
                         'locked',
@@ -64,10 +64,15 @@ class QuestionBankTest extends TestCase
                         'allow_guidance_override',
                         'question_type',
                         'is_child',
-                        'latest_version',
-                        'versions' => [
-                            0 => ['child_versions']
-                        ],
+                        'version',
+                        'default',
+                        'required',
+                        'title',
+                        'guidance',
+                        'options',
+                        'component',
+                        'validations',
+                        'version_id',
                     ],
                 ],
                 'first_page_url',
@@ -83,6 +88,14 @@ class QuestionBankTest extends TestCase
                 'total',
             ]);
 
+        $response = $this->get('api/v1/questions?section_id=3&is_child=0', $this->header);
+
+        $content = $response->decodeResponseJson();
+
+        foreach ($content['data'] as $question) {
+            $this->assertEquals(3, $question['section_id']);
+            $this->assertEquals(0, $question['is_child']);
+        }
     }
 
     /**
@@ -132,10 +145,10 @@ class QuestionBankTest extends TestCase
                 'current_page',
                 'data' => [
                     0 => [
-                        'id',
                         'created_at',
                         'updated_at',
                         'deleted_at',
+                        'question_id',
                         'section_id',
                         'user_id',
                         'locked',
@@ -145,10 +158,15 @@ class QuestionBankTest extends TestCase
                         'allow_guidance_override',
                         'question_type',
                         'is_child',
-                        'latest_version',
-                        'versions' => [
-                            0 => ['child_versions']
-                        ],
+                        'version',
+                        'default',
+                        'required',
+                        'title',
+                        'guidance',
+                        'options',
+                        'component',
+                        'validations',
+                        'version_id',
                     ],
                 ],
                 'first_page_url',
@@ -213,10 +231,10 @@ class QuestionBankTest extends TestCase
                 'current_page',
                 'data' => [
                     0 => [
-                        'id',
                         'created_at',
                         'updated_at',
                         'deleted_at',
+                        'question_id',
                         'section_id',
                         'user_id',
                         'locked',
@@ -226,10 +244,15 @@ class QuestionBankTest extends TestCase
                         'allow_guidance_override',
                         'question_type',
                         'is_child',
-                        'latest_version',
-                        'versions' => [
-                            0 => ['child_versions']
-                        ],
+                        'version',
+                        'default',
+                        'required',
+                        'title',
+                        'guidance',
+                        'options',
+                        'component',
+                        'validations',
+                        'version_id',
                     ],
                 ],
                 'first_page_url',
@@ -294,10 +317,10 @@ class QuestionBankTest extends TestCase
                 'current_page',
                 'data' => [
                     0 => [
-                        'id',
                         'created_at',
                         'updated_at',
                         'deleted_at',
+                        'question_id',
                         'section_id',
                         'user_id',
                         'locked',
@@ -307,10 +330,15 @@ class QuestionBankTest extends TestCase
                         'allow_guidance_override',
                         'question_type',
                         'is_child',
-                        'latest_version',
-                        'versions' => [
-                            0 => ['child_versions']
-                        ],
+                        'version',
+                        'default',
+                        'required',
+                        'title',
+                        'guidance',
+                        'options',
+                        'component',
+                        'validations',
+                        'version_id',
                     ],
                 ],
                 'first_page_url',
@@ -376,10 +404,10 @@ class QuestionBankTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     0 => [
-                        'id',
                         'created_at',
                         'updated_at',
                         'deleted_at',
+                        'question_id',
                         'section_id',
                         'user_id',
                         'locked',
@@ -389,16 +417,21 @@ class QuestionBankTest extends TestCase
                         'allow_guidance_override',
                         'question_type',
                         'is_child',
-                        'latest_version',
-                        'versions' => [
-                            0 => ['child_versions']
-                        ],
-                    ]
+                        'version',
+                        'default',
+                        'required',
+                        'title',
+                        'guidance',
+                        'options',
+                        'component',
+                        'validations',
+                        'version_id',
+                    ],
                 ],
             ]);
 
         $content = $response->decodeResponseJson();
-        $ids = array_column($content['data'], 'id');
+        $ids = array_column($content['data'], 'question_id');
 
         $this->assertContains($questionId, $ids);
     }
@@ -1305,7 +1338,7 @@ class QuestionBankTest extends TestCase
         // title has been edited, and required has not been edited
         $this->assertEquals($version['version'], 1);
         $this->assertEquals($version['question_json']['title'], 'Updated test question');
-        $this->assertEquals($version['question_json']['required'], false);
+        $this->assertEquals($version['required'], false);
 
         // Test that a new version is not created when question content is not updated
         // e.g. when a question is locked

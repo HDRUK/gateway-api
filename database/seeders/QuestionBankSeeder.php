@@ -30,6 +30,16 @@ class QuestionBankSeeder extends Seeder
         $jsonString = file_get_contents($path);
         $jsonData = json_decode($jsonString, true);
 
+        $componentMap = [
+            'textareaInput' => 'TextArea',
+            'textInput' => 'TextField',
+            'datePickerCustom' => 'DatePicker',
+            'checkboxOptionsInput' => 'CheckboxGroup',
+            'doubleDropdownCustom' => null,
+            'radioOptionsInput' => 'RadioGroup',
+            'buttonInput' => null,
+        ];
+
         $count = 0;
         foreach ($jsonData as $section) {
             $sectionModel = DataAccessSection::updateOrCreate([
@@ -55,7 +65,7 @@ class QuestionBankSeeder extends Seeder
                             'locked' => 0,
                             'archived' => 0,
                             'archived_date' => null,
-                            'force_required' => $question['required'],
+                            'force_required' => $question['force_required'] ?? 0,
                             'allow_guidance_override' => 1,
                             'is_child' => 0,
                     ]);
@@ -73,13 +83,12 @@ class QuestionBankSeeder extends Seeder
                         ],
                         'title' => $question['title'],
                         'guidance' => $question['guidance'],
-                        'required' => $question['required'],
                     ];
 
                     $questionVersionModel = QuestionBankVersion::create([
                         'question_id' => $questionModel->id,
                         'version' => 1,
-                        'required' => $questionModel->force_required,
+                        'required' => $question['required'],
                         'default' => 0,
                         'question_json' => $questionForJson,
                         'deleted_at' => null,
@@ -95,26 +104,30 @@ class QuestionBankSeeder extends Seeder
                                         'locked' => 0,
                                         'archived' => 0,
                                         'archived_date' => null,
-                                        'force_required' => $question['required'],
+                                        'force_required' => $question['force_required'] ?? 0,
                                         'allow_guidance_override' => 1,
                                         'is_child' => 1,
                                     ]);
 
+                                    $component = $subquestion['input']['type'];
+                                    if (array_key_exists($component, $componentMap)) {
+                                        $component = $componentMap[$component];
+                                    }
+
                                     $subquestionForJson = [
                                         'field' => [
                                             'options' => array_column($subquestion['field']['options'] ?? [], 'value'),
-                                            'component' => $subquestion['input']['type'],
+                                            'component' => $component,
                                             'validations' => $subquestion['validations'] ?? [],
                                         ],
                                         'title' => $subquestion['question'] ?? "",
                                         'guidance' => $subquestion['guidance'] ?? "",
-                                        'required' => $subquestion['required'] ?? $question['required'],
                                     ];
 
                                     $subquestionVersionModel = QuestionBankVersion::create([
                                         'question_id' => $subquestionModel->id,
                                         'version' => 1,
-                                        'required' => $subquestionModel->force_required,
+                                        'required' => $subquestion['required'] ?? 0,
                                         'default' => 0,
                                         'question_json' => $subquestionForJson,
                                         'deleted_at' => null,

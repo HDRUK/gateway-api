@@ -10,10 +10,12 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\QuestionBank\GetQuestionBankSection;
 use App\Http\Traits\RequestTransformation;
+use App\Http\Traits\QuestionBankHelpers;
 
 class TeamQuestionBankController extends Controller
 {
     use RequestTransformation;
+    use QuestionBankHelpers;
 
     /**
      * @OA\Get(
@@ -23,6 +25,17 @@ class TeamQuestionBankController extends Controller
      *      tags={"QuestionBank"},
      *      summary="TeamQuestionBank@indexBySection",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="is_child",
+     *          in="query",
+     *          description="filter on is_child field",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="filter on is_child field",
+     *          ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -57,14 +70,22 @@ class TeamQuestionBankController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
+            $isChild = $input['is_child'] ?? null;
+
             $teamQuestions = QuestionHasTeam::where('team_id', $teamId)
                 ->select('qb_question_id')
                 ->pluck('qb_question_id');
 
             $query = QuestionBank::with([
-                'latestVersion', 'versions', 'versions.childVersions'
+                'latestVersion', 'latestVersion.childVersions'
             ])->where('archived', false)
-            ->where('section_id', $sectionId);
+            ->where('section_id', $sectionId)
+            ->when(
+                !is_null($isChild),
+                function ($query) use ($isChild) {
+                    return $query->where('is_child', '=', $isChild);
+                }
+            );
 
             $questionsCustom = (clone $query)
                 ->whereIn('id', $teamQuestions)
@@ -78,6 +99,11 @@ class TeamQuestionBankController extends Controller
 
             $questions = array_merge($questionsCustom, $questionsStandard);
 
+            $questionVersions = [];
+            foreach ($questions as $question) {
+                $questionVersions[] = $this->getVersion($question);
+            }
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
@@ -86,7 +112,7 @@ class TeamQuestionBankController extends Controller
             ]);
 
             return response()->json([
-                'data' => $questions
+                'data' => $questionVersions
             ]);
         } catch (Exception $e) {
             Auditor::log([
