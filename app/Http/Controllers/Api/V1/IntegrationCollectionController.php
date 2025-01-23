@@ -403,7 +403,6 @@ class IntegrationCollectionController extends Controller
             if (array_key_exists('updated_on', $input)) {
                 Collection::where('id', $collectionId)->update(['updated_on' => $input['updated_on']]);
             }
-            $this->indexElasticCollections((int)$collectionId);
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
@@ -584,7 +583,6 @@ class IntegrationCollectionController extends Controller
             if (array_key_exists('updated_on', $input)) {
                 Collection::where('id', $id)->update(['updated_on' => $input['updated_on']]);
             }
-            $this->indexElasticCollections((int)$id);
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
@@ -768,7 +766,6 @@ class IntegrationCollectionController extends Controller
             if (array_key_exists('updated_at', $input)) {
                 Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
-            $this->indexElasticCollections((int)$id);
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?

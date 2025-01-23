@@ -21,7 +21,6 @@ use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
-use ElasticClientController as ECC;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
@@ -56,6 +55,8 @@ class CollectionTeamTest extends TestCase
     public const TEST_URL = '/api/v1/collections';
 
     protected $header = [];
+    protected $nonAdminJwt = '';
+    protected $headerNonAdmin = [];
 
     /**
      * Set up the database
@@ -194,31 +195,10 @@ class CollectionTeamTest extends TestCase
      */
     public function test_add_new_active_team_collection_with_success(): void
     {
-
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
-                    }
-                )
-            )
-            ->times(1);
-
         $datasets = $this->generateDatasets();
         $nActive = Dataset::whereIn("id", array_column($datasets, 'id'))
             ->where('status', Dataset::STATUS_ACTIVE)
             ->count();
-
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
-                    }
-                )
-            )
-            ->times($nActive);
 
         $countBefore = Collection::count();
         $mockData = [
@@ -268,31 +248,10 @@ class CollectionTeamTest extends TestCase
 
     public function test_add_new_draft_team_collection_with_success(): void
     {
-
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
-                    }
-                )
-            )
-            ->times(0);
-
         $datasets = $this->generateDatasets();
         $nActive = Dataset::whereIn("id", array_column($datasets, 'id'))
             ->where('status', Dataset::STATUS_ACTIVE)
             ->count();
-
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
-                    }
-                )
-            )
-            ->times($nActive);
 
         $countBefore = Collection::count();
         $mockData = [
@@ -347,19 +306,7 @@ class CollectionTeamTest extends TestCase
      */
     public function test_update_team_collection_with_success(): void
     {
-
         $datasets = $this->generateDatasets();
-        ECC::shouldReceive("indexDocument")
-        ->with(
-            \Mockery::on(
-                function ($params) {
-                    return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
-                }
-            )
-        )
-        ->times(3);
-
-        ECC::shouldIgnoreMissing(); //ignore index on datasets
 
         // use a non-admin user, and assign them to a team as custodian.team.admin
         [
@@ -539,21 +486,6 @@ class CollectionTeamTest extends TestCase
      */
     public function test_update_team_collection_to_draft_with_success(): void
     {
-
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
-                    }
-                )
-            )
-            ->times(1);
-
-        ECC::shouldReceive("deleteDocument")->once();
-
-        ECC::shouldIgnoreMissing(); //ignore index on datasets
-
         // use a non-admin user, and assign them to a team as custodian.team.admin
         [
             'nonAdminUser' => $nonAdminUser,
@@ -829,12 +761,6 @@ class CollectionTeamTest extends TestCase
      */
     public function test_soft_delete_and_unarchive_team_collection_with_and_without_success(): void
     {
-        ECC::shouldReceive("deleteDocument")
-            ->times(1);
-
-        //dont bother checking any indexing here upon creation
-        ECC::shouldIgnoreMissing();
-
         $countBefore = Collection::count();
         $countTrashedBefore = Collection::onlyTrashed()->count();
 
@@ -934,12 +860,6 @@ class CollectionTeamTest extends TestCase
      */
     public function test_does_not_delete_index_on_draft_archived_team_collection(): void
     {
-        ECC::shouldReceive("deleteDocument")
-            ->times(0);
-
-        //dont bother checking any indexing here upon creation
-        ECC::shouldIgnoreMissing();
-
         // use a non-admin user, and assign them to a team as custodian.team.admin
         [
             'nonAdminUser' => $nonAdminUser,

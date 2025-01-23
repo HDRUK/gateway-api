@@ -47,6 +47,7 @@ class DurIntegrationTest extends TestCase
     public const TEST_URL = '/api/v1/integrations/dur';
 
     protected $header = [];
+    protected $integration;
 
     /**
      * Set up the database

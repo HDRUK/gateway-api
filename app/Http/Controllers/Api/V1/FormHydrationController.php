@@ -153,8 +153,6 @@ class FormHydrationController extends Controller
     {
         $team = Team::findOrFail($id);
 
-
-
         $defaultValues = array();
         $defaultValues['identifier'] = $team['id'];
         $defaultValues['Name of data provider'] = $team['name'];

@@ -17,7 +17,6 @@ use App\Jobs\TermExtraction;
 use App\Jobs\LinkageExtraction;
 use MetadataManagementController as MMC;
 
-use App\Http\Traits\IndexElastic;
 use App\Http\Traits\IntegrationOverride;
 use App\Http\Traits\MetadataOnboard;
 
@@ -35,7 +34,6 @@ use App\Http\Requests\Dataset\EditDataset;
 
 class IntegrationDatasetController extends Controller
 {
-    use IndexElastic;
     use IntegrationOverride;
     use MetadataOnboard;
 
@@ -797,9 +795,6 @@ class IntegrationDatasetController extends Controller
                     'version' => ($lastVersionNumber + 1),
                 ]);
 
-
-                $this->reindexElastic($currDataset->id);
-
                 Auditor::log([
                     'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
                         $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
@@ -893,10 +888,6 @@ class IntegrationDatasetController extends Controller
                             ->latest()->first();
                         $metadata->deleted_at = null;
                         $metadata->save();
-
-                        if ($request['status'] === Dataset::STATUS_ACTIVE) {
-                            $this->reindexElastic($id);
-                        }
 
                         Auditor::log([
                             'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
@@ -1030,7 +1021,6 @@ class IntegrationDatasetController extends Controller
             $this->checkAppCanHandleDataset($dataset->team_id, $request);
 
             MMC::deleteDataset($id, true);
-            $this->deleteDatasetFromElastic($id);
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?

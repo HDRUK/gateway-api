@@ -15,7 +15,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use App\Http\Traits\CheckAccess;
 use App\Models\CollectionHasDur;
-use App\Http\Traits\IndexElastic;
 use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -33,7 +32,6 @@ use App\Models\CollectionHasUser;
 
 class CollectionController extends Controller
 {
-    use IndexElastic;
     use RequestTransformation;
     use CheckAccess;
 
@@ -567,12 +565,6 @@ class CollectionController extends Controller
                 $collection->update(['updated_on' => $input['updated_on']]);
             }
 
-            if ($collection->status === Collection::STATUS_ACTIVE) {
-                $this->indexElasticCollections((int) $collection->id);
-            }
-
-
-
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'target_team_id' => $teamId,
@@ -753,13 +745,6 @@ class CollectionController extends Controller
             // updated_on
             if (array_key_exists('updated_on', $input)) {
                 Collection::where('id', $id)->update(['updated_on' => $input['updated_on']]);
-            }
-
-            $currentCollection = Collection::where('id', $id)->first();
-            if ($currentCollection->status === Collection::STATUS_ACTIVE) {
-                $this->indexElasticCollections((int) $id);
-            } else {
-                $this->deleteCollectionFromElastic((int) $id);
             }
 
             Auditor::log([
@@ -1002,12 +987,6 @@ class CollectionController extends Controller
                     Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
                 }
 
-                if ($updatedCollection->status === Collection::STATUS_ACTIVE) {
-                    $this->indexElasticCollections((int) $id);
-                } elseif ($initCollection->status === Collection::STATUS_ACTIVE) {
-                    $this->deleteCollectionFromElastic((int) $id);
-                }
-
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
                     'target_team_id' => $teamId,
@@ -1107,10 +1086,6 @@ class CollectionController extends Controller
                 CollectionHasPublication::where(['collection_id' => $id])->delete();
                 Collection::where(['id' => $id])->update(['status' => Collection::STATUS_ARCHIVED]);
                 Collection::where(['id' => $id])->delete();
-
-                if($initialStatus === Collection::STATUS_ACTIVE) {
-                    $this->deleteCollectionFromElastic($id);
-                }
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
@@ -1291,7 +1266,6 @@ class CollectionController extends Controller
 
             if (!$checking) {
                 $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId);
-                $this->reindexElastic($dataset['id']);
             } else {
                 if ($checking['deleted_at']) {
                     CollectionHasDatasetVersion::withTrashed()->where([

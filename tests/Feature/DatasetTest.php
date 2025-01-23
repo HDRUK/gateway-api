@@ -38,6 +38,9 @@ class DatasetTest extends TestCase
     {
         $this->commonSetUp();
 
+        Dataset::flushEventListeners();
+        DatasetVersion::flushEventListeners();
+
         $this->seed([
             MinimalUserSeeder::class,
             SpatialCoverageSeeder::class,

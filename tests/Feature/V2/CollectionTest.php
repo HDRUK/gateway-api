@@ -19,7 +19,6 @@ use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
-use ElasticClientController as ECC;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
@@ -262,32 +261,10 @@ class CollectionTest extends TestCase
      */
     public function test_add_new_active_collection_with_success(): void
     {
-
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
-                    }
-                )
-            )
-            ->times(1);
-
         $datasets = $this->generateDatasets();
         $nActive = Dataset::whereIn("id", array_column($datasets, 'id'))
             ->where('status', Dataset::STATUS_ACTIVE)
             ->count();
-
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
-                    }
-                )
-            )
-            ->times($nActive);
-
 
         $countBefore = Collection::count();
         $mockData = [
@@ -322,31 +299,10 @@ class CollectionTest extends TestCase
 
     public function test_add_new_draft_collection_with_success(): void
     {
-
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
-                    }
-                )
-            )
-            ->times(0);
-
         $datasets = $this->generateDatasets();
         $nActive = Dataset::whereIn("id", array_column($datasets, 'id'))
             ->where('status', Dataset::STATUS_ACTIVE)
             ->count();
-
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
-                    }
-                )
-            )
-            ->times($nActive);
 
         $mockData = [
             "name" => "covid",
@@ -380,20 +336,7 @@ class CollectionTest extends TestCase
      */
     public function test_update_collection_with_success(): void
     {
-
         $datasets = $this->generateDatasets();
-        ECC::shouldReceive("indexDocument")
-        ->with(
-            \Mockery::on(
-                function ($params) {
-                    return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
-                }
-            )
-        )
-        ->times(3);
-
-        ECC::shouldIgnoreMissing(); //ignore index on datasets
-
 
         // create new collection
         $mockDataIn = [
@@ -556,21 +499,6 @@ class CollectionTest extends TestCase
      */
     public function test_update_collection_to_draft_with_success(): void
     {
-
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
-                    }
-                )
-            )
-            ->times(1);
-
-        ECC::shouldReceive("deleteDocument")->once();
-
-        ECC::shouldIgnoreMissing(); //ignore index on datasets
-
         // create new collection
         $mockDataIns = [
             "name" => "covid",
@@ -816,12 +744,6 @@ class CollectionTest extends TestCase
      */
     public function test_soft_delete_and_unarchive_collection_with_success(): void
     {
-        ECC::shouldReceive("deleteDocument")
-            ->times(1);
-
-        //dont bother checking any indexing here upon creation
-        ECC::shouldIgnoreMissing();
-
         $countBefore = Collection::count();
         $countTrashedBefore = Collection::onlyTrashed()->count();
         // create new collection
@@ -892,12 +814,6 @@ class CollectionTest extends TestCase
      */
     public function test_does_not_delete_index_on_draft_archived_collection(): void
     {
-        ECC::shouldReceive("deleteDocument")
-            ->times(0);
-
-        //dont bother checking any indexing here upon creation
-        ECC::shouldIgnoreMissing();
-
         // create new draft collection
         $mockDataIn = [
             "name" => "covid",
@@ -986,32 +902,10 @@ class CollectionTest extends TestCase
      */
     public function test_add_new_users_collection_with_success(): void
     {
-
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
-                    }
-                )
-            )
-            ->times(1);
-
         $datasets = $this->generateDatasets();
         $nActive = Dataset::whereIn("id", array_column($datasets, 'id'))
             ->where('status', Dataset::STATUS_ACTIVE)
             ->count();
-
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
-                    }
-                )
-            )
-            ->times($nActive);
-
 
         $countBefore = Collection::count();
 
@@ -1249,7 +1143,6 @@ class CollectionTest extends TestCase
      */
     public function test_update_users_collection_with_success(): void
     {
-
         $collectionOwner = $this->createCollectionOwner();
         $ownerHeader = $collectionOwner['ownerHeader'];
         $ownerId = $collectionOwner['userId'];
@@ -1327,7 +1220,6 @@ class CollectionTest extends TestCase
      */
     public function test_edit_users_collection_with_success(): void
     {
-
         $collectionOwner = $this->createCollectionOwner();
         $ownerHeader = $collectionOwner['ownerHeader'];
         $ownerId = $collectionOwner['userId'];
@@ -1395,7 +1287,6 @@ class CollectionTest extends TestCase
      */
     public function test_delete_users_collection_with_success(): void
     {
-
         $collectionOwner = $this->createCollectionOwner();
         $ownerHeader = $collectionOwner['ownerHeader'];
         $ownerId = $collectionOwner['userId'];
@@ -1442,7 +1333,6 @@ class CollectionTest extends TestCase
      */
     public function test_delete_users_collection_without_success(): void
     {
-
         $collectionOwner = $this->createCollectionOwner();
         $ownerHeader = $collectionOwner['ownerHeader'];
         $ownerId = $collectionOwner['userId'];
@@ -1494,32 +1384,10 @@ class CollectionTest extends TestCase
      */
     public function test_add_new_teams_collection_with_success(): void
     {
-
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
-                    }
-                )
-            )
-            ->times(1);
-
         $datasets = $this->generateDatasets();
         $nActive = Dataset::whereIn("id", array_column($datasets, 'id'))
             ->where('status', Dataset::STATUS_ACTIVE)
             ->count();
-
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
-                    }
-                )
-            )
-            ->times($nActive);
-
 
         $countBefore = Collection::count();
 
@@ -1758,7 +1626,6 @@ class CollectionTest extends TestCase
      */
     public function test_update_teams_collection_with_success(): void
     {
-
         $collectionTeam = $this->createCollectionTeam();
         $memberHeader = $collectionTeam['memberHeader'];
         $teamId = $collectionTeam['teamId'];
@@ -1836,7 +1703,6 @@ class CollectionTest extends TestCase
      */
     public function test_edit_teams_collection_with_success(): void
     {
-
         $collectionTeam = $this->createCollectionTeam();
         $memberHeader = $collectionTeam['memberHeader'];
         $teamId = $collectionTeam['teamId'];
@@ -1904,7 +1770,6 @@ class CollectionTest extends TestCase
      */
     public function test_delete_teams_collection_with_success(): void
     {
-
         $collectionTeam = $this->createCollectionTeam();
         $memberHeader = $collectionTeam['memberHeader'];
         $teamId = $collectionTeam['teamId'];
@@ -1951,7 +1816,6 @@ class CollectionTest extends TestCase
      */
     public function test_delete_teams_collection_without_success(): void
     {
-
         $collectionTeam = $this->createCollectionTeam();
         $memberHeader = $collectionTeam['memberHeader'];
         $teamId = $collectionTeam['teamId'];
