@@ -3911,9 +3911,37 @@ return [
     ],
     [
         'name' => 'dar/applications',
+        'method' => 'put',
+        'path' => 'users/{userId}/dar/applications/{id}',
+        'methodController' => 'UserDataAccessApplicationController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
         'method' => 'patch',
         'path' => '/dar/applications/{id}',
         'methodController' => 'DataAccessApplicationController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'patch',
+        'path' => 'users/{userId}/dar/applications/{id}',
+        'methodController' => 'UserDataAccessApplicationController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',

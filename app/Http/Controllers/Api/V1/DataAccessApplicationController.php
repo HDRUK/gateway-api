@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
+use App\Http\Traits\DataAccessApplicationHelpers;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\DataAccessApplication\GetDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\GetDataAccessApplicationFile;
@@ -33,6 +34,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class DataAccessApplicationController extends Controller
 {
     use RequestTransformation;
+    use DataAccessApplicationHelpers;
 
     /**
      * @OA\Get(
@@ -127,6 +129,7 @@ class DataAccessApplicationController extends Controller
      *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="applicant_id", type="integer", example="1"),
      *                  @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
+     *                  @OA\Property(property="project_title", type="string", example="A DAR project"),
      *                  @OA\Property(property="approval_status", type="string", example="APPROVED"),
      *              )
      *          ),
@@ -439,6 +442,7 @@ class DataAccessApplicationController extends Controller
      *              @OA\Property(property="applicant_id", type="integer", example="1"),
      *              @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
      *              @OA\Property(property="approval_status", type="string", example="APPROVED"),
+     *              @OA\Property(property="project_title", type="string", example="A DAR project"),
      *              @OA\Property(property="team_ids", type="array", @OA\Items()),
      *              @OA\Property(property="dataset_ids", type="array", @OA\Items()),
      *          ),
@@ -469,6 +473,7 @@ class DataAccessApplicationController extends Controller
             $application = DataAccessApplication::create([
                 'applicant_id' => isset($input['applicant_id']) ? $input['applicant_id'] : $jwtUser['id'],
                 'submission_status' => isset($input['submission_status']) ? $input['submission_status'] : 'DRAFT',
+                'project_title' => $input['project_title'],
             ]);
 
             // find data provider for each dataset
@@ -683,6 +688,7 @@ class DataAccessApplicationController extends Controller
      *              required={"applicant_id","submission_status","approval_status"},
      *              @OA\Property(property="applicant_id", type="integer", example="1"),
      *              @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
+     *              @OA\Property(property="project_title", type="string", example="A DAR project"),
      *              @OA\Property(property="approval_status", type="string", example="APPROVED"),
      *              @OA\Property(property="team_ids", type="array", @OA\Items()),
      *              @OA\Property(property="answers", type="array", @OA\Items(
@@ -729,28 +735,7 @@ class DataAccessApplicationController extends Controller
         try {
             $application = DataAccessApplication::findOrFail($id);
 
-            $application->update([
-                'applicant_id' => $input['applicant_id'],
-                'submission_status' => $input['submission_status'],
-                'approval_status' => isset($input['approval_status']) ? $input['approval_status'] : $application->approval_status,
-            ]);
-
-            $answers = $input['answers'] ?? [];
-            if (count($answers)) {
-                if ($application->submission_status !== 'SUBMITTED') {
-                    DataAccessApplicationAnswer::where('application_id', $id)->delete();
-                    foreach ($answers as $answer) {
-                        DataAccessApplicationAnswer::create([
-                            'question_id' => $answer['question_id'],
-                            'application_id' => $id,
-                            'answer' => $answer['answer'],
-                            'contributor_id' => $input['applicant_id'],
-                        ]);
-                    }
-                } else {
-                    throw new Exception('DAR form answers cannot be updated after submission.');
-                }
-            }
+            $this->updateDataAccessApplication($application, $input);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -800,6 +785,7 @@ class DataAccessApplicationController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="applicant_id", type="integer", example="1"),
      *              @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
+     *              @OA\Property(property="project_title", type="string", example="A DAR project"),
      *              @OA\Property(property="approval_status", type="string", example="APPROVED"),
      *              @OA\Property(property="team_ids", type="array", @OA\Items()),
      *          ),
@@ -840,30 +826,7 @@ class DataAccessApplicationController extends Controller
         try {
             $application = DataAccessApplication::findOrFail($id);
 
-            $arrayKeys = [
-                'applicant_id',
-                'submission_status',
-                'approval_status',
-            ];
-            $array = $this->checkEditArray($input, $arrayKeys);
-            $application->update($array);
-
-            $answers = $input['answers'] ?? [];
-            if (count($answers)) {
-                if ($application->submission_status !== 'SUBMITTED') {
-                    DataAccessApplicationAnswer::where('application_id', $id)->delete();
-                    foreach ($answers as $answer) {
-                        DataAccessApplicationAnswer::create([
-                            'question_id' => $answer['question_id'],
-                            'application_id' => $id,
-                            'answer' => $answer['answer'],
-                            'contributor_id' => $application->applicant_id,
-                        ]);
-                    }
-                } else {
-                    throw new Exception('DAR form answers cannot be updated after submission.');
-                }
-            }
+            $this->editDataAccessApplication($application, $input);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

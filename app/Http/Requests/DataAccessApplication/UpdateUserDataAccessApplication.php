@@ -4,7 +4,7 @@ namespace App\Http\Requests\DataAccessApplication;
 
 use App\Http\Requests\BaseFormRequest;
 
-class UpdateDataAccessApplication extends BaseFormRequest
+class UpdateUserDataAccessApplication extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -18,6 +18,11 @@ class UpdateDataAccessApplication extends BaseFormRequest
                 'int',
                 'required',
                 'exists:dar_applications,id',
+            ],
+            'userId' => [
+                'int',
+                'required',
+                'exists:users,id',
             ],
             'applicant_id' => [
                 'integer',
@@ -47,6 +52,9 @@ class UpdateDataAccessApplication extends BaseFormRequest
      */
     protected function prepareForValidation()
     {
-        $this->merge(['id' => $this->route('id')]);
+        $this->merge([
+            'id' => $this->route('id'),
+            'userId' => $this->route('userId'),
+        ]);
     }
 }

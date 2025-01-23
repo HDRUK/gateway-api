@@ -35,6 +35,7 @@ class DataAccessApplicationFactory extends Factory
             'applicant_id' => $user->id,
             'submission_status' => fake()->randomElement($submissionStatuses),
             'approval_status' => fake()->randomElement($approvalStatuses),
+            'project_title' => fake()->text(255),
         ];
     }
 }
