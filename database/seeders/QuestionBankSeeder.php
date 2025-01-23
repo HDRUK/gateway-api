@@ -30,6 +30,16 @@ class QuestionBankSeeder extends Seeder
         $jsonString = file_get_contents($path);
         $jsonData = json_decode($jsonString, true);
 
+        $componentMap = [
+            'textareaInput' => 'TextArea',
+            'textInput' => 'TextField',
+            'datePickerCustom' => 'DatePicker',
+            'checkboxOptionsInput' => 'CheckboxGroup',
+            'doubleDropdownCustom' => null,
+            'radioOptionsInput' => 'RadioGroup',
+            'buttonInput' => null,
+        ];
+
         $count = 0;
         foreach ($jsonData as $section) {
             $sectionModel = DataAccessSection::updateOrCreate([
@@ -100,10 +110,15 @@ class QuestionBankSeeder extends Seeder
                                         'is_child' => 1,
                                     ]);
 
+                                    $component = $subquestion['input']['type'];
+                                    if (array_key_exists($component, $componentMap)) {
+                                        $component = $componentMap[$component];
+                                    }
+
                                     $subquestionForJson = [
                                         'field' => [
                                             'options' => array_column($subquestion['field']['options'] ?? [], 'value'),
-                                            'component' => $subquestion['input']['type'],
+                                            'component' => $component,
                                             'validations' => $subquestion['validations'] ?? [],
                                         ],
                                         'title' => $subquestion['question'] ?? "",
