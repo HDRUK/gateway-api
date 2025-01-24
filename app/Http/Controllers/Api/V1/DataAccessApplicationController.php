@@ -154,10 +154,11 @@ class DataAccessApplicationController extends Controller
                 $version = QuestionBank::with([
                     'latestVersion',
                     'latestVersion.childVersions',
-                ])->where('id', $q->question_id)
-                    ->first()
-                    ->toArray();
-                $application['questions'][$i]['latest_version'] = $version['latest_version'];
+                ])->where('id', $q->question_id)->first();
+                if ($version) {
+                    $vArr = $version->toArray();
+                    $application['questions'][$i]['latest_version'] = $vArr['latest_version'];
+                }
             }
 
             if ($application) {
