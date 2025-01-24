@@ -22,7 +22,6 @@ trait QuestionBankHelpers
             'allow_guidance_override',
             'is_child',
             'question_type',
-            'teams',
         ];
 
         foreach ($keys as $key) {
