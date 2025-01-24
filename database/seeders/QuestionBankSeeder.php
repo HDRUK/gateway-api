@@ -68,12 +68,8 @@ class QuestionBankSeeder extends Seeder
                             'force_required' => $question['force_required'] ?? 0,
                             'allow_guidance_override' => 1,
                             'is_child' => 0,
-                    ]);
-
-                    QuestionHasTeam::create([
-                        'qb_question_id' => $questionModel->id,
-                        'team_id' => 1,
-                    ]);
+                            'question_type' => QuestionBank::STANDARD_TYPE,
+                        ]);
 
                     $questionForJson = [
                         'field' => [
@@ -107,6 +103,7 @@ class QuestionBankSeeder extends Seeder
                                         'force_required' => $question['force_required'] ?? 0,
                                         'allow_guidance_override' => 1,
                                         'is_child' => 1,
+                                        'question_type' => QuestionBank::STANDARD_TYPE,
                                     ]);
 
                                     $component = $subquestion['input']['type'];
@@ -136,10 +133,6 @@ class QuestionBankSeeder extends Seeder
                                         'parent_qbv_id' => $questionVersionModel->id,
                                         'child_qbv_id' => $subquestionVersionModel->id,
                                         'condition' => $option['value'],
-                                    ]);
-                                    QuestionHasTeam::create([
-                                        'qb_question_id' => $subquestionModel->id,
-                                        'team_id' => 1,
                                     ]);
                                 }
                             }

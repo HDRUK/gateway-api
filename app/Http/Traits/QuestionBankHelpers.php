@@ -22,12 +22,15 @@ trait QuestionBankHelpers
             'allow_guidance_override',
             'is_child',
             'question_type',
+            'teams',
         ];
 
         foreach ($keys as $key) {
             $questionVersion[$key] = $question[$key];
         }
 
+        $questionVersion['team_ids'] = array_column($question['teams']->toArray(), 'id');
+        $questionVersion['all_custodians'] = $question['question_type'] === QuestionBank::STANDARD_TYPE;
         // decode json for the FE to easily digest
         foreach ($questionVersion['question_json'] as $key => $value) {
             $questionVersion[$key] = $value;

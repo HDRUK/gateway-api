@@ -52,11 +52,14 @@ class EditQuestionBank extends BaseFormRequest
             'default' => [
                 'boolean',
             ],
-            'team_id' => [
+            'team_ids' => [
                 'array'
             ],
-            'team_id.*' => [
+            'team_ids.*' => [
                 'integer'
+            ],
+            'all_custodians' => [
+                'boolean',
             ]
         ];
     }

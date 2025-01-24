@@ -1067,6 +1067,7 @@ class SearchController extends Controller
                 $response = Http::post($urlString, $input);
 
                 $pubArray = $response['hits']['hits'];
+                var_dump('$pubArray', $pubArray);
                 $totalResults = $response['hits']['total']['value'];
                 $matchedIds = [];
                 foreach (array_values($pubArray) as $i => $d) {
@@ -1074,7 +1075,7 @@ class SearchController extends Controller
                 }
 
                 $pubModels = Publication::whereIn('id', $matchedIds)->get();
-
+                var_dump('$pubModels', $pubModels);
                 foreach ($pubArray as $i => $p) {
                     $foundFlag = false;
                     foreach ($pubModels as $model) {
@@ -1096,6 +1097,7 @@ class SearchController extends Controller
                             $datasets = $model->allDatasets;
                             $datasetLinkTypes = [];
                             $datasetVersions = [];
+                            var_dump('$datasets', $datasets);
                             foreach ($datasets as $dataset) {
                                 $linkType = PublicationHasDatasetVersion::where([
                                     ['publication_id', '=', $model['id']],
@@ -1140,9 +1142,11 @@ class SearchController extends Controller
                     }
                 }
                 $input['field'] = ['TITLE', 'ABSTRACT', 'METHODS'];
+                // var_dump($input);
                 $response = Http::post($urlString, $input);
-
+                // var_dump('$response', $response);
                 $pubArray = $response['resultList']['result'];
+                // var_dump('$pubArray', $pubArray);
                 $totalResults = $response['hitCount'];
                 foreach ($pubArray as $i => $paper) {
                     $pubArray[$i]['testid'] = $paper;
