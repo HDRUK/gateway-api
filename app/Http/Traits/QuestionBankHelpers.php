@@ -29,7 +29,12 @@ trait QuestionBankHelpers
             $questionVersion[$key] = $question[$key];
         }
 
-        $questionVersion['team_ids'] = array_column($question['teams']->toArray(), 'id');
+        $questionVersion['team_ids'] = array_column(
+            is_array($question['teams'])
+                ? $question['teams']
+                : $question['teams']->toArray(),
+            'id'
+        );
         $questionVersion['all_custodians'] = $question['question_type'] === QuestionBank::STANDARD_TYPE;
         // decode json for the FE to easily digest
         foreach ($questionVersion['question_json'] as $key => $value) {
