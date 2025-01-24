@@ -29,6 +29,7 @@ class DataAccessApplication extends Model
         'applicant_id',
         'submission_status',
         'approval_status',
+        'project_title',
     ];
 
     public function user(): BelongsTo

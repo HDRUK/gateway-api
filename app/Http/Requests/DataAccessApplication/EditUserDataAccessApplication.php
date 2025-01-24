@@ -4,7 +4,7 @@ namespace App\Http\Requests\DataAccessApplication;
 
 use App\Http\Requests\BaseFormRequest;
 
-class UpdateDataAccessApplication extends BaseFormRequest
+class EditUserDataAccessApplication extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -19,19 +19,21 @@ class UpdateDataAccessApplication extends BaseFormRequest
                 'required',
                 'exists:dar_applications,id',
             ],
+            'userId' => [
+                'int',
+                'required',
+                'exists:users,id',
+            ],
             'applicant_id' => [
                 'integer',
-                'required',
                 'exists:users,id',
             ],
             'submission_status' => [
                 'string',
-                'required',
                 'in:DRAFT,SUBMITTED,FEEDBACK',
             ],
             'project_title' => [
                 'string',
-                'required',
             ],
             'approval_status' => [
                 'string',
@@ -47,6 +49,9 @@ class UpdateDataAccessApplication extends BaseFormRequest
      */
     protected function prepareForValidation()
     {
-        $this->merge(['id' => $this->route('id')]);
+        $this->merge([
+            'id' => $this->route('id'),
+            'userId' => $this->route('userId'),
+        ]);
     }
 }
