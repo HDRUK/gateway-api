@@ -53,7 +53,7 @@ class UpdateQuestionBank extends BaseFormRequest
             ],
             'default' => [
                 'required',
-                'integer',
+                'boolean',
             ],
             'team_id' => [
                 'array'

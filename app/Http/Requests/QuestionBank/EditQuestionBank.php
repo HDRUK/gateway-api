@@ -50,7 +50,7 @@ class EditQuestionBank extends BaseFormRequest
                 'boolean',
             ],
             'default' => [
-                'integer',
+                'boolean',
             ],
             'team_id' => [
                 'array'

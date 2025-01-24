@@ -53,6 +53,7 @@ class QuestionBank extends Model
         'archived' => 'boolean',
         'force_required' => 'boolean',
         'allow_guidance_override' => 'boolean',
+        'default' => 'boolean',
     ];
 
     /**
