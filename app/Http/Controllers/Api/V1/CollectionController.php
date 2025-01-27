@@ -1255,7 +1255,7 @@ class CollectionController extends Controller
                                             ->get()
                                             ->toArray();
 
-        $collectionHastDatasetVersions = [];
+        $collectionHastDatasetVersionIds = [];
         if (count($collectionHastDatasetVersions)) {
             $collectionHastDatasetVersionIds = array_unique(convertArrayToArrayWithKeyName($collectionHastDatasetVersions, 'dataset_version_id'));
         }
