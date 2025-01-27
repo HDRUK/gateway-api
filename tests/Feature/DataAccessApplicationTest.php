@@ -939,6 +939,7 @@ class DataAccessApplicationTest extends TestCase
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
                 'options' => [],
+                'all_custodians' => true,
                 'component' => 'TextArea',
                 'validations' => [
                     [

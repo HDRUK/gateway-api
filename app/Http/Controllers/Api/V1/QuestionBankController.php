@@ -730,6 +730,7 @@ class QuestionBankController extends Controller
             $question = QuestionBank::with([
                 'latestVersion',
                 'latestVersion.childVersions',
+                'teams',
             ])->findOrFail($id);
 
             if ($question) {
@@ -862,7 +863,7 @@ class QuestionBankController extends Controller
      *              required={"field", "section_id", "guidance", "title", "force_required", "allow_guidance_override", "component", "validations", "options"},
      *              @OA\Property(property="section_id", type="integer", example="1"),
      *              @OA\Property(property="user_id", type="integer", example="1"),
-     *              @OA\Property(property="team_id", type="array", @OA\Items()),
+     *              @OA\Property(property="team_ids", type="array", @OA\Items()),
      *              @OA\Property(property="locked", type="boolean", example="false"),
      *              @OA\Property(property="archived", type="boolean", example="false"),
      *              @OA\Property(property="required", type="boolean", example="false"),
@@ -917,7 +918,8 @@ class QuestionBankController extends Controller
                 'archived' => $input['archived'] ?? false,
                 'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
                 'is_child' => false,
-                'question_type' => $input['question_type'] ?? QuestionBank::STANDARD_TYPE,
+                'question_type' => $input['all_custodians'] ? QuestionBank::STANDARD_TYPE : QuestionBank::CUSTOM_TYPE,
+                'team_ids' => $input['all_custodians'] ? [] : $input['team_ids'],
             ]);
 
             $questionVersion = $this->createVersion($input, $question, 1);
@@ -976,7 +978,7 @@ class QuestionBankController extends Controller
      *              required={"field", "section_id", "guidance", "title", "force_required", "allow_guidance_override"},
      *              @OA\Property(property="section_id", type="integer", example="1"),
      *              @OA\Property(property="user_id", type="integer", example="1"),
-     *              @OA\Property(property="team_id", type="array", @OA\Items()),
+     *              @OA\Property(property="team_ids", type="array", @OA\Items()),
      *              @OA\Property(property="locked", type="boolean", example="false"),
      *              @OA\Property(property="archived", type="boolean", example="false"),
      *              @OA\Property(property="is_child", type="boolean", example="false"),
@@ -1075,7 +1077,8 @@ class QuestionBankController extends Controller
                 'archived' => $input['archived'] ?? false,
                 'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
                 'is_child' => false,
-                'question_type' => $input['question_type'] ?? QuestionBank::STANDARD_TYPE,
+                'question_type' => $input['all_custodians'] ? QuestionBank::STANDARD_TYPE : QuestionBank::CUSTOM_TYPE,
+                'team_ids' => $input['all_custodians'] ? [] : $input['team_ids'],
             ]);
 
             $latestVersion = $question->latestVersion()->first()->version;
@@ -1134,7 +1137,7 @@ class QuestionBankController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="section_id", type="integer", example="1"),
      *              @OA\Property(property="user_id", type="integer", example="1"),
-     *              @OA\Property(property="team_id", type="array", @OA\Items()),
+     *              @OA\Property(property="team_ids", type="array", @OA\Items()),
      *              @OA\Property(property="locked", type="boolean", example="false"),
      *              @OA\Property(property="archived", type="boolean", example="false"),
      *              @OA\Property(property="force_required", type="boolean", example="false"),
@@ -1206,11 +1209,13 @@ class QuestionBankController extends Controller
                 'allow_guidance_override',
                 'locked',
                 'archived',
-                'question_type',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             if ($array['archived'] ?? false) {
                 $array['archived_date'] = Carbon::now();
+            }
+            if (array_key_exists('all_custodians', $input)) {
+                $array['question_type'] = $input['all_custodians'] ? QuestionBank::STANDARD_TYPE : QuestionBank::CUSTOM_TYPE;
             }
             $question->update($array);
 
@@ -1243,10 +1248,10 @@ class QuestionBankController extends Controller
                 ]);
             }
 
+            QuestionHasTeam::where('qb_question_id', $id)->delete();
             if ($question->question_type === QuestionBank::CUSTOM_TYPE) {
-                QuestionHasTeam::where('qb_question_id', $id)->delete();
-                if ($input['team_id']) {
-                    foreach ($input['team_id'] as $t) {
+                if ($input['team_ids']) {
+                    foreach ($input['team_ids'] as $t) {
                         QuestionHasTeam::create([
                             'qb_question_id' => $question->id,
                             'team_id' => $t,
@@ -1536,6 +1541,7 @@ class QuestionBankController extends Controller
                             'archived' => $child['archived'] ?? false,
                             'archived_date' => ($child['archived'] ?? false) ? Carbon::now() : null,
                             'is_child' => true,
+                            'question_type' => $input['all_custodians'] ? QuestionBank::STANDARD_TYPE : QuestionBank::CUSTOM_TYPE,
                         ]);
 
                         $field = [
@@ -1573,10 +1579,10 @@ class QuestionBankController extends Controller
 
     private function updateQuestionHasTeams(QuestionBank $question, array $input)
     {
+        QuestionHasTeam::where('qb_question_id', $question->id)->delete();
         if ($question->question_type === QuestionBank::CUSTOM_TYPE) {
-            QuestionHasTeam::where('qb_question_id', $question->id)->delete();
-            if (isset($input['team_id']) && $input['team_id']) {
-                foreach ($input['team_id'] as $t) {
+            if (isset($input['team_ids']) && $input['team_ids']) {
+                foreach ($input['team_ids'] as $t) {
                     QuestionHasTeam::create([
                         'qb_question_id' => $question->id,
                         'team_id' => $t,

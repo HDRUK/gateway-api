@@ -77,7 +77,7 @@ class TeamQuestionBankController extends Controller
                 ->pluck('qb_question_id');
 
             $query = QuestionBank::with([
-                'latestVersion', 'latestVersion.childVersions'
+                'latestVersion', 'latestVersion.childVersions', 'teams'
             ])->where('archived', false)
             ->where('section_id', $sectionId)
             ->when(

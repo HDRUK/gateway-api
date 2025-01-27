@@ -50,10 +50,10 @@ class CreateQuestionBank extends BaseFormRequest
                 'string',
                 'in:STANDARD,CUSTOM',
             ],
-            'team_id' => [
+            'team_ids' => [
                 'array'
             ],
-            'team_id.*' => [
+            'team_ids.*' => [
                 'integer'
             ],
             'options' => [
@@ -66,6 +66,9 @@ class CreateQuestionBank extends BaseFormRequest
             'validations' => [
                 'array',
             ],
+            'all_custodians' => [
+                'boolean',
+            ]
         ];
     }
 }

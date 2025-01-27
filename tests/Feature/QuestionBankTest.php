@@ -115,6 +115,7 @@ class QuestionBankTest extends TestCase
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
                 'question_type' => 'STANDARD',
+                'all_custodians' => true,
                 'options' => [],
                 'component' => 'TextArea',
                 'validations' => [
@@ -167,6 +168,7 @@ class QuestionBankTest extends TestCase
                         'component',
                         'validations',
                         'version_id',
+                        'all_custodians',
                     ],
                 ],
                 'first_page_url',
@@ -198,9 +200,11 @@ class QuestionBankTest extends TestCase
             [
                 'section_id' => 1,
                 'user_id' => 1,
+                'team_ids' => [1, 2],
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
                 'question_type' => 'CUSTOM',
+                'all_custodians' => false,
                 'options' => [],
                 'component' => 'TextArea',
                 'validations' => [
@@ -253,6 +257,7 @@ class QuestionBankTest extends TestCase
                         'component',
                         'validations',
                         'version_id',
+                        'all_custodians',
                     ],
                 ],
                 'first_page_url',
@@ -301,6 +306,7 @@ class QuestionBankTest extends TestCase
                 'default' => 0,
                 'version' => 1,
                 'is_child' => 0,
+                'all_custodians' => true,
             ],
             $this->header
         );
@@ -339,6 +345,7 @@ class QuestionBankTest extends TestCase
                         'component',
                         'validations',
                         'version_id',
+                        'all_custodians',
                     ],
                 ],
                 'first_page_url',
@@ -370,8 +377,9 @@ class QuestionBankTest extends TestCase
             [
                 'section_id' => 1,
                 'user_id' => 1,
-                'team_id' => [1],
+                'team_ids' => [1],
                 'question_type' => 'CUSTOM',
+                'all_custodians' => false,
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
                 'options' => [],
@@ -426,6 +434,7 @@ class QuestionBankTest extends TestCase
                         'component',
                         'validations',
                         'version_id',
+                        'all_custodians',
                     ],
                 ],
             ]);
@@ -465,6 +474,7 @@ class QuestionBankTest extends TestCase
                 'default' => 0,
                 'version' => 1,
                 'is_child' => 0,
+                'all_custodians' => true,
             ],
             $this->header
         );
@@ -503,6 +513,7 @@ class QuestionBankTest extends TestCase
                     'component',
                     'validations',
                     'version_id',
+                    'all_custodians',
                 ],
             ]);
     }
@@ -523,6 +534,7 @@ class QuestionBankTest extends TestCase
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
                 'options' => [],
+                'all_custodians' => true,
                 'component' => 'TextArea',
                 'validations' => [
                     [
@@ -599,6 +611,7 @@ class QuestionBankTest extends TestCase
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
                 'options' => [],
+                'all_custodians' => true,
                 'component' => 'TextArea',
                 'validations' => [
                     [
@@ -635,10 +648,11 @@ class QuestionBankTest extends TestCase
             [
                 'section_id' => 1,
                 'user_id' => 1,
-                'team_id' => [1],
+                'team_ids' => [1],
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
                 'question_type' => 'CUSTOM',
+                'all_custodians' => false,
                 'options' => [],
                 'component' => 'TextArea',
                 'validations' => [
@@ -678,6 +692,7 @@ class QuestionBankTest extends TestCase
                 "allow_guidance_override" => true,
                 "is_child" => 0,
                 "question_type" => "STANDARD",
+                'all_custodians' => true,
                 "title" => "Please provide the legal basis to process confidential information",
                 "guidance" => "Please confirm if consent is in place or underway for all disclosures of confidential information, if you have Section 251 exemption, or any other legal basis that you require for the project.\n\nFor England and Wales, please specify if Section 251 exemption is currently being sought and if so, please provide a Confidentiality Advisory group reference code.\n\nIn Scotland applications are required for the consented and unconsented use of data.\n",
                 "options" => [
@@ -805,6 +820,7 @@ class QuestionBankTest extends TestCase
                 "allow_guidance_override" => true,
                 "is_child" => 0,
                 "question_type" => "STANDARD",
+                'all_custodians' => true,
                 "guidance" => "Please confirm if consent is in place or underway for all disclosures of confidential information, if you have Section 251 exemption, or any other legal basis that you require for the project.\n\nFor England and Wales, please specify if Section 251 exemption is currently being sought and if so, please provide a Confidentiality Advisory group reference code.\n\nIn Scotland applications are required for the consented and unconsented use of data.\n",
                 "options" => [
                     [
@@ -915,6 +931,7 @@ class QuestionBankTest extends TestCase
                     ]
                 ],
                 'title' => 'Test question',
+                'all_custodians' => true,
                 'section_id' => 1,
                 'user_id' => 1,
                 'force_required' => 0,
@@ -953,6 +970,7 @@ class QuestionBankTest extends TestCase
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
                 'options' => [],
+                'all_custodians' => true,
                 'component' => 'TextArea',
                 'validations' => [
                     [
@@ -985,6 +1003,7 @@ class QuestionBankTest extends TestCase
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
                 'options' => [],
+                'all_custodians' => true,
                 'component' => 'TextArea',
                 'validations' => [
                     [
@@ -1037,6 +1056,7 @@ class QuestionBankTest extends TestCase
                 "allow_guidance_override" => true,
                 "is_child" => 0,
                 "question_type" => "STANDARD",
+                'all_custodians' => true,
                 "title" => "Please provide the legal basis to process confidential information",
                 "guidance" => "Please confirm if consent is in place or underway for all disclosures of confidential information, if you have Section 251 exemption, or any other legal basis that you require for the project.\n\nFor England and Wales, please specify if Section 251 exemption is currently being sought and if so, please provide a Confidentiality Advisory group reference code.\n\nIn Scotland applications are required for the consented and unconsented use of data.\n",
                 "options" => [
@@ -1159,6 +1179,7 @@ class QuestionBankTest extends TestCase
                 "allow_guidance_override" => true,
                 "is_child" => 0,
                 "question_type" => "STANDARD",
+                'all_custodians' => true,
                 "title" => "Please provide the legal basis to process confidential information",
                 "guidance" => "Please confirm if consent is in place or underway for all disclosures of confidential information, if you have Section 251 exemption, or any other legal basis that you require for the project.\n\nFor England and Wales, please specify if Section 251 exemption is currently being sought and if so, please provide a Confidentiality Advisory group reference code.\n\nIn Scotland applications are required for the consented and unconsented use of data.\n",
                 "options" => [
@@ -1251,6 +1272,7 @@ class QuestionBankTest extends TestCase
                     "no"
                 ],
                 "component" => "RadioGroup",
+                'all_custodians' => true,
                 "validations" => [],
                 "section_id" => 1,
                 "title" => "Testing that updating a child fails",
@@ -1289,6 +1311,7 @@ class QuestionBankTest extends TestCase
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
                 'options' => [],
+                'all_custodians' => true,
                 'component' => 'TextArea',
                 'validations' => [
                     [
@@ -1391,6 +1414,7 @@ class QuestionBankTest extends TestCase
                 "allow_guidance_override" => true,
                 "is_child" => 0,
                 "question_type" => "STANDARD",
+                'all_custodians' => true,
                 "title" => "Please provide the legal basis to process confidential information",
                 "guidance" => "Please confirm if consent is in place or underway for all disclosures of confidential information, if you have Section 251 exemption, or any other legal basis that you require for the project.\n\nFor England and Wales, please specify if Section 251 exemption is currently being sought and if so, please provide a Confidentiality Advisory group reference code.\n\nIn Scotland applications are required for the consented and unconsented use of data.\n",
                 "options" => [
@@ -1643,10 +1667,11 @@ class QuestionBankTest extends TestCase
             [
                 'section_id' => 1,
                 'user_id' => 1,
-                'team_id' => [1],
+                'team_ids' => [1],
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
                 'question_type' => 'CUSTOM',
+                'all_custodians' => false,
                 'options' => [],
                 'component' => 'TextArea',
                 'validations' => [
