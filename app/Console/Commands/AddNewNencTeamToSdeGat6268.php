@@ -19,7 +19,7 @@ class AddNewNencTeamToSdeGat6268 extends Command
      *
      * @var string
      */
-    protected $description = 'Add new NENC team to SDE Network page and remove old one';
+    protected $description = 'GAT-6268 :: Add new NENC team to SDE Network page and remove old one';
 
     /**
      * Execute the console command.
