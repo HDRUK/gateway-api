@@ -1250,7 +1250,7 @@ class CollectionController extends Controller
     private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null)
     {
         $collectionHastDatasetVersions = CollectionHasDatasetVersion::withTrashed()
-                                            ->where(['collection_id' => $collectionId])
+                                            ->where('collection_id', $collectionId)
                                             ->select('dataset_version_id')
                                             ->get()
                                             ->toArray();
