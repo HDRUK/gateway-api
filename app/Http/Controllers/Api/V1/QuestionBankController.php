@@ -919,6 +919,7 @@ class QuestionBankController extends Controller
                 'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
                 'is_child' => false,
                 'question_type' => $input['all_custodians'] ? QuestionBank::STANDARD_TYPE : QuestionBank::CUSTOM_TYPE,
+                'team_ids' => $input['all_custodians'] ? [] : $input['team_ids'],
             ]);
 
             $questionVersion = $this->createVersion($input, $question, 1);
@@ -1077,6 +1078,7 @@ class QuestionBankController extends Controller
                 'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
                 'is_child' => false,
                 'question_type' => $input['all_custodians'] ? QuestionBank::STANDARD_TYPE : QuestionBank::CUSTOM_TYPE,
+                'team_ids' => $input['all_custodians'] ? [] : $input['team_ids'],
             ]);
 
             $latestVersion = $question->latestVersion()->first()->version;
@@ -1246,8 +1248,8 @@ class QuestionBankController extends Controller
                 ]);
             }
 
+            QuestionHasTeam::where('qb_question_id', $id)->delete();
             if ($question->question_type === QuestionBank::CUSTOM_TYPE) {
-                QuestionHasTeam::where('qb_question_id', $id)->delete();
                 if ($input['team_ids']) {
                     foreach ($input['team_ids'] as $t) {
                         QuestionHasTeam::create([
@@ -1577,8 +1579,8 @@ class QuestionBankController extends Controller
 
     private function updateQuestionHasTeams(QuestionBank $question, array $input)
     {
+        QuestionHasTeam::where('qb_question_id', $question->id)->delete();
         if ($question->question_type === QuestionBank::CUSTOM_TYPE) {
-            QuestionHasTeam::where('qb_question_id', $question->id)->delete();
             if (isset($input['team_ids']) && $input['team_ids']) {
                 foreach ($input['team_ids'] as $t) {
                     QuestionHasTeam::create([
