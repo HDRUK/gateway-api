@@ -200,6 +200,7 @@ class QuestionBankTest extends TestCase
             [
                 'section_id' => 1,
                 'user_id' => 1,
+                'team_ids' => [1, 2],
                 'force_required' => 0,
                 'allow_guidance_override' => 1,
                 'question_type' => 'CUSTOM',
