@@ -48,7 +48,7 @@ class CollectionTeamTest extends TestCase
         setUp as commonSetUp;
     }
 
-    private function test_url(int $teamId)
+    private function testUrl(int $teamId)
     {
         return '/api/v1/teams/' . $teamId . '/collections/';
     }
@@ -225,7 +225,7 @@ class CollectionTeamTest extends TestCase
         // create a Collection as that user in the selected team
         $response = $this->json(
             'POST',
-            $this->test_url($team->id),
+            $this->testUrl($team->id),
             $mockData,
             $this->headerNonAdmin
         );
@@ -278,14 +278,13 @@ class CollectionTeamTest extends TestCase
         // create a Collection as that user in the selected team
         $response = $this->json(
             'POST',
-            $this->test_url($team->id),
+            $this->testUrl($team->id),
             $mockData,
             $this->headerNonAdmin
         );
 
         $countAfter = Collection::count();
         $countNewRow = $countAfter - $countBefore;
-
         $response->assertStatus(201);
         $this->assertTrue((bool) $countNewRow, 'Response was successful');
 
@@ -332,11 +331,10 @@ class CollectionTeamTest extends TestCase
 
         $response = $this->json(
             'POST',
-            $this->test_url($team->id),
+            $this->testUrl($team->id),
             $mockDataIn,
             $this->headerNonAdmin
         );
-
         $response->assertStatus(201);
         $idIn = (int) $response['data'];
 
@@ -361,7 +359,7 @@ class CollectionTeamTest extends TestCase
         ];
         $responseUpdate = $this->json(
             'PUT',
-            $this->test_url($team->id) . $idIn,
+            $this->testUrl($team->id) . $idIn,
             $mockDataUpdate,
             $this->headerNonAdmin
         );
@@ -388,7 +386,7 @@ class CollectionTeamTest extends TestCase
 
         $responseUpdate = $this->json(
             'PUT',
-            $this->test_url($team->id) . $idIn,
+            $this->testUrl($team->id) . $idIn,
             $mockDataUpdate,
             $headerNonAdmin2
         );
@@ -429,7 +427,7 @@ class CollectionTeamTest extends TestCase
 
         $responseIn = $this->json(
             'POST',
-            $this->test_url($team->id),
+            $this->testUrl($team->id),
             $mockDataIns,
             $this->headerNonAdmin
         );
@@ -471,7 +469,7 @@ class CollectionTeamTest extends TestCase
 
         $responseUpdate = $this->json(
             'PUT',
-            $this->test_url($team->id) . $idIn,
+            $this->testUrl($team->id) . $idIn,
             $mockDataUpdate,
             $headerNonAdmin2
         );
@@ -509,7 +507,7 @@ class CollectionTeamTest extends TestCase
         ];
         $responseIn = $this->json(
             'POST',
-            $this->test_url($team->id),
+            $this->testUrl($team->id),
             $mockDataIn,
             $this->headerNonAdmin
         );
@@ -534,7 +532,7 @@ class CollectionTeamTest extends TestCase
         ];
         $responseUpdate = $this->json(
             'PUT',
-            $this->test_url($team->id) . $idIn,
+            $this->testUrl($team->id) . $idIn,
             $mockDataUpdate,
             $this->headerNonAdmin
         );
@@ -571,11 +569,10 @@ class CollectionTeamTest extends TestCase
         ];
         $responseIns = $this->json(
             'POST',
-            $this->test_url($team->id),
+            $this->testUrl($team->id),
             $mockDataIns,
             $this->headerNonAdmin
         );
-
         $responseIns->assertStatus(201);
         $idIns = (int) $responseIns['data'];
 
@@ -595,7 +592,7 @@ class CollectionTeamTest extends TestCase
         ];
         $responseUpdate = $this->json(
             'PUT',
-            $this->test_url($team->id) . $idIns,
+            $this->testUrl($team->id) . $idIns,
             $mockDataUpdate,
             $this->headerNonAdmin
         );
@@ -614,7 +611,7 @@ class CollectionTeamTest extends TestCase
         ];
         $responseEdit1 = $this->json(
             'PATCH',
-            $this->test_url($team->id) . $idIns,
+            $this->testUrl($team->id) . $idIns,
             $mockDataEdit1,
             $this->headerNonAdmin
         );
@@ -644,7 +641,7 @@ class CollectionTeamTest extends TestCase
 
         $responseEdit2 = $this->json(
             'PATCH',
-            $this->test_url($team->id) . $idIns,
+            $this->testUrl($team->id) . $idIns,
             $mockDataEdit2,
             $headerNonAdmin2
         );
@@ -684,7 +681,7 @@ class CollectionTeamTest extends TestCase
         ];
         $responseIns = $this->json(
             'POST',
-            $this->test_url($team->id),
+            $this->testUrl($team->id),
             $mockDataIns,
             $this->headerNonAdmin
         );
@@ -708,7 +705,7 @@ class CollectionTeamTest extends TestCase
         ];
         $responseUpdate = $this->json(
             'PUT',
-            $this->test_url($team->id) . $idIns,
+            $this->testUrl($team->id) . $idIns,
             $mockDataUpdate,
             $this->headerNonAdmin
         );
@@ -745,7 +742,7 @@ class CollectionTeamTest extends TestCase
 
         $responseEdit1 = $this->json(
             'PATCH',
-            $this->test_url($team->id) . $idIns,
+            $this->testUrl($team->id) . $idIns,
             $mockDataEdit1,
             $headerNonAdmin2
         );
@@ -787,7 +784,7 @@ class CollectionTeamTest extends TestCase
         ];
         $responseIn = $this->json(
             'POST',
-            $this->test_url($team->id),
+            $this->testUrl($team->id),
             $mockDataIn,
             $this->headerNonAdmin
         );
@@ -815,7 +812,7 @@ class CollectionTeamTest extends TestCase
         }
 
         // try to delete collection when not in the correct team - this will fail
-        $response = $this->json('DELETE', $this->test_url($team->id) . $idIn, [], $headerNonAdmin2);
+        $response = $this->json('DELETE', $this->testUrl($team->id) . $idIn, [], $headerNonAdmin2);
         $response->assertStatus(401);
 
         $countAfter = Collection::count();
@@ -826,7 +823,7 @@ class CollectionTeamTest extends TestCase
 
 
         // delete collection when authorised
-        $response = $this->json('DELETE', $this->test_url($team->id) . $idIn, [], $this->headerNonAdmin);
+        $response = $this->json('DELETE', $this->testUrl($team->id) . $idIn, [], $this->headerNonAdmin);
         $response->assertStatus(200);
 
         $countAfter = Collection::count();
@@ -837,7 +834,7 @@ class CollectionTeamTest extends TestCase
 
         $response = $this->json(
             'PATCH',
-            $this->test_url($team->id) . $idIn . '?unarchive',
+            $this->testUrl($team->id) . $idIn . '?unarchive',
             ['status' => 'ACTIVE'],
             $this->headerNonAdmin
         );
@@ -883,14 +880,14 @@ class CollectionTeamTest extends TestCase
         ];
         $responseIn = $this->json(
             'POST',
-            $this->test_url($team->id),
+            $this->testUrl($team->id),
             $mockDataIn,
             $this->headerNonAdmin
         );
         $responseIn->assertStatus(201);
         $idIn = (int) $responseIn['data'];
 
-        $response = $this->json('DELETE', $this->test_url($team->id) . $idIn, [], $this->headerNonAdmin);
+        $response = $this->json('DELETE', $this->testUrl($team->id) . $idIn, [], $this->headerNonAdmin);
         $response->assertStatus(200);
     }
 
@@ -998,6 +995,7 @@ class CollectionTeamTest extends TestCase
             'message'
         ]);
         $firstResponsePost->assertStatus(201);
+
         return [
             "nonAdminUser" => $nonAdminUser,
             "team" => $team
