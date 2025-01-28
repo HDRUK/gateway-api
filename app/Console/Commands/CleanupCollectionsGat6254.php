@@ -85,7 +85,10 @@ class CleanupCollectionsGat6254 extends Command
                     ])->first();
 
                     if (!is_null($checkCollectionHasDatasetVersion)) {
-                        $this->addRelationWithLatestDatasetVersion($collectionId, $collectionDatasetVersionId, $latestDatasetVersionId);
+                        CollectionHasDatasetVersion::where([
+                            'collection_id' => $collectionId,
+                            'dataset_version_id' => $collectionDatasetVersionId,
+                        ])->delete();
                         $this->warn('3. delete collection_id = ' . $collectionId . ' &  dataset_version_id = ' . $collectionDatasetVersionId);
                         continue;
                     }
