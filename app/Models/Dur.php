@@ -129,10 +129,10 @@ class Dur extends Model
         return $this->hasManyThrough(
             User::class,
             DurHasDatasetVersion::class,
-            'dur_id', // Foreign key on the CollectionHasDatasetVersion table
-            'id',            // Local key on the Collection table
+            'dur_id', // Foreign key on the DurHasDatasetVersion table
+            'id',            // Local key on the Dur table
             'id',            // Local key on the User table
-            'user_id'        // Foreign key on the CollectionHasDatasetVersion table
+            'user_id'        // Foreign key on the DurHasDatasetVersion table
         );
     }
 
@@ -141,10 +141,10 @@ class Dur extends Model
         return $this->hasManyThrough(
             Application::class,
             DurHasDatasetVersion::class,
-            'dur_id', // Foreign key on the CollectionHasDatasetVersion table
-            'id',            // Local key on the Collection table
+            'dur_id', // Foreign key on the SurHasDatasetVersion table
+            'id',            // Local key on the Dur table
             'id',            // Local key on the Application table
-            'application_id' // Foreign key on the CollectionHasDatasetVersion table
+            'application_id' // Foreign key on the DurHasDatasetVersion table
         );
     }
 
