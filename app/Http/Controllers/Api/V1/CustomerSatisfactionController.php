@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Models\CustomerSatisfaction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Exception;
 
 class CustomerSatisfactionController extends Controller
 {
