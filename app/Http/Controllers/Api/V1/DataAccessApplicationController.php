@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\DataAccessApplicationHelpers;
+use App\Http\Traits\QuestionBankHelpers;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\DataAccessApplication\GetDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\GetDataAccessApplicationFile;
@@ -35,6 +36,7 @@ class DataAccessApplicationController extends Controller
 {
     use RequestTransformation;
     use DataAccessApplicationHelpers;
+    use QuestionBankHelpers;
 
     /**
      * @OA\Get(
@@ -151,13 +153,25 @@ class DataAccessApplicationController extends Controller
         try {
             $application = DataAccessApplication::where('id', $id)->with('questions')->first();
             foreach ($application['questions'] as $i => $q) {
+                $applicationSpecificFields = [
+                    'application_id' => $q['application_id'],
+                    'question_id' => $q['question_id'],
+                    'guidance' => $q['guidance'],
+                    'required' => $q['required'],
+                    'order' => $q['order'],
+                    'teams' => $q['teams'],
+                ];
                 $version = QuestionBank::with([
                     'latestVersion',
                     'latestVersion.childVersions',
                 ])->where('id', $q->question_id)->first();
                 if ($version) {
                     $vArr = $version->toArray();
-                    $application['questions'][$i]['latest_version'] = $vArr['latest_version'];
+                    $question = $this->getVersion($vArr);
+                    $application['questions'][$i] = array_merge(
+                        $question,
+                        $applicationSpecificFields
+                    );
                 }
             }
 
