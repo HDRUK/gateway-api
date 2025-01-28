@@ -335,7 +335,6 @@ class CollectionTeamTest extends TestCase
             $mockDataIn,
             $this->headerNonAdmin
         );
-
         $response->assertStatus(201);
         $idIn = (int) $response['data'];
 

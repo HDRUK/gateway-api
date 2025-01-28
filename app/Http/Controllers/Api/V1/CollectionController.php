@@ -1352,7 +1352,13 @@ class CollectionController extends Controller
                 $arrCreate['updated_at'] = $dataset['updated_at'];
             }
 
-            return CollectionHasDatasetVersion::create($arrCreate);
+            $checkRow = CollectionHasDatasetVersion::where($searchArray)->first();
+            if (is_null($checkRow)) {
+                return CollectionHasDatasetVersion::create($arrCreate);
+            } else {
+                return $checkRow;
+            }
+
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$arrCreate['user_id'],
