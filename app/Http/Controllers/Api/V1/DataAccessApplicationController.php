@@ -159,7 +159,7 @@ class DataAccessApplicationController extends Controller
                     'guidance' => $q['guidance'],
                     'required' => $q['required'],
                     'order' => $q['order'],
-                    'teams' => $q['teams'],
+                    'template_teams' => $q['teams'],
                 ];
                 $version = QuestionBank::with([
                     'latestVersion',

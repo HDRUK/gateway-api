@@ -550,6 +550,7 @@ class DataAccessApplicationTest extends TestCase
                             'application_id',
                             'order',
                             'teams',
+                            'template_teams',
                         ]
                     ],
                 ],
@@ -557,7 +558,7 @@ class DataAccessApplicationTest extends TestCase
 
         $questions = $response->decodeResponseJson()['data']['questions'];
 
-        $allTeams = array_column($questions, 'teams');
+        $allTeams = array_column($questions, 'template_teams');
 
         $this->assertContains($team1->name, $allTeams);
         $this->assertContains($team2->name, $allTeams);
