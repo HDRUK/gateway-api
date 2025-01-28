@@ -526,15 +526,31 @@ class DataAccessApplicationTest extends TestCase
                     'approval_status',
                     'questions' => [
                         0 => [
-                            'application_id',
-                            'question_id',
+                            'created_at',
+                            'updated_at',
+                            'deleted_at',
+                            'version',
+                            'default',
                             'required',
+                            'section_id',
+                            'user_id',
+                            'locked',
+                            'archived',
+                            'archived_date',
+                            'force_required',
+                            'allow_guidance_override',
+                            'is_child',
+                            'question_type',
+                            'title',
+                            'guidance',
+                            'options',
+                            'component',
+                            'validations',
+                            'version_id',
+                            'application_id',
                             'order',
                             'teams',
-                            'latest_version' => [
-                                'question_json',
-                                'child_versions'
-                            ],
+                            'template_teams',
                         ]
                     ],
                 ],
@@ -542,7 +558,7 @@ class DataAccessApplicationTest extends TestCase
 
         $questions = $response->decodeResponseJson()['data']['questions'];
 
-        $allTeams = array_column($questions, 'teams');
+        $allTeams = array_column($questions, 'template_teams');
 
         $this->assertContains($team1->name, $allTeams);
         $this->assertContains($team2->name, $allTeams);
