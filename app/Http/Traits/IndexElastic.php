@@ -507,8 +507,8 @@ trait IndexElastic
                 $latestVersionID = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->id;
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
                 $linkType = PublicationHasDatasetVersion::where([
-                    ['publication_id', '=', (int)$id],
-                    ['dataset_version_id', '=', (int)$latestVersionID]
+                    'publication_id' => (int)$id,
+                    'dataset_version_id' => (int)$latestVersionID
                 ])->first()->link_type ?? 'UNKNOWN';
                 $datasetLinkTypes[] =  array_key_exists($linkType, $linkTypeMappings) ? $linkTypeMappings[$linkType] : 'Unknown';
             }
