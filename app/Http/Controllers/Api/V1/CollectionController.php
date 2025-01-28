@@ -1261,7 +1261,7 @@ class CollectionController extends Controller
         }
 
         foreach ($inDatasets as $dataset) {
-            $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->select('id')->first()->latestVersion()->id;
+            $datasetVersionLatestId = Dataset::where('id', (int) $dataset['id'])->select('id')->first()->latestVersion()->id;
 
             $datasetVersions = DatasetVersion::where('dataset_id', (int) $dataset['id'])->select('id')->get()->toArray();
 
@@ -1269,12 +1269,12 @@ class CollectionController extends Controller
             $commonDatasetVersionIds = array_intersect($collectionHastDatasetVersionIds, $datasetVersionIds);
 
             if (count($commonDatasetVersionIds) === 0) {
-                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId);
+                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
                 continue;
             }
 
-            if (!in_array($datasetVersionId, $commonDatasetVersionIds)) {
-                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId);
+            if (!in_array($datasetVersionLatestId, $commonDatasetVersionIds)) {
+                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
                 foreach ($commonDatasetVersionIds as $commonDatasetVersionId) {
                     CollectionHasDatasetVersion::where([
                         'collection_id' => $collectionId,
@@ -1284,9 +1284,9 @@ class CollectionController extends Controller
                 continue;
             }
 
-            if (in_array($datasetVersionId, $commonDatasetVersionIds)) {
+            if (in_array($datasetVersionLatestId, $commonDatasetVersionIds)) {
                 foreach ($commonDatasetVersionIds as $commonDatasetVersionId) {
-                    if ((int) $datasetVersionId === (int) $commonDatasetVersionId) {
+                    if ((int) $datasetVersionLatestId === (int) $commonDatasetVersionId) {
                         $checkCollectionWithLatestDatasetVersionActive = CollectionHasDatasetVersion::where([
                             'collection_id' => $collectionId,
                             'dataset_version_id' => $commonDatasetVersionId,
@@ -1352,7 +1352,7 @@ class CollectionController extends Controller
                 $arrCreate['updated_at'] = $dataset['updated_at'];
             }
 
-            return CollectionHasDatasetVersion::withTrashed()->updateOrCreate($searchArray, $arrCreate);
+            return CollectionHasDatasetVersion::create($arrCreate);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$arrCreate['user_id'],
