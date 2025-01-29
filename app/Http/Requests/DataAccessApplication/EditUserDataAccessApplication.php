@@ -37,7 +37,7 @@ class EditUserDataAccessApplication extends BaseFormRequest
             ],
             'approval_status' => [
                 'string',
-                'in:APPROVED,APPROVED_COMMENTS,REJECTED',
+                'in:WITHDRAWN',
             ],
         ];
     }

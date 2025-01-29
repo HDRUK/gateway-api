@@ -144,6 +144,23 @@ class DataAccessApplicationTest extends TestCase
                     'questions',
                 ],
             ]);
+
+        $response = $this->get('api/v1/users/1/dar/applications/' . $content['data'], $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'applicant_id',
+                    'submission_status',
+                    'project_title',
+                    'approval_status',
+                    'questions',
+                ],
+            ]);
     }
 
     /**
@@ -329,7 +346,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PUT',
-            'api/v1/dar/applications/' . $applicationId . '/answers',
+            'api/v1/users/1/dar/applications/' . $applicationId . '/answers',
             [
                 'answers' => [
                     0 => [
@@ -353,7 +370,7 @@ class DataAccessApplicationTest extends TestCase
         // Test it can retrieve the answers
         $response = $this->json(
             'GET',
-            'api/v1/dar/applications/' . $applicationId . '/answers',
+            'api/v1/users/1/dar/applications/' . $applicationId . '/answers',
             [],
             $this->header
         );
@@ -374,6 +391,15 @@ class DataAccessApplicationTest extends TestCase
                     ]
                 ]
             ]);
+
+        // Test it cannot retrieve answers from the wrong endpoint
+        $response = $this->json(
+            'GET',
+            'api/v1/users/2/dar/applications/' . $applicationId . '/answers',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
 
     }
 
@@ -907,6 +933,50 @@ class DataAccessApplicationTest extends TestCase
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+    }
+
+    /**
+     * Tests the user can withdraw a dar application
+     *
+     * @return void
+     */
+    public function test_it_can_withdraw_a_dar_application()
+    {
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'DRAFT',
+                'project_title' => 'A test DAR',
+                'dataset_ids' => [1,2],
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $content = $response->decodeResponseJson();
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/users/1/dar/applications/' . $content['data'],
+            [
+                'approval_status' => 'WITHDRAWN',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // But a user cannot approve their own application
+        $response = $this->json(
+            'PATCH',
+            'api/v1/users/1/dar/applications/' . $content['data'],
+            [
+                'approval_status' => 'APPROVED',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
     }
 
     /**
