@@ -7,6 +7,9 @@ use Laravel\Passport\Passport;
 use Illuminate\Support\ServiceProvider;
 use App\Http\Controllers\SSO\CustomAccessToken;
 
+use App\Models\DataAccessApplication;
+use App\Observers\DataAccessApplicationObserver;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -56,5 +59,7 @@ class AppServiceProvider extends ServiceProvider
 
         Passport::tokensExpireIn(now()->addDays(15));
         Passport::refreshTokensExpireIn(now()->addDays(30));
+
+        DataAccessApplication::observe(DataAccessApplicationObserver::class);
     }
 }

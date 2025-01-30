@@ -725,6 +725,19 @@ class DataAccessApplicationTest extends TestCase
         $this->assertEquals($content['data']['submission_status'], 'DRAFT');
         $this->assertNull($content['data']['approval_status']);
 
+        $responseStatus = $this->json(
+            'GET',
+            'api/v1/dar/applications/' . $applicationId . '/status',
+            [],
+            $this->header,
+        );
+        $responseStatus->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+        $statusCountInit = count($responseStatus->decodeResponseJson()['data']);
+
         $response = $this->json(
             'PATCH',
             'api/v1/dar/applications/' . $applicationId,
@@ -742,6 +755,22 @@ class DataAccessApplicationTest extends TestCase
 
         $content = $response->decodeResponseJson();
         $this->assertEquals($content['data']['approval_status'], 'APPROVED');
+
+        // Test status history has been updated
+        $responseStatus = $this->json(
+            'GET',
+            'api/v1/dar/applications/' . $applicationId . '/status',
+            [],
+            $this->header,
+        );
+        $responseStatus->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+        $statusCountNew = count($responseStatus->decodeResponseJson()['data']);
+
+        $this->assertEquals($statusCountNew, $statusCountInit + 1);
     }
 
     /**

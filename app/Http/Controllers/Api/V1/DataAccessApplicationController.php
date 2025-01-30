@@ -24,6 +24,7 @@ use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationAnswer;
 use App\Models\DataAccessApplicationHasDataset;
 use App\Models\DataAccessApplicationHasQuestion;
+use App\Models\DataAccessApplicationStatus;
 use App\Models\DataAccessTemplate;
 use App\Models\Dataset;
 use App\Models\Team;
@@ -405,6 +406,81 @@ class DataAccessApplicationController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $answers,
+            ], Config::get('statuscodes.STATUS_OK.code'));
+
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/dar/applications/{id}/status",
+     *      summary="Return the status history of a single DAR application",
+     *      description="Return the status history of a single DAR application",
+     *      tags={"DataAccessApplication"},
+     *      summary="DataAccessApplication@status",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DAR application id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR application id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="application_id", type="integer", example="123"),
+     *                  @OA\Property(property="approval_status", type="string", example="APPROVED"),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function status(GetDataAccessApplication $request, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $statuses = DataAccessApplicationStatus::where('application_id', $id)->get();
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'DataAccessApplication status history get ' . $id,
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $statuses,
             ], Config::get('statuscodes.STATUS_OK.code'));
 
         } catch (Exception $e) {

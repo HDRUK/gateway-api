@@ -3901,6 +3901,19 @@ return [
     ],
     [
         'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/dar/applications/{id}/status',
+        'methodController' => 'DataAccessApplicationController@status',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
         'method' => 'post',
         'path' => '/dar/applications',
         'methodController' => 'DataAccessApplicationController@store',
