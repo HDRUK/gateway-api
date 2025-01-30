@@ -4025,6 +4025,65 @@ return [
         ],
     ],
 
+    // dar/applications/reviews
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/dar/applications/{id}/reviews',
+        'methodController' => 'DataAccessApplicationReviewController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'post',
+        'path' => '/dar/applications/{id}/questions/{questionId}/reviews',
+        'methodController' => 'DataAccessApplicationReviewController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'questionId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'put',
+        'path' => '/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}',
+        'methodController' => 'DataAccessApplicationReviewController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'questionId' => '[0-9]+',
+            'reviewId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'delete',
+        'path' => '/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}',
+        'methodController' => 'DataAccessApplicationReviewController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'questionId' => '[0-9]+',
+            'reviewId' => '[0-9]+',
+        ],
+    ],
+
     // dar/templates
     [
         'name' => 'dar/templates',
