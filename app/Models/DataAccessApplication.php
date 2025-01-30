@@ -8,13 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-#[ObservedBy([DataAccessApplicationObserver::class])]
 class DataAccessApplication extends Model
 {
     use HasFactory;
@@ -28,6 +26,10 @@ class DataAccessApplication extends Model
      * @var string
      */
     protected $table = 'dar_applications';
+
+    protected static $observers = [
+        DataAccessApplicationObserver::class
+    ];
 
     protected $fillable = [
         'applicant_id',
