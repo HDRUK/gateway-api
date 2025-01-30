@@ -116,6 +116,7 @@ class AliasReplyScannerTest extends TestCase
             'enabled',
             'is_general_enquiry',
             'is_feasibility_enquiry',
+            'is_dar_review',
         ]);
 
         $this->assertEquals($response->id, $thread->id);
