@@ -191,6 +191,7 @@ class CollectionController extends Controller
             ->paginate((int) $perPage, ['*'], 'page');
 
             $collections->getCollection()->transform(function ($collection) {
+                $collection->image_link = trim($collection->image_link);
                 if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
                     $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
                 }
@@ -1181,6 +1182,7 @@ class CollectionController extends Controller
         ->first();
 
         if ($collection) {
+            $collection->image_link = trim($collection->image_link);
             if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
                 $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
             }
