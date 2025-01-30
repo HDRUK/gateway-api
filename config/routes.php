@@ -351,6 +351,15 @@ return [
         ],
     ],
     [
+        'name' => 'csat',
+        'method' => 'post',
+        'path' => '/csat',
+        'methodController' => 'CustomerSatisfactionController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
         'name' => 'sitemap',
         'method' => 'get',
         'path' => '/sitemap',
