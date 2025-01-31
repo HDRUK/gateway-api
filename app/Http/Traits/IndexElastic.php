@@ -213,7 +213,7 @@ trait IndexElastic
 
             $toIndex = [
                 'name' => Team::findOrFail($teamId)->name,
-                'datasetTitles' => array_unique($datasetTitles),
+                'datasetTitles' => array_values(array_unique($datasetTitles)),
                 'geographicLocation' => $locations,
                 'dataType' => $dataTypes,
                 'durTitles' => $durTitles,
