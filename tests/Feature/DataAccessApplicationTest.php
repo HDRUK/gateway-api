@@ -210,7 +210,7 @@ class DataAccessApplicationTest extends TestCase
         // test it can list files
         $response = $this->json(
             'GET',
-            'api/v1/dar/applications/' . $applicationId . '/files',
+            'api/v1/users/1/dar/applications/' . $applicationId . '/files',
             [],
             $this->header,
         );
@@ -238,21 +238,108 @@ class DataAccessApplicationTest extends TestCase
         // test downloading a file associated with the dar application
         $response = $this->json(
             'GET',
+            'api/v1/users/1/dar/applications/' . $applicationId . '/files/' . $fileId . '/download',
+            [],
+            $this->header,
+        );
+        $response->assertStatus(200);
+
+        // test dar manager cannot view and download the file because the application is a draft
+        $response = $this->json(
+            'GET',
+            'api/v1/dar/applications/' . $applicationId . '/files',
+            [],
+            $this->header,
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+
+        $response = $this->json(
+            'GET',
+            'api/v1/dar/applications/' . $applicationId . '/files/' . $fileId . '/download',
+            [],
+            $this->header,
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+
+        // test user can delete the file while the application is still a draft
+        $response = $this->json(
+            'DELETE',
+            'api/v1/users/1/dar/applications/' . $applicationId . '/files/' . $fileId,
+            [],
+            $this->header,
+        );
+        $response->assertStatus(200);
+
+        // upload a new file
+        $file = UploadedFile::fake()->create('test_dar_application.pdf');
+        $response = $this->json(
+            'POST',
+            'api/v1/files?entity_flag=dar-application-upload&application_id=' . $applicationId . '&question_id=' . $questionId,
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        $response->assertStatus(200);
+
+        // submit the application
+        $response = $this->json(
+            'PATCH',
+            'api/v1/users/1/dar/applications/' . $applicationId,
+            [
+                'submission_status' => 'SUBMITTED',
+            ],
+            $this->header
+        );
+        $response->assertStatus(200);
+
+        // test that the dar manager can view and download the file now that the application has been submitted
+        $response = $this->json(
+            'GET',
+            'api/v1/dar/applications/' . $applicationId . '/files',
+            [],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'filename',
+                        'file_location',
+                        'user_id',
+                        'status',
+                        'entity_id',
+                        'question_id',
+                        'error',
+                    ],
+                ]
+            ]);
+        $fileId = $response->decodeResponseJson()['data'][0]['id'];
+
+        $response = $this->json(
+            'GET',
             'api/v1/dar/applications/' . $applicationId . '/files/' . $fileId . '/download',
             [],
             $this->header,
         );
         $response->assertStatus(200);
 
-        // test deleting the file
+        // test user cannot delete the file now the application has been submitted
         $response = $this->json(
             'DELETE',
-            'api/v1/dar/applications/' . $applicationId . '/files/' . $fileId,
+            'api/v1/users/1/dar/applications/' . $applicationId . '/files/' . $fileId,
             [],
             $this->header,
         );
-        $response->assertStatus(200);
-
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     }
 
     /**

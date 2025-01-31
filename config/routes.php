@@ -3888,6 +3888,35 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'get',
+        'path' => 'users/{userId}/dar/applications/{id}/files',
+        'methodController' => 'UserDataAccessApplicationController@showFiles',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/users/{userId}/dar/applications/{id}/files/{fileId}/download',
+        'methodController' => 'UserDataAccessApplicationController@downloadFile',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'fileId' => '[0-9]+',
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
         'path' => '/dar/applications/{id}/answers',
         'methodController' => 'DataAccessApplicationController@showAnswers',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
@@ -4041,6 +4070,21 @@ return [
         'constraint' => [
             'id' => '[0-9]+',
             'fileId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'delete',
+        'path' => '/users/{userId}/dar/applications/{id}/files/{fileId}',
+        'methodController' => 'UserDataAccessApplicationController@destroyFile',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'fileId' => '[0-9]+',
+            'userId' => '[0-9]+',
         ],
     ],
 
