@@ -711,7 +711,11 @@ class SearchController extends Controller
                         $collectionArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $collectionArray[$i]['name'] = $model['name'];
                         $collectionArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
-                        $collectionArray[$i]['image_link'] = (is_null($model['image_link']) || strlen(trim($model['image_link'])) === 0 || (filter_var($model['image_link'], FILTER_VALIDATE_URL)) ? null : Config::get('services.media.base_url') . $model['image_link']);
+                        $collectionArray[$i]['image_link'] = (is_null($model['image_link']) || strlen(trim($model['image_link'])) === 0
+                                                             ? null
+                                                             : ((filter_var($model['image_link'], FILTER_VALIDATE_URL))
+                                                             ? $model['image_link']
+                                                             : Config::get('services.media.base_url') . $model['image_link']));
                         $foundFlag = true;
                         break;
                     }
