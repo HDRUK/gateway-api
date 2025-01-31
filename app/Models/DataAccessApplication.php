@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Observers\DataAccessApplicationObserver;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -24,6 +26,10 @@ class DataAccessApplication extends Model
      * @var string
      */
     protected $table = 'dar_applications';
+
+    protected static $observers = [
+        DataAccessApplicationObserver::class
+    ];
 
     protected $fillable = [
         'applicant_id',

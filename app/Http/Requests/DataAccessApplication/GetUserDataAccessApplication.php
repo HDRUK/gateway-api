@@ -4,7 +4,7 @@ namespace App\Http\Requests\DataAccessApplication;
 
 use App\Http\Requests\BaseFormRequest;
 
-class UpdateUserDataAccessApplication extends BaseFormRequest
+class GetUserDataAccessApplication extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -23,24 +23,6 @@ class UpdateUserDataAccessApplication extends BaseFormRequest
                 'int',
                 'required',
                 'exists:users,id',
-            ],
-            'applicant_id' => [
-                'integer',
-                'required',
-                'exists:users,id',
-            ],
-            'submission_status' => [
-                'string',
-                'required',
-                'in:DRAFT,SUBMITTED,FEEDBACK',
-            ],
-            'project_title' => [
-                'string',
-                'required',
-            ],
-            'approval_status' => [
-                'string',
-                'in:WITHDRAWN',
             ],
         ];
     }

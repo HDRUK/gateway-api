@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\DataAccessApplication;
+namespace App\Http\Requests\DataAccessApplicationReview;
 
 use App\Http\Requests\BaseFormRequest;
 
-class UpdateUserDataAccessApplication extends BaseFormRequest
+class UpdateDataAccessApplicationReview extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -19,29 +19,20 @@ class UpdateUserDataAccessApplication extends BaseFormRequest
                 'required',
                 'exists:dar_applications,id',
             ],
-            'userId' => [
+            'questionId' => [
                 'int',
                 'required',
-                'exists:users,id',
+                'exists:dar_application_has_questions,question_id',
             ],
-            'applicant_id' => [
-                'integer',
+            'reviewId' => [
+                'int',
                 'required',
-                'exists:users,id',
+                'exists:dar_application_reviews,id',
             ],
-            'submission_status' => [
+            'review_comment' => [
                 'string',
                 'required',
-                'in:DRAFT,SUBMITTED,FEEDBACK',
-            ],
-            'project_title' => [
-                'string',
-                'required',
-            ],
-            'approval_status' => [
-                'string',
-                'in:WITHDRAWN',
-            ],
+            ]
         ];
     }
 
@@ -54,7 +45,8 @@ class UpdateUserDataAccessApplication extends BaseFormRequest
     {
         $this->merge([
             'id' => $this->route('id'),
-            'userId' => $this->route('userId'),
+            'questionId' => $this->route('questionId'),
+            'reviewId' => $this->route('reviewId'),
         ]);
     }
 }

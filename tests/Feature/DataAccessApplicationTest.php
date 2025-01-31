@@ -144,6 +144,23 @@ class DataAccessApplicationTest extends TestCase
                     'questions',
                 ],
             ]);
+
+        $response = $this->get('api/v1/users/1/dar/applications/' . $content['data'], $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'applicant_id',
+                    'submission_status',
+                    'project_title',
+                    'approval_status',
+                    'questions',
+                ],
+            ]);
     }
 
     /**
@@ -329,7 +346,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PUT',
-            'api/v1/dar/applications/' . $applicationId . '/answers',
+            'api/v1/users/1/dar/applications/' . $applicationId . '/answers',
             [
                 'answers' => [
                     0 => [
@@ -353,7 +370,7 @@ class DataAccessApplicationTest extends TestCase
         // Test it can retrieve the answers
         $response = $this->json(
             'GET',
-            'api/v1/dar/applications/' . $applicationId . '/answers',
+            'api/v1/users/1/dar/applications/' . $applicationId . '/answers',
             [],
             $this->header
         );
@@ -374,6 +391,151 @@ class DataAccessApplicationTest extends TestCase
                     ]
                 ]
             ]);
+
+        // Test it cannot retrieve answers from the wrong endpoint
+        $response = $this->json(
+            'GET',
+            'api/v1/users/2/dar/applications/' . $applicationId . '/answers',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+
+    }
+
+    /**
+     * Adds reviews to a dar application
+     *
+     * @return void
+     */
+    public function test_the_application_can_add_reviews_to_a_dar_application()
+    {
+        // Create team with a dataset and a dar template containing known question
+        $teamId = $this->createTeam();
+        $questionId = $this->createQuestion('Test Question One');
+
+        // Create template and datasets owned by teams
+        $team = Team::where('id', $teamId)->first();
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/templates',
+            [
+                'team_id' => $teamId,
+                'published' => true,
+                'locked' => false,
+                'questions' => [
+                    0 => [
+                        'id' => $questionId,
+                        'required' => true,
+                        'guidance' => 'Question One Guidance',
+                        'order' => 1,
+                    ],
+                ]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        $metadata = $this->getMetadata();
+        $metadata['metadata']['summary']['publisher'] = [
+            'name' => $team->name,
+            'gatewayId' => $team->id
+        ];
+        $responseDataset = $this->json(
+            'POST',
+            'api/v1/datasets',
+            [
+                'team_id' => $teamId,
+                'user_id' => 1,
+                'metadata' => $metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseDataset->assertStatus(201);
+        $datasetId = $responseDataset['data'];
+
+        // Create DAR application for that dataset
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'DRAFT',
+                'project_title' => 'A test DAR',
+                'approval_status' => 'APPROVED_COMMENTS',
+                'dataset_ids' => [$datasetId],
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+        $applicationId = $response->decodeResponseJson()['data'];
+
+        // Add a review to the dar
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications/' . $applicationId . '/questions/' . $questionId . '/reviews',
+            [
+                'review_comment' => 'A test review comment'
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+        $reviewId = $response->decodeResponseJson()['data'];
+
+        // Retrieve review
+        $response = $this->json(
+            'GET',
+            'api/v1/dar/applications/' . $applicationId . '/reviews',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+        $content = $response->decodeResponseJson()['data'];
+
+        $this->assertEquals(1, count($content));
+
+        // Update review
+        $response = $this->json(
+            'PUT',
+            'api/v1/dar/applications/' . $applicationId . '/questions/' . $questionId . '/reviews/' . $reviewId,
+            [
+                'review_comment' => 'A test review comment - updated'
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+        $content = $response->decodeResponseJson()['data'];
+
+        $this->assertEquals('A test review comment - updated', $content['review_comment']);
+
+        // Delete review
+        $response = $this->json(
+            'DELETE',
+            'api/v1/dar/applications/' . $applicationId . '/questions/' . $questionId . '/reviews/' . $reviewId,
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
     }
 
@@ -699,6 +861,19 @@ class DataAccessApplicationTest extends TestCase
         $this->assertEquals($content['data']['submission_status'], 'DRAFT');
         $this->assertNull($content['data']['approval_status']);
 
+        $responseStatus = $this->json(
+            'GET',
+            'api/v1/dar/applications/' . $applicationId . '/status',
+            [],
+            $this->header,
+        );
+        $responseStatus->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+        $statusCountInit = count($responseStatus->decodeResponseJson()['data']);
+
         $response = $this->json(
             'PATCH',
             'api/v1/dar/applications/' . $applicationId,
@@ -716,6 +891,22 @@ class DataAccessApplicationTest extends TestCase
 
         $content = $response->decodeResponseJson();
         $this->assertEquals($content['data']['approval_status'], 'APPROVED');
+
+        // Test status history has been updated
+        $responseStatus = $this->json(
+            'GET',
+            'api/v1/dar/applications/' . $applicationId . '/status',
+            [],
+            $this->header,
+        );
+        $responseStatus->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+        $statusCountNew = count($responseStatus->decodeResponseJson()['data']);
+
+        $this->assertEquals($statusCountNew, $statusCountInit + 1);
     }
 
     /**
@@ -907,6 +1098,50 @@ class DataAccessApplicationTest extends TestCase
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+    }
+
+    /**
+     * Tests the user can withdraw a dar application
+     *
+     * @return void
+     */
+    public function test_it_can_withdraw_a_dar_application()
+    {
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'DRAFT',
+                'project_title' => 'A test DAR',
+                'dataset_ids' => [1,2],
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $content = $response->decodeResponseJson();
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/users/1/dar/applications/' . $content['data'],
+            [
+                'approval_status' => 'WITHDRAWN',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // But a user cannot approve their own application
+        $response = $this->json(
+            'PATCH',
+            'api/v1/users/1/dar/applications/' . $content['data'],
+            [
+                'approval_status' => 'APPROVED',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
     }
 
     /**

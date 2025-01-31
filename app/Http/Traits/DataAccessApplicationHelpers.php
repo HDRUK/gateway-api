@@ -5,10 +5,39 @@ namespace App\Http\Traits;
 use Exception;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationAnswer;
+use App\Models\QuestionBank;
 
 trait DataAccessApplicationHelpers
 {
+    use QuestionBankHelpers;
     use RequestTransformation;
+
+    public function getApplicationWithQuestions(DataAccessApplication $application): void
+    {
+        foreach ($application['questions'] as $i => $q) {
+            $applicationSpecificFields = [
+                'application_id' => $q['application_id'],
+                'question_id' => $q['question_id'],
+                'guidance' => $q['guidance'],
+                'required' => $q['required'],
+                'order' => $q['order'],
+                'template_teams' => $q['teams'],
+            ];
+            $version = QuestionBank::with([
+                'latestVersion',
+                'latestVersion.childVersions',
+                'teams',
+            ])->where('id', $q->question_id)->first();
+            if ($version) {
+                $vArr = $version->toArray();
+                $question = $this->getVersion($vArr);
+                $application['questions'][$i] = array_merge(
+                    $question,
+                    $applicationSpecificFields
+                );
+            }
+        }
+    }
 
     public function updateDataAccessApplication(DataAccessApplication $application, array $input): void
     {
