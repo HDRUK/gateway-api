@@ -158,7 +158,7 @@ class CohortRequestController extends Controller
                 $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
             }
 
-            $query = CohortRequest::with(['user.teams', 'logs', 'logs.user', 'permissions'])
+            $query = CohortRequest::with(['user.teams', 'logs', 'logs.user', 'permissions', 'user.sector'])
                 ->when($email, function ($query) use ($email) {
                     $query->whereHas('user', function ($query) use ($email) {
                         $query->where('email', 'LIKE', '%' . $email . '%')
