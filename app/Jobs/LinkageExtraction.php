@@ -11,8 +11,10 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
 use App\Models\DatasetVersionHasDatasetVersion;
+use App\Models\PublicationHasDatasetVersion;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use App\Models\Publication;
 
 class LinkageExtraction implements ShouldQueue
 {
@@ -24,7 +26,8 @@ class LinkageExtraction implements ShouldQueue
     protected string $sourceDatasetId = '';
     protected string $sourceDatasetVersionId = '';
     protected string $gwdmVersion = '';
-    protected array|null $linkages;
+    protected array|null $datasetLinkages;
+    protected array|null $publicationLinkages;
     protected string $description = '';
 
     /**
@@ -37,9 +40,10 @@ class LinkageExtraction implements ShouldQueue
         $version = DatasetVersion::findOrFail($datasetVersionId);
 
         $this->gwdmVersion = $version->metadata['gwdmVersion'];
-        $this->linkages = $version->metadata['metadata']['linkage']['datasetLinkage'] ?? null;
+        $this->datasetLinkages = $version->metadata['metadata']['linkage']['datasetLinkage'] ?? null;
+        $this->publicationLinkages = $version->metadata['metadata']['linkage']['publications'] ?? null;
         $this->description = 'Extracted from GWDM';
-
+    
     }
 
     /**
@@ -50,25 +54,35 @@ class LinkageExtraction implements ShouldQueue
         if(!version_compare($this->gwdmVersion, '2.0', '=')) {
             throw new Exception("LinkageExtraction only supported for GWDM v2.0");
         }
-        if(is_null($this->linkages)) {
-            throw new Exception("LinkageExtraction cannot find linkages in the data");
+
+        // Process dataset linkages
+        $this->processDatasetLinkages();
+
+        // Process publication linkages
+        $this->processPublicationLinkages();
+    }
+
+    /**
+     * Process dataset linkages.
+     */
+    protected function processDatasetLinkages(): void
+    {
+        if (is_null($this->datasetLinkages)) {
+            throw new Exception("LinkageExtraction cannot find dataset linkages in the data");
         }
 
-        //delete any existing relationships for this source id
-        // - delete ones where the description indicates it was added by this job
-        // - leave others alone
         DatasetVersionHasDatasetVersion::where([
             'dataset_version_source_id' => $this->sourceDatasetVersionId,
             'direct_linkage' => 1,
             'description' => $this->description
         ])->delete();
 
-        foreach ($this->linkages as $key => $data) {
+        foreach ($this->datasetLinkages as $key => $data) {
             if(!$data) {
                 continue;
             }
             foreach ($data as $d) {
-                $targetDatasetVersionId = $this->findTarget($d);
+                $targetDatasetVersionId = $this->findTargetDataset($d);
                 if(!$targetDatasetVersionId) {
                     continue;
                 }
@@ -79,12 +93,44 @@ class LinkageExtraction implements ShouldQueue
                     'direct_linkage' => 1,
                     'description' => $this->description
                 ]);
-
             }
         }
     }
 
-    public function findTarget(array $data): int|null
+    /**
+     * Process publication linkages.
+     */
+    protected function processPublicationLinkages(): void
+    {
+        if(is_null($this->publicationLinkages)) {
+            return; // No publications to process
+        }
+
+        PublicationHasDatasetVersion::where([
+            'dataset_version_id' => $this->sourceDatasetVersionId,
+        ])->delete();
+
+        foreach($this->publicationLinkages as $data) {
+            if (!$data) {
+                continue;
+            }
+            $publicationId = $this->findTargetPublication($data);
+            if (!$publicationId) {
+                continue;
+            }
+            PublicationHasDatasetVersion::updateOrCreate([
+                'publication_id' => $publicationId,
+                'dataset_version_id' => $this->sourceDatasetVersionId,
+                'link_type' => $data['link_type'] ?? 'USING',
+                'deleted_at' => null
+            ]);
+        }
+    }
+
+    /**
+     * Find the target dataset version ID.
+     */
+    protected function findTargetDataset(array $data): int|null
     {
         try {
             $id = null;
@@ -118,7 +164,6 @@ class LinkageExtraction implements ShouldQueue
                 }
             }
             return null;
-
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -128,9 +173,47 @@ class LinkageExtraction implements ShouldQueue
 
             throw new Exception($e->getMessage());
         }
-
     }
 
+    /**
+     * Find the target publication ID.
+     */
+    protected function findTargetPublication(array $data): int|null
+    {
+        try {
+            $doi = $data['doi'] ?? null;
+            $title = $data['title'] ?? null;
+
+            if ($doi) {
+                $publication = Publication::where('doi', $doi)->first();
+                if ($publication) {
+                    return $publication->id;
+                }
+            }
+
+            if ($title) {
+                $publication = Publication::filterTitle($title)->first();
+                if ($publication) {
+                    return $publication->id;
+                }
+            }
+
+            return null;
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+        
+    }
+
+    /**
+     * Tags for the job.
+     */
     public function tags(): array
     {
         return [
