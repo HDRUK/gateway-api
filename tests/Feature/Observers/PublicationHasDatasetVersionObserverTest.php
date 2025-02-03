@@ -71,6 +71,7 @@ class PublicationHasDatasetVersionObserverTest extends TestCase
             'publication_id' => $publication->id,
             'dataset_version_id' => $datasetVersionId,
             'link_type' => 'USING',
+            'description' => 'Extrated from Publication',
         ]);
 
         $this->assertDatabaseHas('publication_has_dataset_version', [
@@ -109,6 +110,7 @@ class PublicationHasDatasetVersionObserverTest extends TestCase
             'publication_id' => $publication->id,
             'dataset_version_id' => $datasetVersionId,
             'link_type' => 'USING',
+            'description' => 'Extrated from Publication',
         ]);
 
         $publicationHasDatasetVersion->update(['link_type' => 'ABOUT']);
@@ -117,6 +119,7 @@ class PublicationHasDatasetVersionObserverTest extends TestCase
             'publication_id' => $publication->id,
             'dataset_version_id' => $datasetVersionId,
             'link_type' => 'ABOUT',
+            'description' => 'Extrated from Publication',
         ]);
         $this->assertEquals('ABOUT', $publicationHasDatasetVersion->link_type);
     }
@@ -149,6 +152,7 @@ class PublicationHasDatasetVersionObserverTest extends TestCase
             'publication_id' => $publication->id,
             'dataset_version_id' => $datasetVersionId,
             'link_type' => 'USING',
+            'description' => 'Extrated from Publication',
         ]);
         $publicationHasDatasetVersion->delete();
 
@@ -157,6 +161,7 @@ class PublicationHasDatasetVersionObserverTest extends TestCase
             'publication_id' => $publication->id,
             'dataset_version_id' => $datasetVersionId,
             'link_type' => 'USING',
+            'description' => 'Extrated from Publication',
         ]);
     }
 }

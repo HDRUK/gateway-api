@@ -213,15 +213,16 @@ class LinkageExtraction implements ShouldQueue
     }
 
     /**
-     * Find the target publication ID.
-     */
+    * Find the target publication ID.
+    */
     protected function findTargetPublication(array $doi): int|null
     {
-         try {
+        try {
             $publication = Publication::where('doi', $doi)->first();
             if ($publication) {
                 return $publication->id;
             }
+            return null; // Explicit return statement if no publication is found
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
