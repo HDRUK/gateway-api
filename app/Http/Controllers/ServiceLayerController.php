@@ -19,8 +19,10 @@ class ServiceLayerController extends Controller
         $federations = Federation::with('team')
             ->where('enabled', 1)
             ->where('tested', 1)
-            ->get();
-        return response()->json($federations);
+            ->get()
+            ->toArray();
+
+        return response(json_encode(array_values($federations)), 200, ['Content-Type' => 'application/json']);
     }
 
     public function setFederationInvalidRunState(Request $request, int $id)

@@ -669,3 +669,68 @@ Accept: application/json
         ]
     }
 }
+
+### test
+# POST {{baseUrl}}/validate?input_schema=GWDM&input_version=2.0
+POST https://hdr-gateway-traser-dev-qmnkcg5qjq-ew.a.run.app/validate?input_schema=HDRUK&input_version=2.1.2
+Content-Type: application/json
+Accept: application/json
+
+{
+    "metadata": {
+        "accessibility":
+            {
+                "access":
+                    {
+                        "accessRequestCost": "To be agreed per project by SDE program",
+                        "accessRights": "something",
+                        "accessService":"  ",
+                        "dataController":"Kent and Medway ICB",
+                        "dataProcessor":"Kent and Medway Data Warehouse",
+                        "deliveryLeadTime":"1-2 MONTHS",
+                        "jurisdiction":["GB-ENG"]
+                    },
+                    "formatAndStandards": {
+                        "conformsTo":["LOCAL"],
+                        "format":["Text"],
+                        "language":["en"],
+                        "vocabularyEncodingScheme":["READ","NHS NATIONAL CODES","ODS"]
+                    },
+                    "usage": {
+                        "dataUseLimitation":["RESEARCH SPECIFIC RESTRICTIONS"],
+                        "dataUseRequirements":["ETHICS APPROVAL REQUIRED","GEOGRAPHICAL RESTRICTIONS","NOT FOR PROFIT USE","PROJECT SPECIFIC RESTRICTIONS","TIME LIMIT ON USE","USER SPECIFIC RESTRICTION"],
+                        "resourceCreator":["Kent and Mewday ICB","Kent and Medway Data Warehouse"]
+                    }
+                },
+                "coverage": {
+                    "followup":"UNKNOWN",
+                    "physicalSampleAvailability":["NOT AVAILABLE"],
+                    "spatial":"Kent and Medway",
+                    "typicalAgeRange":"0-120"
+                },
+                "documentation": {
+                    "description":"Primary Care Consultations information, recording the intereactions that patients with medical staff at GP practices",
+                    "isPartOf":["Primary Care Data"]
+                },
+                "identifier":"242c84be-a866-ac0c-0000-000000001bbd",
+                "issued":"2024-03-09T23:22:05+00:00",
+                "modified":"2024-07-03T09:54:34+00:00",
+                "observations": [
+                    {
+                        "disambiguatingDescription":"     ",
+                        "measuredProperty":"COUNT",
+                        "measuredValue":1350436,
+                        "observationDate":"2019-06-24",
+                        "observedNode":"PERSONS"
+                    },
+                    {
+                        "disambiguatingDescription":"     ",
+                        "measuredProperty":"COUNT",
+                        "measuredValue":29514552,
+                        "observationDate":"2019-06-24",
+                        "observedNode":"EVENTS"
+                    }
+                ],
+                "provenance":{"origin":{"collectionSituation":["PRIMARY CARE"],"purpose":["CARE"],"source":["EPR"]},"temporal":{"accrualPeriodicity":"STATIC","distributionReleaseDate":"2019-06-24","endDate":"2019-06-24","startDate":"2014-04-01","timeLag":"NOT APPLICABLE"}},"revisions":[{"url":"https://nhse-ics-kms-uat5-ui.metadata.works/browser/dataset?id=7101","version":"1.0.0"}],"structuralMetadata":[{"description":"Primary Care Consultations Table","elements":[{"dataType":"String","description":"Commissioner for the consultation","name":"Commissioner_Code","sensitive":false},{"dataType":"date","description":"Date of the activity","name":"Activity_Date","sensitive":false},{"dataType":"String","description":"Consultant or home visit","name":"Data_Currency","sensitive":false},{"dataType":"String","description":"Code for GP practice that is current for the patient from PMI","name":"Current_Practice_Code","sensitive":false},{"dataType":"String","description":"Code for GP practice that is as at the activity date","name":"Practice_Code","sensitive":false},{"dataType":"String","description":"Read code of the consultation","name":"Consultation_Read_Code","sensitive":false},{"dataType":"String","description":"Sex of patient at activity date","name":"Sex  ","sensitive":false},{"dataType":"String","description":"Unique reference to the consultation record","name":"Unique_ID","sensitive":false},{"dataType":"String","description":"NHS number of patient, encrypted with 256 bit SHA with salt","name":"Pseudonymised_NHS_Number","sensitive":false},{"dataType":"String","description":"Type of staff member who attended patient","name":"Staff_Member_Type","sensitive":false},{"dataType":"String","description":"ID of staff member, encrypted with 256 bit SHA with salt","name":"Pseudonymised_Staff_Member","sensitive":false},{"dataType":"String","description":"Regstration number of staff member, encrypted with 256 bit SHA with salt","name":"Pseudonymised_Registration_Number","sensitive":false}],"name":"GP Consultations"}],"summary":{"abstract":"Primary Care Consultations information, recording the intereactions that patients with medical staff at GP practices","contactPoint":"kmicb.bi@nhs.net","doiName":"10.81022/kfqp-wq04","keywords":["General practitioner","Consultation","GP   ","Primary care"],"publisher":{"contactPoint":["kmicb.bi@nhs.net"],"description":"https://www.kentandmedway.icb.nhs.uk/about-us","logo":"https://www.kentandmedway.icb.nhs.uk/application/files/cache/thumbnails/b9a92ca7b10d21ae1cdf056d95e99659.png","memberOf":"OTHER","name":"Kent u0026 Medway Data Warehouse"},"title":"Kent Integrated Dataset - GP Consultations"},"version":"1.0.0"
+    }
+}
