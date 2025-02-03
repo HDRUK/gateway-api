@@ -806,7 +806,7 @@ class CohortRequestController extends Controller
                         'Bio',
                         'Domain',
                         'Link',
-                        'Orc Id',
+                        'OrcId',
                         'Updated At',
                         'Status',
                         'Date Requested',
