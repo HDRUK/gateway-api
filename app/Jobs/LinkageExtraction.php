@@ -115,7 +115,7 @@ class LinkageExtraction implements ShouldQueue
                     if(!$targetDatasetVersionId) {
                         continue;
                     }
-                    DatasetVersionHasDatasetVersion::->updateOrCreate([
+                    DatasetVersionHasDatasetVersion::updateOrCreate([
                         'dataset_version_source_id' => $this->sourceDatasetVersionId,
                         'dataset_version_target_id' => $targetDatasetVersionId,
                         'linkage_type' => $key,
@@ -144,7 +144,7 @@ class LinkageExtraction implements ShouldQueue
             PublicationHasDatasetVersion::where([
                 'dataset_version_id' => $this->sourceDatasetVersionId,
                 'link_type' => 'ABOUT',
-                'description' => $this->description
+                //'description' => $this->description
             ])->delete();
 
             if(is_null($this->publicationAboutDatasetLinkages)) {
