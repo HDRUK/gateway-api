@@ -163,7 +163,8 @@ class LinkageExtraction implements ShouldQueue
                     'publication_id' => $publicationId,
                     'dataset_version_id' => $this->sourceDatasetVersionId,
                     'link_type' => 'ABOUT',
-                    'description' => $this->description
+                    'description' => $this->description,
+                    'deleted_at' => null,
                 ]);
             }
         } catch(Exception $e) {
@@ -205,7 +206,8 @@ class LinkageExtraction implements ShouldQueue
                     'publication_id' => $publicationId,
                     'dataset_version_id' => $this->sourceDatasetVersionId,
                     'link_type' => 'USING',
-                    'description' => $this->description
+                    'description' => $this->description,
+                    'deleted_at' => null
                 ]);
             }
         } catch(Exception $e) {
