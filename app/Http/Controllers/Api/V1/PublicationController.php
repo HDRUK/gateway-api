@@ -935,8 +935,9 @@ class PublicationController extends Controller
                 'publication_id' => $publicationId,
                 'dataset_version_id' => $datasetVersionId,
                 'link_type' => $dataset['link_type'] ?? 'USING', // Assuming default link_type is 'USING'
-                'deleted_at' => null,
                 'description' => 'Extrated from Publication',
+                'deleted_at' => null,
+                
             ];
 
             if (array_key_exists('updated_at', $dataset)) { // special for migration
