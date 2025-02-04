@@ -224,45 +224,35 @@ class LinkageExtraction implements ShouldQueue
      */
     protected function findTargetDataset(array $data): int|null
     {
-        try {
-            $id = $data['url'] ?? null;
-            $pid = $data['pid'] ?? null;
-            $title = $data['title'] ?? null;
+        $id = $data['url'] ?? null;
+        $pid = $data['pid'] ?? null;
+        $title = $data['title'] ?? null;
 
-            if($id) {
-                $urlParts = explode('/', parse_url($id, PHP_URL_PATH));
-                $id = end($urlParts);
-                $dataset = Dataset::find($id);
-                if($dataset) {
-                    return $dataset->latestVersionID($dataset->id);
-                }
+        if($id) {
+            $urlParts = explode('/', parse_url($id, PHP_URL_PATH));
+            $id = end($urlParts);
+            $dataset = Dataset::find($id);
+            if($dataset) {
+                return $dataset->latestVersionID($dataset->id);
             }
-
-            if($pid) {
-                $dataset = Dataset::where('pid', $pid)->first();
-                if($dataset) {
-                    return $dataset->latestVersionID($dataset->id);
-                }
-            }
-
-            if($title) {
-                $datasetVersion = DatasetVersion::filterTitle($title)->first();
-                if($datasetVersion) {
-                    return $datasetVersion->id;
-                }
-            }
-
-            // Return null if no match is found(no exception needed)
-            return null;
-        } catch(Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => __METHOD__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception('Error finding target dataset: ' . $e->getMessage());
         }
+
+        if($pid) {
+            $dataset = Dataset::where('pid', $pid)->first();
+            if($dataset) {
+                return $dataset->latestVersionID($dataset->id);
+            }
+        }
+
+        if($title) {
+            $datasetVersion = DatasetVersion::filterTitle($title)->first();
+            if($datasetVersion) {
+                return $datasetVersion->id;
+            }
+        }
+
+        // Return null if no match is found(no exception needed)
+        return null;
     }
 
     /**
@@ -270,28 +260,17 @@ class LinkageExtraction implements ShouldQueue
      */
     protected function findTargetPublication(string $doi): int|null
     {
-        try {
-            // Search for publications with matching normalized DOI
-            $publication = Publication::whereRaw(
-                "REPLACE(REPLACE(paper_doi, 'https://doi.org/', ''), 'doi.org/', '') = ?",
-                [$doi]
-            )->first();
+        // Search for publications with matching normalized DOI
+        $publication = Publication::whereRaw(
+            "REPLACE(REPLACE(paper_doi, 'https://doi.org/', ''), 'doi.org/', '') = ?",
+            [$doi]
+        )->first();
 
-            if($publication) {
-                return $publication->id;
-            }
-            // Return null if no publication match is found
-            return null;
-
-        } catch(Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => __METHOD__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception('Error finding target publication: ' . $e->getMessage());
+        if($publication) {
+            return $publication->id;
         }
+        // Return null if no publication match is found
+        return null;
     }
 
 
