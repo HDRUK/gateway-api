@@ -928,28 +928,34 @@ class PublicationController extends Controller
         }
     }
 
-    private function addPublicationHasDatasetVersion(int $publicationId, array $dataset, int $datasetVersionId)
-    {
-        try {
-            $arrCreate = [
-                'publication_id' => $publicationId,
-                'dataset_version_id' => $datasetVersionId,
-                'link_type' => $dataset['link_type'] ?? 'USING', // Assuming default link_type is 'USING'
-                'description' => 'Extrated from Publication',
-                'deleted_at' => null,
-                
-            ];
+        private function addPublicationHasDatasetVersion(int $publicationId, array $dataset, int $datasetVersionId)
+        {
+            try {
+                $arrCreate = [
+                    'publication_id' => $publicationId,
+                    'dataset_version_id' => $datasetVersionId,
+                    'link_type' => $dataset['link_type'] ?? 'USING', // Assuming default link_type is 'USING'
+                    'description' => 'Extrated from Publication',
+                    'deleted_at' => null,
+                    
+                ];
 
-            if (array_key_exists('updated_at', $dataset)) { // special for migration
-                $arrCreate['created_at'] = $dataset['updated_at'];
-                $arrCreate['updated_at'] = $dataset['updated_at'];
+                if (array_key_exists('updated_at', $dataset)) { // special for migration
+                    $arrCreate['created_at'] = $dataset['updated_at'];
+                    $arrCreate['updated_at'] = $dataset['updated_at'];
+                }
+
+                return PublicationHasDatasetVersion::withTrashed()->updateOrCreate(
+                    [
+                        'publication_id' => $publicationId,
+                        'dataset_version_id' => $datasetVersionId,
+                    ],
+                    $arrCreate
+                );
+            } catch (Exception $e) {
+                throw new Exception("addPublicationHasDatasetVersion :: " . $e->getMessage());
             }
-
-            return PublicationHasDatasetVersion::withTrashed()->updateOrCreate($arrCreate);
-        } catch (Exception $e) {
-            throw new Exception("addPublicationHasDatasetVersion :: " . $e->getMessage());
         }
-    }
 
     private function checkInPublicationHasDatasetVersions(int $publicationId, int $datasetVersionId, array $dataset)
     {
