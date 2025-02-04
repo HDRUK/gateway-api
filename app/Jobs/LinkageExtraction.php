@@ -75,7 +75,7 @@ class LinkageExtraction implements ShouldQueue
                 return; // Not the correct version for processing
             }
 
-            PublicationHasDatasetVersion::withTrashed()->updateOrCreate([
+            PublicationHasDatasetVersion::Create([
                 'publication_id' => 2,
                 'dataset_version_id' => 1186,
                 'link_type' => 'ABOUT',
@@ -150,11 +150,11 @@ class LinkageExtraction implements ShouldQueue
     {
 
         try {
-            //PublicationHasDatasetVersion::where([
-            //    'dataset_version_id' => $this->sourceDatasetVersionId,
-            //    'link_type' => 'ABOUT',
-            //    'description' => $this->description
-            //])->delete();
+            PublicationHasDatasetVersion::where([
+                'dataset_version_id' => $this->sourceDatasetVersionId,
+                'link_type' => 'ABOUT',
+                'description' => $this->description
+            ])->delete();
 
             if(is_null($this->publicationAboutDatasetLinkages)) {
                 return; // No publications to process
