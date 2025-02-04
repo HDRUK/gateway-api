@@ -956,8 +956,7 @@ class PublicationController extends Controller
             return PublicationHasDatasetVersion::where([
                 'publication_id' => $publicationId,
                 'dataset_version_id' => $datasetVersionId,
-                'link_type' => $dataset['link_type'] ?? 'USING',
-                'description' => 'Extrated from Publication',
+                'link_type' => $dataset['link_type'] ?? 'USING'
             ])->first();
         } catch (Exception $e) {
             throw new Exception("checkInPublicationHasDatasetVersions :: " . $e->getMessage());
@@ -969,8 +968,7 @@ class PublicationController extends Controller
         try {
             return PublicationHasDatasetVersion::where([
                 'publication_id' => $publicationId,
-                'dataset_version_id' => $datasetVersionId,
-                'description' => 'Extrated from Publication'
+                'dataset_version_id' => $datasetVersionId
             ])->delete();
         } catch (Exception $e) {
             throw new Exception("deletePublicationHasDatasetVersions :: " . $e->getMessage());
