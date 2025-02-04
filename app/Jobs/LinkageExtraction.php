@@ -293,6 +293,8 @@ class LinkageExtraction implements ShouldQueue
         return [
             'dataset:' . $this->sourceDatasetId,
             'version:' . $this->sourceDatasetVersionId,
+            'publicationsAbout:' . $this->publicationAboutDatasetLinkages,
+            'publicationsUsing:' . $this->publicationUsingDatasetLinkages,
         ];
     }
 }
