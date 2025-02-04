@@ -200,11 +200,21 @@ class LinkageExtraction implements ShouldQueue
      */
     protected function findTargetPublication(array $data): int|null
     {
-        $doi = $data['doi'] ?? null;
+        $doi = $data['paper_doi'] ?? null;
 
-        if($doi) {
-            $publication = Publication::where('doi', $doi)->first();
-            if($publication) {
+        if ($doi) {
+            // Normalize the input DOI from metadata (already in the 10.xxxx/xxxx format)
+            $normalizedDoi = $doi;
+
+            // Attempt to match against possible DOI formats in the publication table
+            $publication = Publication::where(function($query) use ($normalizedDoi) {
+                $query->where('paper_doi', $normalizedDoi)
+                    ->orWhere('paper_doi', 'like', "%doi.org/%" . $normalizedDoi)
+                    ->orWhere('paper_doi', 'like', "%doi/%" . $normalizedDoi)
+                    ->orWhere('paper_doi', 'like', "%https://doi.org/%" . $normalizedDoi);
+            })->first();
+
+            if ($publication) {
                 return $publication->id;
             }
         }
@@ -212,6 +222,8 @@ class LinkageExtraction implements ShouldQueue
         // Return null if no publication match is found
         return null;
     }
+
+
 
     /**
      * Tags for the job.
