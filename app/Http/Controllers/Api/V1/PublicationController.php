@@ -920,11 +920,9 @@ class PublicationController extends Controller
 
         foreach ($inDatasets as $dataset) {
             $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
-            $checking = $this->checkInPublicationHasDatasetVersions($publicationId, $datasetVersionId, $dataset);
-
-            if (!$checking) {
-                $this->addPublicationHasDatasetVersion($publicationId, $dataset, $datasetVersionId);
-            }
+            
+            $this->addPublicationHasDatasetVersion($publicationId, $dataset, $datasetVersionId);
+            
         }
     }
 
@@ -966,10 +964,10 @@ class PublicationController extends Controller
     private function deletePublicationHasDatasetVersions(int $publicationId, int $datasetVersionId)
     {
         try {
-            return PublicationHasDatasetVersion::withTrashed()->where([
+            return PublicationHasDatasetVersion::where([
                 'publication_id' => $publicationId,
                 'dataset_version_id' => $datasetVersionId
-            ])->forceDelete();
+            ])->delete();
         } catch (Exception $e) {
             throw new Exception("deletePublicationHasDatasetVersions :: " . $e->getMessage());
         }
