@@ -12,7 +12,7 @@ class AddDescriptionToPublicationHasDatasetVersionTable extends Migration
     public function up(): void
     {
         Schema::table('publication_has_dataset_version', function (Blueprint $table) {
-            $table->string('description')->nullable()->after('link_type');
+            $table->text('description')->nullable()->after('link_type');
         });
     }
 
