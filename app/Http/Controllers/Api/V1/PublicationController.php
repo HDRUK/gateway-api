@@ -966,10 +966,10 @@ class PublicationController extends Controller
     private function deletePublicationHasDatasetVersions(int $publicationId, int $datasetVersionId)
     {
         try {
-            return PublicationHasDatasetVersion::where([
+            return PublicationHasDatasetVersion::withTrashed()->where([
                 'publication_id' => $publicationId,
                 'dataset_version_id' => $datasetVersionId
-            ])->delete();
+            ])->forceDelete();
         } catch (Exception $e) {
             throw new Exception("deletePublicationHasDatasetVersions :: " . $e->getMessage());
         }
