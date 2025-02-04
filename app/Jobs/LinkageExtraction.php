@@ -159,7 +159,7 @@ class LinkageExtraction implements ShouldQueue
                 if(!$publicationId) {
                     continue;
                 }
-                PublicationHasDatasetVersion::updateOrCreate([
+                PublicationHasDatasetVersion::withTrashed()->updateOrCreate([
                     'publication_id' => $publicationId,
                     'dataset_version_id' => $this->sourceDatasetVersionId,
                     'link_type' => 'ABOUT',
@@ -201,7 +201,7 @@ class LinkageExtraction implements ShouldQueue
                 if(!$publicationId) {
                     continue;
                 }
-                PublicationHasDatasetVersion::updateOrCreate([
+                PublicationHasDatasetVersion::withTrashed()->updateOrCreate([
                     'publication_id' => $publicationId,
                     'dataset_version_id' => $this->sourceDatasetVersionId,
                     'link_type' => 'USING',
