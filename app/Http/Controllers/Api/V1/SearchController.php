@@ -1146,7 +1146,7 @@ class SearchController extends Controller
                 $input['field'] = ['TITLE', 'ABSTRACT', 'METHODS'];
                 $response = Http::post($urlString, $input);
 
-                $pubArray = $response['resultList']['result'];
+                $pubArray = $response['resultList']['result'] ?? [];
                 $totalResults = $response['hitCount'];
                 foreach ($pubArray as $i => $paper) {
                     $pubArray[$i]['testid'] = $paper;
