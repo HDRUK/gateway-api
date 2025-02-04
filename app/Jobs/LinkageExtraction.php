@@ -75,6 +75,14 @@ class LinkageExtraction implements ShouldQueue
                 return; // Not the correct version for processing
             }
 
+            PublicationHasDatasetVersion::withTrashed()->updateOrCreate([
+                'publication_id' => 2,
+                'dataset_version_id' => 1186,
+                'link_type' => 'ABOUT',
+                'description' => 'Extracted from GWDM',
+                'deleted_at' => null,
+            ]);
+
             // Process dataset and publication linkages
             $this->processDatasetLinkages();
             $this->processPublicationAboutLinkages();
@@ -140,14 +148,6 @@ class LinkageExtraction implements ShouldQueue
      */
     protected function processPublicationAboutLinkages(): void
     {
-
-        PublicationHasDatasetVersion::withTrashed()->updateOrCreate([
-            'publication_id' => 2,
-            'dataset_version_id' => 1186,
-            'link_type' => 'ABOUT',
-            'description' => 'Extracted from GWDM',
-            'deleted_at' => null,
-        ]);
 
         try {
             PublicationHasDatasetVersion::where([
