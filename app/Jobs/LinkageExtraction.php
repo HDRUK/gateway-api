@@ -284,7 +284,6 @@ class LinkageExtraction implements ShouldQueue
         return null;
     }
 
-
     /**
      * Tags for the job.
      */
