@@ -262,7 +262,7 @@ class LinkageExtraction implements ShouldQueue
     protected function findTargetPublication(array $data): int|null
     {
         try {
-            $doi = $data['paper_doi'] ?? null;
+            $doi = $data ?? null;
 
             if($doi) {
                 // Search for publications with matching normalized DOI
