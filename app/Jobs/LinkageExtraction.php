@@ -144,7 +144,7 @@ class LinkageExtraction implements ShouldQueue
             PublicationHasDatasetVersion::where([
                 'dataset_version_id' => $this->sourceDatasetVersionId,
                 'link_type' => 'ABOUT',
-                //'description' => $this->description
+                'description' => $this->description
             ])->delete();
 
             if(is_null($this->publicationAboutDatasetLinkages)) {
@@ -186,7 +186,7 @@ class LinkageExtraction implements ShouldQueue
             PublicationHasDatasetVersion::where([
                 'dataset_version_id' => $this->sourceDatasetVersionId,
                 'link_type' => 'USING',
-                'description' => $this->description
+               // 'description' => $this->description
             ])->delete();
 
             if(is_null($this->publicationUsingDatasetLinkages)) {
