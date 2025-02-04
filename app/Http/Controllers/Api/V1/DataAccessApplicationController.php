@@ -20,6 +20,7 @@ use App\Http\Requests\DataAccessApplication\CreateDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\DeleteDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\DeleteDataAccessApplicationFile;
 use App\Http\Requests\DataAccessApplication\UpdateDataAccessApplication;
+use App\Jobs\SendEmailJob;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationAnswer;
 use App\Models\DataAccessApplicationHasDataset;
@@ -27,8 +28,10 @@ use App\Models\DataAccessApplicationHasQuestion;
 use App\Models\DataAccessApplicationStatus;
 use App\Models\DataAccessTemplate;
 use App\Models\Dataset;
+use App\Models\EmailTemplate;
 use App\Models\Team;
 use App\Models\Upload;
+use App\Models\User;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DataAccessApplicationController extends Controller
@@ -718,7 +721,14 @@ class DataAccessApplicationController extends Controller
         try {
             $application = DataAccessApplication::findOrFail($id);
 
+            $originalStatus = $application->approval_status;
+            $newStatus = $input['approval_status'] ?? $originalStatus;
+
             $this->updateDataAccessApplication($application, $input);
+
+            if ($newStatus !== $originalStatus) {
+                $this->emailStatusNotification($id, $application);
+            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -809,7 +819,14 @@ class DataAccessApplicationController extends Controller
         try {
             $application = DataAccessApplication::findOrFail($id);
 
+            $originalStatus = $application->approval_status;
+            $newStatus = $input['approval_status'] ?? $originalStatus;
+
             $this->editDataAccessApplication($application, $input);
+
+            if ($newStatus !== $originalStatus) {
+                $this->emailStatusNotification($id, $application);
+            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -995,5 +1012,29 @@ class DataAccessApplicationController extends Controller
 
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function emailStatusNotification(int $id, DataAccessApplication $application): void
+    {
+        $template = EmailTemplate::where(['identifier' => 'dar.status.researcher'])->first();
+        $user = User::where('id', $application->applicant_id)->first();
+
+        $to = [
+            'to' => [
+                'email' => $user['email'],
+                'name' => $user['name'],
+            ],
+        ];
+        $status = ucwords(strtolower(str_replace('_', ' ', $application->approval_status)));
+
+        $replacements = [
+            '[[USER_FIRST_NAME]]' => $user['firstname'],
+            '[[PROJECT_TITLE]]' => $application->project_title,
+            '[[APPLICATION_ID]]' => $id,
+            '[[STATUS]]' => $status,
+            '[[CURRENT_YEAR]]' => date("Y"),
+        ];
+
+        SendEmailJob::dispatch($to, $template, $replacements);
     }
 }

@@ -891,6 +891,7 @@ class DataAccessApplicationTest extends TestCase
 
         $content = $response->decodeResponseJson();
         $this->assertEquals($content['data']['approval_status'], 'APPROVED');
+        Queue::assertPushed(SendEmailJob::class, 1);
 
         // Test status history has been updated
         $responseStatus = $this->json(
