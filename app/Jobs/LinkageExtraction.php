@@ -104,11 +104,11 @@ class LinkageExtraction implements ShouldQueue
     protected function processDatasetLinkages(): void
     {
         try {
-            //DatasetVersionHasDatasetVersion::where([
-            //    'dataset_version_source_id' => $this->sourceDatasetVersionId,
-            //    'direct_linkage' => 1,
-            //    'description' => $this->description
-            //])->delete();
+            DatasetVersionHasDatasetVersion::where([
+                'dataset_version_source_id' => $this->sourceDatasetVersionId,
+                'direct_linkage' => 1,
+                'description' => $this->description
+            ])->delete();
 
             if(is_null($this->datasetLinkages)) {
                 return; // No datasets to process
@@ -150,11 +150,11 @@ class LinkageExtraction implements ShouldQueue
     {
 
         try {
-            PublicationHasDatasetVersion::where([
-                'dataset_version_id' => $this->sourceDatasetVersionId,
-                'link_type' => 'ABOUT',
-                'description' => $this->description
-            ])->delete();
+            //PublicationHasDatasetVersion::where([
+            //    'dataset_version_id' => $this->sourceDatasetVersionId,
+            //    'link_type' => 'ABOUT',
+            //    'description' => $this->description
+            //])->delete();
 
             if(is_null($this->publicationAboutDatasetLinkages)) {
                 return; // No publications to process
