@@ -102,8 +102,8 @@ class LinkageExtraction implements ShouldQueue
     {
         PublicationHasDatasetVersion::where([
             'dataset_version_id' => $this->sourceDatasetVersionId,
-            'link_type' => 'ABOUT',
-            'description' => $this->description
+            'link_type' => 'ABOUT'
+            
         ])->delete();
 
         if(is_null($this->publicationAboutDatasetLinkages)) {
