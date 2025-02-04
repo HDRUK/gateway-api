@@ -259,25 +259,21 @@ class LinkageExtraction implements ShouldQueue
     /**
      * Find the target publication ID.
      */
-    protected function findTargetPublication(array $data): int|null
+    protected function findTargetPublication(string $doi): int|null
     {
         try {
-            $doi = $data ?? null;
+            // Search for publications with matching normalized DOI
+            $publication = Publication::whereRaw(
+                "REPLACE(REPLACE(paper_doi, 'https://doi.org/', ''), 'doi.org/', '') = ?",
+                [$doi]
+            )->first();
 
-            if($doi) {
-                // Search for publications with matching normalized DOI
-                $publication = Publication::whereRaw(
-                    "REPLACE(REPLACE(paper_doi, 'https://doi.org/', ''), 'doi.org/', '') = ?",
-                    [$doi]
-                )->first();
-
-                if($publication) {
-                    return $publication->id;
-                }
+            if($publication) {
+                return $publication->id;
             }
-
             // Return null if no publication match is found
             return null;
+
         } catch(Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
