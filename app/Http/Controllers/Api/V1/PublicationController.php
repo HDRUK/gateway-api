@@ -922,7 +922,9 @@ class PublicationController extends Controller
             $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
             $checking = $this->checkInPublicationHasDatasetVersions($publicationId, $datasetVersionId, $dataset);
 
-            
+            if (!$checking) {
+                $this->addPublicationHasDatasetVersion($publicationId, $dataset, $datasetVersionId);
+            }
         }
     }
 
