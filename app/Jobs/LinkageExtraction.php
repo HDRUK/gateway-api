@@ -140,6 +140,15 @@ class LinkageExtraction implements ShouldQueue
      */
     protected function processPublicationAboutLinkages(): void
     {
+
+        PublicationHasDatasetVersion::withTrashed()->updateOrCreate([
+            'publication_id' => 2,
+            'dataset_version_id' => 1186,
+            'link_type' => 'ABOUT',
+            'description' => 'Extracted from GWDM',
+            'deleted_at' => null,
+        ]);
+
         try {
             PublicationHasDatasetVersion::where([
                 'dataset_version_id' => $this->sourceDatasetVersionId,
