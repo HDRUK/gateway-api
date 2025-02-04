@@ -763,7 +763,7 @@ class CohortRequestController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $query = CohortRequest::with(['user', 'logs', 'logs.user']);
+            $query = CohortRequest::with(['user', 'logs', 'logs.user', 'user.sector']);
 
             // filter by users.organisation
             if ($request->has('organisation')) {
@@ -800,7 +800,14 @@ class CohortRequestController extends Controller
                         'User ID',
                         'Name',
                         'Email address',
+                        'Secondary Email address',
+                        'Sector',
                         'Organisation',
+                        'Bio',
+                        'Domain',
+                        'Link',
+                        'OrcId',
+                        'Profile Updated At',
                         'Status',
                         'Date Requested',
                         'Date Actioned',
@@ -816,7 +823,14 @@ class CohortRequestController extends Controller
                             (string)$rowDetails['user']['id'],
                             (string)$rowDetails['user']['name'],
                             (string)$rowDetails['user']['email'],
+                            (string)$rowDetails['user']['secondary_email'],
+                            (string)$rowDetails['user']['sector']['name'],
                             (string)$rowDetails['user']['organisation'],
+                            (string)$rowDetails['user']['bio'],
+                            (string)$rowDetails['user']['domain'],
+                            (string)$rowDetails['user']['link'],
+                            (string)$rowDetails['user']['orcid'],
+                            (string)$rowDetails['user']['updated_at'],
                             (string)$rowDetails['request_status'],
                             (string)$rowDetails['created_at'],
                             (string)$rowDetails['updated_at'],
