@@ -240,6 +240,10 @@ class DataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
+            $application = DataAccessApplication::findOrFail($id);
+            if ($application->submission_status === 'DRAFT') {
+                throw new Exception('Files associated with a data access request cannot be viewed when the request is still a draft.');
+            }
             $uploads = Upload::where('entity_id', $id)->get();
 
             if ($uploads) {
@@ -323,6 +327,10 @@ class DataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
+            $application = DataAccessApplication::findOrFail($id);
+            if ($application->submission_status === 'DRAFT') {
+                throw new Exception('Files associated with a data access request cannot be downloaded when the request is still a draft.');
+            }
             $file = Upload::where('id', $fileId)->first();
 
             if ($file) {

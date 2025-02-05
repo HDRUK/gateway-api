@@ -6,11 +6,14 @@ use Auditor;
 use Config;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 use App\Exceptions\UnauthorizedException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DataAccessApplication\CreateUserDataAccessApplicationAnswer;
 use App\Http\Requests\DataAccessApplication\EditUserDataAccessApplication;
+use App\Http\Requests\DataAccessApplication\DeleteUserDataAccessApplicationFile;
 use App\Http\Requests\DataAccessApplication\GetUserDataAccessApplication;
+use App\Http\Requests\DataAccessApplication\GetUserDataAccessApplicationFile;
 use App\Http\Requests\DataAccessApplication\UpdateUserDataAccessApplication;
 use App\Http\Traits\DataAccessApplicationHelpers;
 use App\Jobs\SendEmailJob;
@@ -23,7 +26,9 @@ use App\Models\Role;
 use App\Models\Team;
 use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
+use App\Models\Upload;
 use App\Models\User;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class UserDataAccessApplicationController extends Controller
 {
@@ -212,6 +217,202 @@ class UserDataAccessApplicationController extends Controller
             return response()->json([
                 'message' => $e->getMessage(),
             ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/users/{userId}/dar/applications/{id}/files",
+     *      summary="Return a list of files associated with a DAR application",
+     *      description="Return a list of files associated with a DAR application",
+     *      tags={"DataAccessApplication"},
+     *      summary="DataAccessApplication@showFiles",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DAR application id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR application id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="userId",
+     *         in="path",
+     *         description="User id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="User id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="filename", type="string"),
+     *                  @OA\Property(property="file_location", type="string"),
+     *                  @OA\Property(property="user_id", type="string"),
+     *                  @OA\Property(property="status", type="string"),
+     *                  @OA\Property(property="application_id", type="integer"),
+     *                  @OA\Property(property="question_id", type="integer"),
+     *                  @OA\Property(property="error", type="string")
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function showFiles(GetUserDataAccessApplication $request, int $userId, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $application = DataAccessApplication::findOrFail($id);
+            if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
+                throw new UnauthorizedException('User does not have permission to use this endpoint to view these files.');
+            }
+            $uploads = Upload::where('entity_id', $id)->get();
+
+            if ($uploads) {
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'DataAccessApplication list files ' . $id,
+                ]);
+
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $uploads,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/users/{userId}/dar/applications/{id}/files/{fileId}/download",
+     *      summary="Download a file associated with a DAR application",
+     *      description="Download a file associated with a DAR application",
+     *      tags={"DataAccessApplication"},
+     *      summary="DataAccessApplication@downloadFile",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DAR application id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR application id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="userId",
+     *         in="path",
+     *         description="User id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="User id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="fileId",
+     *         in="path",
+     *         description="File id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="File id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\MediaType(
+     *              mediaType="file"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function downloadFile(GetUserDataAccessApplicationFile $request, int $userId, int $id, int $fileId): StreamedResponse | JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $application = DataAccessApplication::findOrFail($id);
+            if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
+                throw new UnauthorizedException('User does not have permission to use this endpoint to download this files.');
+            }
+            $file = Upload::where('id', $fileId)->first();
+
+            if ($file) {
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'DataAccessApplication ' . $id . ' download file ' . $fileId,
+                ]);
+
+                return Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
+                    ->download($file->file_location);
+            }
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -548,6 +749,114 @@ class UserDataAccessApplicationController extends Controller
             return response()->json([
                 'message' => $e->getMessage(),
             ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *      path="/api/v1/users/{userId}/dar/applications/{id}/files/{fileId}",
+     *      summary="Delete a file associated with a DAR application",
+     *      description="Delete a file associated with a DAR application",
+     *      tags={"DataAccessApplication"},
+     *      summary="DataAccessApplication@destroyFile",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DAR application id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR application id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="userId",
+     *         in="path",
+     *         description="User id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="User id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="fileId",
+     *         in="path",
+     *         description="File id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="File id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *           ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function destroyFile(DeleteUserDataAccessApplicationFile $request, int $userId, int $id, int $fileId): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $application = DataAccessApplication::findOrFail($id);
+            if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
+                throw new UnauthorizedException('User does not have permission to use this endpoint to delete this file.');
+            }
+            if ($application->submission_status !== 'DRAFT') {
+                throw new Exception('Files cannot be deleted after a data access request has been submitted.');
+            }
+
+            $file = Upload::where('id', $fileId)->first();
+
+            Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
+                ->delete($file->file_location);
+
+            $file->delete();
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'DataAccessApplication ' . $id . ' file ' . $fileId . ' deleted',
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
