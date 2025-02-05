@@ -4171,4 +4171,29 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+
+    ///
+
+    [
+        'name' => '/test/datasets',
+        'method' => 'get',
+        'path' => '/test/datasets',
+        'methodController' => 'TestController@testListDatasets',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+        ],
+        'constraint' => [
+        ],
+    ],
+    [
+        'name' => '/test/datasets/{id}',
+        'method' => 'get',
+        'path' => '/test/datasets/{id}',
+        'methodController' => 'TestController@testListDatasetId',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+        ],
+        'constraint' => [
+        ],
+    ],
 ];
