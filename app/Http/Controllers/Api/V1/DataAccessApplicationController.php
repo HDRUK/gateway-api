@@ -567,17 +567,18 @@ class DataAccessApplicationController extends Controller
 
                 $gatewayId = $metadata['metadata']['summary']['publisher']['gatewayId'];
                 // check for primary key or pid match...
-                $team = Team::where('id', $gatewayId)->first();
-                if (!$team) {
+                if (is_numeric($gatewayId)) {
+                    $team = Team::where('id', $gatewayId)->first();
+                } else {
                     $team = Team::where('pid', $gatewayId)->first();
-                    if (!$team) {
-                        CloudLogger::write([
-                            'action_type' => 'CREATE',
-                            'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                            'description' => 'Unable to create data access application for dataset with id ' . $d . ', no matching team found.',
-                        ]);
-                        continue;
-                    }
+                }
+                if (!$team) {
+                    CloudLogger::write([
+                        'action_type' => 'CREATE',
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => 'Unable to create data access application for dataset with id ' . $d . ', no matching team found.',
+                    ]);
+                    continue;
                 }
                 $teams[] = $team;
             }
