@@ -935,9 +935,10 @@ class PublicationController extends Controller
                 [
                     'publication_id' => $publicationId,
                     'dataset_version_id' => $datasetVersionId,
-                    'link_type' => $dataset['link_type'] ?? 'USING',
+                    
                 ],
                 [
+                    'link_type' => $dataset['link_type'] ?? 'USING',
                     'description' => 'Extracted from Publication',
                     'deleted_at' => null,
                 ]
