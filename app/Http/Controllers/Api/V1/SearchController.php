@@ -1084,8 +1084,7 @@ class SearchController extends Controller
                     foreach ($pubModels as $model) {
                         if ((int)$p['_id'] !== $model['id']) {
                             continue;
-                        }
-                        if ((int)$p['_id'] === $model['id']) {
+                        } else {
                             $pubArray[$i]['_source']['created_at'] = $model['created_at'];
                             $pubArray[$i]['_source']['year_of_publication'] = $model['year_of_publication'];
                             $pubArray[$i]['paper_title'] = $model['paper_title'];
@@ -1215,7 +1214,6 @@ class SearchController extends Controller
                 'id' => $datasetVersions->dataset_id,
                 'status' => Dataset::STATUS_ACTIVE,
             ])->select('id')->first();
-
             if (is_null($datasetById)) {
                 continue;
             }
