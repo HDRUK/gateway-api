@@ -4,7 +4,6 @@ run-name: ${{ github.actor }} triggered deploy to DEV pipeline
 on:
   push:
     branches:
-      - 'dev'
       - 'fix/GAT-6251/publication-not-appearing'
 
 env:
