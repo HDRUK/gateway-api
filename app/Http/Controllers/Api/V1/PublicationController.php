@@ -930,32 +930,9 @@ class PublicationController extends Controller
 
     private function addPublicationHasDatasetVersion(int $publicationId, array $dataset, int $datasetVersionId)
     {
-        try {
-            $record = PublicationHasDatasetVersion::withTrashed()->where([
-                'publication_id' => $publicationId,
-                'dataset_version_id' => $datasetVersionId,
-                'link_type' => $dataset['link_type'] ?? 'USING',
-                'description' => 'Extracted from Publication',
-            ])->first();
-            
-            if ($record) {
-                $record->restore(); // Restore the soft-deleted record
-                $record->description = 'Extracted from Publication';
-                $record->save();
-                return $record;
-            } else {
-                return PublicationHasDatasetVersion::create([
-                    'publication_id' => $publicationId,
-                    'dataset_version_id' => $datasetVersionId,
-                    'link_type' => $dataset['link_type'] ?? 'USING',
-                    'description' => 'Extracted from Publication',
-                ]);
-            }
-
-        } catch (Exception $e) {
-            throw new Exception("addPublicationHasDatasetVersion :: " . $e->getMessage());
-        }
+        return null;
     }
+
 
 
     private function checkInPublicationHasDatasetVersions(int $publicationId, int $datasetVersionId, array $dataset)
