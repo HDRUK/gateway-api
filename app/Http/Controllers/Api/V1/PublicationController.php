@@ -930,9 +930,22 @@ class PublicationController extends Controller
 
     private function addPublicationHasDatasetVersion(int $publicationId, array $dataset, int $datasetVersionId)
     {
-        return null;
+        try {
+            return PublicationHasDatasetVersion::withTrashed()->updateOrCreate(
+                [
+                    'publication_id' => $publicationId,
+                    'dataset_version_id' => $datasetVersionId,
+                    'link_type' => $dataset['link_type'] ?? 'USING',
+                ],
+                [
+                    'description' => 'Extracted from Publication',
+                    'deleted_at' => null,
+                ]
+            );
+        } catch (Exception $e) {
+            throw new Exception("addPublicationHasDatasetVersion :: " . $e->getMessage());
+        }
     }
-
 
 
     private function checkInPublicationHasDatasetVersions(int $publicationId, int $datasetVersionId, array $dataset)
