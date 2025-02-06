@@ -936,16 +936,11 @@ class PublicationController extends Controller
                     'publication_id' => $publicationId,
                     'dataset_version_id' => $datasetVersionId,
                     'link_type' => $dataset['link_type'] ?? 'USING',
-                    'description' => 'Extracted from Publication',
+                    'description' => 'Extracted from Publication' ?: null,
                 ],
                 [
-                    'publication_id' => $publicationId,
-                    'dataset_version_id' => $datasetVersionId,
-                    'link_type' => $dataset['link_type'] ?? 'USING',
-                    'description' => 'Extracted from Publication',
+                    'description' => 'Extracted from Publication' ?: null,
                     'deleted_at' => null,
-                    'created_at' => $dataset['updated_at'] ?? null,
-                    'updated_at' => $dataset['updated_at'] ?? null,
                 ]
             );
         } catch (Exception $e) {
@@ -961,7 +956,7 @@ class PublicationController extends Controller
                 'publication_id' => $publicationId,
                 'dataset_version_id' => $datasetVersionId,
                 'link_type' => $dataset['link_type'] ?? 'USING', // Assuming default link_type is 'USING'
-
+                'description' => 'Extracted from Publication' ?: null,
             ])->first();
         } catch (Exception $e) {
             throw new Exception("checkInPublicationHasDatasetVersions :: " . $e->getMessage());

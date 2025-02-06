@@ -46,14 +46,6 @@ class LinkageExtraction implements ShouldQueue
             $this->publicationUsingDatasetLinkages = $version->metadata['metadata']['linkage']['publicationUsingDataset'] ?? null;
             $this->description = 'Extracted from GWDM';
 
-            Auditor::log([
-                'action_type' => 'DEBUG',
-                'action_name' => __METHOD__,
-                'gwdmVersion' => $this->gwdmVersion ?? 'Not Found',
-                'datasetLinkages' => $this->datasetLinkages ? 'Found' : 'Not Found',
-                'publicationAboutDatasetLinkages' => $this->publicationAboutDatasetLinkages ? 'Found' : 'Not Found',
-                'publicationUsingDatasetLinkages' => $this->publicationUsingDatasetLinkages ? 'Found' : 'Not Found',
-            ]);
         } catch(Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -75,18 +67,11 @@ class LinkageExtraction implements ShouldQueue
                 return; // Not the correct version for processing
             }
 
-            PublicationHasDatasetVersion::Create([
-                'publication_id' => 2,
-                'dataset_version_id' => 1186,
-                'link_type' => 'ABOUT',
-                'description' => 'Extracted from GWDM',
-                'deleted_at' => null,
-            ]);
-
             // Process dataset and publication linkages
             $this->processDatasetLinkages();
             $this->processPublicationAboutLinkages();
             $this->processPublicationUsingLinkages();
+
         } catch(Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -168,13 +153,20 @@ class LinkageExtraction implements ShouldQueue
                 if(!$publicationId) {
                     continue;
                 }
-                PublicationHasDatasetVersion::withTrashed()->updateOrCreate([
-                    'publication_id' => $publicationId,
-                    'dataset_version_id' => $this->sourceDatasetVersionId,
-                    'link_type' => 'ABOUT',
-                    'description' => $this->description,
-                    'deleted_at' => null,
-                ]);
+                
+
+                PublicationHasDatasetVersion::withTrashed()->updateOrCreate(
+                    [
+                        'publication_id' => $publicationId,
+                        'dataset_version_id' => $this->sourceDatasetVersionId,
+                        'link_type' => 'ABOUT',
+                        'description' => $this->description,
+                    ],
+                    [
+                        'description' => $this->description,
+                        'deleted_at' => null,
+                    ]
+                );
             }
         } catch(Exception $e) {
             Auditor::log([
@@ -211,13 +203,20 @@ class LinkageExtraction implements ShouldQueue
                 if(!$publicationId) {
                     continue;
                 }
-                PublicationHasDatasetVersion::withTrashed()->updateOrCreate([
-                    'publication_id' => $publicationId,
-                    'dataset_version_id' => $this->sourceDatasetVersionId,
-                    'link_type' => 'USING',
-                    'description' => $this->description,
-                    'deleted_at' => null
-                ]);
+                PublicationHasDatasetVersion::withTrashed()->updateOrCreate(
+                    [
+                        'publication_id' => $publicationId,
+                        'dataset_version_id' => $this->sourceDatasetVersionId,
+                        'link_type' => 'USING',
+                        'description' => $this->description,
+                    ],
+                    [
+                        'description' => $this->description,
+                        'deleted_at' => null,
+                        'created_at' => $dataset['updated_at'] ?? now(),
+                        'updated_at' => $dataset['updated_at'] ?? now(),
+                    ]
+                );
             }
         } catch(Exception $e) {
             Auditor::log([
