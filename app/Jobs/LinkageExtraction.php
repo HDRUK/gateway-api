@@ -213,8 +213,6 @@ class LinkageExtraction implements ShouldQueue
                     [
                         'description' => $this->description,
                         'deleted_at' => null,
-                        'created_at' => $dataset['updated_at'] ?? now(),
-                        'updated_at' => $dataset['updated_at'] ?? now(),
                     ]
                 );
             }
