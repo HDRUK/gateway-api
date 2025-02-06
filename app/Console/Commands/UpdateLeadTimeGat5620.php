@@ -3,7 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Models\Dataset;
+use Illuminate\Support\Arr;
+use App\Models\DatasetVersion;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 class UpdateLeadTimeGat5620 extends Command
 {
@@ -12,7 +16,7 @@ class UpdateLeadTimeGat5620 extends Command
      *
      * @var string
      */
-    protected $signature = 'app:update-lead-time-gat5620';
+    protected $signature = 'app:update-lead-time-gat5620 {argument}';
 
     /**
      * The console command description.
@@ -34,37 +38,90 @@ class UpdateLeadTimeGat5620 extends Command
      */
     public function handle()
     {
-        // if (Schema::hasColumn('dataset_versions', 'metadata_backup')) {
-        //     $this->info('coloana exista');
-        //     // Schema::table('dataset_versions', function (Blueprint $table) {
-        //     //     $table->dropColumn('metadata_backup');
-        //     // });
-        // } else {
-        //     $this->warn('coloana no exista');
-        //     Schema::table('dataset_versions', function (Blueprint $table) {
-        //         $table->json('metadata_backup'); // Modify the column type as needed
-        //     });
-        // }
+        $action = $this->argument('argument');
+        switch ($action) {
+            case 'create_backup':
+                $this->info('create backup');
+                $this->createBackup();
+                break;
+            case 'remove_backup':
+                $this->info('remove_backup');
+                $this->removeBackup();
+                break;
+            case 'update':
+                $this->info('update');
+                $this->updateMetadata();
+                break;
+            case 'undo_from_backup':
+                $this->info('undo_from_backup');
+                $this->copyFromBackup();
+                break;
+            default:
+                $this->info('no argument');
+                return;
+        }
 
-        // $this->info('The "dataset_versions.metadata_backup" column has been created.');
-        // \DB::update('UPDATE dataset_versions SET metadata_backup = ?', [json_encode([])]);
+        return;
 
-        // $this->info('A backup is created for the "dataset_versions.metadata" column in the "dataset_versions.metadata_backup" column.');
-        // $datasetVersionIds = DatasetVersion::select('id')->get();
-        // foreach ($datasetVersionIds as $datasetVersionId) {
-        //     $metadata = DatasetVersion::where('id', $datasetVersionId)->select('metadata')->first();
-        //     \DB::statement('UPDATE dataset_versions SET metadata_backup = ?', [$metadata]);
-        // }
-        // $this->info("The backup was created successfully.");
-
-        $this->updateMetadata();
         echo 'Completed ...' . PHP_EOL;
+    }
+
+    public function createBackup()
+    {
+        if (!Schema::hasColumn('dataset_versions', 'metadata_backup')) {
+            Schema::table('dataset_versions', function (Blueprint $table) {
+                $table->json('metadata_backup');
+            });
+        }
+
+        $datasetVersionIds = DatasetVersion::select('id')->get();
+        foreach ($datasetVersionIds as $datasetVersionId) {
+            \DB::table('dataset_versions')->where('id', $datasetVersionId->id)->update(['metadata_backup' => \DB::raw('metadata')]);
+        }
+    }
+
+    public function removeBackup()
+    {
+        if (!Schema::hasColumn('dataset_versions', 'metadata_backup')) {
+            $this->warn('the "dataset_versions.metadata_backup" column not found!');
+            return;
+        }
+
+        if (Schema::hasColumn('dataset_versions', 'metadata_backup')) {
+            Schema::table('dataset_versions', function (Blueprint $table) {
+                $table->dropColumn('metadata_backup');
+            });
+            $this->warn('the "dataset_versions.metadata_backup" column was removed!');
+            return;
+        }
+    }
+
+    public function copyFromBackup()
+    {
+        if (!Schema::hasColumn('dataset_versions', 'metadata_backup')) {
+            $this->warn('the "dataset_versions.metadata_backup" column not found!');
+            return;
+        }
+
+        $checking = DatasetVersion::where('metadata_backup', '{}')->first();
+        if (!is_null($checking)) {
+            $this->warn('no data found in "dataset_versions.metadata_backup"!');
+            return;
+        }
+
+        $datasetVersionIds = DatasetVersion::select('id')->get();
+        foreach ($datasetVersionIds as $datasetVersionId) {
+            \DB::table('dataset_versions')->where('id', $datasetVersionId->id)->update(['metadata' => \DB::raw('metadata_backup')]);
+        }
     }
 
     public function updateMetadata()
     {
         $total = count($this->csvData);
         $notFound = 0;
+        $foundMetadataObject = 0;
+        $foundMetadataString = 0;
+        $pathNotFound = 0;
         foreach ($this->csvData as $item) {
             $datasetMongoId = trim($item['MK1 Mongo Object id']);
             $leadTime = trim($item['Update Value']);
@@ -84,24 +141,76 @@ class UpdateLeadTimeGat5620 extends Command
                 ->first();
 
             $metadataType = $metadata->metadata_type;
-            // for test
+
+            $this->info('dataset mongo id: ' . $datasetMongoId . ', new lead time: ' . $leadTime . ', datasetId: ' . $dataset->id);
+
             if ($metadataType === 'OBJECT') {
-                continue;
+                $foundMetadataObject++;
+                $data = json_decode($metadata->metadata, true);
+                $path = 'metadata.accessibility.access.deliveryLeadTime';
+                $update = $this->updateMetadataObject($data, $path, $latestDatasetVersionId, $leadTime);
+                if (!$update) {
+                    $this->warn('Path not found');
+                    $pathNotFound++;
+                }
             }
 
-            $this->info('dataset mongo id: ' . $datasetMongoId . ', lead time: ' . $leadTime . ', datasetId: ' . $dataset->id);
-            $this->info('Type: ' . $metadata->metadata_type);
-
-            // $metadataType = STRING;
-            print_r(json_decode(json_decode($metadata->metadata), true)['metadata']);
-            // $metadataType = OBJECT;
-            // print_r(json_decode($metadata->metadata, true)['metadata']);
-            break;
+            if ($metadataType === 'STRING') {
+                $foundMetadataString++;
+                $data = json_decode(json_decode($metadata->metadata), true);
+                $path = 'metadata.accessibility.access.deliveryLeadTime';
+                $update = $this->updateMetadataString($data, $path, $latestDatasetVersionId, $leadTime);
+                if (!$update) {
+                    $this->warn('Path not found');
+                    $pathNotFound++;
+                }
+            }
         }
 
         echo PHP_EOL . 'Total: ' . $total . PHP_EOL;
         echo 'Dataset Found: ' . ($total - $notFound) . PHP_EOL;
+        echo 'Metadata Found Object: ' . $foundMetadataObject . PHP_EOL;
+        echo 'Metadata Found String: ' . $foundMetadataString . PHP_EOL;
         echo 'Dataset NotFound: ' . $notFound . PHP_EOL;
+        echo 'Dataset Path NotFound (no update): ' . $pathNotFound . PHP_EOL;
+        echo 'Datasets updated: ' . ($total - $notFound - $pathNotFound) . PHP_EOL;
+    }
+
+    private function updateMetadataString(array $data, string $path, int $datasetVersionId, string $leadTime)
+    {
+        if (Arr::has($data, $path)) {
+            Arr::set($data, $path, $leadTime);
+
+            DatasetVersion::where([
+                'id' => $datasetVersionId,
+            ])->update([
+                'metadata' => json_encode(json_encode($data)),
+            ]);
+            $this->info('metadata was updated');
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private function updateMetadataObject(array $data, string $path, int $datasetVersionId, string $leadTime)
+    {
+        if (Arr::has($data, $path)) {
+            Arr::set($data, $path, $leadTime);
+
+            DatasetVersion::where([
+                'id' => $datasetVersionId,
+            ])->update([
+                'metadata' => json_encode($data),
+            ]);
+            $this->info('metadata was updated');
+
+            return true;
+        } else {
+            return false;
+        }
+
     }
 
     private function readMigrationFile(string $migrationFile): void
