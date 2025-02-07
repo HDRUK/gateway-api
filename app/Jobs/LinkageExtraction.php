@@ -133,7 +133,6 @@ class LinkageExtraction implements ShouldQueue
         try {
             PublicationHasDatasetVersion::where([
                 'dataset_version_id' => $this->sourceDatasetVersionId,
-                'link_type' => $linkType,
                 'description' => $this->description
             ])->delete();
 
@@ -141,11 +140,11 @@ class LinkageExtraction implements ShouldQueue
                 return; // No publications to process
             }
 
-            foreach ($publicationLinkages as $data) {
-                if (!$data) {
+            foreach ($publicationLinkages as $doi) {
+                if (!$doi) {
                     continue;
                 }
-                $publicationId = $this->findTargetPublication($data);
+                $publicationId = $this->findTargetPublication($doi);
                 if (!$publicationId) {
 
                     // THIS IS WHERE WE CAN SEARCH FOR NEW PUB AUTOMAGICALLY
@@ -223,15 +222,6 @@ class LinkageExtraction implements ShouldQueue
         )->first();
 
         return $publication?->id;
-    }
-
-    /**
-     * Check if a query string is a DOI.
-     */
-    private function isDoi(string $query): bool
-    {
-        $pattern = '/10.\d{4,9}[-._;()\/:a-zA-Z0-9]+(?=[\s,\/]|$)/i';
-        return (bool) preg_match($pattern, $query);
     }
 
     /**
