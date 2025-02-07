@@ -131,6 +131,7 @@ class LinkageExtraction implements ShouldQueue
     protected function processPublicationLinkages(?array $publicationLinkages, string $linkType): void
     {
         try {
+            // Clear any old linkages matching this description for the current dataset version
             PublicationHasDatasetVersion::where([
                 'dataset_version_id' => $this->sourceDatasetVersionId,
                 'description' => $this->description
@@ -144,9 +145,9 @@ class LinkageExtraction implements ShouldQueue
                 if (!$doi) {
                     continue;
                 }
+
                 $publicationId = $this->findTargetPublication($doi);
                 if (!$publicationId) {
-
                     // THIS IS WHERE WE CAN SEARCH FOR NEW PUB AUTOMAGICALLY
                     continue;
                 }
@@ -157,18 +158,13 @@ class LinkageExtraction implements ShouldQueue
                     'link_type' => $linkType,
                     'description' => $this->description,
                 ];
-    
-                $existingLinkage = PublicationHasDatasetVersion::withTrashed()->where($searchArray)->first();
-    
-                if ($existingLinkage) {
-                    // Restore the existing linkage if it’s soft-deleted
-                    foreach ($existingLinkage as $Linkage) {
-                        $Linkage->restore();
-                    }
 
-                } else {
-                    // Create a new linkage
-                    PublicationHasDatasetVersion::create($searchArray);
+                // Use firstOrCreate and restore if necessary
+                $linkage = PublicationHasDatasetVersion::withTrashed()->firstOrCreate($searchArray);
+
+                // Restore if it’s soft-deleted
+                if ($linkage->trashed()) {
+                    $linkage->restore();
                 }
             }
         } catch (Exception $e) {
@@ -181,6 +177,7 @@ class LinkageExtraction implements ShouldQueue
             throw new Exception("Error processing publication linkages ({$linkType}): " . $e->getMessage());
         }
     }
+
 
     /**
      * Find the target dataset version ID.

@@ -929,24 +929,8 @@ class PublicationController extends Controller
      }
  
      private function addPublicationHasDatasetVersion(int $publicationId, array $dataset, int $datasetVersionId)
-     {
-         try {
-             // Search for an existing record (including soft-deleted)
-            $existingLinkage = PublicationHasDatasetVersion::withTrashed()->where([
-                'publication_id' => $publicationId,
-                'dataset_version_id' => $datasetVersionId,
-                'link_type' => $dataset['link_type'] ?? 'USING',
-            ])->first();
-
-            if ($existingLinkage) {
-                // Restore the existing linkage if it’s soft-deleted
-                foreach ($existingLinkage as $Linkage) {
-                    $Linkage->restore();
-                }
-
-                return $existingLinkage;
-
-            } else {
+    {
+        try {
             $linkageData = [
                 'publication_id' => $publicationId,
                 'dataset_version_id' => $datasetVersionId,
@@ -959,16 +943,20 @@ class PublicationController extends Controller
                 $linkageData['updated_at'] = $dataset['updated_at'];
             }
 
-                // Create a new linkage
-                return PublicationHasDatasetVersion::create($linkageData);
+            // Use firstOrCreate and restore if necessary
+            $linkage = PublicationHasDatasetVersion::withTrashed()->firstOrCreate($linkageData);
+
+            // Restore the linkage if it’s soft-deleted
+            if ($linkage->trashed()) {
+                $linkage->restore();
             }
 
+            return $linkage;
+        } catch (Exception $e) {
+            throw new Exception("addPublicationHasDatasetVersion :: " . $e->getMessage());
+        }
+    }
 
-
-         } catch (Exception $e) {
-             throw new Exception("addPublicationHasDatasetVersion :: " . $e->getMessage());
-         }
-     }
  
      private function checkInPublicationHasDatasetVersions(int $publicationId, int $datasetVersionId, array $dataset)
      {
