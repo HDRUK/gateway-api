@@ -18,13 +18,11 @@ class PublicationHasDatasetVersionSeeder extends Seeder
             $pubId = Publication::all()->random()->id;
             $datasetVersionId = Dataset::all()->random()->latestVersion()->id;
             $type = fake()->randomElement(['ABOUT', 'USING']);
-            $description = 'Extrated from Publication';
 
             $pubHasDataset = PublicationHasDatasetVersion::where([
                 'publication_id' => $pubId,
                 'dataset_version_id' => $datasetVersionId,
                 'link_type' => $type,
-                'description' => $description,
             ])->first();
 
             if (!$pubHasDataset) {
@@ -32,7 +30,6 @@ class PublicationHasDatasetVersionSeeder extends Seeder
                     'publication_id' => $pubId,
                     'dataset_version_id' => $datasetVersionId,
                     'link_type' => $type,
-                    'description' => $description,
                 ]);
             }
         }

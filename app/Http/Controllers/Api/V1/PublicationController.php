@@ -910,13 +910,9 @@ class PublicationController extends Controller
     private function checkDatasets(int $publicationId, array $inDatasets)
     {
 
-        $pubs = PublicationHasDatasetVersion::where(['publication_id' => $publicationId])->get();
-        foreach ($pubs as $pub) {
-            $dataset_id = DatasetVersion::where("id", $pub->dataset_version_id)->first()->dataset_id;
-            if (!in_array($dataset_id, $this->extractInputIdToArray($inDatasets))) {
-                $this->deletePublicationHasDatasetVersions($publicationId, $pub->dataset_version_id);
-            }
-        }
+        
+        $this->deletePublicationHasDatasetVersions($publicationId);
+      
 
         foreach ($inDatasets as $dataset) {
             $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
@@ -935,7 +931,6 @@ class PublicationController extends Controller
                 'publication_id' => $publicationId,
                 'dataset_version_id' => $datasetVersionId,
                 'link_type' => $dataset['link_type'] ?? 'USING', // Assuming default link_type is 'USING'
-                'deleted_at' => null,
             ];
 
             if (array_key_exists('updated_at', $dataset)) { // special for migration
@@ -970,12 +965,15 @@ class PublicationController extends Controller
         }
     }
 
-    private function deletePublicationHasDatasetVersions(int $publicationId, int $datasetVersionId)
+    // At the moment only publication via this controller are visible in the GUI 
+    // This needs investigating and the delete code below will need to be changed 
+    // once a fix is identified and in place
+    private function deletePublicationHasDatasetVersions(int $publicationId)
     {
         try {
             return PublicationHasDatasetVersion::where([
                 'publication_id' => $publicationId,
-                'dataset_version_id' => $datasetVersionId,
+                'description' => null, // WILL NEED REMOVING IN THE FUTURE 
             ])->delete();
         } catch (Exception $e) {
             throw new Exception("deletePublicationHasDatasetVersions :: " . $e->getMessage());
