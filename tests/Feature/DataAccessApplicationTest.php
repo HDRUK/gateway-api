@@ -491,6 +491,224 @@ class DataAccessApplicationTest extends TestCase
     }
 
     /**
+     * Tests adding files as answers to a dar application
+     *
+     * @return void
+     */
+    public function test_the_application_can_upload_files_as_answers_to_a_dar_application()
+    {
+        $t1 = $this->createTeam();
+
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'options' => [],
+                'all_custodians' => true,
+                'component' => 'FileUpload',
+                'validations' => [],
+                'title' => 'Single File Upload Question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $q1 = $response->decodeResponseJson()['data'];
+
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'options' => [],
+                'all_custodians' => true,
+                'component' => 'FileUploadMultiple',
+                'validations' => [],
+                'title' => 'Multiple File Upload Question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $q2 = $response->decodeResponseJson()['data'];
+
+        // Create template and datasets owned by teams
+        $team1 = Team::where('id', $t1)->first();
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/templates',
+            [
+                'team_id' => $team1->id,
+                'published' => true,
+                'locked' => false,
+                'questions' => [
+                    0 => [
+                        'id' => $q1,
+                        'required' => true,
+                        'guidance' => 'Question One Guidance',
+                        'order' => 1,
+                    ],
+                    1 => [
+                        'id' => $q2,
+                        'required' => true,
+                        'guidance' => 'Question Two Guidance',
+                        'order' => 2,
+                    ]
+                ]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        $metadata1 = $this->getMetadata();
+        $metadata1['metadata']['summary']['publisher'] = [
+            'name' => $team1->name,
+            'gatewayId' => $team1->id
+        ];
+        $responseDataset1 = $this->json(
+            'POST',
+            'api/v1/datasets',
+            [
+                'team_id' => $team1->id,
+                'user_id' => 1,
+                'metadata' => $metadata1,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseDataset1->assertStatus(201);
+        $datasetId1 = $responseDataset1['data'];
+
+        // Create DAR application for that dataset - template will have file upload questions
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'DRAFT',
+                'project_title' => 'A test DAR',
+                'approval_status' => 'APPROVED_COMMENTS',
+                'dataset_ids' => [$datasetId1],
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+        $applicationId = $response->decodeResponseJson()['data'];
+
+        // upload file
+        $file = UploadedFile::fake()->create('test_dar_application.pdf');
+        $response = $this->json(
+            'POST',
+            'api/v1/files?entity_flag=dar-application-upload&application_id=' . $applicationId . '&question_id=' . $q1,
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        $response->assertStatus(200);
+
+        // get answers
+        $response = $this->json(
+            'GET',
+            'api/v1/users/1/dar/applications/' . $applicationId . '/answers',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data' => [
+                    0 => [
+                        'answer'
+                    ]
+                ]
+            ]);
+        $answer = $response->decodeResponseJson()['data'][0]['answer'];
+        $this->assertEquals('test_dar_application.pdf', $answer['value']['filename']);
+
+        // upload multiple files
+        $file = UploadedFile::fake()->create('test_file_one.pdf');
+        $response = $this->json(
+            'POST',
+            'api/v1/files?entity_flag=dar-application-upload&application_id=' . $applicationId . '&question_id=' . $q2,
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        $response->assertStatus(200);
+
+        $file = UploadedFile::fake()->create('test_file_two.pdf');
+        $response = $this->json(
+            'POST',
+            'api/v1/files?entity_flag=dar-application-upload&application_id=' . $applicationId . '&question_id=' . $q2,
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        $response->assertStatus(200);
+
+        // get answers
+        $response = $this->json(
+            'GET',
+            'api/v1/users/1/dar/applications/' . $applicationId . '/answers',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data' => [
+                    0 => [
+                        'answer'
+                    ],
+                    1 => [
+                        'answer'
+                    ]
+                ]
+            ]);
+        $answer = $response->decodeResponseJson()['data'][1]['answer'];
+        $this->assertEquals(2, count($answer['value']));
+        $this->assertContains('test_file_one.pdf', array_column($answer['value'], 'filename'));
+        $this->assertContains('test_file_two.pdf', array_column($answer['value'], 'filename'));
+    }
+
+    /**
      * Adds reviews to a dar application
      *
      * @return void
