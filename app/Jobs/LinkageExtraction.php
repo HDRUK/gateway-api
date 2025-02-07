@@ -154,7 +154,7 @@ class LinkageExtraction implements ShouldQueue
                 }
 
                 // Use firstOrCreate and restore if necessary
-                $linkage = PublicationHasDatasetVersion::create([
+                $linkage = PublicationHasDatasetVersion::withTrashed()->firstOrCreate([
                     'publication_id' => $publicationId,
                     'dataset_version_id' => $this->sourceDatasetVersionId,
                     'link_type' => $linkType,

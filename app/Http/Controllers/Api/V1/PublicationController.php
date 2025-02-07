@@ -910,10 +910,12 @@ class PublicationController extends Controller
     private function checkDatasets(int $publicationId, array $inDatasets)
     {
 
+        // There was an error here where by the Publications were not getting cleared out / exhibiting
+        // wierd cache like behavior on the FE. Clearing all links for a Pub and restoring active ones
+        // is much cleaner approach. 
         
         $this->deletePublicationHasDatasetVersions($publicationId);
       
-
         foreach ($inDatasets as $dataset) {
             $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
             $checking = $this->checkInPublicationHasDatasetVersions($publicationId, $datasetVersionId, $dataset);
@@ -965,15 +967,11 @@ class PublicationController extends Controller
         }
     }
 
-    // At the moment only publication via this controller are visible in the GUI 
-    // This needs investigating and the delete code below will need to be changed 
-    // once a fix is identified and in place
     private function deletePublicationHasDatasetVersions(int $publicationId)
     {
         try {
             return PublicationHasDatasetVersion::where([
                 'publication_id' => $publicationId,
-                'description' => null, // WILL NEED REMOVING IN THE FUTURE 
             ])->delete();
         } catch (Exception $e) {
             throw new Exception("deletePublicationHasDatasetVersions :: " . $e->getMessage());
