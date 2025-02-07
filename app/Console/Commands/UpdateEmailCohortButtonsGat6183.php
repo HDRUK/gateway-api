@@ -70,7 +70,7 @@ class UpdateEmailCohortButtonsGat6183 extends Command
                                     <ul>
                                         <li>Registering a user profile on the Gateway.</li>
                                         <li>Your Gateway profile must include an organisational or institutional email address (either as primary or secondary emails).</li>
-                                        <li>Please also fill in as much information in your Gateway profile as you can to help establish yourself as a bona fide researcher, NHS analyst or equivalent. Useful information here is your organisation or institutional name, a short bio, your domain of work and any links to social media (LinkedIn, Research Gate etc.) or ORCID.</li>
+                                        <li>Please also fill in as much information in your Gateway profile as you can to help establish yourself as a bona fide researcher, NHS analyst or equivalent. Useful information here is your organisation or institutional name, a short bio, your domain of work and any links to social media (LinkedIn, ResearchGate etc.) or ORCID.</li>
                                     </ul>                    
                                     This information is required to help establish your status as a &lsquo;Safe Person&rsquo; under the Five Safes principles.<br/>If you have any questions on the above decision, please raise a support ticket on the Health Data Research Gateway.
                                 </mj-text>
