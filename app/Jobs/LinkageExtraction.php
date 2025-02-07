@@ -162,7 +162,10 @@ class LinkageExtraction implements ShouldQueue
     
                 if ($existingLinkage) {
                     // Restore the existing linkage if it’s soft-deleted
-                    $existingLinkage->restore();
+                    foreach ($existingLinkage as $Linkage) {
+                        $Linkage->restore();
+                    }
+
                 } else {
                     // Create a new linkage
                     PublicationHasDatasetVersion::create($searchArray);

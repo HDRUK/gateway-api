@@ -939,8 +939,11 @@ class PublicationController extends Controller
             ])->first();
 
             if ($existingLinkage) {
-                // Restore the existing linkage if soft-deleted
-                $existingLinkage->restore();
+                // Restore the existing linkage if it’s soft-deleted
+                foreach ($existingLinkage as $Linkage) {
+                    $Linkage->restore();
+                }
+
                 return $existingLinkage;
 
             } else {
