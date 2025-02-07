@@ -27,6 +27,8 @@ class PublicationHasDatasetVersion extends Model
         'description',
     ];
 
+    protected $dates = ['deleted_at'];
+
     /**
      * The table associated with the model.
      *

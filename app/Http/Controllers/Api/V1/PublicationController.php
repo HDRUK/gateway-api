@@ -965,7 +965,6 @@ class PublicationController extends Controller
                  'publication_id' => $publicationId,
                  'dataset_version_id' => $datasetVersionId,
                  'link_type' => $dataset['link_type'] ?? 'USING', // Assuming default link_type is 'USING'
-                 'deleted_at' => null
              ])->first();
          } catch (Exception $e) {
              throw new Exception("checkInPublicationHasDatasetVersions :: " . $e->getMessage());
