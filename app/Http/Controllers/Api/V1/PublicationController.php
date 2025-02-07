@@ -937,25 +937,38 @@ class PublicationController extends Controller
                 'link_type' => $dataset['link_type'] ?? 'USING', // Default link_type to 'USING'
             ];
 
+            
+
+            // Search for an existing linkage (including soft-deleted)
+            $existingLinkage = PublicationHasDatasetVersion::withTrashed()->where($linkageData)->first();
+
             // Special case for migration timestamps
             if (array_key_exists('updated_at', $dataset)) {
                 $linkageData['created_at'] = $dataset['updated_at'];
                 $linkageData['updated_at'] = $dataset['updated_at'];
             }
-
-            // Use firstOrCreate and restore if necessary
-            $linkage = PublicationHasDatasetVersion::withTrashed()->firstOrCreate($linkageData);
-
-            // Restore the linkage if it’s soft-deleted
-            if ($linkage->trashed()) {
-                $linkage->restore();
+            
+            if ($existingLinkage) {
+                // Restore the existing soft-deleted record
+                if ($existingLinkage->trashed()) {
+                    $existingLinkage->restore();
+                }
+                return $existingLinkage;
+            } else {
+                // Special case for migration timestamps
+                if (array_key_exists('updated_at', $dataset)) {
+                    $linkageData['created_at'] = $dataset['updated_at'];
+                    $linkageData['updated_at'] = $dataset['updated_at'];
+                }
+                
+                // Create a new linkage if none exists
+                return PublicationHasDatasetVersion::create($linkageData);
             }
-
-            return $linkage;
         } catch (Exception $e) {
             throw new Exception("addPublicationHasDatasetVersion :: " . $e->getMessage());
         }
     }
+
 
  
      private function checkInPublicationHasDatasetVersions(int $publicationId, int $datasetVersionId, array $dataset)
