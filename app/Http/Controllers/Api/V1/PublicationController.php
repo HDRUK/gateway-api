@@ -906,7 +906,7 @@ class PublicationController extends Controller
         return $publication;
     }
 
-     // datasets
+    // datasets
     private function checkDatasets(int $publicationId, array $inDatasets)
     {
 
@@ -920,32 +920,37 @@ class PublicationController extends Controller
 
         foreach ($inDatasets as $dataset) {
             $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
-            $checking = $this->checkInPublicationHasDatasetVersions($publicationId, $datasetVersionId,  $dataset);
+            $checking = $this->checkInPublicationHasDatasetVersions($publicationId, $datasetVersionId, $dataset);
 
             if (!$checking) {
                 $this->addPublicationHasDatasetVersion($publicationId, $dataset, $datasetVersionId);
             }
         }
     }
- 
+
     private function addPublicationHasDatasetVersion(int $publicationId, array $dataset, int $datasetVersionId)
     {
         try {
-            $linkageData = [
+            $arrCreate = [
                 'publication_id' => $publicationId,
                 'dataset_version_id' => $datasetVersionId,
-                'link_type' => $dataset['link_type'] ?? 'USING', // Default link_type to 'USING'
+                'link_type' => $dataset['link_type'] ?? 'USING', // Assuming default link_type is 'USING'
+                'deleted_at' => null,
             ];
 
-            // Special case for migration timestamps
-            if (array_key_exists('updated_at', $dataset)) {
-                $linkageData['created_at'] = $dataset['updated_at'];
-                $linkageData['updated_at'] = $dataset['updated_at'];
+            if (array_key_exists('updated_at', $dataset)) { // special for migration
+                $arrCreate['created_at'] = $dataset['updated_at'];
+                $arrCreate['updated_at'] = $dataset['updated_at'];
             }
 
-            // Use firstOrCreate and restore if necessary
-            return PublicationHasDatasetVersion::withTrashed()->firstOrCreate($linkageData)->restore();
-            
+            $linkage = PublicationHasDatasetVersion::withTrashed()->firstOrCreate($arrCreate);
+            // Restore if it’s soft-deleted
+            if ($linkage->trashed()) { 
+                $linkage->restore(); 
+            }
+
+            return $linkage;
+
         } catch (Exception $e) {
             throw new Exception("addPublicationHasDatasetVersion :: " . $e->getMessage());
         }
@@ -954,31 +959,30 @@ class PublicationController extends Controller
     private function checkInPublicationHasDatasetVersions(int $publicationId, int $datasetVersionId, array $dataset)
     {
         try {
-            return PublicationHasDatasetVersion::withTrashed()->where([
+            return PublicationHasDatasetVersion::where([
                 'publication_id' => $publicationId,
                 'dataset_version_id' => $datasetVersionId,
-                'link_type' => $dataset['link_type'] ?? 'USING', // Assuming default link_type is 'USING'
+                'link_type' => $dataset['link_type'] ?? 'USING',
+                'description' => null,
             ])->first();
         } catch (Exception $e) {
             throw new Exception("checkInPublicationHasDatasetVersions :: " . $e->getMessage());
         }
     }
- 
+
     private function deletePublicationHasDatasetVersions(int $publicationId, int $datasetVersionId)
     {
         try {
-            $oldLinkages = PublicationHasDatasetVersion::where([
+            return PublicationHasDatasetVersion::where([
                 'publication_id' => $publicationId,
                 'dataset_version_id' => $datasetVersionId,
-            ])->get();
-            
-            foreach ($oldLinkages as $oldLinkage) {
-                $oldLinkage->delete(); // This will properly soft-delete by setting deleted_at
-            }
+            ])->delete();
         } catch (Exception $e) {
             throw new Exception("deletePublicationHasDatasetVersions :: " . $e->getMessage());
         }
     }
+
+
 
     // tools
     private function checkTools(int $publicationId, array $inTools, int $userId = null)
