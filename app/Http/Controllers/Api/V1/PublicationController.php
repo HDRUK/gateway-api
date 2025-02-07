@@ -357,6 +357,7 @@ class PublicationController extends Controller
      *                @OA\Items(type="object",
      *                   @OA\Property(property="id", type="integer"),
      *                   @OA\Property(property="link_type", type="string"),
+     *                   @OA\Property(property="description", type="string"),
      *                )
      *             ),
      *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
@@ -487,6 +488,7 @@ class PublicationController extends Controller
      *                @OA\Items(type="object",
      *                   @OA\Property(property="id", type="integer"),
      *                   @OA\Property(property="link_type", type="string"),
+     *                   @OA\Property(property="description", type="string"),
      *                )
      *             ),
      *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
@@ -643,6 +645,7 @@ class PublicationController extends Controller
       *                @OA\Items(type="object",
       *                   @OA\Property(property="id", type="integer"),
       *                   @OA\Property(property="link_type", type="string"),
+      *                   @OA\Property(property="description", type="string"),
       *                )
       *             ),
       *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
@@ -913,7 +916,7 @@ class PublicationController extends Controller
         // There was an error here where by the Publications were not getting cleared out / exhibiting
         // wierd cache like behavior on the FE. Clearing all links for a Pub and restoring active ones
         // is much cleaner approach. 
-        
+
         $this->deletePublicationHasDatasetVersions($publicationId);
       
         foreach ($inDatasets as $dataset) {
