@@ -1066,6 +1066,8 @@ class ToolController extends Controller
         ->where(['id' => $toolId])
         ->first();
 
+        $tool->description = htmlspecialchars_decode($tool->description);
+        $tool->results_insights = htmlspecialchars_decode($tool->results_insights);
         $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
         return $tool;
     }
