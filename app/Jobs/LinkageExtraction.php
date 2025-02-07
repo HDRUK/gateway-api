@@ -132,14 +132,15 @@ class LinkageExtraction implements ShouldQueue
     {
         try {
             // Clear any old linkages matching this description for the current dataset version
-            $oldLinkages =  PublicationHasDatasetVersion::where([
+            $oldLinkages = PublicationHasDatasetVersion::where([
                 'dataset_version_id' => $this->sourceDatasetVersionId,
                 'description' => $this->description
-            ]);
+            ])->get(); // Retrieve the collection of models
             
             foreach ($oldLinkages as $oldLinkage) {
                 $oldLinkage->delete(); // This will properly soft-delete by setting deleted_at
             }
+            
 
             if (is_null($publicationLinkages)) {
                 return; // No publications to process
@@ -155,6 +156,9 @@ class LinkageExtraction implements ShouldQueue
                     // THIS IS WHERE WE CAN SEARCH FOR NEW PUB AUTOMAGICALLY
                     continue;
                 }
+
+                 // Introduce a short delay to ensure the delete propagates properly
+                usleep(50000); // 50ms delay
 
                 // Use firstOrCreate and restore if necessary
                 PublicationHasDatasetVersion::withTrashed()->firstOrCreate([
