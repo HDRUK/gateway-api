@@ -152,28 +152,13 @@ class LinkageExtraction implements ShouldQueue
                     continue;
                 }
 
-                // Search for existing linkage (including soft-deleted)
-                $existingLinkage = PublicationHasDatasetVersion::withTrashed()->where([
+                // Use firstOrCreate and restore if necessary
+                PublicationHasDatasetVersion::withTrashed()->firstOrCreate([
                     'publication_id' => $publicationId,
                     'dataset_version_id' => $this->sourceDatasetVersionId,
                     'link_type' => $linkType,
                     'description' => $this->description,
-                ])->first();
-
-                if ($existingLinkage) {
-                    // Restore the existing soft-deleted record
-                    if ($existingLinkage->trashed()) {
-                        $existingLinkage->restore();
-                    }
-                } else {
-                    // Create a new linkage if none exists
-                    PublicationHasDatasetVersion::create([
-                        'publication_id' => $publicationId,
-                        'dataset_version_id' => $this->sourceDatasetVersionId,
-                        'link_type' => $linkType,
-                        'description' => $this->description,
-                    ]);
-                }
+                ])->restore();
             }
         } catch (Exception $e) {
             Auditor::log([
@@ -185,7 +170,6 @@ class LinkageExtraction implements ShouldQueue
             throw new Exception("Error processing publication linkages ({$linkType}): " . $e->getMessage());
         }
     }
-
 
 
     /**
