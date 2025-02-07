@@ -931,21 +931,37 @@ class PublicationController extends Controller
      private function addPublicationHasDatasetVersion(int $publicationId, array $dataset, int $datasetVersionId)
      {
          try {
-             $Search_array = [
+             // Search for an existing record (including soft-deleted)
+            $existingLinkage = PublicationHasDatasetVersion::withTrashed()->where([
                 'publication_id' => $publicationId,
                 'dataset_version_id' => $datasetVersionId,
-                'link_type' => $dataset['link_type'] ?? 'USING', // Assuming default link_type is 'USING'
-                
-             ];
-             $arrCreate = [
-               'deleted_at' => null,
-             ]; 
-             if (array_key_exists('updated_at', $dataset)) { // special for migration
-                 $arrCreate['created_at'] = $dataset['updated_at'];
-                 $arrCreate['updated_at'] = $dataset['updated_at'];
-             }
- 
-             return PublicationHasDatasetVersion::withTrashed()->updateOrCreate($Search_array, $arrCreate);
+                'link_type' => $dataset['link_type'] ?? 'USING',
+            ])->first();
+
+            if ($existingLinkage) {
+                // Restore the existing linkage if soft-deleted
+                $existingLinkage->restore();
+                return $existingLinkage;
+
+            } else {
+            $linkageData = [
+                'publication_id' => $publicationId,
+                'dataset_version_id' => $datasetVersionId,
+                'link_type' => $dataset['link_type'] ?? 'USING', // Default link_type to 'USING'
+            ];
+
+            // Special case for migration timestamps
+            if (array_key_exists('updated_at', $dataset)) {
+                $linkageData['created_at'] = $dataset['updated_at'];
+                $linkageData['updated_at'] = $dataset['updated_at'];
+            }
+
+                // Create a new linkage
+                return PublicationHasDatasetVersion::create($linkageData);
+            }
+
+
+
          } catch (Exception $e) {
              throw new Exception("addPublicationHasDatasetVersion :: " . $e->getMessage());
          }

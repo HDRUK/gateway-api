@@ -151,18 +151,22 @@ class LinkageExtraction implements ShouldQueue
                     continue;
                 }
 
-                $Search_array = [
+                $searchArray = [
                     'publication_id' => $publicationId,
                     'dataset_version_id' => $this->sourceDatasetVersionId,
                     'link_type' => $linkType,
                     'description' => $this->description,
                 ];
-
-                $arrCreate = [
-                    'deleted_at' => null,
-                ];
-
-                PublicationHasDatasetVersion::withTrashed()->updateOrCreate($Search_array, $arrCreate);
+    
+                $existingLinkage = PublicationHasDatasetVersion::withTrashed()->where($searchArray)->first();
+    
+                if ($existingLinkage) {
+                    // Restore the existing linkage if it’s soft-deleted
+                    $existingLinkage->restore();
+                } else {
+                    // Create a new linkage
+                    PublicationHasDatasetVersion::create($searchArray);
+                }
             }
         } catch (Exception $e) {
             Auditor::log([
