@@ -153,7 +153,6 @@ class LinkageExtraction implements ShouldQueue
                 if(!$publicationId) {
                     continue;
                 }
-                
 
                 PublicationHasDatasetVersion::withTrashed()->updateOrCreate(
                     [
@@ -163,7 +162,6 @@ class LinkageExtraction implements ShouldQueue
                         'description' => $this->description,
                     ],
                     [
-                        'description' => $this->description,
                         'deleted_at' => null,
                     ]
                 );
@@ -211,7 +209,6 @@ class LinkageExtraction implements ShouldQueue
                         'description' => $this->description,
                     ],
                     [
-                        'description' => $this->description,
                         'deleted_at' => null,
                     ]
                 );

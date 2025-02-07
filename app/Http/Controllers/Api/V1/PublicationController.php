@@ -906,74 +906,74 @@ class PublicationController extends Controller
         return $publication;
     }
 
-    // datasets
-    private function checkDatasets(int $publicationId, array $inDatasets)
-    {
-
-        $pubs = PublicationHasDatasetVersion::where(['publication_id' => $publicationId])->get();
-        foreach ($pubs as $pub) {
-            $dataset_id = DatasetVersion::where("id", $pub->dataset_version_id)->first()->dataset_id;
-            if (!in_array($dataset_id, $this->extractInputIdToArray($inDatasets))) {
-                $this->deletePublicationHasDatasetVersions($publicationId, $pub->dataset_version_id);
-            }
-        }
-
-        foreach ($inDatasets as $dataset) {
-            $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
-            $checking = $this->checkInPublicationHasDatasetVersions($publicationId, $datasetVersionId, $dataset);
-
-            if (!$checking) {
-                $this->addPublicationHasDatasetVersion($publicationId, $dataset, $datasetVersionId);
-            }
-        }
-    }
-
-    private function addPublicationHasDatasetVersion(int $publicationId, array $dataset, int $datasetVersionId)
-    {
-        try {
-            return PublicationHasDatasetVersion::withTrashed()->updateOrCreate(
-                [
-                    'publication_id' => $publicationId,
-                    'dataset_version_id' => $datasetVersionId,
-                    
-                ],
-                [
-                    'link_type' => $dataset['link_type'] ?? 'USING',
-                    'description' => 'Extracted from Publication',
-                    'deleted_at' => null,
-                ]
-            );
-        } catch (Exception $e) {
-            throw new Exception("addPublicationHasDatasetVersion :: " . $e->getMessage());
-        }
-    }
-
-
-    private function checkInPublicationHasDatasetVersions(int $publicationId, int $datasetVersionId, array $dataset)
-    {
-        try {
-            return PublicationHasDatasetVersion::where([
-                'publication_id' => $publicationId,
-                'dataset_version_id' => $datasetVersionId,
-                'link_type' => $dataset['link_type'] ?? 'USING', // Assuming default link_type is 'USING'
-                'description' => 'Extracted from Publication' ?: null,
-            ])->first();
-        } catch (Exception $e) {
-            throw new Exception("checkInPublicationHasDatasetVersions :: " . $e->getMessage());
-        }
-    }
-
-    private function deletePublicationHasDatasetVersions(int $publicationId, int $datasetVersionId)
-    {
-        try {
-            return PublicationHasDatasetVersion::where([
-                'publication_id' => $publicationId,
-                'dataset_version_id' => $datasetVersionId,
-            ])->delete();
-        } catch (Exception $e) {
-            throw new Exception("deletePublicationHasDatasetVersions :: " . $e->getMessage());
-        }
-    }
+     // datasets
+     private function checkDatasets(int $publicationId, array $inDatasets)
+     {
+ 
+         $pubs = PublicationHasDatasetVersion::where(['publication_id' => $publicationId])->get();
+         foreach ($pubs as $pub) {
+             $dataset_id = DatasetVersion::where("id", $pub->dataset_version_id)->first()->dataset_id;
+             if (!in_array($dataset_id, $this->extractInputIdToArray($inDatasets))) {
+                 $this->deletePublicationHasDatasetVersions($publicationId, $pub->dataset_version_id);
+             }
+         }
+ 
+         foreach ($inDatasets as $dataset) {
+             $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
+             $checking = $this->checkInPublicationHasDatasetVersions($publicationId, $datasetVersionId);
+ 
+             if (!$checking) {
+                 $this->addPublicationHasDatasetVersion($publicationId, $dataset, $datasetVersionId);
+             }
+         }
+     }
+ 
+     private function addPublicationHasDatasetVersion(int $publicationId, array $dataset, int $datasetVersionId)
+     {
+         try {
+             $arrCreate = [
+                 'publication_id' => $publicationId,
+                 'dataset_version_id' => $datasetVersionId,
+                 'link_type' => $dataset['link_type'] ?? 'USING', // Assuming default link_type is 'USING'
+                 'deleted_at' => null,
+             ];
+ 
+             if (array_key_exists('updated_at', $dataset)) { // special for migration
+                 $arrCreate['created_at'] = $dataset['updated_at'];
+                 $arrCreate['updated_at'] = $dataset['updated_at'];
+             }
+ 
+             return PublicationHasDatasetVersion::withTrashed()->updateOrCreate($arrCreate);
+         } catch (Exception $e) {
+             throw new Exception("addPublicationHasDatasetVersion :: " . $e->getMessage());
+         }
+     }
+ 
+     private function checkInPublicationHasDatasetVersions(int $publicationId, int $datasetVersionId)
+     {
+         try {
+             return PublicationHasDatasetVersion::where([
+                 'publication_id' => $publicationId,
+                 'dataset_version_id' => $datasetVersionId,
+                 'link_type' => $dataset['link_type'] ?? 'USING', // Assuming default link_type is 'USING'
+             ])->first();
+         } catch (Exception $e) {
+             throw new Exception("checkInPublicationHasDatasetVersions :: " . $e->getMessage());
+         }
+     }
+ 
+     private function deletePublicationHasDatasetVersions(int $publicationId, int $datasetVersionId)
+     {
+         try {
+             return PublicationHasDatasetVersion::where([
+                 'publication_id' => $publicationId,
+                 'dataset_version_id' => $datasetVersionId,
+             ])->delete();
+         } catch (Exception $e) {
+             throw new Exception("deletePublicationHasDatasetVersions :: " . $e->getMessage());
+         }
+     }
+ 
 
 
 
