@@ -21,6 +21,7 @@ use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
+use App\Models\DurHasDatasetVersion;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\DurHasToolSeeder;
@@ -178,6 +179,13 @@ class DurTest extends TestCase
     public function test_get_dur_by_id_with_success(): void
     {
         $durId = (int) Dur::all()->where('status', 'ACTIVE')->random()->id;
+        $dataset = Dataset::all()->where('status', 'ACTIVE')->random();
+        $datasetVersionId = $dataset->versions()->first()->id;
+        DurHasDatasetVersion::create([
+            'dur_id' => $durId,
+            'dataset_version_id' => $datasetVersionId,
+        ]);
+
         $response = $this->json('GET', self::TEST_URL . '/' . $durId, [], $this->header);
 
         $this->assertCount(1, $response['data']);
