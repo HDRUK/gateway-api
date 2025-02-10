@@ -258,9 +258,6 @@ class SearchController extends Controller
                 return Excel::download(new DatasetTableExport($datasetsArray), 'datasets.csv');
             }
 
-            // return response()->json([
-            //     $datasetsArray, $sortField, $sortDirection,
-            // ], 200);
             $datasetsArray = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
