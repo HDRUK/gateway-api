@@ -258,6 +258,9 @@ class SearchController extends Controller
                 return Excel::download(new DatasetTableExport($datasetsArray), 'datasets.csv');
             }
 
+            // return response()->json([
+            //     $datasetsArray, $sortField, $sortDirection,
+            // ], 200);
             $datasetsArray = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
@@ -1746,7 +1749,11 @@ class SearchController extends Controller
             usort(
                 $resultArray,
                 function ($a, $b) use ($sortField) {
-                    return -1 * ($a['_source'][$sortField] <=> $b['_source'][$sortField]);
+                    if (is_string($b['_source'][$sortField])) {
+                        return strtoupper($b['_source'][$sortField]) <=> strtoupper($a['_source'][$sortField]);
+                    } else {
+                        return $b['_source'][$sortField] <=> $a['_source'][$sortField];
+                    }
                 }
             );
         }
