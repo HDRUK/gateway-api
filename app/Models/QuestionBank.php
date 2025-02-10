@@ -53,6 +53,7 @@ class QuestionBank extends Model
         'archived' => 'boolean',
         'force_required' => 'boolean',
         'allow_guidance_override' => 'boolean',
+        'default' => 'boolean',
     ];
 
     /**
@@ -76,7 +77,7 @@ class QuestionBank extends Model
 
     public function teams(): BelongsToMany
     {
-        return $this->belongsToMany(Team::class, 'qb_question_has_team');
+        return $this->belongsToMany(Team::class, 'qb_question_has_team', 'qb_question_id', 'team_id');
     }
 
     public function section(): BelongsTo

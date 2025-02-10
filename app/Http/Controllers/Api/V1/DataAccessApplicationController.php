@@ -10,29 +10,35 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
+use App\Http\Traits\DataAccessApplicationHelpers;
+use App\Http\Traits\QuestionBankHelpers;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\DataAccessApplication\GetDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\GetDataAccessApplicationFile;
 use App\Http\Requests\DataAccessApplication\EditDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\CreateDataAccessApplication;
-use App\Http\Requests\DataAccessApplication\CreateDataAccessApplicationAnswer;
 use App\Http\Requests\DataAccessApplication\DeleteDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\DeleteDataAccessApplicationFile;
 use App\Http\Requests\DataAccessApplication\UpdateDataAccessApplication;
+use App\Jobs\SendEmailJob;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationAnswer;
 use App\Models\DataAccessApplicationHasDataset;
 use App\Models\DataAccessApplicationHasQuestion;
+use App\Models\DataAccessApplicationStatus;
 use App\Models\DataAccessTemplate;
 use App\Models\Dataset;
-use App\Models\QuestionBank;
+use App\Models\EmailTemplate;
 use App\Models\Team;
 use App\Models\Upload;
+use App\Models\User;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DataAccessApplicationController extends Controller
 {
     use RequestTransformation;
+    use DataAccessApplicationHelpers;
+    use QuestionBankHelpers;
 
     /**
      * @OA\Get(
@@ -127,6 +133,7 @@ class DataAccessApplicationController extends Controller
      *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="applicant_id", type="integer", example="1"),
      *                  @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
+     *                  @OA\Property(property="project_title", type="string", example="A DAR project"),
      *                  @OA\Property(property="approval_status", type="string", example="APPROVED"),
      *              )
      *          ),
@@ -147,15 +154,8 @@ class DataAccessApplicationController extends Controller
 
         try {
             $application = DataAccessApplication::where('id', $id)->with('questions')->first();
-            foreach ($application['questions'] as $i => $q) {
-                $version = QuestionBank::with([
-                    'latestVersion',
-                    'latestVersion.childVersions',
-                ])->where('id', $q->question_id)
-                    ->first()
-                    ->toArray();
-                $application['questions'][$i]['latest_version'] = $version['latest_version'];
-            }
+
+            $this->getApplicationWithQuestions($application);
 
             if ($application) {
                 Auditor::log([
@@ -240,6 +240,10 @@ class DataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
+            $application = DataAccessApplication::findOrFail($id);
+            if ($application->submission_status === 'DRAFT') {
+                throw new Exception('Files associated with a data access request cannot be viewed when the request is still a draft.');
+            }
             $uploads = Upload::where('entity_id', $id)->get();
 
             if ($uploads) {
@@ -323,6 +327,10 @@ class DataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
+            $application = DataAccessApplication::findOrFail($id);
+            if ($application->submission_status === 'DRAFT') {
+                throw new Exception('Files associated with a data access request cannot be downloaded when the request is still a draft.');
+            }
             $file = Upload::where('id', $fileId)->first();
 
             if ($file) {
@@ -424,6 +432,81 @@ class DataAccessApplicationController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *      path="/api/v1/dar/applications/{id}/status",
+     *      summary="Return the status history of a single DAR application",
+     *      description="Return the status history of a single DAR application",
+     *      tags={"DataAccessApplication"},
+     *      summary="DataAccessApplication@status",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DAR application id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR application id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="application_id", type="integer", example="123"),
+     *                  @OA\Property(property="approval_status", type="string", example="APPROVED"),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function status(GetDataAccessApplication $request, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $statuses = DataAccessApplicationStatus::where('application_id', $id)->get();
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'DataAccessApplication status history get ' . $id,
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $statuses,
+            ], Config::get('statuscodes.STATUS_OK.code'));
+
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
      * @OA\Post(
      *      path="/api/v1/dar/applications",
      *      summary="Create a new DAR application",
@@ -439,6 +522,7 @@ class DataAccessApplicationController extends Controller
      *              @OA\Property(property="applicant_id", type="integer", example="1"),
      *              @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
      *              @OA\Property(property="approval_status", type="string", example="APPROVED"),
+     *              @OA\Property(property="project_title", type="string", example="A DAR project"),
      *              @OA\Property(property="team_ids", type="array", @OA\Items()),
      *              @OA\Property(property="dataset_ids", type="array", @OA\Items()),
      *          ),
@@ -469,6 +553,7 @@ class DataAccessApplicationController extends Controller
             $application = DataAccessApplication::create([
                 'applicant_id' => isset($input['applicant_id']) ? $input['applicant_id'] : $jwtUser['id'],
                 'submission_status' => isset($input['submission_status']) ? $input['submission_status'] : 'DRAFT',
+                'project_title' => $input['project_title'],
             ]);
 
             // find data provider for each dataset
@@ -482,17 +567,18 @@ class DataAccessApplicationController extends Controller
 
                 $gatewayId = $metadata['metadata']['summary']['publisher']['gatewayId'];
                 // check for primary key or pid match...
-                $team = Team::where('id', $gatewayId)->first();
-                if (!$team) {
+                if (is_numeric($gatewayId)) {
+                    $team = Team::where('id', $gatewayId)->first();
+                } else {
                     $team = Team::where('pid', $gatewayId)->first();
-                    if (!$team) {
-                        CloudLogger::write([
-                            'action_type' => 'CREATE',
-                            'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                            'description' => 'Unable to create data access application for dataset with id ' . $d . ', no matching team found.',
-                        ]);
-                        continue;
-                    }
+                }
+                if (!$team) {
+                    CloudLogger::write([
+                        'action_type' => 'CREATE',
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => 'Unable to create data access application for dataset with id ' . $d . ', no matching team found.',
+                    ]);
+                    continue;
                 }
                 $teams[] = $team;
             }
@@ -573,92 +659,6 @@ class DataAccessApplicationController extends Controller
 
     /**
      * @OA\Put(
-     *      path="/api/v1/dar/applications/{id}/answers",
-     *      summary="Add answers to a DAR application",
-     *      description="Add answers to a DAR application",
-     *      tags={"DataAccessApplication"},
-     *      summary="DataAccessApplication@storeAnswers",
-     *      security={{"bearerAuth":{}}},
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="DataAccessApplication definition",
-     *          @OA\JsonContent(
-     *              required={},
-     *              @OA\Property(property="answers", type="array", @OA\Items(
-     *                  @OA\Property(property="question_id", type="integer", example="123"),
-     *                  @OA\Property(property="answer", type="object",
-     *                      @OA\Property(property="value", type="string", example="an answer"),
-     *                  ),
-     *              ))
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Success",
-     *          @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="success"),
-     *             @OA\Property(property="data", type="integer", example="100")
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=500,
-     *          description="Error",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="error")
-     *          )
-     *      )
-     * )
-     */
-    public function storeAnswers(CreateDataAccessApplicationAnswer $request, int $id): JsonResponse
-    {
-        $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
-        try {
-            $application = DataAccessApplication::findOrFail($id);
-
-            if ($application->submission_status !== 'SUBMITTED') {
-                foreach ($input['answers'] as $answer) {
-                    DataAccessApplicationAnswer::where([
-                        'question_id' => $answer['question_id'],
-                        'application_id' => $id,
-                    ])->delete();
-                    DataAccessApplicationAnswer::create([
-                        'question_id' => $answer['question_id'],
-                        'application_id' => $id,
-                        'answer' => $answer['answer'],
-                        'contributor_id' => $jwtUser['id'],
-                    ]);
-                }
-            } else {
-                throw new Exception('DAR form answers cannot be updated after submission.');
-            }
-
-            Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
-                'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'DataAccessApplication ' . $id . ' answer created',
-            ]);
-
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $id,
-            ], Config::get('statuscodes.STATUS_CREATED.code'));
-        } catch (Exception $e) {
-            Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Put(
      *      path="/api/v1/dar/applications/{id}",
      *      summary="Update a system DAR application",
      *      description="Update a system DAR application",
@@ -683,6 +683,7 @@ class DataAccessApplicationController extends Controller
      *              required={"applicant_id","submission_status","approval_status"},
      *              @OA\Property(property="applicant_id", type="integer", example="1"),
      *              @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
+     *              @OA\Property(property="project_title", type="string", example="A DAR project"),
      *              @OA\Property(property="approval_status", type="string", example="APPROVED"),
      *              @OA\Property(property="team_ids", type="array", @OA\Items()),
      *              @OA\Property(property="answers", type="array", @OA\Items(
@@ -729,27 +730,13 @@ class DataAccessApplicationController extends Controller
         try {
             $application = DataAccessApplication::findOrFail($id);
 
-            $application->update([
-                'applicant_id' => $input['applicant_id'],
-                'submission_status' => $input['submission_status'],
-                'approval_status' => isset($input['approval_status']) ? $input['approval_status'] : $application->approval_status,
-            ]);
+            $originalStatus = $application->approval_status;
+            $newStatus = $input['approval_status'] ?? $originalStatus;
 
-            $answers = $input['answers'] ?? [];
-            if (count($answers)) {
-                if ($application->submission_status !== 'SUBMITTED') {
-                    DataAccessApplicationAnswer::where('application_id', $id)->delete();
-                    foreach ($answers as $answer) {
-                        DataAccessApplicationAnswer::create([
-                            'question_id' => $answer['question_id'],
-                            'application_id' => $id,
-                            'answer' => $answer['answer'],
-                            'contributor_id' => $input['applicant_id'],
-                        ]);
-                    }
-                } else {
-                    throw new Exception('DAR form answers cannot be updated after submission.');
-                }
+            $this->updateDataAccessApplication($application, $input);
+
+            if ($newStatus !== $originalStatus) {
+                $this->emailStatusNotification($id, $application);
             }
 
             Auditor::log([
@@ -800,6 +787,7 @@ class DataAccessApplicationController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="applicant_id", type="integer", example="1"),
      *              @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
+     *              @OA\Property(property="project_title", type="string", example="A DAR project"),
      *              @OA\Property(property="approval_status", type="string", example="APPROVED"),
      *              @OA\Property(property="team_ids", type="array", @OA\Items()),
      *          ),
@@ -840,29 +828,13 @@ class DataAccessApplicationController extends Controller
         try {
             $application = DataAccessApplication::findOrFail($id);
 
-            $arrayKeys = [
-                'applicant_id',
-                'submission_status',
-                'approval_status',
-            ];
-            $array = $this->checkEditArray($input, $arrayKeys);
-            $application->update($array);
+            $originalStatus = $application->approval_status;
+            $newStatus = $input['approval_status'] ?? $originalStatus;
 
-            $answers = $input['answers'] ?? [];
-            if (count($answers)) {
-                if ($application->submission_status !== 'SUBMITTED') {
-                    DataAccessApplicationAnswer::where('application_id', $id)->delete();
-                    foreach ($answers as $answer) {
-                        DataAccessApplicationAnswer::create([
-                            'question_id' => $answer['question_id'],
-                            'application_id' => $id,
-                            'answer' => $answer['answer'],
-                            'contributor_id' => $application->applicant_id,
-                        ]);
-                    }
-                } else {
-                    throw new Exception('DAR form answers cannot be updated after submission.');
-                }
+            $this->editDataAccessApplication($application, $input);
+
+            if ($newStatus !== $originalStatus) {
+                $this->emailStatusNotification($id, $application);
             }
 
             Auditor::log([
@@ -1049,5 +1021,29 @@ class DataAccessApplicationController extends Controller
 
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function emailStatusNotification(int $id, DataAccessApplication $application): void
+    {
+        $template = EmailTemplate::where(['identifier' => 'dar.status.researcher'])->first();
+        $user = User::where('id', $application->applicant_id)->first();
+
+        $to = [
+            'to' => [
+                'email' => $user['email'],
+                'name' => $user['name'],
+            ],
+        ];
+        $status = ucwords(strtolower(str_replace('_', ' ', $application->approval_status)));
+
+        $replacements = [
+            '[[USER_FIRST_NAME]]' => $user['firstname'],
+            '[[PROJECT_TITLE]]' => $application->project_title,
+            '[[APPLICATION_ID]]' => $id,
+            '[[STATUS]]' => $status,
+            '[[CURRENT_YEAR]]' => date("Y"),
+        ];
+
+        SendEmailJob::dispatch($to, $template, $replacements);
     }
 }

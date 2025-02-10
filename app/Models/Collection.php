@@ -6,6 +6,7 @@ use Config;
 use App\Http\Traits\DatasetFetch;
 use App\Models\Traits\SortManager;
 use App\Models\Traits\EntityCounter;
+use App\Observers\CollectionObserver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Validator;
@@ -14,9 +15,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
+#[ObservedBy([CollectionObserver::class])]
 class Collection extends Model
 {
     use HasFactory;
@@ -30,6 +33,8 @@ class Collection extends Model
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
     public const STATUS_ARCHIVED = 'ARCHIVED';
+
+    public string $prevStatus = '';
 
     /**
      * The table associated with the model.

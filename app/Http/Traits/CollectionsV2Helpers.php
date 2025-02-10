@@ -121,30 +121,74 @@ trait CollectionsV2Helpers
     // datasets
     private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null)
     {
-        $cols = CollectionHasDatasetVersion::where(['collection_id' => $collectionId])->get();
-        foreach ($cols as $col) {
-            $datasetId = DatasetVersion::where('id', $col->dataset_version_id)->select('dataset_id')->get();
-            if (count($datasetId) > 0) {
-                if (!in_array($datasetId[0]['dataset_id'], $this->extractInputIdToArray($inDatasets))) {
-                    $this->deleteCollectionHasDatasetVersions($collectionId, $col->dataset_version_id);
-                }
-            }
+        $collectionHastDatasetVersions = CollectionHasDatasetVersion::withTrashed()
+                                            ->where('collection_id', $collectionId)
+                                            ->select('dataset_version_id')
+                                            ->get()
+                                            ->toArray();
+
+        $collectionHastDatasetVersionIds = [];
+        if (count($collectionHastDatasetVersions)) {
+            $collectionHastDatasetVersionIds = array_unique(convertArrayToArrayWithKeyName($collectionHastDatasetVersions, 'dataset_version_id'));
         }
 
-        // LS - This is superflous.
         foreach ($inDatasets as $dataset) {
-            $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
-            $checking = $this->checkInCollectionHasDatasetVersions($collectionId, $datasetVersionId);
+            $datasetVersionLatestId = Dataset::where('id', (int) $dataset['id'])->select('id')->first()->latestVersion()->id;
 
-            if (!$checking) {
-                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId);
-                $this->reindexElastic($dataset['id']);
-            } else {
-                if ($checking['deleted_at']) {
-                    CollectionHasDatasetVersion::withTrashed()->where([
+            $datasetVersions = DatasetVersion::where('dataset_id', (int) $dataset['id'])->select('id')->get()->toArray();
+
+            $datasetVersionIds = convertArrayToArrayWithKeyName($datasetVersions, 'id');
+            $commonDatasetVersionIds = array_intersect($collectionHastDatasetVersionIds, $datasetVersionIds);
+
+            if (count($commonDatasetVersionIds) === 0) {
+                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
+                continue;
+            }
+
+            if (!in_array($datasetVersionLatestId, $commonDatasetVersionIds)) {
+                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
+                foreach ($commonDatasetVersionIds as $commonDatasetVersionId) {
+                    CollectionHasDatasetVersion::where([
                         'collection_id' => $collectionId,
-                        'dataset_version_id' => $datasetVersionId,
-                    ])->update(['deleted_at' => null]);
+                        'dataset_version_id' => $commonDatasetVersionId,
+                    ])->delete();
+                }
+                continue;
+            }
+
+            if (in_array($datasetVersionLatestId, $commonDatasetVersionIds)) {
+                foreach ($commonDatasetVersionIds as $commonDatasetVersionId) {
+                    if ((int) $datasetVersionLatestId === (int) $commonDatasetVersionId) {
+                        $checkCollectionWithLatestDatasetVersionActive = CollectionHasDatasetVersion::where([
+                            'collection_id' => $collectionId,
+                            'dataset_version_id' => $commonDatasetVersionId,
+                        ])->first();
+
+                        if (!is_null($checkCollectionWithLatestDatasetVersionActive)) {
+                            continue;
+                        }
+
+                        $checkCollectionWithLatestDatasetVersionDeleted = CollectionHasDatasetVersion::onlyTrashed()
+                            ->where([
+                                'collection_id' => $collectionId,
+                                'dataset_version_id' => $commonDatasetVersionId,
+                            ])->first();
+
+                        if (!is_null($checkCollectionWithLatestDatasetVersionDeleted)) {
+                            CollectionHasDatasetVersion::withTrashed()->where([
+                                'collection_id' => $collectionId,
+                                'dataset_version_id' => $commonDatasetVersionId,
+                            ])
+                            ->limit(1)
+                            ->update(['deleted_at' => null]);
+                            continue;
+                        }
+                    } else {
+                        CollectionHasDatasetVersion::where([
+                            'collection_id' => $collectionId,
+                            'dataset_version_id' => $commonDatasetVersionId,
+                        ])->delete();
+                    }
                 }
             }
         }
@@ -180,7 +224,12 @@ trait CollectionsV2Helpers
                 $arrCreate['updated_at'] = $dataset['updated_at'];
             }
 
-            return CollectionHasDatasetVersion::withTrashed()->updateOrCreate($searchArray, $arrCreate);
+            $checkRow = CollectionHasDatasetVersion::where($searchArray)->first();
+            if (is_null($checkRow)) {
+                return CollectionHasDatasetVersion::create($arrCreate);
+            } else {
+                return $checkRow;
+            }
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$arrCreate['user_id'],

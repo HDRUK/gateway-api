@@ -69,6 +69,7 @@ class EnquiryThreadTest extends TestCase
                         'is_dar_status',
                         'is_general_enquiry',
                         'is_feasibility_enquiry',
+                        'is_dar_review',
                         'enabled',
                     ],
                 ]
@@ -97,6 +98,7 @@ class EnquiryThreadTest extends TestCase
                     'is_dar_status',
                     'is_general_enquiry',
                     'is_feasibility_enquiry',
+                    'is_dar_review',
                     'enabled',
                 ],
             ]

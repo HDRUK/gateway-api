@@ -53,12 +53,12 @@ class UpdateQuestionBank extends BaseFormRequest
             ],
             'default' => [
                 'required',
-                'integer',
+                'boolean',
             ],
-            'team_id' => [
+            'team_ids' => [
                 'array'
             ],
-            'team_id.*' => [
+            'team_ids.*' => [
                 'integer'
             ],
             'options' => [
@@ -71,6 +71,9 @@ class UpdateQuestionBank extends BaseFormRequest
             'validations' => [
                 'array',
             ],
+            'all_custodians' => [
+                'boolean',
+            ]
         ];
     }
 

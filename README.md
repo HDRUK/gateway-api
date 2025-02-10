@@ -23,6 +23,32 @@ If you don't have a mysql client installed you can use the following to deploy a
 
 -   In order to connect to your mysql pod locally (via any other client), you must ensure you port-forward the mysql port `3306` with the following: `kubectl port-forward <deployed-pod-name> 3306:3306`
 
+### Increase the sort_buffer_size to 1G (1 Gigabyte) in your MySQL instance
+List pods:
+```
+kubectl get pods
+```
+
+Connect to the pod:
+```
+kubectl exec -it <mysql-pod-name> -- bash
+```
+
+Login mysql:
+```
+mysql -u root -p
+```
+
+Set `set_buffer_size` to `1G`:
+```
+SET GLOBAL sort_buffer_size = 1073741824; -- 1G in bytes
+```
+
+Verify the Change:
+```
+SHOW VARIABLES LIKE 'sort_buffer_size';
+```
+
 ## Configuring
 
 Copy `.env.example` to `.env` and fill in the required parameters. Namely the database connectivity credentials and host address

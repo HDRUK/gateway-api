@@ -22,6 +22,10 @@ class CreateDataAccessApplication extends BaseFormRequest
                 'string',
                 'in:DRAFT,SUBMITTED,FEEDBACK'
             ],
+            'project_title' => [
+                'string',
+                'required',
+            ],
             'dataset_ids' => [
                 'required',
                 'array',

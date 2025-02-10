@@ -15,7 +15,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use App\Http\Traits\CheckAccess;
 use App\Models\CollectionHasDur;
-use App\Http\Traits\IndexElastic;
 use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -33,7 +32,6 @@ use App\Models\CollectionHasUser;
 
 class CollectionController extends Controller
 {
-    use IndexElastic;
     use RequestTransformation;
     use CheckAccess;
 
@@ -193,6 +191,7 @@ class CollectionController extends Controller
             ->paginate((int) $perPage, ['*'], 'page');
 
             $collections->getCollection()->transform(function ($collection) {
+                $collection->image_link = trim($collection->image_link);
                 if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
                     $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
                 }
@@ -567,12 +566,6 @@ class CollectionController extends Controller
                 $collection->update(['updated_on' => $input['updated_on']]);
             }
 
-            if ($collection->status === Collection::STATUS_ACTIVE) {
-                $this->indexElasticCollections((int) $collection->id);
-            }
-
-
-
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'target_team_id' => $teamId,
@@ -753,13 +746,6 @@ class CollectionController extends Controller
             // updated_on
             if (array_key_exists('updated_on', $input)) {
                 Collection::where('id', $id)->update(['updated_on' => $input['updated_on']]);
-            }
-
-            $currentCollection = Collection::where('id', $id)->first();
-            if ($currentCollection->status === Collection::STATUS_ACTIVE) {
-                $this->indexElasticCollections((int) $id);
-            } else {
-                $this->deleteCollectionFromElastic((int) $id);
             }
 
             Auditor::log([
@@ -1002,12 +988,6 @@ class CollectionController extends Controller
                     Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
                 }
 
-                if ($updatedCollection->status === Collection::STATUS_ACTIVE) {
-                    $this->indexElasticCollections((int) $id);
-                } elseif ($initCollection->status === Collection::STATUS_ACTIVE) {
-                    $this->deleteCollectionFromElastic((int) $id);
-                }
-
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
                     'target_team_id' => $teamId,
@@ -1108,10 +1088,6 @@ class CollectionController extends Controller
                 Collection::where(['id' => $id])->update(['status' => Collection::STATUS_ARCHIVED]);
                 Collection::where(['id' => $id])->delete();
 
-                if($initialStatus === Collection::STATUS_ACTIVE) {
-                    $this->deleteCollectionFromElastic($id);
-                }
-
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'DELETE',
@@ -1206,6 +1182,7 @@ class CollectionController extends Controller
         ->first();
 
         if ($collection) {
+            $collection->image_link = trim($collection->image_link);
             if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
                 $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
             }
@@ -1274,30 +1251,74 @@ class CollectionController extends Controller
     // datasets
     private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null)
     {
-        $cols = CollectionHasDatasetVersion::where(['collection_id' => $collectionId])->get();
-        foreach ($cols as $col) {
-            $datasetId = DatasetVersion::where('id', $col->dataset_version_id)->select('dataset_id')->get();
-            if (count($datasetId) > 0) {
-                if (!in_array($datasetId[0]['dataset_id'], $this->extractInputIdToArray($inDatasets))) {
-                    $this->deleteCollectionHasDatasetVersions($collectionId, $col->dataset_version_id);
-                }
-            }
+        $collectionHastDatasetVersions = CollectionHasDatasetVersion::withTrashed()
+                                            ->where('collection_id', $collectionId)
+                                            ->select('dataset_version_id')
+                                            ->get()
+                                            ->toArray();
+
+        $collectionHastDatasetVersionIds = [];
+        if (count($collectionHastDatasetVersions)) {
+            $collectionHastDatasetVersionIds = array_unique(convertArrayToArrayWithKeyName($collectionHastDatasetVersions, 'dataset_version_id'));
         }
 
-        // LS - This is superflous.
         foreach ($inDatasets as $dataset) {
-            $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
-            $checking = $this->checkInCollectionHasDatasetVersions($collectionId, $datasetVersionId);
+            $datasetVersionLatestId = Dataset::where('id', (int) $dataset['id'])->select('id')->first()->latestVersion()->id;
 
-            if (!$checking) {
-                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId);
-                $this->reindexElastic($dataset['id']);
-            } else {
-                if ($checking['deleted_at']) {
-                    CollectionHasDatasetVersion::withTrashed()->where([
+            $datasetVersions = DatasetVersion::where('dataset_id', (int) $dataset['id'])->select('id')->get()->toArray();
+
+            $datasetVersionIds = convertArrayToArrayWithKeyName($datasetVersions, 'id');
+            $commonDatasetVersionIds = array_intersect($collectionHastDatasetVersionIds, $datasetVersionIds);
+
+            if (count($commonDatasetVersionIds) === 0) {
+                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
+                continue;
+            }
+
+            if (!in_array($datasetVersionLatestId, $commonDatasetVersionIds)) {
+                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
+                foreach ($commonDatasetVersionIds as $commonDatasetVersionId) {
+                    CollectionHasDatasetVersion::where([
                         'collection_id' => $collectionId,
-                        'dataset_version_id' => $datasetVersionId,
-                    ])->update(['deleted_at' => null]);
+                        'dataset_version_id' => $commonDatasetVersionId,
+                    ])->delete();
+                }
+                continue;
+            }
+
+            if (in_array($datasetVersionLatestId, $commonDatasetVersionIds)) {
+                foreach ($commonDatasetVersionIds as $commonDatasetVersionId) {
+                    if ((int) $datasetVersionLatestId === (int) $commonDatasetVersionId) {
+                        $checkCollectionWithLatestDatasetVersionActive = CollectionHasDatasetVersion::where([
+                            'collection_id' => $collectionId,
+                            'dataset_version_id' => $commonDatasetVersionId,
+                        ])->first();
+
+                        if (!is_null($checkCollectionWithLatestDatasetVersionActive)) {
+                            continue;
+                        }
+
+                        $checkCollectionWithLatestDatasetVersionDeleted = CollectionHasDatasetVersion::onlyTrashed()
+                            ->where([
+                                'collection_id' => $collectionId,
+                                'dataset_version_id' => $commonDatasetVersionId,
+                            ])->first();
+
+                        if (!is_null($checkCollectionWithLatestDatasetVersionDeleted)) {
+                            CollectionHasDatasetVersion::withTrashed()->where([
+                                'collection_id' => $collectionId,
+                                'dataset_version_id' => $commonDatasetVersionId,
+                            ])
+                            ->limit(1)
+                            ->update(['deleted_at' => null]);
+                            continue;
+                        }
+                    } else {
+                        CollectionHasDatasetVersion::where([
+                            'collection_id' => $collectionId,
+                            'dataset_version_id' => $commonDatasetVersionId,
+                        ])->delete();
+                    }
                 }
             }
         }
@@ -1333,7 +1354,13 @@ class CollectionController extends Controller
                 $arrCreate['updated_at'] = $dataset['updated_at'];
             }
 
-            return CollectionHasDatasetVersion::withTrashed()->updateOrCreate($searchArray, $arrCreate);
+            $checkRow = CollectionHasDatasetVersion::where($searchArray)->first();
+            if (is_null($checkRow)) {
+                return CollectionHasDatasetVersion::create($arrCreate);
+            } else {
+                return $checkRow;
+            }
+
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$arrCreate['user_id'],

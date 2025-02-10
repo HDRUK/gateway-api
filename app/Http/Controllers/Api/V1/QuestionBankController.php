@@ -20,11 +20,13 @@ use App\Http\Requests\QuestionBank\DeleteQuestionBank;
 use App\Http\Requests\QuestionBank\UpdateQuestionBank;
 use App\Http\Requests\QuestionBank\GetQuestionBankVersion;
 use App\Http\Requests\QuestionBank\UpdateStatusQuestionBank;
+use App\Http\Traits\QuestionBankHelpers;
 use App\Http\Traits\RequestTransformation;
 
 class QuestionBankController extends Controller
 {
     use RequestTransformation;
+    use QuestionBankHelpers;
 
     /**
      * @OA\Get(
@@ -34,11 +36,55 @@ class QuestionBankController extends Controller
      *      tags={"QuestionBank"},
      *      summary="QuestionBank@index",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="section_id",
+     *          in="query",
+     *          description="section id",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="section id",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="is_child",
+     *          in="query",
+     *          description="filter on is_child field",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="filter on is_child field",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="per page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="per page",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="page",
+     *          in="query",
+     *          description="page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="page",
+     *          ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="current_page", type="integer", example="1"),
      *              @OA\Property(property="data", type="array",
      *                  @OA\Items(
      *                      @OA\Property(property="id", type="integer", example="123"),
@@ -54,10 +100,25 @@ class QuestionBankController extends Controller
      *                      @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *                      @OA\Property(property="is_child", type="boolean", example="true"),
      *                      @OA\Property(property="question_type", type="string", example="STANDARD"),
-     *                      @OA\Property(property="latest_version", type="object", example=""),
-     *                      @OA\Property(property="versions", type="object", example=""),
+     *                      @OA\Property(property="title", type="string", example="This is a question"),
+     *                      @OA\Property(property="guidance", type="string", example="This is a question's guidance"),
+     *                      @OA\Property(property="options", type="array", @OA\Items()),
+     *                      @OA\Property(property="component", type="string", example="RadioGroup"),
+     *                      @OA\Property(property="validations", type="array", @OA\Items()),),
+     *                      @OA\Property(property="version_id", type="integer", example="123"),
      *                  )
-     *              )
+     *              ),
+     *              @OA\Property(property="first_page_url", type="string", example="http://localhost:8000/api/v1/questions?page=1"),
+     *              @OA\Property(property="from", type="integer", example="1"),
+     *              @OA\Property(property="last_page", type="integer", example="1"),
+     *              @OA\Property(property="last_page_url", type="string", example="http://localhost:8000/api/v1/questions?page=1"),
+     *              @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="next_page_url", type="string", example="null"),
+     *              @OA\Property(property="path", type="string", example="http://localhost:8000/api/v1/questions"),
+     *              @OA\Property(property="per_page", type="integer", example="25"),
+     *              @OA\Property(property="prev_page_url", type="string", example="null"),
+     *              @OA\Property(property="to", type="integer", example="3"),
+     *              @OA\Property(property="total", type="integer", example="3"),
      *          )
      *      )
      * )
@@ -68,14 +129,40 @@ class QuestionBankController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+            $sectionId = $input['section_id'] ?? null;
+            $isChild = $input['is_child'] ?? null;
+            $perPage = request('per_page', Config::get('constants.per_page'));
+
             $questions = QuestionBank::with(
-                ['latestVersion', 'versions', 'versions.childVersions']
+                ['latestVersion', 'latestVersion.childVersions']
             )->where('archived', false)
+            ->when(
+                $sectionId,
+                function ($query) use ($sectionId) {
+                    return $query->where('section_id', '=', $sectionId);
+                }
+            )
+            ->when(
+                !is_null($isChild),
+                function ($query) use ($isChild) {
+                    return $query->where('is_child', '=', $isChild);
+                }
+            )
             ->paginate(
-                Config::get('constants.per_page'),
+                function ($total) use ($perPage) {
+                    if($perPage === -1) {
+                        return $total;
+                    }
+                    return $perPage;
+                },
                 ['*'],
                 'page'
             );
+
+            $questions->transform(function ($question) {
+                $question = $this->getVersion($question);
+                return $question;
+            });
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -107,11 +194,55 @@ class QuestionBankController extends Controller
      *      tags={"QuestionBank"},
      *      summary="QuestionBank@indexStandard",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="section_id",
+     *          in="query",
+     *          description="section id",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="section id",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="is_child",
+     *          in="query",
+     *          description="filter on is_child field",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="filter on is_child field",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="per page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="per page",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="page",
+     *          in="query",
+     *          description="page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="page",
+     *          ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="current_page", type="integer", example="1"),
      *              @OA\Property(property="data", type="array",
      *                  @OA\Items(
      *                      @OA\Property(property="id", type="integer", example="123"),
@@ -121,16 +252,31 @@ class QuestionBankController extends Controller
      *                      @OA\Property(property="section_id", type="integer", example="1"),
      *                      @OA\Property(property="user_id", type="integer", example="1"),
      *                      @OA\Property(property="locked", type="boolean", example="false"),
-     *                      @OA\Property(property="archived", type="boolean", example="true"),
+     *                      @OA\Property(property="archived", type="boolean", example="false"),
      *                      @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
      *                      @OA\Property(property="force_required", type="boolean", example="false"),
      *                      @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *                      @OA\Property(property="is_child", type="boolean", example="true"),
      *                      @OA\Property(property="question_type", type="string", example="STANDARD"),
-     *                      @OA\Property(property="latest_version", type="object", example=""),
-     *                      @OA\Property(property="versions", type="object", example=""),
+     *                      @OA\Property(property="title", type="string", example="This is a question"),
+     *                      @OA\Property(property="guidance", type="string", example="This is a question's guidance"),
+     *                      @OA\Property(property="options", type="array", @OA\Items()),
+     *                      @OA\Property(property="component", type="string", example="RadioGroup"),
+     *                      @OA\Property(property="validations", type="array", @OA\Items()),),
+     *                      @OA\Property(property="version_id", type="integer", example="123"),
      *                  )
-     *              )
+     *              ),
+     *              @OA\Property(property="first_page_url", type="string", example="http://localhost:8000/api/v1/questions?page=1"),
+     *              @OA\Property(property="from", type="integer", example="1"),
+     *              @OA\Property(property="last_page", type="integer", example="1"),
+     *              @OA\Property(property="last_page_url", type="string", example="http://localhost:8000/api/v1/questions?page=1"),
+     *              @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="next_page_url", type="string", example="null"),
+     *              @OA\Property(property="path", type="string", example="http://localhost:8000/api/v1/questions"),
+     *              @OA\Property(property="per_page", type="integer", example="25"),
+     *              @OA\Property(property="prev_page_url", type="string", example="null"),
+     *              @OA\Property(property="to", type="integer", example="3"),
+     *              @OA\Property(property="total", type="integer", example="3"),
      *          )
      *      )
      * )
@@ -141,15 +287,41 @@ class QuestionBankController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+            $sectionId = $input['section_id'] ?? null;
+            $isChild = $input['is_child'] ?? null;
+            $perPage = request('per_page', Config::get('constants.per_page'));
+
             $questions = QuestionBank::with([
-                'latestVersion', 'versions', 'versions.childVersions'
+                'latestVersion', 'latestVersion.childVersions'
             ])->where('question_type', QuestionBank::STANDARD_TYPE)
             ->where('archived', false)
+            ->when(
+                $sectionId,
+                function ($query) use ($sectionId) {
+                    return $query->where('section_id', '=', $sectionId);
+                }
+            )
+            ->when(
+                !is_null($isChild),
+                function ($query) use ($isChild) {
+                    return $query->where('is_child', '=', $isChild);
+                }
+            )
             ->paginate(
-                Config::get('constants.per_page'),
+                function ($total) use ($perPage) {
+                    if($perPage === -1) {
+                        return $total;
+                    }
+                    return $perPage;
+                },
                 ['*'],
                 'page'
             );
+
+            $questions->transform(function ($question) {
+                $question = $this->getVersion($question);
+                return $question;
+            });
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -181,11 +353,55 @@ class QuestionBankController extends Controller
      *      tags={"QuestionBank"},
      *      summary="QuestionBank@indexCustom",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="section_id",
+     *          in="query",
+     *          description="section id",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="section id",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="is_child",
+     *          in="query",
+     *          description="filter on is_child field",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="filter on is_child field",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="per page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="per page",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="page",
+     *          in="query",
+     *          description="page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="page",
+     *          ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="current_page", type="integer", example="1"),
      *              @OA\Property(property="data", type="array",
      *                  @OA\Items(
      *                      @OA\Property(property="id", type="integer", example="123"),
@@ -195,16 +411,31 @@ class QuestionBankController extends Controller
      *                      @OA\Property(property="section_id", type="integer", example="1"),
      *                      @OA\Property(property="user_id", type="integer", example="1"),
      *                      @OA\Property(property="locked", type="boolean", example="false"),
-     *                      @OA\Property(property="archived", type="boolean", example="true"),
+     *                      @OA\Property(property="archived", type="boolean", example="false"),
      *                      @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
      *                      @OA\Property(property="force_required", type="boolean", example="false"),
      *                      @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *                      @OA\Property(property="is_child", type="boolean", example="true"),
-     *                      @OA\Property(property="question_type", type="string", example="STANDARD"),
-     *                      @OA\Property(property="latest_version", type="object", example=""),
-     *                      @OA\Property(property="versions", type="object", example=""),
+     *                      @OA\Property(property="question_type", type="string", example="CUSTOM"),
+     *                      @OA\Property(property="title", type="string", example="This is a question"),
+     *                      @OA\Property(property="guidance", type="string", example="This is a question's guidance"),
+     *                      @OA\Property(property="options", type="array", @OA\Items()),
+     *                      @OA\Property(property="component", type="string", example="RadioGroup"),
+     *                      @OA\Property(property="validations", type="array", @OA\Items()),),
+     *                      @OA\Property(property="version_id", type="integer", example="123"),
      *                  )
-     *              )
+     *              ),
+     *              @OA\Property(property="first_page_url", type="string", example="http://localhost:8000/api/v1/questions?page=1"),
+     *              @OA\Property(property="from", type="integer", example="1"),
+     *              @OA\Property(property="last_page", type="integer", example="1"),
+     *              @OA\Property(property="last_page_url", type="string", example="http://localhost:8000/api/v1/questions?page=1"),
+     *              @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="next_page_url", type="string", example="null"),
+     *              @OA\Property(property="path", type="string", example="http://localhost:8000/api/v1/questions"),
+     *              @OA\Property(property="per_page", type="integer", example="25"),
+     *              @OA\Property(property="prev_page_url", type="string", example="null"),
+     *              @OA\Property(property="to", type="integer", example="3"),
+     *              @OA\Property(property="total", type="integer", example="3"),
      *          )
      *      )
      * )
@@ -215,15 +446,41 @@ class QuestionBankController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+            $sectionId = $input['section_id'] ?? null;
+            $isChild = $input['is_child'] ?? null;
+            $perPage = request('per_page', Config::get('constants.per_page'));
+
             $questions = QuestionBank::with([
-                'latestVersion', 'versions', 'versions.childVersions'
+                'latestVersion', 'latestVersion.childVersions'
             ])->where('question_type', QuestionBank::CUSTOM_TYPE)
             ->where('archived', false)
+            ->when(
+                $sectionId,
+                function ($query) use ($sectionId) {
+                    return $query->where('section_id', '=', $sectionId);
+                }
+            )
+            ->when(
+                !is_null($isChild),
+                function ($query) use ($isChild) {
+                    return $query->where('is_child', '=', $isChild);
+                }
+            )
             ->paginate(
-                Config::get('constants.per_page'),
+                function ($total) use ($perPage) {
+                    if($perPage === -1) {
+                        return $total;
+                    }
+                    return $perPage;
+                },
                 ['*'],
                 'page'
             );
+
+            $questions->transform(function ($question) {
+                $question = $this->getVersion($question);
+                return $question;
+            });
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -255,11 +512,55 @@ class QuestionBankController extends Controller
      *      tags={"QuestionBank"},
      *      summary="QuestionBank@indexArchived",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="section_id",
+     *          in="query",
+     *          description="section id",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="section id",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="is_child",
+     *          in="query",
+     *          description="filter on is_child field",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="filter on is_child field",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="per page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="per page",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="page",
+     *          in="query",
+     *          description="page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="page",
+     *          ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="current_page", type="integer", example="1"),
      *              @OA\Property(property="data", type="array",
      *                  @OA\Items(
      *                      @OA\Property(property="id", type="integer", example="123"),
@@ -275,10 +576,25 @@ class QuestionBankController extends Controller
      *                      @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *                      @OA\Property(property="is_child", type="boolean", example="true"),
      *                      @OA\Property(property="question_type", type="string", example="STANDARD"),
-     *                      @OA\Property(property="latest_version", type="object", example=""),
-     *                      @OA\Property(property="versions", type="object", example=""),
+     *                      @OA\Property(property="title", type="string", example="This is a question"),
+     *                      @OA\Property(property="guidance", type="string", example="This is a question's guidance"),
+     *                      @OA\Property(property="options", type="array", @OA\Items()),
+     *                      @OA\Property(property="component", type="string", example="RadioGroup"),
+     *                      @OA\Property(property="validations", type="array", @OA\Items()),),
+     *                      @OA\Property(property="version_id", type="integer", example="123"),
      *                  )
-     *              )
+     *              ),
+     *              @OA\Property(property="first_page_url", type="string", example="http://localhost:8000/api/v1/questions?page=1"),
+     *              @OA\Property(property="from", type="integer", example="1"),
+     *              @OA\Property(property="last_page", type="integer", example="1"),
+     *              @OA\Property(property="last_page_url", type="string", example="http://localhost:8000/api/v1/questions?page=1"),
+     *              @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="next_page_url", type="string", example="null"),
+     *              @OA\Property(property="path", type="string", example="http://localhost:8000/api/v1/questions"),
+     *              @OA\Property(property="per_page", type="integer", example="25"),
+     *              @OA\Property(property="prev_page_url", type="string", example="null"),
+     *              @OA\Property(property="to", type="integer", example="3"),
+     *              @OA\Property(property="total", type="integer", example="3"),
      *          )
      *      )
      * )
@@ -289,14 +605,40 @@ class QuestionBankController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+            $sectionId = $input['section_id'] ?? null;
+            $isChild = $input['is_child'] ?? null;
+            $perPage = request('per_page', Config::get('constants.per_page'));
+
             $questions = QuestionBank::with([
-                'latestVersion', 'versions', 'versions.childVersions'
+                'latestVersion', 'latestVersion.childVersions'
             ])->where('archived', true)
-                ->paginate(
-                    Config::get('constants.per_page'),
-                    ['*'],
-                    'page'
-                );
+            ->when(
+                $sectionId,
+                function ($query) use ($sectionId) {
+                    return $query->where('section_id', '=', $sectionId);
+                }
+            )
+            ->when(
+                !is_null($isChild),
+                function ($query) use ($isChild) {
+                    return $query->where('is_child', '=', $isChild);
+                }
+            )
+            ->paginate(
+                function ($total) use ($perPage) {
+                    if($perPage === -1) {
+                        return $total;
+                    }
+                    return $perPage;
+                },
+                ['*'],
+                'page'
+            );
+
+            $questions->transform(function ($question) {
+                $question = $this->getVersion($question);
+                return $question;
+            });
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -345,7 +687,6 @@ class QuestionBankController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
      *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
@@ -353,7 +694,21 @@ class QuestionBankController extends Controller
      *                  @OA\Property(property="version", type="integer", example="1"),
      *                  @OA\Property(property="default", type="boolean", example="false"),
      *                  @OA\Property(property="required", type="boolean", example="true"),
-     *                  @OA\Property(property="question_json", type="object", example=""),
+     *                  @OA\Property(property="section_id", type="integer", example="1"),
+     *                  @OA\Property(property="user_id", type="integer", example="1"),
+     *                  @OA\Property(property="locked", type="boolean", example="false"),
+     *                  @OA\Property(property="archived", type="boolean", example="false"),
+     *                  @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="force_required", type="boolean", example="false"),
+     *                  @OA\Property(property="allow_guidance_override", type="boolean", example="false"),
+     *                  @OA\Property(property="is_child", type="integer", example="0"),
+     *                  @OA\Property(property="question_type", type="string", example="STANDARD"),
+     *                  @OA\Property(property="title", type="string", example="This is a question"),
+     *                  @OA\Property(property="guidance", type="string", example="This is a question's guidance"),
+     *                  @OA\Property(property="options", type="array", @OA\Items()),
+     *                  @OA\Property(property="component", type="string", example="RadioGroup"),
+     *                  @OA\Property(property="validations", type="array", @OA\Items()),),
+     *                  @OA\Property(property="version_id", type="integer", example="123"),
      *              )
      *          ),
      *      ),
@@ -375,120 +730,11 @@ class QuestionBankController extends Controller
             $question = QuestionBank::with([
                 'latestVersion',
                 'latestVersion.childVersions',
+                'teams',
             ])->findOrFail($id);
 
             if ($question) {
-                $questionVersion = $question['latestVersion'];
-
-                $keys = [
-                    'section_id',
-                    'user_id',
-                    'locked',
-                    'archived',
-                    'archived_date',
-                    'force_required',
-                    'allow_guidance_override',
-                    'is_child',
-                    'question_type',
-                ];
-
-                foreach ($keys as $key) {
-                    $questionVersion[$key] = $question[$key];
-                }
-
-                // decode json for the FE to easily digest
-                foreach ($questionVersion['question_json'] as $key => $value) {
-                    $questionVersion[$key] = $value;
-                }
-                unset($questionVersion['question_json']);
-
-                $options = [];
-
-                foreach ($questionVersion['childVersions'] as $child) {
-                    // get its option value
-                    $option = $child['pivot']['condition'];
-                    // append its value to the correct option (handling creation of the key if not already extant)
-                    if (!array_key_exists($option, $options)) {
-                        $options[$option] = [];
-                    }
-                    array_push($options[$option], $child);
-                }
-                unset($questionVersion['childVersions']);
-
-                // now rejig so it's a non-associative array with labels in the values
-                $newOptions = [];
-                foreach ($options as $optionKey => $option) {
-                    $childVersionArray = [];
-                    foreach ($option as $childQuestionVersion) {
-                        // move all items from `field` field to one level up
-                        $toAdd = $childQuestionVersion['question_json'];
-                        $toAdd['component'] = $toAdd['field']['component'];
-                        if (isset($toAdd['field'])) {
-
-                            if (isset($toAdd['field']['options'])) {
-                                $toAdd['options'] = array_map(
-                                    fn ($elem) => ['label' => $elem],
-                                    $toAdd['field']['options']
-                                );
-                            }
-                            if (isset($toAdd['field']['validations'])) {
-                                $toAdd['validations'] = $toAdd['field']['validations'] ?? [];
-                            }
-                            unset($toAdd['field']);
-                        }
-
-                        $qbFields = QuestionBank::where('id', $childQuestionVersion['question_id'])
-                            ->select('id', 'force_required', 'allow_guidance_override')
-                            ->first();
-                        $toAdd['force_required'] = $qbFields->force_required;
-                        $toAdd['allow_guidance_override'] = $qbFields->allow_guidance_override;
-
-                        array_push(
-                            $childVersionArray,
-                            [
-                                'label' => $optionKey,
-                                'version_id' => $childQuestionVersion['id'],
-                                'question_id' => $childQuestionVersion['question_id'],
-                                ...$toAdd,
-                            ]
-                        );
-                    }
-
-                    array_push(
-                        $newOptions,
-                        [
-                            'label' => $optionKey,
-                            'children' => $childVersionArray
-                        ]
-                    );
-
-                }
-
-                // add in any options that don't have any children
-                foreach ($questionVersion['field']['options'] as $option) {
-                    if (!in_array($option, array_column($newOptions, 'label'))) {
-                        array_push(
-                            $newOptions,
-                            [
-                                'label' => $option,
-                                'children' => []
-                            ]
-                        );
-                    }
-
-                }
-
-                $questionVersion['options'] = $newOptions;
-
-                // Move 2 entries up to the root
-                $questionVersion['component'] = $questionVersion['field']['component'];
-                $questionVersion['validations'] = $questionVersion['field']['validations'] ?? [];
-                unset($questionVersion['field']);
-
-                // And, because we're really returning a modified form of the QuestionVersion in response
-                // to a query about a Question, we need to make it clear that the id is the version id
-                $questionVersion['version_id'] = $questionVersion['id'];
-                unset($questionVersion['id']);
+                $questionVersion = $this->getVersion($question);
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
@@ -617,13 +863,13 @@ class QuestionBankController extends Controller
      *              required={"field", "section_id", "guidance", "title", "force_required", "allow_guidance_override", "component", "validations", "options"},
      *              @OA\Property(property="section_id", type="integer", example="1"),
      *              @OA\Property(property="user_id", type="integer", example="1"),
-     *              @OA\Property(property="team_id", type="array", @OA\Items()),
+     *              @OA\Property(property="team_ids", type="array", @OA\Items()),
      *              @OA\Property(property="locked", type="boolean", example="false"),
      *              @OA\Property(property="archived", type="boolean", example="false"),
      *              @OA\Property(property="required", type="boolean", example="false"),
      *              @OA\Property(property="force_required", type="boolean", example="false"),
      *              @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
-     *              @OA\Property(property="default", type="integer", example="1"),
+     *              @OA\Property(property="default", type="boolean", example="false"),
      *              @OA\Property(property="guidance", type="string", example="Question guidance"),
      *              @OA\Property(property="title", type="string", example="Question title"),
      *              @OA\Property(property="field", type="array", @OA\Items()),
@@ -672,7 +918,8 @@ class QuestionBankController extends Controller
                 'archived' => $input['archived'] ?? false,
                 'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
                 'is_child' => false,
-                'question_type' => $input['question_type'] ?? QuestionBank::STANDARD_TYPE,
+                'question_type' => $input['all_custodians'] ? QuestionBank::STANDARD_TYPE : QuestionBank::CUSTOM_TYPE,
+                'team_ids' => $input['all_custodians'] ? [] : $input['team_ids'],
             ]);
 
             $questionVersion = $this->createVersion($input, $question, 1);
@@ -731,7 +978,7 @@ class QuestionBankController extends Controller
      *              required={"field", "section_id", "guidance", "title", "force_required", "allow_guidance_override"},
      *              @OA\Property(property="section_id", type="integer", example="1"),
      *              @OA\Property(property="user_id", type="integer", example="1"),
-     *              @OA\Property(property="team_id", type="array", @OA\Items()),
+     *              @OA\Property(property="team_ids", type="array", @OA\Items()),
      *              @OA\Property(property="locked", type="boolean", example="false"),
      *              @OA\Property(property="archived", type="boolean", example="false"),
      *              @OA\Property(property="is_child", type="boolean", example="false"),
@@ -739,7 +986,7 @@ class QuestionBankController extends Controller
      *              @OA\Property(property="required", type="boolean", example="false"),
      *              @OA\Property(property="force_required", type="boolean", example="false"),
      *              @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
-     *              @OA\Property(property="default", type="integer", example="1"),
+     *              @OA\Property(property="default", type="boolean", example="false"),
      *              @OA\Property(property="guidance", type="string", example="Question guidance"),
      *              @OA\Property(property="title", type="string", example="Question title"),
      *              @OA\Property(property="field", type="array", @OA\Items()),
@@ -830,7 +1077,8 @@ class QuestionBankController extends Controller
                 'archived' => $input['archived'] ?? false,
                 'archived_date' => ($input['archived'] ?? false) ? Carbon::now() : null,
                 'is_child' => false,
-                'question_type' => $input['question_type'] ?? QuestionBank::STANDARD_TYPE,
+                'question_type' => $input['all_custodians'] ? QuestionBank::STANDARD_TYPE : QuestionBank::CUSTOM_TYPE,
+                'team_ids' => $input['all_custodians'] ? [] : $input['team_ids'],
             ]);
 
             $latestVersion = $question->latestVersion()->first()->version;
@@ -889,13 +1137,13 @@ class QuestionBankController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="section_id", type="integer", example="1"),
      *              @OA\Property(property="user_id", type="integer", example="1"),
-     *              @OA\Property(property="team_id", type="array", @OA\Items()),
+     *              @OA\Property(property="team_ids", type="array", @OA\Items()),
      *              @OA\Property(property="locked", type="boolean", example="false"),
      *              @OA\Property(property="archived", type="boolean", example="false"),
      *              @OA\Property(property="force_required", type="boolean", example="false"),
      *              @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
      *              @OA\Property(property="question_type", type="string", example="STANDARD"),
-     *              @OA\Property(property="default", type="integer", example="1"),
+     *              @OA\Property(property="default", type="boolean", example="false"),
      *              @OA\Property(property="guidance", type="string", example="Question guidance"),
      *              @OA\Property(property="title", type="string", example="Question title"),
      *              @OA\Property(property="field", type="array", @OA\Items()),
@@ -961,11 +1209,13 @@ class QuestionBankController extends Controller
                 'allow_guidance_override',
                 'locked',
                 'archived',
-                'question_type',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             if ($array['archived'] ?? false) {
                 $array['archived_date'] = Carbon::now();
+            }
+            if (array_key_exists('all_custodians', $input)) {
+                $array['question_type'] = $input['all_custodians'] ? QuestionBank::STANDARD_TYPE : QuestionBank::CUSTOM_TYPE;
             }
             $question->update($array);
 
@@ -986,7 +1236,6 @@ class QuestionBankController extends Controller
                     'field' => $input['field'] ?? $latestJson['field'],
                     'title' => $input['title'] ?? $latestJson['title'],
                     'guidance' => $input['guidance'] ?? $latestJson['guidance'],
-                    'required' => $input['required'] ?? $latestJson['required'],
                 ];
                 $questionVersion = QuestionBankVersion::where('id', $latestVersion->id)->first();
 
@@ -999,10 +1248,10 @@ class QuestionBankController extends Controller
                 ]);
             }
 
+            QuestionHasTeam::where('qb_question_id', $id)->delete();
             if ($question->question_type === QuestionBank::CUSTOM_TYPE) {
-                QuestionHasTeam::where('qb_question_id', $id)->delete();
-                if ($input['team_id']) {
-                    foreach ($input['team_id'] as $t) {
+                if ($input['team_ids']) {
+                    foreach ($input['team_ids'] as $t) {
                         QuestionHasTeam::create([
                             'qb_question_id' => $question->id,
                             'team_id' => $t,
@@ -1259,7 +1508,6 @@ class QuestionBankController extends Controller
                 ],
                 'title' => $input['title'],
                 'guidance' => $input['guidance'],
-                'required' => $input['required'] ?? false,
             ],
             'required' => $input['required'] ?? false,
             'default' => $input['default'],
@@ -1293,6 +1541,7 @@ class QuestionBankController extends Controller
                             'archived' => $child['archived'] ?? false,
                             'archived_date' => ($child['archived'] ?? false) ? Carbon::now() : null,
                             'is_child' => true,
+                            'question_type' => $input['all_custodians'] ? QuestionBank::STANDARD_TYPE : QuestionBank::CUSTOM_TYPE,
                         ]);
 
                         $field = [
@@ -1305,7 +1554,6 @@ class QuestionBankController extends Controller
                             'field' => $field,
                             'title' => $child['title'],
                             'guidance' => $child['guidance'],
-                            'required' => $child['required'] ?? false,
                         ];
 
                         $childQuestionVersion = QuestionBankVersion::create([
@@ -1331,10 +1579,10 @@ class QuestionBankController extends Controller
 
     private function updateQuestionHasTeams(QuestionBank $question, array $input)
     {
+        QuestionHasTeam::where('qb_question_id', $question->id)->delete();
         if ($question->question_type === QuestionBank::CUSTOM_TYPE) {
-            QuestionHasTeam::where('qb_question_id', $question->id)->delete();
-            if (isset($input['team_id']) && $input['team_id']) {
-                foreach ($input['team_id'] as $t) {
+            if (isset($input['team_ids']) && $input['team_ids']) {
+                foreach ($input['team_ids'] as $t) {
                     QuestionHasTeam::create([
                         'qb_question_id' => $question->id,
                         'team_id' => $t,

@@ -4,12 +4,13 @@ namespace App\Imports;
 
 use Carbon\Carbon;
 
-use App\Http\Traits\MapOrganisationSector;
 use App\Models\Dur;
 use Maatwebsite\Excel\Concerns\ToModel;
+use App\Http\Traits\MapOrganisationSector;
 use Maatwebsite\Excel\Concerns\WithStartRow;
+use Maatwebsite\Excel\Concerns\WithValidation;
 
-class DataUsesTemplateImport implements ToModel, WithStartRow
+class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
 {
     use MapOrganisationSector;
 
@@ -83,5 +84,20 @@ class DataUsesTemplateImport implements ToModel, WithStartRow
     private function calculateExcelDate(int $excelDate)
     {
         return Carbon::parse('1900-01-01')->addDays($excelDate);
+    }
+
+    public function rules(): array
+    {
+        return [
+            '0' => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    // Skip validation if the cell is empty
+                    if (is_null($value) || trim($value) === '' || strlen(trim($value)) === 0) {
+                        return;
+                    }
+                },
+            ]
+        ];
     }
 }

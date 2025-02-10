@@ -158,7 +158,7 @@ class CohortRequestController extends Controller
                 $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
             }
 
-            $query = CohortRequest::with(['user.teams', 'logs', 'logs.user', 'permissions'])
+            $query = CohortRequest::with(['user.teams', 'logs', 'logs.user', 'permissions', 'user.sector'])
                 ->when($email, function ($query) use ($email) {
                     $query->whereHas('user', function ($query) use ($email) {
                         $query->where('email', 'LIKE', '%' . $email . '%')
@@ -763,7 +763,7 @@ class CohortRequestController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $query = CohortRequest::with(['user', 'logs', 'logs.user']);
+            $query = CohortRequest::with(['user', 'logs', 'logs.user', 'user.sector']);
 
             // filter by users.organisation
             if ($request->has('organisation')) {
@@ -800,7 +800,14 @@ class CohortRequestController extends Controller
                         'User ID',
                         'Name',
                         'Email address',
+                        'Secondary Email address',
+                        'Sector',
                         'Organisation',
+                        'Bio',
+                        'Domain',
+                        'Link',
+                        'OrcId',
+                        'Profile Updated At',
                         'Status',
                         'Date Requested',
                         'Date Actioned',
@@ -816,7 +823,14 @@ class CohortRequestController extends Controller
                             (string)$rowDetails['user']['id'],
                             (string)$rowDetails['user']['name'],
                             (string)$rowDetails['user']['email'],
+                            (string)$rowDetails['user']['secondary_email'],
+                            (string)$rowDetails['user']['sector']['name'],
                             (string)$rowDetails['user']['organisation'],
+                            (string)$rowDetails['user']['bio'],
+                            (string)$rowDetails['user']['domain'],
+                            (string)$rowDetails['user']['link'],
+                            (string)$rowDetails['user']['orcid'],
+                            (string)$rowDetails['user']['updated_at'],
                             (string)$rowDetails['request_status'],
                             (string)$rowDetails['created_at'],
                             (string)$rowDetails['updated_at'],

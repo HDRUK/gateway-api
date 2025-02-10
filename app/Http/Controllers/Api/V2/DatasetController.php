@@ -14,7 +14,6 @@ use App\Jobs\LinkageExtraction;
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
 use App\Http\Traits\CheckAccess;
-use App\Http\Traits\IndexElastic;
 
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -41,7 +40,6 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class DatasetController extends Controller
 {
     use MetadataVersioning;
-    use IndexElastic;
     use GetValueByPossibleKeys;
     use MetadataOnboard;
     use CheckAccess;
@@ -432,7 +430,7 @@ class DatasetController extends Controller
         $this->checkAccess($input, $teamId, null, 'team');
 
         try {
-            $elasticIndexing = $request->boolean('elastic_indexing', true);
+            $elasticIndexing = $request->boolean('elastic_indexing', false);
 
             $team = Team::where('id', $teamId)->first()->toArray();
 
@@ -552,7 +550,7 @@ class DatasetController extends Controller
         $this->checkAccess($input, $initDataset->team_id, null, 'team');
 
         try {
-            $elasticIndexing = $request->boolean('elastic_indexing', true);
+            $elasticIndexing = $request->boolean('elastic_indexing', false);
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $teamId = (int)$input['team_id'];
@@ -634,11 +632,7 @@ class DatasetController extends Controller
                         $elasticIndexing,
                         Config::get('ted.use_partial')
                     );
-                } else {
-                    $this->reindexElastic($currDataset->id);
                 }
-            } elseif($initDataset->status === Dataset::STATUS_ACTIVE) {
-                $this->deleteDatasetFromElastic($currDataset->id);
             }
 
             Auditor::log([
@@ -730,7 +724,6 @@ class DatasetController extends Controller
                     $datasetModel->id,
                     $metadata->id,
                 );
-                $this->reindexElastic($id);
             }
 
 
@@ -816,10 +809,6 @@ class DatasetController extends Controller
             $deleteFromElastic = ($dataset->status === Dataset::STATUS_ACTIVE);
 
             MMC::deleteDataset($id);
-
-            if ($deleteFromElastic) {
-                $this->deleteDatasetFromElastic($id);
-            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

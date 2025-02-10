@@ -711,7 +711,11 @@ class SearchController extends Controller
                         $collectionArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $collectionArray[$i]['name'] = $model['name'];
                         $collectionArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
-                        $collectionArray[$i]['image_link'] = (is_null($model['image_link']) || strlen(trim($model['image_link'])) === 0 || (filter_var($model['image_link'], FILTER_VALIDATE_URL)) ? null : Config::get('services.media.base_url') . $model['image_link']);
+                        $collectionArray[$i]['image_link'] = (is_null($model['image_link']) || strlen(trim($model['image_link'])) === 0
+                                                             ? null
+                                                             : ((filter_var($model['image_link'], FILTER_VALIDATE_URL))
+                                                             ? $model['image_link']
+                                                             : Config::get('services.media.base_url') . $model['image_link']));
                         $foundFlag = true;
                         break;
                     }
@@ -1078,7 +1082,9 @@ class SearchController extends Controller
                 foreach ($pubArray as $i => $p) {
                     $foundFlag = false;
                     foreach ($pubModels as $model) {
-                        if ((int)$p['_id'] === $model['id']) {
+                        if ((int)$p['_id'] !== $model['id']) {
+                            continue;
+                        } else {
                             $pubArray[$i]['_source']['created_at'] = $model['created_at'];
                             $pubArray[$i]['_source']['year_of_publication'] = $model['year_of_publication'];
                             $pubArray[$i]['paper_title'] = $model['paper_title'];
@@ -1092,29 +1098,10 @@ class SearchController extends Controller
                             $pubArray[$i]['url'] = $model['url'];
                             $pubArray[$i]['publication_type'] = $model['publication_type'];
 
-                            // Use accessor to get datasets and their link types
-                            $datasets = $model->allDatasets;
-                            $datasetLinkTypes = [];
-                            $datasetVersions = [];
-                            foreach ($datasets as $dataset) {
-                                $linkType = PublicationHasDatasetVersion::where([
-                                    ['publication_id', '=', $model['id']],
-                                    ['dataset_version_id', '=', $dataset['id']]
-                                ])->value('link_type') ?? 'UNKNOWN';
-                                $datasetLinkTypes[] = $linkType;
-                                $getDatasetversions = DatasetVersion::where('id', $dataset['id'])->select(['id', 'dataset_id', 'metadata'])->first();
-                                if (!is_null($getDatasetversions)) {
-                                    $datasetVersions[] = [
-                                        'id' => $getDatasetversions->id,
-                                        'dataset_id' => $getDatasetversions->dataset_id,
-                                        'metadata' => $getDatasetversions->metadata,
-                                    ];
-                                }
-                            }
+                            $datasets = $this->getDatasetByPublicationId($model['id']);
+                            $pubArray[$i]['datasetLinkTypes'] = $datasets['datasetLinkTypes'];
+                            $pubArray[$i]['datasetVersions'] = $datasets['datasetVersions'];
 
-                            $pubArray[$i]['datasetLinkTypes'] = $datasetLinkTypes;
-
-                            $pubArray[$i]['datasetVersions'] = $datasetVersions;
                             $pubArray[$i]['collections'] = $this->getCollectionsByPublicationId($model['id']);
                             $pubArray[$i]['tools'] = $this->getToolsByPublicationId($model['id']);
                             $pubArray[$i]['durs'] = $this->getDursByPublicationId($model['id']);
@@ -1142,7 +1129,7 @@ class SearchController extends Controller
                 $input['field'] = ['TITLE', 'ABSTRACT', 'METHODS'];
                 $response = Http::post($urlString, $input);
 
-                $pubArray = $response['resultList']['result'];
+                $pubArray = $response['resultList']['result'] ?? [];
                 $totalResults = $response['hitCount'];
                 foreach ($pubArray as $i => $paper) {
                     $pubArray[$i]['testid'] = $paper;
@@ -1199,6 +1186,51 @@ class SearchController extends Controller
 
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function getDatasetByPublicationId(int $publicationId)
+    {
+        $linkTypeMappings = [
+            'USING' => 'Using a dataset',
+            'ABOUT' => 'About a dataset',
+            'UNKNOWN' => 'Unknown',
+        ];
+        $arrDatasetLinkTypes = [];
+        $arrDatasetVersions = [];
+
+        $publicationHasDatasetVersions = PublicationHasDatasetVersion::where([
+            'publication_id' => $publicationId,
+        ])->select(['dataset_version_id', 'link_type'])->get();
+
+        foreach ($publicationHasDatasetVersions as $publicationHasDatasetVersion) {
+            $datasetVersions = DatasetVersion::where([
+                'id' => $publicationHasDatasetVersion->dataset_version_id,
+            ])->select(['id', 'dataset_id'])->first();
+            if (is_null($datasetVersions)) {
+                continue;
+            }
+
+            $datasetById = Dataset::where([
+                'id' => $datasetVersions->dataset_id,
+                'status' => Dataset::STATUS_ACTIVE,
+            ])->select('id')->first();
+            if (is_null($datasetById)) {
+                continue;
+            }
+
+            $metadata = $datasetById->latestVersion()->metadata;
+            $arrDatasetVersions[] = [
+                'id' => $datasetVersions->id,
+                'dataset_id' => $datasetVersions->dataset_id,
+                'name' => $metadata['metadata']['summary']['shortTitle'],
+            ];
+            $arrDatasetLinkTypes[]  = $linkTypeMappings[$publicationHasDatasetVersion->link_type ?? 'UNKNOWN'];
+        }
+
+        return [
+            'datasetLinkTypes' => array_unique($arrDatasetLinkTypes),
+            'datasetVersions' => $arrDatasetVersions,
+        ];
     }
 
     private function getCollectionsByPublicationId(int $publicationId)

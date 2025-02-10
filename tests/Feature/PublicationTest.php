@@ -6,23 +6,23 @@ use Tests\TestCase;
 use App\Models\Tool;
 use App\Models\Dataset;
 use App\Models\Publication;
+use App\Models\DatasetVersion;
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\LicenseSeeder;
-use ElasticClientController as ECC;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TeamHasUserSeeder;
+
 use Database\Seeders\TypeCategorySeeder;
+
 use Database\Seeders\DatasetVersionSeeder;
 
 use App\Models\PublicationHasDatasetVersion;
-
 use Database\Seeders\PublicationHasToolSeeder;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
@@ -45,7 +45,11 @@ class PublicationTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-        ECC::spy();
+
+        Dataset::flushEventListeners();
+        DatasetVersion::flushEventListeners();
+        Publication::flushEventListeners();
+        PublicationHasDatasetVersion::flushEventListeners();
 
         $this->seed([
             MinimalUserSeeder::class,
@@ -70,7 +74,6 @@ class PublicationTest extends TestCase
      */
     public function test_get_all_publications_with_success(): void
     {
-        ECC::shouldReceive("indexDocument")->times(0);
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
         $response->assertJsonStructure([
@@ -115,7 +118,6 @@ class PublicationTest extends TestCase
      */
     public function test_get_publication_by_id_with_success(): void
     {
-        ECC::shouldReceive("indexDocument")->times(0);
         $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
 
         $response->assertJsonStructure([
@@ -148,27 +150,6 @@ class PublicationTest extends TestCase
     public function test_create_publication_with_success(): void
     {
         $datasetId = 1;
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_PUBLICATION;
-                    }
-                )
-            )
-            ->times(1);
-
-        //if the linked dataset is active then this will also be reindexed
-        $isActiveDataset = Dataset::findOrFail($datasetId)->status === Dataset::STATUS_ACTIVE;
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_DATASET;
-                    }
-                )
-            )
-            ->times($isActiveDataset ? 1 : 0);
 
         $response = $this->json(
             'POST',
@@ -214,7 +195,6 @@ class PublicationTest extends TestCase
      */
     public function test_create_publication_without_success(): void
     {
-        ECC::shouldReceive("indexDocument")->times(0);
         $response = $this->json(
             'POST',
             self::TEST_URL,
@@ -253,18 +233,6 @@ class PublicationTest extends TestCase
      */
     public function test_update_active_publication_with_success(): void
     {
-
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_PUBLICATION;
-                    }
-                )
-            )
-            ->times(1);
-
-
         $countBefore = Publication::all()->count();
         $response = $this->json(
             'POST',
@@ -302,22 +270,6 @@ class PublicationTest extends TestCase
 
         $publicationId = (int)$response['data'];
 
-        //should reindex again
-        ECC::shouldReceive("indexDocument")
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_PUBLICATION;
-                    }
-                )
-            )
-            ->times(1);
-        //should not try to delete
-        ECC::shouldReceive('deleteDocument')
-                  ->times(0);
-
-        ECC::shouldIgnoreMissing(); //ignore index on datasets
-
         $responseUpdate = $this->json(
             'PUT',
             self::TEST_URL . '/' . $publicationId,
@@ -353,21 +305,6 @@ class PublicationTest extends TestCase
 
     public function test_can_change_active_publication_with_success(): void
     {
-        ECC::shouldReceive('indexDocument')
-            ->with(
-                \Mockery::on(
-                    function ($params) {
-                        return $params['index'] === ECC::ELASTIC_NAME_PUBLICATION;
-                    }
-                )
-            )
-            ->times(1);
-
-        ECC::shouldReceive('deleteDocument')
-            ->times(1);
-
-        ECC::shouldIgnoreMissing(); //ignore index on datasets
-
         $response = $this->json(
             'POST',
             self::TEST_URL,
@@ -425,7 +362,6 @@ class PublicationTest extends TestCase
 
     public function test_can_count_with_success(): void
     {
-
         $responseCount = $this->json(
             'GET',
             self::TEST_URL .
@@ -434,8 +370,9 @@ class PublicationTest extends TestCase
             $this->header
         );
         $responseCount->assertStatus(200);
+        $countDraftDb = Publication::where('status', Publication::STATUS_DRAFT)->withTrashed()->get()->count();
         $countDraft = $responseCount['data']['DRAFT'];
-        $this->assertTrue($countDraft === 10);
+        $this->assertTrue($countDraft === $countDraftDb);
 
 
         Publication::factory(1)->create(['status' => 'ACTIVE']);
@@ -448,8 +385,9 @@ class PublicationTest extends TestCase
             $this->header
         );
         $responseCount->assertStatus(200);
+        $countActiveDb = Publication::where('status', Publication::STATUS_ACTIVE)->withTrashed()->get()->count();
         $countActive = $responseCount['data']['ACTIVE'];
-        $this->assertTrue($countActive === 1);
+        $this->assertTrue($countActive === $countActiveDb);
 
         //now delete one
         $response = $this->json('DELETE', self::TEST_URL . '/1', [], $this->header);
@@ -463,8 +401,9 @@ class PublicationTest extends TestCase
             $this->header
         );
         $responseCount->assertStatus(200);
+        $countArchivedDb = Publication::where('status', Publication::STATUS_ARCHIVED)->withTrashed()->get()->count();
         $countArchived = $responseCount['data']['ARCHIVED'];
-        $this->assertTrue($countArchived === 1);
+        $this->assertTrue($countArchived === $countArchivedDb);
 
         $ownerId = 1;
         Publication::take(5)->update(['owner_id' => $ownerId]);
@@ -477,30 +416,42 @@ class PublicationTest extends TestCase
             $this->header
         );
         $responseCount->assertStatus(200);
-        $countDraft = $responseCount['data']['DRAFT'];
-        $this->assertTrue($countDraft === 5);
+        $countDraftDb2 = Publication::where([
+            'status' => Publication::STATUS_DRAFT,
+            'owner_id' => $ownerId,
+            ])->get()->count();
+        $countDraft = isset($responseCount['data']['DRAFT']) ? $responseCount['data']['DRAFT'] : 0;
+        $this->assertTrue($countDraft === $countDraftDb2);
 
     }
 
     public function test_patch_publication_status_with_success(): void
     {
-        $countBefore = Publication::all()->count();
+        // draft to archived
+        $publicationStatusDraft = Publication::where('status', Publication::STATUS_DRAFT)->first();
+        $countStatusDraft = Publication::where('status', Publication::STATUS_DRAFT)->get()->count();
         $response = $this->json(
             'PATCH',
-            self::TEST_URL . "/1",
+            self::TEST_URL . "/" . $publicationStatusDraft->id,
             [
-                'status' => 'ARCHIVED'
+                'status' => Publication::STATUS_ARCHIVED
             ],
             $this->header,
         );
         $response->assertStatus(200);
-        $countAfter = Publication::all()->count();
-        $this->assertTrue(($countBefore - $countAfter) === 1);
+        $countAfter = Publication::where('status', Publication::STATUS_DRAFT)->get()->count();
+        $this->assertTrue(($countStatusDraft - $countAfter) === 1);
 
+
+        // draft to active
+        $countActiveBefore = Publication::where("status", Publication::STATUS_ACTIVE)->count();
+        $countDraftBefore = Publication::where("status", Publication::STATUS_DRAFT)->count();
+        $publicationStatusDraft = Publication::where('status', Publication::STATUS_DRAFT)->first();
+        $countArchivedBefore = Publication::withTrashed()->where("status", Publication::STATUS_ARCHIVED)->count();
 
         $response = $this->json(
             'PATCH',
-            self::TEST_URL . "/2",
+            self::TEST_URL . "/" . $publicationStatusDraft->id,
             [
                 'status' => 'ACTIVE'
             ],
@@ -511,13 +462,13 @@ class PublicationTest extends TestCase
         $countActive = Publication::where("status", Publication::STATUS_ACTIVE)->count();
         $countDraft = Publication::where("status", Publication::STATUS_DRAFT)->count();
         $countArchived = Publication::withTrashed()->where("status", Publication::STATUS_ARCHIVED)->count();
-        $this->assertTrue($countActive === 1);
-        $this->assertTrue($countArchived === 1);
-        $this->assertTrue($countDraft === ($countBefore - 2));
+        $this->assertTrue(($countActive - 1) === $countActiveBefore);
+        $this->assertTrue($countArchived === $countArchivedBefore);
+        $this->assertTrue(($countDraft + 1) === $countDraftBefore);
 
     }
 
-    public function test_can_filter_publications(): void
+    public function test_can_filter_publications_not_by_status(): void
     {
         $firstPublicationTitle = Publication::where("id", 1)->get()->first()->paper_title;
         $response = $this->json(
@@ -534,6 +485,7 @@ class PublicationTest extends TestCase
     public function test_can_filter_publications_on_status(): void
     {
         //all seeded publications are draft
+        $countDraft = Publication::where("status", Publication::STATUS_DRAFT)->count();
         $response = $this->json(
             'GET',
             self::TEST_URL . "?status=DRAFT",
@@ -541,7 +493,7 @@ class PublicationTest extends TestCase
         );
         //check adding a status filter doesnt crash
         $response->assertStatus(200);
-        $this->assertCount(10, $response['data']);
+        $this->assertCount($countDraft, $response['data']);
 
         //change one of the publications to active
         $response = $this->json(
@@ -555,13 +507,14 @@ class PublicationTest extends TestCase
         $response->assertStatus(200);
 
         //filter to find this one active publciation
+        $countActive = Publication::where("status", Publication::STATUS_ACTIVE)->count();
         $response = $this->json(
             'GET',
             self::TEST_URL . "?status=ACTIVE",
             $this->header,
         );
         $response->assertStatus(200);
-        $this->assertCount(1, $response['data']);
+        $this->assertCount($countActive, $response['data']);
 
 
         //update 2 other publications to be archived
@@ -592,9 +545,8 @@ class PublicationTest extends TestCase
             $this->header,
         );
         $response->assertStatus(200);
-        $this->assertCount(2, $response['data']);
-
-
+        $countArchived = Publication::where("status", Publication::STATUS_ARCHIVED)->withTrashed()->count();
+        $this->assertCount($countArchived, $response['data']);
     }
 
     /**
@@ -602,10 +554,6 @@ class PublicationTest extends TestCase
      */
     public function test_soft_delete_and_unarchive_publication_with_success(): void
     {
-        ECC::shouldReceive("deleteDocument")
-            ->times(1);
-        ECC::shouldReceive("indexDocument")->times(1);
-
         // Create a new publication for this test with ACTIVE status
         $response = $this->json(
             'POST',

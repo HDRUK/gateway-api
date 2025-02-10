@@ -29,6 +29,10 @@ class UpdateDataAccessApplication extends BaseFormRequest
                 'required',
                 'in:DRAFT,SUBMITTED,FEEDBACK',
             ],
+            'project_title' => [
+                'string',
+                'required',
+            ],
             'approval_status' => [
                 'string',
                 'in:APPROVED,APPROVED_COMMENTS,REJECTED',
