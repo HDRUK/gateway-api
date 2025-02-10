@@ -914,7 +914,7 @@ class PublicationController extends Controller
     {
 
         // There was an error here where by the Publications were not getting cleared out / exhibiting
-        // wierd cache like behavior on the FE. Clearing all links for a Pub and restoring active ones
+        // weird cache like behavior on the FE. Clearing all links for a Pub and restoring active ones
         // is much cleaner approach. 
 
         $this->deletePublicationHasDatasetVersions($publicationId);
