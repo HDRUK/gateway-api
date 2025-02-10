@@ -33,10 +33,11 @@ class LinkageExtraction implements ShouldQueue
     public function __construct(string $datasetId, string $datasetVersionId)
     {
         try {
-            $this->sourceDatasetId = $datasetId;
-            $this->sourceDatasetVersionId = $datasetVersionId;
+
             $version = DatasetVersion::findOrFail($datasetVersionId);
 
+            $this->sourceDatasetId = $datasetId;
+            $this->sourceDatasetVersionId = $datasetVersionId;
             $this->gwdmVersion = $version->metadata['gwdmVersion'];
             $this->datasetLinkages = $version->metadata['metadata']['linkage']['datasetLinkage'] ?? null;
             $this->publicationAboutDatasetLinkages = $version->metadata['metadata']['linkage']['publicationAboutDataset'] ?? null;
@@ -105,7 +106,7 @@ class LinkageExtraction implements ShouldQueue
                     if (!$targetDatasetVersionId) {
                         continue;
                     }
-                    DatasetVersionHasDatasetVersion::updateOrCreate([
+                    DatasetVersionHasDatasetVersion::firstOrCreate([
                         'dataset_version_source_id' => $this->sourceDatasetVersionId,
                         'dataset_version_target_id' => $targetDatasetVersionId,
                         'linkage_type' => $key,
