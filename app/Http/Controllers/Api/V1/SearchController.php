@@ -267,6 +267,7 @@ class SearchController extends Controller
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
+                'ids' => $matchedIds,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -578,6 +579,7 @@ class SearchController extends Controller
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
+                'ids' => $matchedIds,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -735,6 +737,7 @@ class SearchController extends Controller
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
+                'ids' => $matchedIds,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -918,6 +921,7 @@ class SearchController extends Controller
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
+                'ids' => $matchedIds,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -1063,6 +1067,7 @@ class SearchController extends Controller
 
             $source = !is_null($input['source']) ? $input['source'] : 'GAT';
 
+            $matchedIds = null;
             if ($source === 'GAT') {
                 $aggs = Filter::where('type', 'paper')->get()->toArray();
                 $input['aggs'] = $aggs;
@@ -1163,10 +1168,14 @@ class SearchController extends Controller
             $paginatedData = $this->paginateArray($request, $pubArray, $perPage);
             unset($pubArray);
 
-            $aggs = collect([
+            $arrAggs = [
                 'aggregations' => isset($response['aggregations']) ? $response['aggregations'] : [],
                 'elastic_total' => $totalResults,
-            ]);
+            ];
+            if  ($matchedIds) {
+                $arrAggs['ids'] = $matchedIds;
+            }
+            $aggs = collect($arrAggs);
 
             $final = $aggs->merge($paginatedData);
 
@@ -1660,6 +1669,7 @@ class SearchController extends Controller
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
+                'ids' => $matchedIds,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -1746,7 +1756,11 @@ class SearchController extends Controller
             usort(
                 $resultArray,
                 function ($a, $b) use ($sortField) {
-                    return -1 * ($a['_source'][$sortField] <=> $b['_source'][$sortField]);
+                    if (is_string($b['_source'][$sortField])) {
+                        return strtoupper($b['_source'][$sortField]) <=> strtoupper($a['_source'][$sortField]);
+                    } else {
+                        return $b['_source'][$sortField] <=> $a['_source'][$sortField];
+                    }
                 }
             );
         }
