@@ -824,7 +824,7 @@ class CohortRequestController extends Controller
                             (string)$rowDetails['user']['name'],
                             (string)$rowDetails['user']['email'],
                             (string)$rowDetails['user']['secondary_email'],
-                            (string)$rowDetails['user']['sector']['name'],
+                            (string)($rowDetails['user']['sector']['name'] ?? 'N/A'),
                             (string)$rowDetails['user']['organisation'],
                             (string)$rowDetails['user']['bio'],
                             (string)$rowDetails['user']['domain'],
