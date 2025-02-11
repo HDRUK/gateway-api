@@ -267,6 +267,7 @@ class SearchController extends Controller
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
+                'ids' => $matchedIds,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -578,6 +579,7 @@ class SearchController extends Controller
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
+                'ids' => $matchedIds,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -735,6 +737,7 @@ class SearchController extends Controller
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
+                'ids' => $matchedIds,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -918,6 +921,7 @@ class SearchController extends Controller
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
+                'ids' => $matchedIds,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -1166,6 +1170,7 @@ class SearchController extends Controller
             $aggs = collect([
                 'aggregations' => isset($response['aggregations']) ? $response['aggregations'] : [],
                 'elastic_total' => $totalResults,
+                'ids' => $matchedIds,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -1660,6 +1665,7 @@ class SearchController extends Controller
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
+                'ids' => $matchedIds,
             ]);
 
             $final = $aggs->merge($paginatedData);
