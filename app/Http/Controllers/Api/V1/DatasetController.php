@@ -30,7 +30,6 @@ use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\EditDataset;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Requests\Dataset\CreateDataset;
-use App\Http\Requests\Dataset\DeleteDataset;
 use App\Http\Requests\Dataset\ExportDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
 use App\Exports\DatasetStructuralMetadataExport;
@@ -1011,7 +1010,7 @@ class DatasetController extends Controller
      *      )
      * )
      */
-    public function destroy(DeleteDataset $request, string $id) // softdelete
+    public function destroy(Request $request, string $id) // softdelete
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
