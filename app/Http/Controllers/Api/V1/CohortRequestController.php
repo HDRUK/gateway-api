@@ -369,7 +369,7 @@ class CohortRequestController extends Controller
 
         try {
             $user = User::where([ 'id' => $jwtUser['id'] ])->first();
-            if (strlen(trim($user->name)) === 0) {
+            if (!$user->name || strlen(trim($user->name)) === 0) {
                 throw new Exception("The user name not found!");
             }
 
