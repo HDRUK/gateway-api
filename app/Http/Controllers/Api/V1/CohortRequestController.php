@@ -368,6 +368,11 @@ class CohortRequestController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
+            $user = User::where([ 'id' => $jwtUser['id'] ])->first();
+            if (strlen(trim($user->name)) === 0) {
+                throw new Exception("The user name not found!");
+            }
+
             $id = 0;
             $cohortRequest = null;
             $notAllowUpdateRequest = ['PENDING', 'APPROVED', 'BANNED', 'SUSPENDED'];
