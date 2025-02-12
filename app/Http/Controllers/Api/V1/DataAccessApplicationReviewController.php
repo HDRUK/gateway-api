@@ -54,8 +54,14 @@ class DataAccessApplicationReviewController extends Controller
      *                  @OA\Property(property="application_id", type="integer", example="1"),
      *                  @OA\Property(property="question_id", type="integer", example="1"),
      *                  @OA\Property(property="comments", type="array", @OA\Items(
-     *
-     *
+     *                      @OA\Property(property="id", type="integer", example="123"),
+     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="user_id", type="integer", example="123"),
+     *                      @OA\Property(property="team_id", type="integer", example="123"),
+     *                      @OA\Property(property="review_id", type="integer", example="123"),
+     *                      @OA\Property(property="comment", type="string", example="A comment"),
      *                  )),
      *              )
      *          ),
