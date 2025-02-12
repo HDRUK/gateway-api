@@ -9,7 +9,6 @@ use Exception;
 use App\Models\Dataset;
 use App\Models\Publication;
 use Illuminate\Http\Request;
-use App\Models\DatasetVersion;
 use Illuminate\Support\Carbon;
 use App\Http\Traits\CheckAccess;
 use App\Models\DurHasPublication;
@@ -915,10 +914,10 @@ class PublicationController extends Controller
 
         // There was an error here where by the Publications were not getting cleared out / exhibiting
         // weird cache like behavior on the FE. Clearing all links for a Pub and restoring active ones
-        // is much cleaner approach. 
+        // is much cleaner approach.
 
         $this->deletePublicationHasDatasetVersions($publicationId);
-      
+
         foreach ($inDatasets as $dataset) {
             $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
             $checking = $this->checkInPublicationHasDatasetVersions($publicationId, $datasetVersionId, $dataset);
@@ -945,8 +944,8 @@ class PublicationController extends Controller
 
             $linkage = PublicationHasDatasetVersion::withTrashed()->firstOrCreate($arrCreate);
             // Restore if it’s soft-deleted
-            if ($linkage->trashed()) { 
-                $linkage->restore(); 
+            if ($linkage->trashed()) {
+                $linkage->restore();
             }
 
             return $linkage;
