@@ -17,7 +17,10 @@ use App\Models\Publication;
 
 class LinkageExtraction implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     protected string $sourceDatasetId = '';
     protected string $sourceDatasetVersionId = '';
@@ -164,7 +167,9 @@ class LinkageExtraction implements ShouldQueue
 
 
                 // Restore if it’s soft-deleted
-                if ($linkage->trashed()) { $linkage->restore(); }
+                if ($linkage->trashed()) {
+                    $linkage->restore();
+                }
             }
         } catch (Exception $e) {
             Auditor::log([
