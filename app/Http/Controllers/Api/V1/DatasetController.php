@@ -729,8 +729,8 @@ class DatasetController extends Controller
 
             $inputSchema = isset($input['metadata']['schemaModel']) ? $input['metadata']['schemaModel'] : null;
             $inputVersion = isset($input['metadata']['schemaVersion']) ? $input['metadata']['schemaVersion'] : null;
-
-            $submittedMetadata = $input['metadata']['metadata'];
+            //TODO go over with big c
+            $submittedMetadata = ($input['metadata']['metadata'] ?? $input['metadata']);
             $gwdmMetadata = null;
 
             $traserResponse = MMC::translateDataModelType(
@@ -765,6 +765,10 @@ class DatasetController extends Controller
             ]);
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
+            //TODO go over with big c
+            if (!is_array($submittedMetadata)) {
+                $submittedMetadata = json_decode($submittedMetadata, true);
+            }
 
             $datasetVersionId = $this->updateMetadataVersion(
                 $currDataset,
@@ -1050,6 +1054,38 @@ class DatasetController extends Controller
         $this->checkAccess($input, $teamId, null, 'team');
         $dataset = Dataset::where('pid', "=", $pid)->first();
         return $this->destroy($request, $dataset->id);
+    }
+
+    public function federationDestroyByPid(Request $request, string $pid) // softdelete
+    {
+        $input = $request->all();
+        $teamId = (int)$input['team_id'];
+        $this->checkAccess($input, $teamId, null, 'team');
+        $dataset = Dataset::where('pid', '=', $pid)
+                  ->where('team_id', '=', $teamId)
+                  ->first();
+
+        if ($dataset->team_id !== $teamId) {
+            return response()->json(['error' => 'Forbidden', 'message' => 'Cannot delete dataset, it belongs to '.$dataset->team_id.', not team ' . $teamId], 403);
+        }
+
+        return $this->destroy($request, $dataset->id);
+    }
+
+    public function federationUpdateByPid(UpdateDataset $request, string $pid)
+    {
+        $input = $request->all();
+        $teamId = (int) $input['team_id'];
+        $dataset = Dataset::where('pid', '=', $pid)
+                  ->where('team_id', '=', $teamId)
+                  ->first();
+
+        if ($dataset->team_id !== $teamId) {
+            return response()->json(['error' => 'Forbidden', 'message' => 'Cannot update dataset, it belongs to '.$dataset->team_id.', not team ' . $teamId], 403);
+        }
+
+        $this->checkAccess($input, $teamId, null, 'team');
+        return $this->update($request, $dataset->id);
     }
 
     public function updateByPid(UpdateDataset $request, string $pid)

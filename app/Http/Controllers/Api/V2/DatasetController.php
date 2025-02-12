@@ -834,15 +834,13 @@ class DatasetController extends Controller
     public function destroyByPid(Request $request, string $pid) // softdelete
     {
         $dataset = Dataset::where('pid', "=", $pid)->first();
-        $updatedRequest = $request->merge(['team_id' => $dataset->team_id]);
-        return $this->destroy($updatedRequest, $dataset->id);
+        return $this->destroy($request, $dataset->id);
     }
 
-    public function updateByPid(Request $request, string $pid)
+    public function updateByPid(UpdateDataset $request, string $pid)
     {
         $dataset = Dataset::where('pid', "=", $pid)->first();
-        $updatedRequest = $request->merge(['team_id' => $dataset->team_id]);
-        return $this->update($updatedRequest, $dataset->id);
+        return $this->update($request, $dataset->id);
     }
 
     /**
