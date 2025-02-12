@@ -730,7 +730,9 @@ class DatasetController extends Controller
             $inputSchema = isset($input['metadata']['schemaModel']) ? $input['metadata']['schemaModel'] : null;
             $inputVersion = isset($input['metadata']['schemaVersion']) ? $input['metadata']['schemaVersion'] : null;
             //TODO go over with big c
-            $submittedMetadata = ($input['metadata']['metadata'] ?? $input['metadata']);
+            //$submittedMetadata = ($input['metadata']['metadata'] ?? $input['metadata']);
+            $submittedMetadata = $input['metadata']['metadata'];
+
             $gwdmMetadata = null;
 
             $traserResponse = MMC::translateDataModelType(
@@ -766,9 +768,9 @@ class DatasetController extends Controller
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
             //TODO go over with big c
-            if (!is_array($submittedMetadata)) {
-                $submittedMetadata = json_decode($submittedMetadata, true);
-            }
+            // if (!is_array($submittedMetadata)) {
+            //     $submittedMetadata = json_decode($submittedMetadata, true);
+            // }
 
             $datasetVersionId = $this->updateMetadataVersion(
                 $currDataset,
