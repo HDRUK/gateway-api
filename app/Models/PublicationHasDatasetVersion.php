@@ -21,8 +21,13 @@ class PublicationHasDatasetVersion extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'publication_id', 'dataset_version_id', 'link_type'
+        'publication_id', 
+        'dataset_version_id', 
+        'link_type', 
+        'description',
     ];
+
+    protected $dates = ['deleted_at'];
 
     /**
      * The table associated with the model.
