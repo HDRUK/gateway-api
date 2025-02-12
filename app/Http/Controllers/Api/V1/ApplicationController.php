@@ -822,7 +822,11 @@ class ApplicationController extends Controller
 
         $receivers = $this->sendEmailTo($app);
 
-        foreach ($receivers as $receiver) {
+        $listOfAdminDevNames = $this->listOfAdminDevName($receivers['user_admin_dev_name']);
+        $textAdminDev = 'To review or edit the integration, including generating a new <b>Client ID</b>, click the link below or visit your account on the Gateway.';
+        $textNoAdminDev = 'To review or edit the integration, contact your Team Administrator(s) or Developer(s):<br>' . $listOfAdminDevNames;
+
+        foreach ($receivers['users'] as $receiver) {
             $to = [
                 'to' => [
                     'email' => $receiver['email'],
@@ -839,6 +843,8 @@ class ApplicationController extends Controller
                 '[[APP_UPDATED_AT_DATE]]' => $app->updated_at,
                 '[[APP_DELETED_AT_DATE]]' => date('Y-m-d'),
                 '[[APP_STATUS]]' => $app->enabled ? 'enabled' : 'disabled',
+                '[[APP_PERMISSIONS_LIST]]' => $this->listOfAppPermissions($appId),
+                '[[OTHER_USER_MESSAGE]]' => in_array($receiver['id'], $receivers['user_admin_dev_ids']) ? $textAdminDev : $textNoAdminDev,
                 '[[CURRENT_YEAR]]' => date('Y'),
             ];
 
@@ -857,18 +863,54 @@ class ApplicationController extends Controller
         $teamHasUsers = TeamHasUser::where('team_id', $teamId)->select('id', 'user_id')->get();
 
         $notificationuserId = [];
+        $userAdminDevNames = [];
+        $userAdminDevIds = [];
         foreach ($teamHasUsers as $item) {
             $teamUserHasRoles = TeamUserHasRole::whereIn('role_id', $roles)->where('team_has_user_id', $item->id)->first();
             if (!is_null($teamUserHasRoles)) {
                 $notificationuserId[] = $item->user_id;
             }
+
+            $user = User::where(['id' => $item->user_id])->select(['name'])->first();
+            if (!is_null($user)) {
+                $userAdminDevNames[] = $user->name;
+                $userAdminDevIds[] = $item->user_id;
+            }
         }
+
 
         $notificationuserId[] = $userId;
         $notificationuserId = array_unique($notificationuserId);
-        $return = User::whereIn('id', $notificationuserId)->select(['firstname', 'name', 'email'])->get()->toArray();
+        $users = User::whereIn('id', $notificationuserId)->select(['id', 'firstname', 'name', 'email'])->get()->toArray();
 
+        return [
+            'user_admin_dev_ids' => $userAdminDevIds,
+            'user_admin_dev_name' => $userAdminDevNames,
+            'users' => $users,
+        ];
+    }
+
+    public function listOfAdminDevName(array $userAdminDevNames): string
+    {
+        $return = '<ul>';
+        foreach ($userAdminDevNames as $item) {
+            $return .= '<li>' . $item . '</li>';
+        }
+        $return .= '</ul>';
         return $return;
+    }
+
+    public function listOfAppPermissions(int $appId)
+    {
+        $applications = Application::with(['permissions'])->where(['id' => $appId])->first()->toArray();
+
+        $list = '<ul>';
+        foreach ($applications['permissions'] as $item) {
+            $list .= '<li>' . $item['name'] . '</li>';
+        }
+        $list .= '</ul>';
+
+        return $list;
     }
 
 }
