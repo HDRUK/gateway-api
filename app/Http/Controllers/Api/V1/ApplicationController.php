@@ -722,7 +722,7 @@ class ApplicationController extends Controller
      *    path="/api/v1/applications/{id}/generate",
      *    tags={"Application"},
      *    summary="Generate Client ID application",
-     *    description="Generate Client ID application,
+     *    description="Generate Client ID application",
      *    summary="ApplicationController@generateClientIdById",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
