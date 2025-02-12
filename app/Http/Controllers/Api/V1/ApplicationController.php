@@ -783,7 +783,7 @@ class ApplicationController extends Controller
         try {
             $clientId = Str::random(40);
             $clientSecret = Hash::make(
-                $initApplication->appId .
+                $initApplication->app_id .
                 ':' . $clientId .
                 ':' . env('APP_AUTH_PRIVATE_SALT') .
                 ':' . env('APP_AUTH_PRIVATE_SALT_2')
