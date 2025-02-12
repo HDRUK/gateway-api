@@ -785,9 +785,12 @@ class DatasetController extends Controller
                     $currDataset->id,
                     $datasetVersionId,
                 );
-                if(Config::get('ted.enabled')) {
+                if(Config::get('ted.enabled')) 
+                        /// i have a sneaky sus its you!
+                    Log::info('<<<<<<<<<<<<<<<<<<<<<< Am teddin: ');
+                    
                     $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
-
+                    Log::info('<<<<<<<<<<<<<<<<<<<<<< Am still teddin: ');
                     TermExtraction::dispatch(
                         $currDataset->id,
                         $datasetVersionId,
