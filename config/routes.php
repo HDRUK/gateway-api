@@ -4136,6 +4136,22 @@ return [
     ],
     [
         'name' => 'dar/applications',
+        'method' => 'put',
+        'path' => '/users/{userId}/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}',
+        'methodController' => 'DataAccessApplicationReviewController@userUpdate',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+            'questionId' => '[0-9]+',
+            'reviewId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
         'method' => 'delete',
         'path' => '/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}',
         'methodController' => 'DataAccessApplicationReviewController@destroy',

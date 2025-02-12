@@ -788,7 +788,8 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications/' . $applicationId . '/questions/' . $questionId . '/reviews',
             [
-                'review_comment' => 'A test review comment'
+                'comment' => 'A test review comment',
+                'team_id' => $teamId
             ],
             $this->header
         );
@@ -809,18 +810,40 @@ class DataAccessApplicationTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'message',
-                'data'
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                        'application_id',
+                        'question_id',
+                        'resolved',
+                        'comments' => [
+                            0 => [
+                                'id',
+                                'created_at',
+                                'updated_at',
+                                'deleted_at',
+                                'team_id',
+                                'user_id',
+                                'comment',
+                            ]
+                        ]
+                    ]
+                ]
             ]);
         $content = $response->decodeResponseJson()['data'];
 
-        $this->assertEquals(1, count($content));
+        $this->assertEquals(1, count($content[0]['comments']));
+        $this->assertEquals('A test review comment', $content[0]['comments'][0]['comment']);
 
-        // Update review
+        // User adds another comment to the review
         $response = $this->json(
             'PUT',
-            'api/v1/dar/applications/' . $applicationId . '/questions/' . $questionId . '/reviews/' . $reviewId,
+            'api/v1/users/1/dar/applications/' . $applicationId . '/questions/' . $questionId . '/reviews/' . $reviewId,
             [
-                'review_comment' => 'A test review comment - updated'
+                'comment' => 'Another test review comment',
             ],
             $this->header
         );
@@ -829,9 +852,17 @@ class DataAccessApplicationTest extends TestCase
                 'message',
                 'data'
             ]);
+        $response = $this->json(
+            'GET',
+            'api/v1/dar/applications/' . $applicationId . '/reviews',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $content = $response->decodeResponseJson()['data'];
 
-        $this->assertEquals('A test review comment - updated', $content['review_comment']);
+        $this->assertEquals(2, count($content[0]['comments']));
+        $this->assertEquals('Another test review comment', $content[0]['comments'][1]['comment']);
 
         // Delete review
         $response = $this->json(
