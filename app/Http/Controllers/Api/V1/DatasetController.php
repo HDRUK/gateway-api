@@ -731,7 +731,7 @@ class DatasetController extends Controller
 
             $inputSchema = isset($input['metadata']['schemaModel']) ? $input['metadata']['schemaModel'] : null;
             $inputVersion = isset($input['metadata']['schemaVersion']) ? $input['metadata']['schemaVersion'] : null;
-            //TODO go over with big c
+
             $submittedMetadata = ($input['metadata']['metadata'] ?? $input['metadata']);
             $gwdmMetadata = null;
             $useGWDMetada = false;
@@ -768,7 +768,7 @@ class DatasetController extends Controller
             ]);
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
-            //TODO go over with big c
+
             if (!is_array($submittedMetadata)) {
                 $submittedMetadata = json_decode($submittedMetadata, true);
             }
@@ -787,23 +787,9 @@ class DatasetController extends Controller
                     $datasetVersionId,
                 );
                 if(Config::get('ted.enabled')) {
-                    /// i have a sneaky sus its you!
-                    Log::info('<<<<<<<<<<<<<<<<<<<<<< Am teddin: ');
-                    // We below up below because there is no $input['metadata']['metadata']
-                    // now I fixed something similiar earlier where i check if it exists if not i go to top level and dump in $submittedMetadata
-                    $tedMetadata = ($useGWDMetada) ? $gwdmMetadata['metadata'] : $input['metadata'];
+                    $tedMetadata = ($useGWDMetada) ? $gwdmMetadata : $input['metadata'];
+                    $tedData = Config::get('ted.use_partial') ? $tedMetadata['summary'] : $tedMetadata;
 
-
-                    $tedData = Config::get('ted.use_partial') ? $tedMetadata['metadata']['summary'] : $tedMetadata['metadata'];
-
-                    // above should be:
-                    // $tedData = Config::get('ted.use_partial')
-                    // ? ($submittedMetadata['summary'] ?? $submittedMetadata)
-                    // : $submittedMetadata;
-                    Log::info('<<<<<<<<<<<<<<<<<<<<<< Am still teddin: ');
-
-
-                    Log::info('<<<<<<<<<<<<<<<<<<<<<< Am still teddin or did i fall over?: ');
                     TermExtraction::dispatch(
                         $currDataset->id,
                         $datasetVersionId,
