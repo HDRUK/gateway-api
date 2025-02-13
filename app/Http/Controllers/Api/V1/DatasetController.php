@@ -734,7 +734,7 @@ class DatasetController extends Controller
             //TODO go over with big c
             $submittedMetadata = ($input['metadata']['metadata'] ?? $input['metadata']);
             $gwdmMetadata = null;
-
+            $useGWDMetada = false;
             $traserResponse = MMC::translateDataModelType(
                 json_encode($payload),
                 Config::get('metadata.GWDM.name'),
@@ -747,6 +747,7 @@ class DatasetController extends Controller
             if ($traserResponse['wasTranslated']) {
                 //set the gwdm metadata
                 $gwdmMetadata = $traserResponse['metadata'];
+                $useGWDMetada = true;
             } else {
                 return response()->json([
                     'message' => 'metadata is in an unknown format and cannot be processed.',
@@ -790,13 +791,15 @@ class DatasetController extends Controller
                     Log::info('<<<<<<<<<<<<<<<<<<<<<< Am teddin: ');
                     // We below up below because there is no $input['metadata']['metadata']
                     // now I fixed something similiar earlier where i check if it exists if not i go to top level and dump in $submittedMetadata
+                    $tedMetadata = ($useGWDMetada) ? $gwdmMetadata['metadata'] : $input['metadata'];
 
-                    //$tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
+
+                    $tedData = Config::get('ted.use_partial') ? $tedMetadata['metadata']['summary'] : $tedMetadata['metadata'];
 
                     // above should be:
-                    $tedData = Config::get('ted.use_partial')
-                    ? ($submittedMetadata['summary'] ?? $submittedMetadata)
-                    : $submittedMetadata;
+                    // $tedData = Config::get('ted.use_partial')
+                    // ? ($submittedMetadata['summary'] ?? $submittedMetadata)
+                    // : $submittedMetadata;
                     Log::info('<<<<<<<<<<<<<<<<<<<<<< Am still teddin: ');
 
 
