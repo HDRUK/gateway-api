@@ -788,9 +788,19 @@ class DatasetController extends Controller
                 if(Config::get('ted.enabled')) {
                     /// i have a sneaky sus its you!
                     Log::info('<<<<<<<<<<<<<<<<<<<<<< Am teddin: ');
+                    // We below up below because there is no $input['metadata']['metadata']
+                    // now I fixed something similiar earlier where i check if it exists if not i go to top level and dump in $submittedMetadata
 
-                    $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
+                    //$tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
+
+                    // above should be:
+                    $tedData = Config::get('ted.use_partial')
+                    ? ($submittedMetadata['summary'] ?? $submittedMetadata)
+                    : $submittedMetadata;
                     Log::info('<<<<<<<<<<<<<<<<<<<<<< Am still teddin: ');
+
+
+                    Log::info('<<<<<<<<<<<<<<<<<<<<<< Am still teddin or did i fall over?: ');
                     TermExtraction::dispatch(
                         $currDataset->id,
                         $datasetVersionId,
