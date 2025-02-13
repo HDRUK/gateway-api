@@ -1797,7 +1797,7 @@ return [
     [
         'name' => 'applications',
         'method' => 'patch',
-        'path' => '/applications/{id}/generate',
+        'path' => '/applications/{id}/clientid',
         'methodController' => 'ApplicationController@generateClientIdById',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [

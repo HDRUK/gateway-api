@@ -719,7 +719,7 @@ class ApplicationController extends Controller
 
     /**
      * @OA\Patch(
-     *    path="/api/v1/applications/{id}/generate",
+     *    path="/api/v1/applications/{id}/clientid",
      *    tags={"Application"},
      *    summary="Generate Client ID application",
      *    description="Generate Client ID application",
@@ -794,8 +794,6 @@ class ApplicationController extends Controller
                 'client_secret' => $clientSecret,
             ];
 
-            $array['image_link'] = $input['image_link'];
-
             Application::where(['id' => $id])->update($array);
 
             $application = Application::with(['permissions','team','user','notifications.userNotification'])->where('id', $id)->first();
@@ -809,6 +807,8 @@ class ApplicationController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Application ' . $id . ' updated',
             ]);
+
+            $this->sendEmail((int)$id, 'UPDATE.CLIENTID');
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -914,26 +914,25 @@ class ApplicationController extends Controller
         $template = null;
         switch ($type) {
             case 'CREATE':
-                $template = EmailTemplate::where('identifier', '=', 'private.app.create')->first();
+                $template = EmailTemplate::where('identifier', 'private.app.create')->first();
                 break;
             case 'UPDATE':
-                $template = EmailTemplate::where('identifier', '=', 'private.app.update')->first();
+                $template = EmailTemplate::where('identifier', 'private.app.update')->first();
                 break;
             case 'DELETE':
-                $template = EmailTemplate::where('identifier', '=', 'private.app.delete')->first();
+                $template = EmailTemplate::where('identifier', 'private.app.delete')->first();
+                break;
+            case 'UPDATE.CLIENTID':
+                $template = EmailTemplate::where('identifier', 'private.app.update.clientid')->first();
                 break;
             default:
                 throw new Exception("Send email type not found!");
                 break;
         }
 
-        if (is_null($template)) {
-            throw new Exception('Email template not found!');
-        }
-
         $receivers = $this->sendEmailTo($app);
 
-        $listOfAdminDevNames = $this->listOfAdminDevName($receivers['user_admin_dev_name']);
+        $listOfAdminDevNames = convertArrayToHtmlUlList($receivers['user_admin_dev_name']);
         $textAdminDev = 'To review or edit the integration, including generating a new <b>Client ID</b>, click the link below or visit your account on the Gateway.';
         $textNoAdminDev = 'To review or edit the integration, contact your Team Administrator(s) or Developer(s):<br>' . $listOfAdminDevNames;
 
@@ -1003,27 +1002,15 @@ class ApplicationController extends Controller
         ];
     }
 
-    public function listOfAdminDevName(array $userAdminDevNames): string
-    {
-        $return = '<ul>';
-        foreach ($userAdminDevNames as $item) {
-            $return .= '<li>' . $item . '</li>';
-        }
-        $return .= '</ul>';
-        return $return;
-    }
-
     public function listOfAppPermissions(int $appId)
     {
         $applications = Application::with(['permissions'])->where(['id' => $appId])->first()->toArray();
-
-        $list = '<ul>';
+        $permissions = [];
         foreach ($applications['permissions'] as $item) {
-            $list .= '<li>' . $item['name'] . '</li>';
+            $permissions[] = $item['name'];
         }
-        $list .= '</ul>';
 
-        return $list;
+        return convertArrayToHtmlUlList($permissions);
     }
 
 }
