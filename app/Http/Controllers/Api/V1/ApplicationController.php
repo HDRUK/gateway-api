@@ -28,6 +28,7 @@ use App\Http\Requests\Application\EditApplication;
 use App\Http\Requests\Application\CreateApplication;
 use App\Http\Requests\Application\DeleteApplication;
 use App\Http\Requests\Application\UpdateApplication;
+use App\Http\Requests\Application\GenerateApplication;
 
 class ApplicationController extends Controller
 {
@@ -717,6 +718,116 @@ class ApplicationController extends Controller
     }
 
     /**
+     * @OA\Patch(
+     *    path="/api/v1/applications/{id}/clientid",
+     *    tags={"Application"},
+     *    summary="Generate Client ID application",
+     *    description="Generate Client ID application",
+     *    summary="ApplicationController@generateClientIdById",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="application id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="application id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Not found response",
+     *       @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="not found")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *        response=200,
+     *        description="Success",
+     *        @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(
+     *                 property="data", type="object",
+     *                 @OA\Property(property="name", type="string", example="covid"),
+     *                 @OA\Property(property="app_id", type="string", example="obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ4"),
+     *                 @OA\Property(property="client_id", type="string", example="iem4i3geb1FxehvvQBlSOZ2A6S6digs"),
+     *                 @OA\Property(property="description", type="string", example="Dolorem voluptas consequatur nihil illum et sunt libero."),
+     *                 @OA\Property(property="image_link", type="string", example="https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"),
+     *                 @OA\Property(property="enabled", type="boolean", example="true"),
+     *                 @OA\Property(property="public", type="boolean", example="true"),
+     *                 @OA\Property(property="counter", type="integer", example="123"),
+     *                 @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                 @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                 @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
+     *              ),
+     *        ),
+     *    ),
+     *    @OA\Response(
+     *        response=500,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="error")
+     *        )
+     *    )
+     * )
+     */
+    public function generateClientIdById(GenerateApplication $request, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $initApplication = Application::withTrashed()->where('id', $id)->first();
+        $this->checkAccess($input, $initApplication->team_id, null, 'team');
+
+        try {
+            $clientId = Str::random(40);
+            $clientSecret = Hash::make(
+                $initApplication->app_id .
+                ':' . $clientId .
+                ':' . env('APP_AUTH_PRIVATE_SALT') .
+                ':' . env('APP_AUTH_PRIVATE_SALT_2')
+            );
+
+            $array = [
+                'client_id' => $clientId,
+                'client_secret' => $clientSecret,
+            ];
+
+            Application::where(['id' => $id])->update($array);
+
+            $application = Application::with(['permissions','team','user','notifications.userNotification'])->where('id', $id)->first();
+            $application->makeHidden(['client_secret']);
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'target_user_id' => $application['user_id'],
+                'target_team_id' => $application['team_id'],
+                'action_type' => 'UPDATE',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Application ' . $id . ' updated',
+            ]);
+
+            $this->sendEmail((int)$id, 'UPDATE.CLIENTID');
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $application,
+            ], Config::get('statuscodes.STATUS_OK.code'));
+
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
      * Application has permissions associated
      *
      * @param integer $applicationId
@@ -803,26 +914,31 @@ class ApplicationController extends Controller
         $template = null;
         switch ($type) {
             case 'CREATE':
-                $template = EmailTemplate::where('identifier', '=', 'private.app.create')->first();
+                $template = EmailTemplate::where('identifier', 'private.app.create')->first();
                 break;
             case 'UPDATE':
-                $template = EmailTemplate::where('identifier', '=', 'private.app.update')->first();
+                $template = EmailTemplate::where('identifier', 'private.app.update')->first();
                 break;
             case 'DELETE':
-                $template = EmailTemplate::where('identifier', '=', 'private.app.delete')->first();
+                $template = EmailTemplate::where('identifier', 'private.app.delete')->first();
+                break;
+            case 'UPDATE.CLIENTID':
+                $template = EmailTemplate::where('identifier', 'private.app.update.clientid')->first();
                 break;
             default:
                 throw new Exception("Send email type not found!");
                 break;
         }
 
-        if (is_null($template)) {
-            throw new Exception('Email template not found!');
-        }
-
         $receivers = $this->sendEmailTo($app);
 
-        foreach ($receivers as $receiver) {
+        $listOfAdminDevNames = convertArrayToHtmlUlList($receivers['user_admin_dev_name']);
+        $textAdminDev = 'To review or edit the integration, including generating a new <b>Client ID</b>, click the link below or visit your account on the Gateway.';
+        $textNoAdminDev = 'To review or edit the integration, contact your Team Administrator(s) or Developer(s):<br>' . $listOfAdminDevNames;
+
+        $listOfPermsions = $this->listOfAppPermissions($appId);
+
+        foreach ($receivers['users'] as $receiver) {
             $to = [
                 'to' => [
                     'email' => $receiver['email'],
@@ -839,6 +955,8 @@ class ApplicationController extends Controller
                 '[[APP_UPDATED_AT_DATE]]' => $app->updated_at,
                 '[[APP_DELETED_AT_DATE]]' => date('Y-m-d'),
                 '[[APP_STATUS]]' => $app->enabled ? 'enabled' : 'disabled',
+                '[[APP_PERMISSIONS_LIST]]' => $listOfPermsions,
+                '[[OTHER_USER_MESSAGE]]' => in_array($receiver['id'], $receivers['user_admin_dev_ids']) ? $textAdminDev : $textNoAdminDev,
                 '[[CURRENT_YEAR]]' => date('Y'),
             ];
 
@@ -857,18 +975,42 @@ class ApplicationController extends Controller
         $teamHasUsers = TeamHasUser::where('team_id', $teamId)->select('id', 'user_id')->get();
 
         $notificationuserId = [];
+        $userAdminDevNames = [];
+        $userAdminDevIds = [];
         foreach ($teamHasUsers as $item) {
             $teamUserHasRoles = TeamUserHasRole::whereIn('role_id', $roles)->where('team_has_user_id', $item->id)->first();
             if (!is_null($teamUserHasRoles)) {
                 $notificationuserId[] = $item->user_id;
             }
+
+            $user = User::where(['id' => $item->user_id])->select(['name'])->first();
+            if (!is_null($user)) {
+                $userAdminDevNames[] = $user->name;
+                $userAdminDevIds[] = $item->user_id;
+            }
         }
+
 
         $notificationuserId[] = $userId;
         $notificationuserId = array_unique($notificationuserId);
-        $return = User::whereIn('id', $notificationuserId)->select(['firstname', 'name', 'email'])->get()->toArray();
+        $users = User::whereIn('id', $notificationuserId)->select(['id', 'firstname', 'name', 'email'])->get()->toArray();
 
-        return $return;
+        return [
+            'user_admin_dev_ids' => $userAdminDevIds,
+            'user_admin_dev_name' => $userAdminDevNames,
+            'users' => $users,
+        ];
+    }
+
+    public function listOfAppPermissions(int $appId)
+    {
+        $applications = Application::with(['permissions'])->where(['id' => $appId])->first()->toArray();
+        $permissions = [];
+        foreach ($applications['permissions'] as $item) {
+            $permissions[] = $item['name'];
+        }
+
+        return convertArrayToHtmlUlList($permissions);
     }
 
 }

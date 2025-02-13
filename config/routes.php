@@ -1794,6 +1794,21 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'applications',
+        'method' => 'patch',
+        'path' => '/applications/{id}/clientid',
+        'methodController' => 'ApplicationController@generateClientIdById',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:permissions,applications.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 
     // roles
     [
