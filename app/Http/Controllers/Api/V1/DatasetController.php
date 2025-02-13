@@ -36,8 +36,6 @@ use App\Exports\DatasetStructuralMetadataExport;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-use Illuminate\Support\Facades\Log;
-
 class DatasetController extends Controller
 {
     use MetadataVersioning;
@@ -1065,8 +1063,6 @@ class DatasetController extends Controller
         $input = $request->all();
         $teamId = (int)$input['team_id'];
         $this->checkAccess($input, $teamId, null, 'team');
-
-        Log::info('teamId: '. $teamId);
 
         $dataset = Dataset::where('pid', '=', $pid)
                   ->where('team_id', '=', $teamId)
