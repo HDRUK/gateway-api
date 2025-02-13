@@ -51,6 +51,7 @@ use App\Http\Traits\GetValueByPossibleKeys;
 use App\Models\PublicationHasDatasetVersion;
 use Illuminate\Database\Eloquent\Casts\Json;
 use App\Http\Requests\Search\PublicationSearch;
+use App\Models\DurHasDatasetVersion;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SearchController extends Controller
@@ -850,6 +851,121 @@ class SearchController extends Controller
      * )
      */
     public function dataUses(Request $request): JsonResponse|BinaryFileResponse
+    {
+        // try {
+        $input = $request->all();
+        $download = array_key_exists('download', $input) ? $input['download'] : false;
+        $sort = $request->query('sort', 'score:desc');
+
+        $tmp = explode(":", $sort);
+        $sortField = $tmp[0];
+
+        $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
+        $aggs = Filter::where('type', 'dataUseRegister')->get()->toArray();
+        $input['aggs'] = $aggs;
+
+        $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur';
+        $response = Http::post($urlString, $input);
+
+        $durArray = $response['hits']['hits'];
+        $totalResults = $response['hits']['total']['value'];
+
+        $matchedIds = [];
+        foreach (array_values($durArray) as $i => $d) {
+            $matchedIds[] = $d['_id'];
+        }
+
+        foreach ($durArray as $i => $dur) {
+            $dur = Dur::where('id', (int)$dur['_id'])->where('status', 'ACTIVE')->first();
+            if (is_null($dur)) {
+                unset($durArray[$i]);
+                continue;
+            }
+
+            $datasetTitles = $this->getDatasetVersionsByDurId($dur->id);
+            $durArray[$i]['_source']['created_at'] = $dur->created_at;
+            $durArray[$i]['_source']['updated_at'] = $dur->updated_at;
+            $durArray[$i]['projectTitle'] = $dur->project_title;
+            $durArray[$i]['organisationName'] = $dur->organisation_name;
+            $durArray[$i]['team'] = $dur->team;
+            $durArray[$i]['datasetTitles'] = array_column($datasetTitles, 'title');
+            $durArray[$i]['datasetIds'] = array_column($datasetTitles, 'id');
+            // $durArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
+            $durArray[$i]['toolNames'] = $this->durToolNames($dur->id);
+            $durArray[$i]['non_gateway_datasets'] = $dur->non_gateway_datasets;
+            $durArray[$i]['collectionNames'] = $this->getCollectionNamesByDurId($dur->id);
+
+        }
+        if ($download) {
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Search dur export data',
+            ]);
+            return Excel::download(new DataUseExport($durArray), 'dur.csv');
+        }
+
+        $durArray = $this->sortSearchResult($durArray, $sortField, $sortDirection);
+
+        $perPage = request('perPage', Config::get('constants.per_page'));
+        $paginatedData = $this->paginateArray($request, $durArray, $perPage);
+        unset($durArray);
+
+        $aggs = collect([
+            'aggregations' => $response['aggregations'],
+            'elastic_total' => $totalResults,
+            'ids' => $matchedIds,
+        ]);
+
+        $final = $aggs->merge($paginatedData);
+
+        Auditor::log([
+            'action_type' => 'GET',
+            'action_name' => class_basename($this) . '@' . __FUNCTION__,
+            'description' => "Search dur",
+        ]);
+
+        return response()->json($final, 200);
+        // } catch (Exception $e) {
+        //     Auditor::log([
+        //         'action_type' => 'EXCEPTION',
+        //         'action_name' => class_basename($this) . '@' . __FUNCTION__,
+        //         'description' => $e->getMessage(),
+        //     ]);
+
+        //     throw new Exception($e->getMessage());
+        // }
+    }
+
+    public function getDatasetVersionsByDurId(int $durId)
+    {
+        $durHasDatasetVersions = DurHasDatasetVersion::where('dur_id', $durId)->select(['dataset_version_id'])->get()->toArray();
+        $durHasDatasetVersionIds = convertArrayToArrayWithKeyName($durHasDatasetVersions, 'dataset_version_id');
+        $datasetVersions = DatasetVersion::whereIn('id', $durHasDatasetVersionIds)
+            ->select('id', \DB::raw("JSON_UNQUOTE(
+                                        JSON_EXTRACT(
+                                            CAST(JSON_UNQUOTE(metadata) AS JSON),
+                                            '$.metadata.summary.shortTitle'
+                                        )
+                                    ) AS title
+                                "))
+            ->get()
+            ->map(function ($item) {
+                return $item->toArray();
+            })
+            ->all();
+
+        usort($datasetVersions, function ($a, $b) {
+            return strcasecmp($a['title'], $b['title']);
+        });
+
+
+        return $datasetVersions;
+    }
+
+
+    public function dataUsesTest(Request $request): JsonResponse|BinaryFileResponse
     {
         try {
             $input = $request->all();
