@@ -612,9 +612,6 @@ class DataAccessApplicationController extends Controller
 
                 $guidanceArray = array();
                 foreach($question as $q) {
-                    if ($q['guidance'] === '') {
-                        $q['guidance'] = '<em>No guidance provided for this question</em>';
-                    }
                     if (isset($guidanceArray[$q['guidance']])) {
                         $guidanceArray[$q['guidance']][] = $q['team'];
                     } else {
@@ -623,7 +620,7 @@ class DataAccessApplicationController extends Controller
                 }
                 $guidance = '';
                 foreach($guidanceArray as $g => $t) {
-                    $guidance .= '<b>' . implode(',', $t) . '</b>' . '\n\n' . $g . '\n\n';
+                    $guidance .= '<b>' . implode(',', $t) . '</b>' . '<p><em>' . $g . '</em><p/>';
                 }
 
                 DataAccessApplicationHasQuestion::create([
