@@ -57,6 +57,7 @@ jobs:
           git checkout dev
           git merge --no-ff main -m "Merge main into dev after release"
           git push origin dev     
+          
   build:
     needs: semantic
     permissions:
