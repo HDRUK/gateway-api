@@ -13,7 +13,52 @@ env:
   SLACK_CHANNEL: "${{ secrets.GITHUBACTIONS_SLACK_CHANNEL }}"
 
 jobs:
+  semantic: 
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          token:  ${{ secrets.GH_TOKEN }}
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Semantic Release
+        run: npx semantic-release
+        env:
+          JIRA_URL: ${{ vars.JIRA_URL }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Set Git config
+        run: |
+            git config --local user.email "actions@github.com"
+            git config --local user.name "Github Actions"
+  
+      - name: Fetch latest changes from main
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+  
+      - name: Merge changes from main to dev
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git fetch origin dev
+          git checkout dev
+          git merge --no-ff main -m "Merge main into dev after release"
+          git push origin dev     
   build:
+    needs: semantic
     permissions:
       contents: write
       id-token: write
@@ -32,36 +77,6 @@ jobs:
         run: | 
           sed -n 's/^appVersion:\(.*\)/\1/p' < chart/gateway-api/Chart.yaml > version
           echo "version=$(sed '/.*\"\(.*\)\".*/ s//\1/g' version)" >> $GITHUB_OUTPUT
-
-      - name: Get Current Release
-        id: get_current_release
-        uses: joutvhu/get-release@v1
-        with:
-          tag_name: '${{ steps.getversion.outputs.version }}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Check for Existing Release
-        id: check_existing_release
-        run: |
-          if [[ -n "${{ steps.get_current_release.outputs.id }}" ]]; then
-            echo "release_exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "release_exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create the release
-        id: create_release
-        uses: comnoco/create-release-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: '${{ steps.getversion.outputs.version }}'
-          release_name: Release ${{ steps.getversion.outputs.version }}
-          draft: false
-          prerelease: false
-        if: |
-          steps.check_existing_release.outputs.release_exists == 'false'
 
       - name: Google Auth
         id: auth
