@@ -850,7 +850,7 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function dataUses(Request $request): JsonResponse|BinaryFileResponse
+    public function dataUses2(Request $request): JsonResponse|BinaryFileResponse
     {
         // try {
         $input = $request->all();
@@ -869,6 +869,7 @@ class SearchController extends Controller
         $response = Http::post($urlString, $input);
 
         $durArray = $response['hits']['hits'];
+        $durArray = $this->sortSearchResult($durArray, $sortField, $sortDirection);
         $totalResults = $response['hits']['total']['value'];
 
         $matchedIds = [];
@@ -876,8 +877,13 @@ class SearchController extends Controller
             $matchedIds[] = $d['_id'];
         }
 
+        $count = 0;
         foreach ($durArray as $i => $dur) {
-            $dur = Dur::where('id', (int)$dur['_id'])->where('status', 'ACTIVE')->first();
+            $dur = Dur::with(['team:id,name'])
+                ->where('id', (int)$dur['_id'])
+                ->where('status', 'ACTIVE')
+                ->select(['id', 'non_gateway_datasets', 'created_at', 'updated_at'])
+                ->first();
             if (is_null($dur)) {
                 unset($durArray[$i]);
                 continue;
@@ -886,16 +892,20 @@ class SearchController extends Controller
             $datasetTitles = $this->getDatasetVersionsByDurId($dur->id);
             $durArray[$i]['_source']['created_at'] = $dur->created_at;
             $durArray[$i]['_source']['updated_at'] = $dur->updated_at;
-            $durArray[$i]['projectTitle'] = $dur->project_title;
-            $durArray[$i]['organisationName'] = $dur->organisation_name;
+            $durArray[$i]['projectTitle'] = $durArray[$i]['_source']['projectTitle'];
+            $durArray[$i]['organisationName'] = $durArray[$i]['_source']['organisationName'];
             $durArray[$i]['team'] = $dur->team;
             $durArray[$i]['datasetTitles'] = array_column($datasetTitles, 'title');
             $durArray[$i]['datasetIds'] = array_column($datasetTitles, 'id');
-            // $durArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
+            $durArray[$i]['dataProviderColl'] = $this->getDataProviderCollNamesByTeamId((int) $dur->team_id);
             $durArray[$i]['toolNames'] = $this->durToolNames($dur->id);
             $durArray[$i]['non_gateway_datasets'] = $dur->non_gateway_datasets;
             $durArray[$i]['collectionNames'] = $this->getCollectionNamesByDurId($dur->id);
 
+            $count++;
+            if ($count >= Config::get('constants.per_page')) {
+                break;
+            }
         }
         if ($download) {
             Auditor::log([
@@ -906,7 +916,7 @@ class SearchController extends Controller
             return Excel::download(new DataUseExport($durArray), 'dur.csv');
         }
 
-        $durArray = $this->sortSearchResult($durArray, $sortField, $sortDirection);
+        // $durArray = $this->sortSearchResult($durArray, $sortField, $sortDirection);
 
         $perPage = request('perPage', Config::get('constants.per_page'));
         $paginatedData = $this->paginateArray($request, $durArray, $perPage);
@@ -965,7 +975,7 @@ class SearchController extends Controller
     }
 
 
-    public function dataUsesTest(Request $request): JsonResponse|BinaryFileResponse
+    public function dataUses(Request $request): JsonResponse|BinaryFileResponse
     {
         try {
             $input = $request->all();
@@ -1861,6 +1871,7 @@ class SearchController extends Controller
             return $resultArraySorted;
         }
 
+
         if ($sortDirection === 'asc') {
             usort(
                 $resultArray,
@@ -1929,6 +1940,22 @@ class SearchController extends Controller
 
         usort($response, 'strcasecmp');
         return $response;
+    }
+
+    private function getDataProviderCollNamesByTeamId(int $teamId): array
+    {
+        $dataProviderColls = DataProviderCollHasTeam::where('team_id', $teamId)
+                                ->select(['data_provider_coll_id'])
+                                ->get()
+                                ->toArray();
+        $dataProviderCollIds = convertArrayToArrayWithKeyName($dataProviderColls, 'data_provider_coll_id');
+
+        $dataProviderCollNames = DataProviderColl::whereIn('id', $dataProviderCollIds)
+                            ->select(['name'])
+                            ->get()
+                            ->toArray();
+
+        return convertArrayToArrayWithKeyName($dataProviderCollNames, 'name');
     }
 
     private function getDataProviderColl(array $model): array
