@@ -620,7 +620,7 @@ class DataAccessApplicationController extends Controller
                 }
                 $guidance = '';
                 foreach($guidanceArray as $g => $t) {
-                    $guidance .= implode(',', $t) . '\n\n' . $g . '\n\n';
+                    $guidance .= '<b>' . implode(',', $t) . '</b>' . '<p><em>' . $g . '</em><p/>';
                 }
 
                 DataAccessApplicationHasQuestion::create([
