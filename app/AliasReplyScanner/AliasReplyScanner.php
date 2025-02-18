@@ -151,10 +151,6 @@ class AliasReplyScanner
             'thread_id' => $threadId,
         ])->latest()->first();
 
-        $team = Team::where([
-            'id' => $enquiryThread->team_id,
-        ])->first();
-
         $user = User::where([
             'id' => $enquiryThread->user_id,
         ])->first();
@@ -202,7 +198,6 @@ class AliasReplyScanner
             $enquiryMessage,
             $enquiryThread,
             $enquiryThreads,
-            $team,
             $user,
             $usersToNotify,
         );

@@ -25,9 +25,9 @@ class EnquiryThread extends Model
        'is_dar_review',
     ];
 
-    // protected $casts = [
-    //     'team_ids' => 'array',
-    // ];
+    protected $casts = [
+        'team_ids' => 'array',
+    ];
 
     /**
      * Table associated with this model
@@ -43,7 +43,7 @@ class EnquiryThread extends Model
      *
      * @return \Illuminate\Database\Eloquent\Casts\Attribute
      */
-    protected function teamIds(): Attribute
+    public function teamIds(): Attribute
     {
         return Attribute::make(
             get: fn ($value) => json_decode($value, true),

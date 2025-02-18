@@ -266,11 +266,6 @@ class EnquiryThreadController extends Controller
             EMC::createEnquiryMessage($enquiryThreadId, $payload['message']);
             $usersToNotify = EMC::getUsersByTeamIds($teamIds);
 
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
-                'data' => $usersToNotify,
-            ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
-
             if (empty($usersToNotify)) {
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
