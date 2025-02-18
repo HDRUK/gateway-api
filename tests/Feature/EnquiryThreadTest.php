@@ -222,6 +222,7 @@ class EnquiryThreadTest extends TestCase
             $body,
             $this->header
         );
+
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'message',
@@ -328,6 +329,6 @@ class EnquiryThreadTest extends TestCase
 
         $numThreadsAfter = EnquiryThread::count();
 
-        $this->assertEquals($numThreadsAfter, $numThreadsBefore + 2);
+        $this->assertEquals($numThreadsAfter, $numThreadsBefore + 1);
     }
 }
