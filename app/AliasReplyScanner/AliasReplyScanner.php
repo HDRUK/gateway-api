@@ -135,7 +135,7 @@ class AliasReplyScanner
         ])->get();
 
         foreach ($enquiryThreads as $eqTh) {
-            $usersToNotify[] = EMC::determineDARManagersFromTeamId($eqTh->team_id, $eqTh->id, $eqTh->user_id);
+            $usersToNotify[] = EMC::getUsersByTeamIds($eqTh->team_ids, $eqTh->user_id);
         }
 
         if (empty($usersToNotify)) {
@@ -161,17 +161,24 @@ class AliasReplyScanner
             'id' => $enquiryThread->user_id,
         ])->first();
 
+        $teamNames = [];
+        foreach ($enquiryThread->team_ids as $item) {
+            $team = Team::where('id', $item)->first();
+            $teamNames[] = $team->name;
+        }
+
         $payload = [
             'thread' => [
                 'user_id' => $enquiryThread->user_id,
-                'team_id' => $enquiryThread->team_id,
+                'team_ids' => $enquiryThread->team_ids,
+                'team_names' => $teamNames,
                 'project_title' => $enquiryThread->project_title,
                 'unique_key' => $uniqueKey, // Not random, but should be unique
             ],
             'message' => [
                 'from' => $enquiryMessage->from,
                 'message_body' => [
-                    '[[TEAM_NAME]]' => $team->name,
+                    '[[TEAM_NAME]]' => $teamNames,
                     '[[USER_FIRST_NAME]]' => $user->firstname,
                     '[[USER_LAST_NAME]]' => $user->lastname,
                     '[[USER_ORGANISATION]]' => $user->organisation,
@@ -222,24 +229,17 @@ class AliasReplyScanner
             );
 
             // TODO Add unique key to URL button. Future scope.
-            foreach ($usersToNotify as $u) {
-                if ($u === null) {
-                    continue;
-                }
+            foreach ($usersToNotify as $user) {
+                $replacements['[[RECIPIENT_NAME]]'] = $user['name'];
+                $to = [
+                    'to' => [
+                        'email' => $user['email'],
+                        'name' => $user['firstname'] . ' ' . $user['lastname'],
+                    ],
+                ];
 
-                // In case for multiple users to notify, loop again for actual details.
-                foreach ($u as $arr) {
-                    $replacements['[[RECIPIENT_NAME]]'] = $arr['user']['name'];
-                    $to = [
-                        'to' => [
-                            'email' => $arr['user']['email'],
-                            'name' => $arr['user']['firstname'] . ' ' . $arr['user']['lastname'],
-                        ],
-                    ];
-
-                    $from = $username . '+' . $threadDetail['thread']['unique_key'] . '@' . $domain;
-                    $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
-                }
+                $from = $username . '+' . $threadDetail['thread']['unique_key'] . '@' . $domain;
+                $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
             }
             unset(
                 $template,

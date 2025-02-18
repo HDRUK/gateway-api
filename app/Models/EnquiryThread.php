@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,6 +14,7 @@ class EnquiryThread extends Model
     protected $fillable = [
        'user_id',
        'team_id',
+       'team_ids',
        'project_title',
        'unique_key',
        'enabled',
@@ -23,15 +25,31 @@ class EnquiryThread extends Model
        'is_dar_review',
     ];
 
+    // protected $casts = [
+    //     'team_ids' => 'array',
+    // ];
+
     /**
      * Table associated with this model
      *
      * @var string
      */
-    protected $table = 'enquiry_thread';
+    protected $table = 'enquiry_threads';
 
     public $timestamps = false;
 
+    /**
+     * Get and Set the team IDs.
+     *
+     * @return \Illuminate\Database\Eloquent\Casts\Attribute
+     */
+    protected function teamIds(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => json_decode($value, true),
+            set: fn ($value) => json_encode($value),
+        );
+    }
 
     public function getProjectTitleAttribute()
     {
