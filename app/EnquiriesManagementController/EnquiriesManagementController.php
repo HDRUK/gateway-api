@@ -135,67 +135,65 @@ class EnquiriesManagementController
         $imapUsername = env('ARS_IMAP_USERNAME', 'devreply@healthdatagateway.org');
         list($username, $domain) = explode('@', $imapUsername);
 
-        // try {
-        $template = EmailTemplate::where('identifier', $ident)->first();
+        try {
+            $template = EmailTemplate::where('identifier', $ident)->first();
 
-        if (array_key_exists('datasets', $threadDetail['thread'])) {
-            $threadDetail['message']['message_body']['[[DATASETS]]'] = $threadDetail['thread']['datasets'];
-        }
+            if (array_key_exists('datasets', $threadDetail['thread'])) {
+                $threadDetail['message']['message_body']['[[DATASETS]]'] = $threadDetail['thread']['datasets'];
+            }
 
-        $replacements = [
-            '[[CURRENT_YEAR]]' => $threadDetail['message']['message_body']['[[CURRENT_YEAR]]'],
-            '[[TEAM_NAME]]' => '',
-            '[[SENDER_NAME]]' => $threadDetail['message']['message_body']['[[SENDER_NAME]]'] ?? '',
-            '[[USER_FIRST_NAME]]' => $threadDetail['message']['message_body']['[[USER_FIRST_NAME]]'],
-            '[[USER_LAST_NAME]]' => $threadDetail['message']['message_body']['[[USER_LAST_NAME]]'],
-            '[[USER_ORGANISATION]]' => $threadDetail['message']['message_body']['[[USER_ORGANISATION]]'],
-            '[[PROJECT_TITLE]]' => $threadDetail['message']['message_body']['[[PROJECT_TITLE]]'],
-            '[[MESSAGE_BODY]]' => $this->convertThreadToBody($threadDetail),
-        ];
-        // dd($replacements);
+            $replacements = [
+                '[[CURRENT_YEAR]]' => $threadDetail['message']['message_body']['[[CURRENT_YEAR]]'],
+                '[[TEAM_NAME]]' => '',
+                '[[SENDER_NAME]]' => $threadDetail['message']['message_body']['[[SENDER_NAME]]'] ?? '',
+                '[[USER_FIRST_NAME]]' => $threadDetail['message']['message_body']['[[USER_FIRST_NAME]]'],
+                '[[USER_LAST_NAME]]' => $threadDetail['message']['message_body']['[[USER_LAST_NAME]]'],
+                '[[USER_ORGANISATION]]' => $threadDetail['message']['message_body']['[[USER_ORGANISATION]]'],
+                '[[PROJECT_TITLE]]' => $threadDetail['message']['message_body']['[[PROJECT_TITLE]]'],
+                '[[MESSAGE_BODY]]' => $this->convertThreadToBody($threadDetail),
+            ];
+            // dd($replacements);
 
-        // TODO Add unique key to URL button. Future scope.
-        if (count($usersToNotify) === 0) {
+            // TODO Add unique key to URL button. Future scope.
+            if (count($usersToNotify) === 0) {
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'SEND EMAIL',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'EnquiriesManagementController failed to send email on behalf of ' .
+                        $jwtUser['id'] . '. Detail: ' . json_encode($threadDetail),
+                ]);
+
+                return;
+            }
+
+            foreach ($usersToNotify as $user) {
+                $replacements['[[RECIPIENT_NAME]]'] = $user['user']['name'];
+                $replacements['[[TEAM_NAME]]'] = $user['team']['name'];
+                $to = [
+                    'to' => [
+                        'email' => $user['user']['email'],
+                        'name' => $user['user']['firstname'] . ' ' . $user['user']['lastname'],
+                    ],
+                ];
+
+                $from = $username . '+' . $threadDetail['thread']['unique_key'] . '@' . $domain;
+                $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
+            }
+
+            unset(
+                $template,
+                $replacements,
+            );
+        } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'SEND EMAIL',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'EnquiriesManagementController failed to send email on behalf of ' .
-                    $jwtUser['id'] . '. Detail: ' . json_encode($threadDetail),
+                'description' => $e->getMessage(),
             ]);
-
-            return;
+            throw new Exception($e->getMessage());
         }
-
-        foreach ($usersToNotify as $user) {
-            $replacements['[[RECIPIENT_NAME]]'] = $user['user']['name'];
-            $replacements['[[TEAM_NAME]]'] = $user['team']['name'];
-            $to = [
-                'to' => [
-                    'email' => $user['user']['email'],
-                    'name' => $user['user']['firstname'] . ' ' . $user['user']['lastname'],
-                ],
-            ];
-
-            $from = $username . '+' . $threadDetail['thread']['unique_key'] . '@' . $domain;
-            $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
-        }
-
-        unset(
-            $template,
-            $team,
-            $user,
-            $replacements,
-        );
-        // } catch (Exception $e) {
-        //     Auditor::log([
-        //         'user_id' => (int)$jwtUser['id'],
-        //         'action_type' => 'SEND EMAIL',
-        //         'action_name' => class_basename($this) . '@' . __FUNCTION__,
-        //         'description' => $e->getMessage(),
-        //     ]);
-        //     throw new Exception($e->getMessage());
-        // }
     }
 
     private function convertThreadToBody(array $in): string

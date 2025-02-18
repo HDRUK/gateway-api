@@ -132,11 +132,9 @@ class AliasReplyScanner
 
         $enquiryThreads = EnquiryThread::where([
             'unique_key' => $uniqueKey
-        ])->get();
+        ])->first();
 
-        foreach ($enquiryThreads as $eqTh) {
-            $usersToNotify[] = EMC::getUsersByTeamIds($eqTh->team_ids, $eqTh->user_id);
-        }
+        $usersToNotify = EMC::getUsersByTeamIds($enquiryThreads->team_ids, $enquiryThreads->user_id);
 
         if (empty($usersToNotify)) {
             CloudLogger::write([

@@ -206,114 +206,119 @@ class EnquiryThreadController extends Controller
 
         $user = User::where('id', $jwtUser['id'])->first();
 
-        // try {
-        $payload = [
-            'thread' => [
-                'user_id' => $user->id,
-                'team_ids' => [],
-                'project_title' => isset($input['project_title']) ? $input['project_title'] : "",
-                'unique_key' => Str::random(8), // 8 chars in length
-                'is_dar_dialogue' => $input['is_dar_dialogue'],
-                'is_dar_status' => $input['is_dar_status'],
-                'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
-                'is_general_enquiry' => $input['is_general_enquiry'],
-                'is_dar_review' => $input['is_dar_review'] ?? false,
-                'datasets' => $this->mapDatasets($input['datasets']),
-                'enabled' => true,
-            ],
-            'message' => [
-                'from' => $input['from'],
-                'message_body' => [
-                    '[[TEAM_NAME]]' => [],
-                    '[[USER_FIRST_NAME]]' => $user->firstname,
-                    '[[USER_LAST_NAME]]' => $user->lastname,
-                    '[[USER_ORGANISATION]]' => isset($user->organisation) ? $user->organisation : $input['organisation'],
-                    '[[CONTACT_NUMBER]]' => isset($input['contact_number']) ? $input['contact_number'] : "",
-                    '[[PROJECT_TITLE]]' => isset($input['project_title']) ? $input['project_title'] : "",
-                    '[[RESEARCH_AIM]]' => isset($input['research_aim']) ? $input['research_aim'] : "",
-                    '[[OTHER_DATASETS_YES_NO]]' => isset($input['other_datasets']) ? $input['other_datasets'] : "",
-                    '[[DATASETS_PARTS_YES_NO]]' => isset($input['dataset_parts_known']) ? $input['dataset_parts_known'] : "",
-                    '[[FUNDING]]' => isset($input['funding']) ? $input['funding'] : "",
-                    '[[PUBLIC_BENEFIT]]' => isset($input['potential_research_benefit']) ? $input['potential_research_benefit'] : "",
-                    '[[QUERY]]' => isset($input['query']) ? $input['query'] : "",
-                    '[[MESSAGE]]' => isset($input['message']) ? $input['message'] : "",
-                    '[[CURRENT_YEAR]]' => date('Y'),
+        try {
+            $payload = [
+                'thread' => [
+                    'user_id' => $user->id,
+                    'team_ids' => [],
+                    'project_title' => isset($input['project_title']) ? $input['project_title'] : "",
+                    'unique_key' => Str::random(8), // 8 chars in length
+                    'is_dar_dialogue' => $input['is_dar_dialogue'],
+                    'is_dar_status' => $input['is_dar_status'],
+                    'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
+                    'is_general_enquiry' => $input['is_general_enquiry'],
+                    'is_dar_review' => $input['is_dar_review'] ?? false,
+                    'datasets' => $this->mapDatasets($input['datasets']),
+                    'enabled' => true,
                 ],
-            ],
-        ];
+                'message' => [
+                    'from' => $input['from'],
+                    'message_body' => [
+                        '[[TEAM_NAME]]' => [],
+                        '[[USER_FIRST_NAME]]' => $user->firstname,
+                        '[[USER_LAST_NAME]]' => $user->lastname,
+                        '[[USER_ORGANISATION]]' => isset($user->organisation) ? $user->organisation : $input['organisation'],
+                        '[[CONTACT_NUMBER]]' => isset($input['contact_number']) ? $input['contact_number'] : "",
+                        '[[PROJECT_TITLE]]' => isset($input['project_title']) ? $input['project_title'] : "",
+                        '[[RESEARCH_AIM]]' => isset($input['research_aim']) ? $input['research_aim'] : "",
+                        '[[OTHER_DATASETS_YES_NO]]' => isset($input['other_datasets']) ? $input['other_datasets'] : "",
+                        '[[DATASETS_PARTS_YES_NO]]' => isset($input['dataset_parts_known']) ? $input['dataset_parts_known'] : "",
+                        '[[FUNDING]]' => isset($input['funding']) ? $input['funding'] : "",
+                        '[[PUBLIC_BENEFIT]]' => isset($input['potential_research_benefit']) ? $input['potential_research_benefit'] : "",
+                        '[[QUERY]]' => isset($input['query']) ? $input['query'] : "",
+                        '[[MESSAGE]]' => isset($input['message']) ? $input['message'] : "",
+                        '[[CURRENT_YEAR]]' => date('Y'),
+                    ],
+                ],
+            ];
 
-        $payload['thread']['dataCustodians'] = [];
-        $dataCustodians = [];
-        foreach ($payload['thread']['datasets'] as $d) {
-            $t = Team::where('id', $d['team_id'])->first();
-            $dataCustodians[] = $t->name;
-        }
-        $payload['thread']['dataCustodians'] = array_unique($dataCustodians);
+            $payload['thread']['dataCustodians'] = [];
+            $dataCustodians = [];
+            foreach ($payload['thread']['datasets'] as $d) {
+                $t = Team::where('id', $d['team_id'])->first();
+                $dataCustodians[] = $t->name;
+            }
+            $payload['thread']['dataCustodians'] = array_unique($dataCustodians);
 
-        // For each dataset we need to determine if teams are responsible for the data providing
-        // if not, then a separate enquiry thread and message are created for that team also.
-        $teamIds = [];
-        $teamNames = [];
-        foreach ($payload['thread']['datasets'] as $d) {
-            $team = Team::where('id', $d['team_id'])->first();
-            $teamIds[] = $team->id;
-            $teamNames[] = $team->name;
-        }
+            // For each dataset we need to determine if teams are responsible for the data providing
+            // if not, then a separate enquiry thread and message are created for that team also.
+            $teamIds = [];
+            $teamNames = [];
+            foreach ($payload['thread']['datasets'] as $d) {
+                $team = Team::where('id', $d['team_id'])->first();
+                $teamIds[] = $team->id;
+                $teamNames[] = $team->name;
+            }
 
-        $payload['thread']['team_ids'] = json_encode(array_unique($teamIds));
-        $payload['message']['message_body']['[[TEAM_NAME]]'] = array_unique($teamNames);
-        $enquiryThreadId = EMC::createEnquiryThread($payload['thread']);
-        EMC::createEnquiryMessage($enquiryThreadId, $payload['message']);
-        $usersToNotify = EMC::getUsersByTeamIds($teamIds);
+            $payload['thread']['team_ids'] = array_unique($teamIds);
+            $payload['message']['message_body']['[[TEAM_NAME]]'] = array_unique($teamNames);
+            $enquiryThreadId = EMC::createEnquiryThread($payload['thread']);
+            EMC::createEnquiryMessage($enquiryThreadId, $payload['message']);
+            $usersToNotify = EMC::getUsersByTeamIds($teamIds);
 
-        if (empty($usersToNotify)) {
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
+                'data' => $usersToNotify,
+            ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+
+            if (empty($usersToNotify)) {
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'POST',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' .
+                        $enquiryThreadId,
+                ]);
+
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
+                    'data' => null,
+                ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+            }
+
+            // Spawn email notifications to all DAR managers for this team
+            if ($input['is_feasibility_enquiry'] == true) {
+                EMC::sendEmail('feasibilityenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
+            } elseif ($input['is_general_enquiry'] == true) {
+                EMC::sendEmail('generalenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
+            } elseif ($input['is_dar_dialogue'] == true) {
+                EMC::sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser);
+            }
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
-                'action_type' => 'POST',
+                'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' .
-                    $enquiryThreadId,
+                'description' => 'EnquiryThread ' . $enquiryThreadId . ' created',
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $enquiryThreadId,
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
-                'data' => null,
+                'data' => $e->getMessage(),
             ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
         }
-
-        // Spawn email notifications to all DAR managers for this team
-        if ($input['is_feasibility_enquiry'] == true) {
-            EMC::sendEmail('feasibilityenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
-        } elseif ($input['is_general_enquiry'] == true) {
-            EMC::sendEmail('generalenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
-        } elseif ($input['is_dar_dialogue'] == true) {
-            EMC::sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser);
-        }
-
-        Auditor::log([
-            'user_id' => (int)$jwtUser['id'],
-            'action_type' => 'CREATE',
-            'action_name' => class_basename($this) . '@' . __FUNCTION__,
-            'description' => 'EnquiryThread ' . $enquiryThreadId . ' created',
-        ]);
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_OK.message'),
-            'data' => $enquiryThreadId,
-        ], Config::get('statuscodes.STATUS_OK.code'));
-        // } catch (Exception $e) {
-        //     Auditor::log([
-        //         'user_id' => (int)$jwtUser['id'],
-        //         'action_type' => 'EXCEPTION',
-        //         'action_name' => class_basename($this) . '@' . __FUNCTION__,
-        //         'description' => $e->getMessage(),
-        //     ]);
-
-        //     return response()->json([
-        //         'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
-        //         'data' => $e->getMessage(),
-        //     ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
-        // }
     }
 
     private function mapDatasets(array $datasets): array
