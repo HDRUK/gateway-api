@@ -152,7 +152,6 @@ class EnquiriesManagementController
                 '[[PROJECT_TITLE]]' => $threadDetail['message']['message_body']['[[PROJECT_TITLE]]'],
                 '[[MESSAGE_BODY]]' => $this->convertThreadToBody($threadDetail),
             ];
-            // dd($replacements);
 
             // TODO Add unique key to URL button. Future scope.
             if (count($usersToNotify) === 0) {
