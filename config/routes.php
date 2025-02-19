@@ -3846,6 +3846,30 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'get',
+        'path' => 'teams/{teamId}/dar/applications',
+        'methodController' => 'TeamDataAccessApplicationController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-applications.provider.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => 'teams/{teamId}/dar/applications/count/{field}',
+        'methodController' => 'TeamDataAccessApplicationController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-applications.provider.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
         'path' => '/dar/applications/{id}',
         'methodController' => 'DataAccessApplicationController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
