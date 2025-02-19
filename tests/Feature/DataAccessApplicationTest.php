@@ -1088,6 +1088,20 @@ class DataAccessApplicationTest extends TestCase
         $content = $response->decodeResponseJson();
         $this->assertEquals($applicationIdTwo, $content['data'][0]['id']);
         $this->assertEquals(1, count($content['data']));
+
+        $response = $this->json(
+            'GET',
+            'api/v1/teams/' . $teamId . '/dar/applications/count/submission_status',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'SUBMITTED',
+                    'DRAFT',
+                ]
+            ]);
     }
 
     /**
