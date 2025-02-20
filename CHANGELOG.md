@@ -1,3 +1,19 @@
+## [0.11.0](https://github.com/HDRUK/gateway-api-2/compare/v0.10.0...v0.11.0) (2025-02-20)
+
+### ✨ Features
+
+* **GAT-5909:** Set up teams/dars endpoint for custodian dashboard (#1083) ([19b53bb](https://github.com/HDRUK/gateway-api-2/commit/19b53bb0f579402262184bc266a6c62ae0ac9c3b)), closes [GAT-5909](GAT-5909)
+* **GAT-6183:** Updated rejection email (#1065) ([2ccc45d](https://github.com/HDRUK/gateway-api-2/commit/2ccc45d84613912326af42460fb24cb05665146f)), closes [GAT-6183](GAT-6183) [GAT-6183](GAT-6183) [app/Console/Commands/UpdateEmailCohortButtonsGat6183](Gat6183)
+* **GAT-6250:** Add file upload question type support (#1066) ([a1dbc32](https://github.com/HDRUK/gateway-api-2/commit/a1dbc32523b03daa3d8689af0782632f9e900a59)), closes [GAT-6250](GAT-6250)
+* **GAT-6346:** Update formatting of dar guidance text (#1081) ([2164448](https://github.com/HDRUK/gateway-api-2/commit/2164448ef94ebed3ed25f318cbfb3e1baa02adf3)), closes [GAT-6346](GAT-6346)
+* **GAT-6363:** DAR reviews, add comments table, and update endpoints (#1077) ([212489f](https://github.com/HDRUK/gateway-api-2/commit/212489f362f6eebb1c157ed04c6bdc2d9a969df2)), closes [GAT-6363](GAT-6363)
+
+### 🐛 Bug Fixes
+
+* **GAT-5624:** Decode tool description and results_insights (#1067) ([9b86472](https://github.com/HDRUK/gateway-api-2/commit/9b864726bfe6fcd582cc19cf73a0b4f27c017d2d)), closes [GAT-5624](GAT-5624)
+* **GAT-6182:** Fix for cohort admin download display error (#1072) ([96a035f](https://github.com/HDRUK/gateway-api-2/commit/96a035fa13dbfddaa71cfa8e5c8e0241983d747f))
+* **GAT-6386:** Getting GMI working (#1074) ([9ff7450](https://github.com/HDRUK/gateway-api-2/commit/9ff745002af6a34f1b147cf564c612a2a9e99375)), closes [GAT-6386](GAT-6386)
+
 ## [0.10.0](https://github.com/HDRUK/gateway-api-2/compare/v0.9.0...v0.10.0) (2025-02-20)
 
 ### ✨ Features
