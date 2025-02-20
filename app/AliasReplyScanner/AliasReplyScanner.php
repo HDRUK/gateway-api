@@ -191,7 +191,6 @@ class AliasReplyScanner
             $body,
             $enquiryMessage,
             $enquiryThread,
-            $enquiryThreads,
             $user,
             $usersToNotify,
         );
