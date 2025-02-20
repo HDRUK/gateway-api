@@ -38,25 +38,3 @@ if (!function_exists('convertArrayToArrayWithKeyName')) {
         return $return;
     }
 }
-
-if (!function_exists('convertArrayToHtmlUlList')) {
-    /**
-     * convertArrayToHtmlUlList function
-     *
-     * @param array $array example: ["a", "b", "c", ...]
-     * @return string
-     */
-    function convertArrayToHtmlUlList(array $array): string
-    {
-        if (!count($array)) {
-            return '';
-        }
-
-        $return = '<ul>';
-        foreach ($array as $item) {
-            $return .= '<li>' . $item . '</li>';
-        }
-        $return .= '</ul>';
-        return $return;
-    }
-}
