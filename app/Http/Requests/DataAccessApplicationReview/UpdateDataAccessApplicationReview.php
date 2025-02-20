@@ -19,6 +19,11 @@ class UpdateDataAccessApplicationReview extends BaseFormRequest
                 'required',
                 'exists:dar_applications,id',
             ],
+            'teamId' => [
+                'int',
+                'required',
+                'exists:teams,id'
+            ],
             'questionId' => [
                 'int',
                 'required',
@@ -38,10 +43,6 @@ class UpdateDataAccessApplicationReview extends BaseFormRequest
                 'int',
                 'exists:users,id'
             ],
-            'team_id' => [
-                'int',
-                'exists:teams,id'
-            ]
         ];
     }
 
@@ -54,6 +55,7 @@ class UpdateDataAccessApplicationReview extends BaseFormRequest
     {
         $this->merge([
             'id' => $this->route('id'),
+            'teamId' => $this->route('teamId'),
             'questionId' => $this->route('questionId'),
             'reviewId' => $this->route('reviewId'),
         ]);
