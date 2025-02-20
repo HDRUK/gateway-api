@@ -374,6 +374,9 @@ class PublicationTest extends TestCase
         $countDraft = $responseCount['data']['DRAFT'];
         $this->assertTrue($countDraft === $countDraftDb);
 
+
+        Publication::factory(1)->create(['status' => 'ACTIVE']);
+
         $responseCount = $this->json(
             'GET',
             self::TEST_URL .
@@ -417,7 +420,7 @@ class PublicationTest extends TestCase
             'status' => Publication::STATUS_DRAFT,
             'owner_id' => $ownerId,
             ])->get()->count();
-        $countDraft = $responseCount['data']['DRAFT'] ?? 0;
+        $countDraft = isset($responseCount['data']['DRAFT']) ? $responseCount['data']['DRAFT'] : 0;
         $this->assertTrue($countDraft === $countDraftDb2);
 
     }

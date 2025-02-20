@@ -29,18 +29,9 @@ class UpdateDataAccessApplicationReview extends BaseFormRequest
                 'required',
                 'exists:dar_application_reviews,id',
             ],
-            'comment' => [
+            'review_comment' => [
                 'string',
                 'required',
-            ]
-            ,
-            'user_id' => [
-                'int',
-                'exists:users,id'
-            ],
-            'team_id' => [
-                'int',
-                'exists:teams,id'
             ]
         ];
     }

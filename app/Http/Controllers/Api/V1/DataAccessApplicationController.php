@@ -30,7 +30,6 @@ use App\Models\DataAccessTemplate;
 use App\Models\Dataset;
 use App\Models\EmailTemplate;
 use App\Models\Team;
-use App\Models\TeamHasDataAccessApplication;
 use App\Models\Upload;
 use App\Models\User;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -582,11 +581,6 @@ class DataAccessApplicationController extends Controller
                     continue;
                 }
                 $teams[] = $team;
-
-                TeamHasDataAccessApplication::create([
-                    'dar_application_id' => $application->id,
-                    'team_id' => $team->id,
-                ]);
             }
 
             // compile questions from each teams template
@@ -626,7 +620,7 @@ class DataAccessApplicationController extends Controller
                 }
                 $guidance = '';
                 foreach($guidanceArray as $g => $t) {
-                    $guidance .= '<b>' . implode(',', $t) . '</b>' . '<p><em>' . $g . '</em><p/>';
+                    $guidance .= implode(',', $t) . '\n\n' . $g . '\n\n';
                 }
 
                 DataAccessApplicationHasQuestion::create([

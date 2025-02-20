@@ -23,7 +23,6 @@ class DataAccessApplicationStatus extends Model
     protected $fillable = [
         'application_id',
         'approval_status',
-        'submission_status',
     ];
 
 }
