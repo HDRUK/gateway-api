@@ -6,7 +6,6 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
 class DataAccessApplicationReview extends Model
@@ -25,11 +24,6 @@ class DataAccessApplicationReview extends Model
     protected $fillable = [
         'application_id',
         'question_id',
-        'resolved',
+        'review_comment',
     ];
-
-    public function comments(): HasMany
-    {
-        return $this->hasMany(DataAccessApplicationComment::class, 'review_id');
-    }
 }

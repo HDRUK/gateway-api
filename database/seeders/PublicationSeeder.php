@@ -14,16 +14,5 @@ class PublicationSeeder extends Seeder
     public function run(): void
     {
         Publication::factory()->count(10)->create();
-
-        // Ensure all tests have at least one active/draft/archived Publication available
-        Publication::factory()->create(
-            ['status' => Publication::STATUS_ACTIVE]
-        );
-        Publication::factory()->create(
-            ['status' => Publication::STATUS_DRAFT]
-        );
-        Publication::factory()->create(
-            ['status' => Publication::STATUS_ARCHIVED]
-        );
     }
 }

@@ -24,17 +24,9 @@ class CreateDataAccessApplicationReview extends BaseFormRequest
                 'required',
                 'exists:dar_application_has_questions,question_id',
             ],
-            'comment' => [
+            'review_comment' => [
                 'string',
                 'required',
-            ],
-            'user_id' => [
-                'int',
-                'exists:users,id'
-            ],
-            'team_id' => [
-                'int',
-                'exists:teams,id'
             ]
         ];
     }
