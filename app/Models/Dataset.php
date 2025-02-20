@@ -179,20 +179,6 @@ class Dataset extends Model
     }
 
     /**
-     * Helper function to grab dataset title from latest metadata.
-     */
-    public function getTitle(): string
-    {
-        $version = DatasetVersion::where('dataset_id', $this->id)
-            ->select(['version','id'])
-            ->orderBy('version', 'desc')
-            ->first()
-            ->id;
-        $datasetVersion = DatasetVersion::findOrFail($version)->toArray();
-        return $datasetVersion['metadata']['metadata']['summary']['title'];
-    }
-
-    /**
      * Order by raw metadata extract
      */
     public function scopeOrderByMetadata(Builder $query, string $field, string $direction): Builder

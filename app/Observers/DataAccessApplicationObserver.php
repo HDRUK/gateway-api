@@ -18,12 +18,5 @@ class DataAccessApplicationObserver
                 'approval_status' => $application->approval_status,
             ]);
         }
-
-        if ($application->wasChanged('submission_status')) {
-            DataAccessApplicationStatus::create([
-                'application_id' => $application->id,
-                'submission_status' => $application->submission_status,
-            ]);
-        }
     }
 }
