@@ -124,17 +124,11 @@ class AliasReplyScanner
     {
         $usersToNotify = [];
 
-        $enquiryThread = EnquiryThread::where([
-            'id' => $threadId,
-        ])->first();
+        $enquiryThread = EnquiryThread::where('id', $threadId)->first();
 
         $uniqueKey = $enquiryThread->unique_key;
 
-        $enquiryThreads = EnquiryThread::where([
-            'unique_key' => $uniqueKey
-        ])->first();
-
-        $usersToNotify = EMC::getUsersByTeamIds($enquiryThreads->team_ids, $enquiryThreads->user_id);
+        $usersToNotify = EMC::getUsersByTeamIds($enquiryThread->team_ids, $enquiryThread->user_id);
 
         if (empty($usersToNotify)) {
             CloudLogger::write([
@@ -223,11 +217,11 @@ class AliasReplyScanner
 
             // TODO Add unique key to URL button. Future scope.
             foreach ($usersToNotify as $user) {
-                $replacements['[[RECIPIENT_NAME]]'] = $user['name'];
+                $replacements['[[RECIPIENT_NAME]]'] = $user['user']['name'];
                 $to = [
                     'to' => [
-                        'email' => $user['email'],
-                        'name' => $user['firstname'] . ' ' . $user['lastname'],
+                        'email' => $user['user']['email'],
+                        'name' => $user['user']['firstname'] . ' ' . $user['user']['lastname'],
                     ],
                 ];
 

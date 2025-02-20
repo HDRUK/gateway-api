@@ -46,8 +46,14 @@ class EnquiryThread extends Model
     public function teamIds(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => json_decode($value, true),
-            set: fn ($value) => json_encode($value),
+            get: function ($value) {
+                $response = json_decode($value, true);
+                if (is_string($response)) {
+                    $response = json_decode($response, true);
+                }
+                return $response;
+            },
+            set: fn ($value) => is_array($value) ? json_encode($value) : $value,
         );
     }
 
