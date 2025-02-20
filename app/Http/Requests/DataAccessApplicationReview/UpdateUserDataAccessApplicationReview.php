@@ -4,7 +4,7 @@ namespace App\Http\Requests\DataAccessApplicationReview;
 
 use App\Http\Requests\BaseFormRequest;
 
-class CreateDataAccessApplicationReview extends BaseFormRequest
+class UpdateUserDataAccessApplicationReview extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -14,6 +14,11 @@ class CreateDataAccessApplicationReview extends BaseFormRequest
     public function rules(): array
     {
         return [
+            'userId' => [
+                'int',
+                'required',
+                'exists:users,id',
+            ],
             'id' => [
                 'int',
                 'required',
@@ -24,10 +29,16 @@ class CreateDataAccessApplicationReview extends BaseFormRequest
                 'required',
                 'exists:dar_application_has_questions,question_id',
             ],
+            'reviewId' => [
+                'int',
+                'required',
+                'exists:dar_application_reviews,id',
+            ],
             'comment' => [
                 'string',
                 'required',
-            ],
+            ]
+            ,
             'user_id' => [
                 'int',
                 'exists:users,id'
@@ -47,8 +58,10 @@ class CreateDataAccessApplicationReview extends BaseFormRequest
     protected function prepareForValidation()
     {
         $this->merge([
+            'userId' => $this->route('userId'),
             'id' => $this->route('id'),
             'questionId' => $this->route('questionId'),
+            'reviewId' => $this->route('reviewId'),
         ]);
     }
 }
