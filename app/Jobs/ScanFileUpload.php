@@ -8,10 +8,12 @@ use Config;
 use Exception;
 
 use App\Models\Collection;
+use App\Models\DataAccessApplicationAnswer;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Dur;
 use App\Models\DurHasDatasetVersion;
+use App\Models\QuestionBank;
 use App\Models\Team;
 use App\Models\Upload;
 use App\Imports\ImportDur;
@@ -490,6 +492,66 @@ class ScanFileUpload implements ShouldQueue
     private function darApplicationUpload(string $loc, Upload $upload): void
     {
         try {
+            // add file to dar application answers table
+            $questionVersion = QuestionBank::where('id', $this->questionId)
+                ->first()
+                ->latestVersion()
+                ->first();
+            if (!$questionVersion) {
+                throw new Exception('No question version found for question with id ' . $this->questionId);
+            }
+            $componentType = $questionVersion->question_json['field']['component'];
+
+            if ($componentType === 'FileUpload') {
+                DataAccessApplicationAnswer::updateOrCreate(
+                    [
+                        'application_id' => $this->applicationId,
+                        'question_id' => $this->questionId,
+                    ],
+                    [
+                        'application_id' => $this->applicationId,
+                        'question_id' => $this->questionId,
+                        'contributor_id' => $this->userId,
+                        'answer' => [
+                            'value' => [
+                                'filename' => $upload->filename,
+                                'id' => $upload->id,
+                            ]
+                        ]
+                    ]
+                );
+            } elseif ($componentType === 'FileUploadMultiple') {
+                $answer = DataAccessApplicationAnswer::where([
+                    'application_id' => $this->applicationId,
+                    'question_id' => $this->questionId,
+                ])->first();
+                if ($answer) {
+                    $thisFile = [[
+                        'filename' => $upload->filename,
+                        'id' => $upload->id,
+                    ]];
+                    $value = array_merge(
+                        $answer['answer']['value'],
+                        $thisFile,
+                    );
+                    $answer->update([
+                        'answer' => ['value' => $value]
+                    ]);
+                } else {
+                    DataAccessApplicationAnswer::create([
+                        'application_id' => $this->applicationId,
+                        'question_id' => $this->questionId,
+                        'contributor_id' => $this->userId,
+                        'answer' => [
+                            'value' => [[
+                                'filename' => $upload->filename,
+                                'id' => $upload->id,
+                            ]]
+                        ]
+                    ]);
+                }
+            }
+
             $upload->update([
                 'status' => 'PROCESSED',
                 'file_location' => $loc,
