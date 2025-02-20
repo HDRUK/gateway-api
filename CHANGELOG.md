@@ -1,3 +1,9 @@
+## [0.10.0](https://github.com/HDRUK/gateway-api-2/compare/v0.9.0...v0.10.0) (2025-02-20)
+
+### ✨ Features
+
+* **GAT-6320:** Fix the merge conflict (#1087) ([43756d2](https://github.com/HDRUK/gateway-api-2/commit/43756d223061a489e3c34082aec683bbb7add7a8))
+
 ## [0.9.0](https://github.com/HDRUK/gateway-api-2/compare/v0.8.0...v0.9.0) (2025-02-20)
 
 ### ✨ Features
