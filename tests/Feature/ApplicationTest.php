@@ -502,4 +502,23 @@ class ApplicationTest extends TestCase
         $this->assertEquals($retVal['create_origin'], 'API');
         $this->assertEquals($retVal['status'], 'ACTIVE');
     }
+
+    public function test_application_update_clientid_by_application_id()
+    {
+        $initApp = Application::where('id', 1)->first();
+        $initClientId = $initApp->client_id;
+
+        $responseUpdateClientId = $this->json(
+            'PATCH',
+            self::TEST_URL . '/1/clientid',
+            [],
+            $this->header,
+        );
+        $responseUpdateClientId->assertStatus(200);
+
+        $afterApp = Application::where('id', 1)->first();
+        $afterClientId = $afterApp->client_id;
+
+        $this->assertNotEquals($initClientId, $afterClientId);
+    }
 }
