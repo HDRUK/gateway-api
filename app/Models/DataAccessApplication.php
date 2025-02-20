@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Observers\DataAccessApplicationObserver;
 
+use App\Models\Traits\SortManager;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -18,6 +19,7 @@ class DataAccessApplication extends Model
     use HasFactory;
     use Notifiable;
     use SoftDeletes;
+    use SortManager;
     use Prunable;
 
     /**
@@ -38,6 +40,11 @@ class DataAccessApplication extends Model
         'project_title',
     ];
 
+    protected static array $sortableColumns = [
+        'project_title',
+        'updated_at',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'applicant_id');
@@ -52,4 +59,10 @@ class DataAccessApplication extends Model
     {
         return $this->hasMany(DataAccessApplicationAnswer::class, 'application_id');
     }
+
+    public function datasets(): HasMany
+    {
+        return $this->hasMany(DataAccessApplicationHasDataset::class, 'dar_application_id');
+    }
+
 }
