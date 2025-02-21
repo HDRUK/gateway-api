@@ -151,6 +151,7 @@ class SocialLoginController extends Controller
     public function callback(Request $request, string $provider): mixed
     {
         $user = null;
+        $referer = $request->headers->get('referer');
 
         try {
             if (strtolower($provider) === 'linkedin') {
@@ -179,6 +180,7 @@ class SocialLoginController extends Controller
                     'token_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/token',
                     'userinfo_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/userinfo',
                 ]);
+
                 $oidc->setRedirectUrl(Config::get('services.openathens.redirect'));
                 $oidc->authenticate();
 
@@ -232,9 +234,9 @@ class SocialLoginController extends Controller
                 Cookie::make('token', $jwt),
             ];
             if ($user['name'] === '' || $user['email'] === '') {
-                return redirect()->away(env('GATEWAY_URL') . '/account/profile')->withCookies($cookies);
+                return redirect()->away($referer ?? env('GATEWAY_URL') . '/account/profile')->withCookies($cookies);
             } else {
-                $redirectUrl = session('redirectUrl');
+                $redirectUrl = $referer ?? session('redirectUrl');
                 return redirect()->away($redirectUrl)->withCookies($cookies);
             }
         } catch (Exception $e) {
