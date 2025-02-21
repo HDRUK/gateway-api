@@ -13,7 +13,6 @@ class EnquiryThread extends Model
 
     protected $fillable = [
        'user_id',
-    //    'team_id',
        'team_ids',
        'project_title',
        'unique_key',
@@ -34,7 +33,7 @@ class EnquiryThread extends Model
      *
      * @var string
      */
-    protected $table = 'enquiry_thread';
+    protected $table = 'enquiry_threads';
 
     public $timestamps = false;
 

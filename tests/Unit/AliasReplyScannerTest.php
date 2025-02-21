@@ -108,7 +108,6 @@ class AliasReplyScannerTest extends TestCase
         $this->assertSame(array_keys($response->toArray()), [
             'id',
             'user_id',
-            'team_id',
             'project_title',
             'unique_key',
             'is_dar_dialogue',

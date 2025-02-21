@@ -24,7 +24,6 @@ class EnquiryThreadFactory extends Factory
         $user_id = User::all()->random()->id;
 
         return [
-            'team_id' => $team_id,
             'team_ids' => json_encode([$team_id]),
             'user_id' => $user_id,
             'project_title' => fake()->sentence(),
