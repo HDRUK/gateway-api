@@ -1,3 +1,19 @@
+## [0.14.0](https://github.com/HDRUK/gateway-api-2/compare/v0.13.0...v0.14.0) (2025-02-21)
+
+### ✨ Features
+
+* **GAT-6216:** Trigger release round 4 ([b4553a3](https://github.com/HDRUK/gateway-api-2/commit/b4553a3dfc1788a7add5bd7ff249461f6fe07324)), closes [GAT-6216](GAT-6216) [GAT-6216](GAT-6216) [GAT-6216](GAT-6216)
+
+### 🐛 Bug Fixes
+
+* **GAT-6216:** Add in force and rebase to avoid conflicts (#1104) ([9c896ac](https://github.com/HDRUK/gateway-api-2/commit/9c896ac9f517231504dba45cf93776571ec5057a)), closes [GAT-6216](GAT-6216)
+
+## [0.13.0](https://github.com/HDRUK/gateway-api-2/compare/v0.12.0...v0.13.0) (2025-02-21)
+
+### ✨ Features
+
+* **GAT-6216:** Trigger release round 3 ([6129007](https://github.com/HDRUK/gateway-api-2/commit/6129007e4823b634ffd122cff090c015a0e049f8)), closes [GAT-6216](GAT-6216)
+
 ## [0.12.0](https://github.com/HDRUK/gateway-api-2/compare/v0.11.1...v0.12.0) (2025-02-21)
 
 ### ✨ Features
