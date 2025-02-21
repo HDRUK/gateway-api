@@ -64,7 +64,7 @@ DB_USERNAME=<username>
 DB_PASSWORD=<password>
 ```
 
--   When port-forwarding mysql port to your localhost (as above), you can connect to mysql locally with either `127.0.0.1` or `localhost`. Generally speaking your mysql instance will be available on `mysql.default.svc.cluster.local`
+-   When port-forwarding mysql port to your localhost (as specified above), you can connect to mysql locally with either `127.0.0.1` or `localhost`. Generally speaking your mysql instance will be available on `mysql.default.svc.cluster.local`
 
 Create a new (gitignore'd) `tiltconf.json` following the same format as below:
 
