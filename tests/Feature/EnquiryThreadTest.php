@@ -63,7 +63,7 @@ class EnquiryThreadTest extends TestCase
                     0 => [
                         'id',
                         'user_id',
-                        'team_id',
+                        'team_ids',
                         'project_title',
                         'is_dar_dialogue',
                         'is_dar_status',
@@ -91,7 +91,7 @@ class EnquiryThreadTest extends TestCase
                 0 => [
                     'id',
                     'user_id',
-                    'team_id',
+                    'team_ids',
                     'project_title',
                     'unique_key',
                     'is_dar_dialogue',
