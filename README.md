@@ -60,7 +60,7 @@ DB_CONNECTION=mysql
 DB_HOST=mysql
 DB_PORT=3306
 DB_DATABASE=gateway
-DB_USERNAME=<username>
+DB_USERNAME=<username> 
 DB_PASSWORD=<password>
 ```
 
