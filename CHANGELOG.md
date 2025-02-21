@@ -1,3 +1,11 @@
+## [0.12.0](https://github.com/HDRUK/gateway-api-2/compare/v0.11.1...v0.12.0) (2025-02-21)
+
+### ✨ Features
+
+* **GAT-6216:** Trigger release ([0045465](https://github.com/HDRUK/gateway-api-2/commit/0045465ca819d6a499fe7ab796ff88129b8b88e0)), closes [GAT-6216](GAT-6216)
+
+## [0.11.1](https://github.com/HDRUK/gateway-api-2/compare/v0.11.0...v0.11.1) (2025-02-20)
+
 ## [0.11.0](https://github.com/HDRUK/gateway-api-2/compare/v0.10.0...v0.11.0) (2025-02-20)
 
 ### ✨ Features
