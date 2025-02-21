@@ -34,7 +34,7 @@ class EnquiryThread extends Model
      *
      * @var string
      */
-    protected $table = 'enquiry_threads';
+    protected $table = 'enquiry_thread';
 
     public $timestamps = false;
 
