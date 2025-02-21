@@ -24,9 +24,7 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::table('team_has_dar_applications', function (Blueprint $table) {
-            $table->dropIfExists('submission_status');
-            $table->dropIfExists('approval_status');
-            $table->dropIfExists('review_id');
+            $table->dropColumn(['submission_status', 'approval_status', 'review_id']);
         });
     }
 };

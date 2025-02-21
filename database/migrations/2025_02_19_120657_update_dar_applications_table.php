@@ -11,8 +11,7 @@ return new class () extends Migration {
     public function up(): void
     {
         Schema::table('dar_applications', function (Blueprint $table) {
-            $table->dropColumn('submission_status');
-            $table->dropColumn('approval_status');
+            $table->dropColumn(['submission_status', 'approval_status']);
         });
     }
 

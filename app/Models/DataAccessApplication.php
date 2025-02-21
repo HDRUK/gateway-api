@@ -59,8 +59,7 @@ class DataAccessApplication extends Model
 
     public function teams(): HasMany
     {
-        return $this->hasMany(TeamHasDataAccessApplication::class, 'dar_application_id')
-            ->withPivot('submission_status', 'approval_status');
+        return $this->hasMany(TeamHasDataAccessApplication::class, 'dar_application_id');
     }
 
 }

@@ -22,6 +22,7 @@ use App\Models\DataAccessApplicationAnswer;
 use App\Models\EmailTemplate;
 use App\Models\Role;
 use App\Models\Team;
+use App\Models\TeamHasDataAccessApplication;
 use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use App\Models\Upload;
@@ -500,7 +501,7 @@ class UserDataAccessApplicationController extends Controller
                 throw new UnauthorizedException('User does not have permission to use this endpoint to update this application.');
             }
 
-            $statuses = array_unique(array_column($application['teams'], 'submission_status'));
+            $statuses = array_unique(array_column($application['teams']->toArray(), 'submission_status'));
             if ((count($statuses) === 1) && ($statuses[0] === 'SUBMITTED')) {
                 $originalStatus = 'SUBMITTED';
             } else {
@@ -509,6 +510,11 @@ class UserDataAccessApplicationController extends Controller
             $newStatus = $input['submission_status'] ?? null;
 
             if (($newStatus === 'SUBMITTED') && ($originalStatus != 'SUBMITTED')) {
+                TeamHasDataAccessApplication::where([
+                    'dar_application_id' => $id
+                ])->first()->update([
+                    'submission_status' => $newStatus
+                ]);
                 $this->emailSubmissionNotification($id, $userId, $application);
             }
 
@@ -523,7 +529,7 @@ class UserDataAccessApplicationController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => DataAccessApplication::where('id', $id)->first(),
+                'data' => DataAccessApplication::where('id', $id)->with('teams')->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (UnauthorizedException $e) {
             return response()->json([
@@ -613,7 +619,7 @@ class UserDataAccessApplicationController extends Controller
                 throw new UnauthorizedException('User does not have permission to use this endpoint to update this application.');
             }
 
-            $status = in_array('DRAFT', array_column($application['teams'], 'submission_status')) ? 'DRAFT' : 'SUBMITTED';
+            $status = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status')) ? 'DRAFT' : 'SUBMITTED';
 
             if ($status !== 'SUBMITTED') {
                 foreach ($input['answers'] as $answer) {
@@ -730,10 +736,15 @@ class UserDataAccessApplicationController extends Controller
                 throw new UnauthorizedException('User does not have permission to use this endpoint to edit this application.');
             }
 
-            $status = in_array('DRAFT', array_column($application['teams'], 'submission_status')) ? 'DRAFT' : 'SUBMITTED';
+            $status = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status')) ? 'DRAFT' : 'SUBMITTED';
             $newStatus = $input['submission_status'] ?? null;
 
-            if (($newStatus === 'SUBMITTED') && ($originalStatus != 'SUBMITTED')) {
+            if (($newStatus === 'SUBMITTED') && ($status != 'SUBMITTED')) {
+                TeamHasDataAccessApplication::where([
+                    'dar_application_id' => $id
+                ])->first()->update([
+                    'submission_status' => $newStatus
+                ]);
                 $this->emailSubmissionNotification($id, $userId, $application);
             }
 
@@ -748,7 +759,7 @@ class UserDataAccessApplicationController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => DataAccessApplication::where('id', $id)->first(),
+                'data' => DataAccessApplication::where('id', $id)->with('teams')->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (UnauthorizedException $e) {
             return response()->json([
@@ -836,11 +847,13 @@ class UserDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $application = DataAccessApplication::findOrFail($id);
+            $application = DataAccessApplication::where('id', $id)->with('teams')->first();
             if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
                 throw new UnauthorizedException('User does not have permission to use this endpoint to delete this file.');
             }
-            if ($application->submission_status !== 'DRAFT') {
+
+            $status = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status')) ? 'DRAFT' : 'SUBMITTED';
+            if ($status === 'SUBMITTED') {
                 throw new Exception('Files cannot be deleted after a data access request has been submitted.');
             }
 
@@ -879,9 +892,11 @@ class UserDataAccessApplicationController extends Controller
         $template = EmailTemplate::where(['identifier' => 'dar.submission.researcher'])->first();
         $user = User::where('id', '=', $userId)->first();
 
-        $teams = TeamHasDataAccessApplication::where('dar_application_id', $id)
+        $teamIds = TeamHasDataAccessApplication::where('dar_application_id', $id)
             ->select('team_id')
             ->pluck('team_id');
+
+        $teams = Team::whereIn('id', $teamIds)->get();
 
         $to = [
             'to' => [
@@ -890,7 +905,7 @@ class UserDataAccessApplicationController extends Controller
             ],
         ];
 
-        $teamNames = array_column($teams, 'name');
+        $teamNames = array_column($teams->toArray(), 'name');
         $custodiansList = $this->formatTeamNames($teamNames);
 
         $replacements = [

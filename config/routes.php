@@ -4144,7 +4144,7 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'get',
-        'path' => '/teams/{team_id}/dar/applications/{id}/reviews',
+        'path' => '/teams/{teamId}/dar/applications/{id}/reviews',
         'methodController' => 'DataAccessApplicationReviewController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
@@ -4159,7 +4159,7 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'post',
-        'path' => '/teams/{team_id}/dar/applications/{id}/questions/{questionId}/reviews',
+        'path' => '/teams/{teamId}/dar/applications/{id}/questions/{questionId}/reviews',
         'methodController' => 'DataAccessApplicationReviewController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
@@ -4175,7 +4175,7 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'put',
-        'path' => '/teams/{team_id}/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}',
+        'path' => '/teams/{teamId}/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}',
         'methodController' => 'DataAccessApplicationReviewController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
@@ -4208,7 +4208,7 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'delete',
-        'path' => '/teams/{team_id}/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}',
+        'path' => '/teams/{teamId}/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}',
         'methodController' => 'DataAccessApplicationReviewController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [

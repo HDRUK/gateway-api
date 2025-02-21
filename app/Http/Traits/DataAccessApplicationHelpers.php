@@ -7,6 +7,7 @@ use App\Exceptions\UnauthorizedException;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationAnswer;
 use App\Models\QuestionBank;
+use App\Models\TeamHasDataAccessApplication;
 
 trait DataAccessApplicationHelpers
 {
@@ -49,7 +50,7 @@ trait DataAccessApplicationHelpers
             'project_title' => $input['project_title'],
         ]);
 
-        $isDraft = in_array('DRAFT', array_column($application['teams'], 'submission_status'));
+        $isDraft = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status'));
 
         $answers = $input['answers'] ?? [];
         if (count($answers)) {
@@ -80,7 +81,7 @@ trait DataAccessApplicationHelpers
         $array = $this->checkEditArray($input, $arrayKeys);
         $application->update($array);
 
-        $isDraft = in_array('DRAFT', array_column($application['teams'], 'submission_status'));
+        $isDraft = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status'));
 
         $answers = $input['answers'] ?? [];
         if (count($answers)) {

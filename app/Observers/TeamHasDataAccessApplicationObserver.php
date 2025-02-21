@@ -8,13 +8,13 @@ use App\Models\DataAccessApplicationStatus;
 class TeamHasDataAccessApplicationObserver
 {
     /**
-     * Handle the DataAccessApplication "updated" event.
+     * Handle the TeamHasDataAccessApplication "updated" event.
      */
     public function updated(TeamHasDataAccessApplication $teamHasDar): void
     {
         if ($teamHasDar->wasChanged('approval_status')) {
             DataAccessApplicationStatus::create([
-                'application_id' => $teamHasDar->dar_applicantion_id,
+                'application_id' => $teamHasDar->dar_application_id,
                 'approval_status' => $teamHasDar->approval_status,
                 'submission_status' => null,
                 'review_id' => $teamHasDar->review_id,
@@ -24,9 +24,9 @@ class TeamHasDataAccessApplicationObserver
 
         if ($teamHasDar->wasChanged('submission_status')) {
             DataAccessApplicationStatus::create([
-                'application_id' => $teamHasDar->dar_applicantion_id,
+                'application_id' => $teamHasDar->dar_application_id,
                 'approval_status' => null,
-                'submission_status' => $teamHasDar->approval_status,
+                'submission_status' => $teamHasDar->submission_status,
                 'review_id' => $teamHasDar->review_id,
                 'team_id' => $teamHasDar->team_id,
             ]);
