@@ -55,8 +55,12 @@ jobs:
         run: |
           git fetch origin dev
           git checkout dev
-          git merge --no-ff main -m "Merge main into dev after release"
-          git push origin dev     
+          git merge --no-ff main || true
+          git checkout --theirs .
+          git add .
+          git commit -m "Auto-resolve merge conflicts by keeping main's changes [skip ci]"
+          
+          git push origin dev
           
   build:
     needs: semantic
