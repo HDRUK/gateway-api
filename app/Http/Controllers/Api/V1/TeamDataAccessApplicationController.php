@@ -16,6 +16,7 @@ use App\Http\Requests\DataAccessApplication\EditDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\DeleteDataAccessApplicationFile;
 use App\Jobs\SendEmailJob;
 use App\Models\DataAccessApplication;
+use App\Models\DataAccessApplicationComment;
 use App\Models\DataAccessApplicationReview;
 use App\Models\DataAccessApplicationStatus;
 use App\Models\DataAccessApplicationAnswer;
@@ -56,9 +57,25 @@ class TeamDataAccessApplicationController extends Controller
      *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                      @OA\Property(property="applicant_id", type="integer", example="1"),
-     *                      @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
-     *                      @OA\Property(property="approval_status", type="string", example="APPORVED"),
      *                      @OA\Property(property="project_title", type="string", example="A project"),
+     *                      @OA\Property(property="user", type="array", @OA\Items(
+     *                          @OA\Property(property="name", type="string", example="A User"),
+     *                          @OA\Property(property="organisation", type="string", example="An origanisation"),
+     *                      )),
+     *                      @OA\Property(property="datasets", type="array", @OA\Items(
+     *                          @OA\Property(property="dar_application_id", type="integer", example="1"),
+     *                          @OA\Property(property="dataset_id", type="integer", example="1"),
+     *                          @OA\Property(property="dataset_title", type="string", example="A dataset"),
+     *                          @OA\Property(property="custodian", type="array", @OA\Items(
+     *                              @OA\Property(property="name", type="string", example="A Custodian"),
+     *                          )),
+     *                      )),
+     *                      @OA\Property(property="teams", type="array", @OA\Items(
+     *                          @OA\Property(property="team_id", type="integer", example="1"),
+     *                          @OA\Property(property="dar_application_id", type="integer", example="1"),
+     *                          @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
+     *                          @OA\Property(property="approval_status", type="string", example="APPROVED"),
+     *                      )),
      *                  )
      *              )
      *          )
@@ -96,8 +113,10 @@ class TeamDataAccessApplicationController extends Controller
             if (!is_null($filterApproval)) {
                 $approvalMatches = [];
                 foreach ($applications as $a) {
-                    if ($a['teams'][0]['approval_status'] === $filterApproval) {
-                        $approvalMatches[] = $a->id;
+                    foreach($a['teams'] as $t) {
+                        if (($t->team_id === $teamId) && ($t->approval_status === $filterApproval)) {
+                            $approvalMatches[] = $a->id;
+                        }
                     }
                 }
                 $matches = array_intersect($matches, $approvalMatches);
@@ -106,8 +125,10 @@ class TeamDataAccessApplicationController extends Controller
             if (!is_null($filterSubmission)) {
                 $submissionMatches = [];
                 foreach ($applications as $a) {
-                    if ($a['teams'][0]['submission_status'] === $filterSubmission) {
-                        $submissionMatches[] = $a->id;
+                    foreach($a['teams'] as $t) {
+                        if (($t->team_id === $teamId) && ($t->submission_status === $filterSubmission)) {
+                            $submissionMatches[] = $a->id;
+                        }
                     }
                 }
                 $matches = array_intersect($matches, $submissionMatches);
@@ -642,6 +663,7 @@ class TeamDataAccessApplicationController extends Controller
      *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="application_id", type="integer", example="123"),
      *                  @OA\Property(property="approval_status", type="string", example="APPROVED"),
+     *                  @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
      *              )
      *          ),
      *      ),
@@ -791,7 +813,7 @@ class TeamDataAccessApplicationController extends Controller
 
             if ($newStatus !== $originalStatus) {
                 $application = DataAccessApplication::where('id', $id)->with('teams')->first();
-                $this->emailStatusNotification($id, $application);
+                $this->emailStatusNotification($id, $application, $teamId);
             }
 
             Auditor::log([
@@ -917,7 +939,7 @@ class TeamDataAccessApplicationController extends Controller
         }
     }
 
-    private function emailStatusNotification(int $id, DataAccessApplication $application): void
+    private function emailStatusNotification(int $id, DataAccessApplication $application, int $teamId): void
     {
         $template = EmailTemplate::where(['identifier' => 'dar.status.researcher'])->first();
         $user = User::where('id', $application->applicant_id)->first();
@@ -928,7 +950,13 @@ class TeamDataAccessApplicationController extends Controller
                 'name' => $user['name'],
             ],
         ];
-        $status = ucwords(strtolower(str_replace('_', ' ', $application->approval_status)));
+        $approvalStatus = '';
+        foreach ($application['teams'] as $t) {
+            if ($t->team_id === $teamId) {
+                $approvalStatus = $t->approval_status;
+            }
+        }
+        $status = ucwords(strtolower(str_replace('_', ' ', $approvalStatus)));
 
         $replacements = [
             '[[USER_FIRST_NAME]]' => $user['firstname'],

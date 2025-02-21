@@ -74,10 +74,14 @@ class UserDataAccessApplicationController extends Controller
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="applicant_id", type="integer", example="1"),
-     *                  @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
      *                  @OA\Property(property="project_title", type="string", example="A DAR project"),
-     *                  @OA\Property(property="approval_status", type="string", example="APPROVED"),
      *                  @OA\Property(property="questions", type="array", @OA\Items()),
+     *                  @OA\Property(property="teams", type="array", @OA\Items(
+     *                      @OA\Property(property="team_id", type="integer", example="1"),
+     *                      @OA\Property(property="dar_application_id", type="integer", example="1"),
+     *                      @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
+     *                      @OA\Property(property="approval_status", type="string", example="APPROVED"),
+     *                  )),
      *              )
      *          ),
      *      ),
