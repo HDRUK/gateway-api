@@ -166,7 +166,6 @@ class AliasReplyScanner
             'message' => [
                 'from' => $enquiryMessage->from,
                 'message_body' => [
-                    '[[TEAM_NAME]]' => $teamNames,
                     '[[USER_FIRST_NAME]]' => $user->firstname,
                     '[[USER_LAST_NAME]]' => $user->lastname,
                     '[[USER_ORGANISATION]]' => $user->organisation,
@@ -220,7 +219,7 @@ class AliasReplyScanner
                 $to = [
                     'to' => [
                         'email' => $user['user']['email'],
-                        'name' => $user['user']['firstname'] . ' ' . $user['user']['lastname'],
+                        'name' => $user['user']['name'],
                     ],
                 ];
 
