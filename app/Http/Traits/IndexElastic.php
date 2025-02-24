@@ -301,7 +301,7 @@ trait IndexElastic
             if ($relation === 'collection' || $relation === 'undefined') {
                 $collections = Collection::where('team_id', $teamId)->select(['id', 'status'])->get();
                 foreach ($collections as $collection) {
-                    if ($collections->status === Collection::STATUS_ACTIVE) {
+                    if ($collection->status === Collection::STATUS_ACTIVE) {
                         $this->indexElasticCollections($collection->id);
                     }
                 }
