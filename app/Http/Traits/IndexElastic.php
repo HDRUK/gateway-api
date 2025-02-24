@@ -810,6 +810,11 @@ trait IndexElastic
         $this->deleteFromElastic($id, ECC::ELASTIC_NAME_DATASET);
     }
 
+    public function deleteDataProvider(string $id)
+    {
+        $this->deleteFromElastic($id, ECC::ELASTIC_NAME_DATAPROVIDER);
+    }
+
     public function deleteDataProviderCollFromElastic(string $id)
     {
         $this->deleteFromElastic($id, ECC::ELASTIC_NAME_DATAPROVIDERCOLL);

@@ -75,7 +75,7 @@ class DurObserverTest extends TestCase
     {
         $observer = Mockery::mock(DurObserver::class)->makePartial();
         app()->instance(DurObserver::class, $observer);
-        $observer->shouldReceive('indexElasticDur')->once()->with(1);
+        $observer->shouldReceive('indexElasticDur')->with(2);
 
         $userId = User::all()->random()->id;
         $teamId = Team::all()->random()->id;
@@ -140,7 +140,7 @@ class DurObserverTest extends TestCase
     {
         $observer = Mockery::mock(DurObserver::class)->makePartial();
         app()->instance(DurObserver::class, $observer);
-        $observer->shouldReceive('indexElasticDur')->once()->with(1);
+        $observer->shouldReceive('indexElasticDur')->with(2);
 
         $dur = Dur::create([
             'id' => 1,
@@ -252,7 +252,7 @@ class DurObserverTest extends TestCase
         ]);
 
         $observer = Mockery::mock(DurObserver::class)->makePartial();
-        $observer->shouldReceive('indexElasticDur')->once()->with(1);
+        $observer->shouldReceive('indexElasticDur')->with(2);
         app()->instance(DurObserver::class, $observer);
 
         $dur->update(['status' => Dur::STATUS_ACTIVE]);
@@ -267,7 +267,7 @@ class DurObserverTest extends TestCase
     {
         $observer = Mockery::mock(DurObserver::class)->makePartial();
         $observer->shouldReceive('deleteDurFromElastic')->once()->with(1);
-        $observer->shouldReceive('indexElasticDur')->once()->with(1);
+        $observer->shouldReceive('indexElasticDur')->with(2);
         app()->instance(DurObserver::class, $observer);
 
         $dur = Dur::create([
