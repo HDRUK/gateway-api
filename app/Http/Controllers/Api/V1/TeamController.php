@@ -813,9 +813,9 @@ class TeamController extends Controller
             $users = array_key_exists('users', $input) ? $input['users'] : [];
             $this->updateTeamAdminUsers($teamId, $users);
 
-            if (array_key_exists('name', $array)) {
-                $this->reindexRelatedEntities($teamId);
-            }
+            // if (array_key_exists('name', $array)) {
+            //     $this->reindexRelatedEntities($teamId);
+            // }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -973,9 +973,9 @@ class TeamController extends Controller
             $users = array_key_exists('users', $input) ? $input['users'] : [];
             $this->updateTeamAdminUsers($teamId, $users);
 
-            if (array_key_exists('name', $array)) {
-                $this->reindexRelatedEntities($teamId);
-            }
+            // if (array_key_exists('name', $array)) {
+            //     $this->reindexRelatedEntities($teamId);
+            // }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
