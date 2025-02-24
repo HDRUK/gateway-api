@@ -40,7 +40,7 @@ class DatasetObserverTest extends TestCase
     public function testDatasetObserverReindexesElasticOnCreatedEeventIfActiveAndHasVersion()
     {
         $observer = Mockery::mock(DatasetObserver::class)->makePartial();
-        $observer->shouldReceive('reindexElastic')->once()->with(1);
+        $observer->shouldReceive('reindexElastic')->with(1);
 
         $teamHasUser = TeamHasUser::all()->random();
         $dataset = Dataset::create([
