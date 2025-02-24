@@ -14,8 +14,8 @@ if (!function_exists('convertArrayToStringWithKeyName')) {
     }
 }
 
-if (!function_exists('format_clean_input')) {
-    function format_clean_input($input)
+if (!function_exists('formatCleanInput')) {
+    function formatCleanInput($input)
     {
         $decoded_input = html_entity_decode($input, ENT_QUOTES, 'UTF-8');
         $config = HTMLPurifier_Config::createDefault();
