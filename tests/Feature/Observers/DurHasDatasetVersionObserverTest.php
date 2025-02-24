@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Observers;
+namespace Tests\Feature\Observers;
 
 use Mockery;
 use App\Models\Dur;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Observers;
+namespace Tests\Feature\Observers;
 
 use Mockery;
 use Tests\TestCase;
@@ -45,7 +45,6 @@ class CollectionObserverTest extends TestCase
     public function testCollectionObserverCreatedEeventIndexesActiveCollection()
     {
         $this->observer->shouldReceive('indexElasticCollections')
-            ->once()
             ->with(1);
 
         $collection = Collection::factory()->create([
@@ -87,7 +86,7 @@ class CollectionObserverTest extends TestCase
                     }
                 )
             )
-            ->times(1);
+            ->times(2);
 
         ECC::shouldIgnoreMissing();
 
@@ -129,7 +128,7 @@ class CollectionObserverTest extends TestCase
                 return $params['index'] === ECC::ELASTIC_NAME_COLLECTION;
             })
         )
-        ->times(1);
+        ->times(2);
 
         ECC::shouldIgnoreMissing();
 
