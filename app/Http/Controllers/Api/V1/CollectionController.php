@@ -527,7 +527,7 @@ class CollectionController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             if (array_key_exists('name', $input)) {
-                $array['name'] = format_clean_input($input['name']);
+                $array['name'] = formatCleanInput($input['name']);
             }
 
             $collection = Collection::create($array);
@@ -714,7 +714,7 @@ class CollectionController extends Controller
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             if (array_key_exists('name', $input)) {
-                $array['name'] = format_clean_input($input['name']);
+                $array['name'] = formatCleanInput($input['name']);
             }
             Collection::where('id', $id)->update($array);
 
@@ -930,7 +930,7 @@ class CollectionController extends Controller
                 ];
                 $array = $this->checkEditArray($input, $arrayKeys);
                 if (array_key_exists('name', $input)) {
-                    $array['name'] = format_clean_input($input['name']);
+                    $array['name'] = formatCleanInput($input['name']);
                 }
                 // Handle the 'deleted_at' field based on 'status'
                 if (isset($input['status']) && ($input['status'] === Collection::STATUS_ARCHIVED)) {
