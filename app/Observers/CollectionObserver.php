@@ -16,7 +16,9 @@ class CollectionObserver
     {
         if ($collection->status === Collection::STATUS_ACTIVE) {
             $this->indexElasticCollections((int) $collection->id);
-            $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'collection');
+            if ($collection->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'collection');
+            }
         }
     }
 
@@ -38,12 +40,16 @@ class CollectionObserver
 
         if ($prevStatus === Collection::STATUS_ACTIVE && $collection->status !== Collection::STATUS_ACTIVE) {
             $this->deleteCollectionFromElastic((int) $collection->id);
-            $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'collection');
+            if ($collection->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'collection');
+            }
         }
 
         if($collection->status === Collection::STATUS_ACTIVE) {
             $this->indexElasticCollections((int) $collection->id);
-            $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'collection');
+            if ($collection->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'collection');
+            }
         }
     }
 
@@ -54,6 +60,10 @@ class CollectionObserver
     {
         if($collection->status === Collection::STATUS_ACTIVE) {
             $this->deleteCollectionFromElastic((int) $collection->id);
+            if ($collection->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'collection');
+            }
+
         }
     }
 

@@ -60,7 +60,9 @@ class DatasetVersionObserver
 
         if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
             $this->reindexElastic($dataset->id);
-            $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
+            if ($dataset->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
+            }
         }
     }
 }

@@ -16,7 +16,10 @@ class DurObserver
     {
         if($dur->status === Dur::STATUS_ACTIVE) {
             $this->indexElasticDur($dur->id);
-            $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dur');
+            if ($dur->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dur');
+            }
+
         }
     }
 
@@ -37,12 +40,16 @@ class DurObserver
 
         if ($prevStatus === Dur::STATUS_ACTIVE && $dur->status !== Dur::STATUS_ACTIVE) {
             $this->deleteDurFromElastic($dur->id);
-            $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dur');
+            if ($dur->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dur');
+            }
         }
 
         if($dur->status === Dur::STATUS_ACTIVE) {
             $this->indexElasticDur($dur->id);
-            $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dur');
+            if ($dur->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dur');
+            }
         }
     }
 
@@ -63,7 +70,9 @@ class DurObserver
 
         if($prevStatus === Dur::STATUS_ACTIVE) {
             $this->deleteDurFromElastic($dur->id);
-            $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dur');
+            if ($dur->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dur');
+            }
         }
     }
 
