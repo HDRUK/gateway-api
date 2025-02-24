@@ -36,6 +36,7 @@ use App\Models\TypeCategory;
 
 
 use ElasticClientController as ECC;
+use MetadataManagementController as MMC;
 
 trait IndexElastic
 {
@@ -243,6 +244,95 @@ trait IndexElastic
             ]);
             throw new Exception($e->getMessage());
         }
+    }
+
+    public function reindexElasticDataProviderWithRelations(string $teamId, string $relation = 'undefined')
+    {
+        try {
+            $this->reindexElasticDataProvider($teamId);
+
+            $team = Team::where('id', $teamId)->select(['id', 'pid', 'name'])->first()->toArray();
+
+            if ($relation === 'dataset' || $relation === 'undefined') {
+                $datasets = Dataset::where('team_id', $teamId)->select(['id', 'status'])->get();
+                foreach ($datasets as $dataset) {
+                    if ($dataset->status === Dataset::STATUS_ACTIVE) {
+                        if(version_compare(Config::get('metadata.GWDM.version'), '1.1', '<')) {
+                            $publisher = [
+                                'publisherId' => $team['pid'],
+                                'publisherName' => $team['name'],
+                            ];
+                        } else {
+                            $publisher = [
+                                'gatewayId' => $team['pid'],
+                                'name' => $team['name'],
+                            ];
+                        }
+
+                        $metadata = $dataset->latestVersion()->metadata['metadata'];
+                        $metadata['summary']['publisher'] = $publisher;
+
+                        $isValid = MMC::validateDataModelType(
+                            json_encode(['metadata' => $metadata]),
+                            Config::get('metadata.GWDM.name'),
+                            Config::get('metadata.GWDM.version'),
+                        );
+                        if ($isValid) {
+                            $metadataSaveObject = [
+                                'gwdmVersion' =>  Config::get('metadata.GWDM.version'),
+                                'metadata' => $metadata,
+                                'original_metadata' => $dataset->latestVersion()->metadata['original_metadata'],
+                            ];
+                            DatasetVersion::where([
+                                'dataset_id' => $dataset->id,
+                                'version' => $dataset->lastMetadataVersionNumber()->version,
+                            ])->update([
+                                'metadata' => json_encode($metadataSaveObject),
+                            ]);
+
+                            $this->reindexElastic($dataset->id);
+                        } else {
+                            throw new Exception('Failed to validate metadata with new team name');
+                        }
+                    }
+                }
+            }
+
+            if ($relation === 'collection' || $relation === 'undefined') {
+                $collections = Collection::where('team_id', $teamId)->select(['id', 'status'])->get();
+                foreach ($collections as $collection) {
+                    if ($collections->status === Collection::STATUS_ACTIVE) {
+                        $this->indexElasticCollections($collection->id);
+                    }
+                }
+            }
+
+            if ($relation === 'dur' || $relation === 'undefined') {
+                $durs = Dur::where('team_id', $teamId)->select(['id', 'status'])->get();
+                foreach ($durs as $dur) {
+                    if ($dur->status === Dur::STATUS_ACTIVE) {
+                        $this->indexElasticDur($dur->id);
+                    }
+                }
+            }
+
+            if ($relation === 'tool' || $relation === 'undefined') {
+                $tools = Tool::where('team_id', $teamId)->select(['id', 'status'])->get();
+                foreach ($tools as $tool) {
+                    if ($tool->status === Tool::STATUS_ACTIVE) {
+                        $this->indexElasticTools($tool->id);
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            \Log::error('Error reindexing ElasticSearch', [
+                'teamId' => $teamId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw new Exception($e->getMessage());
+        }
+
     }
 
     /**

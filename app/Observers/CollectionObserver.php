@@ -16,8 +16,10 @@ class CollectionObserver
     {
         if ($collection->status === Collection::STATUS_ACTIVE) {
             $this->indexElasticCollections((int) $collection->id);
+            $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'collection');
         }
     }
+
 
     /**
      * Handle the Collection "updating" event.
@@ -36,10 +38,12 @@ class CollectionObserver
 
         if ($prevStatus === Collection::STATUS_ACTIVE && $collection->status !== Collection::STATUS_ACTIVE) {
             $this->deleteCollectionFromElastic((int) $collection->id);
+            $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'collection');
         }
 
         if($collection->status === Collection::STATUS_ACTIVE) {
             $this->indexElasticCollections((int) $collection->id);
+            $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'collection');
         }
     }
 

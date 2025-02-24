@@ -76,6 +76,7 @@ class DurHasDatasetVersionObserver
 
             if (!is_null($dataset)) {
                 $this->reindexElastic($dataset->id);
+                $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
             }
         }
     }

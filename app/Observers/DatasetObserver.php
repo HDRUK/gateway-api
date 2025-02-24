@@ -21,6 +21,8 @@ class DatasetObserver
         if($dataset->status === Dataset::STATUS_ACTIVE && !is_null($datasetVersion)) {
             $this->reindexElastic($dataset->id);
         }
+
+        $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
     }
 
     /**
@@ -43,10 +45,12 @@ class DatasetObserver
 
         if ($prevStatus === Dataset::STATUS_ACTIVE && $dataset->status !== Dataset::STATUS_ACTIVE) {
             $this->deleteDatasetFromElastic($dataset->id);
+            $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
         }
 
         if($dataset->status === Dataset::STATUS_ACTIVE && !is_null($datasetVersion)) {
             $this->reindexElastic($dataset->id);
+            $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
         }
     }
 
@@ -67,6 +71,7 @@ class DatasetObserver
 
         if($prevStatus === Dataset::STATUS_ACTIVE) {
             $this->deleteDatasetFromElastic($dataset->id);
+            $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
         }
     }
 
