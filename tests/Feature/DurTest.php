@@ -949,8 +949,7 @@ class DurTest extends TestCase
 
         $response->assertStatus(200);
         $content = $response->decodeResponseJson()['data'];
-        dd($content);
-        $this->assertTrue($content['project_id_text'] === $mockData['project_id_text']);
+        $this->assertTrue($content[0]['project_id_text'] === $mockData['project_id_text']);
         $this->assertTrue(count($content) === 1);
     }
 
