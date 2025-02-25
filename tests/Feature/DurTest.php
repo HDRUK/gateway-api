@@ -917,12 +917,15 @@ class DurTest extends TestCase
 
     public function test_the_application_can_search_on_project_id(): void
     {
+        $teamId = (int) Team::all()->random()->id;
+
         $mockData = [
             'project_id_text' => '12345-67890',
             'datasets' => $this->generateDatasets(),
             'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
             'tools' => $this->generateTools(),
+            'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
             'organisation_sector' => 'academia',
