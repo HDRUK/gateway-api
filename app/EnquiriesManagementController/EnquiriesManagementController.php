@@ -20,66 +20,65 @@ use App\Models\EnquiryThreadHasDatasetVersion;
 
 class EnquiriesManagementController
 {
-    public function determineDARManagersFromTeamId(int $teamId, int $enquiryThreadId, int $currUserId = 0): ?array
+    public function getUsersByTeamIds(array $teamIds, int $currUserId = 0)
     {
-        $team = Team::with('users')->where('id', $teamId)->first();
-        $teamHasUserIds = TeamHasUser::where('team_id', $team->id)->get();
-        $roleIdeal = null;
-        $roleSecondary = null;
-        $enquiryThread = null;
-
         $users = [];
-        // user who open the enquiry
-        if ($currUserId) {
-            $users[] = [
-                'user' => User::where('id', $currUserId)
-                            ->select(['id', 'name', 'firstname', 'lastname', 'email', 'secondary_email', 'preferred_email'])
-                            ->first()
-                            ->toArray(),
-            ];
-        }
 
-        foreach ($teamHasUserIds as $thu) {
-            $teamUserHasRoles = TeamUserHasRole::where('team_has_user_id', $thu->id)->get();
+        $selectRoles = ['custodian.dar.manager'];
+        $roles = Role::whereIn('name', $selectRoles)->select(['id'])->get()->toArray();
+        $roleIds = convertArrayToArrayWithKeyName($roles, 'id');
+        foreach ($teamIds as $teamId) {
+            $team = Team::where('id', $teamId)->first();
+            if (is_null($team)) {
+                continue;
+            }
 
-            foreach ($teamUserHasRoles as $tuhr) {
-                $roleIdeal = Role::where([
-                    'id' => $tuhr->role_id,
-                    'name' => 'custodian.dar.manager',
-                ])->first();
+            $teamHasUsers = TeamHasUser::where('team_id', $teamId)->select(['id', 'user_id'])->get()->toArray();
+            foreach ($teamHasUsers as $teamHasUser) {
+                $teamUserHasRoles = TeamUserHasRole::where('team_has_user_id', $teamHasUser['id'])->whereIn('role_id', $roleIds)->first();
 
-                $roleSecondary = Role::where([
-                    'id' => $tuhr->role_id,
-                    'name' => 'dar.manager',
-                ])->first();
+                if (!is_null($teamUserHasRoles)) {
+                    $user = User::where('id', $teamHasUser['user_id'])
+                                ->select(['id', 'name', 'firstname', 'lastname', 'email', 'secondary_email', 'preferred_email'])
+                                ->first();
 
-                if (!$roleIdeal && !$roleSecondary) {
-                    continue;
-                } // If neither roles are set, ignore
+                    if (is_null($user)) {
+                        continue;
+                    }
 
-                // we don't care about this as we've found our dar.manager users.
-                unset($team['users']);
-
-                $enquiryThread = EnquiryThread::where([
-                    'id' => $enquiryThreadId,
-                ])->first();
-
-                $users[] = [
-                    'user' => User::where('id', $thu['user_id'])->first()->toArray(),
-                    'role' => (($roleIdeal ? $roleIdeal->toArray() : ($roleSecondary ?
-                        $roleSecondary->toArray() : []))),
-                    'team' => $team->toArray(),
-                ];
+                    $users[] = [
+                        'user' => $user->toArray(),
+                        'team' => $team->toArray(),
+                    ];
+                }
             }
         }
 
-        unset(
-            $team,
-            $teamHasUserIds,
-            $roleIdeal,
-            $roleSecondary,
-            $enquiryThread,
-        );
+        $user = User::where('id', $currUserId)
+                    ->select(['id', 'name', 'firstname', 'lastname', 'email', 'secondary_email', 'preferred_email'])
+                    ->first();
+
+        if ($currUserId && !is_null($user)) {
+            foreach ($teamIds as $teamId) {
+                $team = Team::where('id', $teamId)->first();
+                if (is_null($team)) {
+                    continue;
+                }
+
+                $teamHasUsers = TeamHasUser::where([
+                    'team_id' => $teamId,
+                    'user_id' => $currUserId,
+                ])->first();
+
+                if (!is_null($teamHasUsers)) {
+                    $users[] = [
+                        'user' => $user->toArray(),
+                        'team' => $team->toArray(),
+                    ];
+
+                }
+            }
+        }
 
         return $users;
     }
@@ -88,7 +87,7 @@ class EnquiriesManagementController
     {
         $enquiryThread = EnquiryThread::create([
             'user_id' => $input['user_id'],
-            'team_id' => $input['team_id'],
+            'team_ids' => $input['team_ids'],
             'project_title' => isset($input['project_title']) ? $input['project_title'] : "",
             'unique_key' => $input['unique_key'],
             'is_dar_dialogue' => $input['is_dar_dialogue'],
@@ -106,7 +105,7 @@ class EnquiriesManagementController
                 }
                 $datasetVersion = DatasetVersion::where('dataset_id', $dataset['dataset_id'])
                     ->latest('created_at')->first();
-                $enquiryThreadHasDataset = EnquiryThreadHasDatasetVersion::create([
+                EnquiryThreadHasDatasetVersion::create([
                     'enquiry_thread_id' => $enquiryThread->id,
                     'dataset_version_id' =>  $datasetVersion->id,
                     'interest_type' => $dataset['interest_type'],
@@ -138,8 +137,6 @@ class EnquiriesManagementController
 
         try {
             $template = EmailTemplate::where('identifier', $ident)->first();
-            $team = Team::where('id', $threadDetail['thread']['team_id'])->first();
-            $user = User::where('id', $jwtUser['id'])->first();
 
             if (array_key_exists('datasets', $threadDetail['thread'])) {
                 $threadDetail['message']['message_body']['[[DATASETS]]'] = $threadDetail['thread']['datasets'];
@@ -147,7 +144,7 @@ class EnquiriesManagementController
 
             $replacements = [
                 '[[CURRENT_YEAR]]' => $threadDetail['message']['message_body']['[[CURRENT_YEAR]]'],
-                '[[TEAM_NAME]]' => $threadDetail['message']['message_body']['[[TEAM_NAME]]'],
+                '[[TEAM_NAME]]' => '',
                 '[[SENDER_NAME]]' => $threadDetail['message']['message_body']['[[SENDER_NAME]]'] ?? '',
                 '[[USER_FIRST_NAME]]' => $threadDetail['message']['message_body']['[[USER_FIRST_NAME]]'],
                 '[[USER_LAST_NAME]]' => $threadDetail['message']['message_body']['[[USER_LAST_NAME]]'],
@@ -157,23 +154,25 @@ class EnquiriesManagementController
             ];
 
             // TODO Add unique key to URL button. Future scope.
-            foreach ($usersToNotify as $u) {
-                $replacements['[[RECIPIENT_NAME]]'] = $u['user']['name'];
-                if ($u === null) {
-                    Auditor::log([
-                        'user_id' => (int)$jwtUser['id'],
-                        'action_type' => 'SEND EMAIL',
-                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                        'description' => 'EnquiriesManagementController failed to send email on behalf of ' .
-                            $jwtUser['id'] . '. Detail: ' . json_encode($threadDetail),
-                    ]);
-                    continue;
-                }
+            if (count($usersToNotify) === 0) {
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'SEND EMAIL',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'EnquiriesManagementController failed to send email on behalf of ' .
+                        $jwtUser['id'] . '. Detail: ' . json_encode($threadDetail),
+                ]);
 
+                return;
+            }
+
+            foreach ($usersToNotify as $user) {
+                $replacements['[[RECIPIENT_NAME]]'] = $user['user']['name'];
+                $replacements['[[TEAM_NAME]]'] = $user['team']['name'];
                 $to = [
                     'to' => [
-                        'email' => $u['user']['email'],
-                        'name' => $u['user']['firstname'] . ' ' . $u['user']['lastname'],
+                        'email' => $user['user']['email'],
+                        'name' => $user['user']['firstname'] . ' ' . $user['user']['lastname'],
                     ],
                 ];
 
@@ -183,8 +182,6 @@ class EnquiriesManagementController
 
             unset(
                 $template,
-                $team,
-                $user,
                 $replacements,
             );
         } catch (Exception $e) {
@@ -230,6 +227,7 @@ class EnquiriesManagementController
         } elseif ($in['thread']['is_dar_dialogue']) {
             $str .= $in['message']['message_body']['[[MESSAGE]]'] . '<br/>';
         }
+
         return $str;
     }
 }
