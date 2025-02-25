@@ -1,3 +1,17 @@
+## [2.1.0](https://github.com/HDRUK/gateway-api-2/compare/v2.0.0...v2.1.0) (2025-02-25)
+
+### ✨ Features
+
+* **GAT-6216:** Trigger release ([14ca3ee](https://github.com/HDRUK/gateway-api-2/commit/14ca3ee6cb34281e315adee8a6d07254d8433ff9)), closes [GAT-6216](GAT-6216)
+* **GAT-6216:** Trigger release round 3 ([fc7d697](https://github.com/HDRUK/gateway-api-2/commit/fc7d6977e202d7fe8867952a0109dbff585cabb2)), closes [GAT-6216](GAT-6216) [GAT-6216](GAT-6216) [/github.com/HDRUK/gateway-api-2](gateway-api-2) [GAT-6216](GAT-6216) [GAT-6216](GAT-6216)
+
+### 🐛 Bug Fixes
+
+* **GAT-6216:** Add in force and rebase to avoid conflicts ([bdaca07](https://github.com/HDRUK/gateway-api-2/commit/bdaca07d998d618bcd0fe0c171de3e03360112e9)), closes [GAT-6216](GAT-6216)
+* **GAT-6216:** Add in force and rebase to avoid conflicts (#1102) ([42c501f](https://github.com/HDRUK/gateway-api-2/commit/42c501f78c5d2465711fb469a8e1292f444d5388)), closes [GAT-6216](GAT-6216)
+* **GAT-6287:** Use referrer for social logins - revert (#1107) ([ebbe11b](https://github.com/HDRUK/gateway-api-2/commit/ebbe11b323cca456dd13f66324e5f0a5c02e63e8)), closes [GAT-6287](GAT-6287)
+* **GAT-6287:** Use referrer for social logins (#1097) ([c45cbae](https://github.com/HDRUK/gateway-api-2/commit/c45cbae261ebc1ff81a287c8e40ed34bdbf2af74)), closes [GAT-6287](GAT-6287)
+
 ## [0.14.0](https://github.com/HDRUK/gateway-api-2/compare/v0.13.0...v0.14.0) (2025-02-21)
 
 ### ✨ Features
