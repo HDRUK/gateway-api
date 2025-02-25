@@ -159,6 +159,7 @@ class DurController extends Controller
             $mongoId = $request->query('mongo_id', null);
             $projectTitle = $request->query('project_title', null);
             $teamId = $request->query('team_id', null);
+            $projectId = $request->query('project_id', null);
             $filterStatus = $request->query('status', null);
             $perPage = request('perPage', Config::get('constants.per_page'));
             $withRelated = $request->boolean('with_related', true);
@@ -173,6 +174,8 @@ class DurController extends Controller
                 return $query->where('project_title', 'like', '%'. $projectTitle .'%');
             })->when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
+            })->when($projectId, function ($query) use ($projectId) {
+                return $query->where('project_id_text', '=', $projectId);
             })->when(
                 $filterStatus,
                 function ($query) use ($filterStatus) {
