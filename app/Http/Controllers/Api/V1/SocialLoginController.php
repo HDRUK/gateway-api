@@ -179,6 +179,7 @@ class SocialLoginController extends Controller
                     'token_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/token',
                     'userinfo_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/userinfo',
                 ]);
+
                 $oidc->setRedirectUrl(Config::get('services.openathens.redirect'));
                 $oidc->authenticate();
 
