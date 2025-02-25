@@ -58,7 +58,7 @@ jobs:
           git merge --no-ff main || true
           git checkout --theirs .
           git add .
-          git commit -m "Auto-resolve merge conflicts by keeping main's changes [skip ci]"
+          git commit -m "Auto-resolve merge conflicts by keeping main's changes [skip ci]" || echo "No changes to commit"
           
           git push origin dev
           
