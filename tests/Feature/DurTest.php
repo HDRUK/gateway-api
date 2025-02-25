@@ -923,8 +923,6 @@ class DurTest extends TestCase
             'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
             'tools' => $this->generateTools(),
-            'user_id' => $userId,
-            'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
             'organisation_sector' => 'academia',
