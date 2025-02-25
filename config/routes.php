@@ -47,6 +47,28 @@ return [
     [
         'name' => 'login.social',
         'method' => 'get',
+        'path' => '/auth/dta/{provider}',
+        'methodController' => 'SocialLoginController@dtaLogin',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'provider' => 'google|azure|linkedin|openathens',
+        ],
+    ],
+    [
+        'name' => 'login.social',
+        'method' => 'get',
+        'path' => '/auth/dta/{provider}/callback',
+        'methodController' => 'SocialLoginController@dtaCallback',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'provider' => 'google|azure|linkedin|openathens',
+        ],
+    ],
+    [
+        'name' => 'login.social',
+        'method' => 'get',
         'path' => '/auth/{provider}/callback',
         'methodController' => 'SocialLoginController@callback',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
