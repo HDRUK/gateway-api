@@ -918,7 +918,7 @@ class DurTest extends TestCase
     public function test_the_application_can_search_on_project_id(): void
     {
         $mockData = [
-            'project_id_text' => '123456-7890',
+            'project_id_text' => '12345-67890',
             'datasets' => $this->generateDatasets(),
             'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
@@ -942,13 +942,14 @@ class DurTest extends TestCase
 
         $response = $this->json(
             'GET',
-            self::TEST_URL . '?project_id=12345-67890',
+            self::TEST_URL . '?project_id=' . $mockData['project_id_text'],
             $this->header
         );
 
         $response->assertStatus(200);
         $content = $response->decodeResponseJson()['data'];
-        $this->assertTrue($content['project_id_text'] === '12345-67890');
+        $this->assertTrue($content['project_id_text'] === $mockData['project_id_text']);
+        $this->assertTrue(count($content) === 1);
     }
 
     private function generateKeywords()
