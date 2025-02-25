@@ -3,9 +3,11 @@
 namespace App\Http\Traits;
 
 use Exception;
+use App\Exceptions\UnauthorizedException;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationAnswer;
 use App\Models\QuestionBank;
+use App\Models\TeamHasDataAccessApplication;
 
 trait DataAccessApplicationHelpers
 {
@@ -45,14 +47,14 @@ trait DataAccessApplicationHelpers
 
         $application->update([
             'applicant_id' => $input['applicant_id'],
-            'submission_status' => $input['submission_status'],
-            'approval_status' => isset($input['approval_status']) ? $input['approval_status'] : $application->approval_status,
             'project_title' => $input['project_title'],
         ]);
 
+        $isDraft = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status'));
+
         $answers = $input['answers'] ?? [];
         if (count($answers)) {
-            if ($application->submission_status !== 'SUBMITTED') {
+            if ($isDraft) {
                 DataAccessApplicationAnswer::where('application_id', $id)->delete();
                 foreach ($answers as $answer) {
                     DataAccessApplicationAnswer::create([
@@ -74,16 +76,16 @@ trait DataAccessApplicationHelpers
 
         $arrayKeys = [
             'applicant_id',
-            'submission_status',
-            'approval_status',
             'project_title',
         ];
         $array = $this->checkEditArray($input, $arrayKeys);
         $application->update($array);
 
+        $isDraft = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status'));
+
         $answers = $input['answers'] ?? [];
         if (count($answers)) {
-            if ($application->submission_status !== 'SUBMITTED') {
+            if ($isDraft) {
                 DataAccessApplicationAnswer::where('application_id', $id)->delete();
                 foreach ($answers as $answer) {
                     DataAccessApplicationAnswer::create([
@@ -96,6 +98,22 @@ trait DataAccessApplicationHelpers
             } else {
                 throw new Exception('DAR form answers cannot be updated after submission.');
             }
+        }
+    }
+
+    public function checkTeamAccess(int $teamId, int $id, string $op): void
+    {
+        $access = count(
+            TeamHasDataAccessApplication::where([
+                'team_id' => $teamId,
+                'dar_application_id' => $id
+            ])->get()
+        );
+
+        if (!$access) {
+            throw new UnauthorizedException(
+                "Team does not have permission to use this endpoint to $op this application."
+            );
         }
     }
 }

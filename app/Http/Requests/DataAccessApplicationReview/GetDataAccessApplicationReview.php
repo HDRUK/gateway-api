@@ -19,6 +19,11 @@ class GetDataAccessApplicationReview extends BaseFormRequest
                 'required',
                 'exists:dar_applications,id',
             ],
+            'teamId' => [
+                'int',
+                'required',
+                'exists:teams,id'
+            ],
         ];
     }
 
@@ -29,6 +34,9 @@ class GetDataAccessApplicationReview extends BaseFormRequest
      */
     protected function prepareForValidation()
     {
-        $this->merge(['id' => $this->route('id')]);
+        $this->merge([
+            'id' => $this->route('id'),
+            'teamId' => $this->route('teamId'),
+        ]);
     }
 }
