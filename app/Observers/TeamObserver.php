@@ -16,12 +16,4 @@ class TeamObserver
     {
         $this->reindexElasticDataProviderWithRelations((int) $team->id);
     }
-
-    /**
-     * Handle the Team "updated" event.
-     */
-    public function deleted(Team $team): void
-    {
-        $this->deleteDataProvider((int) $team->id);
-    }
 }
