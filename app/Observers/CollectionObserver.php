@@ -16,6 +16,9 @@ class CollectionObserver
     {
         if ($collection->status === Collection::STATUS_ACTIVE) {
             $this->indexElasticCollections((int) $collection->id);
+            if ($collection->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'dataset');
+            }
         }
     }
 
@@ -36,10 +39,18 @@ class CollectionObserver
 
         if ($prevStatus === Collection::STATUS_ACTIVE && $collection->status !== Collection::STATUS_ACTIVE) {
             $this->deleteCollectionFromElastic((int) $collection->id);
+            if ($collection->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'dataset');
+            }
+
         }
 
         if($collection->status === Collection::STATUS_ACTIVE) {
             $this->indexElasticCollections((int) $collection->id);
+            if ($collection->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'dataset');
+            }
+
         }
     }
 
@@ -50,6 +61,10 @@ class CollectionObserver
     {
         if($collection->status === Collection::STATUS_ACTIVE) {
             $this->deleteCollectionFromElastic((int) $collection->id);
+            if ($collection->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'dataset');
+            }
+
         }
     }
 

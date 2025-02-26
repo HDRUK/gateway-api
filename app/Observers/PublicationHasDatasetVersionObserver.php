@@ -76,6 +76,9 @@ class PublicationHasDatasetVersionObserver
 
             if (!is_null($dataset)) {
                 $this->reindexElastic($dataset->id);
+                if ($dataset->team_id) {
+                    $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
+                }
             }
         }
     }

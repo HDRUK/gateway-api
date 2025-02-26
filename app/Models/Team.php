@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Config;
+use App\Observers\TeamObserver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Validator;
@@ -11,9 +12,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
+#[ObservedBy(TeamObserver::class)]
 class Team extends Model
 {
     use HasFactory;
@@ -46,6 +49,7 @@ class Team extends Model
         'is_dar',
         'dar_modal_footer',
         'dar_modal_header',
+        'pid',
     ];
 
     /**

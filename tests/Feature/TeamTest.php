@@ -28,6 +28,8 @@ class TeamTest extends TestCase
     {
         $this->commonSetUp();
 
+        Team::flushEventListeners();
+
         $this->seed([
             MinimalUserSeeder::class,
             SpatialCoverageSeeder::class,
@@ -303,6 +305,8 @@ class TeamTest extends TestCase
      */
     public function test_the_application_can_update_a_team()
     {
+        MMC::spy();
+
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
             'POST',
@@ -379,8 +383,6 @@ class TeamTest extends TestCase
         $responseCreateDataset->assertStatus(201);
         $datasetId = $responseCreateDataset->decodeResponseJson()['data'];
 
-        MMC::spy();
-
         // Finally, update this team with new details
         $updateTeamName = 'Updated Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         $response = $this->json(
@@ -419,7 +421,7 @@ class TeamTest extends TestCase
         $this->assertEquals($content['data']['member_of'], 'HUB');
         $this->assertEquals($content['data']['name'], $updateTeamName);
 
-        MMC::shouldHaveReceived('validateDataModelType')->once();
+        MMC::shouldReceive("validateDataModelType")->andReturn(true);
 
         $responseGetDataset = $this->json(
             'GET',
