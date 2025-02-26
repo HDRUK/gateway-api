@@ -604,7 +604,7 @@ class TeamController extends Controller
             return $key !== 'notifications' || $key !== 'users';
         }, ARRAY_FILTER_USE_KEY);
 
-        $arrayTeam['name'] = format_clean_input($input['name']);
+        $arrayTeam['name'] = formatCleanInput($input['name']);
         $arrayTeam['pid'] = (string) Str::uuid();
 
         $arrayTeamNotification = $input['notifications'];
