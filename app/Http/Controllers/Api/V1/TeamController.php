@@ -34,11 +34,13 @@ use App\Http\Requests\Team\UpdateTeam;
 use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Traits\GetValueByPossibleKeys;
+use App\Http\Traits\CheckAccess;
 
 class TeamController extends Controller
 {
     use GetValueByPossibleKeys;
     use IndexElastic;
+    use CheckAccess;
     use TeamTransformation;
     use RequestTransformation;
     use TrimPayload;
@@ -928,6 +930,7 @@ class TeamController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        $this->checkAccess($input, $teamId, null, 'team');
         try {
             $arrayKeys = [
                 'name',
