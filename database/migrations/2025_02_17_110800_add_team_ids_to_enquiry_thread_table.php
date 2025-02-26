@@ -29,7 +29,6 @@ return new class () extends Migration {
 
         if (Schema::hasTable('enquiry_threads')) {
             Schema::table('enquiry_threads', function (Blueprint $table) {
-                $table->dropIndex(['team_id']);
                 $table->dropColumn('team_id');
             });
         }
