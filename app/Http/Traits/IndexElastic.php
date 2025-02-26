@@ -245,6 +245,63 @@ trait IndexElastic
         }
     }
 
+    public function reindexElasticDataProviderWithRelations(string $teamId, string $relation = 'undefined')
+    {
+        try {
+            $team = Team::where('id', $teamId)->select(['id', 'pid', 'name'])->first();
+            if (is_null($team)) {
+                return;
+            }
+            $team = $team->toArray();
+
+            $this->reindexElasticDataProvider($teamId);
+
+            if ($relation === 'dataset' || $relation === 'undefined') {
+                $datasets = Dataset::where('team_id', $teamId)->select(['id', 'status'])->get();
+                foreach ($datasets as $dataset) {
+                    if ($dataset->status === Dataset::STATUS_ACTIVE) {
+                        $this->reindexElastic($dataset->id);
+                    }
+                }
+            }
+
+            if ($relation === 'collection' || $relation === 'undefined') {
+                $collections = Collection::where('team_id', $teamId)->select(['id', 'status'])->get();
+                foreach ($collections as $collection) {
+                    if ($collection->status === Collection::STATUS_ACTIVE) {
+                        $this->indexElasticCollections($collection->id);
+                    }
+                }
+            }
+
+            if ($relation === 'dur' || $relation === 'undefined') {
+                $durs = Dur::where('team_id', $teamId)->select(['id', 'status'])->get();
+                foreach ($durs as $dur) {
+                    if ($dur->status === Dur::STATUS_ACTIVE) {
+                        $this->indexElasticDur($dur->id);
+                    }
+                }
+            }
+
+            if ($relation === 'tool' || $relation === 'undefined') {
+                $tools = Tool::where('team_id', $teamId)->select(['id', 'status'])->get();
+                foreach ($tools as $tool) {
+                    if ($tool->status === Tool::STATUS_ACTIVE) {
+                        $this->indexElasticTools($tool->id);
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            \Log::error('Error reindexing ElasticSearch', [
+                'teamId' => $teamId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw new Exception($e->getMessage());
+        }
+
+    }
+
     /**
      * Insert collection document into elastic index
      *
@@ -751,6 +808,11 @@ trait IndexElastic
     public function deleteDatasetFromElastic(string $id)
     {
         $this->deleteFromElastic($id, ECC::ELASTIC_NAME_DATASET);
+    }
+
+    public function deleteDataProvider(string $id)
+    {
+        $this->deleteFromElastic($id, ECC::ELASTIC_NAME_DATAPROVIDER);
     }
 
     public function deleteDataProviderCollFromElastic(string $id)
