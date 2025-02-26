@@ -1551,7 +1551,7 @@ class DataAccessApplicationTest extends TestCase
                 'applicant_id' => 1,
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
-                'dataset_ids' => [1],
+                'dataset_ids' => [1,2],
             ],
             $this->header
         );
@@ -1615,7 +1615,7 @@ class DataAccessApplicationTest extends TestCase
                 'applicant_id' => 1,
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
-                'dataset_ids' => [1],
+                'dataset_ids' => [1,2],
             ],
             $this->header
         );
@@ -1659,7 +1659,7 @@ class DataAccessApplicationTest extends TestCase
                 'applicant_id' => 1,
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
-                'dataset_ids' => [1],
+                'dataset_ids' => [1,2],
             ],
             $this->header
         );
