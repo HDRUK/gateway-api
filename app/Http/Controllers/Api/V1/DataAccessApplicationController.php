@@ -105,13 +105,23 @@ class DataAccessApplicationController extends Controller
                     ]);
                     continue;
                 }
-                $teams[] = $team;
+
+                $teamHasDar = TeamHasDataAccessApplication::where([
+                    'dar_application_id' => $application->id,
+                    'team_id' => $team->id,
+                ])->first();
+
+                if (!is_null($teamHasDar)) {
+                    continue;
+                }
 
                 TeamHasDataAccessApplication::create([
                     'dar_application_id' => $application->id,
                     'team_id' => $team->id,
                     'submission_status' => $submissionStatus
                 ]);
+
+                $teams[] = $team;
             }
 
             // compile questions from each teams template
