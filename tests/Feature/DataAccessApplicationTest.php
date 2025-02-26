@@ -117,6 +117,36 @@ class DataAccessApplicationTest extends TestCase
                 'total',
             ]);
 
+        $response = $this->get('api/v1/users/1/dar/applications', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'current_page',
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                        'applicant_id',
+                        'user',
+                        'datasets',
+                        'teams',
+                        'project_title',
+                    ],
+                ],
+                'first_page_url',
+                'from',
+                'last_page',
+                'last_page_url',
+                'links',
+                'next_page_url',
+                'path',
+                'per_page',
+                'prev_page_url',
+                'to',
+                'total',
+            ]);
     }
 
     /**

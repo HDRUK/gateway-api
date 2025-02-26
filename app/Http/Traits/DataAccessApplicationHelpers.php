@@ -2,12 +2,19 @@
 
 namespace App\Http\Traits;
 
+use Config;
 use Exception;
+use Carbon\Carbon;
 use App\Exceptions\UnauthorizedException;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationAnswer;
+use App\Models\DataAccessApplicationReview;
+use App\Models\DataAccessApplicationStatus;
+use App\Models\Dataset;
 use App\Models\QuestionBank;
+use App\Models\Team;
 use App\Models\TeamHasDataAccessApplication;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 trait DataAccessApplicationHelpers
 {
@@ -115,5 +122,97 @@ trait DataAccessApplicationHelpers
                 "Team does not have permission to use this endpoint to $op this application."
             );
         }
+    }
+
+    public function dashboardIndex(
+        array $applicationIds,
+        ?string $filterTitle,
+        ?string $filterApproval,
+        ?string $filterSubmission,
+        ?string $filterAction,
+        ?int $teamId,
+        ?int $userId,
+    ): LengthAwarePaginator {
+        $applications = DataAccessApplication::whereIn('id', $applicationIds)
+            ->with('teams')
+            ->when($filterTitle, function ($query) use ($filterTitle) {
+                return $query->where('project_title', 'LIKE', "%{$filterTitle}%");
+            })
+            ->get();
+
+        $matches = [];
+        foreach ($applications as $a) {
+            $matches[] = $a->id;
+        }
+
+        if (!is_null($filterApproval)) {
+            $approvalMatches = [];
+            foreach ($applications as $a) {
+                foreach($a['teams'] as $t) {
+                    if (($t->team_id === $teamId) && ($t->approval_status === $filterApproval)) {
+                        $approvalMatches[] = $a->id;
+                    }
+                }
+            }
+            $matches = array_intersect($matches, $approvalMatches);
+        }
+
+        if (!is_null($filterSubmission)) {
+            $submissionMatches = [];
+            foreach ($applications as $a) {
+                foreach($a['teams'] as $t) {
+                    if (($t->team_id === $teamId) && ($t->submission_status === $filterSubmission)) {
+                        $submissionMatches[] = $a->id;
+                    }
+                }
+            }
+            $matches = array_intersect($matches, $submissionMatches);
+        }
+
+        if (!is_null($filterAction)) {
+            $actionMatches = [];
+            foreach ($matches as $m) {
+                $reviews = DataAccessApplicationReview::where('application_id', $m)
+                    ->select(['resolved'])->pluck('resolved')->toArray();
+                $resolved = in_array(false, $reviews) ? false : true;
+
+                if ((bool) $filterAction === $resolved) {
+                    $actionMatches[] = $m;
+                }
+            }
+            $matches = array_intersect($matches, $actionMatches);
+        }
+
+        $applications = DataAccessApplication::whereIn('id', $matches)
+            ->with(['user:id,name,organisation','datasets','teams'])
+            ->applySorting()
+            ->paginate(
+                Config::get('constants.per_page'),
+                ['*'],
+                'page'
+            );
+
+        foreach ($applications as $app) {
+            foreach ($app['datasets'] as $d) {
+                $dataset = Dataset::where('id', $d['dataset_id'])->first();
+                $title = $dataset->getTitle();
+                $custodian = Team::where('id', $dataset->team_id)->select(['id','name'])->first();
+                $d['dataset_title'] = $title;
+                $d['custodian'] = $custodian;
+            }
+
+            $submissionAudit = DataAccessApplicationStatus::where([
+                'application_id' => $app->id,
+                'submission_status' => 'SUBMITTED',
+            ])->first();
+            if ($submissionAudit) {
+                $app['days_since_submission'] = $submissionAudit
+                    ->updated_at
+                    ->diffInDays(Carbon::today());
+            } else {
+                $app['days_since_submission'] = null;
+            }
+        }
+        return $applications;
     }
 }

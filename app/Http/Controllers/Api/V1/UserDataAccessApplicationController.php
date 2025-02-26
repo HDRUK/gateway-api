@@ -6,6 +6,7 @@ use Auditor;
 use Config;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Exceptions\UnauthorizedException;
 use App\Http\Controllers\Controller;
@@ -32,6 +33,103 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class UserDataAccessApplicationController extends Controller
 {
     use DataAccessApplicationHelpers;
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/users/{userId}/dar/applications",
+     *      summary="List of dar applications belonging to a user",
+     *      description="List of dar applications belonging to a user",
+     *      tags={"UserDataAccessApplication"},
+     *      summary="UserDataAccessApplication@index",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="array",
+     *                  @OA\Items(
+     *                      @OA\Property(property="id", type="integer", example="123"),
+     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="applicant_id", type="integer", example="1"),
+     *                      @OA\Property(property="project_title", type="string", example="A project"),
+     *                      @OA\Property(property="user", type="array", @OA\Items(
+     *                          @OA\Property(property="name", type="string", example="A User"),
+     *                          @OA\Property(property="organisation", type="string", example="An origanisation"),
+     *                      )),
+     *                      @OA\Property(property="datasets", type="array", @OA\Items(
+     *                          @OA\Property(property="dar_application_id", type="integer", example="1"),
+     *                          @OA\Property(property="dataset_id", type="integer", example="1"),
+     *                          @OA\Property(property="dataset_title", type="string", example="A dataset"),
+     *                          @OA\Property(property="custodian", type="array", @OA\Items(
+     *                              @OA\Property(property="name", type="string", example="A Custodian"),
+     *                          )),
+     *                      )),
+     *                      @OA\Property(property="teams", type="array", @OA\Items(
+     *                          @OA\Property(property="team_id", type="integer", example="1"),
+     *                          @OA\Property(property="dar_application_id", type="integer", example="1"),
+     *                          @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
+     *                          @OA\Property(property="approval_status", type="string", example="APPROVED"),
+     *                      )),
+     *                  )
+     *              )
+     *          )
+     *      )
+     * )
+     */
+    public function index(Request $request, int $userId): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            if ($jwtUser['id'] != $userId) {
+                throw new UnauthorizedException('Logged in user does match user id in endpoint.');
+            }
+
+            $applicationIds = DataAccessApplication::where('applicant_id', $userId)
+                ->select('id')
+                ->pluck('id');
+
+            $filterTitle = $request->query('project_title', null);
+            $filterApproval = $request->query('approval_status', null);
+            $filterSubmission = $request->query('submission_status', null);
+            $filterAction = isset($input['action_required']) ?
+                $request->boolean('action_required', null) : null;
+
+            $applications = $this->dashboardIndex(
+                $applicationIds->toArray(),
+                $filterTitle,
+                $filterApproval,
+                $filterSubmission,
+                $filterAction,
+                null,
+                $userId,
+            );
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'DataAccessApplication get all by user',
+            ]);
+
+            return response()->json(
+                $applications
+            );
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
 
     /**
      * @OA\Get(
