@@ -11,12 +11,12 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::table('enquiry_thread', function (Blueprint $table) {
+        Schema::table('enquiry_threads', function (Blueprint $table) {
             $table->json('team_ids')->after('user_id');
         });
 
 
-        $equiryTreads = \DB::SELECT('SELECT id, team_id FROM enquiry_thread');
+        $equiryTreads = \DB::SELECT('SELECT id, team_id FROM enquiry_threads');
         foreach ($equiryTreads as $equiryTread) {
             $teamIds = [];
             $teamIds[] = $equiryTread->team_id;
@@ -27,9 +27,8 @@ return new class () extends Migration {
                 ]);
         }
 
-        if (Schema::hasTable('enquiry_thread')) {
-            Schema::table('enquiry_thread', function (Blueprint $table) {
-                $table->dropIndex(['team_id']);
+        if (Schema::hasTable('enquiry_threads')) {
+            Schema::table('enquiry_threads', function (Blueprint $table) {
                 $table->dropColumn('team_id');
             });
         }
@@ -40,7 +39,7 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        $equiryTreads = \DB::SELECT('SELECT id, team_ids FROM enquiry_thread');
+        $equiryTreads = \DB::SELECT('SELECT id, team_ids FROM enquiry_threads');
         foreach ($equiryTreads as $equiryTread) {
             $teamId = $equiryTread->team_ids;
 
@@ -50,7 +49,7 @@ return new class () extends Migration {
                 ]);
         }
 
-        Schema::table('enquiry_thread', function (Blueprint $table) {
+        Schema::table('enquiry_threads', function (Blueprint $table) {
             $table->dropColumn('team_ids');
         });
     }
