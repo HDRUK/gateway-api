@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Config;
-use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Validator;
@@ -188,8 +187,6 @@ class Team extends Model
         parent::boot();
 
         static::creating(function ($model) {
-            $model->pid = (string) Str::uuid();
-
             $model->validateFields();
         });
 
