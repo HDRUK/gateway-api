@@ -2,23 +2,26 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
-use Config;
 use DB;
+use Config;
+use Auditor;
 use Exception;
+use App\Models\Dur;
 use App\Models\Role;
 use App\Models\Team;
-use App\Models\User;
-use App\Models\TeamHasUser;
-use App\Models\Collection;
-use App\Models\Dataset;
-use App\Models\DatasetVersion;
-use App\Models\Dur;
 use App\Models\Tool;
+use App\Models\User;
+use App\Models\Dataset;
+use App\Models\Collection;
 use App\Models\Publication;
+use App\Models\TeamHasUser;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\DatasetVersion;
 use App\Models\TeamUserHasRole;
+use App\Http\Traits\TrimPayload;
+use App\Http\Traits\IndexElastic;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Team\GetTeam;
 use App\Models\TeamHasNotification;
@@ -28,11 +31,9 @@ use App\Exceptions\NotFoundException;
 use App\Http\Requests\Team\CreateTeam;
 use App\Http\Requests\Team\DeleteTeam;
 use App\Http\Requests\Team\UpdateTeam;
-use App\Http\Traits\GetValueByPossibleKeys;
-use App\Http\Traits\IndexElastic;
 use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\RequestTransformation;
-use App\Http\Traits\TrimPayload;
+use App\Http\Traits\GetValueByPossibleKeys;
 
 class TeamController extends Controller
 {
@@ -604,6 +605,7 @@ class TeamController extends Controller
         }, ARRAY_FILTER_USE_KEY);
 
         $arrayTeam['name'] = format_clean_input($input['name']);
+        $arrayTeam['pid'] = (string) Str::uuid();
 
         $arrayTeamNotification = $input['notifications'];
         $arrayTeamUsers = $input['users'];

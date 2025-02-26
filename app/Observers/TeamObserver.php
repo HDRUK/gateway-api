@@ -9,9 +9,7 @@ class TeamObserver
 {
     use IndexElastic;
 
-    /**
-     * Handle the Team "updated" event.
-     */
+
     public function updated(Team $team): void
     {
         $this->reindexElasticDataProviderWithRelations((int) $team->id);
