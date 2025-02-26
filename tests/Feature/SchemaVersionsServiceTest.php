@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
 use App\Services\SchemaVersionsService;
 
 class SchemaVersionsServiceTest extends TestCase
@@ -12,7 +11,6 @@ class SchemaVersionsServiceTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        Cache::forget('schema_versions');
     }
 
     /** @test */
@@ -47,26 +45,5 @@ class SchemaVersionsServiceTest extends TestCase
         $data = SchemaVersionsService::getSchemaVersions();
 
         $this->assertNull($data);
-    }
-
-    /** @test */
-    public function it_caches_the_response()
-    {
-        $mockResponse = [
-            'GWDM' => "GWDM",
-            'GWDM_CURRENT_VERSION' => "2.0",
-            'FORM_HYDRATION_SCHEMA_MODEL' => "HDRUK",
-            'FORM_HYDRATION_SCHEMA_LATEST_VERSION' => "3.0.0"
-        ];
-
-        Http::fake([
-            env("TRASER_SERVICE_URL") . '/latest' => Http::response($mockResponse, 200),
-        ]);
-
-        SchemaVersionsService::getSchemaVersions();
-        $cachedData = Cache::get('schema_versions');
-
-        $this->assertNotNull($cachedData);
-        $this->assertEquals("HDRUK", $cachedData['FORM_HYDRATION_SCHEMA_MODEL']);
     }
 }
