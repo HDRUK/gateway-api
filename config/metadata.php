@@ -1,8 +1,11 @@
 <?php
 
+use App\Services\SchemaVersionsService;
+
+$schemaData = SchemaVersionsService::getSchemaVersions();
 return [
     "GWDM" => [
-        "name" => env("GWDM", "GWDM"),
-        "version" => env("GWDM_CURRENT_VERSION", "2.0")
+        "name" => $schemaData['GWDM'],
+        "version" =>  $schemaData['GWDM_CURRENT_VERSION']
     ]
 ];
