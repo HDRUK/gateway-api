@@ -133,6 +133,76 @@ class UserDataAccessApplicationController extends Controller
 
     /**
      * @OA\Get(
+     *    path="/api/v1/users/{userId}/dar/applications/count/{field}",
+     *    tags={"UserDataAccessApplications"},
+     *    summary="UserDataAccessApplicationController@count",
+     *    description="Get Counts for distinct entries of a field in the model",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="field",
+     *       in="path",
+     *       description="name of the field to perform a count on",
+     *       required=true,
+     *       example="approval_status",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="approval status field",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="object",
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function count(Request $request, int $userId, string $field): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            if ($jwtUser['id'] != $userId) {
+                throw new UnauthorizedException('Logged in user does match user id in endpoint.');
+            }
+
+            $applications = DataAccessApplication::where('applicant_id', $userId)
+                ->with('teams')
+                ->get();
+
+            $counts = array();
+
+            foreach ($applications as $app) {
+                foreach ($app['teams'] as $t) {
+                    if (array_key_exists($t[$field], $counts)) {
+                        $counts[$t[$field]] += 1;
+                    } else {
+                        $counts[$t[$field]] = 1;
+                    }
+                }
+            }
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'User DAR application count',
+            ]);
+
+            return response()->json([
+                'data' => $counts
+            ]);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
      *      path="/api/v1/users/{userId}/dar/applications/{id}",
      *      summary="Return a DAR application belonging to the user",
      *      description="Return a DAR application belonging to the user",
@@ -622,6 +692,15 @@ class UserDataAccessApplicationController extends Controller
 
             $this->updateDataAccessApplication($application, $input);
 
+            if (isset($input['approval_status'])) {
+                TeamHasDataAccessApplication::where([
+                    'dar_application_id' => $id
+                ])->update([
+                    'approval_status' => $input['approval_status']
+                ]);
+                // TODO: send notification that application has been withdrawn
+            }
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
@@ -844,13 +923,22 @@ class UserDataAccessApplicationController extends Controller
             if (($newStatus === 'SUBMITTED') && ($status != 'SUBMITTED')) {
                 TeamHasDataAccessApplication::where([
                     'dar_application_id' => $id
-                ])->first()->update([
+                ])->update([
                     'submission_status' => $newStatus
                 ]);
                 $this->emailSubmissionNotification($id, $userId, $application);
             }
 
             $this->editDataAccessApplication($application, $input);
+
+            if (isset($input['approval_status'])) {
+                TeamHasDataAccessApplication::where([
+                    'dar_application_id' => $id
+                ])->update([
+                    'approval_status' => $input['approval_status']
+                ]);
+                // TODO: send notification that application has been withdrawn
+            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

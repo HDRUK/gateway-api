@@ -3889,6 +3889,19 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'get',
+        'path' => 'users/{userId}/dar/applications/count/{field}',
+        'methodController' => 'UserDataAccessApplicationController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
         'path' => '/teams/{teamId}/dar/applications/{id}',
         'methodController' => 'TeamDataAccessApplicationController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',

@@ -1091,6 +1091,197 @@ class DataAccessApplicationTest extends TestCase
     }
 
     /**
+     * Lists dar applications by user
+     *
+     * @return void
+     */
+    public function test_the_application_can_list_dar_applications_by_user()
+    {
+        $entityIds = $this->createDatasetForDar();
+        $datasetId = $entityIds['datasetId'];
+        $teamId = $entityIds['teamId'];
+        $questionId = $entityIds['questionId'];
+
+        // Create first DAR application for that dataset
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'DRAFT',
+                'project_title' => 'First test DAR',
+                'dataset_ids' => [$datasetId],
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+        $applicationIdOne = $response->decodeResponseJson()['data'];
+
+        // Create second DAR application for that dataset
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'SUBMITTED',
+                'project_title' => 'Second test DAR',
+                'dataset_ids' => [$datasetId],
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+        $applicationIdTwo = $response->decodeResponseJson()['data'];
+
+        // Update approval status of application two
+        $response = $this->json(
+            'PATCH',
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationIdTwo,
+            [
+                'approval_status' => 'APPROVED_COMMENTS',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // Add a review to second DAR application
+        $response = $this->json(
+            'POST',
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationIdTwo . '/questions/' . $questionId . '/reviews',
+            [
+                'comment' => 'A test review comment',
+                'team_id' => $teamId
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+
+        $response = $this->json(
+            'GET',
+            'api/v1/users/1/dar/applications',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'current_page',
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                        'applicant_id',
+                        'project_title',
+                        'days_since_submission',
+                        'user' => [
+                            'id',
+                            'name',
+                            'organisation'
+                        ],
+                        'datasets' => [
+                            0 => [
+                                'dataset_id',
+                                'dataset_title',
+                                'custodian' => [
+                                    'id',
+                                    'name'
+                                ]
+                            ]
+                        ],
+                        'teams' => [
+                            0 => [
+                                'submission_status',
+                                'approval_status',
+                            ]
+                        ]
+                    ]
+                ],
+                'first_page_url',
+                'from',
+                'last_page',
+                'last_page_url',
+                'links',
+                'next_page_url',
+                'path',
+                'per_page',
+                'prev_page_url',
+                'to',
+                'total',
+            ]);
+
+        $response = $this->json(
+            'GET',
+            'api/v1/users/1/dar/applications?sort=project_title:desc',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $content = $response->decodeResponseJson();
+        $this->assertEquals($applicationIdTwo, $content['data'][0]['id']);
+
+        $response = $this->json(
+            'GET',
+            'api/v1/users/1/dar/applications?submission_status=SUBMITTED',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $content = $response->decodeResponseJson();
+        $this->assertEquals(1, count($content['data']));
+
+        $response = $this->json(
+            'GET',
+            'api/v1/users/1/dar/applications?approval_status=APPROVED_COMMENTS',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $content = $response->decodeResponseJson();
+        $this->assertEquals(1, count($content['data']));
+
+        // action required = false should return the dar with a review that is
+        // waiting for a response from the applicant
+        $response = $this->json(
+            'GET',
+            'api/v1/users/1/dar/applications?action_required=false',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $content = $response->decodeResponseJson();
+        $this->assertEquals($applicationIdTwo, $content['data'][0]['id']);
+        $this->assertEquals(1, count($content['data']));
+
+        $response = $this->json(
+            'GET',
+            'api/v1/users/1/dar/applications/count/submission_status',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'SUBMITTED',
+                    'DRAFT',
+                ]
+            ]);
+    }
+
+    /**
      * Creates a new dar application with merged template
      *
      * @return void

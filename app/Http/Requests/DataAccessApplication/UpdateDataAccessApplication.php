@@ -32,7 +32,7 @@ class UpdateDataAccessApplication extends BaseFormRequest
             'submission_status' => [
                 'string',
                 'required',
-                'in:DRAFT,SUBMITTED,FEEDBACK',
+                'in:DRAFT,SUBMITTED',
             ],
             'project_title' => [
                 'string',
@@ -40,7 +40,7 @@ class UpdateDataAccessApplication extends BaseFormRequest
             ],
             'approval_status' => [
                 'string',
-                'in:APPROVED,APPROVED_COMMENTS,REJECTED',
+                'in:APPROVED,APPROVED_COMMENTS,FEEDBACK,REJECTED',
             ],
         ];
     }
