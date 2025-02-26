@@ -151,7 +151,6 @@ class SocialLoginController extends Controller
     public function callback(Request $request, string $provider): mixed
     {
         $user = null;
-        $referer = $request->headers->get('referer');
 
         try {
             if (strtolower($provider) === 'linkedin') {
@@ -234,9 +233,9 @@ class SocialLoginController extends Controller
                 Cookie::make('token', $jwt),
             ];
             if ($user['name'] === '' || $user['email'] === '') {
-                return redirect()->away($referer ?? env('GATEWAY_URL') . '/account/profile')->withCookies($cookies);
+                return redirect()->away(env('GATEWAY_URL') . '/account/profile')->withCookies($cookies);
             } else {
-                $redirectUrl = $referer ?? session('redirectUrl');
+                $redirectUrl = session('redirectUrl');
                 return redirect()->away($redirectUrl)->withCookies($cookies);
             }
         } catch (Exception $e) {

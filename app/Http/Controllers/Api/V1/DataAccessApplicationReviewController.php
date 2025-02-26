@@ -14,6 +14,7 @@ use App\Http\Requests\DataAccessApplicationReview\GetDataAccessApplicationReview
 use App\Http\Requests\DataAccessApplicationReview\UpdateDataAccessApplicationReview;
 use App\Http\Requests\DataAccessApplicationReview\UpdateUserDataAccessApplicationReview;
 use App\Http\Traits\RequestTransformation;
+use App\Http\Traits\DataAccessApplicationHelpers;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationComment;
 use App\Models\DataAccessApplicationReview;
@@ -21,10 +22,11 @@ use App\Models\DataAccessApplicationReview;
 class DataAccessApplicationReviewController extends Controller
 {
     use RequestTransformation;
+    use DataAccessApplicationHelpers;
 
     /**
      * @OA\Get(
-     *      path="/api/v1/dar/applications/{id}/reviews",
+     *      path="/api/v1/teams/{team_id}/dar/applications/{id}/reviews",
      *      summary="Return all reviews on a DAR application",
      *      description="Return all reviews on a DAR application",
      *      tags={"DataAccessApplicationReview"},
@@ -75,11 +77,13 @@ class DataAccessApplicationReviewController extends Controller
      *      )
      * )
      */
-    public function index(GetDataAccessApplicationReview $request, int $id): JsonResponse
+    public function index(GetDataAccessApplicationReview $request, int $teamId, int $id): JsonResponse
     {
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $this->checkTeamAccess($teamId, $id, 'view reviews on');
 
             $reviews = DataAccessApplicationReview::where('application_id', $id)
                 ->with('comments')
@@ -102,6 +106,10 @@ class DataAccessApplicationReviewController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -116,7 +124,7 @@ class DataAccessApplicationReviewController extends Controller
 
     /**
      * @OA\Post(
-     *      path="/api/v1/dar/applications/{id}/questions/{questionId}/reviews",
+     *      path="/api/v1/teams/{team_id}/dar/applications/{id}/questions/{questionId}/reviews",
      *      summary="Create a new review comment on a question in a DAR application",
      *      description="Create a new review comment on a question in a DAR application",
      *      tags={"DataAccessApplicationReview"},
@@ -150,8 +158,6 @@ class DataAccessApplicationReviewController extends Controller
      *          @OA\JsonContent(
      *              required={"comment"},
      *              @OA\Property(property="comment", type="string", example="A review of this application"),
-     *              @OA\Property(property="user_id", type="integer", example="1"),
-     *              @OA\Property(property="team_id", type="integer", example="1"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -171,11 +177,13 @@ class DataAccessApplicationReviewController extends Controller
      *      )
      * )
      */
-    public function store(CreateDataAccessApplicationReview $request, int $id, int $questionId): JsonResponse
+    public function store(CreateDataAccessApplicationReview $request, int $teamId, int $id, int $questionId): JsonResponse
     {
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $this->checkTeamAccess($teamId, $id, 'add reviews to');
 
             $review = DataAccessApplicationReview::create([
                 'application_id' => $id,
@@ -184,8 +192,7 @@ class DataAccessApplicationReviewController extends Controller
 
             DataAccessApplicationComment::create([
                 'review_id' => $review->id,
-                'user_id' => $input['user_id'] ?? null,
-                'team_id' => $input['team_id'] ?? null,
+                'team_id' => $teamId,
                 'comment' => $input['comment'],
             ]);
 
@@ -200,6 +207,10 @@ class DataAccessApplicationReviewController extends Controller
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $review->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -214,7 +225,7 @@ class DataAccessApplicationReviewController extends Controller
 
     /**
      * @OA\Put(
-     *      path="/api/v1/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}",
+     *      path="/api/v1/teams/{team_id}/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}",
      *      summary="Update a review comment on a question in a DAR application",
      *      description="Update a review comment on a question in a DAR application",
      *      tags={"DataAccessApplicationReview"},
@@ -259,8 +270,6 @@ class DataAccessApplicationReviewController extends Controller
      *          @OA\JsonContent(
      *              required={"comment"},
      *              @OA\Property(property="comment", type="string", example="A review of this application"),
-     *              @OA\Property(property="user_id", type="integer", example="1"),
-     *              @OA\Property(property="team_id", type="integer", example="1"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -295,18 +304,19 @@ class DataAccessApplicationReviewController extends Controller
      *      )
      * )
      */
-    public function update(UpdateDataAccessApplicationReview $request, int $id, int $questionId, int $reviewId): JsonResponse
+    public function update(UpdateDataAccessApplicationReview $request, int $teamId, int $id, int $questionId, int $reviewId): JsonResponse
     {
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+            $this->checkTeamAccess($teamId, $id, 'add reviews to');
+
             $review = DataAccessApplicationReview::findOrFail($reviewId);
 
             DataAccessApplicationComment::create([
                 'review_id' => $review->id,
-                'user_id' => null,
-                'team_id' => $input['team_id'] ?? null,
+                'team_id' => $teamId,
                 'comment' => $input['comment'],
             ]);
 
@@ -325,6 +335,10 @@ class DataAccessApplicationReviewController extends Controller
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => DataAccessApplicationReview::where('id', $reviewId)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -395,7 +409,6 @@ class DataAccessApplicationReviewController extends Controller
      *          @OA\JsonContent(
      *              required={"comment"},
      *              @OA\Property(property="comment", type="string", example="A review of this application"),
-     *              @OA\Property(property="user_id", type="integer", example="1"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -460,6 +473,10 @@ class DataAccessApplicationReviewController extends Controller
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => DataAccessApplicationReview::where('id', $reviewId)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -478,7 +495,7 @@ class DataAccessApplicationReviewController extends Controller
 
     /**
      * @OA\Delete(
-     *      path="/api/v1/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}",
+     *      path="/api/v1/teams/{team_id}/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}",
      *      summary="Delete a review from a DAR application",
      *      description="Delete a review from a DAR application",
      *      summary="DataAccessApplicationReview@destroy",
@@ -539,11 +556,13 @@ class DataAccessApplicationReviewController extends Controller
      *      )
      * )
      */
-    public function destroy(DeleteDataAccessApplicationReview $request, int $id, int $questionId, int $reviewId): JsonResponse
+    public function destroy(DeleteDataAccessApplicationReview $request, int $teamId, int $id, int $questionId, int $reviewId): JsonResponse
     {
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $this->checkTeamAccess($teamId, $id, 'delete reviews from');
 
             $review = DataAccessApplicationReview::findOrFail($reviewId);
 
@@ -562,6 +581,10 @@ class DataAccessApplicationReviewController extends Controller
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
 
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

@@ -24,6 +24,8 @@ class DataAccessApplicationStatus extends Model
         'application_id',
         'approval_status',
         'submission_status',
+        'review_id',
+        'team_id',
     ];
 
 }

@@ -607,6 +607,7 @@ class TeamController extends Controller
         $arrayTeam['name'] = formatCleanInput($input['name']);
         $arrayTeam['pid'] = (string) Str::uuid();
 
+
         $arrayTeamNotification = $input['notifications'];
         $arrayTeamUsers = $input['users'];
         $superAdminIds = User::where('is_admin', true)->pluck('id');
@@ -797,7 +798,7 @@ class TeamController extends Controller
 
             $array = $this->checkEditArray($input, $arrayKeys);
             if (array_key_exists('name', $input)) {
-                $array['name'] = format_clean_input($input['name']);
+                $array['name'] = formatCleanInput($input['name']);
             }
             Team::where('id', $teamId)->update($array);
 
@@ -952,7 +953,7 @@ class TeamController extends Controller
 
             $array = $this->checkEditArray($input, $arrayKeys);
             if (array_key_exists('name', $input)) {
-                $array['name'] = format_clean_input($input['name']);
+                $array['name'] = formatCleanInput($input['name']);
             }
             Team::where('id', $teamId)->update($array);
 

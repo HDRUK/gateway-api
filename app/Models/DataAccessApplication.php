@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Observers\DataAccessApplicationObserver;
-
 use App\Models\Traits\SortManager;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -29,14 +27,8 @@ class DataAccessApplication extends Model
      */
     protected $table = 'dar_applications';
 
-    protected static $observers = [
-        DataAccessApplicationObserver::class
-    ];
-
     protected $fillable = [
         'applicant_id',
-        'submission_status',
-        'approval_status',
         'project_title',
     ];
 
@@ -63,6 +55,11 @@ class DataAccessApplication extends Model
     public function datasets(): HasMany
     {
         return $this->hasMany(DataAccessApplicationHasDataset::class, 'dar_application_id');
+    }
+
+    public function teams(): HasMany
+    {
+        return $this->hasMany(TeamHasDataAccessApplication::class, 'dar_application_id');
     }
 
 }

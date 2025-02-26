@@ -24,6 +24,11 @@ class GetDataAccessApplicationFile extends BaseFormRequest
                 'required',
                 'exists:uploads,id',
             ],
+            'teamId' => [
+                'int',
+                'required',
+                'exists:teams,id',
+            ],
         ];
     }
 
@@ -37,6 +42,7 @@ class GetDataAccessApplicationFile extends BaseFormRequest
         $this->merge([
             'id' => $this->route('id'),
             'fileId' => $this->route('fileId'),
+            'teamId' => $this->route('teamId'),
         ]);
     }
 }

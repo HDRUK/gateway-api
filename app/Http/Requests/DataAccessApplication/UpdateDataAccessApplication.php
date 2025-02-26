@@ -19,6 +19,11 @@ class UpdateDataAccessApplication extends BaseFormRequest
                 'required',
                 'exists:dar_applications,id',
             ],
+            'teamId' => [
+                'int',
+                'required',
+                'exists:teams,id',
+            ],
             'applicant_id' => [
                 'integer',
                 'required',
@@ -47,6 +52,9 @@ class UpdateDataAccessApplication extends BaseFormRequest
      */
     protected function prepareForValidation()
     {
-        $this->merge(['id' => $this->route('id')]);
+        $this->merge([
+            'id' => $this->route('id'),
+            'teamId' => $this->route('teamId'),
+        ]);
     }
 }
