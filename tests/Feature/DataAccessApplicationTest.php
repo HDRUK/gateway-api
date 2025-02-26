@@ -4,28 +4,28 @@ namespace Tests\Feature;
 
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
-use App\Jobs\LinkageExtraction;
+use Tests\TestCase;
+use App\Models\Team;
+use App\Models\Dataset;
 use App\Jobs\SendEmailJob;
 use App\Jobs\TermExtraction;
-use App\Models\Dataset;
-use App\Models\Team;
+use App\Jobs\LinkageExtraction;
 use App\Http\Enums\TeamMemberOf;
-use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\DataAccessApplicationSeeder;
-use Database\Seeders\DataAccessTemplateSeeder;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\EmailTemplateSeeder;
-use Database\Seeders\QuestionBankSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
-
-use Tests\Traits\MockExternalApis;
-
-use Illuminate\Support\Facades\Queue;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Tests\Traits\MockExternalApis;
+use Database\Seeders\DatasetSeeder;
+use Illuminate\Support\Facades\Queue;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\QuestionBankSeeder;
+use Database\Seeders\EmailTemplateSeeder;
+
+
+use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\SpatialCoverageSeeder;
+use Database\Seeders\DataAccessTemplateSeeder;
+use Database\Seeders\DataAccessApplicationSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DataAccessApplicationTest extends TestCase
 {
@@ -40,6 +40,8 @@ class DataAccessApplicationTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
+
+        Team::flushEventListeners();
 
         Queue::fake([
             LinkageExtraction::class,
@@ -1418,7 +1420,6 @@ class DataAccessApplicationTest extends TestCase
             ],
             $this->header
         );
-
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'message',
@@ -1441,6 +1442,7 @@ class DataAccessApplicationTest extends TestCase
                 'message',
                 'data',
             ]);
+
         $statusCountNew = count($responseStatus->decodeResponseJson()['data']);
 
         $this->assertEquals($statusCountNew, $statusCountInit + 1);
