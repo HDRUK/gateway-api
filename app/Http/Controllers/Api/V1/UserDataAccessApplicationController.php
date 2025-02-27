@@ -175,14 +175,17 @@ class UserDataAccessApplicationController extends Controller
                 ->with('teams')
                 ->get();
 
-            $counts = array();
-
-            foreach ($applications as $app) {
-                foreach ($app['teams'] as $t) {
-                    if (array_key_exists($t[$field], $counts)) {
-                        $counts[$t[$field]] += 1;
-                    } else {
-                        $counts[$t[$field]] = 1;
+            if ($field === 'action_required') {
+                $counts = $this->actionRequiredCounts(array_column($applications->toArray(), 'id'));
+            } else {
+                $counts = array();
+                foreach ($applications as $app) {
+                    foreach ($app['teams'] as $t) {
+                        if (array_key_exists($t[$field], $counts)) {
+                            $counts[$t[$field]] += 1;
+                        } else {
+                            $counts[$t[$field]] = 1;
+                        }
                     }
                 }
             }

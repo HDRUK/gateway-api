@@ -1088,6 +1088,20 @@ class DataAccessApplicationTest extends TestCase
                     'DRAFT',
                 ]
             ]);
+
+        $response = $this->json(
+            'GET',
+            'api/v1/teams/' . $teamId . '/dar/applications/count/action_required',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'action_required',
+                    'info_required',
+                ]
+            ]);
     }
 
     /**
@@ -1277,6 +1291,20 @@ class DataAccessApplicationTest extends TestCase
                 'data' => [
                     'SUBMITTED',
                     'DRAFT',
+                ]
+            ]);
+
+        $response = $this->json(
+            'GET',
+            'api/v1/users/1/dar/applications/count/action_required',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'action_required',
+                    'info_required',
                 ]
             ]);
     }

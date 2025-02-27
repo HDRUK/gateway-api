@@ -219,4 +219,24 @@ trait DataAccessApplicationHelpers
         }
         return $applications;
     }
+
+    public function actionRequiredCounts(array $applicationIds): array
+    {
+        $actionRequired = 0;
+        $infoRequired = 0;
+        foreach ($applicationIds as $a) {
+            $reviews = DataAccessApplicationReview::where('application_id', $a)
+                ->select(['resolved'])->pluck('resolved')->toArray();
+            $resolved = in_array(false, $reviews) ? false : true;
+            if ($resolved) {
+                $actionRequired += 1;
+            } else {
+                $infoRequired += 1;
+            }
+        }
+        return [
+            'action_required' => $actionRequired,
+            'info_required' => $infoRequired,
+        ];
+    }
 }
