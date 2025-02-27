@@ -216,6 +216,8 @@ trait DataAccessApplicationHelpers
             } else {
                 $app['days_since_submission'] = null;
             }
+
+            $app['primary_applicant'] = $this->getPrimaryApplicantInfo($app->id);
         }
         return $applications;
     }
@@ -237,6 +239,50 @@ trait DataAccessApplicationHelpers
         return [
             'action_required' => $actionRequired,
             'info_required' => $infoRequired,
+        ];
+    }
+
+    public function getPrimaryApplicantInfo(int $id): array
+    {
+        $applicantQuestions = QuestionBank::whereRelation(
+            'section',
+            'name',
+            'Primary Applicant'
+        )->with('latestVersion')->get();
+
+        $applicantNameQuestion = null;
+        $applicantOrgQuestion = null;
+        foreach ($applicantQuestions as $q) {
+            if ($q['latestVersion']['question_json']['title'] === 'Full name') {
+                $applicantNameQuestion = $q->id;
+            } elseif ($q['latestVersion']['question_json']['title'] === 'Your organisation name') {
+                $applicantOrgQuestion = $q->id;
+            }
+        }
+
+        $nameAnswer = DataAccessApplicationAnswer::where([
+            'application_id' => $id,
+            'question_id' => $applicantNameQuestion,
+        ])->first();
+        if ($nameAnswer) {
+            $applicantName = $nameAnswer->answer['value'];
+        } else {
+            $applicantName = null;
+        }
+
+        $orgAnswer = DataAccessApplicationAnswer::where([
+            'application_id' => $id,
+            'question_id' => $applicantOrgQuestion,
+        ])->first();
+        if ($orgAnswer) {
+            $applicantOrg = $orgAnswer->answer['value'];
+        } else {
+            $applicantOrg = null;
+        }
+
+        return [
+            'name' => $applicantName,
+            'organisation' => $applicantOrg,
         ];
     }
 }

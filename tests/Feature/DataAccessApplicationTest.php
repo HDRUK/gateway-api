@@ -996,6 +996,10 @@ class DataAccessApplicationTest extends TestCase
                         'applicant_id',
                         'project_title',
                         'days_since_submission',
+                        'primary_applicant' => [
+                            'name',
+                            'organisation',
+                        ],
                         'user' => [
                             'id',
                             'name',
@@ -1201,6 +1205,10 @@ class DataAccessApplicationTest extends TestCase
                         'applicant_id',
                         'project_title',
                         'days_since_submission',
+                        'primary_applicant' => [
+                            'name',
+                            'organisation',
+                        ],
                         'user' => [
                             'id',
                             'name',
