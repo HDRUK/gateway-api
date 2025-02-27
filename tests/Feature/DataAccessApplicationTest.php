@@ -77,7 +77,7 @@ class DataAccessApplicationTest extends TestCase
             'api/v1/dar/applications',
             [
                 'applicant_id' => 1,
-                'submission_status' => 'DRAFT',
+                'submission_status' => 'SUBMITTED',
                 'project_title' => 'A test DAR',
                 'approval_status' => 'APPROVED_COMMENTS',
                 'dataset_ids' => [$datasetId]

@@ -87,8 +87,10 @@ class TeamDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $applicationIds = TeamHasDataAccessApplication::where('team_id', $teamId)
-                ->select('dar_application_id')
+            $applicationIds = TeamHasDataAccessApplication::where([
+                'team_id' => $teamId,
+                'submission_status' => 'SUBMITTED',
+            ])->select('dar_application_id')
                 ->pluck('dar_application_id');
 
             $filterTitle = $request->query('project_title', null);
