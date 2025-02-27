@@ -52,6 +52,10 @@ class Publication extends Model
         'status',
     ];
 
+    protected static array $sortableColumns = [
+        'updated_at',
+    ];
+
     // Accessor for all datasets associated with this object
     public function getAllDatasetsAttribute()
     {
