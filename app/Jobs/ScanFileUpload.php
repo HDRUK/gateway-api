@@ -321,10 +321,22 @@ class ScanFileUpload implements ShouldQueue
     {
         try {
             $team = Team::findOrFail($this->teamId)->toArray();
+            $metadata = json_decode($content);
+
+
+            if (!isset($metadata['summary']['dataCustodian']['identifier'])) {
+                throw new \Exception('Invalid metadata: dataCustodian identifier missing.');
+            }
+
+            $dataCustodianIdentifier = $metadata['summary']['dataCustodian']['identifier'];
+
+            if ($dataCustodianIdentifier !== $team['pid']) {
+                throw new \Exception("Mismatch: dataCustodian identifier ($dataCustodianIdentifier) does not match team PID ($teamPid).");
+            }
 
             $content = Storage::disk($this->fileSystem . '.scanned')->get($loc);
             $input = [
-                'metadata' => ['metadata' => json_decode($content)],
+                'metadata' => ['metadata' => $metadata],
                 'status' => 'DRAFT',
                 'create_origin' => 'MANUAL',
                 'user_id' => $this->userId,
