@@ -580,8 +580,8 @@ class TeamPublicationController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $initPublication = Publication::withTrashed()->where('id', $id)->first();
-        $this->checkAccess($input, null, $initPublication->owner_id, 'user');
+        $initPublication = Publication::where('id', $id)->first();
+        $this->checkAccess($input, $teamId, null, 'user');
 
         try {
 

@@ -54,6 +54,8 @@ class Publication extends Model
 
     protected static array $sortableColumns = [
         'updated_at',
+        'paper_title',
+        'year_of_publication',
     ];
 
     // Accessor for all datasets associated with this object
