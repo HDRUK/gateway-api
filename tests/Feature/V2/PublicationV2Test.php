@@ -1307,7 +1307,7 @@ class PublicationV2Test extends TestCase
         $countActiveBefore = Publication::where("status", Publication::STATUS_ACTIVE)->count();
         $countDraftBefore = Publication::where("status", Publication::STATUS_DRAFT)->count();
         $publicationStatusDraft = Publication::where('status', Publication::STATUS_DRAFT)->first();
-        $countArchivedBefore = Publication::withTrashed()->where("status", Publication::STATUS_ARCHIVED)->count();
+        $countArchivedBefore = Publication::where("status", Publication::STATUS_ARCHIVED)->count();
 
         $response = $this->json(
             'PATCH',
@@ -1321,7 +1321,7 @@ class PublicationV2Test extends TestCase
         $response->assertStatus(200);
         $countActive = Publication::where("status", Publication::STATUS_ACTIVE)->count();
         $countDraft = Publication::where("status", Publication::STATUS_DRAFT)->count();
-        $countArchived = Publication::withTrashed()->where("status", Publication::STATUS_ARCHIVED)->count();
+        $countArchived = Publication::where("status", Publication::STATUS_ARCHIVED)->count();
         $this->assertTrue(($countActive - 1) === $countActiveBefore);
         $this->assertTrue($countArchived === $countArchivedBefore);
         $this->assertTrue(($countDraft + 1) === $countDraftBefore);
@@ -1350,7 +1350,7 @@ class PublicationV2Test extends TestCase
         $countActiveBefore = Publication::where("status", Publication::STATUS_ACTIVE)->count();
         $countDraftBefore = Publication::where("status", Publication::STATUS_DRAFT)->count();
         $publicationStatusDraft = Publication::where('status', Publication::STATUS_DRAFT)->first();
-        $countArchivedBefore = Publication::withTrashed()->where("status", Publication::STATUS_ARCHIVED)->count();
+        $countArchivedBefore = Publication::where("status", Publication::STATUS_ARCHIVED)->count();
 
         $response = $this->json(
             'PATCH',
@@ -1364,7 +1364,7 @@ class PublicationV2Test extends TestCase
         $response->assertStatus(200);
         $countActive = Publication::where("status", Publication::STATUS_ACTIVE)->count();
         $countDraft = Publication::where("status", Publication::STATUS_DRAFT)->count();
-        $countArchived = Publication::withTrashed()->where("status", Publication::STATUS_ARCHIVED)->count();
+        $countArchived = Publication::where("status", Publication::STATUS_ARCHIVED)->count();
         $this->assertTrue(($countActive - 1) === $countActiveBefore);
         $this->assertTrue($countArchived === $countArchivedBefore);
         $this->assertTrue(($countDraft + 1) === $countDraftBefore);
