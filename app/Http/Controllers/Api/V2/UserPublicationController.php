@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V2;
 use Config;
 use Auditor;
 use Exception;
+
 use Carbon\Carbon;
 use App\Models\Publication;
 use App\Http\Traits\CheckAccess;
@@ -16,15 +17,15 @@ use App\Models\CollectionHasPublication;
 use App\Http\Traits\PublicationsV2Helper;
 use App\Http\Traits\RequestTransformation;
 use App\Models\PublicationHasDatasetVersion;
-use App\Http\Requests\V2\Publication\CreatePublicationByTeamId;
-use App\Http\Requests\V2\Publication\GetPublicationByTeamAndId;
-use App\Http\Requests\V2\Publication\EditPublicationByTeamIdById;
-use App\Http\Requests\V2\Publication\DeletePublicationByTeamIdById;
-use App\Http\Requests\V2\Publication\GetPublicationByTeamAndStatus;
-use App\Http\Requests\V2\Publication\UpdatePublicationByTeamIdById;
-use App\Http\Requests\V2\Publication\GePublicationByTeamByIdByStatus;
+use App\Http\Requests\V2\Publication\CreatePublicationByUserId;
+use App\Http\Requests\V2\Publication\GetPublicationByUserAndId;
+use App\Http\Requests\V2\Publication\EditPublicationByUserIdById;
+use App\Http\Requests\V2\Publication\DeletePublicationByUserIdById;
+use App\Http\Requests\V2\Publication\GetPublicationByUserAndStatus;
+use App\Http\Requests\V2\Publication\UpdatePublicationByUserIdById;
+use App\Http\Requests\V2\Publication\GePublicationByUserByIdByStatus;
 
-class TeamPublicationController extends Controller
+class UserPublicationController extends Controller
 {
     use RequestTransformation;
     use CheckAccess;
@@ -37,15 +38,15 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v2/teams/{teamId}/publications/{status}",
-     *     operationId="fetch_all_publications_by_team_and_status_v2",
+     *     path="/api/v2/users/{userId}/publications/{status}",
+     *     operationId="fetch_all_publications_by_user_and_status_v2",
      *     tags={"Publication"},
-     *     summary="TeamPublicationController@indexStatus",
-     *     description="Returns a list of a teams publications",
+     *     summary="UserPublicationController@indexStatus",
+     *     description="Returns a list of a users publications",
      *     @OA\Parameter(
-     *         name="teamId",
+     *         name="userId",
      *         in="path",
-     *         description="ID of the team",
+     *         description="ID of the user",
      *         required=true,
      *         @OA\Schema(
      *             type="integer",
@@ -84,18 +85,18 @@ class TeamPublicationController extends Controller
      *     )
      * )
      *
-     * @param  GetPublicationByTeamAndStatus  $request
-     * @param  int  $teamId
+     * @param  GetPublicationByUserAndStatus  $request
+     * @param  int  $userId
      * @param  string|null  $status
      * @return JsonResponse
      */
-    public function indexStatus(GetPublicationByTeamAndStatus $request, int $teamId, ?string $status = 'active'): JsonResponse
+    public function indexStatus(GetPublicationByUserAndStatus $request, int $userId, ?string $status = 'active'): JsonResponse
     {
         try {
             $perPage = request('per_page', Config::get('constants.per_page'));
 
             $publications = Publication::where([
-                    'team_id' => $teamId,
+                    'owner_id' => $userId,
                     'status' => strtoupper($status),
                 ])
                 ->with(['tools']);
@@ -133,22 +134,21 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Get(
-     *    path="/api/v2/teams/{teamId}/publications/{id}",
-     *    operationId="fetch_publications_by_team_and_by_id_v2",
+     *    path="/api/v2/users/{userId}/publications/{id}",
+     *    operationId="fetch_publications_by_user_and_by_id_v2",
      *    tags={"Publication"},
-     *    summary="TeamPublicationController@show",
-     *    description="Get publication by team id and by id",
+     *    summary="UserPublicationController@show",
+     *    description="Get publication by user id and by id",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
-     *       name="teamId",
+     *       name="userId",
      *       in="path",
-     *       description="team id",
+     *       description="ID of the user",
      *       required=true,
-     *       example="1",
      *       @OA\Schema(
      *          type="integer",
-     *          description="team id",
-     *       ),
+     *          format="int64"
+     *       )
      *    ),
      *    @OA\Parameter(
      *       name="id",
@@ -193,16 +193,16 @@ class TeamPublicationController extends Controller
      *      )
      * )
      *
-     * @param  GetPublicationByTeamAndId  $request
-     * @param  int  $teamId
+     * @param  GetPublicationByUserAndId  $request
+     * @param  int  $userId
      * @param  int  $id
      * @return JsonResponse
      */
-    public function show(GetPublicationByTeamAndId $request, int $teamId, int $id): JsonResponse
+    public function show(GetPublicationByUserAndId $request, int $userId, int $id): JsonResponse
     {
         try {
             $publication = Publication::where([
-                                'team_id' => $teamId,
+                                'owner_id' => $userId,
                                 'id' => $id,
                             ])
                             ->with(['tools', 'durs', 'collections'])
@@ -232,22 +232,21 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Get(
-     *    path="/api/v2/teams/{teamId}/publications/{id}/status/{status}",
-     *    operationId="fetch_publications_by_team_and_by_id_by_status_v2",
+     *    path="/api/v2/users/{userId}/publications/{id}/status/{status}",
+     *    operationId="fetch_publications_by_user_and_by_id_by_status_v2",
      *    tags={"Publication"},
-     *    summary="TeamPublicationController@showStatus",
-     *    description="Get publication by team id and by id by status",
+     *    summary="UserPublicationController@showStatus",
+     *    description="Get publication by user id and by id by status",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
-     *       name="teamId",
+     *       name="userId",
      *       in="path",
-     *       description="team id",
+     *       description="ID of the user",
      *       required=true,
-     *       example="1",
      *       @OA\Schema(
      *          type="integer",
-     *          description="team id",
-     *       ),
+     *          format="int64"
+     *       )
      *    ),
      *    @OA\Parameter(
      *       name="id",
@@ -303,16 +302,16 @@ class TeamPublicationController extends Controller
      *      )
      * )
      *
-     * @param  GePublicationByTeamByIdByStatus  $request
-     * @param  int  $teamId
+     * @param  GePublicationByUserByIdByStatus  $request
+     * @param  int  $userId
      * @param  int  $id
      * @return JsonResponse
      */
-    public function showStatus(GePublicationByTeamByIdByStatus $request, int $teamId, int $id, string $status): JsonResponse
+    public function showStatus(GePublicationByUserByIdByStatus $request, int $userId, int $id, string $status): JsonResponse
     {
         try {
             $publication = Publication::where([
-                                'team_id' => $teamId,
+                                'owner_id' => $userId,
                                 'id' => $id,
                                 'status' => strtoupper($status),
                             ])
@@ -344,22 +343,21 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Post(
-     *    path="/api/v2/teams/{teamId}/publications",
-     *    operationId="create_publications_v2_by_team_id",
+     *    path="/api/v2/users/{userId}/publications",
+     *    operationId="create_publications_v2_by_user_id",
      *    tags={"Publication"},
-     *    summary="TeamPublicationController@store",
-     *    description="Create a new publication by team id",
+     *    summary="UserPublicationController@store",
+     *    description="Create a new publication by user id",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
-     *       name="teamId",
+     *       name="userId",
      *       in="path",
-     *       description="team id",
+     *       description="ID of the user",
      *       required=true,
-     *       example="1",
      *       @OA\Schema(
      *          type="integer",
-     *          description="team id",
-     *       ),
+     *          format="int64"
+     *       )
      *    ),
      *    @OA\RequestBody(
      *       required=true,
@@ -411,11 +409,11 @@ class TeamPublicationController extends Controller
      *    )
      * )
      *
-     * @param  CreatePublicationByTeamId  $request
-     * @param  int  $teamId
+     * @param  CreatePublicationByUserId  $request
+     * @param  int  $userId
      * @return JsonResponse
      */
-    public function store(CreatePublicationByTeamId $request, int $teamId): JsonResponse
+    public function store(CreatePublicationByUserId $request, int $userId): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -436,8 +434,8 @@ class TeamPublicationController extends Controller
                 'abstract' => $input['abstract'],
                 'url' => array_key_exists('url', $input) ? $input['url'] : null,
                 'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
-                'team_id' => $teamId,
-                'owner_id' => (int)$jwtUser['id'],
+                'team_id' => array_key_exists('team_id', $input) ? $input['team_id'] : null,
+                'owner_id' => $userId,
                 'status' => $request['status'],
             ]);
             $publicationId = (int)$publication->id;
@@ -446,10 +444,10 @@ class TeamPublicationController extends Controller
             $this->checkDatasets($publicationId, $datasets);
 
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
-            $this->checkTools($publicationId, $tools, (int)$jwtUser['id']);
+            $this->checkTools($publicationId, $tools, $userId);
 
             $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
-            $this->checkDurs($publicationId, $durs, (int)$jwtUser['id']);
+            $this->checkDurs($publicationId, $durs, $userId);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -476,22 +474,21 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Put(
-     *    path="/api/v2/teams/{teamId}/publications/{id}",
-     *    operationId="update_publications_v2_by_team_id",
+     *    path="/api/v2/users/{userId}/publications/{id}",
+     *    operationId="update_publications_v2_by_user_id",
      *    tags={"Publication"},
-     *    summary="TeamPublicationController@update",
-     *    description="Update publications by team id",
+     *    summary="UserPublicationController@update",
+     *    description="Update publications by user id",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
-     *       name="teamId",
+     *       name="userId",
      *       in="path",
-     *       description="team id",
+     *       description="ID of the user",
      *       required=true,
-     *       example="1",
      *       @OA\Schema(
      *          type="integer",
-     *          description="team id",
-     *       ),
+     *          format="int64"
+     *       )
      *    ),
      *    @OA\Parameter(
      *       name="id",
@@ -571,12 +568,12 @@ class TeamPublicationController extends Controller
      *    )
      * )
      *
-     * @param  UpdatePublicationByTeamIdById  $request
-     * @param  int  $teamId
+     * @param  UpdatePublicationByUserIdById  $request
+     * @param  int  $userId
      * @param  int  $id
      * @return JsonResponse
      */
-    public function update(UpdatePublicationByTeamIdById $request, int $teamId, int $id): JsonResponse
+    public function update(UpdatePublicationByUserIdById $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -601,17 +598,17 @@ class TeamPublicationController extends Controller
                 'url' => array_key_exists('url', $input) ? $input['url'] : null,
                 'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
                 'status' => array_key_exists('status', $input) ? $input['status'] : Publication::STATUS_DRAFT,
-                'team_id' => $teamId,
+                'team_id' => array_key_exists('team_id', $input) ? $input['team_id'] : null,
             ]);
 
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
             $this->checkDatasets($id, $datasets);
 
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
-            $this->checkTools($id, $tools, (int)$jwtUser['id']);
+            $this->checkTools($id, $tools, $userId);
 
             $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
-            $this->checkDurs($id, $durs, (int)$jwtUser['id']);
+            $this->checkDurs($id, $durs, $userId);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -638,22 +635,21 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Patch(
-     *    path="/api/v2/teams/{teamId}/publications/{id}",
-     *    operationId="edit_publications_v2_by_team_id",
+     *    path="/api/v2/users/{userId}/publications/{id}",
+     *    operationId="edit_publications_v2_by_user_id",
      *    tags={"Publication"},
-     *    summary="TeamPublicationController@edit",
-     *    description="Edit publications by team id",
+     *    summary="UserPublicationController@edit",
+     *    description="Edit publications by user id",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
-     *       name="teamId",
+     *       name="userId",
      *       in="path",
-     *       description="team id",
+     *       description="ID of the user",
      *       required=true,
-     *       example="1",
      *       @OA\Schema(
      *          type="integer",
-     *          description="team id",
-     *       ),
+     *          format="int64"
+     *       )
      *    ),
      *    @OA\Parameter(
      *       name="id",
@@ -733,12 +729,12 @@ class TeamPublicationController extends Controller
      *    )
      * )
      *
-     * @param  EditPublicationByTeamIdById  $request
-     * @param  int  $teamId
+     * @param  EditPublicationByUserIdById  $request
+     * @param  int  $userId
      * @param  int  $id
      * @return JsonResponse
      */
-    public function edit(EditPublicationByTeamIdById $request, int $teamId, int $id): JsonResponse
+    public function edit(EditPublicationByUserIdById $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -760,7 +756,6 @@ class TeamPublicationController extends Controller
                 'status'
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
-            $arrayKeys['team_id'] = $teamId;
 
             Publication::where('id', $id)->update($array);
 
@@ -771,11 +766,11 @@ class TeamPublicationController extends Controller
 
             if (array_key_exists('tools', $input)) {
                 $tools = $input['tools'];
-                $this->checkTools($id, $tools, $jwtUser['id'] ?? null);
+                $this->checkTools($id, $tools, $userId);
             }
 
             $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
-            $this->checkDurs($id, $durs, (int)$jwtUser['id']);
+            $this->checkDurs($id, $durs, $userId);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -803,22 +798,21 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Delete(
-     *    path="/api/v2/teams/{teamId}/publications/{id}",
-     *    operationId="delete_publications_v2_by_team_id",
+     *    path="/api/v2/users/{userId}/publications/{id}",
+     *    operationId="delete_publications_v2_by_user_id",
      *    tags={"Publication"},
-     *    summary="TeamPublicationController@destroy",
-     *    description="Delete publication by team id and id",
+     *    summary="UserPublicationController@destroy",
+     *    description="Delete publication by user id and id",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
-     *       name="teamId",
+     *       name="userId",
      *       in="path",
-     *       description="team id",
+     *       description="ID of the user",
      *       required=true,
-     *       example="1",
      *       @OA\Schema(
      *          type="integer",
-     *          description="team id",
-     *       ),
+     *          format="int64"
+     *       )
      *    ),
      *    @OA\Parameter(
      *       name="id",
@@ -861,16 +855,16 @@ class TeamPublicationController extends Controller
      *    )
      * )
      *
-     * @param  DeletePublicationByTeamIdById  $request
-     * @param  int  $teamId
+     * @param  DeletePublicationByUserIdById  $request
+     * @param  int  $userId
      * @param  int  $id
      * @return JsonResponse
      */
-    public function destroy(DeletePublicationByTeamIdById $request, int $teamId, int $id): JsonResponse
+    public function destroy(DeletePublicationByUserIdById $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $publication = Publication::where(['id' => $id, 'team_id' => $teamId])->first();
+        $publication = Publication::where(['id' => $id, 'owner_id' => $userId])->first();
         $this->checkAccess($input, null, $publication->owner_id, 'user');
 
         try {

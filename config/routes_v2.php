@@ -706,4 +706,101 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+
+    // user & publications
+    [
+        'name' => 'publications.get.active',
+        'method' => 'get',
+        'path' => '/users/{userId}/publications',
+        'methodController' => 'UserPublicationController@indexStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.get.active',
+        'method' => 'get',
+        'path' => '/users/{userId}/publications/status/{status}',
+        'methodController' => 'UserPublicationController@indexStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'publications.get.one',
+        'method' => 'get',
+        'path' => '/users/{userId}/publications/{id}',
+        'methodController' => 'UserPublicationController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.get.one',
+        'method' => 'get',
+        'path' => '/users/{userId}/publications/{id}/status/{status}',
+        'methodController' => 'UserPublicationController@showStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'publications.create',
+        'method' => 'post',
+        'path' => '/users/{userId}/publications',
+        'methodController' => 'UserPublicationController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.update',
+        'method' => 'put',
+        'path' => '/users/{userId}/publications/{id}',
+        'methodController' => 'UserPublicationController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.edit',
+        'method' => 'patch',
+        'path' => '/users/{userId}/publications/{id}',
+        'methodController' => 'UserPublicationController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.destroy',
+        'method' => 'delete',
+        'path' => '/users/{userId}/publications/{id}',
+        'methodController' => 'UserPublicationController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
 ];
