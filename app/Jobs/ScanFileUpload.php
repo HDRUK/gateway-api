@@ -336,7 +336,7 @@ class ScanFileUpload implements ShouldQueue
                 throw new Exception("Mismatch: dataCustodian identifier ($dataCustodianIdentifier) does not match team PID ({$team['pid']}).");
             }
             $input = [
-                'metadata' => ['metadata' => $metadata],
+                'metadata' => ['metadata' => json_decode($content)],
                 'status' => 'DRAFT',
                 'create_origin' => 'MANUAL',
                 'user_id' => $this->userId,
