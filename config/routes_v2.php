@@ -536,4 +536,271 @@ return [
             'teamId' => '[0-9]+',
         ],
     ],
+
+    // publications
+    [
+        'name' => 'publications.index',
+        'method' => 'get',
+        'path' => '/publications',
+        'methodController' => 'PublicationController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'publications-count-field',
+        'method' => 'get',
+        'path' => '/publications/count/{field}',
+        'methodController' => 'PublicationController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'publications.show',
+        'method' => 'get',
+        'path' => '/publications/{id}',
+        'methodController' => 'PublicationController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.edit',
+        'method' => 'patch',
+        'path' => '/publications/{id}',
+        'methodController' => 'PublicationController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.update',
+        'method' => 'put',
+        'path' => '/publications/{id}',
+        'methodController' => 'PublicationController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.create',
+        'method' => 'post',
+        'path' => '/publications',
+        'methodController' => 'PublicationController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'publications.destroy',
+        'method' => 'delete',
+        'path' => '/publications/{id}',
+        'methodController' => 'PublicationController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
+    // teams & publications
+    [
+        'name' => 'publications.get.active',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/publications',
+        'methodController' => 'TeamPublicationController@indexStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.get.active',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/publications/status/{status}',
+        'methodController' => 'TeamPublicationController@indexStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'publications.get.one',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/publications/{id}',
+        'methodController' => 'TeamPublicationController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.get.one',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/publications/{id}/status/{status}',
+        'methodController' => 'TeamPublicationController@showStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'publications.create',
+        'method' => 'post',
+        'path' => '/teams/{teamId}/publications',
+        'methodController' => 'TeamPublicationController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.update',
+        'method' => 'put',
+        'path' => '/teams/{teamId}/publications/{id}',
+        'methodController' => 'TeamPublicationController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.edit',
+        'method' => 'patch',
+        'path' => '/teams/{teamId}/publications/{id}',
+        'methodController' => 'TeamPublicationController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.destroy',
+        'method' => 'delete',
+        'path' => '/teams/{teamId}/publications/{id}',
+        'methodController' => 'TeamPublicationController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+
+    // user & publications
+    [
+        'name' => 'publications.get.active',
+        'method' => 'get',
+        'path' => '/users/{userId}/publications',
+        'methodController' => 'UserPublicationController@indexStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.get.active',
+        'method' => 'get',
+        'path' => '/users/{userId}/publications/status/{status}',
+        'methodController' => 'UserPublicationController@indexStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'publications.get.one',
+        'method' => 'get',
+        'path' => '/users/{userId}/publications/{id}',
+        'methodController' => 'UserPublicationController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.get.one',
+        'method' => 'get',
+        'path' => '/users/{userId}/publications/{id}/status/{status}',
+        'methodController' => 'UserPublicationController@showStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'publications.create',
+        'method' => 'post',
+        'path' => '/users/{userId}/publications',
+        'methodController' => 'UserPublicationController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.update',
+        'method' => 'put',
+        'path' => '/users/{userId}/publications/{id}',
+        'methodController' => 'UserPublicationController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.edit',
+        'method' => 'patch',
+        'path' => '/users/{userId}/publications/{id}',
+        'methodController' => 'UserPublicationController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.destroy',
+        'method' => 'delete',
+        'path' => '/users/{userId}/publications/{id}',
+        'methodController' => 'UserPublicationController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
 ];
