@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Team;
+use App\Models\User;
 use App\Models\Publication;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -17,6 +19,9 @@ class PublicationFactory extends Factory
      */
     public function definition(): array
     {
+        $teams = Team::all();
+        $users = User::all();
+
         return [
             'paper_title' => fake()->words(5, true),
             'authors' => 'Author One, Author Two, Author Three, Author Four',
@@ -32,6 +37,8 @@ class PublicationFactory extends Factory
                 Publication::STATUS_ARCHIVED,
                 Publication::STATUS_DRAFT,
             ]),
+            'team_id' => fake()->randomElement($teams)->id,
+            'owner_id' => fake()->randomElement($users)->id,
         ];
     }
 }

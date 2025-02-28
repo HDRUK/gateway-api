@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Traits\DatasetFetch;
+use App\Models\Traits\SortManager;
 use App\Observers\PublicationObserver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
@@ -18,6 +19,7 @@ class Publication extends Model
     use SoftDeletes;
     use Prunable;
     use DatasetFetch;
+    use SortManager;
 
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
@@ -48,6 +50,12 @@ class Publication extends Model
         'owner_id',
         'team_id',
         'status',
+    ];
+
+    protected static array $sortableColumns = [
+        'updated_at',
+        'paper_title',
+        'year_of_publication',
     ];
 
     // Accessor for all datasets associated with this object
