@@ -7,12 +7,14 @@ use Auditor;
 use Exception;
 use Carbon\Carbon;
 use App\Models\Publication;
+use App\Http\Traits\CheckAccess;
 use App\Models\DurHasPublication;
 use Illuminate\Http\JsonResponse;
 use App\Models\PublicationHasTool;
 use App\Http\Controllers\Controller;
 use App\Models\CollectionHasPublication;
 use App\Http\Traits\PublicationsV2Helper;
+use App\Http\Traits\RequestTransformation;
 use App\Models\PublicationHasDatasetVersion;
 use App\Http\Requests\V2\Publication\CreatePublicationByTeamId;
 use App\Http\Requests\V2\Publication\GetPublicationByTeamAndId;
@@ -24,6 +26,8 @@ use App\Http\Requests\V2\Publication\GePublicationByTeamByIdByStatus;
 
 class TeamPublicationController extends Controller
 {
+    use RequestTransformation;
+    use CheckAccess;
     use PublicationsV2Helper;
 
     public function __construct()
