@@ -321,6 +321,7 @@ class ScanFileUpload implements ShouldQueue
     {
         try {
             $team = Team::findOrFail($this->teamId)->toArray();
+            $content = Storage::disk($this->fileSystem . '.scanned')->get($loc);
             $metadata = json_decode($content);
 
 
