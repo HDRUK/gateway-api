@@ -22,6 +22,7 @@ use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 
 use App\Models\PublicationHasDatasetVersion;
+use App\Models\Team;
 use Database\Seeders\PublicationHasToolSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
@@ -903,6 +904,164 @@ class PublicationV2Test extends TestCase
             ],
         ]);
         $response->assertStatus(200);
+    }
+
+    public function test_v2_create_publication_with_success_by_team_id(): void
+    {
+        $teamId = Team::all()->random()->id;
+        $datasetId = 1;
+
+        $response = $this->json(
+            'POST',
+            '/api/v2/teams/' . $teamId . '/publications/',
+            [
+                'paper_title' => 'Test Paper Title',
+                'authors' => 'Einstein, Albert, Yankovich, Al',
+                'year_of_publication' => '2013',
+                'paper_doi' => '10.1000/182',
+                'publication_type' => 'Paper and such',
+                'journal_name' => 'Something Journal-y here',
+                'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html',
+                'datasets' => [
+                    0 => [
+                        'id' => $datasetId,
+                        'link_type' => 'USING',
+                    ],
+                ],
+                'tools' => $this->generateTools(),
+                'status' => 'ACTIVE',
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(201);
+        $response->assertJsonStructure([
+            'message',
+            'data'
+        ]);
+
+        $pubId = $response->decodeResponseJson()['data'];
+        $relation = PublicationHasDatasetVersion::where('publication_id', $pubId)->first();
+        $this->assertNotNull($relation);
+        $this->assertEquals($relation['link_type'], "USING");
+
+    }
+
+    public function test_v2_update_active_publication_by_team_id_with_success(): void
+    {
+        $teamId = Team::all()->random()->id;
+        $countBefore = Publication::all()->count();
+        $response = $this->json(
+            'POST',
+            '/api/v2/teams/' . $teamId . '/publications/',
+            [
+                'paper_title' => 'Test Paper Title',
+                'authors' => 'Einstein, Albert, Yankovich, Al',
+                'year_of_publication' => '2013',
+                'paper_doi' => '10.1000/182',
+                'publication_type' => 'Paper and such',
+                'journal_name' => 'Something Journal-y here',
+                'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html',
+                'datasets' => [
+                    0 => [
+                        'id' => 1,
+                        'link_type' => 'ABOUT',
+                    ],
+                ],
+                'tools' => $this->generateTools(),
+                'status' => 'ACTIVE'
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(201);
+
+        $countAfter = Publication::all()->count();
+        $this->assertTrue((bool) ($countAfter - $countBefore));
+
+        $response->assertJsonStructure([
+            'message',
+            'data'
+        ]);
+
+        $publicationId = (int)$response['data'];
+
+        $responseUpdate = $this->json(
+            'PUT',
+            '/api/v2/teams/' . $teamId . '/publications/' . $publicationId,
+            [
+                 'paper_title' => 'Not A Test Paper Title',
+                 'authors' => 'Einstein, Albert, Yankovich, Al',
+                 'year_of_publication' => '2022',
+                 'paper_doi' => '10.1000/182',
+                 'publication_type' => 'Paper and such',
+                 'journal_name' => 'Something Journal-y here',
+                 'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                 'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html',
+                 'datasets' => [
+                     0 => [
+                         'id' => 1,
+                         'link_type' => 'USING',
+                     ],
+                 ],
+                 'status' => 'ACTIVE'
+             ],
+            $this->header,
+        );
+
+        $responseUpdate->assertStatus(200);
+        $responseUpdate->assertJsonStructure([
+            'message',
+            'data'
+        ]);
+
+        $content = $responseUpdate->decodeResponseJson()['data'];
+        $this->assertEquals($content['paper_title'], 'Not A Test Paper Title');
+    }
+
+    public function test_v2_patch_publication_status_by_team_id_with_success(): void
+    {
+        // draft to archived
+        $publicationStatusDraft = Publication::where('status', Publication::STATUS_DRAFT)->first();
+        $countStatusDraft = Publication::where('status', Publication::STATUS_DRAFT)->get()->count();
+        $response = $this->json(
+            'PATCH',
+            '/api/v2/teams/' . $publicationStatusDraft->team_id . '/publications/' . $publicationStatusDraft->id,
+            [
+                'status' => Publication::STATUS_ARCHIVED
+            ],
+            $this->header,
+        );
+        $response->assertStatus(200);
+        $countAfter = Publication::where('status', Publication::STATUS_DRAFT)->get()->count();
+        $this->assertTrue(($countStatusDraft - $countAfter) === 1);
+
+
+        // draft to active
+        $countActiveBefore = Publication::where("status", Publication::STATUS_ACTIVE)->count();
+        $countDraftBefore = Publication::where("status", Publication::STATUS_DRAFT)->count();
+        $publicationStatusDraft = Publication::where('status', Publication::STATUS_DRAFT)->first();
+        $countArchivedBefore = Publication::withTrashed()->where("status", Publication::STATUS_ARCHIVED)->count();
+
+        $response = $this->json(
+            'PATCH',
+            '/api/v2/teams/' . $publicationStatusDraft->team_id . '/publications/' . $publicationStatusDraft->id,
+            [
+                'status' => 'ACTIVE'
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(200);
+        $countActive = Publication::where("status", Publication::STATUS_ACTIVE)->count();
+        $countDraft = Publication::where("status", Publication::STATUS_DRAFT)->count();
+        $countArchived = Publication::withTrashed()->where("status", Publication::STATUS_ARCHIVED)->count();
+        $this->assertTrue(($countActive - 1) === $countActiveBefore);
+        $this->assertTrue($countArchived === $countArchivedBefore);
+        $this->assertTrue(($countDraft + 1) === $countDraftBefore);
+
     }
 
     private function getTeamWithStatus($status)
