@@ -285,4 +285,45 @@ trait DataAccessApplicationHelpers
             'organisation' => $applicantOrg,
         ];
     }
+
+    public function getDarManagers(int $teamId): ?array
+    {
+        $team = Team::with('users')->where('id', $teamId)->first();
+        $teamHasUserIds = TeamHasUser::where('team_id', $team->id)->get();
+        $roleIdeal = null;
+        $roleSecondary = null;
+
+        $users = [];
+
+        foreach ($teamHasUserIds as $thu) {
+            $teamUserHasRoles = TeamUserHasRole::where('team_has_user_id', $thu->id)->get();
+
+            foreach ($teamUserHasRoles as $tuhr) {
+                $roleIdeal = Role::where([
+                    'id' => $tuhr->role_id,
+                    'name' => 'custodian.dar.manager',
+                ])->first();
+
+                $roleSecondary = Role::where([
+                    'id' => $tuhr->role_id,
+                    'name' => 'dar.manager',
+                ])->first();
+
+                if (!$roleIdeal && !$roleSecondary) {
+                    continue;
+                }
+
+                $user = User::where('id', $thu['user_id'])->first()->toArray();
+
+                $users[] = [
+                    'to' => [
+                        'email' => $user['email'],
+                        'name' => $user['name'],
+                    ],
+                ];
+            }
+        }
+
+        return $users;
+    }
 }

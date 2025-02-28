@@ -21,11 +21,8 @@ use App\Jobs\SendEmailJob;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationAnswer;
 use App\Models\EmailTemplate;
-use App\Models\Role;
 use App\Models\Team;
 use App\Models\TeamHasDataAccessApplication;
-use App\Models\TeamHasUser;
-use App\Models\TeamUserHasRole;
 use App\Models\Upload;
 use App\Models\User;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -1141,47 +1138,6 @@ class UserDataAccessApplicationController extends Controller
         }
 
         return $formatted;
-    }
-
-    private function getDarManagers(int $teamId): ?array
-    {
-        $team = Team::with('users')->where('id', $teamId)->first();
-        $teamHasUserIds = TeamHasUser::where('team_id', $team->id)->get();
-        $roleIdeal = null;
-        $roleSecondary = null;
-
-        $users = [];
-
-        foreach ($teamHasUserIds as $thu) {
-            $teamUserHasRoles = TeamUserHasRole::where('team_has_user_id', $thu->id)->get();
-
-            foreach ($teamUserHasRoles as $tuhr) {
-                $roleIdeal = Role::where([
-                    'id' => $tuhr->role_id,
-                    'name' => 'custodian.dar.manager',
-                ])->first();
-
-                $roleSecondary = Role::where([
-                    'id' => $tuhr->role_id,
-                    'name' => 'dar.manager',
-                ])->first();
-
-                if (!$roleIdeal && !$roleSecondary) {
-                    continue;
-                }
-
-                $user = User::where('id', $thu['user_id'])->first()->toArray();
-
-                $users[] = [
-                    'to' => [
-                        'email' => $user['email'],
-                        'name' => $user['name'],
-                    ],
-                ];
-            }
-        }
-
-        return $users;
     }
 
 }

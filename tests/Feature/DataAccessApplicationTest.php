@@ -781,11 +781,11 @@ class DataAccessApplicationTest extends TestCase
     }
 
     /**
-     * Adds reviews to a dar application
+     * Adds question specific reviews to a dar application
      *
      * @return void
      */
-    public function test_the_application_can_add_reviews_to_a_dar_application()
+    public function test_the_application_can_add_question_specific_reviews_to_a_dar_application()
     {
         $entityIds = $this->createDatasetForDar();
         $datasetId = $entityIds['datasetId'];
@@ -894,6 +894,127 @@ class DataAccessApplicationTest extends TestCase
         $response = $this->json(
             'DELETE',
             'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/questions/' . $questionId . '/reviews/' . $reviewId,
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+    }
+
+    /**
+     * Adds general reviews to a dar application
+     *
+     * @return void
+     */
+    public function test_the_application_can_add_reviews_to_a_dar_application()
+    {
+        $entityIds = $this->createDatasetForDar();
+        $datasetId = $entityIds['datasetId'];
+        $teamId = $entityIds['teamId'];
+        $questionId = $entityIds['questionId'];
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'DRAFT',
+                'project_title' => 'A test DAR',
+                'approval_status' => 'APPROVED_COMMENTS',
+                'dataset_ids' => [$datasetId]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+        $applicationId = $response->decodeResponseJson()['data'];
+
+        // Add a review to the dar
+        $response = $this->json(
+            'POST',
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/reviews',
+            [
+                'comment' => 'A test review comment',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+        $reviewId = $response->decodeResponseJson()['data'];
+
+        // Retrieve review
+        $response = $this->json(
+            'GET',
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/reviews',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                        'application_id',
+                        'question_id',
+                        'resolved',
+                        'comments' => [
+                            0 => [
+                                'id',
+                                'created_at',
+                                'updated_at',
+                                'deleted_at',
+                                'team_id',
+                                'user_id',
+                                'comment',
+                            ]
+                        ]
+                    ]
+                ]
+            ]);
+        $content = $response->decodeResponseJson()['data'];
+
+        $this->assertEquals(1, count($content[0]['comments']));
+        $this->assertEquals('A test review comment', $content[0]['comments'][0]['comment']);
+
+        // User adds another comment to the review
+        $response = $this->json(
+            'PUT',
+            'api/v1/users/1/dar/applications/' . $applicationId . '/reviews/' . $reviewId,
+            [
+                'comment' => 'Another test review comment',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+        $response = $this->json(
+            'GET',
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/reviews',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $content = $response->decodeResponseJson()['data'];
+
+        $this->assertEquals(2, count($content[0]['comments']));
+        $this->assertEquals('Another test review comment', $content[0]['comments'][1]['comment']);
+
+        // Delete review
+        $response = $this->json(
+            'DELETE',
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId,
             [],
             $this->header
         );
