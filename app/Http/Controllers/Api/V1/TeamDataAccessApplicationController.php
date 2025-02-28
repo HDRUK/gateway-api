@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Auditor;
-use Carbon\Carbon;
 use Config;
 use Exception;
 use App\Exceptions\UnauthorizedException;
@@ -88,8 +87,10 @@ class TeamDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $applicationIds = TeamHasDataAccessApplication::where('team_id', $teamId)
-                ->select('dar_application_id')
+            $applicationIds = TeamHasDataAccessApplication::where([
+                'team_id' => $teamId,
+                'submission_status' => 'SUBMITTED',
+            ])->select('dar_application_id')
                 ->pluck('dar_application_id');
 
             $filterTitle = $request->query('project_title', null);
@@ -98,86 +99,15 @@ class TeamDataAccessApplicationController extends Controller
             $filterAction = isset($input['action_required']) ?
                 $request->boolean('action_required', null) : null;
 
-            $applications = DataAccessApplication::whereIn('id', $applicationIds)
-                ->with('teams')
-                ->when($filterTitle, function ($query) use ($filterTitle) {
-                    return $query->where('project_title', 'LIKE', "%{$filterTitle}%");
-                })
-                ->get();
-
-            $matches = [];
-            foreach ($applications as $a) {
-                $matches[] = $a->id;
-            }
-
-            if (!is_null($filterApproval)) {
-                $approvalMatches = [];
-                foreach ($applications as $a) {
-                    foreach($a['teams'] as $t) {
-                        if (($t->team_id === $teamId) && ($t->approval_status === $filterApproval)) {
-                            $approvalMatches[] = $a->id;
-                        }
-                    }
-                }
-                $matches = array_intersect($matches, $approvalMatches);
-            }
-
-            if (!is_null($filterSubmission)) {
-                $submissionMatches = [];
-                foreach ($applications as $a) {
-                    foreach($a['teams'] as $t) {
-                        if (($t->team_id === $teamId) && ($t->submission_status === $filterSubmission)) {
-                            $submissionMatches[] = $a->id;
-                        }
-                    }
-                }
-                $matches = array_intersect($matches, $submissionMatches);
-            }
-
-            if (!is_null($filterAction)) {
-                $actionMatches = [];
-                foreach ($matches as $m) {
-                    $reviews = DataAccessApplicationReview::where('application_id', $m)
-                        ->select(['resolved'])->pluck('resolved')->toArray();
-                    $resolved = in_array(false, $reviews) ? false : true;
-
-                    if ((bool) $filterAction === $resolved) {
-                        $actionMatches[] = $m;
-                    }
-                }
-                $matches = array_intersect($matches, $actionMatches);
-            }
-
-            $applications = DataAccessApplication::whereIn('id', $matches)
-                ->with(['user:id,name,organisation','datasets','teams'])
-                ->applySorting()
-                ->paginate(
-                    Config::get('constants.per_page'),
-                    ['*'],
-                    'page'
-                );
-
-            foreach ($applications as $app) {
-                foreach ($app['datasets'] as $d) {
-                    $dataset = Dataset::where('id', $d['dataset_id'])->first();
-                    $title = $dataset->getTitle();
-                    $custodian = Team::where('id', $dataset->team_id)->select(['id','name'])->first();
-                    $d['dataset_title'] = $title;
-                    $d['custodian'] = $custodian;
-                }
-
-                $submissionAudit = DataAccessApplicationStatus::where([
-                    'application_id' => $app->id,
-                    'submission_status' => 'SUBMITTED',
-                ])->first();
-                if ($submissionAudit) {
-                    $app['days_since_submission'] = $submissionAudit
-                        ->updated_at
-                        ->diffInDays(Carbon::today());
-                } else {
-                    $app['days_since_submission'] = null;
-                }
-            }
+            $applications = $this->dashboardIndex(
+                $applicationIds->toArray(),
+                $filterTitle,
+                $filterApproval,
+                $filterSubmission,
+                $filterAction,
+                $teamId,
+                null,
+            );
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -243,15 +173,18 @@ class TeamDataAccessApplicationController extends Controller
                 ->with('teams')
                 ->get();
 
-            $counts = array();
-
-            foreach ($applications as $app) {
-                foreach ($app['teams'] as $t) {
-                    if ($t->team_id === $teamId) {
-                        if (array_key_exists($t[$field], $counts)) {
-                            $counts[$t[$field]] += 1;
-                        } else {
-                            $counts[$t[$field]] = 1;
+            if ($field === 'action_required') {
+                $counts = $this->actionRequiredCounts(array_column($applications->toArray(), 'id'));
+            } else {
+                $counts = array();
+                foreach ($applications as $app) {
+                    foreach ($app['teams'] as $t) {
+                        if ($t->team_id === $teamId) {
+                            if (array_key_exists($t[$field], $counts)) {
+                                $counts[$t[$field]] += 1;
+                            } else {
+                                $counts[$t[$field]] = 1;
+                            }
                         }
                     }
                 }

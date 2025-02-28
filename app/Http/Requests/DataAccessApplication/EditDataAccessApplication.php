@@ -30,14 +30,14 @@ class EditDataAccessApplication extends BaseFormRequest
             ],
             'submission_status' => [
                 'string',
-                'in:DRAFT,SUBMITTED,FEEDBACK',
+                'in:DRAFT,SUBMITTED',
             ],
             'project_title' => [
                 'string',
             ],
             'approval_status' => [
                 'string',
-                'in:APPROVED,APPROVED_COMMENTS,REJECTED',
+                'in:APPROVED,APPROVED_COMMENTS,FEEDBACK,REJECTED',
             ],
         ];
     }

@@ -32,7 +32,7 @@ class UpdateUserDataAccessApplication extends BaseFormRequest
             'submission_status' => [
                 'string',
                 'required',
-                'in:DRAFT,SUBMITTED,FEEDBACK',
+                'in:DRAFT,SUBMITTED',
             ],
             'project_title' => [
                 'string',
