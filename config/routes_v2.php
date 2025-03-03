@@ -803,4 +803,88 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+
+    // tools
+    [
+        'name' => 'tools',
+        'method' => 'get',
+        'path' => '/tools',
+        'methodController' => 'ToolController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'tools-count-field',
+        'method' => 'get',
+        'path' => '/tools/count/{field}',
+        'methodController' => 'ToolController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'tools',
+        'method' => 'get',
+        'path' => '/tools/{id}',
+        'methodController' => 'ToolController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools',
+        'method' => 'post',
+        'path' => '/tools',
+        'methodController' => 'ToolController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'tools',
+        'method' => 'put',
+        'path' => '/tools/{id}',
+        'methodController' => 'ToolController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools',
+        'method' => 'patch',
+        'path' => '/tools/{id}',
+        'methodController' => 'ToolController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools',
+        'method' => 'delete',
+        'path' => '/tools/{id}',
+        'methodController' => 'ToolController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 ];
