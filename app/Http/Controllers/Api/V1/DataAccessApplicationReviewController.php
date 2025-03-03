@@ -20,9 +20,13 @@ use App\Http\Requests\DataAccessApplicationReview\UpdateGlobalUserDataAccessAppl
 use App\Http\Requests\DataAccessApplicationReview\UpdateUserDataAccessApplicationReview;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Traits\DataAccessApplicationHelpers;
+use App\Jobs\SendEmailJob;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationComment;
 use App\Models\DataAccessApplicationReview;
+use App\Models\EmailTemplate;
+use App\Models\Team;
+use App\Models\User;
 
 class DataAccessApplicationReviewController extends Controller
 {
@@ -302,7 +306,7 @@ class DataAccessApplicationReviewController extends Controller
                 'comment' => $input['comment'],
             ]);
 
-            $this->emailResearcherReview($review);
+            $this->emailResearcherReview($review->id, $id);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -393,7 +397,7 @@ class DataAccessApplicationReviewController extends Controller
                 'comment' => $input['comment'],
             ]);
 
-            $this->emailResearcherReview($review);
+            $this->emailResearcherReview($review->id, $id);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -523,7 +527,7 @@ class DataAccessApplicationReviewController extends Controller
                 $review->update(['resolved' => $input['resolved']]);
             }
 
-            $this->emailResearcherReview($review);
+            $this->emailResearcherReview($review->id, $id);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -642,7 +646,7 @@ class DataAccessApplicationReviewController extends Controller
                 $review->update(['resolved' => $input['resolved']]);
             }
 
-            $this->emailResearcherReview($review);
+            $this->emailResearcherReview($reviewId, $id);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -782,7 +786,7 @@ class DataAccessApplicationReviewController extends Controller
                 'comment' => $input['comment'],
             ]);
 
-            $this->emailCustodianReview($review);
+            $this->emailCustodianReview($reviewId, $id);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -911,7 +915,7 @@ class DataAccessApplicationReviewController extends Controller
                 'comment' => $input['comment'],
             ]);
 
-            $this->emailCustodianReview($review);
+            $this->emailCustodianReview($reviewId, $id);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1146,27 +1150,23 @@ class DataAccessApplicationReviewController extends Controller
         $application = DataAccessApplication::where('id', $applicationId)->first();
         $comments = DataAccessApplicationReview::where('id', $reviewId)
             ->with('comments')
-            ->get()
+            ->first()
             ->toArray();
-        $teamIds = array_unique(array_column($comments['comments'], 'team_id'));
-        $to = [];
-        foreach ($teamIds as $t) {
-            $to[] = $this->getDarManagers($t);
-            $to[]['team_id'] = $t;
-        }
+        $teamId = array_filter(array_unique(array_column($comments['comments'], 'team_id')))[0];
+        $to = $this->getDarManagers($teamId);
 
         $thread = $this->formatThread($comments);
 
         foreach ($to as $darManager) {
             $replacements = [
-                '[[DAR_MANAGER_FIRST_NAME]]' => $darManager['firstname'],
+                '[[DAR_MANAGER_FIRST_NAME]]' => $darManager['to']['name'],
                 '[[PROJECT_TITLE]]' => $application->project_title,
                 '[[THREAD]]' => $thread,
-                '[[TEAM_ID]]' => $darManager['team_id'],
+                '[[TEAM_ID]]' => $teamId,
                 '[[CURRENT_YEAR]]' => date("Y"),
             ];
 
-            SendEmailJob::dispatch($to, $template, $replacements);
+            SendEmailJob::dispatch($darManager, $template, $replacements);
         }
     }
 
@@ -1176,7 +1176,7 @@ class DataAccessApplicationReviewController extends Controller
         $application = DataAccessApplication::where('id', $applicationId)->first();
         $comments = DataAccessApplicationReview::where('id', $reviewId)
             ->with('comments')
-            ->get()
+            ->first()
             ->toArray();
         $teamId = array_filter(array_unique(array_column($comments['comments'], 'team_id')))[0];
         $teamName = Team::where('id', $teamId)->first()->name;
@@ -1195,7 +1195,7 @@ class DataAccessApplicationReviewController extends Controller
             '[[USER_FIRST_NAME]]' => $user['firstname'],
             '[[PROJECT_TITLE]]' => $application->project_title,
             '[[CUSTODIAN_NAME]]' => $teamName,
-            '[[APPLICATION_ID]]' => $id,
+            '[[APPLICATION_ID]]' => $applicationId,
             '[[THREAD]]' => $thread,
             '[[CURRENT_YEAR]]' => date("Y"),
         ];
@@ -1208,11 +1208,11 @@ class DataAccessApplicationReviewController extends Controller
         $thread = '';
         foreach ($comments['comments'] as $c) {
             if (!is_null($c['team_id'])) {
-                $teamName = Team::where('id', $c['team_id'])->first()->select('name')->pluck('name');
+                $teamName = Team::where('id', $c['team_id'])->select('name')->pluck('name')->first();
                 $thread .= $teamName . '<br/>';
                 $thread .= $c['comment'] . '<br/><br/>';
             } elseif (!is_null($c['user_id'])) {
-                $userName = User::where('id', $c['user_id'])->first()->select('name')->pluck('name');
+                $userName = User::where('id', $c['user_id'])->select('name')->pluck('name')->first();
                 $thread .= $userName . '<br/>';
                 $thread .= $c['comment'] . '<br/><br/>';
             }

@@ -3995,7 +3995,7 @@ class EmailTemplateSeeder extends Seeder
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[DAR_MANAGER_FIRST_NAME]],<br><br>
-                                    You have received a comment in response to your query on [[PROJECT TITLE]], a preview of which can be found in the thread below. 
+                                    You have received a comment in response to your query on [[PROJECT_TITLE]], a preview of which can be found in the thread below. 
                                     You can respond via the Gateway by opening the data access request for this project. 
                                     Use the button below to navigate to the Data Access Request management page.<br><br>
                                     [[THREAD]]

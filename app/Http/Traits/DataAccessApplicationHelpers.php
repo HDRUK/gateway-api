@@ -11,9 +11,13 @@ use App\Models\DataAccessApplicationAnswer;
 use App\Models\DataAccessApplicationReview;
 use App\Models\DataAccessApplicationStatus;
 use App\Models\Dataset;
+use App\Models\Role;
 use App\Models\QuestionBank;
 use App\Models\Team;
+use App\Models\TeamHasUser;
+use App\Models\TeamUserHasRole;
 use App\Models\TeamHasDataAccessApplication;
+use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 trait DataAccessApplicationHelpers

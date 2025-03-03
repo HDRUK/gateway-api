@@ -908,10 +908,50 @@ class DataAccessApplicationTest extends TestCase
      */
     public function test_the_application_can_add_reviews_to_a_dar_application()
     {
+        // Create user with dar.manager role
+        $responseCreateUser = $this->json(
+            'POST',
+            '/api/v1/users',
+            [
+                'firstname' => 'XXXXXXXXXX',
+                'lastname' => 'XXXXXXXXXX',
+                'email' => 'just.test.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/12345678",
+                'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",
+            ],
+            $this->header
+        );
+        $responseCreateUser->assertStatus(201);
+        $uniqueUserId = $responseCreateUser->decodeResponseJson()['data'];
+
         $entityIds = $this->createDatasetForDar();
         $datasetId = $entityIds['datasetId'];
         $teamId = $entityIds['teamId'];
         $questionId = $entityIds['questionId'];
+
+        // assign dar.manager role to user
+        $url = '/api/v1/teams/' . $teamId . '/users';
+        $responseUserRole = $this->json(
+            'POST',
+            $url,
+            [
+                'userId' => $uniqueUserId,
+                'roles' => [
+                    'custodian.dar.manager'
+                ]
+            ],
+            $this->header
+        );
+        $responseUserRole->assertStatus(201);
 
         $response = $this->json(
             'POST',
@@ -931,6 +971,9 @@ class DataAccessApplicationTest extends TestCase
             ]);
         $applicationId = $response->decodeResponseJson()['data'];
 
+        // Clear the fake queue
+        Queue::fake();
+
         // Add a review to the dar
         $response = $this->json(
             'POST',
@@ -946,6 +989,7 @@ class DataAccessApplicationTest extends TestCase
                 'data'
             ]);
         $reviewId = $response->decodeResponseJson()['data'];
+        Queue::assertPushed(SendEmailJob::class, 1);
 
         // Retrieve review
         $response = $this->json(
@@ -985,6 +1029,8 @@ class DataAccessApplicationTest extends TestCase
         $this->assertEquals(1, count($content[0]['comments']));
         $this->assertEquals('A test review comment', $content[0]['comments'][0]['comment']);
 
+        Queue::fake();
+
         // User adds another comment to the review
         $response = $this->json(
             'PUT',
@@ -999,6 +1045,8 @@ class DataAccessApplicationTest extends TestCase
                 'message',
                 'data'
             ]);
+        Queue::assertPushed(SendEmailJob::class, 1);
+
         $response = $this->json(
             'GET',
             'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/reviews',
