@@ -4184,6 +4184,20 @@ return [
     ],
     [
         'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/users/{userId}/dar/applications/{id}/reviews',
+        'methodController' => 'DataAccessApplicationReviewController@indexUser',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
         'method' => 'post',
         'path' => '/teams/{teamId}/dar/applications/{id}/questions/{questionId}/reviews',
         'methodController' => 'DataAccessApplicationReviewController@store',
@@ -4196,6 +4210,21 @@ return [
             'id' => '[0-9]+',
             'teamId' => '[0-9]+',
             'questionId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'post',
+        'path' => '/teams/{teamId}/dar/applications/{id}/reviews',
+        'methodController' => 'DataAccessApplicationReviewController@storeGlobal',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-applications.review.create',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
@@ -4218,6 +4247,22 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'put',
+        'path' => '/teams/{teamId}/dar/applications/{id}/reviews/{reviewId}',
+        'methodController' => 'DataAccessApplicationReviewController@updateGlobal',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-applications.review.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
+            'reviewId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'put',
         'path' => '/users/{userId}/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}',
         'methodController' => 'DataAccessApplicationReviewController@userUpdate',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
@@ -4228,6 +4273,21 @@ return [
             'userId' => '[0-9]+',
             'id' => '[0-9]+',
             'questionId' => '[0-9]+',
+            'reviewId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'put',
+        'path' => '/users/{userId}/dar/applications/{id}/reviews/{reviewId}',
+        'methodController' => 'DataAccessApplicationReviewController@userUpdateGlobal',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
             'reviewId' => '[0-9]+',
         ],
     ],
@@ -4245,6 +4305,22 @@ return [
             'id' => '[0-9]+',
             'teamId' => '[0-9]+',
             'questionId' => '[0-9]+',
+            'reviewId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'delete',
+        'path' => '/teams/{teamId}/dar/applications/{id}/reviews/{reviewId}',
+        'methodController' => 'DataAccessApplicationReviewController@destroyGlobal',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
             'reviewId' => '[0-9]+',
         ],
     ],
