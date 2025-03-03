@@ -1208,11 +1208,11 @@ class DataAccessApplicationReviewController extends Controller
         $thread = '';
         foreach ($comments['comments'] as $c) {
             if (!is_null($c['team_id'])) {
-                $teamName = Team::where('id', $c['team_id'])->select('name')->pluck('name')->first();
+                $teamName = Team::where('id', $c['team_id'])->select('name')->first()['name'];
                 $thread .= $teamName . '<br/>';
                 $thread .= $c['comment'] . '<br/><br/>';
             } elseif (!is_null($c['user_id'])) {
-                $userName = User::where('id', $c['user_id'])->select('name')->pluck('name')->first();
+                $userName = User::where('id', $c['user_id'])->select('name')->first()['name'];
                 $thread .= $userName . '<br/>';
                 $thread .= $c['comment'] . '<br/><br/>';
             }
