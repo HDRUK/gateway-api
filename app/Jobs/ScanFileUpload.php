@@ -326,7 +326,7 @@ class ScanFileUpload implements ShouldQueue
             $metadata = json_decode($content, true);
 
 
-            if (!isset($metadata['summary']['dataCustodian']['identifier'])) {
+            if (!array_key_exists('identifier', $metadata['summary']['dataCustodian'])) {
                 throw new Exception('Invalid metadata: dataCustodian identifier missing.');
             }
 
