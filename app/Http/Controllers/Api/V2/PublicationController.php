@@ -19,12 +19,12 @@ use App\Models\CollectionHasPublication;
 use App\Http\Traits\PublicationsV2Helper;
 use App\Http\Traits\RequestTransformation;
 use App\Models\PublicationHasDatasetVersion;
-use App\Http\Requests\Publication\GetPublication;
 
-use App\Http\Requests\Publication\EditPublication;
-use App\Http\Requests\Publication\CreatePublication;
-use App\Http\Requests\Publication\DeletePublication;
-use App\Http\Requests\Publication\UpdatePublication;
+use App\Http\Requests\V2\Publication\GetPublication;
+use App\Http\Requests\V2\Publication\EditPublication;
+use App\Http\Requests\V2\Publication\CreatePublication;
+use App\Http\Requests\V2\Publication\DeletePublication;
+use App\Http\Requests\V2\Publication\UpdatePublication;
 
 class PublicationController extends Controller
 {
