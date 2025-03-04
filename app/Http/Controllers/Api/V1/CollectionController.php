@@ -192,8 +192,8 @@ class CollectionController extends Controller
 
             $collections->getCollection()->transform(function ($collection) {
                 $collection->image_link = trim($collection->image_link);
-                if ($collection->image_link && !filter_var(urlencode($collection->image_link), FILTER_VALIDATE_URL)) {
-                    $collection->image_link = urlencode(Config::get('services.media.base_url') . $collection->image_link);
+                if ($collection->image_link && !preg_match('/^https?:\/\//', $collection->image_link)) {
+                    $collection->image_link = Config::get('services.media.base_url') . $collection->image_link;
                 }
 
                 return $collection;
@@ -1183,8 +1183,8 @@ class CollectionController extends Controller
 
         if ($collection) {
             $collection->image_link = trim($collection->image_link);
-            if ($collection->image_link && !filter_var(urlencode($collection->image_link), FILTER_VALIDATE_URL)) {
-                $collection->image_link = urlencode(Config::get('services.media.base_url') . $collection->image_link);
+            if ($collection->image_link && !preg_match('/^https?:\/\//', $collection->image_link)) {
+                $collection->image_link = Config::get('services.media.base_url') . $collection->image_link;
             }
 
             if($collection->users) {
