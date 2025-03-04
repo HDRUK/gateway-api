@@ -887,4 +887,101 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+
+    // teams & tools
+    [
+        'name' => 'tools.get.active',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/tools',
+        'methodController' => 'TeamToolController@indexStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools.get.active',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/tools/status/{status}',
+        'methodController' => 'TeamToolController@indexStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'tools.get.one',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/tools/{id}',
+        'methodController' => 'TeamToolController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools.get.one',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/tools/{id}/status/{status}',
+        'methodController' => 'TeamToolController@showStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'tools.create',
+        'method' => 'post',
+        'path' => '/teams/{teamId}/tools',
+        'methodController' => 'TeamToolController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools.update',
+        'method' => 'put',
+        'path' => '/teams/{teamId}/tools/{id}',
+        'methodController' => 'TeamToolController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.edit',
+        'method' => 'patch',
+        'path' => '/teams/{teamId}/publications/{id}',
+        'methodController' => 'TeamPublicationController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.destroy',
+        'method' => 'delete',
+        'path' => '/teams/{teamId}/publications/{id}',
+        'methodController' => 'TeamPublicationController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
 ];
