@@ -77,7 +77,7 @@ class DataProviderCollController extends Controller
                 ])->where('enabled', 1)
                 ->paginate((int) $perPage, ['*'], 'page')
                 ->through(function ($item) use ($mediaBaseUrl) {
-                    $item->img_url = (is_null($item->img_url) || strlen(trim($item->img_url)) === 0) ? null : (filter_var($item->img_url, FILTER_VALIDATE_URL) ? $item->img_url : $mediaBaseUrl . $item->img_url);
+                    $item->img_url = (is_null($item->img_url) || strlen(trim($item->img_url)) === 0) ? null : (preg_match('/^https?:\/\//', $item->img_url) ? $item->img_url : $mediaBaseUrl . $item->img_url);
                     return $item;
                 });
 
@@ -155,7 +155,7 @@ class DataProviderCollController extends Controller
                 ])->where('id', $id)->firstOrFail();
 
             $mediaBaseUrl = Config::get('services.media.base_url');
-            $dpc->img_url = (is_null($dpc->img_url) || strlen(trim($dpc->img_url)) === 0) ? null : (filter_var($dpc->img_url, FILTER_VALIDATE_URL) ? $dpc->img_url : $mediaBaseUrl . $dpc->img_url);
+            $dpc->img_url = (is_null($dpc->img_url) || strlen(trim($dpc->img_url)) === 0) ? null : (preg_match('/^https?:\/\//', $dpc->img_url) ? $dpc->img_url : $mediaBaseUrl . $dpc->img_url);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -291,7 +291,7 @@ class DataProviderCollController extends Controller
                 'updated_at'
             )->whereIn('id', $this->collections)->where('status', 'ACTIVE')->get()->toArray();
             $collections = array_map(function ($collection) {
-                if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
+                if ($collection['image_link'] && !preg_match('/^https?:\/\//', $collection->image_link)) {
                     $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
                 }
                 return $collection;
@@ -302,7 +302,7 @@ class DataProviderCollController extends Controller
             $result = [
                 'id' => $dpc->id,
                 'name' => $dpc->name,
-                'img_url' => (is_null($dpc->img_url) || strlen(trim($dpc->img_url)) === 0) ? '' : (filter_var($dpc->img_url, FILTER_VALIDATE_URL) ? $dpc->img_url : Config::get('services.media.base_url') . $dpc->img_url),
+                'img_url' => (is_null($dpc->img_url) || strlen(trim($dpc->img_url)) === 0) ? '' : (preg_match('/^https?:\/\//', $dpc->img_url) ? $dpc->img_url : Config::get('services.media.base_url') . $dpc->img_url),
                 'summary' => $dpc->summary,
                 'enabled' => $dpc->enabled,
                 'url' => $dpc->url,

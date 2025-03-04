@@ -486,7 +486,7 @@ class TeamController extends Controller
                 ->toArray();
 
             $collections = array_map(function ($collection) {
-                if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
+                if ($collection['image_link'] && !preg_match('/^https?:\/\//', $collection->image_link)) {
                     $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
                 }
                 return $collection;
@@ -509,7 +509,7 @@ class TeamController extends Controller
                 'data' => [
                     'id' => $dp->id,
                     'is_provider' => $dp->is_provider,
-                    'team_logo' => (is_null($dp->team_logo) || strlen(trim($dp->team_logo)) === 0) ? '' : (filter_var($dp->team_logo, FILTER_VALIDATE_URL) ? $dp->team_logo : Config::get('services.media.base_url') . $dp->team_logo),
+                    'team_logo' => (is_null($dp->team_logo) || strlen(trim($dp->team_logo)) === 0) ? '' : (preg_match('/^https?:\/\//', $dp->team_logo) ? $dp->team_logo : Config::get('services.media.base_url') . $dp->team_logo),
                     'url' => $dp->url,
                     'service' => empty($service) ? null : $service,
                     'name' => $dp->name,
