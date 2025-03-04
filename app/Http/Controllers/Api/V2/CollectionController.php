@@ -989,7 +989,7 @@ class CollectionController extends Controller
         ->first();
 
         if ($collection) {
-            if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
+            if ($collection->image_link && !preg_match('/^https?:\/\//', $collection->image_link)) {
                 $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
             }
 
