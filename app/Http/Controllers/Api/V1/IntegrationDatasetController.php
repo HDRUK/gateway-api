@@ -426,6 +426,20 @@ class IntegrationDatasetController extends Controller
      *          )
      *       )
      *    ),
+     *    @OA\Parameter(
+     *       name="input_schema",
+     *       in="query",
+     *       description="Input schema model.",
+     *       example="HDRUK",
+     *       @OA\Schema(type="string")
+     *    ),
+     *    @OA\Parameter(
+     *       name="input_version",
+     *       in="query",
+     *       description="Input schema version.",
+     *       example="3.0.0",
+     *       @OA\Schema(type="string")
+     *     ),
      *      @OA\Response(
      *          response=201,
      *          description="Created",
@@ -466,11 +480,14 @@ class IntegrationDatasetController extends Controller
 
             $input['metadata'] = $this->extractMetadata($input);
 
+            $inputSchema = $request->query('input_schema', null);
+            $inputVersion = $request->query('input_version', null);
+
             //send the payload to traser
             // - traser will return the input unchanged if the data is
             //   already in the GWDM with GWDM_CURRENT_VERSION
             // - if it is not, traser will try to work out what the metadata is
-            //   and translate it into the GWDM
+            //   and translate it into the GWDM (unless input schema and version are specified)
             // - otherwise traser will return a non-200 error
 
             $payload = $input['metadata'];
@@ -486,6 +503,8 @@ class IntegrationDatasetController extends Controller
                 json_encode($payload),
                 Config::get('metadata.GWDM.name'),
                 Config::get('metadata.GWDM.version'),
+                $inputSchema,
+                $inputVersion,
             );
 
             if ($traserResponse['wasTranslated']) {
@@ -663,6 +682,20 @@ class IntegrationDatasetController extends Controller
      *          description="dataset id",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="input_schema",
+     *       in="query",
+     *       description="Input schema model.",
+     *       example="HDRUK",
+     *       @OA\Schema(type="string")
+     *    ),
+     *    @OA\Parameter(
+     *       name="input_version",
+     *       in="query",
+     *       description="Input schema version.",
+     *       example="3.0.0",
+     *       @OA\Schema(type="string")
+     *    ),
      *    @OA\RequestBody(
      *       required=true,
      *       description="Pass user credentials",
@@ -726,6 +759,9 @@ class IntegrationDatasetController extends Controller
 
             $input['metadata'] = $this->extractMetadata($input);
 
+            $inputSchema = $request->query('input_schema', null);
+            $inputVersion = $request->query('input_version', null);
+
             $payload = $input['metadata'];
             $payload['extra'] = [
                 'id' => $id,
@@ -738,7 +774,9 @@ class IntegrationDatasetController extends Controller
             $traserResponse = MMC::translateDataModelType(
                 json_encode($payload),
                 Config::get('metadata.GWDM.name'),
-                Config::get('metadata.GWDM.version')
+                Config::get('metadata.GWDM.version'),
+                $inputSchema,
+                $inputVersion,
             );
 
             if ($traserResponse['wasTranslated']) {
