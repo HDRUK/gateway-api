@@ -1096,7 +1096,7 @@ class ToolV2Test extends TestCase
         ]);
         $response->assertStatus(200);
 
-        $response = $this->json('GET', '/api/v2/teams/' . $tool->user_id . '/tools', [], $this->header);
+        $response = $this->json('GET', '/api/v2/teams/' . $tool->team_id . '/tools', [], $this->header);
         $response->assertJsonStructure([
             'data' => [
                 0 => [
@@ -1734,6 +1734,36 @@ class ToolV2Test extends TestCase
         $count2 = Dataset::where('id', 5)->first()->versions()->count();
         $finalDatasetVersions = DatasetVersionHasTool::where('tool_id', $toolIdInsert)->count();
         $this->assertEquals($finalDatasetVersions, $count1 + $count2);
+    }
+
+    public function test_v2_soft_delete_tool_by_team_with_success(): void
+    {
+        $tools = Tool::first();
+        $countBefore = Tool::onlyTrashed()->count();
+        $response = $this->json('DELETE', '/api/v2/teams/' . $tools->team_id . '/tools/' . $tools->id, [], $this->header);
+        $countAfter = Tool::onlyTrashed()->count();
+        $response->assertStatus(200);
+
+        $this->assertEquals(
+            $countBefore + 1,
+            $countAfter,
+            "actual value is equals to expected"
+        );
+    }
+
+    public function test_v2_soft_delete_tool_by_user_with_success(): void
+    {
+        $tools = Tool::first();
+        $countBefore = Tool::onlyTrashed()->count();
+        $response = $this->json('DELETE', '/api/v2/users/' . $tools->user_id . '/tools/' . $tools->id, [], $this->header);
+        $countAfter = Tool::onlyTrashed()->count();
+        $response->assertStatus(200);
+
+        $this->assertEquals(
+            $countBefore + 1,
+            $countAfter,
+            "actual value is equals to expected"
+        );
     }
 
     private function getToolsByTeam($status = null)

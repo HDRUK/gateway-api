@@ -963,8 +963,8 @@ return [
     [
         'name' => 'publications.edit',
         'method' => 'patch',
-        'path' => '/teams/{teamId}/publications/{id}',
-        'methodController' => 'TeamPublicationController@edit',
+        'path' => '/teams/{teamId}/tools/{id}',
+        'methodController' => 'TeamToolController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => ['jwt.verify'],
         'constraint' => [
@@ -975,8 +975,8 @@ return [
     [
         'name' => 'publications.destroy',
         'method' => 'delete',
-        'path' => '/teams/{teamId}/publications/{id}',
-        'methodController' => 'TeamPublicationController@destroy',
+        'path' => '/teams/{teamId}/tools/{id}',
+        'methodController' => 'TeamToolController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => ['jwt.verify'],
         'constraint' => [
@@ -1061,7 +1061,7 @@ return [
     [
         'name' => 'publications.edit',
         'method' => 'patch',
-        'path' => '/users/{userId}/publications/{id}',
+        'path' => '/users/{userId}/tools/{id}',
         'methodController' => 'UserToolController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => ['jwt.verify'],
@@ -1073,7 +1073,7 @@ return [
     [
         'name' => 'publications.destroy',
         'method' => 'delete',
-        'path' => '/users/{userId}/publications/{id}',
+        'path' => '/users/{userId}/tools/{id}',
         'methodController' => 'UserToolController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => ['jwt.verify'],

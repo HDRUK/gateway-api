@@ -971,7 +971,7 @@ class TeamToolController extends Controller
             'id' => $id,
             'team_id' => $teamId,
         ])->first();
-        $this->checkAccess($input, null, $tool->user_id, 'user');
+        $this->checkAccess($input, $teamId, null, 'user');
 
         try {
             if ($tool) {
