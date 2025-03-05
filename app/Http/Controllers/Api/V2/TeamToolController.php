@@ -417,7 +417,6 @@ class TeamToolController extends Controller
 
         try {
             $arrayKeys = [
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',
@@ -606,7 +605,6 @@ class TeamToolController extends Controller
             }
 
             $arrayKeys = [
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',
@@ -807,7 +805,6 @@ class TeamToolController extends Controller
 
         try {
             $arrayKeys = [
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',

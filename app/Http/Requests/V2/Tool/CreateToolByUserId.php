@@ -15,9 +15,6 @@ class CreateToolByUserId extends BaseFormRequest
     {
         return [
             'userId' => 'required|int|exists:users,id',
-            'mongo_object_id' => [
-                'string',
-            ],
             'name' => [
                 'required',
                 'string',

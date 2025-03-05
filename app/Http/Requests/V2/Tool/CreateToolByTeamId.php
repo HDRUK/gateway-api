@@ -15,9 +15,6 @@ class CreateToolByTeamId extends BaseFormRequest
     {
         return [
             'teamId' => 'required|int|exists:teams,id',
-            'mongo_object_id' => [
-                'string',
-            ],
             'name' => [
                 'required',
                 'string',

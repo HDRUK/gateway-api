@@ -22,9 +22,6 @@ class UpdateToolByTeamIdById extends BaseFormRequest
                 'required',
                 'exists:tools,id',
             ],
-            'mongo_object_id' => [
-                'string',
-            ],
             'name' => [
                 'required',
                 'string',

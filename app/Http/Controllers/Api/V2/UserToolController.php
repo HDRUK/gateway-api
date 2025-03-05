@@ -398,7 +398,6 @@ class UserToolController extends Controller
 
         try {
             $arrayKeys = [
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',
@@ -582,7 +581,6 @@ class UserToolController extends Controller
             }
 
             $arrayKeys = [
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',
@@ -780,7 +778,6 @@ class UserToolController extends Controller
 
         try {
             $arrayKeys = [
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',

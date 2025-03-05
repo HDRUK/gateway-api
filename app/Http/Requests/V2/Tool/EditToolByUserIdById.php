@@ -22,9 +22,6 @@ class EditToolByUserIdById extends BaseFormRequest
                 'required',
                 'exists:tools,id',
             ],
-            'mongo_object_id' => [
-                'string',
-            ],
             'name' => [
                 'string',
             ],

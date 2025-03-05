@@ -117,7 +117,6 @@ class ToolV2Test extends TestCase
             'data' => [
                 0 => [
                     'id',
-                    'mongo_object_id',
                     'name',
                     'url',
                     'description',
@@ -171,7 +170,6 @@ class ToolV2Test extends TestCase
         $response->assertJsonStructure([
             'data' => [
                 'id',
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',
@@ -219,7 +217,6 @@ class ToolV2Test extends TestCase
         $initialTagCount = ToolHasTag::count();
 
         $mockData = [
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -384,7 +381,6 @@ class ToolV2Test extends TestCase
                 'contact_feedback' => 1,
                 'contact_news' => 1,
                 'mongo_id' => 1234566,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header,
         );
@@ -398,7 +394,6 @@ class ToolV2Test extends TestCase
             'POST',
             self::TEST_URL,
             [
-                'mongo_object_id' => '5ece82082abda8b3a06f1941',
                 'name' => 'Tool A',
                 'url' => 'http://example.com/toolA',
                 'description' => 'Test Tool A Description',
@@ -428,7 +423,6 @@ class ToolV2Test extends TestCase
             'POST',
             self::TEST_URL,
             [
-                'mongo_object_id' => '5ece82082abda8b3a06f1942',
                 'name' => 'Tool B',
                 'url' => 'http://example.com/toolB',
                 'description' => 'Test Tool B Description',
@@ -458,7 +452,6 @@ class ToolV2Test extends TestCase
             'POST',
             self::TEST_URL,
             [
-                'mongo_object_id' => '5ece82082abda8b3a06f1943',
                 'name' => 'Tool C',
                 'url' => 'http://example.com/toolC',
                 'description' => 'Test Tool C Description',
@@ -608,7 +601,6 @@ class ToolV2Test extends TestCase
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         // insert
         $mockDataIns = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -656,7 +648,6 @@ class ToolV2Test extends TestCase
         $generatedPublications = $this->generatePublications();
         $generatedCollections = $this->generateCollections();
         $mockDataUpdate = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Ea fuga ab aperiam nihil quis.",
             "url" => "http://dach.com/odio-facilis-ex-culpa",
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
@@ -755,7 +746,6 @@ class ToolV2Test extends TestCase
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         // insert
         $mockDataIns = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -809,7 +799,6 @@ class ToolV2Test extends TestCase
 
         // update
         $mockDataUpdate = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Ea fuga ab aperiam nihil quis.",
             "url" => "http://dach.com/odio-facilis-ex-culpa",
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
@@ -906,7 +895,6 @@ class ToolV2Test extends TestCase
 
         // Insert
         $mockDataIns = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -989,7 +977,6 @@ class ToolV2Test extends TestCase
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockData = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -1055,7 +1042,6 @@ class ToolV2Test extends TestCase
             'data' => [
                 0 => [
                     'id',
-                    'mongo_object_id',
                     'name',
                     'url',
                     'description',
@@ -1101,7 +1087,6 @@ class ToolV2Test extends TestCase
             'data' => [
                 0 => [
                     'id',
-                    'mongo_object_id',
                     'name',
                     'url',
                     'description',
@@ -1151,7 +1136,6 @@ class ToolV2Test extends TestCase
             'data' => [
                 0 => [
                     'id',
-                    'mongo_object_id',
                     'name',
                     'url',
                     'description',
@@ -1197,7 +1181,6 @@ class ToolV2Test extends TestCase
             'data' => [
                 0 => [
                     'id',
-                    'mongo_object_id',
                     'name',
                     'url',
                     'description',
@@ -1246,7 +1229,6 @@ class ToolV2Test extends TestCase
         $response->assertJsonStructure([
             'data' => [
                 'id',
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',
@@ -1284,7 +1266,6 @@ class ToolV2Test extends TestCase
         $response->assertJsonStructure([
             'data' => [
                 'id',
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',
@@ -1328,7 +1309,6 @@ class ToolV2Test extends TestCase
         $initialTagCount = ToolHasTag::count();
 
         $mockData = [
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -1386,7 +1366,6 @@ class ToolV2Test extends TestCase
         $initialTagCount = ToolHasTag::count();
 
         $mockData = [
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -1446,7 +1425,6 @@ class ToolV2Test extends TestCase
         $teamId = Team::all()->random()->id;
         // insert
         $mockDataIns = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -1493,7 +1471,6 @@ class ToolV2Test extends TestCase
         $generatedPublications = $this->generatePublications();
         $generatedCollections = $this->generateCollections();
         $mockDataUpdate = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Ea fuga ab aperiam nihil quis.",
             "url" => "http://dach.com/odio-facilis-ex-culpa",
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
@@ -1598,7 +1575,6 @@ class ToolV2Test extends TestCase
 
         // insert
         $mockDataIns = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -1646,7 +1622,6 @@ class ToolV2Test extends TestCase
         $generatedPublications = $this->generatePublications();
         $generatedCollections = $this->generateCollections();
         $mockDataUpdate = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Ea fuga ab aperiam nihil quis.",
             "url" => "http://dach.com/odio-facilis-ex-culpa",
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
