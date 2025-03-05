@@ -22,6 +22,41 @@ use App\Models\ToolHasProgrammingLanguage;
 
 trait ToolsV2Helper
 {
+    public function getToolByUserIdAndByIdByStatus(int $userId, int $toolId, string $status)
+    {
+        $tool = Tool::with([
+            'user',
+            'tag',
+            'team',
+            'license',
+            'programmingLanguages',
+            'programmingPackages',
+            'typeCategory',
+            'publications' => function ($query) use ($status) {
+                $query->where('status', strtoupper($status));
+            },
+            'durs' => function ($query) use ($status) {
+                $query->where('status', strtoupper($status));
+            },
+            'collections' => function ($query) use ($status) {
+                $query->where('status', strtoupper($status));
+            },
+            'category',
+        ])
+        ->where([
+            'user_id' => $userId,
+            'id' => $toolId,
+            'status' => $toolId,
+        ])
+        ->first();
+
+        $tool->name = html_entity_decode($tool->name);
+        $tool->description = html_entity_decode($tool->description);
+        $tool->results_insights = html_entity_decode($tool->results_insights);
+        $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
+        return $tool;
+    }
+
     public function getToolByTeamIdAndByIdByStatus(int $teamId, int $toolId, string $status)
     {
         $tool = Tool::with([
@@ -48,6 +83,46 @@ trait ToolsV2Helper
             'id' => $toolId,
             'status' => $toolId,
         ])
+        ->first();
+
+        $tool->name = html_entity_decode($tool->name);
+        $tool->description = html_entity_decode($tool->description);
+        $tool->results_insights = html_entity_decode($tool->results_insights);
+        $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
+        return $tool;
+    }
+
+    public function getToolByUserIdAndById(int $userId, int $toolId, bool $onlyActive = false)
+    {
+        $tool = Tool::with([
+            'user',
+            'tag',
+            'team',
+            'license',
+            'programmingLanguages',
+            'programmingPackages',
+            'typeCategory',
+            'publications' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
+                    $query->where('status', Publication::STATUS_ACTIVE);
+                }
+            },
+            'durs' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
+                    $query->where('status', Dur::STATUS_ACTIVE);
+                }
+            },
+            'collections' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
+                    $query->where('status', Collection::STATUS_ACTIVE);
+                }
+            },
+            'category',
+        ])
+        ->where([
+            'user_id' => $userId,
+            'id' => $toolId,
+            ])
         ->first();
 
         $tool->name = html_entity_decode($tool->name);

@@ -984,4 +984,102 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+
+
+    // users & tools
+    [
+        'name' => 'tools.get.active',
+        'method' => 'get',
+        'path' => '/users/{userId}/tools',
+        'methodController' => 'UserToolController@indexStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools.get.active',
+        'method' => 'get',
+        'path' => '/users/{userId}/tools/status/{status}',
+        'methodController' => 'UserToolController@indexStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'tools.get.one',
+        'method' => 'get',
+        'path' => '/users/{userId}/tools/{id}',
+        'methodController' => 'UserToolController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools.get.one',
+        'method' => 'get',
+        'path' => '/users/{userId}/tools/{id}/status/{status}',
+        'methodController' => 'UserToolController@showStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'tools.create',
+        'method' => 'post',
+        'path' => '/users/{userId}/tools',
+        'methodController' => 'UserToolController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools.update',
+        'method' => 'put',
+        'path' => '/users/{userId}/tools/{id}',
+        'methodController' => 'UserToolController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.edit',
+        'method' => 'patch',
+        'path' => '/users/{userId}/publications/{id}',
+        'methodController' => 'UserToolController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.destroy',
+        'method' => 'delete',
+        'path' => '/users/{userId}/publications/{id}',
+        'methodController' => 'UserToolController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
 ];
