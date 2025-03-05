@@ -727,8 +727,10 @@ class DatasetController extends Controller
                 "publisherName" => $team['name']
             ];
 
-            $inputSchema = isset($input['metadata']['schemaModel']) ? $input['metadata']['schemaModel'] : null;
-            $inputVersion = isset($input['metadata']['schemaVersion']) ? $input['metadata']['schemaVersion'] : null;
+            $inputSchema = isset($input['metadata']['schemaModel']) ?
+                $input['metadata']['schemaModel'] : $request->query('input_schema', null);
+            $inputVersion = isset($input['metadata']['schemaVersion']) ?
+                $input['metadata']['schemaVersion'] : $request->query('input_version', null);
 
             $submittedMetadata = ($input['metadata']['metadata'] ?? $input['metadata']);
             $gwdmMetadata = null;
