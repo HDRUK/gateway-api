@@ -270,7 +270,7 @@ class UserToolController extends Controller
      * )
      *
      * @param  GetToolByUserByIdByStatus  $request
-     * @param  int  $teamId
+     * @param  int  $userId
      * @param  int  $id
      * @param  string  $status
      * @return JsonResponse
