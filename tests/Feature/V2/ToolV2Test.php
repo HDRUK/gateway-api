@@ -5,7 +5,9 @@ namespace Tests\Feature\V2;
 use Config;
 use Exception;
 use Tests\TestCase;
+use App\Models\Team;
 use App\Models\Tool;
+use App\Models\User;
 use ReflectionClass;
 use App\Models\Dataset;
 use App\Models\License;
@@ -44,9 +46,9 @@ use Database\Seeders\DurHasPublicationSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
+
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\DatasetVersionHasToolSeeder;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
@@ -106,7 +108,7 @@ class ToolV2Test extends TestCase
      *
      * @return void
      */
-    public function test_get_all_tools_with_success(): void
+    public function test_v2_get_all_tools_with_success(): void
     {
         $countTool = Tool::where('enabled', 1)->count();
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
@@ -162,7 +164,7 @@ class ToolV2Test extends TestCase
      *
      * @return void
      */
-    public function test_get_tool_by_id_with_success(): void
+    public function test_v2_get_tool_by_id_with_success(): void
     {
         $toolId = Tool::where('enabled', 1)->get()->random()->id;
         $response = $this->json('GET', self::TEST_URL . '/' . $toolId, [], $this->header);
@@ -205,7 +207,7 @@ class ToolV2Test extends TestCase
      *
      * @return void
      */
-    public function test_add_new_tool_with_success(): void
+    public function test_v2_add_new_tool_with_success(): void
     {
         ECC::shouldReceive("indexDocument")
             ->times(1);
@@ -269,7 +271,7 @@ class ToolV2Test extends TestCase
      *
      * @return void
      */
-    public function test_get_all_team_tools_with_success(): void
+    public function test_v2_get_all_team_tools_with_success(): void
     {
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -557,15 +559,12 @@ class ToolV2Test extends TestCase
         $responseDeleteUser->assertStatus(200);
     }
 
-
-
-
     /**
      * Insert data into tool_has_tags table with success
      *
      * @return void
      */
-    public function test_insert_data_in_tool_has_tags(): void
+    public function test_v2_insert_data_in_tool_has_tags(): void
     {
         ToolHasTag::truncate();
 
@@ -596,7 +595,7 @@ class ToolV2Test extends TestCase
      *
      * @return void
      */
-    public function test_update_tool_with_success(): void
+    public function test_v2_update_tool_with_success(): void
     {
 
         ECC::shouldReceive("indexDocument")
@@ -751,7 +750,7 @@ class ToolV2Test extends TestCase
      *
      * @return void
      */
-    public function test_edit_tool_with_success(): void
+    public function test_v2_edit_tool_with_success(): void
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         // insert
@@ -901,7 +900,7 @@ class ToolV2Test extends TestCase
      *
      * @return void
      */
-    public function test_create_archive_unarchive_tool_with_success(): void
+    public function test_v2_create_archive_unarchive_tool_with_success(): void
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
 
@@ -1032,7 +1031,7 @@ class ToolV2Test extends TestCase
      *
      * @return void
      */
-    public function test_soft_delete_tool_with_success(): void
+    public function test_v2_soft_delete_tool_with_success(): void
     {
         $tools = Tool::first();
         $countBefore = Tool::onlyTrashed()->count();
@@ -1046,6 +1045,300 @@ class ToolV2Test extends TestCase
             $countAfter,
             "actual value is equals to expected"
         );
+    }
+
+    public function test_v2_get_all_tools_by_team_with_success(): void
+    {
+        $tool = $this->getToolsByTeam('active');
+        $response = $this->json('GET', '/api/v2/teams/' . $tool->team_id . '/tools/status/active', [], $this->header);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    'id',
+                    'mongo_object_id',
+                    'name',
+                    'url',
+                    'description',
+                    'results_insights',
+                    'license',
+                    'tech_stack',
+                    'category_id',
+                    'user_id',
+                    'enabled',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'user',
+                    'tag',
+                    'associated_authors',
+                    'contact_address',
+                    'publications',
+                    'durs',
+                    'collections',
+                    'datasets',
+                    'any_dataset',
+                    'type_category',
+                    'category',
+                ]
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',
+        ]);
+        $response->assertStatus(200);
+
+        $response = $this->json('GET', '/api/v2/teams/' . $tool->user_id . '/tools', [], $this->header);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    'id',
+                    'mongo_object_id',
+                    'name',
+                    'url',
+                    'description',
+                    'results_insights',
+                    'license',
+                    'tech_stack',
+                    'category_id',
+                    'user_id',
+                    'enabled',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'user',
+                    'tag',
+                    'associated_authors',
+                    'contact_address',
+                    'publications',
+                    'durs',
+                    'collections',
+                    'datasets',
+                    'any_dataset',
+                    'type_category',
+                    'category',
+                ]
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',
+        ]);
+        $response->assertStatus(200);
+    }
+
+    public function test_v2_get_all_tools_by_user_with_success(): void
+    {
+        $tool = $this->getToolsByUser('active');
+        $response = $this->json('GET', '/api/v2/users/' . $tool->user_id . '/tools/status/active', [], $this->header);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    'id',
+                    'mongo_object_id',
+                    'name',
+                    'url',
+                    'description',
+                    'results_insights',
+                    'license',
+                    'tech_stack',
+                    'category_id',
+                    'user_id',
+                    'enabled',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'user',
+                    'tag',
+                    'associated_authors',
+                    'contact_address',
+                    'publications',
+                    'durs',
+                    'collections',
+                    'datasets',
+                    'any_dataset',
+                    'type_category',
+                    'category',
+                ]
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',
+        ]);
+        $response->assertStatus(200);
+
+        $response = $this->json('GET', '/api/v2/users/' . $tool->user_id . '/tools', [], $this->header);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    'id',
+                    'mongo_object_id',
+                    'name',
+                    'url',
+                    'description',
+                    'results_insights',
+                    'license',
+                    'tech_stack',
+                    'category_id',
+                    'user_id',
+                    'enabled',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'user',
+                    'tag',
+                    'associated_authors',
+                    'contact_address',
+                    'publications',
+                    'durs',
+                    'collections',
+                    'datasets',
+                    'any_dataset',
+                    'type_category',
+                    'category',
+                ]
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',
+        ]);
+        $response->assertStatus(200);
+    }
+
+    public function test_v2_get_tool_by_id_and_by_team_with_success(): void
+    {
+        $tool = $this->getToolsByTeam('active');
+        $response = $this->json('GET', '/api/v2/teams/' . $tool->team_id . '/tools/' . $tool->id, [], $this->header);
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'mongo_object_id',
+                'name',
+                'url',
+                'description',
+                'results_insights',
+                'license',
+                'tech_stack',
+                'category_id',
+                'user_id',
+                'enabled',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'user',
+                'tag',
+                'programming_languages',
+                'programming_packages',
+                'type_category',
+                'category',
+                'associated_authors',
+                'contact_address',
+                'publications',
+                'durs',
+                'collections',
+                'datasets',
+                'any_dataset',
+            ]
+        ]);
+        $response->assertStatus(200);
+    }
+
+    public function test_v2_get_tool_by_id_and_by_user_with_success(): void
+    {
+        $tool = $this->getToolsByUser('active');
+        $response = $this->json('GET', '/api/v2/users/' . $tool->user_id . '/tools/' . $tool->id, [], $this->header);
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'mongo_object_id',
+                'name',
+                'url',
+                'description',
+                'results_insights',
+                'license',
+                'tech_stack',
+                'category_id',
+                'user_id',
+                'enabled',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'user',
+                'tag',
+                'programming_languages',
+                'programming_packages',
+                'type_category',
+                'category',
+                'associated_authors',
+                'contact_address',
+                'publications',
+                'durs',
+                'collections',
+                'datasets',
+                'any_dataset',
+            ]
+        ]);
+        $response->assertStatus(200);
+    }
+
+    private function getToolsByTeam($status = null)
+    {
+        $teams = Team::pluck('id');
+        $filter = [
+            'enabled' => 1,
+        ];
+        if (!is_null($status)) {
+            $filter['status'] = strtoupper($status);
+        }
+
+        return Tool::whereIn('team_id', $teams)->where($filter)->first();
+    }
+
+    private function getToolsByUser($status = null)
+    {
+        $users = User::pluck('id');
+        $filter = [
+            'enabled' => 1,
+        ];
+        if (!is_null($status)) {
+            $filter['status'] = strtoupper($status);
+        }
+
+        return Tool::whereIn('user_id', $users)->where($filter)->first();
     }
 
     private function generatePublications()
