@@ -1315,6 +1315,427 @@ class ToolV2Test extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_v2_add_new_tool_by_team_with_success(): void
+    {
+        ECC::shouldReceive("indexDocument")
+            ->times(1);
+
+        $licenseId = License::where('valid_until', null)->get()->random()->id ?? null;
+        $teamId = Team::all()->random()->id;
+        $this->assertNotNull($licenseId, 'No valid license ID found');
+
+        $initialToolCount = Tool::count();
+        $initialTagCount = ToolHasTag::count();
+
+        $mockData = [
+            "mongo_object_id" => "5ece82082abda8b3a06f1941",
+            "name" => "Similique sapiente est vero eum.",
+            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+            'results_insights' => "asfhiasfh aoshfa ",
+            "license" => $licenseId,
+            "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
+            "user_id" => 1,
+            "tag" => [1, 2],
+            "dataset" => [1, 2],
+            "programming_language" => [1, 2],
+            "programming_package" => [1, 2],
+            "type_category" => [1, 2],
+            "enabled" => 1,
+            "publications" => $this->generatePublications(),
+            "durs" => [],
+            "collections" => $this->generateCollections(),
+            "any_dataset" => false,
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            '/api/v2/teams/' . $teamId . '/tools/',
+            $mockData,
+            $this->header
+        );
+
+        $response->assertStatus(201);
+        $toolId = $response['data'];
+
+        $finalToolCount = Tool::count();
+        $finalTagCount = ToolHasTag::count();
+
+        $newToolCount = $finalToolCount - $initialToolCount;
+        $newTagCount = $finalTagCount - $initialTagCount;
+
+        $this->assertTrue((bool)$newToolCount, 'New tool was not created');
+        $this->assertEquals(2, $newTagCount, 'Number of new tags is not as expected');
+        $count1 = Dataset::where('id', 1)->first()->versions()->count();
+        $count2 = Dataset::where('id', 2)->first()->versions()->count();
+        $finalDatasetVersions = DatasetVersionHasTool::where('tool_id', $toolId)->count();
+        $this->assertEquals($finalDatasetVersions, $count1 + $count2);
+    }
+
+    public function test_v2_add_new_tool_by_user_with_success(): void
+    {
+        ECC::shouldReceive("indexDocument")
+            ->times(1);
+
+        $licenseId = License::where('valid_until', null)->get()->random()->id ?? null;
+        $this->assertNotNull($licenseId, 'No valid license ID found');
+
+        $initialToolCount = Tool::count();
+        $initialTagCount = ToolHasTag::count();
+
+        $mockData = [
+            "mongo_object_id" => "5ece82082abda8b3a06f1941",
+            "name" => "Similique sapiente est vero eum.",
+            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+            'results_insights' => "asfhiasfh aoshfa ",
+            "license" => $licenseId,
+            "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
+            "user_id" => 1,
+            "tag" => [1, 2],
+            "dataset" => [1, 2],
+            "programming_language" => [1, 2],
+            "programming_package" => [1, 2],
+            "type_category" => [1, 2],
+            "enabled" => 1,
+            "publications" => $this->generatePublications(),
+            "durs" => [],
+            "collections" => $this->generateCollections(),
+            "any_dataset" => false,
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            '/api/v2/users/1/tools/',
+            $mockData,
+            $this->header
+        );
+
+        $response->assertStatus(201);
+        $toolId = $response['data'];
+
+        $finalToolCount = Tool::count();
+        $finalTagCount = ToolHasTag::count();
+
+        $newToolCount = $finalToolCount - $initialToolCount;
+        $newTagCount = $finalTagCount - $initialTagCount;
+
+        $this->assertTrue((bool)$newToolCount, 'New tool was not created');
+        $this->assertEquals(2, $newTagCount, 'Number of new tags is not as expected');
+        $count1 = Dataset::where('id', 1)->first()->versions()->count();
+        $count2 = Dataset::where('id', 2)->first()->versions()->count();
+        $finalDatasetVersions = DatasetVersionHasTool::where('tool_id', $toolId)->count();
+        $this->assertEquals($finalDatasetVersions, $count1 + $count2);
+    }
+
+    public function test_v2_update_tool_by_team_with_success(): void
+    {
+
+        ECC::shouldReceive("indexDocument")
+            ->times(1);
+
+        ECC::shouldReceive("deleteDocument")
+            ->times(1);
+
+
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $teamId = Team::all()->random()->id;
+        // insert
+        $mockDataIns = array(
+            "mongo_object_id" => "5ece82082abda8b3a06f1941",
+            "name" => "Similique sapiente est vero eum.",
+            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+            'results_insights' => 'insights',
+            "license" => $licenseId,
+            "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
+            "user_id" => 1,
+            "tag" => array(1),
+            "programming_language" => array(1, 2),
+            "programming_package" => array(1, 2),
+            "type_category" => array(1, 2),
+            "enabled" => 1,
+            "publications" => $this->generatePublications(),
+            "durs" => [],
+            "collections" => $this->generateCollections(),
+            "any_dataset" => false,
+            "status" => "ACTIVE"
+        );
+        $responseIns = $this->json(
+            'POST',
+            '/api/v2/teams/' . $teamId . '/tools/',
+            $mockDataIns,
+            $this->header
+        );
+        $responseIns->assertStatus(201);
+        $responseIns->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $responseIns->assertJsonStructure([
+            'message',
+            'data'
+        ]);
+        $this->assertEquals(
+            $responseIns['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+        $toolIdInsert = $responseIns['data'];
+        $responseIns->assertStatus(201);
+
+        // update
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+        $mockDataUpdate = array(
+            "mongo_object_id" => "5ece82082abda8b3a06f1941",
+            "name" => "Ea fuga ab aperiam nihil quis.",
+            "url" => "http://dach.com/odio-facilis-ex-culpa",
+            "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
+            'results_insights' => 'insights',
+            "license" => $licenseId,
+            "tech_stack" => "Dolor accusamus rerum numquam et.",
+            "category_id" => 1,
+            "user_id" => 1,
+            "tag" => array(2),
+            "dataset" => [
+                [
+                    'id' => 4,
+                    'link_type' => 'Used on',
+                ],
+                [
+                    'id' => 5,
+                    'link_type' => 'Other',
+                ],
+            ],
+            "programming_language" => array(1),
+            "programming_package" => array(1),
+            "type_category" => array(1),
+            "enabled" => 1,
+            "publications" => $generatedPublications,
+            "durs" => [1, 2],
+            "collections" => $generatedCollections,
+            "any_dataset" => false,
+            "status" => "DRAFT"
+        );
+
+        $responseUpdate = $this->json(
+            'PUT',
+            '/api/v2/teams/' . $teamId . '/tools/' . $toolIdInsert,
+            $mockDataUpdate,
+            $this->header
+        );
+
+        $responseUpdate->assertStatus(200);
+        $responseUpdate->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
+        $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
+        $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
+        $this->assertEquals($responseUpdate['data']['results_insights'], $mockDataUpdate['results_insights']);
+        $this->assertEquals($responseUpdate['data']['license']['id'], $mockDataUpdate['license']);
+        $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
+        $this->assertEquals($responseUpdate['data']['category_id'], $mockDataUpdate['category_id']);
+        $this->assertEquals($responseUpdate['data']['user_id'], $mockDataUpdate['user_id']);
+        $this->assertEquals($responseUpdate['data']['enabled'], $mockDataUpdate['enabled']);
+
+        $toolHasTags = ToolHasTag::where('tool_id', $toolIdInsert)->get();
+
+        $this->assertEquals(count($toolHasTags), 1);
+
+        $this->assertEquals($toolHasTags[0]['tag_id'], 2);
+
+        $toolHasProgrammingLanguages = ToolHasProgrammingLanguage::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($toolHasProgrammingLanguages), 1);
+        $this->assertEquals($toolHasProgrammingLanguages[0]['programming_language_id'], 1);
+
+        $toolHasProgrammingPackages = ToolHasProgrammingPackage::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($toolHasProgrammingPackages), 1);
+        $this->assertEquals($toolHasProgrammingPackages[0]['programming_package_id'], 1);
+
+        $toolHasTypeCategories = ToolHasTypeCategory::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($toolHasTypeCategories), 1);
+        $this->assertEquals($toolHasTypeCategories[0]['type_category_id'], 1);
+
+        $publicationHasTool = PublicationHasTool::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($publicationHasTool), count($generatedPublications));
+
+        $durHasTool = DurHasTool::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($durHasTool), 2);
+        $this->assertEquals($durHasTool[0]['dur_id'], 1);
+        $this->assertEquals($durHasTool[1]['dur_id'], 2);
+
+        $collectionHasTool = CollectionHasTool::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($collectionHasTool), count($generatedCollections));
+
+        $count1 = Dataset::where('id', 4)->first()->versions()->count();
+        $count2 = Dataset::where('id', 5)->first()->versions()->count();
+        $finalDatasetVersions = DatasetVersionHasTool::where('tool_id', $toolIdInsert)->count();
+        $this->assertEquals($finalDatasetVersions, $count1 + $count2);
+    }
+
+    public function test_v2_update_tool_by_user_with_success(): void
+    {
+
+        ECC::shouldReceive("indexDocument")
+            ->times(1);
+
+        ECC::shouldReceive("deleteDocument")
+            ->times(1);
+
+
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $userId = User::all()->random()->id;
+        $teamId = Team::all()->random()->id;
+
+        // insert
+        $mockDataIns = array(
+            "mongo_object_id" => "5ece82082abda8b3a06f1941",
+            "name" => "Similique sapiente est vero eum.",
+            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+            'results_insights' => 'insights',
+            "license" => $licenseId,
+            "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
+            "team_id" => $teamId,
+            "user_id" => $userId,
+            "tag" => array(1),
+            "programming_language" => array(1, 2),
+            "programming_package" => array(1, 2),
+            "type_category" => array(1, 2),
+            "enabled" => 1,
+            "publications" => $this->generatePublications(),
+            "durs" => [],
+            "collections" => $this->generateCollections(),
+            "any_dataset" => false,
+            "status" => "ACTIVE"
+        );
+        $responseIns = $this->json(
+            'POST',
+            '/api/v2/users/' . $userId . '/tools/',
+            $mockDataIns,
+            $this->header
+        );
+        $responseIns->assertStatus(201);
+        $responseIns->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $responseIns->assertJsonStructure([
+            'message',
+            'data'
+        ]);
+        $this->assertEquals(
+            $responseIns['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+        $toolIdInsert = $responseIns['data'];
+        $responseIns->assertStatus(201);
+
+        // update
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+        $mockDataUpdate = array(
+            "mongo_object_id" => "5ece82082abda8b3a06f1941",
+            "name" => "Ea fuga ab aperiam nihil quis.",
+            "url" => "http://dach.com/odio-facilis-ex-culpa",
+            "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
+            'results_insights' => 'insights',
+            "license" => $licenseId,
+            "tech_stack" => "Dolor accusamus rerum numquam et.",
+            "category_id" => 1,
+            "team_id" => $teamId,
+            "user_id" => $userId,
+            "tag" => array(2),
+            "dataset" => [
+                [
+                    'id' => 4,
+                    'link_type' => 'Used on',
+                ],
+                [
+                    'id' => 5,
+                    'link_type' => 'Other',
+                ],
+            ],
+            "programming_language" => array(1),
+            "programming_package" => array(1),
+            "type_category" => array(1),
+            "enabled" => 1,
+            "publications" => $generatedPublications,
+            "durs" => [1, 2],
+            "collections" => $generatedCollections,
+            "any_dataset" => false,
+            "status" => "DRAFT"
+        );
+
+        $responseUpdate = $this->json(
+            'PUT',
+            '/api/v2/users/' . $userId . '/tools/' . $toolIdInsert,
+            $mockDataUpdate,
+            $this->header
+        );
+
+        $responseUpdate->assertStatus(200);
+        $responseUpdate->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
+        $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
+        $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
+        $this->assertEquals($responseUpdate['data']['results_insights'], $mockDataUpdate['results_insights']);
+        $this->assertEquals($responseUpdate['data']['license']['id'], $mockDataUpdate['license']);
+        $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
+        $this->assertEquals($responseUpdate['data']['category_id'], $mockDataUpdate['category_id']);
+        $this->assertEquals($responseUpdate['data']['user_id'], $mockDataUpdate['user_id']);
+        $this->assertEquals($responseUpdate['data']['enabled'], $mockDataUpdate['enabled']);
+
+        $toolHasTags = ToolHasTag::where('tool_id', $toolIdInsert)->get();
+
+        $this->assertEquals(count($toolHasTags), 1);
+
+        $this->assertEquals($toolHasTags[0]['tag_id'], 2);
+
+        $toolHasProgrammingLanguages = ToolHasProgrammingLanguage::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($toolHasProgrammingLanguages), 1);
+        $this->assertEquals($toolHasProgrammingLanguages[0]['programming_language_id'], 1);
+
+        $toolHasProgrammingPackages = ToolHasProgrammingPackage::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($toolHasProgrammingPackages), 1);
+        $this->assertEquals($toolHasProgrammingPackages[0]['programming_package_id'], 1);
+
+        $toolHasTypeCategories = ToolHasTypeCategory::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($toolHasTypeCategories), 1);
+        $this->assertEquals($toolHasTypeCategories[0]['type_category_id'], 1);
+
+        $publicationHasTool = PublicationHasTool::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($publicationHasTool), count($generatedPublications));
+
+        $durHasTool = DurHasTool::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($durHasTool), 2);
+        $this->assertEquals($durHasTool[0]['dur_id'], 1);
+        $this->assertEquals($durHasTool[1]['dur_id'], 2);
+
+        $collectionHasTool = CollectionHasTool::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($collectionHasTool), count($generatedCollections));
+
+        $count1 = Dataset::where('id', 4)->first()->versions()->count();
+        $count2 = Dataset::where('id', 5)->first()->versions()->count();
+        $finalDatasetVersions = DatasetVersionHasTool::where('tool_id', $toolIdInsert)->count();
+        $this->assertEquals($finalDatasetVersions, $count1 + $count2);
+    }
+
     private function getToolsByTeam($status = null)
     {
         $teams = Team::pluck('id');
