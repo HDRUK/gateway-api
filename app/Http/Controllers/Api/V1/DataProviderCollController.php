@@ -291,7 +291,7 @@ class DataProviderCollController extends Controller
                 'updated_at'
             )->whereIn('id', $this->collections)->where('status', 'ACTIVE')->get()->toArray();
             $collections = array_map(function ($collection) {
-                if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
+                if ($collection['image_link'] && !preg_match('/^https?:\/\//', $collection['image_link'])) {
                     $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
                 }
                 return $collection;
