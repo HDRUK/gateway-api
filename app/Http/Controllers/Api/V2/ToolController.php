@@ -368,7 +368,6 @@ class ToolController extends Controller
 
         try {
             $arrayKeys = [
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',
@@ -538,7 +537,6 @@ class ToolController extends Controller
             }
 
             $arrayKeys = [
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',
@@ -729,7 +727,6 @@ class ToolController extends Controller
 
         try {
             $arrayKeys = [
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',
