@@ -152,7 +152,7 @@ class DataAccessTemplateController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $template = DataAccessTemplate::where('id', $id)->with('questions')->first();
+            $template = DataAccessTemplate::where('id', $id)->with(['questions','files'])->first();
             foreach ($template['questions'] as $i => $q) {
                 $version = QuestionBank::with([
                     'latestVersion',
@@ -561,6 +561,7 @@ class DataAccessTemplateController extends Controller
 
             $template = DataAccessTemplate::findOrFail($id);
             DataAccessTemplateHasQuestion::where('template_id', $template->id)->delete();
+            DataAccessTemplateHasFile::where('template_id', $template->id)->delete();
             $template->delete();
 
             Auditor::log([

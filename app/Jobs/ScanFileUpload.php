@@ -187,6 +187,9 @@ class ScanFileUpload implements ShouldQueue
                     case 'dar-application-upload':
                         $this->darApplicationUpload($loc, $upload);
                         break;
+                    case 'dar-template-upload':
+                        $this->darTemplateUpload($loc, $upload);
+                        break;
                 }
 
                 CloudLogger::write([
@@ -572,6 +575,49 @@ class ScanFileUpload implements ShouldQueue
                 'entity_type' => 'dataAccessApplication',
                 'entity_id' => $this->applicationId,
                 'question_id' => $this->questionId,
+            ]);
+
+            CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
+
+        } catch (Exception $e) {
+            // Record exception in uploads table
+            $upload->update([
+                'status' => 'FAILED',
+                'file_location' => $loc,
+                'error' => $e->getMessage()
+            ]);
+
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    private function darTemplateUpload(string $loc, Upload $upload): void
+    {
+        try {
+            // add file based dar template
+            $template = DataAccessTemplate::create([
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'published' => true,
+                'locked' => false,
+            ]);
+
+            DataAccessTemplateHasFile::create([
+                'template_id' => $template->id,
+                'upload_id' => $upload->id,
+            ]);
+
+            $upload->update([
+                'status' => 'PROCESSED',
+                'file_location' => $loc,
+                'entity_type' => 'dataAccessTemplate',
+                'entity_id' => $template->id,
             ]);
 
             CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');

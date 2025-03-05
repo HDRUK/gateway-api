@@ -4442,6 +4442,22 @@ return [
         'constraint' => [
             'id' => '[0-9]+',
         ],
+        [
+            'name' => 'dar/templates',
+            'method' => 'delete',
+            'path' => 'teams/{teamId}/dar/templates/{id}/files/{fileId}',
+            'methodController' => 'TeamDataAccessTemplateController@destroyFile',
+            'namespaceController' => 'App\Http\Controllers\Api\V1',
+            'middleware' => [
+                'jwt.verify',
+                'check.access:permissions,data-access-template.delete',
+            ],
+            'constraint' => [
+                'id' => '[0-9]+',
+                'teamId' => '[0-9]+',
+                'fileId' => '[0-9]+',
+            ],
+        ]
     ],
 
     // dar/sections

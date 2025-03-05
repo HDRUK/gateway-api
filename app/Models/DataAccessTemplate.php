@@ -46,4 +46,9 @@ class DataAccessTemplate extends Model
     {
         return $this->hasMany(DataAccessTemplateHasQuestion::class, 'template_id');
     }
+
+    public function files(): HasMany
+    {
+        return $this->hasMany(DataAccessTemplateHasFile::class, 'template_id');
+    }
 }
