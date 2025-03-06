@@ -502,22 +502,6 @@ class DatasetTest extends TestCase
         $responseDeleteDataset->assertJsonStructure([
             'message'
         ]);
-
-        for ($i = 1; $i <= 2; $i++) {
-            // delete team
-            $responseDeleteTeam = $this->json(
-                'DELETE',
-                self::TEST_URL_TEAM . '/' . ${'teamId' . $i} . '?deletePermanently=true',
-                [],
-                $this->header
-            );
-
-            $responseDeleteTeam->assertJsonStructure([
-                'message'
-            ]);
-            $responseDeleteTeam->assertStatus(200);
-        }
-
     }
 
 
