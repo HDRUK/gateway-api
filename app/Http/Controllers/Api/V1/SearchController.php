@@ -1122,14 +1122,12 @@ class SearchController extends Controller
                     }
                 }
             } else {
-                if (isset($input['query']) && is_array($input['query']) && !empty($input['query'])) {
+                if (isset($input['query']) && is_array($input['query']) && count($input['query']) > 0) {
                     $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search/array';
+                } elseif (isset($input['query']) && is_string($input['query']) && $this->isDoi($input['query'])) {
+                    $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi';
                 } else {
-                    if (isset($input['query']) && $this->isDoi($input['query'])) {
-                        $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi';
-                    } else {
-                        $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search';
-                    }
+                    $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search';
                 }
 
                 $input['field'] = ['TITLE', 'ABSTRACT', 'METHODS'];
