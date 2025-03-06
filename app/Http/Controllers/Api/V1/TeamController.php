@@ -1044,6 +1044,12 @@ class TeamController extends Controller
         try {
             $team = Team::findOrFail($teamId);
             if ($team) {
+                $existsDatasets = Dataset::where('team_id', $teamId)->select('id')->first();
+
+                if (!is_null($existsDatasets)) {
+                    throw new Exception('The team cannot be deleted as there are datasets currently assigned to it.');
+                }
+
                 TeamHasNotification::where('team_id', $teamId)->delete();
 
                 $deletePermanently = false;
