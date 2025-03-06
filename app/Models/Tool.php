@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Traits\DatasetFetch;
+use App\Models\Traits\SortManager;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -18,6 +19,7 @@ class Tool extends Model
     use SoftDeletes;
     use Prunable;
     use DatasetFetch;
+    use SortManager;
 
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
@@ -62,6 +64,11 @@ class Tool extends Model
     protected $casts = [
         'enabled' => 'boolean',
         'any_dataset' => 'boolean',
+    ];
+
+    protected static array $sortableColumns = [
+        'updated_at',
+        'name',
     ];
 
     // Accessor for all datasets associated with this object

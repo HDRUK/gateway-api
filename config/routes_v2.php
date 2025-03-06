@@ -803,4 +803,283 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+
+    // tools
+    [
+        'name' => 'tools',
+        'method' => 'get',
+        'path' => '/tools',
+        'methodController' => 'ToolController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'tools-count-field',
+        'method' => 'get',
+        'path' => '/tools/count/{field}',
+        'methodController' => 'ToolController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'tools',
+        'method' => 'get',
+        'path' => '/tools/{id}',
+        'methodController' => 'ToolController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools',
+        'method' => 'post',
+        'path' => '/tools',
+        'methodController' => 'ToolController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'tools',
+        'method' => 'put',
+        'path' => '/tools/{id}',
+        'methodController' => 'ToolController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools',
+        'method' => 'patch',
+        'path' => '/tools/{id}',
+        'methodController' => 'ToolController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools',
+        'method' => 'delete',
+        'path' => '/tools/{id}',
+        'methodController' => 'ToolController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
+    // teams & tools
+    [
+        'name' => 'tools.get.active',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/tools',
+        'methodController' => 'TeamToolController@indexStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools.get.active',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/tools/status/{status}',
+        'methodController' => 'TeamToolController@indexStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'tools.get.one',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/tools/{id}',
+        'methodController' => 'TeamToolController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools.get.one',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/tools/{id}/status/{status}',
+        'methodController' => 'TeamToolController@showStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'tools.create',
+        'method' => 'post',
+        'path' => '/teams/{teamId}/tools',
+        'methodController' => 'TeamToolController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools.update',
+        'method' => 'put',
+        'path' => '/teams/{teamId}/tools/{id}',
+        'methodController' => 'TeamToolController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.edit',
+        'method' => 'patch',
+        'path' => '/teams/{teamId}/tools/{id}',
+        'methodController' => 'TeamToolController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.destroy',
+        'method' => 'delete',
+        'path' => '/teams/{teamId}/tools/{id}',
+        'methodController' => 'TeamToolController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+
+
+    // users & tools
+    [
+        'name' => 'tools.get.active',
+        'method' => 'get',
+        'path' => '/users/{userId}/tools',
+        'methodController' => 'UserToolController@indexStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools.get.active',
+        'method' => 'get',
+        'path' => '/users/{userId}/tools/status/{status}',
+        'methodController' => 'UserToolController@indexStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'tools.get.one',
+        'method' => 'get',
+        'path' => '/users/{userId}/tools/{id}',
+        'methodController' => 'UserToolController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools.get.one',
+        'method' => 'get',
+        'path' => '/users/{userId}/tools/{id}/status/{status}',
+        'methodController' => 'UserToolController@showStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'tools.create',
+        'method' => 'post',
+        'path' => '/users/{userId}/tools',
+        'methodController' => 'UserToolController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools.update',
+        'method' => 'put',
+        'path' => '/users/{userId}/tools/{id}',
+        'methodController' => 'UserToolController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.edit',
+        'method' => 'patch',
+        'path' => '/users/{userId}/tools/{id}',
+        'methodController' => 'UserToolController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'publications.destroy',
+        'method' => 'delete',
+        'path' => '/users/{userId}/tools/{id}',
+        'methodController' => 'UserToolController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
 ];
