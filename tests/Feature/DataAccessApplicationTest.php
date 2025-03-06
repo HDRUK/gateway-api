@@ -1840,6 +1840,26 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PATCH',
+            'api/v1/users/1/dar/applications/' . $applicationId,
+            [
+                'submission_status' => 'SUBMITTED',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $this->assertEquals($content['data']['teams'][0]['submission_status'], 'SUBMITTED');
+
+        // Clear test queue
+        Queue::fake();
+
+        $response = $this->json(
+            'PATCH',
             'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId,
             [
                 'approval_status' => 'APPROVED',
@@ -1871,7 +1891,8 @@ class DataAccessApplicationTest extends TestCase
 
         $statusCountNew = count($responseStatus->decodeResponseJson()['data']);
 
-        $this->assertEquals($statusCountNew, $statusCountInit + 1);
+        // Check for 2 new status entries - submission and approval
+        $this->assertEquals($statusCountNew, $statusCountInit + 2);
     }
 
     /**

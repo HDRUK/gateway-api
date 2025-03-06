@@ -682,11 +682,12 @@ class UserDataAccessApplicationController extends Controller
             $newStatus = $input['submission_status'] ?? null;
 
             if (($newStatus === 'SUBMITTED') && ($originalStatus != 'SUBMITTED')) {
-                TeamHasDataAccessApplication::where([
+                $thd = TeamHasDataAccessApplication::where([
                     'dar_application_id' => $id
-                ])->first()->update([
-                    'submission_status' => $newStatus
-                ]);
+                ])->get();
+                foreach ($thd as $t) {
+                    $t->update(['submission_status' => $newStatus]);
+                }
                 $this->emailSubmissionNotification($id, $userId, $application);
             }
 
@@ -921,11 +922,12 @@ class UserDataAccessApplicationController extends Controller
             $newStatus = $input['submission_status'] ?? null;
 
             if (($newStatus === 'SUBMITTED') && ($status != 'SUBMITTED')) {
-                TeamHasDataAccessApplication::where([
+                $thd = TeamHasDataAccessApplication::where([
                     'dar_application_id' => $id
-                ])->update([
-                    'submission_status' => $newStatus
-                ]);
+                ])->get();
+                foreach ($thd as $t) {
+                    $t->update(['submission_status' => $newStatus]);
+                }
                 $this->emailSubmissionNotification($id, $userId, $application);
             }
 
