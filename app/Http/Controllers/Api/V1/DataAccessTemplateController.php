@@ -401,6 +401,17 @@ class DataAccessTemplateController extends Controller
      *            description="DAR template id",
      *         ),
      *      ),
+     *      @OA\Parameter(
+     *         name="section_id",
+     *         in="query",
+     *         description="Section id",
+     *         required=false,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Section id",
+     *         ),
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="DataAccessTemplate definition",
@@ -408,7 +419,8 @@ class DataAccessTemplateController extends Controller
      *              @OA\Property(property="applicant_id", type="integer", example="1"),
      *              @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
      *              @OA\Property(property="approval_status", type="string", example="APPROVED"),
-     *              @OA\Property(property="team_ids", type="array", @OA\Items()),
+     *              @OA\Property(property="team_id", type="array", @OA\Items()),
+     *              @OA\Property(property="questions", type="array", @OA\Items()),
      *          ),
      *      ),
      *      @OA\Response(
@@ -445,6 +457,8 @@ class DataAccessTemplateController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+            $sectionId = $request->query('section_id', null);
+
             $template = DataAccessTemplate::findOrFail($id);
 
             $arrayKeys = [
@@ -457,8 +471,21 @@ class DataAccessTemplateController extends Controller
             $template->update($array);
 
             if (isset($input['questions'])) {
-                DataAccessTemplateHasQuestion::where('template_id', $id)->delete();
-                $this->insertTemplateHasQuestions($input['questions'], $template, $input['team_id']);
+                if ($sectionId) {
+                    $thq = DataAccessTemplateHasQuestion::where('template_id', $id)->get();
+                    foreach ($thq as $t) {
+                        $question = QuestionBank::where('id', $t->question_id)->first();
+                        if ($question->section_id === (int) $sectionId) {
+                            DataAccessTemplateHasQuestion::where([
+                                'template_id' => $id,
+                                'question_id' => $question->id,
+                            ])->delete();
+                        }
+                    }
+                } else {
+                    DataAccessTemplateHasQuestion::where('template_id', $id)->delete();
+                }
+                $this->insertTemplateHasQuestions($input['questions'], $template, $template->team_id);
             }
 
             Auditor::log([

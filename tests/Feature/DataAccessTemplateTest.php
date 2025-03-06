@@ -556,6 +556,86 @@ class DataAccessTemplateTest extends TestCase
     }
 
     /**
+     * Edits a new dar template by section
+     *
+     * @return void
+     */
+    public function test_the_application_can_edit_a_dar_template_by_section()
+    {
+        $q1 = $this->createQuestion(1);
+        $q2 = $this->createQuestion(2);
+        $q3 = $this->createQuestion(2);
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/templates',
+            [
+                'team_id' => 1,
+                'published' => true,
+                'locked' => false,
+                'questions' => [
+                    0 => [
+                        'id' => $q1,
+                        'required' => true,
+                        'guidance' => 'Custom guidance',
+                        'order' => 2,
+                    ],
+                    1 => [
+                        'id' => $q2,
+                        'required' => true,
+                        'guidance' => 'Custom guidance',
+                        'order' => 2,
+                    ]
+                ]
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+
+        $templateId = $response->decodeResponseJson()['data'];
+
+        // Edit template section 2 - replace q2 with q3
+        $response = $this->json(
+            'PATCH',
+            'api/v1/dar/templates/' . $templateId . '?section_id=2',
+            [
+                'questions' => [
+                    0 => [
+                        'id' => $q3,
+                        'required' => true,
+                        'guidance' => 'Custom guidance',
+                        'order' => 2,
+                    ]
+                ]
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $response = $this->get('api/v1/dar/templates/' . $templateId, $this->header);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $qIds = array_column(
+            $response->decodeResponseJson()['data']['questions'],
+            'question_id'
+        );
+
+        $this->assertContains($q1, $qIds);
+        $this->assertContains($q3, $qIds);
+        $this->assertNotContains($q2, $qIds);
+    }
+
+    /**
      * Tests it can delete a dar template
      *
      * @return void
@@ -587,5 +667,39 @@ class DataAccessTemplateTest extends TestCase
             ->assertJsonStructure([
                 'message',
             ]);
+    }
+
+    private function createQuestion(int $sectionId): int
+    {
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => $sectionId,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'options' => [],
+                'all_custodians' => true,
+                'component' => 'TextArea',
+                'validations' => [
+                    [
+                        'min' => 1,
+                        'message' => 'Please enter a value'
+                    ]
+                ],
+                'title' => 'Test question section two',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $qId = $response->decodeResponseJson()['data'];
+
+        return $qId;
     }
 }
