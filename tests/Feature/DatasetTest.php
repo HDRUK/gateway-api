@@ -474,19 +474,34 @@ class DatasetTest extends TestCase
         );
         $response->assertStatus(400);
 
-
-        for ($i = 1; $i <= 3; $i++) {
-            // delete dataset
-            $responseDeleteDataset = $this->json(
-                'DELETE',
-                self::TEST_URL_DATASET . '/' . ${'datasetId' . $i} . '?deletePermanently=true',
-                [],
-                $this->header
-            );
-            $responseDeleteDataset->assertJsonStructure([
-                'message'
-            ]);
-        }
+        // delete datasets
+        $responseDeleteDataset = $this->json(
+            'DELETE',
+            self::TEST_URL_DATASET . '/' . $datasetId1 . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteDataset = $this->json(
+            'DELETE',
+            self::TEST_URL_DATASET . '/' . $datasetId2 . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteDataset = $this->json(
+            'DELETE',
+            self::TEST_URL_DATASET . '/' . $datasetId3 . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteDataset->assertJsonStructure([
+            'message'
+        ]);
 
         for ($i = 1; $i <= 2; $i++) {
             // delete team
