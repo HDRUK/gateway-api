@@ -420,6 +420,7 @@ class FederationController extends Controller
      *             @OA\Property(property="endpoint_datasets", type="string", example="/api/v1/bearer/datasets"),
      *             @OA\Property(property="endpoint_dataset", type="string", example="/api/v1/bearer/datasets/{id}"),
      *             @OA\Property(property="run_time_hour", type="integer", example=11),
+     *             @OA\Property(property="run_time_minute", type="string", example=02),
      *             @OA\Property(property="enabled", type="boolean", example=true),
      *             @OA\Property(property="notifications", type="array", example="['t1@test.com','t2@test.com']", @OA\Items(type="array", @OA\Items())),
      *             @OA\Property(property="tested", type="boolean", example=true),
@@ -463,6 +464,7 @@ class FederationController extends Controller
                 'endpoint_datasets' => $input['endpoint_datasets'],
                 'endpoint_dataset' => $input['endpoint_dataset'],
                 'run_time_hour' => $input['run_time_hour'],
+                'run_time_minute' => $input['run_time_minute'],
                 'enabled' => $input['enabled'],
                 'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0
             ];
