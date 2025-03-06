@@ -596,7 +596,7 @@ class TeamToolController extends Controller
             'id' => $id,
             'team_id' => $teamId,
         ])->first();
-        $this->checkAccess($input, $initTool->team_id, null, 'user');
+        $this->checkAccess($input, $teamId, null, 'user');
 
         try {
 
@@ -801,7 +801,7 @@ class TeamToolController extends Controller
             'id' => $id,
             'team_id' => $teamId,
         ])->first();
-        $this->checkAccess($input, null, $toolModel->user_id, 'user');
+        $this->checkAccess($input, $teamId, null, 'user');
 
         try {
             $arrayKeys = [

@@ -217,25 +217,25 @@ class ToolV2Test extends TestCase
         $initialTagCount = ToolHasTag::count();
 
         $mockData = [
-            "name" => "Similique sapiente est vero eum.",
-            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
-            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-            'results_insights' => "asfhiasfh aoshfa ",
-            "license" => $licenseId,
-            "tech_stack" => "Cumque molestias excepturi quam at.",
-            "category_id" => 1,
-            "user_id" => 1,
-            "tag" => [1, 2],
-            "dataset" => [1, 2],
-            "programming_language" => [1, 2],
-            "programming_package" => [1, 2],
-            "type_category" => [1, 2],
-            "enabled" => 1,
-            "publications" => $this->generatePublications(),
-            "durs" => [],
-            "collections" => $this->generateCollections(),
-            "any_dataset" => false,
-            "status" => "ACTIVE"
+            'name' => 'Similique sapiente est vero eum.',
+            'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
+            'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
+            'results_insights' => 'asfhiasfh aoshfa ',
+            'license' => $licenseId,
+            'tech_stack' => 'Cumque molestias excepturi quam at.',
+            'category_id' => 1,
+            'user_id' => 1,
+            'tag' => [1, 2],
+            'dataset' => [1, 2],
+            'programming_language' => [1, 2],
+            'programming_package' => [1, 2],
+            'type_category' => [1, 2],
+            'enabled' => 1,
+            'publications' => $this->generatePublications(),
+            'durs' => [],
+            'collections' => $this->generateCollections(),
+            'any_dataset' => false,
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(
@@ -381,10 +381,10 @@ class ToolV2Test extends TestCase
                 'contact_feedback' => 1,
                 'contact_news' => 1,
                 'mongo_id' => 1234566,
+                'mongo_object_id' => '5ece82082abda8b3a06f1941',
             ],
             $this->header,
         );
-
         $responseCreateUser->assertStatus(201);
         $contentCreateUser = $responseCreateUser->decodeResponseJson();
         $userId = $contentCreateUser['data'];
@@ -601,24 +601,24 @@ class ToolV2Test extends TestCase
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         // insert
         $mockDataIns = array(
-            "name" => "Similique sapiente est vero eum.",
-            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
-            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+            'name' => 'Similique sapiente est vero eum.',
+            'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
+            'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
             'results_insights' => 'insights',
-            "license" => $licenseId,
-            "tech_stack" => "Cumque molestias excepturi quam at.",
-            "category_id" => 1,
-            "user_id" => 1,
-            "tag" => array(1),
-            "programming_language" => array(1, 2),
-            "programming_package" => array(1, 2),
-            "type_category" => array(1, 2),
-            "enabled" => 1,
-            "publications" => $this->generatePublications(),
-            "durs" => [],
-            "collections" => $this->generateCollections(),
-            "any_dataset" => false,
-            "status" => "ACTIVE"
+            'license' => $licenseId,
+            'tech_stack' => 'Cumque molestias excepturi quam at.',
+            'category_id' => 1,
+            'user_id' => 1,
+            'tag' => array(1),
+            'programming_language' => array(1, 2),
+            'programming_package' => array(1, 2),
+            'type_category' => array(1, 2),
+            'enabled' => 1,
+            'publications' => $this->generatePublications(),
+            'durs' => [],
+            'collections' => $this->generateCollections(),
+            'any_dataset' => false,
+            'status' => 'ACTIVE'
         );
         $responseIns = $this->json(
             'POST',
@@ -648,16 +648,16 @@ class ToolV2Test extends TestCase
         $generatedPublications = $this->generatePublications();
         $generatedCollections = $this->generateCollections();
         $mockDataUpdate = array(
-            "name" => "Ea fuga ab aperiam nihil quis.",
-            "url" => "http://dach.com/odio-facilis-ex-culpa",
-            "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
+            'name' => 'Ea fuga ab aperiam nihil quis.',
+            'url' => 'http://dach.com/odio-facilis-ex-culpa',
+            'description' => 'Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.',
             'results_insights' => 'insights',
-            "license" => $licenseId,
-            "tech_stack" => "Dolor accusamus rerum numquam et.",
-            "category_id" => 1,
-            "user_id" => 1,
-            "tag" => array(2),
-            "dataset" => [
+            'license' => $licenseId,
+            'tech_stack' => 'Dolor accusamus rerum numquam et.',
+            'category_id' => 1,
+            'user_id' => 1,
+            'tag' => array(2),
+            'dataset' => [
                 [
                     'id' => 4,
                     'link_type' => 'Used on',
@@ -667,15 +667,15 @@ class ToolV2Test extends TestCase
                     'link_type' => 'Other',
                 ],
             ],
-            "programming_language" => array(1),
-            "programming_package" => array(1),
-            "type_category" => array(1),
-            "enabled" => 1,
-            "publications" => $generatedPublications,
-            "durs" => [1, 2],
-            "collections" => $generatedCollections,
-            "any_dataset" => false,
-            "status" => "DRAFT"
+            'programming_language' => array(1),
+            'programming_package' => array(1),
+            'type_category' => array(1),
+            'enabled' => 1,
+            'publications' => $generatedPublications,
+            'durs' => [1, 2],
+            'collections' => $generatedCollections,
+            'any_dataset' => false,
+            'status' => 'DRAFT',
         );
 
         $responseUpdate = $this->json(
