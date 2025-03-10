@@ -2,23 +2,26 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
-use Config;
 use DB;
+use Config;
+use Auditor;
 use Exception;
+use App\Models\Dur;
 use App\Models\Role;
 use App\Models\Team;
-use App\Models\User;
-use App\Models\TeamHasUser;
-use App\Models\Collection;
-use App\Models\Dataset;
-use App\Models\DatasetVersion;
-use App\Models\Dur;
 use App\Models\Tool;
+use App\Models\User;
+use App\Models\Dataset;
+use App\Models\Collection;
 use App\Models\Publication;
+use App\Models\TeamHasUser;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\DatasetVersion;
 use App\Models\TeamUserHasRole;
+use App\Http\Traits\TrimPayload;
+use App\Http\Traits\IndexElastic;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Team\GetTeam;
 use App\Models\TeamHasNotification;
@@ -28,18 +31,16 @@ use App\Exceptions\NotFoundException;
 use App\Http\Requests\Team\CreateTeam;
 use App\Http\Requests\Team\DeleteTeam;
 use App\Http\Requests\Team\UpdateTeam;
-use App\Http\Traits\GetValueByPossibleKeys;
-use App\Http\Traits\IndexElastic;
 use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\RequestTransformation;
-use App\Http\Traits\TrimPayload;
-
-use MetadataManagementController as MMC;
+use App\Http\Traits\GetValueByPossibleKeys;
+use App\Http\Traits\CheckAccess;
 
 class TeamController extends Controller
 {
     use GetValueByPossibleKeys;
     use IndexElastic;
+    use CheckAccess;
     use TeamTransformation;
     use RequestTransformation;
     use TrimPayload;
@@ -485,7 +486,7 @@ class TeamController extends Controller
                 ->toArray();
 
             $collections = array_map(function ($collection) {
-                if ($collection['image_link'] && !filter_var($collection['image_link'], FILTER_VALIDATE_URL)) {
+                if ($collection['image_link'] && !preg_match('/^https?:\/\//', $collection->image_link)) {
                     $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
                 }
                 return $collection;
@@ -508,7 +509,7 @@ class TeamController extends Controller
                 'data' => [
                     'id' => $dp->id,
                     'is_provider' => $dp->is_provider,
-                    'team_logo' => (is_null($dp->team_logo) || strlen(trim($dp->team_logo)) === 0) ? '' : (filter_var($dp->team_logo, FILTER_VALIDATE_URL) ? $dp->team_logo : Config::get('services.media.base_url') . $dp->team_logo),
+                    'team_logo' => (is_null($dp->team_logo) || strlen(trim($dp->team_logo)) === 0) ? '' : (preg_match('/^https?:\/\//', $dp->team_logo) ? $dp->team_logo : Config::get('services.media.base_url') . $dp->team_logo),
                     'url' => $dp->url,
                     'service' => empty($service) ? null : $service,
                     'name' => $dp->name,
@@ -605,7 +606,8 @@ class TeamController extends Controller
             return $key !== 'notifications' || $key !== 'users';
         }, ARRAY_FILTER_USE_KEY);
 
-        $arrayTeam['name'] = format_clean_input($input['name']);
+        $arrayTeam['name'] = formatCleanInput($input['name']);
+        $arrayTeam['pid'] = (string) Str::uuid();
 
         $arrayTeamNotification = $input['notifications'];
         $arrayTeamUsers = $input['users'];
@@ -797,7 +799,7 @@ class TeamController extends Controller
 
             $array = $this->checkEditArray($input, $arrayKeys);
             if (array_key_exists('name', $input)) {
-                $array['name'] = format_clean_input($input['name']);
+                $array['name'] = formatCleanInput($input['name']);
             }
             Team::where('id', $teamId)->update($array);
 
@@ -812,10 +814,6 @@ class TeamController extends Controller
 
             $users = array_key_exists('users', $input) ? $input['users'] : [];
             $this->updateTeamAdminUsers($teamId, $users);
-
-            if (array_key_exists('name', $array)) {
-                $this->reindexRelatedEntities($teamId);
-            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -932,6 +930,7 @@ class TeamController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        $this->checkAccess($input, $teamId, null, 'team');
         try {
             $arrayKeys = [
                 'name',
@@ -956,7 +955,7 @@ class TeamController extends Controller
 
             $array = $this->checkEditArray($input, $arrayKeys);
             if (array_key_exists('name', $input)) {
-                $array['name'] = format_clean_input($input['name']);
+                $array['name'] = formatCleanInput($input['name']);
             }
             Team::where('id', $teamId)->update($array);
 
@@ -972,10 +971,6 @@ class TeamController extends Controller
 
             $users = array_key_exists('users', $input) ? $input['users'] : [];
             $this->updateTeamAdminUsers($teamId, $users);
-
-            if (array_key_exists('name', $array)) {
-                $this->reindexRelatedEntities($teamId);
-            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1291,80 +1286,5 @@ class TeamController extends Controller
         $this->publications = array_unique(array_merge($this->publications, Arr::pluck($dataset->allPublications, 'id')));
         $this->tools = array_unique(array_merge($this->tools, Arr::pluck($dataset->allTools, 'id')));
         $this->collections = array_unique(array_merge($this->collections, Arr::pluck($dataset->allCollections, 'id')));
-    }
-
-    private function reindexRelatedEntities(int $teamId): void
-    {
-        try {
-            $team = Team::findOrFail($teamId);
-            $this->reindexElasticDataProvider($teamId);
-
-            $datasets = Dataset::where('team_id', $teamId)->get();
-            foreach ($datasets as $d) {
-                if ($d->status === Dataset::STATUS_ACTIVE) {
-                    if(version_compare(Config::get('metadata.GWDM.version'), '1.1', '<')) {
-                        $publisher = [
-                            'publisherId' => $team['pid'],
-                            'publisherName' => $team['name'],
-                        ];
-                    } else {
-                        $publisher = [
-                            'gatewayId' => $team['pid'],
-                            'name' => $team['name'],
-                        ];
-                    }
-
-                    $metadata = $d->latestVersion()->metadata['metadata'];
-                    $metadata['summary']['publisher'] = $publisher;
-
-                    $isValid = MMC::validateDataModelType(
-                        json_encode(['metadata' => $metadata]),
-                        Config::get('metadata.GWDM.name'),
-                        Config::get('metadata.GWDM.version'),
-                    );
-                    if ($isValid) {
-                        $metadataSaveObject = [
-                            'gwdmVersion' =>  Config::get('metadata.GWDM.version'),
-                            'metadata' => $metadata,
-                            'original_metadata' => $d->latestVersion()->metadata['original_metadata'],
-                        ];
-                        DatasetVersion::where([
-                            'dataset_id' => $d->id,
-                            'version' => $d->lastMetadataVersionNumber()->version,
-                        ])->update([
-                            'metadata' => json_encode($metadataSaveObject),
-                        ]);
-
-                        $this->reindexElastic($d->id);
-                    } else {
-                        throw new Exception('Failed to validate metadata with new team name');
-                    }
-                }
-            }
-
-            $collections = Collection::where('team_id', $teamId)->get();
-            foreach ($collections as $c) {
-                if ($c->status === Collection::STATUS_ACTIVE) {
-                    $this->indexElasticCollections($c->id);
-                }
-            }
-
-            $durs = Dur::where('team_id', $teamId)->get();
-            foreach ($durs as $d) {
-                if ($d->status === Dur::STATUS_ACTIVE) {
-                    $this->indexElasticDur($d->id);
-                }
-            }
-
-            $tools = Tool::where('team_id', $teamId)->get();
-            foreach ($tools as $t) {
-                if ($t->status === Tool::STATUS_ACTIVE) {
-                    $this->indexElasticTools($t->id);
-                }
-            }
-        } catch (Exception $e) {
-            throw new Exception('Failed to reindex related entities with: ' . $e->getMessage());
-        }
-
     }
 }

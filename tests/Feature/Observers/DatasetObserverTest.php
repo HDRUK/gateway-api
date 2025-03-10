@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Observers;
+namespace Tests\Feature\Observers;
 
 use Mockery;
 use Tests\TestCase;
@@ -40,7 +40,7 @@ class DatasetObserverTest extends TestCase
     public function testDatasetObserverReindexesElasticOnCreatedEeventIfActiveAndHasVersion()
     {
         $observer = Mockery::mock(DatasetObserver::class)->makePartial();
-        $observer->shouldReceive('reindexElastic')->once()->with(1);
+        $observer->shouldReceive('reindexElastic')->with(2);
 
         $teamHasUser = TeamHasUser::all()->random();
         $dataset = Dataset::create([

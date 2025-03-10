@@ -124,19 +124,11 @@ class AliasReplyScanner
     {
         $usersToNotify = [];
 
-        $enquiryThread = EnquiryThread::where([
-            'id' => $threadId,
-        ])->first();
+        $enquiryThread = EnquiryThread::where('id', $threadId)->first();
 
         $uniqueKey = $enquiryThread->unique_key;
 
-        $enquiryThreads = EnquiryThread::where([
-            'unique_key' => $uniqueKey
-        ])->get();
-
-        foreach ($enquiryThreads as $eqTh) {
-            $usersToNotify[] = EMC::determineDARManagersFromTeamId($eqTh->team_id, $eqTh->id, $eqTh->user_id);
-        }
+        $usersToNotify = EMC::getUsersByTeamIds($enquiryThread->team_ids, $enquiryThread->user_id);
 
         if (empty($usersToNotify)) {
             CloudLogger::write([
@@ -153,25 +145,27 @@ class AliasReplyScanner
             'thread_id' => $threadId,
         ])->latest()->first();
 
-        $team = Team::where([
-            'id' => $enquiryThread->team_id,
-        ])->first();
-
         $user = User::where([
             'id' => $enquiryThread->user_id,
         ])->first();
 
+        $teamNames = [];
+        foreach ($enquiryThread->team_ids as $item) {
+            $team = Team::where('id', $item)->first();
+            $teamNames[] = $team->name;
+        }
+
         $payload = [
             'thread' => [
                 'user_id' => $enquiryThread->user_id,
-                'team_id' => $enquiryThread->team_id,
+                'team_ids' => $enquiryThread->team_ids,
+                'team_names' => $teamNames,
                 'project_title' => $enquiryThread->project_title,
                 'unique_key' => $uniqueKey, // Not random, but should be unique
             ],
             'message' => [
                 'from' => $enquiryMessage->from,
                 'message_body' => [
-                    '[[TEAM_NAME]]' => $team->name,
                     '[[USER_FIRST_NAME]]' => $user->firstname,
                     '[[USER_LAST_NAME]]' => $user->lastname,
                     '[[USER_ORGANISATION]]' => $user->organisation,
@@ -196,8 +190,6 @@ class AliasReplyScanner
             $body,
             $enquiryMessage,
             $enquiryThread,
-            $enquiryThreads,
-            $team,
             $user,
             $usersToNotify,
         );
@@ -222,24 +214,17 @@ class AliasReplyScanner
             );
 
             // TODO Add unique key to URL button. Future scope.
-            foreach ($usersToNotify as $u) {
-                if ($u === null) {
-                    continue;
-                }
+            foreach ($usersToNotify as $user) {
+                $replacements['[[RECIPIENT_NAME]]'] = $user['user']['name'];
+                $to = [
+                    'to' => [
+                        'email' => $user['user']['email'],
+                        'name' => $user['user']['name'],
+                    ],
+                ];
 
-                // In case for multiple users to notify, loop again for actual details.
-                foreach ($u as $arr) {
-                    $replacements['[[RECIPIENT_NAME]]'] = $arr['user']['name'];
-                    $to = [
-                        'to' => [
-                            'email' => $arr['user']['email'],
-                            'name' => $arr['user']['firstname'] . ' ' . $arr['user']['lastname'],
-                        ],
-                    ];
-
-                    $from = $username . '+' . $threadDetail['thread']['unique_key'] . '@' . $domain;
-                    $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
-                }
+                $from = $username . '+' . $threadDetail['thread']['unique_key'] . '@' . $domain;
+                $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
             }
             unset(
                 $template,

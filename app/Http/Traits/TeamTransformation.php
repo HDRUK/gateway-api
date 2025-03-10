@@ -45,7 +45,7 @@ trait TeamTransformation
                 'url' => $team['url'],
                 'introduction' => $team['introduction'],
                 'dar_modal_content' => $team['dar_modal_content'],
-                'team_logo' => (is_null($team['team_logo']) || strlen(trim($team['team_logo'])) === 0) ? '' : (filter_var($team['team_logo'], FILTER_VALIDATE_URL) ? $team['team_logo'] : Config::get('services.media.base_url') . $team['team_logo']),
+                'team_logo' => (is_null($team['team_logo']) || strlen(trim($team['team_logo'])) === 0) ? '' : (preg_match('/^https?:\/\//', $team['team_logo']) ? $team['team_logo'] : Config::get('services.media.base_url') . $team['team_logo']),
                 'service' => $team['service'],
             ];
 

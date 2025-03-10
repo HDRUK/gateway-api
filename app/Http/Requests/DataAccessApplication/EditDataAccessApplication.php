@@ -19,20 +19,25 @@ class EditDataAccessApplication extends BaseFormRequest
                 'required',
                 'exists:dar_applications,id',
             ],
+            'teamId' => [
+                'int',
+                'required',
+                'exists:teams,id',
+            ],
             'applicant_id' => [
                 'integer',
                 'exists:users,id',
             ],
             'submission_status' => [
                 'string',
-                'in:DRAFT,SUBMITTED,FEEDBACK',
+                'in:DRAFT,SUBMITTED',
             ],
             'project_title' => [
                 'string',
             ],
             'approval_status' => [
                 'string',
-                'in:APPROVED,APPROVED_COMMENTS,REJECTED',
+                'in:APPROVED,APPROVED_COMMENTS,FEEDBACK,REJECTED',
             ],
         ];
     }
@@ -44,6 +49,9 @@ class EditDataAccessApplication extends BaseFormRequest
      */
     protected function prepareForValidation()
     {
-        $this->merge(['id' => $this->route('id')]);
+        $this->merge([
+            'id' => $this->route('id'),
+            'teamId' => $this->route('teamId'),
+        ]);
     }
 }

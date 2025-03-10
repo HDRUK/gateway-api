@@ -3834,14 +3834,16 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'get',
-        'path' => '/dar/applications',
-        'methodController' => 'DataAccessApplicationController@index',
+        'path' => '/teams/{teamId}/dar/applications',
+        'methodController' => 'TeamDataAccessApplicationController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,data-access-applications.provider.read',
         ],
-        'constraint' => [],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'dar/applications',
@@ -3853,7 +3855,22 @@ return [
             'jwt.verify',
             'check.access:permissions,data-access-applications.provider.read',
         ],
-        'constraint' => [],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => 'users/{userId}/dar/applications',
+        'methodController' => 'UserDataAccessApplicationController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'dar/applications',
@@ -3865,13 +3882,28 @@ return [
             'jwt.verify',
             'check.access:permissions,data-access-applications.provider.read',
         ],
-        'constraint' => [],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
     ],
     [
         'name' => 'dar/applications',
         'method' => 'get',
-        'path' => '/dar/applications/{id}',
-        'methodController' => 'DataAccessApplicationController@show',
+        'path' => 'users/{userId}/dar/applications/count/{field}',
+        'methodController' => 'UserDataAccessApplicationController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/dar/applications/{id}',
+        'methodController' => 'TeamDataAccessApplicationController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3879,6 +3911,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
@@ -3898,8 +3931,8 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'get',
-        'path' => '/dar/applications/{id}/files',
-        'methodController' => 'DataAccessApplicationController@showFiles',
+        'path' => '/teams/{teamId}/dar/applications/{id}/files',
+        'methodController' => 'TeamDataAccessApplicationController@showFiles',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3907,13 +3940,14 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
         'name' => 'dar/applications',
         'method' => 'get',
-        'path' => '/dar/applications/{id}/files/{fileId}/download',
-        'methodController' => 'DataAccessApplicationController@downloadFile',
+        'path' => '/teams/{teamId}/dar/applications/{id}/files/{fileId}/download',
+        'methodController' => 'TeamDataAccessApplicationController@downloadFile',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3922,6 +3956,7 @@ return [
         'constraint' => [
             'id' => '[0-9]+',
             'fileId' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
@@ -3956,8 +3991,8 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'get',
-        'path' => '/dar/applications/{id}/answers',
-        'methodController' => 'DataAccessApplicationController@showAnswers',
+        'path' => '/teams/{teamId}/dar/applications/{id}/answers',
+        'methodController' => 'TeamDataAccessApplicationController@showAnswers',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3965,6 +4000,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
@@ -3984,8 +4020,8 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'get',
-        'path' => '/dar/applications/{id}/status',
-        'methodController' => 'DataAccessApplicationController@status',
+        'path' => '/teams/{teamId}/dar/applications/{id}/status',
+        'methodController' => 'TeamDataAccessApplicationController@status',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3993,6 +4029,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
@@ -4025,8 +4062,8 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'put',
-        'path' => '/dar/applications/{id}',
-        'methodController' => 'DataAccessApplicationController@update',
+        'path' => '/teams/{teamId}/dar/applications/{id}',
+        'methodController' => 'TeamDataAccessApplicationController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -4035,6 +4072,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
@@ -4055,8 +4093,8 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'patch',
-        'path' => '/dar/applications/{id}',
-        'methodController' => 'DataAccessApplicationController@edit',
+        'path' => '/teams/{teamId}/dar/applications/{id}',
+        'methodController' => 'TeamDataAccessApplicationController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -4065,6 +4103,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
@@ -4131,7 +4170,7 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'get',
-        'path' => '/dar/applications/{id}/reviews',
+        'path' => '/teams/{teamId}/dar/applications/{id}/reviews',
         'methodController' => 'DataAccessApplicationReviewController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
@@ -4140,12 +4179,27 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/users/{userId}/dar/applications/{id}/reviews',
+        'methodController' => 'DataAccessApplicationReviewController@indexUser',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'userId' => '[0-9]+',
         ],
     ],
     [
         'name' => 'dar/applications',
         'method' => 'post',
-        'path' => '/dar/applications/{id}/questions/{questionId}/reviews',
+        'path' => '/teams/{teamId}/dar/applications/{id}/questions/{questionId}/reviews',
         'methodController' => 'DataAccessApplicationReviewController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
@@ -4154,13 +4208,29 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
             'questionId' => '[0-9]+',
         ],
     ],
     [
         'name' => 'dar/applications',
+        'method' => 'post',
+        'path' => '/teams/{teamId}/dar/applications/{id}/reviews',
+        'methodController' => 'DataAccessApplicationReviewController@storeGlobal',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-applications.review.create',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
         'method' => 'put',
-        'path' => '/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}',
+        'path' => '/teams/{teamId}/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}',
         'methodController' => 'DataAccessApplicationReviewController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
@@ -4169,7 +4239,24 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
             'questionId' => '[0-9]+',
+            'reviewId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'put',
+        'path' => '/teams/{teamId}/dar/applications/{id}/reviews/{reviewId}',
+        'methodController' => 'DataAccessApplicationReviewController@updateGlobal',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-applications.review.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
             'reviewId' => '[0-9]+',
         ],
     ],
@@ -4191,8 +4278,23 @@ return [
     ],
     [
         'name' => 'dar/applications',
+        'method' => 'put',
+        'path' => '/users/{userId}/dar/applications/{id}/reviews/{reviewId}',
+        'methodController' => 'DataAccessApplicationReviewController@userUpdateGlobal',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+            'reviewId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
         'method' => 'delete',
-        'path' => '/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}',
+        'path' => '/teams/{teamId}/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}',
         'methodController' => 'DataAccessApplicationReviewController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
@@ -4201,7 +4303,24 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
             'questionId' => '[0-9]+',
+            'reviewId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'delete',
+        'path' => '/teams/{teamId}/dar/applications/{id}/reviews/{reviewId}',
+        'methodController' => 'DataAccessApplicationReviewController@destroyGlobal',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
             'reviewId' => '[0-9]+',
         ],
     ],

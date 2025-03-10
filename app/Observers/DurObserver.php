@@ -16,6 +16,9 @@ class DurObserver
     {
         if($dur->status === Dur::STATUS_ACTIVE) {
             $this->indexElasticDur($dur->id);
+            if ($dur->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dataset');
+            }
         }
     }
 
@@ -36,10 +39,16 @@ class DurObserver
 
         if ($prevStatus === Dur::STATUS_ACTIVE && $dur->status !== Dur::STATUS_ACTIVE) {
             $this->deleteDurFromElastic($dur->id);
+            if ($dur->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dataset');
+            }
         }
 
         if($dur->status === Dur::STATUS_ACTIVE) {
             $this->indexElasticDur($dur->id);
+            if ($dur->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dataset');
+            }
         }
     }
 
@@ -60,6 +69,9 @@ class DurObserver
 
         if($prevStatus === Dur::STATUS_ACTIVE) {
             $this->deleteDurFromElastic($dur->id);
+            if ($dur->team_id) {
+                $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dataset');
+            }
         }
     }
 

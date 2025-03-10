@@ -19,6 +19,11 @@ class DeleteDataAccessApplicationReview extends BaseFormRequest
                 'required',
                 'exists:dar_applications,id',
             ],
+            'teamId' => [
+                'int',
+                'required',
+                'exists:teams,id'
+            ],
             'questionId' => [
                 'int',
                 'required',
@@ -41,6 +46,7 @@ class DeleteDataAccessApplicationReview extends BaseFormRequest
     {
         $this->merge([
             'id' => $this->route('id'),
+            'teamId' => $this->route('teamId'),
             'questionId' => $this->route('questionId'),
             'reviewId' => $this->route('reviewId'),
         ]);

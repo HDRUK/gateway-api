@@ -92,11 +92,10 @@ class EnquiriesManagementControllerTest extends TestCase
             ]);
         }
 
-        $users = EMC::determineDARManagersFromTeamId($team1->id, 1);
+        $users = EMC::getUsersByTeamIds([$team1->id], 1);
         $this->assertEquals(count($users), 1);
 
         $this->assertEquals($users[0]['user']['email'], 'peter.venkman@ghostbusters.com');
-        $this->assertEquals($users[0]['role']['name'], 'custodian.dar.manager');
         $this->assertEquals($users[0]['team']['id'], $team1->id);
     }
 }

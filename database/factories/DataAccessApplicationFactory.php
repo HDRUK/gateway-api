@@ -19,22 +19,9 @@ class DataAccessApplicationFactory extends Factory
     public function definition(): array
     {
         $user = User::all()->random();
-        $submissionStatuses = [
-            'DRAFT',
-            'SUBMITTED',
-            'FEEDBACK',
-        ];
-
-        $approvalStatuses = [
-            'APPROVED',
-            'APPROVED_COMMENTS',
-            'REJECTED',
-        ];
 
         return [
             'applicant_id' => $user->id,
-            'submission_status' => fake()->randomElement($submissionStatuses),
-            'approval_status' => fake()->randomElement($approvalStatuses),
             'project_title' => fake()->text(255),
         ];
     }

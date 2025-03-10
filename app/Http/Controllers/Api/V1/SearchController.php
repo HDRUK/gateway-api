@@ -715,7 +715,7 @@ class SearchController extends Controller
                         $collectionArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $collectionArray[$i]['image_link'] = (is_null($model['image_link']) || strlen(trim($model['image_link'])) === 0
                                                              ? null
-                                                             : ((filter_var($model['image_link'], FILTER_VALIDATE_URL))
+                                                             : (preg_match('/^https?:\/\//', $model['image_link'])
                                                              ? $model['image_link']
                                                              : Config::get('services.media.base_url') . $model['image_link']));
                         $foundFlag = true;
@@ -1480,7 +1480,7 @@ class SearchController extends Controller
                         $dataProviderCollArray[$i]['id'] = $model['id'];
                         $dataProviderCollArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $dataProviderCollArray[$i]['name'] = $model['name'];
-                        $dataProviderCollArray[$i]['img_url'] =  (is_null($model['img_url']) || strlen(trim($model['img_url'])) === 0 || (filter_var($model['img_url'], FILTER_VALIDATE_URL)) ? null : Config::get('services.media.base_url') . $model['img_url']);
+                        $dataProviderCollArray[$i]['img_url'] =  (is_null($model['img_url']) || strlen(trim($model['img_url'])) === 0 || (preg_match('/^https?:\/\//', $model['img_url'])) ? null : Config::get('services.media.base_url') . $model['img_url']);
                         $dataProviderCollArray[$i]['datasetTitles'] = $this->dataProviderDatasetTitles($model);
                         $dataProviderCollArray[$i]['geographicLocations'] = $this->dataProviderLocations($model);
                         $foundFlag = true;
@@ -1640,7 +1640,7 @@ class SearchController extends Controller
                     if ((int)$dp['_id'] === $model['id']) {
                         $dataProviderArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $dataProviderArray[$i]['name'] = $model['name'];
-                        $dataProviderArray[$i]['team_logo'] = (is_null($model['team_logo']) || strlen(trim($model['team_logo'])) === 0) ? '' : (filter_var($model['team_logo'], FILTER_VALIDATE_URL) ? $model['team_logo'] : Config::get('services.media.base_url') . $model['team_logo']);
+                        $dataProviderArray[$i]['team_logo'] = (is_null($model['team_logo']) || strlen(trim($model['team_logo'])) === 0) ? '' : (preg_match('/^https?:\/\//', $model['team_logo']) ? $model['team_logo'] : Config::get('services.media.base_url') . $model['team_logo']);
                         $foundFlag = true;
                         break;
                     }

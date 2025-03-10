@@ -915,6 +915,44 @@ class DurTest extends TestCase
         $response->assertJson(['error' => 'File not found.']);
     }
 
+    public function test_the_application_can_search_on_project_id(): void
+    {
+        $teamId = (int) Team::all()->random()->id;
+
+        $mockData = [
+            'project_id_text' => '12345-67890',
+            'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
+            'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
+            'team_id' => $teamId,
+            'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+            'latest_approval_date' => '2017-09-12T01:00:00',
+            'organisation_sector' => 'academia',
+            'status' => 'ACTIVE',
+        ];
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            $mockData,
+            $this->header
+        );
+
+        $response->assertStatus(201);
+
+        $response = $this->json(
+            'GET',
+            self::TEST_URL . '?project_id=' . $mockData['project_id_text'],
+            $this->header
+        );
+
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson()['data'];
+        $this->assertTrue($content[0]['project_id_text'] === $mockData['project_id_text']);
+        $this->assertTrue(count($content) === 1);
+    }
+
     private function generateKeywords()
     {
         $return = [];

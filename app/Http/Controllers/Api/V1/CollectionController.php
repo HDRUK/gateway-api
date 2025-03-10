@@ -192,8 +192,8 @@ class CollectionController extends Controller
 
             $collections->getCollection()->transform(function ($collection) {
                 $collection->image_link = trim($collection->image_link);
-                if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
-                    $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
+                if ($collection->image_link && !preg_match('/^https?:\/\//', $collection->image_link)) {
+                    $collection->image_link = Config::get('services.media.base_url') . $collection->image_link;
                 }
 
                 return $collection;
@@ -527,7 +527,7 @@ class CollectionController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             if (array_key_exists('name', $input)) {
-                $array['name'] = format_clean_input($input['name']);
+                $array['name'] = formatCleanInput($input['name']);
             }
 
             $collection = Collection::create($array);
@@ -714,7 +714,7 @@ class CollectionController extends Controller
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             if (array_key_exists('name', $input)) {
-                $array['name'] = format_clean_input($input['name']);
+                $array['name'] = formatCleanInput($input['name']);
             }
             Collection::where('id', $id)->update($array);
 
@@ -930,7 +930,7 @@ class CollectionController extends Controller
                 ];
                 $array = $this->checkEditArray($input, $arrayKeys);
                 if (array_key_exists('name', $input)) {
-                    $array['name'] = format_clean_input($input['name']);
+                    $array['name'] = formatCleanInput($input['name']);
                 }
                 // Handle the 'deleted_at' field based on 'status'
                 if (isset($input['status']) && ($input['status'] === Collection::STATUS_ARCHIVED)) {
@@ -1183,8 +1183,8 @@ class CollectionController extends Controller
 
         if ($collection) {
             $collection->image_link = trim($collection->image_link);
-            if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
-                $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
+            if ($collection->image_link && !preg_match('/^https?:\/\//', $collection->image_link)) {
+                $collection->image_link = Config::get('services.media.base_url') . $collection->image_link;
             }
 
             if($collection->users) {

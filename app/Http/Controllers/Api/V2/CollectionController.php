@@ -357,7 +357,7 @@ class CollectionController extends Controller
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             if (array_key_exists('name', $input)) {
-                $array['name'] = format_clean_input($input['name']);
+                $array['name'] = formatCleanInput($input['name']);
             }
             $collection = Collection::create($array);
             $collectionId = (int) $collection->id;
@@ -735,7 +735,7 @@ class CollectionController extends Controller
                 $array = $this->checkEditArray($input, $arrayKeys);
 
                 if (array_key_exists('name', $input)) {
-                    $array['name'] = format_clean_input($input['name']);
+                    $array['name'] = formatCleanInput($input['name']);
                 }
 
                 // Handle the 'deleted_at' field based on 'status'
@@ -989,7 +989,7 @@ class CollectionController extends Controller
         ->first();
 
         if ($collection) {
-            if ($collection->image_link && !filter_var($collection->image_link, FILTER_VALIDATE_URL)) {
+            if ($collection->image_link && !preg_match('/^https?:\/\//', $collection->image_link)) {
                 $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
             }
 

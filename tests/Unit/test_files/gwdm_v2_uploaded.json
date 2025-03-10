@@ -26,6 +26,9 @@
     },
     "summary": {
         "abstract": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations",
+        "dataCustodian": {
+            "identifier": null
+        },
         "contactPoint": "susheel.varma@hdruk.ac.uk",
         "keywords": "Preprints,Papers,HDR UK",
         "controlledKeywords": null,

@@ -19,6 +19,11 @@ class UpdateDataAccessApplication extends BaseFormRequest
                 'required',
                 'exists:dar_applications,id',
             ],
+            'teamId' => [
+                'int',
+                'required',
+                'exists:teams,id',
+            ],
             'applicant_id' => [
                 'integer',
                 'required',
@@ -27,7 +32,7 @@ class UpdateDataAccessApplication extends BaseFormRequest
             'submission_status' => [
                 'string',
                 'required',
-                'in:DRAFT,SUBMITTED,FEEDBACK',
+                'in:DRAFT,SUBMITTED',
             ],
             'project_title' => [
                 'string',
@@ -35,7 +40,7 @@ class UpdateDataAccessApplication extends BaseFormRequest
             ],
             'approval_status' => [
                 'string',
-                'in:APPROVED,APPROVED_COMMENTS,REJECTED',
+                'in:APPROVED,APPROVED_COMMENTS,FEEDBACK,REJECTED',
             ],
         ];
     }
@@ -47,6 +52,9 @@ class UpdateDataAccessApplication extends BaseFormRequest
      */
     protected function prepareForValidation()
     {
-        $this->merge(['id' => $this->route('id')]);
+        $this->merge([
+            'id' => $this->route('id'),
+            'teamId' => $this->route('teamId'),
+        ]);
     }
 }
