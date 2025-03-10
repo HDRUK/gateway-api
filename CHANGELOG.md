@@ -1,3 +1,24 @@
+## [2.3.0](https://github.com/HDRUK/gateway-api-2/compare/v2.2.0...v2.3.0) (2025-03-10)
+
+### ✨ Features
+
+* **GAT-439:** SOURSD integration additions for DUR link (#1110) ([0bcce27](https://github.com/HDRUK/gateway-api-2/commit/0bcce274118ce1df209186a973d186445a262ab1)), closes [GAT-439](GAT-439)
+* **GAT-5972:** Stabilisation of Tools endpoints (#1122) ([092dd1e](https://github.com/HDRUK/gateway-api-2/commit/092dd1e155f40e7441655c29166b6d50b2bb18be)), closes [GAT-5972](GAT-5972)
+* **GAT-5973:** Stabilisation of Publication endpoint (#1118) ([7906eca](https://github.com/HDRUK/gateway-api-2/commit/7906eca39477a5234a680a9abaeadba0cdc7d17f)), closes [GAT-5973](GAT-5973)
+* **GAT-6184:** de-Duplication of Enquiry Notifications if multiple datasets from same custodian (#1082) ([47642ad](https://github.com/HDRUK/gateway-api-2/commit/47642ad35082712dfd3440774ffd65bcc11849cd)), closes [GAT-6184](GAT-6184) [GAT-6184](GAT-6184)
+* **GAT-6362:** Enable DARs to have different submission/approval statuses from each custodian (#1093) ([762487a](https://github.com/HDRUK/gateway-api-2/commit/762487a977c3b73d8ef20c1118a79e795534297b)), closes [GAT-6362](GAT-6362)
+* **GAT-6377:** User DAR dashboard (#1117) ([eff73f4](https://github.com/HDRUK/gateway-api-2/commit/eff73f495877d9ce9fa1c5cc9371a39b95226c23)), closes [GAT-6377](GAT-6377)
+* **GAT-6417:** Observers for Elastic Indexing - Teams Update (#1114) ([691c0be](https://github.com/HDRUK/gateway-api-2/commit/691c0be97653353bff13403efb533b8f5cbf54df)), closes [GAT-6417](GAT-6417)
+* **GAT-6448:** Notify researcher/custodian when comments made on DAR application (#1121) ([9d12ea5](https://github.com/HDRUK/gateway-api-2/commit/9d12ea5c10dddfe227f9ed4e1f36d7a016196ebd)), closes [GAT-6448](GAT-6448)
+
+### 🐛 Bug Fixes
+
+* **GAT-5751:** teams patch returns 200 (#1115) ([5770c7f](https://github.com/HDRUK/gateway-api-2/commit/5770c7ff50e80b0fd7ce133b4738b4200f09b837)), closes [GAT-5751](GAT-5751)
+* **GAT-6215:** correct the handling of urls with spaces (#1123) ([b7adc5d](https://github.com/HDRUK/gateway-api-2/commit/b7adc5d2718b218c6743757fa5d11b3db7a8ac88)), closes [GAT-6215](GAT-6215)
+* **GAT-6261:** validate pid in metadata (#1119) ([50aa608](https://github.com/HDRUK/gateway-api-2/commit/50aa6082ac0f59af18f7fe27d756ad3c8ff4462d)), closes [GAT-6261](GAT-6261) [GAT-6261](GAT-6261)
+* **GAT-6287:** Use referrer for social logins - revert (#1107) ([9fd056a](https://github.com/HDRUK/gateway-api-2/commit/9fd056a8a2591127e975509d76f2d94c78555d6c)), closes [GAT-6287](GAT-6287)
+* **GAT-6406:** - Allow minutes in federation update (#1126) ([2e23c63](https://github.com/HDRUK/gateway-api-2/commit/2e23c63e97e2e262c247f09a34992b2ecd8e9e4c)), closes [GAT-6406](GAT-6406) [GAT-6406](GAT-6406)
+
 ## [2.2.0](https://github.com/HDRUK/gateway-api-2/compare/v2.1.0...v2.2.0) (2025-02-25)
 
 ### ✨ Features
