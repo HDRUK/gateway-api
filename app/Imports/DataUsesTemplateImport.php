@@ -39,7 +39,7 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
     public function model(array $row)
     {
         if (trim($row[0]) === '') {
-            return;
+            return null;
         }
 
         $dur = Dur::create([
