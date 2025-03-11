@@ -80,7 +80,6 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
             'team_id' => $this->data['team_id'],
         ]);
 
-        \Log::info('dur imported :: ' . $dur->id);
         $this->durIds[] = (int) $dur->id;
 
         return $dur;
@@ -95,7 +94,6 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
     {
         return [
             '0' => [
-                // 'required',
                 function ($attribute, $value, $fail) {
                     // Skip validation if the cell is empty
                     if (is_null($value) || trim($value) === '' || strlen(trim($value)) === 0) {
