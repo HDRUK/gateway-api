@@ -237,15 +237,17 @@ class ScanFileUpload implements ShouldQueue
             }
 
 
-            $durId = $import->durImport->durId;
+            $durIds = $import->durImport->durIds;
 
-            $this->linkDatasets((int) $durId);
+            foreach ($durIds as $durId) {
+                $this->linkDatasets((int) $durId);
+            }
 
             $upload->update([
                 'status' => 'PROCESSED',
                 'file_location' => $loc,
                 'entity_type' => 'dur',
-                'entity_id' => $durId
+                'entity_id' => $durIds[0]
             ]);
 
             CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');

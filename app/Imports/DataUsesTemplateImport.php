@@ -15,12 +15,12 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
     use MapOrganisationSector;
 
     private $data;
-    public int $durId;
+    public array $durIds;
 
     public function __construct(array $data = [])
     {
         $this->data = $data;
-        $this->durId = 0;
+        $this->durIds = [];
     }
 
     /**
@@ -38,6 +38,10 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
     */
     public function model(array $row)
     {
+        if (trim($row[0]) === '') {
+            return;
+        }
+
         $dur = Dur::create([
             'project_id_text' => $row[0],
             'organisation_name' => $row[1],
@@ -76,7 +80,8 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
             'team_id' => $this->data['team_id'],
         ]);
 
-        $this->durId = (int) $dur->id;
+        \Log::info('dur imported :: ' . $dur->id);
+        $this->durIds[] = (int) $dur->id;
 
         return $dur;
     }
@@ -90,7 +95,7 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
     {
         return [
             '0' => [
-                'required',
+                // 'required',
                 function ($attribute, $value, $fail) {
                     // Skip validation if the cell is empty
                     if (is_null($value) || trim($value) === '' || strlen(trim($value)) === 0) {
