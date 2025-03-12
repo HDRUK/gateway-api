@@ -1194,7 +1194,7 @@ class QuestionBankController extends Controller
 
             $question = QuestionBank::findOrFail($id);
 
-            if ($input['is_child'] ?? false) {
+            if ((isset($input['is_child'])) && ($input['is_child'] !== $question->is_child)) {
                 return response()->json([
                     'message' => "Cannot edit a question's 'is_child' field"
                 ], 400);
@@ -1220,31 +1220,34 @@ class QuestionBankController extends Controller
             $question->update($array);
 
             $versionKeys = [
-                'field',
+                'component',
+                'validations',
+                'options',
                 'title',
                 'guidance',
                 'required',
                 'default',
             ];
-            $versionArray = $this->checkEditArray($input, $versionKeys);
+            $inputVersionKeys = array_intersect($versionKeys, array_keys($input));
 
-            if (!empty($versionArray)) {
+            if (count($inputVersionKeys)) {
                 $latestVersion = $question->latestVersion()->first();
                 $latestJson = $latestVersion->question_json;
 
-                $questionJson = [
-                    'field' => $input['field'] ?? $latestJson['field'],
-                    'title' => $input['title'] ?? $latestJson['title'],
-                    'guidance' => $input['guidance'] ?? $latestJson['guidance'],
-                ];
-                $questionVersion = QuestionBankVersion::where('id', $latestVersion->id)->first();
-
-                $questionVersion = $questionVersion->update([
-                    'question_json' => $questionJson,
+                $latestVersion->update([
+                    'question_json' => [
+                        'field' => [
+                            'component' => $input['component'] ?? $latestJson['field']['component'],
+                            'validations' => $input['validations'] ?? $latestJson['field']['validations'],
+                            'options' => isset($input['options']) ?
+                                array_column($input['options'], 'label') : $latestJson['field']['options'],
+                        ],
+                        'title' => $input['title'] ?? $latestJson['title'],
+                        'guidance' => $input['guidance'] ?? $latestJson['guidance'],
+                    ],
                     'required' => $input['required'] ?? $latestVersion->required,
                     'default' => $input['default'] ?? $latestVersion->default,
-                    'question_id' => $id,
-                    'version' => $latestVersion->version,
+                    'question_id' => $question->id,
                 ]);
             }
 
@@ -1503,7 +1506,7 @@ class QuestionBankController extends Controller
             'question_json' => [
                 'field' => [
                     'component' => $input['component'],
-                    'validations' => $input['validations'],
+                    'validations' => empty($input['validations']) ? null : $input['validations'],
                     'options' => array_column($input['options'], 'label'),
                 ],
                 'title' => $input['title'],

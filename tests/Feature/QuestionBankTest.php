@@ -295,10 +295,8 @@ class QuestionBankTest extends TestCase
                 'options' => [],
                 'component' => 'TextArea',
                 'validations' => [
-                    [
-                        'min' => 1,
-                        'message' => 'Please enter a value'
-                    ]
+                    'min' => 1,
+                    'message' => 'Please enter a value'
                 ],
                 'title' => 'Test question',
                 'guidance' => 'Something helpful',
@@ -385,10 +383,8 @@ class QuestionBankTest extends TestCase
                 'options' => [],
                 'component' => 'TextArea',
                 'validations' => [
-                    [
-                        'min' => 1,
-                        'message' => 'Please enter a value'
-                    ]
+                    'min' => 1,
+                    'message' => 'Please enter a value'
                 ],
                 'title' => 'Test question',
                 'guidance' => 'Something helpful',
@@ -463,10 +459,8 @@ class QuestionBankTest extends TestCase
                 'options' => [],
                 'component' => 'TextArea',
                 'validations' => [
-                    [
-                        'min' => 1,
-                        'message' => 'Please enter a value'
-                    ]
+                    'min' => 1,
+                    'message' => 'Please enter a value'
                 ],
                 'title' => 'Test question',
                 'guidance' => 'Something helpful',
@@ -537,10 +531,8 @@ class QuestionBankTest extends TestCase
                 'all_custodians' => true,
                 'component' => 'TextArea',
                 'validations' => [
-                    [
-                        'min' => 1,
-                        'message' => 'Please enter a value'
-                    ]
+                    'min' => 1,
+                    'message' => 'Please enter a value'
                 ],
                 'title' => 'Test question',
                 'guidance' => 'Something helpful',
@@ -614,10 +606,8 @@ class QuestionBankTest extends TestCase
                 'all_custodians' => true,
                 'component' => 'TextArea',
                 'validations' => [
-                    [
-                        'min' => 1,
-                        'message' => 'Please enter a value'
-                    ]
+                    'min' => 1,
+                    'message' => 'Please enter a value'
                 ],
                 'title' => 'Test question',
                 'guidance' => 'Something helpful',
@@ -656,10 +646,8 @@ class QuestionBankTest extends TestCase
                 'options' => [],
                 'component' => 'TextArea',
                 'validations' => [
-                    [
-                        'min' => 1,
-                        'message' => 'Please enter a value'
-                    ]
+                    'min' => 1,
+                    'message' => 'Please enter a value'
                 ],
                 'title' => 'Test question',
                 'guidance' => 'Something helpful',
@@ -925,10 +913,8 @@ class QuestionBankTest extends TestCase
                 'options' => [],
                 'component' => 'TextArea',
                 'validations' => [
-                    [
-                        'min' => 1,
-                        'message' => 'Please enter a value'
-                    ]
+                    'min' => 1,
+                    'message' => 'Please enter a value'
                 ],
                 'title' => 'Test question',
                 'all_custodians' => true,
@@ -973,10 +959,8 @@ class QuestionBankTest extends TestCase
                 'all_custodians' => true,
                 'component' => 'TextArea',
                 'validations' => [
-                    [
-                        'min' => 1,
-                        'message' => 'Please enter a value'
-                    ]
+                    'min' => 1,
+                    'message' => 'Please enter a value'
                 ],
                 'title' => 'Test question',
                 'guidance' => 'Something helpful',
@@ -1006,10 +990,8 @@ class QuestionBankTest extends TestCase
                 'all_custodians' => true,
                 'component' => 'TextArea',
                 'validations' => [
-                    [
-                        'min' => 1,
-                        'message' => 'Please enter a value'
-                    ]
+                    'min' => 1,
+                    'message' => 'Please enter a value'
                 ],
                 'title' => 'Updated test question',
                 'guidance' => 'Something helpful',
@@ -1314,10 +1296,8 @@ class QuestionBankTest extends TestCase
                 'all_custodians' => true,
                 'component' => 'TextArea',
                 'validations' => [
-                    [
-                        'min' => 1,
-                        'message' => 'Please enter a value'
-                    ]
+                    'min' => 1,
+                    'message' => 'Please enter a value'
                 ],
                 'title' => 'Test question',
                 'guidance' => 'Something helpful',
@@ -1389,6 +1369,30 @@ class QuestionBankTest extends TestCase
             ->first();
         // Test latest version is still 1
         $this->assertEquals($version['version'], 1);
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/questions/' . $questionId,
+            [
+                'validations' => [
+                    'min' => 3
+                ]
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $version = QuestionBank::where('id', $questionId)
+            ->first()
+            ->latestVersion()
+            ->first();
+        $this->assertEquals($version['question_json']['field']['validations']['min'], 3);
+
     }
 
     /**
@@ -1675,10 +1679,8 @@ class QuestionBankTest extends TestCase
                 'options' => [],
                 'component' => 'TextArea',
                 'validations' => [
-                    [
-                        'min' => 1,
-                        'message' => 'Please enter a value'
-                    ]
+                    'min' => 1,
+                    'message' => 'Please enter a value'
                 ],
                 'title' => 'Test question',
                 'guidance' => 'Something helpful',
