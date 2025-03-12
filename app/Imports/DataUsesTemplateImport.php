@@ -68,7 +68,6 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
             'duty_of_confidentiality' => $row[22],
             'national_data_optout' => $row[23],
             'request_frequency' => $row[24],
-            'dataset_linkage_description' => $row[25],
             'confidential_data_description' => $row[26],
             'access_date' => $row[27] ? $this->calculateExcelDate($row[27]) : null,
             'access_type' => $row[28],
@@ -85,9 +84,10 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
         return $dur;
     }
 
+    // $excelDate is Excel serial date
     private function calculateExcelDate(int $excelDate)
     {
-        return Carbon::parse('1900-01-01')->addDays($excelDate);
+        return Carbon::createFromTimestamp(($excelDate - 25569) * 86400)->toDateString();
     }
 
     public function rules(): array
