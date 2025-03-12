@@ -532,7 +532,6 @@ class DurController extends Controller
             'organisation_sector',
             'lay_summary',
             'technical_summary',
-            'latest_approval_date',
             'manual_upload',
             'rejection_reason',
             'sublicence_arrangements',
@@ -560,6 +559,9 @@ class DurController extends Controller
             'mongo_id',
             'applicant_id',
             'status',
+            'project_start_date',
+            'project_end_date',
+            'latest_approval_date',
         ];
         $array = $this->checkEditArray($input, $arrayKeys);
         $array['team_id'] = array_key_exists('team_id', $input) ? $input['team_id'] : null;
@@ -807,7 +809,6 @@ class DurController extends Controller
                 'organisation_sector',
                 'lay_summary',
                 'technical_summary',
-                'latest_approval_date',
                 'manual_upload',
                 'rejection_reason',
                 'sublicence_arrangements',
@@ -834,6 +835,10 @@ class DurController extends Controller
                 'mongo_id',
                 'applicant_id',
                 'status',
+                'project_start_date',
+                'project_end_date',
+                'latest_approval_date',
+
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
@@ -1115,7 +1120,6 @@ class DurController extends Controller
                     'organisation_sector',
                     'lay_summary',
                     'technical_summary',
-                    'latest_approval_date',
                     'manual_upload',
                     'rejection_reason',
                     'sublicence_arrangements',
@@ -1142,6 +1146,10 @@ class DurController extends Controller
                     'mongo_id',
                     'applicant_id',
                     'status',
+                    'project_start_date',
+                    'project_end_date',
+                    'latest_approval_date',
+
                 ];
                 $array = $this->checkEditArray($input, $arrayKeys);
 
