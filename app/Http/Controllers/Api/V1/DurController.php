@@ -838,7 +838,6 @@ class DurController extends Controller
                 'project_start_date',
                 'project_end_date',
                 'latest_approval_date',
-
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
@@ -1149,7 +1148,6 @@ class DurController extends Controller
                     'project_start_date',
                     'project_end_date',
                     'latest_approval_date',
-
                 ];
                 $array = $this->checkEditArray($input, $arrayKeys);
 
