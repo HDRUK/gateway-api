@@ -1,3 +1,9 @@
+## [2.3.1](https://github.com/HDRUK/gateway-api-2/compare/v2.3.0...v2.3.1) (2025-03-13)
+
+### 🐛 Bug Fixes
+
+* **GAT-6430:** patch to update question_json fields (#1134) ([0be8506](https://github.com/HDRUK/gateway-api-2/commit/0be850696abce7d5966e31499eebf58f4c4a969d)), closes [GAT-6430](GAT-6430)
+
 ## [2.3.0](https://github.com/HDRUK/gateway-api-2/compare/v2.2.0...v2.3.0) (2025-03-10)
 
 ### ✨ Features
