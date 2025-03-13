@@ -119,7 +119,7 @@ class CreatePublicationsFromMetadataGat6415 extends Command
             }
 
             if (is_null($checkPublication)) {
-                $searchDoi = $this->searchDoi($publication, $userId, $teamId);
+                $searchDoi = $this->searchDoi($publication);
                 if (is_null($searchDoi)) {
                     continue;
                 }

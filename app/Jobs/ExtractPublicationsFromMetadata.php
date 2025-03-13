@@ -9,7 +9,6 @@ use App\Models\Dataset;
 use App\Models\Publication;
 use Illuminate\Support\Arr;
 use Illuminate\Bus\Queueable;
-use App\Models\DatasetVersion;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -51,7 +50,8 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
         $linkagePublicationAboutDataset = 'metadata.linkage.publicationAboutDataset';
         $linkagePublicationUsingDataset = 'metadata.linkage.publicationUsingDataset';
 
-        $metadata = DatasetVersion::where('id', $datasetVersionId)
+        $metadata = \DB::table('dataset_versions')
+                ->where('id', $datasetVersionId)
                 ->select('id', 'dataset_id', 'metadata', \DB::raw('JSON_TYPE(metadata) as metadata_type'))
                 ->first();
 
@@ -121,7 +121,7 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
             }
 
             if (is_null($checkPublication)) {
-                $searchDoi = $this->searchDoi($publication, $userId, $teamId);
+                $searchDoi = $this->searchDoi($publication);
                 if (is_null($searchDoi)) {
                     continue;
                 }
