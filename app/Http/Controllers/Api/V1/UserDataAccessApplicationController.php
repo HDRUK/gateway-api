@@ -173,7 +173,7 @@ class UserDataAccessApplicationController extends Controller
                 ->get();
 
             if ($field === 'action_required') {
-                $counts = $this->actionRequiredCounts(array_column($applications->toArray(), 'id'));
+                $counts = $this->actionRequiredCounts($applications);
             } else {
                 $counts = array();
                 foreach ($applications as $app) {
@@ -191,6 +191,79 @@ class UserDataAccessApplicationController extends Controller
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'User DAR application count',
+            ]);
+
+            return response()->json([
+                'data' => $counts
+            ]);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v1/users/{userId}/dar/applications/count",
+     *    tags={"UserDataAccessApplications"},
+     *    summary="UserDataAccessApplicationController@allCounts",
+     *    description="Get Counts for all status fields in the model",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="object",
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function allCounts(Request $request, int $userId): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            if ($jwtUser['id'] != $userId) {
+                throw new UnauthorizedException('Logged in user does match user id in endpoint.');
+            }
+
+            $applications = DataAccessApplication::where('applicant_id', $userId)
+                ->with('teams')
+                ->get();
+
+            $counts = array(
+                'DRAFT' => 0,
+                'SUBMITTED' => 0,
+                'FEEDBACK' => 0,
+                'APPROVED' => 0,
+                'REJECTED' => 0,
+                'WITHDRAWN' => 0,
+            );
+            foreach ($applications as $app) {
+                foreach ($app['teams'] as $t) {
+                    if ($t['submission_status'] === 'DRAFT') {
+                        $counts['DRAFT'] += 1;
+                    } elseif (is_null($t['approval_status'])) {
+                        $counts['SUBMITTED'] += 1;
+                    } elseif (str_contains($t['approval_status'], 'APPROVED')) {
+                        $counts['APPROVED'] += 1;
+                    } else {
+                        $counts[$t['approval_status']] += 1;
+                    }
+                }
+            }
+
+            $actionCounts = $this->actionRequiredCounts($applications);
+            $counts = array_merge($counts, $actionCounts);
+            $counts['ALL'] = count($applications);
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Team DAR application count",
             ]);
 
             return response()->json([
