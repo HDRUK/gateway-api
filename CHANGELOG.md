@@ -1,3 +1,9 @@
+## [2.3.2](https://github.com/HDRUK/gateway-api-2/compare/v2.3.1...v2.3.2) (2025-03-13)
+
+### 🐛 Bug Fixes
+
+* **GAT-6430:** check for array in validations (#1137) ([dadaf96](https://github.com/HDRUK/gateway-api-2/commit/dadaf9649363e1d65e77b13624b9dfb08c61baca)), closes [GAT-6430](GAT-6430)
+
 ## [2.3.1](https://github.com/HDRUK/gateway-api-2/compare/v2.3.0...v2.3.1) (2025-03-13)
 
 ### 🐛 Bug Fixes
