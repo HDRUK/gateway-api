@@ -37,8 +37,12 @@ class QuestionBankValidationObjects extends Command
                     } else {
                         $validationObj = [];
                         foreach ($validations as $val) {
-                            foreach ($val as $k => $v) {
-                                $validationObj[$k] = $v;
+                            if (is_array($val)) {
+                                foreach ($val as $k => $v) {
+                                    $validationObj[$k] = $v;
+                                }
+                            } else {
+                                continue;
                             }
                         }
                         $questionJson['field']['validations'] = $validationObj;
