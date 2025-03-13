@@ -1349,6 +1349,7 @@ class SearchController extends Controller
                     $pubResult['journal_name'] = null;
                     $pubResult['publication_year'] = null;
                 }
+                $pubResult['fullTextUrl'] = isset($result['fullTextUrlList']['fullTextUrl']) ? $result['fullTextUrlList']['fullTextUrl'] : null;
             } else {
                 return response()->noContent();
             }
