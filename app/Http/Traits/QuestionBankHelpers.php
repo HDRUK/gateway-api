@@ -83,7 +83,7 @@ trait QuestionBankHelpers
                         );
                     }
                     if (isset($toAdd['field']['validations'])) {
-                        $toAdd['validations'] = $toAdd['field']['validations'] ?? [];
+                        $toAdd['validations'] = $toAdd['field']['validations'] ?? null;
                     }
                     unset($toAdd['field']);
                 }
@@ -134,7 +134,7 @@ trait QuestionBankHelpers
 
         // Move 2 entries up to the root
         $questionVersion['component'] = $questionVersion['field']['component'];
-        $questionVersion['validations'] = $questionVersion['field']['validations'] ?? [];
+        $questionVersion['validations'] = $questionVersion['field']['validations'] ?? null;
         unset($questionVersion['field']);
 
         // And, because we're really returning a modified form of the QuestionVersion in response
