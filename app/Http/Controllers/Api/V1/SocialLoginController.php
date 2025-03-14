@@ -300,7 +300,10 @@ class SocialLoginController extends Controller
                     case 'linkedin-openid':
                         $socialUserDetails = $this->linkedinOpenIdResponse($socialUser, $provider);
                         break;
-
+                    case 'azure':
+                        $socialUserDetails = $this->azureResponse($socialUser, $provider);
+                        break;
+                }
                 $user = User::where('email', $socialUserDetails['email'])->first();
             }
 
@@ -315,8 +318,8 @@ class SocialLoginController extends Controller
             Auditor::log([
                 'target_user_id' => $user->id,
                 'action_type' => 'LOGIN',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'User ' . $user->id . ' with login through ' . $user->provider . ' has been connected',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => "User {$user->id} logged in through {$user->provider}",
             ]);
 
             $cookies = [Cookie::make('token', $jwt)];
