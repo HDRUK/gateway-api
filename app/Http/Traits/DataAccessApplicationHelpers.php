@@ -19,6 +19,7 @@ use App\Models\TeamUserHasRole;
 use App\Models\TeamHasDataAccessApplication;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 trait DataAccessApplicationHelpers
 {
@@ -226,12 +227,68 @@ trait DataAccessApplicationHelpers
         return $applications;
     }
 
-    public function actionRequiredCounts(array $applicationIds): array
+    public function statusCounts(Collection $applications, ?int $teamId): array
     {
+        $counts = array(
+            'DRAFT' => 0,
+            'SUBMITTED' => 0,
+            'FEEDBACK' => 0,
+            'APPROVED' => 0,
+            'REJECTED' => 0,
+            'WITHDRAWN' => 0,
+        );
+        foreach ($applications as $app) {
+            foreach ($app['teams'] as $t) {
+                if (is_null($teamId) || $t->team_id === $teamId) {
+                    if ($t['submission_status'] === 'DRAFT') {
+                        $counts['DRAFT'] += 1;
+                    } elseif (is_null($t['approval_status'])) {
+                        $counts['SUBMITTED'] += 1;
+                    } elseif (str_contains($t['approval_status'], 'APPROVED')) {
+                        $counts['APPROVED'] += 1;
+                    } else {
+                        $counts[$t['approval_status']] += 1;
+                    }
+                }
+            }
+        }
+        return $counts;
+    }
+
+    public function actionRequiredCounts(Collection $applications, ?int $teamId): array
+    {
+        $feedbackApplications = [];
+        foreach ($applications as $app) {
+            $teams = $app['teams'];
+            foreach ($teams as $team) {
+                if (is_null($teamId) || ($team->team_id === $teamId)) {
+                    if ($team['approval_status'] === 'FEEDBACK') {
+                        $feedbackApplications[] = $app->id;
+                    }
+                }
+            }
+        }
+
         $actionRequired = 0;
         $infoRequired = 0;
-        foreach ($applicationIds as $a) {
+        foreach ($feedbackApplications as $a) {
             $reviews = DataAccessApplicationReview::where('application_id', $a)
+                ->with('comments')->get();
+
+            $reviewIds = [];
+            if ($teamId) {
+                foreach ($reviews as $r) {
+                    foreach ($r['comments'] as $c) {
+                        if ($c->team_id === $teamId) {
+                            $reviewIds[] = $c->review_id;
+                        }
+                    }
+                }
+            } else {
+                $reviewIds = array_column($reviews->toArray(), 'id');
+            }
+
+            $reviews = DataAccessApplicationReview::whereIn('id', $reviewIds)
                 ->select(['resolved'])->pluck('resolved')->toArray();
             $resolved = in_array(false, $reviews) ? false : true;
             if ($resolved) {

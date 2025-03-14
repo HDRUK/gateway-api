@@ -173,7 +173,7 @@ class UserDataAccessApplicationController extends Controller
                 ->get();
 
             if ($field === 'action_required') {
-                $counts = $this->actionRequiredCounts($applications);
+                $counts = $this->actionRequiredCounts($applications, null);
             } else {
                 $counts = array();
                 foreach ($applications as $app) {
@@ -234,36 +234,19 @@ class UserDataAccessApplicationController extends Controller
                 ->with('teams')
                 ->get();
 
-            $counts = array(
-                'DRAFT' => 0,
-                'SUBMITTED' => 0,
-                'FEEDBACK' => 0,
-                'APPROVED' => 0,
-                'REJECTED' => 0,
-                'WITHDRAWN' => 0,
-            );
-            foreach ($applications as $app) {
-                foreach ($app['teams'] as $t) {
-                    if ($t['submission_status'] === 'DRAFT') {
-                        $counts['DRAFT'] += 1;
-                    } elseif (is_null($t['approval_status'])) {
-                        $counts['SUBMITTED'] += 1;
-                    } elseif (str_contains($t['approval_status'], 'APPROVED')) {
-                        $counts['APPROVED'] += 1;
-                    } else {
-                        $counts[$t['approval_status']] += 1;
-                    }
-                }
-            }
+            $counts = $this->statusCounts($applications, null);
 
-            $actionCounts = $this->actionRequiredCounts($applications);
+            $actionCounts = $this->actionRequiredCounts($applications, null);
             $counts = array_merge($counts, $actionCounts);
-            $counts['ALL'] = count($applications);
+            $counts['ALL'] = count(TeamHasDataAccessApplication::whereIn(
+                'dar_application_id',
+                array_column($applications->toArray(), 'id')
+            )->get());
 
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Team DAR application count",
+                'description' => "User DAR application count",
             ]);
 
             return response()->json([

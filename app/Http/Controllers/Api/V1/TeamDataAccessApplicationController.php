@@ -174,7 +174,7 @@ class TeamDataAccessApplicationController extends Controller
                 ->get();
 
             if ($field === 'action_required') {
-                $counts = $this->actionRequiredCounts($applications);
+                $counts = $this->actionRequiredCounts($applications, $teamId);
             } else {
                 $counts = array();
                 foreach ($applications as $app) {
@@ -235,24 +235,11 @@ class TeamDataAccessApplicationController extends Controller
                 ->with('teams')
                 ->get();
 
-            $fields = ['submission_status', 'approval_status'];
-            $counts = array();
-            foreach ($applications as $app) {
-                foreach ($fields as $field) {
-                    foreach ($app['teams'] as $t) {
-                        if ($t->team_id === $teamId) {
-                            if (array_key_exists($t[$field], $counts)) {
-                                $counts[$t[$field]] += 1;
-                            } else {
-                                $counts[$t[$field]] = 1;
-                            }
-                        }
-                    }
-                }
-            }
+            $counts = $this->statusCounts($applications, $teamId);
 
-            $actionCounts = $this->actionRequiredCounts($applications);
+            $actionCounts = $this->actionRequiredCounts($applications, $teamId);
             $counts = array_merge($counts, $actionCounts);
+            $counts['ALL'] = count($applicationIds);
 
             Auditor::log([
                 'action_type' => 'GET',
