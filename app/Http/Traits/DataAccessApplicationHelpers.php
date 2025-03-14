@@ -263,7 +263,7 @@ trait DataAccessApplicationHelpers
             foreach ($teams as $team) {
                 if (is_null($teamId) || ($team->team_id === $teamId)) {
                     if ($team['approval_status'] === 'FEEDBACK') {
-                        $feedbackApplications[] = $app->id;
+                        $feedbackApplications[] = $app['id'];
                     }
                 }
             }
