@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Http\Traits\IndexElastic;
+use App\Jobs\ExtractPublicationsFromMetadata;
 
 class DatasetVersionObserver
 {
@@ -52,6 +53,7 @@ class DatasetVersionObserver
 
     public function elasticDatasetVersion(DatasetVersion $datasetVersion)
     {
+        ExtractPublicationsFromMetadata::dispatch($datasetVersion->id);
         $datasetId = $datasetVersion->dataset_id;
         $dataset = Dataset::where([
             'id' => $datasetId,
