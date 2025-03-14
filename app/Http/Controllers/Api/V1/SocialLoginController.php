@@ -262,10 +262,11 @@ class SocialLoginController extends Controller
                 if (session_status() === PHP_SESSION_NONE) {
                     session_start();
                 }
-                $input = $request->all();
-                $_REQUEST['code'] = $input['code'] ?? '';
-                $_REQUEST['state'] = $input['state'] ?? '';
-                $_SESSION['openid_connect_state'] = $_REQUEST['state'];
+                $code = array_key_exists('code', $input) ? $input['code'] : '';
+                $_REQUEST['code'] = $code;
+                $state = array_key_exists('state', $input) ? $input['state'] : '';
+                $_REQUEST['state'] = $state;
+                $_SESSION['openid_connect_state'] = $state;
 
                 $oidc = new OpenIDConnectClient(
                     Config::get('services.openathens.issuer'),
@@ -290,12 +291,15 @@ class SocialLoginController extends Controller
             } else {
                 $socialUser = Socialite::driver($provider)->user();
 
-                $socialUserDetails = match (strtolower($provider)) {
-                    'google' => $this->googleResponse($socialUser, $provider),
-                    'linkedin-openid' => $this->linkedinOpenIdResponse($socialUser, $provider),
-                    'azure' => $this->azureResponse($socialUser, $provider),
-                    default => [],
-                };
+                $socialUserDetails = [];
+                switch (strtolower($provider)) {
+                    case 'google':
+                        $socialUserDetails = $this->googleResponse($socialUser, $provider);
+                        break;
+
+                    case 'linkedin-openid':
+                        $socialUserDetails = $this->linkedinOpenIdResponse($socialUser, $provider);
+                        break;
 
                 $user = User::where('email', $socialUserDetails['email'])->first();
             }
@@ -311,8 +315,8 @@ class SocialLoginController extends Controller
             Auditor::log([
                 'target_user_id' => $user->id,
                 'action_type' => 'LOGIN',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => "User {$user->id} logged in through {$user->provider}",
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'User ' . $user->id . ' with login through ' . $user->provider . ' has been connected',
             ]);
 
             $cookies = [Cookie::make('token', $jwt)];
