@@ -262,6 +262,7 @@ class SocialLoginController extends Controller
                 if (session_status() === PHP_SESSION_NONE) {
                     session_start();
                 }
+                $input = $request->all();
                 $code = array_key_exists('code', $input) ? $input['code'] : '';
                 $_REQUEST['code'] = $code;
                 $state = array_key_exists('state', $input) ? $input['state'] : '';
