@@ -80,7 +80,7 @@ class SocialLoginController extends Controller
     */
     public function dtaLogin(Request $request, string $provider): mixed
     {
-        return $this->handleLogin($request, $provider, env('DTA_URL'));
+        return $this->handleLogin($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_DTA_URL'));
     }
 
 
@@ -131,11 +131,11 @@ class SocialLoginController extends Controller
      */
     public function login(Request $request, string $provider): mixed
     {
-        return $this->handleLogin($request, $provider, env('GATEWAY_URL'));
+        return $this->handleLogin($request, $provider, env('GATEWAY_URL'), env('OPENATHENS_REDIRECT_URL'));
 
     }
 
-    private function handleLogin(Request $request, string $provider, string $baseRedirectUrl): mixed
+    private function handleLogin(Request $request, string $provider, string $baseRedirectUrl, $openAthensRedirectUrl): mixed
     {
         $redirectUrl = $baseRedirectUrl;
         if ($request->has("redirect")) {
@@ -153,7 +153,7 @@ class SocialLoginController extends Controller
 
             $params = [
                 'client_id' => Config::get('services.openathens.client_id'),
-                'redirect_uri' => Config::get('services.openathens.redirect'),
+                'redirect_uri' => $openAthensRedirectUrl,
                 'response_type' => 'code',
                 'scope' => 'openid',
                 'state' => bin2hex(random_bytes(16))
@@ -207,7 +207,7 @@ class SocialLoginController extends Controller
          */
     public function dtaCallback(Request $request, string $provider): mixed
     {
-        return $this->handleCallback($request, $provider, env('DTA_URL'));
+        return $this->handleCallback($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_DTA_URL'));
     }
 
     /**
@@ -247,9 +247,9 @@ class SocialLoginController extends Controller
      */
     public function callback(Request $request, string $provider): mixed
     {
-        return $this->handleCallback($request, $provider, env('GATEWAY_URL'));
+        return $this->handleCallback($request, $provider, env('GATEWAY_URL'), env('OPENATHENS_REDIRECT_URL'));
     }
-    private function handleCallback(Request $request, string $provider, string $baseRedirectUrl): mixed
+    private function handleCallback(Request $request, string $provider, string $baseRedirectUrl, string $openAthensRedirectUrl): mixed
     {
         $user = null;
 
@@ -281,7 +281,7 @@ class SocialLoginController extends Controller
                     'userinfo_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/userinfo',
                 ]);
 
-                $oidc->setRedirectUrl(Config::get('services.openathens.redirect'));
+                $oidc->setRedirectUrl($openAthensRedirectUrl);
                 $oidc->authenticate();
 
                 $response = $oidc->requestUserInfo();
