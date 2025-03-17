@@ -486,7 +486,7 @@ class TeamController extends Controller
                 ->toArray();
 
             $collections = array_map(function ($collection) {
-                if ($collection['image_link'] && !preg_match('/^https?:\/\//', $collection->image_link)) {
+                if ($collection['image_link'] && !preg_match('/^https?:\/\//', $collection['image_link'])) {
                     $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
                 }
                 return $collection;
