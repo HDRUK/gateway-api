@@ -577,7 +577,7 @@ class UserDataAccessApplicationController extends Controller
                     'description' => 'DataAccessApplication ' . $id . ' download file ' . $fileId,
                 ]);
 
-                return Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
+                return Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '_scanned')
                     ->download($file->file_location);
             }
 
@@ -1051,7 +1051,7 @@ class UserDataAccessApplicationController extends Controller
 
             $file = Upload::where('id', $fileId)->first();
 
-            Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
+            Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '_scanned')
                 ->delete($file->file_location);
 
             $file->delete();

@@ -14,7 +14,7 @@ class PublicationObserver
      */
     public function created(Publication $publication): void
     {
-        if($publication->status === Publication::STATUS_ACTIVE) {
+        if ($publication->status === Publication::STATUS_ACTIVE) {
             $this->indexElasticPublication((int) $publication->id);
         }
     }
@@ -38,7 +38,7 @@ class PublicationObserver
             $this->deletePublicationFromElastic((int) $publication->id);
         }
 
-        if($publication->status === Publication::STATUS_ACTIVE) {
+        if ($publication->status === Publication::STATUS_ACTIVE) {
             $this->indexElasticPublication((int) $publication->id);
         }
     }

@@ -89,7 +89,7 @@ trait CollectionsV2Helpers
                 $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
             }
 
-            if($collection->users) {
+            if ($collection->users) {
                 $collection->users->map(function ($user) {
                     $currentEmail = $user->email;
                     [$username, $domain] = explode('@', $currentEmail);
@@ -543,7 +543,7 @@ trait CollectionsV2Helpers
     {
         $kws = CollectionHasKeyword::where('collection_id', $collectionId)->get();
 
-        foreach($kws as $kw) {
+        foreach ($kws as $kw) {
             $kwId = $kw->keyword_id;
             $checkKeyword = Keyword::where('id', $kwId)->first();
 

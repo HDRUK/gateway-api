@@ -5,8 +5,8 @@ namespace App\Providers;
 use Config;
 use Laravel\Passport\Passport;
 use Illuminate\Support\ServiceProvider;
-use App\Http\Controllers\SSO\CustomAccessToken;
 use App\Models\TeamHasDataAccessApplication;
+use App\Http\Controllers\SSO\CustomAccessToken;
 use App\Observers\TeamHasDataAccessApplicationObserver;
 
 class AppServiceProvider extends ServiceProvider

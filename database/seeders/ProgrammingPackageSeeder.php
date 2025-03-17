@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\ProgrammingPackage;
-
 use Illuminate\Database\Seeder;
 
 class ProgrammingPackageSeeder extends Seeder

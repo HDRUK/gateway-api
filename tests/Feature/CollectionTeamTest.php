@@ -11,12 +11,12 @@ use App\Models\User;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
-use App\Models\CollectionHasUser;
 use App\Models\Publication;
 use App\Models\TeamHasUser;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
+use App\Models\CollectionHasUser;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
@@ -31,18 +31,19 @@ use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\EmailTemplateSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\CollectionHasDurSeeder;
+use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
 use Database\Seeders\DurHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-
 use Database\Seeders\CollectionHasPublicationSeeder;
 use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class CollectionTeamTest extends TestCase
 {
+    use WithFaker;
     use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;

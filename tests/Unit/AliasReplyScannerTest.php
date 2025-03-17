@@ -7,7 +7,6 @@ use App\Mail\Email;
 use Tests\TestCase;
 use App\Models\Role;
 use App\Models\Team;
-
 use Webklex\PHPIMAP\Message;
 use AliasReplyScanner as ARS;
 use App\Models\EnquiryThread;
@@ -16,17 +15,12 @@ use Database\Seeders\RoleSeeder;
 use Database\Seeders\TeamSeeder;
 use Database\Seeders\UserSeeder;
 use Tests\Traits\MockExternalApis;
-
-
 use Database\Seeders\PermissionSeeder;
-
 use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\EnquiryThreadSeeder;
 use Database\Seeders\EmailTemplateSeeder;
 use Database\Seeders\EnquiryMessageSeeder;
 use Database\Seeders\TeamUserHasRoleSeeder;
-
-
 use App\Exceptions\AliasReplyScannerException;
 use Webklex\PHPIMAP\Support\MessageCollection;
 use Illuminate\Foundation\Testing\RefreshDatabase;

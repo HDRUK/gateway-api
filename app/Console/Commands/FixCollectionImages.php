@@ -50,7 +50,7 @@ class FixCollectionImages extends Command
 
             if ($dryRun) {
                 $col = $collection->first();
-                if(!$col) {
+                if (!$col) {
                     $this->error("Cannot find collection mongo id = {$collectionMongoId}");
                 } else {
                     $this->info("Team ID: {$col->id}, Old Logo: {$col->image_link}, New Logo: {$imagePath}");

@@ -16,11 +16,8 @@ use Database\Seeders\DatasetSeeder;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\MinimalUserSeeder;
-
 use Database\Seeders\PublicationSeeder;
-
 use Database\Seeders\TeamHasUserSeeder;
-
 use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use App\Models\PublicationHasDatasetVersion;

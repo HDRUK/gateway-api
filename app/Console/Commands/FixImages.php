@@ -30,8 +30,8 @@ class FixImages extends Command
         $dryRun = $this->option('dryRun');
         $teams = Team::select(["id","team_logo"])->get();
         $progressbar = $this->output->createProgressBar(count($teams));
-        foreach($teams as $team) {
-            if(is_null($team->team_logo)) {
+        foreach ($teams as $team) {
+            if (is_null($team->team_logo)) {
                 $progressbar->advance();
                 continue;
             }

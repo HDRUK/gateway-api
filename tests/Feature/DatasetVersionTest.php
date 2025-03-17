@@ -4,27 +4,27 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
-use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use App\Models\Team;
 use App\Models\User;
+use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use Tests\Traits\Authorization;
-use Tests\Traits\MockExternalApis;
 use App\Http\Enums\TeamMemberOf;
-
-use Database\Seeders\TeamSeeder;
 use Database\Seeders\RoleSeeder;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
+use Database\Seeders\TeamSeeder;
 use Database\Seeders\UserSeeder;
+use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\PermissionSeeder;
 use Database\Seeders\MinimalUserSeeder;
-
+use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\SpatialCoverageSeeder;
+use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetVersionTest extends TestCase
 {
+    use WithFaker;
     use RefreshDatabase;
     use Authorization;
     use MockExternalApis {
@@ -35,6 +35,8 @@ class DatasetVersionTest extends TestCase
     public const TEST_URL_TEAM = '/api/v1/teams';
     public const TEST_URL_NOTIFICATION = '/api/v1/notifications';
     public const TEST_URL_USER = '/api/v1/users';
+
+    protected $metadata;
 
     public function setUp(): void
     {
@@ -281,7 +283,7 @@ class DatasetVersionTest extends TestCase
         $teamPid = Team::where('id', $teamId)->first()->getPid();
 
         $publisherId = $metadata['metadata']['summary']['publisher'];
-        if(version_compare(Config::get('metadata.GWDM.version'), "1.1", "<")) {
+        if (version_compare(Config::get('metadata.GWDM.version'), "1.1", "<")) {
             $publisherId =  $publisherId['publisherId'];
             $this->assertEquals(
                 $publisherId,

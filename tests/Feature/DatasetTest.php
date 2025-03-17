@@ -5,22 +5,25 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
+use App\Jobs\TermExtraction;
 use App\Models\NamedEntities;
+use App\Models\DatasetVersion;
 use Illuminate\Support\Carbon;
+use App\Jobs\LinkageExtraction;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Support\Facades\Storage;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
-use App\Jobs\LinkageExtraction;
+use Database\Seeders\MinimalUserSeeder;
+use Illuminate\Support\Facades\Storage;
+use Database\Seeders\SpatialCoverageSeeder;
+use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetTest extends TestCase
 {
     use RefreshDatabase;
+    use WithFaker;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
@@ -33,6 +36,8 @@ class DatasetTest extends TestCase
 
     protected $metadata;
     protected $metadataAlt;
+
+    protected static $schemaDropped = false;
 
     public function setUp(): void
     {
@@ -51,12 +56,18 @@ class DatasetTest extends TestCase
         $this->metadataAlt['metadata']['summary']['title'] = 'ABC title';
     }
 
+    protected function tearDown(): void
+    {
+        \DB::rollBack();
+        parent::tearDown();
+    }
+
     /**
      * Get All Datasets with success
      *
      * @return void
      */
-    public function test_get_all_datasets_with_success(): void
+    public function test_v1_get_all_datasets_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL_DATASET, [], $this->header);
         $response->assertJsonStructure([

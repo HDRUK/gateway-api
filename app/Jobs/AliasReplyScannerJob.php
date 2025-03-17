@@ -9,7 +9,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Http\Traits\TeamTransformation;
-
 use AliasReplyScanner as ARS;
 
 class AliasReplyScannerJob implements ShouldQueue
@@ -40,7 +39,7 @@ class AliasReplyScannerJob implements ShouldQueue
 
         $this->noMessagesFound = count($messages);
 
-        foreach($messages as $i => $message) {
+        foreach ($messages as $i => $message) {
             CloudLogger::write('Working on message #' . $i);
             $this->processMessage($message);
         }

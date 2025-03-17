@@ -94,7 +94,7 @@ class UserController extends Controller
                                         return $user;
                                     })
                     ];
-                } elseif($mini) {
+                } elseif ($mini) {
                     //temporary force to get all users but with masked email
                     // - will not be needed in the future as can just use the above if block
                     $users = [
@@ -105,7 +105,7 @@ class UserController extends Controller
                                         return $user;
                                     })
                     ];
-                } elseif($userIsAdmin) {
+                } elseif ($userIsAdmin) {
                     $users = User::with(['roles', 'roles.permissions', 'teams', 'notifications'])->paginate($perPage, ['*'], 'page');
                 } else {
                     $users = User::select('id', 'name')->paginate($perPage, ['*'], 'page');
@@ -479,7 +479,7 @@ class UserController extends Controller
                     }
                 }
 
-                if(array_key_exists('preferred_email', $input)) {
+                if (array_key_exists('preferred_email', $input)) {
                     $array['preferred_email'] = $user->provider === 'open-athens' ? $user->preferred_email : $input['preferred_email'];
                 }
 

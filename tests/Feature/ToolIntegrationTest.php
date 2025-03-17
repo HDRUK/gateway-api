@@ -4,10 +4,8 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
-
 use App\Models\Tool;
 use ReflectionClass;
-
 use App\Models\License;
 use App\Models\Permission;
 use App\Models\ToolHasTag;
@@ -16,7 +14,6 @@ use App\Models\Publication;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
-
 use Tests\Traits\MockExternalApis;
 use App\Models\ToolHasTypeCategory;
 use Database\Seeders\DatasetSeeder;
@@ -26,7 +23,6 @@ use Database\Seeders\CategorySeeder;
 use Database\Seeders\DurHasToolSeeder;
 use Database\Seeders\ToolHasTagSeeder;
 use Database\Seeders\ApplicationSeeder;
-
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use App\Models\ApplicationHasPermission;

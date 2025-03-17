@@ -5,15 +5,12 @@ namespace Tests\Traits;
 use Config;
 use Http\Mock\Client;
 use Nyholm\Psr7\Response;
-
-
-use Database\Seeders\SectorSeeder;
-use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
-
-use Illuminate\Support\Facades\Queue;
+use App\Jobs\LinkageExtraction;
+use Database\Seeders\SectorSeeder;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use MetadataManagementController as MMC;
 
 trait MockExternalApis
@@ -1129,7 +1126,7 @@ trait MockExternalApis
                $metadata = json_decode($dataset, true)["metadata"];
                //mock translating alternative schemas via traser - just give it a new GWDM metadata
 
-               if(!array_key_exists("required", $metadata) || (!is_null($inputSchema) && $inputSchema !== 'GWDM')) {
+               if (!array_key_exists("required", $metadata) || (!is_null($inputSchema) && $inputSchema !== 'GWDM')) {
                    $metadata = $this->getMetadata();
                }
                return [

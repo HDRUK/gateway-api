@@ -3,12 +3,10 @@
 namespace App\Console\Commands;
 
 use Exception;
-
 use App\Models\Team;
 use Illuminate\Console\Command;
 use App\Models\DataProviderColl;
 use App\Http\Traits\IndexElastic;
-
 use App\Models\DataProviderCollHasTeam;
 
 class DataProvidersPostMigration extends Command

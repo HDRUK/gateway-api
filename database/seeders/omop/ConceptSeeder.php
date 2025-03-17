@@ -51,7 +51,7 @@ class ConceptSeeder extends Seeder
 
             foreach ($files as $file) {
 
-                if($useInFileSQL) {// use SQL command
+                if ($useInFileSQL) {// use SQL command
                     $fullPath = addslashes($file);
                     DB::statement("
                         LOAD DATA LOCAL INFILE '{$fullPath}'
