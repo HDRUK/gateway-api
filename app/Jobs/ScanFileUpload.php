@@ -234,10 +234,6 @@ class ScanFileUpload implements ShouldQueue
 
             $durIds = $import->durImport->durIds;
 
-            foreach ($durIds as $durId) {
-                $this->linkDatasets((int) $durId);
-            }
-
             $upload->update([
                 'status' => 'PROCESSED',
                 'file_location' => $loc,
