@@ -380,7 +380,7 @@ class RoleSeeder extends Seeder
                 'role_id' => $role->id,
             ])->delete();
 
-            foreach($v['permissions'] as $p) {
+            foreach ($v['permissions'] as $p) {
                 $perm = null;
 
                 if ($p !== 'all') {

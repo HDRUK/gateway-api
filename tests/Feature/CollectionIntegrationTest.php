@@ -9,11 +9,9 @@ use App\Models\Tool;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
-
 use App\Models\Permission;
 use App\Models\Application;
 use App\Models\Publication;
-
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
@@ -32,6 +30,7 @@ use App\Models\ApplicationHasPermission;
 use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\CollectionHasDurSeeder;
+use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
@@ -42,6 +41,7 @@ use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class CollectionIntegrationTest extends TestCase
 {
+    use WithFaker;
     use RefreshDatabase;
     use Authorization;
     use MockExternalApis {
@@ -51,6 +51,7 @@ class CollectionIntegrationTest extends TestCase
     public const TEST_URL = '/api/v1/integrations/collections';
 
     protected $header = [];
+    protected $integration;
 
     /**
      * Set up the database

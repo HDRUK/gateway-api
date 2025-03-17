@@ -241,7 +241,7 @@ class SearchTest extends TestCase
         $metadata = $response['data'][0]['metadata'];
 
         $this->assertTrue(isset($metadata['additional']['containsTissue']));
-        if(version_compare(Config::get('metadata.GWDM.version'), "2.0", ">=")) {
+        if (version_compare(Config::get('metadata.GWDM.version'), "2.0", ">=")) {
             $this->assertTrue(isset($metadata['accessibility']['access']['accessServiceCategory']));
         }
         $this->assertTrue(isset($metadata['additional']['hasTechnicalMetadata']));

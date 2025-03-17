@@ -3,9 +3,7 @@
 namespace Tests\Feature;
 
 use Config;
-
 use Tests\TestCase;
-
 use App\Models\Dataset;
 use App\Models\Permission;
 use App\Models\Application;
@@ -16,17 +14,16 @@ use Database\Seeders\TeamSeeder;
 use Database\Seeders\SectorSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
-
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
-
 use App\Models\ApplicationHasPermission;
-
 use Database\Seeders\SpatialCoverageSeeder;
+use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetIntegrationTest extends TestCase
 {
+    use WithFaker;
     use RefreshDatabase;
     use Authorization;
     use MockExternalApis {

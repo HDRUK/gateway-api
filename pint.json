@@ -1,0 +1,14 @@
+{
+    "preset": "psr12",
+    "paths": [
+        "app",
+        "config",
+        "database",
+        "routes",
+        "tests"
+    ],
+    "exclude": [
+        "vendor",
+        "node_modules"
+    ]
+}

@@ -144,7 +144,7 @@ class UpdateCollectionHasUsers extends Command
                 ]);
 
                 // collections.authors
-                foreach($authors as $author) {
+                foreach ($authors as $author) {
                     CollectionHasUser::create([
                         'collection_id' => $collection->id,
                         'user_id' => $author,

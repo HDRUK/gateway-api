@@ -189,7 +189,7 @@ class CohortRequestController extends Controller
                     });
                 });
 
-            foreach($sort as $key => $value) {
+            foreach ($sort as $key => $value) {
                 if (in_array($key, ['created_at', 'updated_at', 'request_status'])) {
                     $query->orderBy('cohort_requests.' . $key, strtoupper($value));
                 }

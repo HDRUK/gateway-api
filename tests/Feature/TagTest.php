@@ -5,9 +5,7 @@ namespace Tests\Feature;
 use App\Models\Tag;
 use Tests\TestCase;
 use Database\Seeders\TagSeeder;
-
 use Tests\Traits\MockExternalApis;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class TagTest extends TestCase

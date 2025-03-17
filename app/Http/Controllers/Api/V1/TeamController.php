@@ -624,7 +624,7 @@ class TeamController extends Controller
                 }
 
                 //make sure the super admin is added to this team on creation
-                foreach($superAdminIds as $adminId) {
+                foreach ($superAdminIds as $adminId) {
                     TeamHasUser::create(
                         ['team_id' => $team->id, 'user_id' => $adminId],
                     );

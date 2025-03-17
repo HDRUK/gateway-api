@@ -154,7 +154,7 @@ trait TeamTransformation
 
     private function maskEmail(string|null $email)
     {
-        if(is_null($email)) {
+        if (is_null($email)) {
             return $email;
         }
 

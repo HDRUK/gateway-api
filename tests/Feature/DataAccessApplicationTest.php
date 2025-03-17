@@ -19,16 +19,16 @@ use Illuminate\Support\Facades\Queue;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\QuestionBankSeeder;
 use Database\Seeders\EmailTemplateSeeder;
-
-
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
+use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\DataAccessTemplateSeeder;
 use Database\Seeders\DataAccessApplicationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DataAccessApplicationTest extends TestCase
 {
+    use WithFaker;
     use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;

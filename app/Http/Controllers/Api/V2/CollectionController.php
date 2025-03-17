@@ -993,7 +993,7 @@ class CollectionController extends Controller
                 $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
             }
 
-            if($collection->users) {
+            if ($collection->users) {
                 $collection->users->map(function ($user) {
                     $currentEmail = $user->email;
                     [$username, $domain] = explode('@', $currentEmail);

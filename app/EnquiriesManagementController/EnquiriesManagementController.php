@@ -4,9 +4,7 @@ namespace App\EnquiriesManagementController;
 
 use Auditor;
 use Exception;
-
 use App\Jobs\SendEmailJob;
-
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;

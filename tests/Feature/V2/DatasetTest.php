@@ -5,17 +5,17 @@ namespace Tests\Feature\V2;
 use Config;
 use Tests\TestCase;
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use App\Models\NamedEntities;
+use App\Models\DatasetVersion;
 use Illuminate\Support\Carbon;
+use App\Jobs\LinkageExtraction;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
 use Tests\Traits\MockExternalApis;
+use Illuminate\Support\Facades\Queue;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Queue;
-use App\Jobs\LinkageExtraction;
 
 class DatasetTest extends TestCase
 {
@@ -41,6 +41,8 @@ class DatasetTest extends TestCase
 
     public function setUp(): void
     {
+        parent::setUp();
+
         $this->commonSetUp();
 
         Dataset::flushEventListeners();
@@ -80,8 +82,9 @@ class DatasetTest extends TestCase
      *
      * @return void
      */
-    public function test_get_all_datasets_with_success(): void
+    public function test_v2_get_all_datasets_with_success(): void
     {
+        // $this->setUp();
         $response = $this->json('GET', self::TEST_URL_DATASET_V2, [], $this->headerNonAdmin);
         $response->assertJsonStructure([
             'current_page',

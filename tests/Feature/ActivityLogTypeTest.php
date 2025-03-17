@@ -3,13 +3,10 @@
 namespace Tests\Feature;
 
 use Config;
-
 use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ActivityLogTypeSeeder;
-
 use Tests\Traits\MockExternalApis;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ActivityLogTypeTest extends TestCase

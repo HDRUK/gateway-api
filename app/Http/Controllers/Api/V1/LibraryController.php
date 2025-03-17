@@ -97,7 +97,7 @@ class LibraryController extends Controller
 
 
             $libraries = $libraries->paginate(function ($total) use ($perPage) {
-                if($perPage === -1) {
+                if ($perPage === -1) {
                     return $total;
                 }
                 return $perPage;

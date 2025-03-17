@@ -7,9 +7,7 @@ use Config;
 use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SectorSeeder;
-
 use Tests\Traits\MockExternalApis;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SectorTest extends TestCase

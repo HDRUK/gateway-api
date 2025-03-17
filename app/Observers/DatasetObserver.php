@@ -18,7 +18,7 @@ class DatasetObserver
         $datasetVersion = DatasetVersion::where([
             'dataset_id' => $dataset->id
         ])->select('id')->first();
-        if($dataset->status === Dataset::STATUS_ACTIVE && !is_null($datasetVersion)) {
+        if ($dataset->status === Dataset::STATUS_ACTIVE && !is_null($datasetVersion)) {
             $this->reindexElastic($dataset->id);
             if ($dataset->team_id) {
                 $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
@@ -52,7 +52,7 @@ class DatasetObserver
 
         }
 
-        if($dataset->status === Dataset::STATUS_ACTIVE && !is_null($datasetVersion)) {
+        if ($dataset->status === Dataset::STATUS_ACTIVE && !is_null($datasetVersion)) {
             $this->reindexElastic($dataset->id);
             if ($dataset->team_id) {
                 $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
@@ -76,7 +76,7 @@ class DatasetObserver
     {
         $prevStatus = $dataset->prevStatus;
 
-        if($prevStatus === Dataset::STATUS_ACTIVE) {
+        if ($prevStatus === Dataset::STATUS_ACTIVE) {
             $this->deleteDatasetFromElastic($dataset->id);
             if ($dataset->team_id) {
                 $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');

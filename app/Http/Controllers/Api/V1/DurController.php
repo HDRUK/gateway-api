@@ -26,7 +26,6 @@ use App\Http\Requests\Dur\DeleteDur;
 use App\Http\Requests\Dur\UpdateDur;
 use App\Http\Requests\Dur\UploadDur;
 use App\Models\DurHasDatasetVersion;
-
 use App\Exceptions\NotFoundException;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Traits\MapOrganisationSector;
@@ -1817,7 +1816,7 @@ class DurController extends Controller
     {
         $kws = DurHasKeyword::where('dur_id', $durId)->get();
 
-        foreach($kws as $kw) {
+        foreach ($kws as $kw) {
             $kwId = $kw->keyword_id;
             $checkKeyword = Keyword::where('id', $kwId)->first();
 
@@ -1899,7 +1898,7 @@ class DurController extends Controller
     {
         $tools = DurHasTool::where('dur_id', $durId)->get();
 
-        foreach($tools as $tool) {
+        foreach ($tools as $tool) {
             $toolId = $tool->tool_id;
             $checkTool = Tool::where('id', $toolId)->first();
 

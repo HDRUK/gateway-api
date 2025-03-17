@@ -3,17 +3,13 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use App\Models\DataProviderColl;
 use Database\Seeders\TeamSeeder;
 use Database\Seeders\ToolSeeder;
-
 use Tests\Traits\MockExternalApis;
-
 use Database\Seeders\DatasetSeeder;
-
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
 use ElasticClientController as ECC;
@@ -27,18 +23,19 @@ use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\CollectionHasDurSeeder;
+use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\DataProviderCollsSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-
 use Database\Seeders\CollectionHasPublicationSeeder;
 use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class DataProviderCollTest extends TestCase
 {
+    use WithFaker;
     use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
