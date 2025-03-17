@@ -4,16 +4,13 @@ namespace App\Http\Traits;
 
 use Config;
 use Exception;
-
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
 use App\Jobs\TermExtraction;
 use App\Jobs\LinkageExtraction;
-
 use Illuminate\Support\Str;
-
 use MetadataManagementController as MMC;
 
 trait MetadataOnboard
@@ -120,7 +117,7 @@ trait MetadataOnboard
             //            - publisher.publisherId --> publisher.gatewayId
             //            - publisher.publisherName --> publisher.name
             // -------------------------------------------------------------------
-            if(version_compare(Config::get('metadata.GWDM.version'), '1.1', '<')) {
+            if (version_compare(Config::get('metadata.GWDM.version'), '1.1', '<')) {
                 $publisher = [
                     'publisherId' => $team['pid'],
                     'publisherName' => $team['name'],
@@ -128,7 +125,7 @@ trait MetadataOnboard
                 $input['metadata']['metadata']['summary']['publisher'] = $publisher;
             } else {
                 $version = $this->formatVersion(1);
-                if(array_key_exists('version', $input['metadata']['metadata']['required'])) {
+                if (array_key_exists('version', $input['metadata']['metadata']['required'])) {
                     $version = $input['metadata']['metadata']['required']['version'];
                 }
                 $required['version'] = $version;
@@ -149,14 +146,14 @@ trait MetadataOnboard
             $this->mapCoverage($input['metadata'], $version);
 
             // Dispatch term extraction to a subprocess if the dataset is marked as active
-            if($input['status'] === Dataset::STATUS_ACTIVE) {
+            if ($input['status'] === Dataset::STATUS_ACTIVE) {
 
                 LinkageExtraction::dispatch(
                     $dataset->id,
                     $version->id
                 );
 
-                if(Config::get('ted.enabled')) {
+                if (Config::get('ted.enabled')) {
                     $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
 
                     TermExtraction::dispatch(
@@ -225,7 +222,7 @@ trait MetadataOnboard
 
     public function getVersion(int $version)
     {
-        if($version > 999) {
+        if ($version > 999) {
             throw new Exception('too many versions');
         }
 

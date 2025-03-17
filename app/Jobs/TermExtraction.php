@@ -4,19 +4,15 @@ namespace App\Jobs;
 
 use Auditor;
 use Exception;
-
 use App\Models\Dataset;
 use App\Models\NamedEntities;
 use App\Models\DatasetVersionHasNamedEntities;
-
 use App\Http\Traits\IndexElastic;
-
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-
 use Illuminate\Support\Facades\Http;
 
 class TermExtraction implements ShouldQueue
@@ -72,7 +68,7 @@ class TermExtraction implements ShouldQueue
         ]);
 
         $data = json_decode(gzdecode(gzuncompress(base64_decode($this->data))), true);
-        if($this->usePartialExtraction) {
+        if ($this->usePartialExtraction) {
             //data is partial - summary data only
             $this->postSummaryToTermExtractionDirector(json_encode($data));
         } else {

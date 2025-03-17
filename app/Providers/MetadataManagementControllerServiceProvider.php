@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\MetadataManagementController\MetadataManagementController;
-
 use Illuminate\Support\ServiceProvider;
 
 class MetadataManagementControllerServiceProvider extends ServiceProvider

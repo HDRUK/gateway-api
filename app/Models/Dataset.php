@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use DB;
-
 use App\Models\Traits\EntityCounter;
 use App\Observers\DatasetObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -353,7 +352,7 @@ class Dataset extends Model
 
             $filteredLinkage = $linkageRecords->where($foreignTableId, $entity->id);
 
-            if($includeIntermediate) {
+            if ($includeIntermediate) {
                 $entity->setAttribute('dataset_versions', $filteredLinkage->values()->toArray());
             } else {
                 // Extract dataset version IDs and link types associated with the current entity

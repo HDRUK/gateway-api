@@ -19,8 +19,6 @@ use Illuminate\Support\Facades\Queue;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\QuestionBankSeeder;
 use Database\Seeders\EmailTemplateSeeder;
-
-
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
 use Database\Seeders\DataAccessTemplateSeeder;

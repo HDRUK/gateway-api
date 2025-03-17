@@ -104,7 +104,7 @@ class ApplicationController extends Controller
             $this->checkAccess($input, $teamId, null, 'team');
         }
         $apps = Application::where('user_id', $jwtUser)->whereNotNull('team_id')->select('team_id')->distinct()->get();
-        foreach($apps as $app) {
+        foreach ($apps as $app) {
             $this->checkAccess($input, $app->team_id, null, 'team');
         }
 

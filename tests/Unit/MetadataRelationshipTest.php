@@ -5,17 +5,14 @@ namespace Tests\Unit;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasDatasetVersion;
-
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\TeamSeeder;
 use Database\Seeders\UserSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\TeamUserHasRoleSeeder;
-
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-
 use App\Http\Traits\MetadataVersioning;
 
 class MetadataRelationshipTest extends TestCase

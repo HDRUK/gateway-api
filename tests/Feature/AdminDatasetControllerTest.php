@@ -48,7 +48,7 @@ class AdminDatasetControllerTest extends TestCase
             $this->header
         );
 
-        if(config("ted.enabled")) {
+        if (config("ted.enabled")) {
             $response->assertStatus(200);
 
             // Assert: Check that the job was dispatched and response is correct
@@ -74,7 +74,7 @@ class AdminDatasetControllerTest extends TestCase
             ['minId' => 3, 'maxId' => 5],
             $this->header
         );
-        if(config("ted.enabled")) {
+        if (config("ted.enabled")) {
             // Assert: Check that the job was dispatched and response is correct
             Queue::assertPushed(TermExtraction::class);
             $response->assertStatus(200)
@@ -106,7 +106,7 @@ class AdminDatasetControllerTest extends TestCase
 
         //token in header for super-admin
         $response = $this->json('POST', self::TEST_URL_DATASET . '/trigger/term_extraction', [], $this->header);
-        if(config("ted.enabled")) {
+        if (config("ted.enabled")) {
             $response->assertStatus(200);
         } else {
             $response->assertStatus(500);

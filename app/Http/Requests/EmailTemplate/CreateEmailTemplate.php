@@ -24,7 +24,7 @@ class CreateEmailTemplate extends BaseFormRequest
                         ->where('enabled', $this->input('enabled'))
                         ->first();
 
-                    if($emailTemplate) {
+                    if ($emailTemplate) {
                         $fail('The selected identifier is invalid, already exist.');
                     }
                 }

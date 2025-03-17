@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
@@ -14,16 +13,12 @@ use App\Jobs\LinkageExtraction;
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
 use App\Http\Traits\CheckAccess;
-
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-
 use App\Http\Traits\MetadataOnboard;
 use App\Http\Traits\MetadataVersioning;
 use App\Models\Traits\ModelHelpers;
-
 use Maatwebsite\Excel\Facades\Excel;
-
 use Illuminate\Support\Facades\Storage;
 use MetadataManagementController as MMC;
 use App\Http\Requests\Dataset\GetDataset;
@@ -780,13 +775,13 @@ class DatasetController extends Controller
             );
 
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
-            if($request['status'] === Dataset::STATUS_ACTIVE) {
+            if ($request['status'] === Dataset::STATUS_ACTIVE) {
 
                 LinkageExtraction::dispatch(
                     $currDataset->id,
                     $datasetVersionId,
                 );
-                if(Config::get('ted.enabled')) {
+                if (Config::get('ted.enabled')) {
                     $tedMetadata = ($useGWDMetada) ? $gwdmMetadata : $input['metadata'];
                     $tedData = Config::get('ted.use_partial') ? $tedMetadata['summary'] : $tedMetadata;
 
@@ -925,7 +920,7 @@ class DatasetController extends Controller
 
                     $metadata = DatasetVersion::withTrashed()->where('dataset_id', $id)->latest()->first();
 
-                    if($request['status'] === Dataset::STATUS_ACTIVE) {
+                    if ($request['status'] === Dataset::STATUS_ACTIVE) {
                         LinkageExtraction::dispatch(
                             $datasetModel->id,
                             $metadata->id,
@@ -1192,7 +1187,7 @@ class DatasetController extends Controller
                     $metadata = $rowDetails['metadata']['metadata'];
 
                     $publisherName = $metadata['metadata']['summary']['publisher'];
-                    if(version_compare(Config::get('metadata.GWDM.version'), "1.1", "<")) {
+                    if (version_compare(Config::get('metadata.GWDM.version'), "1.1", "<")) {
                         $publisherName = $publisherName['publisherName'];
                     } else {
                         $publisherName = $publisherName['name'];

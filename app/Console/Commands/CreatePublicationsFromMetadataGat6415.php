@@ -93,11 +93,11 @@ class CreatePublicationsFromMetadataGat6415 extends Command
         }
 
         if (Arr::has($data, $linkagePublicationAboutDataset)) {
-            $this->publicationDataset(data_get($data, $linkagePublicationAboutDataset, []) ?? [], 'ABOUT', $datasetVersionId, $datasetUserId, $datasetTeamId);
+            $this->publicationDataset(is_array(data_get($data, $linkagePublicationAboutDataset, [])) ? data_get($data, $linkagePublicationAboutDataset, []) : [], 'ABOUT', $datasetVersionId, $datasetUserId, $datasetTeamId);
         }
 
         if (Arr::has($data, $linkagePublicationUsingDataset)) {
-            $this->publicationDataset(data_get($data, $linkagePublicationUsingDataset, []) ?? [], 'USING', $datasetVersionId, $datasetUserId, $datasetTeamId);
+            $this->publicationDataset(is_array(data_get($data, $linkagePublicationUsingDataset, [])) ? data_get($data, $linkagePublicationUsingDataset, []) : [], 'USING', $datasetVersionId, $datasetUserId, $datasetTeamId);
         }
     }
 

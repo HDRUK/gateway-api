@@ -3,11 +3,8 @@
 namespace App\Http\Middleware;
 
 use Closure;
-
 use App\Models\Application;
-
 use App\Exceptions\IntegrationPermissionException;
-
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 

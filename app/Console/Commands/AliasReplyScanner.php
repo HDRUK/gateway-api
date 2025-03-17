@@ -3,9 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-
 use App\Http\Traits\TeamTransformation;
-
 use AliasReplyScanner as ARS;
 
 class AliasReplyScanner extends Command
@@ -36,7 +34,7 @@ class AliasReplyScanner extends Command
         $messages = ARS::getNewMessagesSafe();
         $this->info('Found ' . count($messages) . ' new messages');
 
-        foreach($messages as $i => $message) {
+        foreach ($messages as $i => $message) {
             $this->info('Working on message #' . $i);
             $this->processMessage($message);
         }
