@@ -7,13 +7,10 @@ use CloudLogger;
 use App\Models\Team;
 use App\Models\User;
 use App\Jobs\SendEmailJob;
-
 use App\Models\EmailTemplate;
 use App\Models\EnquiryThread;
-
 use App\Models\EnquiryMessage;
 use Webklex\PHPIMAP\ClientManager;
-
 use EnquiriesManagementController as EMC;
 
 class AliasReplyScanner
@@ -57,7 +54,7 @@ class AliasReplyScanner
         // Tokenize the text into words
         $words = str_word_count($text, 1);
 
-        if(count($words) == 0) {
+        if (count($words) == 0) {
             return false;
         }
 

@@ -153,7 +153,7 @@ trait DataAccessApplicationHelpers
         if (!is_null($filterApproval)) {
             $approvalMatches = [];
             foreach ($applications as $a) {
-                foreach($a['teams'] as $t) {
+                foreach ($a['teams'] as $t) {
                     if ((isset($teamId)) && ($t->team_id === $teamId) && ($t->approval_status === $filterApproval)) {
                         $approvalMatches[] = $a->id;
                     } elseif ((isset($userId)) && ($t->approval_status === $filterApproval)) {
@@ -167,7 +167,7 @@ trait DataAccessApplicationHelpers
         if (!is_null($filterSubmission)) {
             $submissionMatches = [];
             foreach ($applications as $a) {
-                foreach($a['teams'] as $t) {
+                foreach ($a['teams'] as $t) {
                     if ((isset($teamId)) && ($t->team_id === $teamId) && ($t->submission_status === $filterSubmission)) {
                         $submissionMatches[] = $a->id;
                     } elseif ((isset($userId)) && ($t->submission_status === $filterSubmission)) {

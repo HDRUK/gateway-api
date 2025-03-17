@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use Config;
-
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Team;
@@ -37,7 +36,6 @@ use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\DurHasDatasetVersionSeeder;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 

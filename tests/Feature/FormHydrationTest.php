@@ -3,11 +3,9 @@
 namespace Tests\Feature;
 
 use Config;
-
 use Tests\TestCase;
 use App\Models\Team;
 use App\Models\Dataset;
-
 use App\Models\DatasetVersion;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
@@ -17,7 +15,6 @@ use Database\Seeders\KeywordSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\TeamHasUserSeeder;
 use MetadataManagementController as MMC;
-
 use Database\Seeders\DatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

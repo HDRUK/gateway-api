@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-
 use App\Models\Dataset;
 use App\Models\Publication;
 use Illuminate\Http\Request;
@@ -16,13 +15,11 @@ use Illuminate\Http\JsonResponse;
 use App\Models\PublicationHasTool;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-
 use App\Models\CollectionHasPublication;
 use App\Http\Traits\RequestTransformation;
 use App\Models\PublicationHasDatasetVersion;
 use App\Http\Requests\Publication\GetPublication;
 use App\Http\Requests\Publication\EditPublication;
-
 use App\Http\Requests\Publication\CreatePublication;
 use App\Http\Requests\Publication\DeletePublication;
 use App\Http\Requests\Publication\UpdatePublication;

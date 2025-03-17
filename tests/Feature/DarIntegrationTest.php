@@ -4,21 +4,15 @@ namespace Tests\Feature;
 
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
-
 use Tests\TestCase;
-
 use App\Models\DarIntegration;
 use App\Models\Application;
 use App\Models\Permission;
 use App\Models\ApplicationHasPermission;
-
 use Database\Seeders\DarIntegrationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ApplicationSeeder;
-
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
-
 use Tests\Traits\MockExternalApis;
 
 class DarIntegrationTest extends TestCase

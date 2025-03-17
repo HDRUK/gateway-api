@@ -152,7 +152,7 @@ class DataAccessApplicationController extends Controller
                 $teams = implode(',', array_column($question, 'team'));
 
                 $guidanceArray = array();
-                foreach($question as $q) {
+                foreach ($question as $q) {
                     if (isset($guidanceArray[$q['guidance']])) {
                         $guidanceArray[$q['guidance']][] = $q['team'];
                     } else {
@@ -160,7 +160,7 @@ class DataAccessApplicationController extends Controller
                     }
                 }
                 $guidance = '';
-                foreach($guidanceArray as $g => $t) {
+                foreach ($guidanceArray as $g => $t) {
                     $guidance .= '<b>' . implode(',', $t) . '</b>' . '<p><em>' . $g . '</em><p/>';
                 }
 

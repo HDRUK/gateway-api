@@ -7,8 +7,6 @@ use App\Models\QuestionBankVersion;
 use App\Models\QuestionBankVersionHasChildVersion;
 use App\Models\QuestionHasTeam;
 use App\Models\DataAccessSection;
-
-
 use Illuminate\Database\Seeder;
 
 class QuestionBankSeeder extends Seeder

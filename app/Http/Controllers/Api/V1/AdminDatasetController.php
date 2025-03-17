@@ -5,14 +5,11 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Exception;
 use Auditor;
-
 use App\Http\Controllers\Controller;
-
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Jobs\TermExtraction;
 use App\Jobs\LinkageExtraction;
-
 use App\Models\Dataset;
 
 class AdminDatasetController extends Controller
@@ -90,7 +87,7 @@ class AdminDatasetController extends Controller
     {
         try {
 
-            if(!Config::get('ted.enabled')) {
+            if (!Config::get('ted.enabled')) {
                 throw new Exception("TED not enabled and you're trying to trigger TED");
             }
 

@@ -3,11 +3,8 @@
 namespace App\Console\Commands;
 
 use Exception;
-
 use App\Models\Upload;
-
 use App\Models\Collection;
-
 use Illuminate\Console\Command;
 
 class UploadImagesPostMigrationProcess extends Command

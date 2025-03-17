@@ -7,8 +7,6 @@ use Config;
 use Exception;
 use App\Models\Federation;
 use App\Models\Dataset;
-
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -74,14 +72,14 @@ class ServiceLayerController extends Controller
 
         $response = array();
         foreach ($datasets as $dataset) {
-            if(count($dataset->versions) == 0) {
+            if (count($dataset->versions) == 0) {
                 continue;
             }
 
             $metadataVersions = [];
-            foreach($dataset->versions as $version) {
+            foreach ($dataset->versions as $version) {
                 $gwdmVersion = $version->metadata['gwdmVersion'];
-                if(version_compare($gwdmVersion, '1.0', '>')) {
+                if (version_compare($gwdmVersion, '1.0', '>')) {
                     $metadata = $version->metadata['metadata'];
                     $metadataVersions[] = $metadata['required']['version'];
                 }
@@ -92,7 +90,7 @@ class ServiceLayerController extends Controller
             ];
 
             if ($request->has('onlyVersions')) {
-                if($request->boolean('onlyVersions')) {
+                if ($request->boolean('onlyVersions')) {
                     continue;
                 }
             }
