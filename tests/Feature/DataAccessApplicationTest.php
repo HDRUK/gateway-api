@@ -152,6 +152,140 @@ class DataAccessApplicationTest extends TestCase
     }
 
     /**
+     * Count all dar applications.
+     *
+     * @return void
+     */
+    public function test_the_application_can_count_dar_applications()
+    {
+        $entityIds1 = $this->createDatasetForDar();
+        $datasetId1 = $entityIds1['datasetId'];
+        $teamId1 = $entityIds1['teamId'];
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'DRAFT',
+                'project_title' => 'A test draft DAR',
+                'dataset_ids' => [$datasetId1]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        $entityIds2 = $this->createDatasetForDar();
+        $datasetId2 = $entityIds2['datasetId'];
+        $teamId2 = $entityIds2['teamId'];
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'SUBMITTED',
+                'project_title' => 'A test joint DAR',
+                'dataset_ids' => [$datasetId1, $datasetId2]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $applicationId2 = $response->decodeResponseJson()['data'];
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/teams/' . $teamId1 . '/dar/applications/' . $applicationId2,
+            [
+                'approval_status' => 'APPROVED_COMMENTS',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/teams/' . $teamId2 . '/dar/applications/' . $applicationId2,
+            [
+                'approval_status' => 'APPROVED',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $entityIds3 = $this->createDatasetForDar();
+        $datasetId3 = $entityIds3['datasetId'];
+        $teamId3 = $entityIds3['teamId'];
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'SUBMITTED',
+                'project_title' => 'A test joint DAR',
+                'dataset_ids' => [$datasetId1, $datasetId3]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $applicationId3 = $response->decodeResponseJson()['data'];
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/teams/' . $teamId3 . '/dar/applications/' . $applicationId3,
+            [
+                'approval_status' => 'FEEDBACK',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $response = $this->json(
+            'POST',
+            'api/v1/teams/' . $teamId3 . '/dar/applications/' . $applicationId3 . '/reviews',
+            [
+                'comment' => 'A test review comment',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        $response = $this->get('api/v1/users/1/dar/applications/count', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $content = $response->decodeResponseJson()['data'];
+        $this->assertEquals(1, $content['DRAFT']);
+        $this->assertEquals(1, $content['SUBMITTED']);
+        $this->assertEquals(2, $content['APPROVED']);
+        $this->assertEquals(1, $content['info_required']);
+        $this->assertEquals(5, $content['ALL'], 5);
+
+
+        $response = $this->get('api/v1/teams/' . $teamId1 . '/dar/applications/count', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $content = $response->decodeResponseJson()['data'];
+        $this->assertEquals(1, $content['APPROVED']);
+        $this->assertEquals(0, $content['info_required']);
+        $this->assertEquals(2, $content['ALL']);
+
+        $response = $this->get('api/v1/teams/' . $teamId2 . '/dar/applications/count', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $content = $response->decodeResponseJson()['data'];
+        $this->assertEquals(1, $content['ALL']);
+
+        $response = $this->get('api/v1/teams/' . $teamId3 . '/dar/applications/count', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $content = $response->decodeResponseJson()['data'];
+        $this->assertEquals(1, $content['FEEDBACK']);
+        $this->assertEquals(1, $content['info_required']);
+        $this->assertEquals(1, $content['ALL']);
+    }
+
+    /**
      * Returns a single dar application
      *
      * @return void

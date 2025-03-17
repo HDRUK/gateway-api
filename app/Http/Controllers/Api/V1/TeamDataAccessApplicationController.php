@@ -174,7 +174,7 @@ class TeamDataAccessApplicationController extends Controller
                 ->get();
 
             if ($field === 'action_required') {
-                $counts = $this->actionRequiredCounts(array_column($applications->toArray(), 'id'));
+                $counts = $this->actionRequiredCounts($applications, $teamId);
             } else {
                 $counts = array();
                 foreach ($applications as $app) {
@@ -198,6 +198,57 @@ class TeamDataAccessApplicationController extends Controller
 
             return response()->json([
                 "data" => $counts
+            ]);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v1/teams/{teamId}/dar/applications/count",
+     *    tags={"TeamDataAccessApplications"},
+     *    summary="TeamDataAccessApplicationController@allCounts",
+     *    description="Get Counts for all status fields in the model",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="object",
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function allCounts(Request $request, int $teamId): JsonResponse
+    {
+        try {
+            $applicationIds = TeamHasDataAccessApplication::where('team_id', $teamId)
+                ->whereNot('submission_status', 'DRAFT')
+                ->select('dar_application_id')
+                ->pluck('dar_application_id');
+
+            $applications = DataAccessApplication::whereIn('id', $applicationIds)
+                ->with('teams')
+                ->get();
+
+            $counts = $this->statusCounts($applications, $teamId);
+
+            $actionCounts = $this->actionRequiredCounts($applications, $teamId);
+            $counts = array_merge($counts, $actionCounts);
+            $counts['ALL'] = count($applicationIds);
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Team DAR application count",
+            ]);
+
+            return response()->json([
+                'data' => $counts
             ]);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
