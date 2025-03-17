@@ -14,7 +14,6 @@ use App\Models\DurHasTool;
 use Illuminate\Http\Request;
 use App\Models\DurHasKeyword;
 use App\Models\DatasetVersion;
-use Illuminate\Support\Carbon;
 use App\Http\Traits\CheckAccess;
 use App\Http\Requests\Dur\GetDur;
 use App\Models\DurHasPublication;
@@ -1263,10 +1262,8 @@ class DurController extends Controller
             DurHasKeyword::where(['dur_id' => $id])->delete();
             DurHasPublication::where(['dur_id' => $id])->delete();
             DurHasTool::where(['dur_id' => $id])->delete();
-            $dur = Dur::where(['id' => $id])->first();
-            $dur->deleted_at = Carbon::now();
-            $dur->status = Dur::STATUS_ARCHIVED;
-            $dur->save();
+            Dur::where(['dur_id' => $id])->update(['status' => Dur::STATUS_ARCHIVED]);
+            Dur::where(['dur_id' => $id])->delete();
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

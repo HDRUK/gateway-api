@@ -44,7 +44,7 @@ class ExtractDatasetFromDur implements ShouldQueue
     private function linkDatasets(int $durId): void
     {
         $dur = Dur::findOrFail($durId);
-        $nonGatewayDatasets = $dur['non_gateway_datasets'];
+        $nonGatewayDatasets = $dur['non_gateway_datasets'] ?? [];
         $unmatched = array();
         foreach ($nonGatewayDatasets as $d) {
             // Try to match on url
