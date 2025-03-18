@@ -9,6 +9,8 @@ use Exception;
 
 use App\Models\Collection;
 use App\Models\DataAccessApplicationAnswer;
+use App\Models\DataAccessTemplate;
+use App\Models\DataAccessTemplateHasFile;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Dur;
@@ -602,10 +604,11 @@ class ScanFileUpload implements ShouldQueue
         try {
             // add file based dar template
             $template = DataAccessTemplate::create([
-                'team_id' => $teamId,
-                'user_id' => $userId,
+                'team_id' => $this->teamId,
+                'user_id' => $this->userId,
                 'published' => true,
                 'locked' => false,
+                'template_type' => 'DOCUMENT',
             ]);
 
             DataAccessTemplateHasFile::create([

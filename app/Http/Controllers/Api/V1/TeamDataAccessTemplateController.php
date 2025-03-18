@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Api\V1;
 use Auditor;
 use Config;
 use Exception;
+use App\Exceptions\UnauthorizedException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DataAccessTemplate\GetTeamDataAccessTemplate;
 use App\Http\Requests\DataAccessTemplate\DeleteDataAccessTemplateFile;
 use App\Http\Traits\RequestTransformation;
 use App\Models\DataAccessTemplate;
+use App\Models\Upload;
 
 class TeamDataAccessTemplateController extends Controller
 {
@@ -52,7 +55,7 @@ class TeamDataAccessTemplateController extends Controller
 
         try {
             $templates = DataAccessTemplate::where('team_id', $teamId)
-            ->with('questions')
+            ->with(['questions','files'])
             ->paginate(
                 Config::get('constants.per_page'),
                 ['*'],
@@ -140,7 +143,7 @@ class TeamDataAccessTemplateController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $template = DataAccessTemplate::where('id', $id);
+            $template = DataAccessTemplate::where('id', $id)->first();
             if ($template->team_id != $teamId) {
                 throw new UnauthorizedException(
                     "Team does not have permission to use this endpoint to delete this template file."

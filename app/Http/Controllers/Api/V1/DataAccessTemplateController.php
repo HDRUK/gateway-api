@@ -7,6 +7,7 @@ use Auditor;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\DataAccessTemplate\GetDataAccessTemplate;
@@ -15,9 +16,12 @@ use App\Http\Requests\DataAccessTemplate\CreateDataAccessTemplate;
 use App\Http\Requests\DataAccessTemplate\DeleteDataAccessTemplate;
 use App\Http\Requests\DataAccessTemplate\UpdateDataAccessTemplate;
 use App\Models\DataAccessTemplate;
+use App\Models\DataAccessTemplateHasFile;
 use App\Models\DataAccessTemplateHasQuestion;
 use App\Models\QuestionBank;
 use App\Models\QuestionHasTeam;
+use App\Models\Upload;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DataAccessTemplateController extends Controller
 {
@@ -175,6 +179,81 @@ class DataAccessTemplateController extends Controller
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                     'data' => $template,
                 ], Config::get('statuscodes.STATUS_OK.code'));
+            }
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/ap1/v1/dar/templates/{id}/download",
+     *      summary="Download the template for a file based DAR application",
+     *      description="Download the template for a file based DAR application",
+     *      tags={"DataAccessTemplate"},
+     *      summary="DataAccessTemplate@downloadFile",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DAR template id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR template id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\MediaType(
+     *              mediaType="file"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function downloadFile(Request $request, int $id): StreamedResponse | JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $template = DataAccessTemplate::findOrFail($id);
+            if ($template->template_type !== 'DOCUMENT') {
+                throw new Exception('The specified template is not a document based template.');
+            }
+            $thf = DataAccessTemplateHasFile::where('template_id', $id)->first();
+            $file = Upload::where('id', $thf->upload_id)->first();
+
+            if ($file) {
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'DataAccessTemplate ' . $id . ' download file ' . $file->id,
+                ]);
+
+                return Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
+                    ->download($file->file_location);
             }
 
             return response()->json([

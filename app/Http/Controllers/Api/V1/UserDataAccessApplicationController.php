@@ -20,6 +20,7 @@ use App\Http\Traits\DataAccessApplicationHelpers;
 use App\Jobs\SendEmailJob;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationAnswer;
+use App\Models\DataAccessTemplate;
 use App\Models\EmailTemplate;
 use App\Models\Team;
 use App\Models\TeamHasDataAccessApplication;
@@ -274,7 +275,18 @@ class UserDataAccessApplicationController extends Controller
                 throw new UnauthorizedException('User does not have permission to use this endpoint to view this application.');
             }
 
-            $this->getApplicationWithQuestions($application);
+            if ($application->application_type === 'FORM') {
+                $this->getApplicationWithQuestions($application);
+            } else {
+                $teams = TeamHasDataAccessApplication::where('dar_application_id', $id)
+                    ->select('team_id')
+                    ->pluck('team_id');
+                $templates = DataAccessTemplate::whereIn('team_id', $teams)
+                    ->where('template_type', 'DOCUMENT')
+                    ->select('id')
+                    ->get();
+                $application['templates'] = $templates;
+            }
 
             if ($application) {
                 Auditor::log([

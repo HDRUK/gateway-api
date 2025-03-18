@@ -30,6 +30,7 @@ class DataAccessTemplate extends Model
         'user_id',
         'published',
         'locked',
+        'template_type',
     ];
 
     public function user(): BelongsTo

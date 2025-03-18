@@ -12,6 +12,7 @@ use Database\Seeders\QuestionBankSeeder;
 use Tests\Traits\MockExternalApis;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 class DataAccessTemplateTest extends TestCase
@@ -339,6 +340,76 @@ class DataAccessTemplateTest extends TestCase
 
         $this->assertEquals('Something helpful', $response['data']['questions'][0]['guidance']);
         $this->assertEquals(1, $response['data']['questions'][0]['order']);
+    }
+
+    /**
+     * Creates a new document based dar template
+     *
+     * @return void
+     */
+    public function test_the_application_can_create_a_document_based_dar_template()
+    {
+        // upload a new template file
+        $file = UploadedFile::fake()->create('test_dar_template.docx');
+        $response = $this->json(
+            'POST',
+            'api/v1/files?entity_flag=dar-template-upload&team_id=1',
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        $response->assertStatus(200);
+        $uploadId = $response->decodeResponseJson()['data']['id'];
+
+        $response = $this->get('api/v1/files/' . $uploadId, $this->header);
+        $templateId = $response->decodeResponseJson()['data']['entity_id'];
+
+        // test the template can be downloaded
+        $response = $this->get(
+            'api/v1/dar/templates/' . $templateId . '/download',
+            $this->header
+        );
+        $response->assertStatus(200);
+
+        // test the template is listed by team
+        $response = $this->get('api/v1/teams/' . 1 . '/dar/templates/', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'current_page',
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                        'user_id',
+                        'team_id',
+                        'published',
+                        'locked',
+                        'files',
+                    ],
+                ],
+                'first_page_url',
+                'from',
+                'last_page',
+                'last_page_url',
+                'links',
+                'next_page_url',
+                'path',
+                'per_page',
+                'prev_page_url',
+                'to',
+                'total',
+            ]);
+        $templates = $response->decodeResponseJson()['data'];
+
+        $this->assertContains($templateId, array_column($templates, 'id'));
     }
 
     /**

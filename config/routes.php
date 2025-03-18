@@ -4388,6 +4388,19 @@ return [
     ],
     [
         'name' => 'dar/templates',
+        'method' => 'get',
+        'path' => '/dar/templates/{id}/download',
+        'methodController' => 'DataAccessTemplateController@downloadFile',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/templates',
         'method' => 'post',
         'path' => '/dar/templates',
         'methodController' => 'DataAccessTemplateController@store',
