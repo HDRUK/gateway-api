@@ -1165,6 +1165,94 @@ class DataAccessApplicationTest extends TestCase
     }
 
     /**
+     * Adds files to a review of a dar application
+     *
+     * @return void
+     */
+    public function test_the_application_can_add_review_files_to_a_dar_application()
+    {
+        $entityIds = $this->createDatasetForDar();
+        $datasetId = $entityIds['datasetId'];
+        $teamId = $entityIds['teamId'];
+        $questionId = $entityIds['questionId'];
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'DRAFT',
+                'project_title' => 'A test DAR',
+                'approval_status' => 'APPROVED',
+                'dataset_ids' => [$datasetId]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+        $applicationId = $response->decodeResponseJson()['data'];
+
+        // Add a review to the dar
+        $response = $this->json(
+            'POST',
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/reviews',
+            [
+                'comment' => 'A test review comment',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+        $reviewId = $response->decodeResponseJson()['data'];
+
+        // Add file to the review
+        $file = UploadedFile::fake()->create('test_dar_review.docx');
+        $response = $this->json(
+            'POST',
+            'api/v1/files?entity_flag=dar-review-upload&review_id=' . $reviewId,
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $uploadId = $response->decodeResponseJson()['data']['id'];
+
+        // Team can download
+        $response = $this->get(
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/download/' . $uploadId,
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+
+        // user can download
+        $response = $this->get(
+            'api/v1/users/1/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/download/' . $uploadId,
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // team can delete
+        $response = $this->json(
+            'DELETE',
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/files/' . $uploadId,
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+    }
+
+    /**
      * Lists dar applications by team
      *
      * @return void

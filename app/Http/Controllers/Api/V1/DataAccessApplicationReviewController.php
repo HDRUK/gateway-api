@@ -6,13 +6,18 @@ use Config;
 use Auditor;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
+use App\Exceptions\NotFoundException;
 use App\Exceptions\UnauthorizedException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DataAccessApplicationReview\CreateDataAccessApplicationReview;
 use App\Http\Requests\DataAccessApplicationReview\CreateGlobalDataAccessApplicationReview;
 use App\Http\Requests\DataAccessApplicationReview\DeleteDataAccessApplicationReview;
+use App\Http\Requests\DataAccessApplicationReview\DeleteDataAccessApplicationReviewFile;
 use App\Http\Requests\DataAccessApplicationReview\DeleteGlobalDataAccessApplicationReview;
 use App\Http\Requests\DataAccessApplicationReview\GetDataAccessApplicationReview;
+use App\Http\Requests\DataAccessApplicationReview\GetDataAccessApplicationReviewFile;
+use App\Http\Requests\DataAccessApplicationReview\GetUserDataAccessApplicationReviewFile;
 use App\Http\Requests\DataAccessApplicationReview\GetUserDataAccessApplicationReview;
 use App\Http\Requests\DataAccessApplicationReview\UpdateDataAccessApplicationReview;
 use App\Http\Requests\DataAccessApplicationReview\UpdateGlobalDataAccessApplicationReview;
@@ -24,9 +29,12 @@ use App\Jobs\SendEmailJob;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationComment;
 use App\Models\DataAccessApplicationReview;
+use App\Models\DataAccessApplicationReviewHasFile;
 use App\Models\EmailTemplate;
 use App\Models\Team;
+use App\Models\Upload;
 use App\Models\User;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DataAccessApplicationReviewController extends Controller
 {
@@ -95,7 +103,7 @@ class DataAccessApplicationReviewController extends Controller
             $this->checkTeamAccess($teamId, $id, 'view reviews on');
 
             $reviews = DataAccessApplicationReview::where('application_id', $id)
-                ->with('comments')
+                ->with(['comments','files'])
                 ->get();
 
             if ($reviews) {
@@ -196,7 +204,7 @@ class DataAccessApplicationReviewController extends Controller
             }
 
             $reviews = DataAccessApplicationReview::where('application_id', $id)
-                ->with('comments')
+                ->with(['comments','files'])
                 ->get();
 
             if ($reviews) {
@@ -220,6 +228,237 @@ class DataAccessApplicationReviewController extends Controller
             return response()->json([
                 'message' => $e->getMessage(),
             ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/ap1/v1/teams/{teamId}/dar/applications/{id}/reviews/{reviewId}/download/{fileId}",
+     *      summary="Download a file associated with a DAR application review",
+     *      description="Download a file associated with a DAR application review",
+     *      tags={"DataAccessApplicationReview"},
+     *      summary="DataAccessApplicationReview@downloadFile",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DAR application id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR application id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="reviewId",
+     *         in="path",
+     *         description="DAR application review id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR application review id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="fileId",
+     *         in="path",
+     *         description="File id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="File id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\MediaType(
+     *              mediaType="file"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function downloadFile(GetDataAccessApplicationReviewFile $request, int $teamId, int $id, int $reviewId, int $fileId): StreamedResponse | JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $this->checkTeamAccess($teamId, $id, 'view reviews on');
+
+            $rhf = DataAccessApplicationReviewHasFile::where([
+                'review_id' => $reviewId,
+                'upload_id' => $fileId,
+            ])->first();
+
+            if ($rhf) {
+                $file = Upload::where('id', $fileId)->first();
+            } else {
+                throw new NotFoundException('File id did not match a file associated with this review.');
+            }
+
+            if ($file) {
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'DataAccessApplicationReview ' . $id . ' download file ' . $file->id,
+                ]);
+
+                return Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
+                    ->download($file->file_location);
+            }
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/ap1/v1/users/{userId}/dar/applications/{id}/reviews/{reviewId}/download/{fileId}",
+     *      summary="Download a file associated with a DAR application review",
+     *      description="Download a file associated with a DAR application review",
+     *      tags={"DataAccessApplicationReview"},
+     *      summary="DataAccessApplicationReview@downloadUserFile",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="userId",
+     *         in="path",
+     *         description="User id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="User id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DAR application id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR application id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="reviewId",
+     *         in="path",
+     *         description="DAR application review id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR application review id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="fileId",
+     *         in="path",
+     *         description="File id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="File id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\MediaType(
+     *              mediaType="file"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function downloadUserFile(GetUserDataAccessApplicationReviewFile $request, int $userId, int $id, int $reviewId, int $fileId): StreamedResponse | JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $application = DataAccessApplication::findOrFail($id);
+            if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
+                throw new UnauthorizedException('User does not have permission to use this endpoint to review this application.');
+            }
+
+            $rhf = DataAccessApplicationReviewHasFile::where([
+                'review_id' => $reviewId,
+                'upload_id' => $fileId,
+            ])->first();
+
+            if ($rhf) {
+                $file = Upload::where('id', $fileId)->first();
+            } else {
+                throw new NotFoundException('File id did not match a file associated with this review.');
+            }
+
+            if ($file) {
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'DataAccessApplicationReview ' . $id . ' download file ' . $file->id,
+                ]);
+
+                return Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
+                    ->download($file->file_location);
+            }
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1021,6 +1260,7 @@ class DataAccessApplicationReviewController extends Controller
             $review = DataAccessApplicationReview::findOrFail($reviewId);
 
             DataAccessApplicationComment::where('review_id', $review->id)->delete();
+            DataAccessApplicationReviewHasFile::where('review_id', $review->id)->delete();
 
             $review->delete();
 
@@ -1114,6 +1354,7 @@ class DataAccessApplicationReviewController extends Controller
             $review = DataAccessApplicationReview::findOrFail($reviewId);
 
             DataAccessApplicationComment::where('review_id', $review->id)->delete();
+            DataAccessApplicationReviewHasFile::where('review_id', $review->id)->delete();
 
             $review->delete();
 
@@ -1132,6 +1373,119 @@ class DataAccessApplicationReviewController extends Controller
             return response()->json([
                 'message' => $e->getMessage(),
             ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/reviews/{reviewId}/files/{fileId}",
+     *      summary="Delete a file associated with a DAR review",
+     *      description="Delete a file associated with a DAR review",
+     *      tags={"DataAccessApplicationReview"},
+     *      summary="DataAccessApplicationReview@destroyFile",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Dar application id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Dar application id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="reviewId",
+     *         in="path",
+     *         description="Review id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Review id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="fileId",
+     *         in="path",
+     *         description="File id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="File id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *           ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function destroyFile(DeleteDataAccessApplicationReviewFile $request, int $teamId, int $id, int $reviewId, int $fileId): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $file = Upload::where('id', $fileId)->first();
+
+            Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
+                ->delete($file->file_location);
+
+            DataAccessApplicationReviewHasFile::where('upload_id', $fileId)->delete();
+
+            $file->delete();
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'DataAccessApplicationReview ' . $id . ' file ' . $fileId . ' deleted',
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

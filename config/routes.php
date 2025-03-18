@@ -4220,6 +4220,39 @@ return [
     ],
     [
         'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/dar/applications/{id}/reviews/{reviewId}/download/{fileId}',
+        'methodController' => 'DataAccessApplicationReviewController@downloadFile',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-applications.review.read',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
+            'reviewId' => '[0-9]+',
+            'fileId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/users/{userId}/dar/applications/{id}/reviews/{reviewId}/download/{fileId}',
+        'methodController' => 'DataAccessApplicationReviewController@downloadUserFile',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'userId' => '[0-9]+',
+            'reviewId' => '[0-9]+',
+            'fileId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
         'method' => 'post',
         'path' => '/teams/{teamId}/dar/applications/{id}/questions/{questionId}/reviews',
         'methodController' => 'DataAccessApplicationReviewController@store',
@@ -4344,6 +4377,23 @@ return [
             'id' => '[0-9]+',
             'teamId' => '[0-9]+',
             'reviewId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'delete',
+        'path' => '/teams/{teamId}/dar/applications/{id}/reviews/{reviewId}/files/{fileId}',
+        'methodController' => 'DataAccessApplicationReviewController@destroyFile',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-applications.review.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
+            'reviewId' => '[0-9]+',
+            'fileId' => '[0-9]+',
         ],
     ],
 

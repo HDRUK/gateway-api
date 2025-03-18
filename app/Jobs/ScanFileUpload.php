@@ -9,6 +9,7 @@ use Exception;
 
 use App\Models\Collection;
 use App\Models\DataAccessApplicationAnswer;
+use App\Models\DataAccessApplicationReviewHasFile;
 use App\Models\DataAccessTemplate;
 use App\Models\DataAccessTemplateHasFile;
 use App\Models\Dataset;
@@ -59,6 +60,7 @@ class ScanFileUpload implements ShouldQueue
     private ?int $collectionId = null;
     private ?int $applicationId = null;
     private ?int $questionId = null;
+    private ?int $reviewId = null;
     private bool $isLocalOrTestEnv = false;
 
     public $timeout = 180; // default timeout is 60
@@ -81,6 +83,7 @@ class ScanFileUpload implements ShouldQueue
         ?int $collectionId,
         ?int $applicationId,
         ?int $questionId,
+        ?int $reviewId,
     ) {
         $this->uploadId = $uploadId;
         $this->fileSystem = $fileSystem;
@@ -96,6 +99,7 @@ class ScanFileUpload implements ShouldQueue
         $this->collectionId = $collectionId;
         $this->applicationId = $applicationId;
         $this->questionId = $questionId;
+        $this->reviewId = $reviewId;
         $this->isLocalOrTestEnv = (strtoupper(config('app.env')) === 'TESTING' || strtoupper(config('app.env')) === 'LOCAL');
     }
 
@@ -191,6 +195,9 @@ class ScanFileUpload implements ShouldQueue
                         break;
                     case 'dar-template-upload':
                         $this->darTemplateUpload($loc, $upload);
+                        break;
+                    case 'dar-review-upload':
+                        $this->darReviewUpload($loc, $upload);
                         break;
                 }
 
@@ -621,6 +628,41 @@ class ScanFileUpload implements ShouldQueue
                 'file_location' => $loc,
                 'entity_type' => 'dataAccessTemplate',
                 'entity_id' => $template->id,
+            ]);
+
+            CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
+
+        } catch (Exception $e) {
+            // Record exception in uploads table
+            $upload->update([
+                'status' => 'FAILED',
+                'file_location' => $loc,
+                'error' => $e->getMessage()
+            ]);
+
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    private function darReviewUpload(string $loc, Upload $upload): void
+    {
+        try {
+            DataAccessApplicationReviewHasFile::create([
+                'review_id' => $this->reviewId,
+                'upload_id' => $upload->id,
+            ]);
+
+            $upload->update([
+                'status' => 'PROCESSED',
+                'file_location' => $loc,
+                'entity_type' => 'dataAccessReview',
+                'entity_id' => $this->reviewId,
             ]);
 
             CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
