@@ -91,14 +91,12 @@ class DataAccessApplicationController extends Controller
                 ]);
 
                 $gatewayId = $metadata['metadata']['summary']['publisher']['gatewayId'];
-                \Log::info($gatewayId);
                 // check for primary key or pid match...
                 if (is_numeric($gatewayId)) {
                     $team = Team::where('id', $gatewayId)->first();
                 } else {
                     $team = Team::where('pid', $gatewayId)->first();
                 }
-                \Log::info(json_encode($team));
                 if (!$team) {
                     CloudLogger::write([
                         'action_type' => 'CREATE',

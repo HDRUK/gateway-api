@@ -949,7 +949,8 @@ class DataAccessApplicationTest extends TestCase
                                 'user_id',
                                 'comment',
                             ]
-                        ]
+                        ],
+                        'files',
                     ]
                 ]
             ]);
@@ -1114,7 +1115,8 @@ class DataAccessApplicationTest extends TestCase
                                 'user_id',
                                 'comment',
                             ]
-                        ]
+                        ],
+                        'files',
                     ]
                 ]
             ]);
