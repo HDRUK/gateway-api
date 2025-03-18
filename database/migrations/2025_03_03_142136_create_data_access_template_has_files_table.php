@@ -18,8 +18,6 @@ return new class () extends Migration {
             $table->foreign('upload_id')->references('id')->on('uploads');
 
             $table->unique(['template_id', 'upload_id']);
-            $table->index('template_id');
-            $table->index('upload_id');
         });
     }
 

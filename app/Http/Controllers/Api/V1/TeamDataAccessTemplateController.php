@@ -115,11 +115,11 @@ class TeamDataAccessTemplateController extends Controller
      *         ),
      *      ),
      *      @OA\Response(
-     *          response=404,
-     *          description="Not found response",
+     *          response=401,
+     *          description="Unauthorized",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="not found")
-     *           ),
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
      *      ),
      *      @OA\Response(
      *          response=200,
