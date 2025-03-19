@@ -1,5 +1,5 @@
 {
-  "name": "gateway-api-2",
+  "name": "gateway-api",
   "version": "2.3.3",
   "private": true,
   "scripts": {
