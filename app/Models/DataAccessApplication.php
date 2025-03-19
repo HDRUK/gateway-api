@@ -29,6 +29,7 @@ class DataAccessApplication extends Model
     protected $fillable = [
         'applicant_id',
         'project_title',
+        'application_type',
     ];
 
     protected static array $sortableColumns = [

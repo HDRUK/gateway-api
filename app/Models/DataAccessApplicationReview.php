@@ -31,4 +31,9 @@ class DataAccessApplicationReview extends Model
     {
         return $this->hasMany(DataAccessApplicationComment::class, 'review_id');
     }
+
+    public function files(): HasMany
+    {
+        return $this->hasMany(DataAccessApplicationReviewHasFile::class, 'review_id');
+    }
 }

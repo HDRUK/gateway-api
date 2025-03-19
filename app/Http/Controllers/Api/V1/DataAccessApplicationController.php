@@ -133,6 +133,8 @@ class DataAccessApplicationController extends Controller
                     'locked' => false
                 ])->first();
                 if ($template) {
+                    $application->application_type = $template->template_type;
+                    $application->save();
                     $templateQuestions = $template->questions()->get();
                     foreach ($templateQuestions as $q) {
                         $q['team'] = $team->name;
