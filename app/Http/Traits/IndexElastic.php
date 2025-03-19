@@ -31,7 +31,6 @@ use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasTag;
 use App\Models\ToolHasTypeCategory;
 use App\Models\TypeCategory;
-use CloudLogger;
 use ElasticClientController as ECC;
 
 trait IndexElastic
@@ -99,10 +98,6 @@ trait IndexElastic
                 'dataProviderColl' => DataProviderColl::whereIn('id', DataProviderCollHasTeam::where('team_id', $datasetMatch->team_id)->pluck('data_provider_coll_id'))->pluck('name')->all(),
                 'formatAndStandards' => $this->formatAndStandard($this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
             ];
-            CloudLogger::write([
-                'id' => $datasetId,
-                'formatAndStandards' => $this->formatAndStandard($this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
-            ]);
 
             $params = [
                 'index' => ECC::ELASTIC_NAME_DATASET,
