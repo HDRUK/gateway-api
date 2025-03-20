@@ -12,7 +12,7 @@ return new class () extends Migration {
     {
         if (Schema::getConnection()->getDriverName() === 'mysql') {
             Schema::table('dataset_versions', function (Blueprint $table) {
-                $table->string('short_title', 500)
+                $table->string('short_title')
                       ->storedAs("CASE WHEN LEFT(metadata, 1) = '{' THEN JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.summary.shortTitle')) ELSE JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.shortTitle')) END")
                       ->collation('utf8mb4_general_ci');
 
