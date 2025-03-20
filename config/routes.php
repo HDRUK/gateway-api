@@ -3049,12 +3049,28 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'publications.create',
+        'method' => 'post',
+        'path' => 'publications',
+        'methodController' => 'PublicationController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,papers.create',
+        ],
+        'constraint' => [
+        ],
+    ],
+    [
         'name' => 'publications.edit',
         'method' => 'patch',
         'path' => 'publications/{id}',
         'methodController' => 'PublicationController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,papers.update',
+        ],
         'constraint' => [],
     ],
     [
@@ -3063,16 +3079,10 @@ return [
         'path' => 'publications/{id}',
         'methodController' => 'PublicationController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'publications.create',
-        'method' => 'post',
-        'path' => 'publications',
-        'methodController' => 'PublicationController@store',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,papers.update',
+        ],
         'constraint' => [],
     ],
     [
@@ -3081,7 +3091,10 @@ return [
         'path' => 'publications/{id}',
         'methodController' => 'PublicationController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,papers.delete',
+        ],
         'constraint' => [],
     ],
 
