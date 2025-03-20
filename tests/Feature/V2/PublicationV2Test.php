@@ -22,12 +22,12 @@ use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use App\Models\PublicationHasDatasetVersion;
 use Database\Seeders\PublicationHasToolSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class PublicationV2Test extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

@@ -11,11 +11,11 @@ use Tests\Traits\MockExternalApis;
 use Database\Seeders\MinimalUserSeeder;
 use App\Models\FederationHasNotification;
 use Database\Seeders\EmailTemplateSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class FederationTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

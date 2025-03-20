@@ -10,11 +10,11 @@ use Database\Seeders\SectorSeeder;
 use Illuminate\Support\Facades\Http;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class UserTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use Authorization;
 
     public const TEST_URL = '/api/v1/users';

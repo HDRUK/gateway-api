@@ -14,11 +14,11 @@ use Illuminate\Support\Facades\Mail;
 use Database\Seeders\CohortRequestSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\EmailTemplateSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class CohortRequestTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

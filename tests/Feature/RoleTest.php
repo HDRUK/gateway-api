@@ -9,11 +9,11 @@ use Database\Seeders\RoleSeeder;
 use App\Models\Role;
 use App\Models\RoleHasPermission;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class RoleTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

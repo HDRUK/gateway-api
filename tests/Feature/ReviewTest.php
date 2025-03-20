@@ -15,12 +15,12 @@ use Database\Seeders\CategorySeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\TypeCategorySeeder;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class ReviewTest extends TestCase
 {
     use WithFaker;
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

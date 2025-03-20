@@ -28,11 +28,11 @@ use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use App\Observers\DurHasDatasetVersionObserver;
 use Database\Seeders\ProgrammingLanguageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class DurHasDatasetVersionObserverTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

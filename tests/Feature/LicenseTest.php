@@ -7,11 +7,11 @@ use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class LicenseTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

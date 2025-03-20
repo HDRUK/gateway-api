@@ -5,15 +5,17 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Application;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\ApplicationSeeder;
 use Tests\Traits\MockExternalApis;
+use Database\Seeders\ApplicationSeeder;
+use Database\Seeders\MinimalUserSeeder;
 use App\Http\Traits\IntegrationOverride;
 use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class ApplicationTest extends TestCase
 {
+    // use FastRefreshDatabase;
     use RefreshDatabase;
     use IntegrationOverride;
     use MockExternalApis {

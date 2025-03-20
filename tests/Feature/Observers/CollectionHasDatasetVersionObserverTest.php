@@ -12,13 +12,13 @@ use Tests\Traits\MockExternalApis;
 use Database\Seeders\MinimalUserSeeder;
 use App\Models\CollectionHasDatasetVersion;
 use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 use App\Observers\CollectionHasDatasetVersionObserver;
 use Config;
 
 class CollectionHasDatasetVersionObserverTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

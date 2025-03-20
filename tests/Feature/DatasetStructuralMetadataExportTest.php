@@ -10,11 +10,11 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use Database\Seeders\SpatialCoverageSeeder;
 use App\Exports\DatasetStructuralMetadataExport;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class DatasetStructuralMetadataExportTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

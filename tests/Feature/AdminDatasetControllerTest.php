@@ -2,28 +2,28 @@
 
 namespace Tests\Feature;
 
+use Tests\TestCase;
 use App\Models\Dataset;
-use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
+use App\Jobs\LinkageExtraction;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Queue;
-use Tests\TestCase;
 use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DatasetVersionSeeder;
+use Illuminate\Support\Facades\Queue;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\DatasetVersionSeeder;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class AdminDatasetControllerTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
     }
     public const TEST_URL_DATASET = '/api/v1/datasets/admin_ctrl';
 
-    protected function setUp(): void
+    public function setUp(): void
     {
         $this->commonSetUp();
         $this->seed([

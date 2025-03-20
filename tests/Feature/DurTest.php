@@ -36,12 +36,12 @@ use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\DurHasDatasetVersionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class DurTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -86,12 +86,13 @@ class DurTest extends TestCase
             DurHasDatasetVersionSeeder::class,
         ]);
     }
+
     /**
      * Get All Data Use Registers with success
      *
      * @return void
      */
-    public function test_get_all_dur_with_success(): void
+    public function test_v1_get_all_dur_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
@@ -707,12 +708,19 @@ class DurTest extends TestCase
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
                 'email' => null,
-                'user_id' => 3,
+                'user_id' => User::all()->random()->id,
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
             $this->header,
         );
+
+        $responseNotification->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
 
@@ -761,7 +769,7 @@ class DurTest extends TestCase
                 'lastname' => 'Lastname',
                 'email' => 'firstname.lastname.123456789@test.com',
                 'password' => 'Passw@rd1!',
-                'sector_id' => 1,
+                'sector_id' => Sector::all()->random()->id,
                 'organisation' => 'Test Organisation',
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
@@ -815,8 +823,6 @@ class DurTest extends TestCase
             [],
             $this->header,
         );
-
-        // dd($responseDownload->decodeResponseJson());
 
         $content = $responseDownload->streamedContent();
         $this->assertMatchesRegularExpression('/Non-Gateway Datasets/', $content);

@@ -17,17 +17,17 @@ use Database\Seeders\UserSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\TeamHasUserSeeder;
-use Database\Seeders\EnquiryThreadSeeder;
 use Database\Seeders\EmailTemplateSeeder;
+use Database\Seeders\EnquiryThreadSeeder;
 use Database\Seeders\EnquiryMessageSeeder;
 use Database\Seeders\TeamUserHasRoleSeeder;
 use App\Exceptions\AliasReplyScannerException;
 use Webklex\PHPIMAP\Support\MessageCollection;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class AliasReplyScannerTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
 
     use MockExternalApis {
         setUp as commonSetUp;
@@ -102,6 +102,7 @@ class AliasReplyScannerTest extends TestCase
         $this->assertSame(array_keys($response->toArray()), [
             'id',
             'user_id',
+            'team_ids',
             'project_title',
             'unique_key',
             'is_dar_dialogue',
@@ -110,7 +111,6 @@ class AliasReplyScannerTest extends TestCase
             'is_general_enquiry',
             'is_feasibility_enquiry',
             'is_dar_review',
-            'team_ids',
         ]);
 
         $this->assertEquals($response->id, $thread->id);

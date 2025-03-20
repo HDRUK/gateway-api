@@ -9,11 +9,11 @@ use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SavedSearchSeeder;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class SavedSearchTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

@@ -28,7 +28,7 @@ use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\DataProviderCollsSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 use Database\Seeders\CollectionHasPublicationSeeder;
 use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
@@ -36,7 +36,7 @@ use Database\Seeders\PublicationHasDatasetVersionSeeder;
 class DataProviderCollTest extends TestCase
 {
     use WithFaker;
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

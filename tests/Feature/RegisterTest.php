@@ -7,11 +7,11 @@ use Tests\TestCase;
 use App\Models\User;
 use Database\Seeders\SectorSeeder;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class RegisterTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
 
     public const TEST_URL = '/api/v1/register';
 

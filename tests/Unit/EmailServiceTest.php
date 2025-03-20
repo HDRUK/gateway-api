@@ -3,15 +3,15 @@
 namespace Tests\Unit;
 
 use App\Mail\Email;
-use App\Models\EmailTemplate;
 use Tests\TestCase;
-use Database\Seeders\EmailTemplateSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\EmailTemplate;
 use Illuminate\Support\Facades\Http;
+use Database\Seeders\EmailTemplateSeeder;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class EmailServiceTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
 
     public function setUp(): void
     {

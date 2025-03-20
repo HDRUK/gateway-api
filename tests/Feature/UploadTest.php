@@ -21,11 +21,11 @@ use Database\Seeders\SpatialCoverageSeeder;
 use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\QuestionBankSeeder;
 use Database\Seeders\DataAccessApplicationSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class UploadTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

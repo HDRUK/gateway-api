@@ -3,12 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\CustomerSatisfaction;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 use Tests\TestCase;
 
 class CustomerSatisfactionTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
 
     /**
      * Test creating a CustomerSatisfaction entry.

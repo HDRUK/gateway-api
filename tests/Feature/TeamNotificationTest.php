@@ -7,11 +7,11 @@ use Tests\TestCase;
 use App\Http\Enums\TeamMemberOf;
 use App\Models\TeamHasNotification;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class TeamNotificationTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

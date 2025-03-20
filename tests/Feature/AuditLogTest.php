@@ -2,16 +2,18 @@
 
 namespace Tests\Feature;
 
+use App\Models\Team;
 use Config;
 use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\AuditLogSeeder;
+use App\Models\User;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\AuditLogSeeder;
+use Database\Seeders\MinimalUserSeeder;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class AuditLogTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -277,8 +279,8 @@ class AuditLogTest extends TestCase
             'POST',
             self::TEST_URL,
             [
-                'user_id' => 1,
-                'team_id' => 2,
+                'user_id' => User::all()->random()->id,
+                'team_id' => Team::all()->random()->id,
                 'action_type' => 'CREATE',
                 'action_name' => 'Gateway API',
                 'description' => 'Test audit log description',

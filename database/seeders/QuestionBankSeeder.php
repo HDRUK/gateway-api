@@ -16,8 +16,6 @@ class QuestionBankSeeder extends Seeder
      */
     public function run(): void
     {
-
-
         DataAccessSection::truncate();
         QuestionHasTeam::truncate();
         QuestionBankVersionHasChildVersion::truncate();

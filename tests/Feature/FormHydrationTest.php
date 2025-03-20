@@ -16,11 +16,11 @@ use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\TeamHasUserSeeder;
 use MetadataManagementController as MMC;
 use Database\Seeders\DatasetVersionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class FormHydrationTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use Authorization;
 
     protected $header = [];

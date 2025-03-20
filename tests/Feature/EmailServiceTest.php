@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class EmailServiceTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use WithFaker;
 
     public function setUp(): void
@@ -26,12 +26,6 @@ class EmailServiceTest extends TestCase
         ]);
 
         Bus::fake();
-    }
-
-    public function tearDown(): void
-    {
-        Bus::fake();
-        parent::tearDown();
     }
 
     public function test_dispatch_email_job()

@@ -7,11 +7,11 @@ use Tests\TestCase;
 use Database\Seeders\FeatureSeeder;
 use Tests\Traits\MockExternalApis;
 use App\Models\Feature as FeatureModel;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class FeatureTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

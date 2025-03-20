@@ -2,19 +2,19 @@
 
 namespace Tests\Unit;
 
-use EnquiriesManagementController as EMC;
 use Tests\TestCase;
+use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
-use App\Models\Role;
 use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use EnquiriesManagementController as EMC;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class EnquiriesManagementControllerTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
 
     public function setUp(): void
     {

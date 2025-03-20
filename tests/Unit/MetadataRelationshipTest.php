@@ -2,22 +2,22 @@
 
 namespace Tests\Unit;
 
+use Tests\TestCase;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
-use App\Models\DatasetVersionHasDatasetVersion;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\TeamSeeder;
 use Database\Seeders\UserSeeder;
 use Database\Seeders\PermissionSeeder;
+use App\Http\Traits\MetadataVersioning;
 use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\TeamUserHasRoleSeeder;
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Http\Traits\MetadataVersioning;
+use App\Models\DatasetVersionHasDatasetVersion;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class MetadataRelationshipTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MetadataVersioning;
 
     public function setUp(): void

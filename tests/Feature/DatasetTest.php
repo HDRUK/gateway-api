@@ -18,11 +18,11 @@ use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Support\Facades\Storage;
 use Database\Seeders\SpatialCoverageSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class DatasetTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use WithFaker;
     use Authorization;
     use MockExternalApis {
@@ -54,12 +54,6 @@ class DatasetTest extends TestCase
         $this->metadata = $this->getMetadata();
         $this->metadataAlt = $this->metadata;
         $this->metadataAlt['metadata']['summary']['title'] = 'ABC title';
-    }
-
-    protected function tearDown(): void
-    {
-        \DB::rollBack();
-        parent::tearDown();
     }
 
     /**

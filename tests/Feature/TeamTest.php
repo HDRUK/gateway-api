@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
+// use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 use Config;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
@@ -11,12 +11,12 @@ use App\Models\Dataset;
 use App\Models\Team;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 use MetadataManagementController as MMC;
 
 class TeamTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

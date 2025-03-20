@@ -443,7 +443,7 @@ class ActivityLogController extends Controller
     public function destroy(DeleteActivityLog $request, int $id): JsonResponse
     {
         try {
-            ActivityLog::where('permission_id', $id)->delete();
+            ActivityLog::where('id', $id)->delete();
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),

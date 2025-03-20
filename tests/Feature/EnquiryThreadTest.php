@@ -10,13 +10,13 @@ use Database\Seeders\EmailTemplateSeeder;
 use Database\Seeders\EnquiryThreadSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 
 class EnquiryThreadTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

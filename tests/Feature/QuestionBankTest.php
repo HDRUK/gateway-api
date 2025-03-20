@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
+// use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 use Config;
 use App\Models\QuestionBank;
 use App\Models\QuestionBankVersion;
@@ -12,12 +12,12 @@ use Database\Seeders\TeamSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\QuestionBankSeeder;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
 class QuestionBankTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

@@ -12,12 +12,12 @@ use App\Http\Enums\TeamMemberOf;
 use Database\Seeders\SectorSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\EmailTemplateSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 use Tests\Traits\MockExternalApis;
 
 class TeamUserTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use Authorization;
     use MockExternalApis{
         setUp as commonSetUp;

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
+// use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 use Config;
 use Tests\TestCase;
 use App\Models\Team;
@@ -25,10 +25,12 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\DataAccessTemplateSeeder;
 use Database\Seeders\DataAccessApplicationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class DataAccessApplicationTest extends TestCase
 {
     use WithFaker;
+    // use FastRefreshDatabase;
     use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;

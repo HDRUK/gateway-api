@@ -29,11 +29,11 @@ use Database\Seeders\SpatialCoverageSeeder;
 use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class DurObserverTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

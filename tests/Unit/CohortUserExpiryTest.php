@@ -10,13 +10,13 @@ use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Mail;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\MinimalUserSeeder;
-use App\Models\CohortRequestHasPermission;
 use Database\Seeders\EmailTemplateSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\CohortRequestHasPermission;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class CohortUserExpiryTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

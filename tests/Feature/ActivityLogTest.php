@@ -2,18 +2,21 @@
 
 namespace Tests\Feature;
 
+use App\Models\ActivityLogType;
+use App\Models\ActivityLogUserType;
 use Config;
 use Tests\TestCase;
+use App\Models\User;
+use Tests\Traits\MockExternalApis;
+use Database\Seeders\ActivityLogSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ActivityLogTypeSeeder;
 use Database\Seeders\ActivityLogUserTypeSeeder;
-use Database\Seeders\ActivityLogSeeder;
-use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Plannr\Laravel\FastRefreshDatabase\Traits\FastRefreshDatabase;
 
 class ActivityLogTest extends TestCase
 {
-    use RefreshDatabase;
+    use FastRefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -88,9 +91,9 @@ class ActivityLogTest extends TestCase
             'api/v1/activity_logs',
             [
                 'event_type' => 'test_case',
-                'user_type_id' => 1,
-                'log_type_id' => 1,
-                'user_id' => 1,
+                'user_type_id' => ActivityLogUserType::all()->random()->id,
+                'log_type_id' => ActivityLogType::all()->random()->id,
+                'user_id' => User::all()->random()->id,
                 'version' => '2.1.0',
                 'html' => '<b>something</b>',
                 'plain_text' => 'something',
@@ -141,9 +144,9 @@ class ActivityLogTest extends TestCase
             'api/v1/activity_logs',
             [
                 'event_type' => 'test_case',
-                'user_type_id' => 1,
-                'log_type_id' => 1,
-                'user_id' => 1,
+                'user_type_id' => ActivityLogUserType::all()->random()->id,
+                'log_type_id' => ActivityLogType::all()->random()->id,
+                'user_id' => User::all()->random()->id,
                 'version' => '2.1.0',
                 'html' => '<b>something</b>',
                 'plain_text' => 'something',
@@ -180,9 +183,9 @@ class ActivityLogTest extends TestCase
             'api/v1/activity_logs',
             [
                 'event_type' => 'test_case',
-                'user_type_id' => 1,
-                'log_type_id' => 1,
-                'user_id' => 1,
+                'user_type_id' => ActivityLogUserType::all()->random()->id,
+                'log_type_id' => ActivityLogType::all()->random()->id,
+                'user_id' => User::all()->random()->id,
                 'version' => '2.1.0',
                 'html' => '<b>something</b>',
                 'plain_text' => 'something',
@@ -206,14 +209,17 @@ class ActivityLogTest extends TestCase
 
         // Finally, update the last entered activity log to
         // prove functionality
+        $newActiviyLogUserTypeId = (int) ActivityLogUserType::all()->random()->id;
+        $newActiviyLogTypeId = (int) ActivityLogType::all()->random()->id;
+        $newUserId = (int) User::all()->random()->id;
         $response = $this->json(
             'PUT',
             'api/v1/activity_logs/' . $content['data'],
             [
                 'event_type' => 'updated_test_case',
-                'user_type_id' => 2,
-                'log_type_id' => 2,
-                'user_id' => 2,
+                'user_type_id' => $newActiviyLogUserTypeId,
+                'log_type_id' => $newActiviyLogTypeId,
+                'user_id' => $newUserId,
                 'version' => '1.0.0',
                 'html' => '<b>something</b>',
                 'plain_text' => 'something',
@@ -226,9 +232,9 @@ class ActivityLogTest extends TestCase
         $content = $response->decodeResponseJson();
 
         $this->assertEquals($content['data']['event_type'], 'updated_test_case');
-        $this->assertEquals($content['data']['user_type_id'], 2);
-        $this->assertEquals($content['data']['log_type_id'], 2);
-        $this->assertEquals($content['data']['user_id'], 2);
+        $this->assertEquals($content['data']['user_type_id'], $newActiviyLogUserTypeId);
+        $this->assertEquals($content['data']['log_type_id'], $newActiviyLogTypeId);
+        $this->assertEquals($content['data']['user_id'], $newUserId);
         $this->assertEquals($content['data']['version'], '1.0.0');
     }
 
@@ -245,9 +251,9 @@ class ActivityLogTest extends TestCase
             'api/v1/activity_logs',
             [
                 'event_type' => 'test_case',
-                'user_type_id' => 1,
-                'log_type_id' => 1,
-                'user_id' => 1,
+                'user_type_id' => ActivityLogUserType::all()->random()->id,
+                'log_type_id' => ActivityLogType::all()->random()->id,
+                'user_id' => User::all()->random()->id,
                 'version' => '2.1.0',
                 'html' => '<b>something</b>',
                 'plain_text' => 'something',
@@ -273,14 +279,17 @@ class ActivityLogTest extends TestCase
         $id = $content['data'];
 
         // update
+        $newActiviyLogUserTypeId = (int) ActivityLogUserType::all()->random()->id;
+        $newActiviyLogTypeId = (int) ActivityLogType::all()->random()->id;
+        $newUserId = (int) User::all()->random()->id;
         $response = $this->json(
             'PUT',
             'api/v1/activity_logs/' . $id,
             [
                 'event_type' => 'updated_test_case',
-                'user_type_id' => 2,
-                'log_type_id' => 2,
-                'user_id' => 2,
+                'user_type_id' => $newActiviyLogUserTypeId,
+                'log_type_id' => $newActiviyLogTypeId,
+                'user_id' => $newUserId,
                 'version' => '1.0.0',
                 'html' => '<b>something</b>',
                 'plain_text' => 'something',
@@ -293,9 +302,9 @@ class ActivityLogTest extends TestCase
         $content = $response->decodeResponseJson();
 
         $this->assertEquals($content['data']['event_type'], 'updated_test_case');
-        $this->assertEquals($content['data']['user_type_id'], 2);
-        $this->assertEquals($content['data']['log_type_id'], 2);
-        $this->assertEquals($content['data']['user_id'], 2);
+        $this->assertEquals($content['data']['user_type_id'], $newActiviyLogUserTypeId);
+        $this->assertEquals($content['data']['log_type_id'], $newActiviyLogTypeId);
+        $this->assertEquals($content['data']['user_id'], $newUserId);
         $this->assertEquals($content['data']['version'], '1.0.0');
 
         // edit/patch
@@ -313,12 +322,13 @@ class ActivityLogTest extends TestCase
         $this->assertEquals($contentPatch1['data']['event_type'], 'updated_test_case_edit');
 
         // edit/patch
+        $newActiviyLogUserTypeId = (int) ActivityLogUserType::all()->random()->id;
         $responsePatch2 = $this->json(
             'PATCH',
             'api/v1/activity_logs/' . $id,
             [
                 'event_type' => 'updated_test_case_edit_another',
-                'user_type_id' => 1,
+                'user_type_id' => $newActiviyLogUserTypeId,
             ],
             $this->header,
         );
@@ -326,17 +336,20 @@ class ActivityLogTest extends TestCase
         $contentPatch2 = $responsePatch2->decodeResponseJson();
 
         $this->assertEquals($contentPatch2['data']['event_type'], 'updated_test_case_edit_another');
-        $this->assertEquals($contentPatch2['data']['user_type_id'], 1);
+        $this->assertEquals($contentPatch2['data']['user_type_id'], $newActiviyLogUserTypeId);
 
         // edit/patch
+        $newActiviyLogUserTypeId = (int) ActivityLogUserType::all()->random()->id;
+        $newActiviyLogTypeId = (int) ActivityLogType::all()->random()->id;
+        $newUserId = (int) User::all()->random()->id;
         $responsePatch3 = $this->json(
             'PATCH',
             'api/v1/activity_logs/' . $id,
             [
                 'event_type' => 'updated_test_case',
-                'user_type_id' => 1,
-                'log_type_id' => 1,
-                'user_id' => 1,
+                'user_type_id' => $newActiviyLogUserTypeId,
+                'log_type_id' => $newActiviyLogTypeId,
+                'user_id' => $newUserId,
                 'version' => '1.0.1',
                 'html' => '<b>something else</b>',
                 'plain_text' => 'something else',
@@ -349,9 +362,9 @@ class ActivityLogTest extends TestCase
         $contentPatch3 = $responsePatch3->decodeResponseJson();
 
         $this->assertEquals($contentPatch3['data']['event_type'], 'updated_test_case');
-        $this->assertEquals($contentPatch3['data']['user_type_id'], 1);
-        $this->assertEquals($contentPatch3['data']['log_type_id'], 1);
-        $this->assertEquals($contentPatch3['data']['user_id'], 1);
+        $this->assertEquals($contentPatch3['data']['user_type_id'], $newActiviyLogUserTypeId);
+        $this->assertEquals($contentPatch3['data']['log_type_id'], $newActiviyLogTypeId);
+        $this->assertEquals($contentPatch3['data']['user_id'], $newUserId);
         $this->assertEquals($contentPatch3['data']['version'], '1.0.1');
         $this->assertEquals($contentPatch3['data']['user_id_mongo'], 'user_id_mongo-new');
         $this->assertEquals($contentPatch3['data']['version_id_mongo'], 'version_id_mongo-new');
@@ -371,9 +384,9 @@ class ActivityLogTest extends TestCase
             'api/v1/activity_logs',
             [
                 'event_type' => 'test_case',
-                'user_type_id' => 1,
-                'log_type_id' => 1,
-                'user_id' => 1,
+                'user_type_id' => ActivityLogUserType::all()->random()->id,
+                'log_type_id' => ActivityLogType::all()->random()->id,
+                'user_id' => User::all()->random()->id,
                 'version' => '2.1.0',
                 'html' => '<b>something</b>',
                 'plain_text' => 'something',
