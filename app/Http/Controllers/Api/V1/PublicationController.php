@@ -536,7 +536,11 @@ class PublicationController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $initPublication = Publication::withTrashed()->where('id', $id)->first();
-        $this->checkAccess($input, null, $initPublication->owner_id, 'user');
+        if ($initPublication->team_id) {
+            $this->checkAccess($input, $initPublication->team_id, null, 'team');
+        } else {
+            $this->checkAccess($input, null, $initPublication->owner_id, 'user');
+        }
 
         try {
 
@@ -693,7 +697,11 @@ class PublicationController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $publicationModel = Publication::withTrashed()->where('id', $id)->first();
-        $this->checkAccess($input, null, $publicationModel->owner_id, 'user');
+        if ($publicationModel->team_id) {
+            $this->checkAccess($input, $publicationModel->team_id, null, 'team');
+        } else {
+            $this->checkAccess($input, null, $publicationModel->owner_id, 'user');
+        }
 
         try {
             $originalStatus = $publicationModel->status;
@@ -852,7 +860,11 @@ class PublicationController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $publication = Publication::where(['id' => $id])->first();
-        $this->checkAccess($input, null, $publication->owner_id, 'user');
+        if ($publication->team_id) {
+            $this->checkAccess($input, $publication->team_id, null, 'team');
+        } else {
+            $this->checkAccess($input, null, $publication->owner_id, 'user');
+        }
 
         try {
             if ($publication) {
