@@ -301,8 +301,8 @@ class ScanFileUpload implements ShouldQueue
             if (env('DB_CONNECTION') !== 'sqlite') {
                 $dCleaned = trim($d);
                 $datasetVersion = DatasetVersion::whereRaw(
-                    "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.shortTitle')) LIKE LOWER(?)",
-                    ["%$dCleaned%"]
+                    'LOWER(short_title) LIKE ?',
+                    ['%' . strtolower($dCleaned) . '%']
                 )->latest('version')->first();
                 if ($datasetVersion) {
                     DurHasDatasetVersion::create([
