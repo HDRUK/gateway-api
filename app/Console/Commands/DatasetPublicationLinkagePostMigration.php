@@ -53,8 +53,8 @@ class DatasetPublicationLinkagePostMigration extends Command
 
             // Find DatasetVersion associated to this row
             $datasetVersion = DatasetVersion::whereRaw(
-                'LOWER(short_title) LIKE ?',
-                ['%' . strtolower($datasetTitle) . '%']
+                "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.title')) LIKE LOWER(?)",
+                ["%$datasetTitle%"]
             )->latest('version')->first();
             if (!$datasetVersion) {
                 echo 'Failed to find dataset with title ' . $datasetTitle . "\n";
