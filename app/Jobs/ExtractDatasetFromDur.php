@@ -11,6 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Support\Facades\Validator;
 
 class ExtractDatasetFromDur implements ShouldQueue
 {
@@ -46,10 +47,18 @@ class ExtractDatasetFromDur implements ShouldQueue
         $dur = Dur::findOrFail($durId);
         $nonGatewayDatasets = $dur['non_gateway_datasets'] ?? [];
         $unmatched = array();
-        foreach ($nonGatewayDatasets as $d) {
+        foreach ($nonGatewayDatasets as $nonGatewayDataset) {
+            $nonDataset = trim($nonGatewayDataset);
+
             // Try to match on url
-            if (str_contains($d, env('GATEWAY_URL'))) {
-                $exploded = explode('/', $d);
+            $isUrl = Validator::make([
+                'url' => $nonDataset
+            ], [
+                'url' => 'required|url|starts_with:' . env('GATEWAY_URL'),
+            ]);
+
+            if (!$isUrl->fails()) {
+                $exploded = explode('/', $nonDataset);
                 $datasetId = (int) end($exploded);
                 $dataset = Dataset::where('id', $datasetId)->first();
                 if ($dataset) {
@@ -62,27 +71,20 @@ class ExtractDatasetFromDur implements ShouldQueue
                 }
             }
 
-            // Try to string match on dataset titles
-            // BES 30/10/24: skip this attempt if running on an sqlite DB_CONNECTION
-            // because JSON_UNQUOTE does not exist in sqlite
-            // and the alternative of grabbing and searching all the metadata is computationally infeasible
-            if (env('DB_CONNECTION') !== 'sqlite') {
-                $dCleaned = trim($d);
-                $datasetVersion = DatasetVersion::whereRaw(
-                    "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.shortTitle')) LIKE LOWER(?)",
-                    ["%$dCleaned%"]
-                )->latest('version')->first();
-                if ($datasetVersion) {
-                    DurHasDatasetVersion::create([
-                        'dur_id' => $durId,
-                        'dataset_version_id' => $datasetVersion->id
-                    ]);
-                    continue;
-                }
+            $datasetVersion = DatasetVersion::whereRaw(
+                'LOWER(short_title) LIKE ?',
+                ['%' . strtolower($nonDataset) . '%']
+            )->latest('version')->first();
+            if ($datasetVersion) {
+                DurHasDatasetVersion::create([
+                    'dur_id' => $durId,
+                    'dataset_version_id' => $datasetVersion->id
+                ]);
+                continue;
             }
 
             // If no match above, assume $d is a non gateway dataset
-            $unmatched[] = $d;
+            $unmatched[] = $nonDataset;
         }
 
         $dur->update([

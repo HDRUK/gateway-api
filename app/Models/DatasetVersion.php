@@ -173,7 +173,7 @@ class DatasetVersion extends Model
             'linkage_type',
         )->selectRaw("dataset_versions.id,
         JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.title')) as title,
-        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.shortTitle')) as shortTitle");
+        short_title as shortTitle");
     }
 
 }

@@ -38,8 +38,8 @@ class UpdateDurHasDatasetsGat6531 extends Command
             foreach ($nonGatewayDatasets as $nonGatewayDataset) {
                 $datasetName = trim($nonGatewayDataset);
                 $search = DatasetVersion::whereRaw(
-                    "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.shortTitle')) LIKE LOWER(?)",
-                    ["%$datasetName%"]
+                    'LOWER(short_title) LIKE ?',
+                    ['%' . strtolower($datasetName) . '%']
                 )->latest('version')->first();
 
                 if (is_null($search)) {
