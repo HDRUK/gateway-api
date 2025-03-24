@@ -46,6 +46,16 @@ class DataAccessTemplateController extends Controller
      *            description="Include questions in response",
      *         ),
      *      ),
+     *      @OA\Parameter(
+     *        name="published",
+     *        in="query",
+     *        description="Template publication status to filter by (true, false)",
+     *        example="true",
+     *        @OA\Schema(
+     *          type="string",
+     *          description="Template publication status to filter by",
+     *        ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -75,10 +85,11 @@ class DataAccessTemplateController extends Controller
         try {
 
             $withQuestions = $request->boolean('with_questions', false);
-            $filterPublished = $request->boolean('published', null);
+            $filterPublished = isset($input['published']) ? $request->boolean('published') : null;
+            $filterPublishedDefined = !is_null($filterPublished);
 
             $templates = DataAccessTemplate::when($withQuestions, fn ($query) => $query->with('questions'))
-            ->when($filterPublished, function ($query) use ($filterPublished) {
+            ->when($filterPublishedDefined, function ($query) use ($filterPublished) {
                 return $query->where('published', $filterPublished);
             });
 
