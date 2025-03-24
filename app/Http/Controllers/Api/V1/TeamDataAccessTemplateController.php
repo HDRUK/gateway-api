@@ -54,7 +54,12 @@ class TeamDataAccessTemplateController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
+            $filterPublished = $request->query('published', null);
+
             $templates = DataAccessTemplate::where('team_id', $teamId)
+            ->when($filterPublished, function ($query) use ($filterPublished) {
+                return $query->where('published', $filterPublished);
+            })
             ->with(['questions','files'])
             ->paginate(
                 Config::get('constants.per_page'),
