@@ -4572,7 +4572,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'check.access:permissions,question-bank.read',
         ],
         'constraint' => [],
     ],
@@ -4584,7 +4583,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'check.access:permissions,question-bank.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
