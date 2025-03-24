@@ -72,7 +72,7 @@ trait MetadataVersioning
 
             $newVersion = DatasetVersion::create([
                 'dataset_id' => $currDataset->id,
-                'metadata' => json_encode($metadataSaveObject),
+                'metadata' => $metadataSaveObject,
                 'version' => $versionNumber,
             ]);
 
@@ -98,7 +98,7 @@ trait MetadataVersioning
                 'dataset_id' => $currDataset->id,
                 'version' => $versionNumber,
             ])->update([
-                'metadata' => json_encode($metadataSaveObject),
+                'metadata' => $metadataSaveObject,
             ]);
         }
 

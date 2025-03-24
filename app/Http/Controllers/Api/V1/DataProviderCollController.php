@@ -704,10 +704,10 @@ class DataProviderCollController extends Controller
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             DataProviderCollHasTeam::where(['data_provider_coll_id' => $id])->delete();
             DataProviderColl::where(['id' => $id])->delete();
 
