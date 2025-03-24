@@ -823,7 +823,7 @@ class IntegrationDatasetController extends Controller
                 // Create new metadata version for this dataset
                 $version = DatasetVersion::create([
                     'dataset_id' => $currDataset->id,
-                    'metadata' => json_encode($input['metadata']),
+                    'metadata' => $input['metadata'],
                     'version' => ($lastVersionNumber + 1),
                 ]);
 

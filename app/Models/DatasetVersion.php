@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
-use App\Observers\DatasetVersionObserver;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Prunable;
+use App\Observers\DatasetVersionObserver;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 #[ObservedBy(DatasetVersionObserver::class)]
 class DatasetVersion extends Model
@@ -44,6 +45,25 @@ class DatasetVersion extends Model
     ];
 
     /**
+     * Get and Set the metadata.
+     *
+     * @return \Illuminate\Database\Eloquent\Casts\Attribute
+     */
+    public function metadata(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value) {
+                $response = json_decode($value, true);
+                if (is_string($response)) {
+                    $response = json_decode($response, true);
+                }
+                return $response;
+            },
+            set: fn ($value) => is_array($value) ? json_encode($value) : $value,
+        );
+    }
+
+    /**
      * Accessor for the metadata field to convert json string to
      * php array for inclusion in json response object. Weirdly
      * the $casts of metadata to array _was_ failing. Possibly due
@@ -54,23 +74,23 @@ class DatasetVersion extends Model
      *
      * @return array The json metadata string as an array
      */
-    public function getMetadataAttribute($value): array
-    {
-        // If the value is already an array, return it directly
-        if (is_array($value)) {
-            return $value;
-        }
+    // public function getMetadataAttribute($value): array
+    // {
+    //     // If the value is already an array, return it directly
+    //     if (is_array($value)) {
+    //         return $value;
+    //     }
 
-        // Decode the value if it's a JSON string
-        $decodedValue = json_decode($value, true);
+    //     // Decode the value if it's a JSON string
+    //     $decodedValue = json_decode($value, true);
 
-        // If the value is still a JSON string after decoding, decode it again
-        if (is_string($decodedValue)) {
-            return json_decode($decodedValue, true);
-        }
+    //     // If the value is still a JSON string after decoding, decode it again
+    //     if (is_string($decodedValue)) {
+    //         return json_decode($decodedValue, true);
+    //     }
 
-        return $decodedValue;
-    }
+    //     return $decodedValue;
+    // }
 
     /**
     * Scope a query to filter on metadata summary title
