@@ -1,3 +1,24 @@
+## [2.4.0](https://github.com/HDRUK/gateway-api/compare/v2.3.3...v2.4.0) (2025-03-25)
+
+### ✨ Features
+
+* **GAT-6391:** add file based dar templates and files for dar reviews (#1144) ([bb66a88](https://github.com/HDRUK/gateway-api/commit/bb66a88328317aa24fdd9683a0423fdfe4c89d7a)), closes [GAT-6391](GAT-6391)
+* **GAT-6396:** Add new filter to Datasets table for 'Data Standard' (#1145) ([5cb05c7](https://github.com/HDRUK/gateway-api/commit/5cb05c78c2165f86c78c2a42fd7ccca0afbf8a3a)), closes [GAT-6396](GAT-6396)
+* **GAT-6415:** Create a new job initiator to create a publication from Dataset & BioSample metadata (#1135) ([dcd9d94](https://github.com/HDRUK/gateway-api/commit/dcd9d94ae6c2f71e6fa0e35a6d1eeb41751a1b96)), closes [GAT-6415](GAT-6415)
+* **GAT-6458:** - Split out social logins For DTA (#1112) ([1247458](https://github.com/HDRUK/gateway-api/commit/1247458b9810d2b9f9e761c52a806fd507802960)), closes [GAT-6458](GAT-6458)
+* **GAT-6528:** add dar count endpoints with all counts (#1139) ([8d690fa](https://github.com/HDRUK/gateway-api/commit/8d690fae48a542d4d2799014172b9989a7949016)), closes [GAT-6528](GAT-6528)
+
+### 🐛 Bug Fixes
+
+* **GAT-6415:** update dataset versions and publications (#1143) ([250c9c6](https://github.com/HDRUK/gateway-api/commit/250c9c67b14770803408deadbb8a1ce338ef1e5d)), closes [GAT-6415](GAT-6415)
+* **GAT-6430:** check for array in validations (#1137) ([e750dcc](https://github.com/HDRUK/gateway-api/commit/e750dcc9bee3ec7ec5555a35a6723383445ef985)), closes [GAT-6430](GAT-6430)
+* **GAT-6430:** patch to update question_json fields (#1134) ([6419e74](https://github.com/HDRUK/gateway-api/commit/6419e74d80d664d729725b755bd7a229d652ae66)), closes [GAT-6430](GAT-6430)
+* **GAT-6443:** add short title column in dataset_versions for search (#1149) ([1723980](https://github.com/HDRUK/gateway-api/commit/1723980f86a20cc3a3fe199e88e477db9905a0c0)), closes [GAT-6443](GAT-6443)
+* **GAT-6450:** Data use upload not rendering correct content in editing view (#1133) ([866663f](https://github.com/HDRUK/gateway-api/commit/866663fd0c3eb877b9f565fada92a15f05c17a4c)), closes [GAT-6450](GAT-6450)
+* **GAT-6531:** Data Use Register not matching Gateway Datasets & BioSamples during upload process (#1132) ([35dce0f](https://github.com/HDRUK/gateway-api/commit/35dce0f28134a79ef142d7cba8d6aae684f90950)), closes [GAT-6531](GAT-6531)
+* **GAT-6617:** array access, not property (#1140) ([61031fd](https://github.com/HDRUK/gateway-api/commit/61031fd3d8c5b437f4afa32a96ab2596cb5e249a)), closes [GAT-6617](GAT-6617)
+* **GAT-6630:** ease permissions on dar/sections get (#1150) ([1394066](https://github.com/HDRUK/gateway-api/commit/139406633e79b4bd5c8661c2dc97bf2621d4c1af)), closes [GAT-6630](GAT-6630)
+
 ## [2.3.3](https://github.com/HDRUK/gateway-api/compare/v2.3.2...v2.3.3) (2025-03-17)
 
 ### 🐛 Bug Fixes
