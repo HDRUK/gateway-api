@@ -480,10 +480,8 @@ class TeamController extends Controller
                 $tool['user'] = $user;
             }
 
-            $collections = Collection::whereIn('id', $this->collections)
-                ->where([
-                    'team_id' => $id,
-                ])
+            $collections = Collection::where(['team_id' => $id ])
+                ->whereIn('id', $this->collections)
                 ->select('id', 'name', 'image_link', 'created_at', 'updated_at', 'status', 'public')
                 ->get()
                 ->toArray();
