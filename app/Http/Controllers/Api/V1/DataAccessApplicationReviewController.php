@@ -106,6 +106,8 @@ class DataAccessApplicationReviewController extends Controller
                 ->with(['comments','files'])
                 ->get();
 
+            $this->getNamesInComments($reviews);
+
             if ($reviews) {
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
@@ -206,6 +208,8 @@ class DataAccessApplicationReviewController extends Controller
             $reviews = DataAccessApplicationReview::where('application_id', $id)
                 ->with(['comments','files'])
                 ->get();
+
+            $this->getNamesInComments($reviews);
 
             if ($reviews) {
                 Auditor::log([

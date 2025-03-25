@@ -1246,6 +1246,8 @@ class DataAccessApplicationTest extends TestCase
                                 'team_id',
                                 'user_id',
                                 'comment',
+                                'team_name',
+                                'user_name',
                             ]
                         ],
                         'files',
