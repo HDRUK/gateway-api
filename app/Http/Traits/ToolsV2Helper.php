@@ -85,9 +85,13 @@ trait ToolsV2Helper
         ->where([
             'team_id' => $teamId,
             'id' => $toolId,
-            'status' => $toolId,
+            'status' => strtoupper($status),
         ])
         ->first();
+
+        if (is_null($tool)) {
+            return null;
+        }
 
         $tool->name = html_entity_decode($tool->name);
         $tool->description = html_entity_decode($tool->description);
