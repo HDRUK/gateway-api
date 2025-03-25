@@ -2442,6 +2442,68 @@ class DataAccessApplicationTest extends TestCase
             ]);
     }
 
+    /**
+     * Tests a user can delete a dar application
+     *
+     * @return void
+     */
+    public function test_user_can_delete_a_dar_application()
+    {
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'DRAFT',
+                'project_title' => 'A test DAR',
+                'dataset_ids' => [1,2],
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $content = $response->decodeResponseJson();
+
+        $response = $this->json(
+            'DELETE',
+            'api/v1/users/1/dar/applications/' . $content['data'],
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        // Test user cannot delete after submission
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'SUBMITTED',
+                'project_title' => 'A test DAR',
+                'dataset_ids' => [1,2],
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $content = $response->decodeResponseJson();
+
+        $response = $this->json(
+            'DELETE',
+            'api/v1/users/1/dar/applications/' . $content['data'],
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+    }
+
     private function createQuestion(string $title): int
     {
         $response = $this->json(
