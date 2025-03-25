@@ -481,6 +481,9 @@ class TeamController extends Controller
             }
 
             $collections = Collection::whereIn('id', $this->collections)
+                ->where([
+                    'team_id' => $id,
+                ])
                 ->select('id', 'name', 'image_link', 'created_at', 'updated_at', 'status', 'public')
                 ->get()
                 ->toArray();
