@@ -393,14 +393,12 @@ trait DataAccessApplicationHelpers
         foreach ($reviews as $review) {
             foreach ($review['comments'] as $comment) {
                 if ($comment['team_id']) {
-                    $comment['team_name'] = Team::where('id', $comment['team_id'])
-                        ->select('name')->pluck('name')->first();
+                    $comment['team_name'] = Team::where('id', $comment['team_id'])->value('name');
                 } else {
                     $comment['team_name'] = null;
                 }
                 if ($comment['user_id']) {
-                    $comment['user_name'] = User::where('id', $comment['user_id'])
-                        ->select('name')->pluck('name')->first();
+                    $comment['user_name'] = User::where('id', $comment['user_id'])->value('name');
                 } else {
                     $comment['user_name'] = null;
                 }
