@@ -3,7 +3,6 @@
 namespace Database\Beta;
 
 use App\Models\EmailTemplate;
-
 use Illuminate\Database\Seeder;
 
 class EmailTemplatesBetaDemo extends Seeder

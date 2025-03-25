@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
@@ -31,5 +30,10 @@ class DataAccessApplicationReview extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(DataAccessApplicationComment::class, 'review_id');
+    }
+
+    public function files(): HasMany
+    {
+        return $this->hasMany(DataAccessApplicationReviewHasFile::class, 'review_id');
     }
 }

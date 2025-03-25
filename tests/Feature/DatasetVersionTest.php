@@ -11,7 +11,6 @@ use App\Models\User;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 use App\Http\Enums\TeamMemberOf;
-
 use Database\Seeders\TeamSeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\PermissionSeeder;
@@ -20,7 +19,6 @@ use Database\Seeders\UserSeeder;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\MinimalUserSeeder;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetVersionTest extends TestCase
@@ -281,7 +279,7 @@ class DatasetVersionTest extends TestCase
         $teamPid = Team::where('id', $teamId)->first()->getPid();
 
         $publisherId = $metadata['metadata']['summary']['publisher'];
-        if(version_compare(Config::get('metadata.GWDM.version'), "1.1", "<")) {
+        if (version_compare(Config::get('metadata.GWDM.version'), "1.1", "<")) {
             $publisherId =  $publisherId['publisherId'];
             $this->assertEquals(
                 $publisherId,

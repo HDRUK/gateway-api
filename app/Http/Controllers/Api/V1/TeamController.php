@@ -624,7 +624,7 @@ class TeamController extends Controller
                 }
 
                 //make sure the super admin is added to this team on creation
-                foreach($superAdminIds as $adminId) {
+                foreach ($superAdminIds as $adminId) {
                     TeamHasUser::create(
                         ['team_id' => $team->id, 'user_id' => $adminId],
                     );
@@ -1044,6 +1044,12 @@ class TeamController extends Controller
         try {
             $team = Team::findOrFail($teamId);
             if ($team) {
+                $existsDatasets = Dataset::where('team_id', $teamId)->select('id')->first();
+
+                if (!is_null($existsDatasets)) {
+                    throw new Exception('The team cannot be deleted as there are datasets currently assigned to it.');
+                }
+
                 TeamHasNotification::where('team_id', $teamId)->delete();
 
                 $deletePermanently = false;

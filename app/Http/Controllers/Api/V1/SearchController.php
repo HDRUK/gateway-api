@@ -18,14 +18,12 @@ use App\Models\DurHasTool;
 use App\Models\Publication;
 use App\Models\TypeCategory;
 use Illuminate\Http\Request;
-
 use Illuminate\Http\Response;
 use App\Exports\DataUseExport;
 use App\Models\DatasetVersion;
 use App\Exports\ToolListExport;
 use App\Models\DataProviderColl;
 use App\Http\Traits\IndexElastic;
-
 use App\Models\DurHasPublication;
 use Illuminate\Http\JsonResponse;
 use App\Exports\DatasetListExport;
@@ -191,7 +189,7 @@ class SearchController extends Controller
                 $model = Dataset::with('team')->where('id', $matchedId)
                     ->first();
 
-                if(!$model) {
+                if (!$model) {
                     \Log::warning('Elastic found id=' . $matchedId . ' which is not an existing dataset');
                     if (isset($datasetsArray[$i])) {
                         unset($datasetsArray[$i]);
@@ -1172,7 +1170,7 @@ class SearchController extends Controller
                 'aggregations' => isset($response['aggregations']) ? $response['aggregations'] : [],
                 'elastic_total' => $totalResults,
             ];
-            if  ($matchedIds) {
+            if ($matchedIds) {
                 $arrAggs['ids'] = $matchedIds;
             }
             $aggs = collect($arrAggs);
@@ -1349,6 +1347,7 @@ class SearchController extends Controller
                     $pubResult['journal_name'] = null;
                     $pubResult['publication_year'] = null;
                 }
+                $pubResult['fullTextUrl'] = isset($result['fullTextUrlList']['fullTextUrl']) ? $result['fullTextUrlList']['fullTextUrl'] : null;
             } else {
                 return response()->noContent();
             }

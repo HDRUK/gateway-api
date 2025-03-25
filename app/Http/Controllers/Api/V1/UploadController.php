@@ -88,6 +88,7 @@ class UploadController extends Controller
             $collectionId = $request->query('collection_id', null);
             $applicationId = $request->query('application_id', null);
             $questionId = $request->query('question_id', null);
+            $reviewId = $request->query('review_id', null);
 
             // store unscanned
             $storedFilename = time() . '_' . $file->getClientOriginalName();
@@ -127,6 +128,7 @@ class UploadController extends Controller
                 (int)$collectionId,
                 (int)$applicationId,
                 (int)$questionId,
+                (int)$reviewId,
             );
 
             // audit log

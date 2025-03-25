@@ -47,6 +47,28 @@ return [
     [
         'name' => 'login.social',
         'method' => 'get',
+        'path' => '/auth/dta/{provider}',
+        'methodController' => 'SocialLoginController@dtaLogin',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'provider' => 'google|azure|linkedin|openathens',
+        ],
+    ],
+    [
+        'name' => 'login.social',
+        'method' => 'get',
+        'path' => '/auth/dta/{provider}/callback',
+        'methodController' => 'SocialLoginController@dtaCallback',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'provider' => 'google|azure|linkedin|openathens',
+        ],
+    ],
+    [
+        'name' => 'login.social',
+        'method' => 'get',
         'path' => '/auth/{provider}/callback',
         'methodController' => 'SocialLoginController@callback',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
@@ -3027,12 +3049,28 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'publications.create',
+        'method' => 'post',
+        'path' => 'publications',
+        'methodController' => 'PublicationController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,papers.create',
+        ],
+        'constraint' => [
+        ],
+    ],
+    [
         'name' => 'publications.edit',
         'method' => 'patch',
         'path' => 'publications/{id}',
         'methodController' => 'PublicationController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,papers.update',
+        ],
         'constraint' => [],
     ],
     [
@@ -3041,16 +3079,10 @@ return [
         'path' => 'publications/{id}',
         'methodController' => 'PublicationController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'publications.create',
-        'method' => 'post',
-        'path' => 'publications',
-        'methodController' => 'PublicationController@store',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,papers.update',
+        ],
         'constraint' => [],
     ],
     [
@@ -3059,7 +3091,10 @@ return [
         'path' => 'publications/{id}',
         'methodController' => 'PublicationController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,papers.delete',
+        ],
         'constraint' => [],
     ],
 
@@ -3889,8 +3924,35 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'get',
+        'path' => 'teams/{teamId}/dar/applications/count',
+        'methodController' => 'TeamDataAccessApplicationController@allCounts',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-applications.provider.read',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
         'path' => 'users/{userId}/dar/applications/count/{field}',
         'methodController' => 'UserDataAccessApplicationController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => 'users/{userId}/dar/applications/count/',
+        'methodController' => 'UserDataAccessApplicationController@allCounts',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -4198,6 +4260,39 @@ return [
     ],
     [
         'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/dar/applications/{id}/reviews/{reviewId}/download/{fileId}',
+        'methodController' => 'DataAccessApplicationReviewController@downloadFile',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-applications.review.read',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
+            'reviewId' => '[0-9]+',
+            'fileId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/users/{userId}/dar/applications/{id}/reviews/{reviewId}/download/{fileId}',
+        'methodController' => 'DataAccessApplicationReviewController@downloadUserFile',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'userId' => '[0-9]+',
+            'reviewId' => '[0-9]+',
+            'fileId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
         'method' => 'post',
         'path' => '/teams/{teamId}/dar/applications/{id}/questions/{questionId}/reviews',
         'methodController' => 'DataAccessApplicationReviewController@store',
@@ -4324,6 +4419,23 @@ return [
             'reviewId' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'delete',
+        'path' => '/teams/{teamId}/dar/applications/{id}/reviews/{reviewId}/files/{fileId}',
+        'methodController' => 'DataAccessApplicationReviewController@destroyFile',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-applications.review.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
+            'reviewId' => '[0-9]+',
+            'fileId' => '[0-9]+',
+        ],
+    ],
 
     // dar/templates
     [
@@ -4359,6 +4471,19 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,data-access-template.read',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/templates',
+        'method' => 'get',
+        'path' => '/dar/templates/{id}/download',
+        'methodController' => 'DataAccessTemplateController@downloadFile',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -4420,6 +4545,22 @@ return [
         'constraint' => [
             'id' => '[0-9]+',
         ],
+        [
+            'name' => 'dar/templates',
+            'method' => 'delete',
+            'path' => 'teams/{teamId}/dar/templates/{id}/files/{fileId}',
+            'methodController' => 'TeamDataAccessTemplateController@destroyFile',
+            'namespaceController' => 'App\Http\Controllers\Api\V1',
+            'middleware' => [
+                'jwt.verify',
+                'check.access:permissions,data-access-template.delete',
+            ],
+            'constraint' => [
+                'id' => '[0-9]+',
+                'teamId' => '[0-9]+',
+                'fileId' => '[0-9]+',
+            ],
+        ]
     ],
 
     // dar/sections
@@ -4431,7 +4572,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'check.access:permissions,question-bank.read',
         ],
         'constraint' => [],
     ],
@@ -4443,7 +4583,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'check.access:permissions,question-bank.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',

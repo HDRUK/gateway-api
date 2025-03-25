@@ -3,10 +3,8 @@
 namespace App\Http\Middleware;
 
 use Config;
-
 use SebastianBergmann\Timer\Timer;
 use SebastianBergmann\Timer\ResourceUsageFormatter;
-
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;

@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Jobs\AdminControlTriggerTermExtractionDirector;
-
 use Illuminate\Http\Request;
-
 use App\Http\Controllers\Controller;
 
 class AdminPanelController extends Controller

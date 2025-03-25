@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-
 use App\Models\Dataset;
 use App\Models\Publication;
 use Illuminate\Http\Request;
@@ -16,13 +15,11 @@ use Illuminate\Http\JsonResponse;
 use App\Models\PublicationHasTool;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-
 use App\Models\CollectionHasPublication;
 use App\Http\Traits\RequestTransformation;
 use App\Models\PublicationHasDatasetVersion;
 use App\Http\Requests\Publication\GetPublication;
 use App\Http\Requests\Publication\EditPublication;
-
 use App\Http\Requests\Publication\CreatePublication;
 use App\Http\Requests\Publication\DeletePublication;
 use App\Http\Requests\Publication\UpdatePublication;
@@ -539,7 +536,11 @@ class PublicationController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $initPublication = Publication::withTrashed()->where('id', $id)->first();
-        $this->checkAccess($input, null, $initPublication->owner_id, 'user');
+        if ($initPublication->team_id) {
+            $this->checkAccess($input, $initPublication->team_id, null, 'team');
+        } else {
+            $this->checkAccess($input, null, $initPublication->owner_id, 'user');
+        }
 
         try {
 
@@ -696,7 +697,11 @@ class PublicationController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $publicationModel = Publication::withTrashed()->where('id', $id)->first();
-        $this->checkAccess($input, null, $publicationModel->owner_id, 'user');
+        if ($publicationModel->team_id) {
+            $this->checkAccess($input, $publicationModel->team_id, null, 'team');
+        } else {
+            $this->checkAccess($input, null, $publicationModel->owner_id, 'user');
+        }
 
         try {
             $originalStatus = $publicationModel->status;
@@ -855,7 +860,11 @@ class PublicationController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $publication = Publication::where(['id' => $id])->first();
-        $this->checkAccess($input, null, $publication->owner_id, 'user');
+        if ($publication->team_id) {
+            $this->checkAccess($input, $publication->team_id, null, 'team');
+        } else {
+            $this->checkAccess($input, null, $publication->owner_id, 'user');
+        }
 
         try {
             if ($publication) {

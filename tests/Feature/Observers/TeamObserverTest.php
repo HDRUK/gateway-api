@@ -278,10 +278,19 @@ class TeamObserverTest extends TestCase
             [],
             $this->header
         );
+        $existsDatasets = Dataset::where('team_id', $teamId)->select('id')->first();
 
-        $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-        ]);
+        if (!is_null($existsDatasets)) {
+            $responseDelete->assertStatus(500)
+                ->assertJsonStructure([
+                    'message',
+                ]);
+        } else {
+            $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+                ->assertJsonStructure([
+                    'message',
+                ]);
+        }
+
     }
 }

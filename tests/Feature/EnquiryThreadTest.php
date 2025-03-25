@@ -10,9 +10,7 @@ use Database\Seeders\EmailTemplateSeeder;
 use Database\Seeders\EnquiryThreadSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
-
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 

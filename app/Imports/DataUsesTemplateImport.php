@@ -3,7 +3,6 @@
 namespace App\Imports;
 
 use Carbon\Carbon;
-
 use App\Models\Dur;
 use Maatwebsite\Excel\Concerns\ToModel;
 use App\Http\Traits\MapOrganisationSector;
@@ -15,12 +14,12 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
     use MapOrganisationSector;
 
     private $data;
-    public int $durId;
+    public array $durIds;
 
     public function __construct(array $data = [])
     {
         $this->data = $data;
-        $this->durId = 0;
+        $this->durIds = [];
     }
 
     /**
@@ -38,6 +37,10 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
     */
     public function model(array $row)
     {
+        if (trim($row[0]) === '') {
+            return null;
+        }
+
         $dur = Dur::create([
             'project_id_text' => $row[0],
             'organisation_name' => $row[1],
@@ -64,7 +67,6 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
             'duty_of_confidentiality' => $row[22],
             'national_data_optout' => $row[23],
             'request_frequency' => $row[24],
-            'dataset_linkage_description' => $row[25],
             'confidential_data_description' => $row[26],
             'access_date' => $row[27] ? $this->calculateExcelDate($row[27]) : null,
             'access_type' => $row[28],
@@ -76,21 +78,21 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
             'team_id' => $this->data['team_id'],
         ]);
 
-        $this->durId = (int) $dur->id;
+        $this->durIds[] = (int) $dur->id;
 
         return $dur;
     }
 
+    // $excelDate is Excel serial date
     private function calculateExcelDate(int $excelDate)
     {
-        return Carbon::parse('1900-01-01')->addDays($excelDate);
+        return Carbon::createFromTimestamp(($excelDate - 25569) * 86400)->toDateString();
     }
 
     public function rules(): array
     {
         return [
             '0' => [
-                'required',
                 function ($attribute, $value, $fail) {
                     // Skip validation if the cell is empty
                     if (is_null($value) || trim($value) === '' || strlen(trim($value)) === 0) {

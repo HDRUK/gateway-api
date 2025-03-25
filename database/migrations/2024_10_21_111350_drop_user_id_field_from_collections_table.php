@@ -15,7 +15,7 @@ return new class () extends Migration {
         Schema::disableForeignKeyConstraints();
 
         $foreignKeys = $this->listTableForeignKeys('collections');
-        if(in_array('collections_user_id_foreign', $foreignKeys)) {
+        if (in_array('collections_user_id_foreign', $foreignKeys)) {
             DB::statement('ALTER TABLE `collections` DROP FOREIGN KEY `collections_user_id_foreign`');
         }
 

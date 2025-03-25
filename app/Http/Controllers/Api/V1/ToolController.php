@@ -34,7 +34,6 @@ use App\Models\DatasetVersionHasTool;
 use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
-
 use App\Models\ToolHasProgrammingPackage;
 use App\Http\Traits\RequestTransformation;
 use App\Models\ToolHasProgrammingLanguage;
@@ -505,7 +504,7 @@ class ToolController extends Controller
             $this->checkCollections($toolId, $collections, (int)$jwtUser['id']);
 
             $currentTool = Tool::where('id', $toolId)->first();
-            if($currentTool->status === Tool::STATUS_ACTIVE) {
+            if ($currentTool->status === Tool::STATUS_ACTIVE) {
                 $this->indexElasticTools((int) $toolId);
             }
 
@@ -913,7 +912,7 @@ class ToolController extends Controller
             }
 
             $currentTool = Tool::where('id', $id)->first();
-            if($currentTool->status === Tool::STATUS_ACTIVE) {
+            if ($currentTool->status === Tool::STATUS_ACTIVE) {
                 $this->indexElasticTools($id);
             }
 
@@ -1081,12 +1080,12 @@ class ToolController extends Controller
      */
     private function createNewTagIfNotExists(mixed $value)
     {
-        if(!is_numeric($value) && !empty($value)) {
+        if (!is_numeric($value) && !empty($value)) {
             $tag = Tag::where([
                 'description' => $value,
             ])->first();
 
-            if(is_null($tag)) {
+            if (is_null($tag)) {
                 $createdTag = Tag::create([
                     'type' => TagType::TOPICS,
                     'description' => $value,
@@ -1122,7 +1121,7 @@ class ToolController extends Controller
                 // This whole thing could be an updateOrCreate, but Eloquent can't cope with the fact
                 // this model has no single primary key column so we have to go around the houses.
 
-                if(is_null($createdTagId)) {
+                if (is_null($createdTagId)) {
                     $toolHasTag = ToolHasTag::withTrashed()->where(
                         [
                         'tool_id' => (int)$toolId,

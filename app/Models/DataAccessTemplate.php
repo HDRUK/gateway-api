@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -30,6 +29,7 @@ class DataAccessTemplate extends Model
         'user_id',
         'published',
         'locked',
+        'template_type',
     ];
 
     public function user(): BelongsTo
@@ -45,5 +45,10 @@ class DataAccessTemplate extends Model
     public function questions(): HasMany
     {
         return $this->hasMany(DataAccessTemplateHasQuestion::class, 'template_id');
+    }
+
+    public function files(): HasMany
+    {
+        return $this->hasMany(DataAccessTemplateHasFile::class, 'template_id');
     }
 }

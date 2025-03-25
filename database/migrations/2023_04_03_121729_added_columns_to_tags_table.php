@@ -53,7 +53,7 @@ return new class () extends Migration {
 
         $foreignKeys = $this->listTableForeignKeys('filters');
 
-        if(in_array('tags_type_unique', $foreignKeys)) {
+        if (in_array('tags_type_unique', $foreignKeys)) {
             DB::statement('ALTER TABLE `tags` DROP FOREIGN KEY `tags_type_unique`');
             DB::statement('ALTER TABLE `tags` DROP KEY `tags_type_unique`');
         }

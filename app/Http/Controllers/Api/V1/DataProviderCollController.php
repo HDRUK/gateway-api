@@ -5,13 +5,10 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-
 use App\Models\Team;
 use App\Models\Dataset;
-
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
-
 use App\Models\DataProviderColl;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
@@ -707,10 +704,10 @@ class DataProviderCollController extends Controller
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             DataProviderCollHasTeam::where(['data_provider_coll_id' => $id])->delete();
             DataProviderColl::where(['id' => $id])->delete();
 

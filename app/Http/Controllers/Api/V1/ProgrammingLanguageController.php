@@ -55,7 +55,7 @@ class ProgrammingLanguageController extends Controller
 
             $programming_languages = ProgrammingLanguage::where('enabled', 1)
                 ->paginate(function ($total) use ($perPage) {
-                    if($perPage === -1) {
+                    if ($perPage === -1) {
                         return $total;
                     }
                     return $perPage;

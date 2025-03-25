@@ -969,7 +969,7 @@ class CollectionController extends Controller
                 $query->when($trimmed, function ($q) {
                     $q->selectRaw('
                         dataset_versions.id,dataset_versions.dataset_id,
-                        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.shortTitle")) as shortTitle,
+                        short_title as shortTitle,
                         CONVERT(JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.populationSize")), SIGNED) as populationSize,
                         JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.datasetType")) as datasetType
                     ');
@@ -993,7 +993,7 @@ class CollectionController extends Controller
                 $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
             }
 
-            if($collection->users) {
+            if ($collection->users) {
                 $collection->users->map(function ($user) {
                     $currentEmail = $user->email;
                     [$username, $domain] = explode('@', $currentEmail);

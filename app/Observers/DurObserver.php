@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Dur;
 use App\Http\Traits\IndexElastic;
+use App\Jobs\ExtractDatasetFromDur;
 
 class DurObserver
 {
@@ -14,7 +15,8 @@ class DurObserver
      */
     public function created(Dur $dur): void
     {
-        if($dur->status === Dur::STATUS_ACTIVE) {
+        ExtractDatasetFromDur::dispatch($dur->id);
+        if ($dur->status === Dur::STATUS_ACTIVE) {
             $this->indexElasticDur($dur->id);
             if ($dur->team_id) {
                 $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dataset');
@@ -35,6 +37,7 @@ class DurObserver
      */
     public function updated(Dur $dur): void
     {
+        ExtractDatasetFromDur::dispatch($dur->id);
         $prevStatus = $dur->prevStatus;
 
         if ($prevStatus === Dur::STATUS_ACTIVE && $dur->status !== Dur::STATUS_ACTIVE) {
@@ -44,7 +47,7 @@ class DurObserver
             }
         }
 
-        if($dur->status === Dur::STATUS_ACTIVE) {
+        if ($dur->status === Dur::STATUS_ACTIVE) {
             $this->indexElasticDur($dur->id);
             if ($dur->team_id) {
                 $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dataset');
@@ -67,7 +70,7 @@ class DurObserver
     {
         $prevStatus = $dur->prevStatus;
 
-        if($prevStatus === Dur::STATUS_ACTIVE) {
+        if ($prevStatus === Dur::STATUS_ACTIVE) {
             $this->deleteDurFromElastic($dur->id);
             if ($dur->team_id) {
                 $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dataset');
@@ -90,4 +93,5 @@ class DurObserver
     {
         //
     }
+
 }

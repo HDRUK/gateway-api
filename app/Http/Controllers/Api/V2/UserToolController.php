@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V2;
 use Config;
 use Auditor;
 use Exception;
-
 use Carbon\Carbon;
 use App\Models\Tool;
 use App\Models\DurHasTool;
@@ -445,7 +444,7 @@ class UserToolController extends Controller
             $this->checkCollections($toolId, $collections, $userId);
 
             $currentTool = Tool::where('id', $toolId)->first();
-            if($currentTool->status === Tool::STATUS_ACTIVE) {
+            if ($currentTool->status === Tool::STATUS_ACTIVE) {
                 $this->indexElasticTools((int) $toolId);
             }
 
@@ -846,7 +845,7 @@ class UserToolController extends Controller
             }
 
             $currentTool = Tool::where('id', $id)->first();
-            if($currentTool->status === Tool::STATUS_ACTIVE) {
+            if ($currentTool->status === Tool::STATUS_ACTIVE) {
                 $this->indexElasticTools($id);
             }
 

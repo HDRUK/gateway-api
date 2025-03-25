@@ -14,7 +14,8 @@
     "tedEnabled": true,
     "gmiEnabled": true,
     "searchEnabled": true,
-    "qbEnabled": true
-    "darasEnabled": true
-    "clamavEnabled": true
+    "qbEnabled": true,
+    "darasEnabled": true,
+    "clamavEnabled": true,
+    "dtaWebEnabled": false
 }

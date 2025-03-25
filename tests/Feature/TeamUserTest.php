@@ -13,7 +13,6 @@ use Database\Seeders\SectorSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-
 use Tests\Traits\MockExternalApis;
 
 class TeamUserTest extends TestCase

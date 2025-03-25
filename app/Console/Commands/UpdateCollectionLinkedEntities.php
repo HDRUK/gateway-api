@@ -56,7 +56,7 @@ class UpdateCollectionLinkedEntities extends Command
 
         foreach ($this->csvData as $csv) {
             $collection = Collection::where('mongo_object_id', $csv['collection_mongo_object_id'])->select('id')->firstOrFail();
-            if(is_null($collection)) {
+            if (is_null($collection)) {
                 //for dev and preprod
                 //this csv was made from prod snapshot
                 $progressbar->advance();
@@ -66,15 +66,15 @@ class UpdateCollectionLinkedEntities extends Command
             list($modelClass, $modelHasClass) = $relatedObjectMap[$csv['related_entity']];
             $relatedModel = null;
 
-            if($csv['related_entity'] !== 'publication') {
+            if ($csv['related_entity'] !== 'publication') {
                 $relatedModel = $modelClass::where('mongo_object_id', $csv['related_mongo_object_id'])->first();
 
             }
-            if(is_null($relatedModel)) {
+            if (is_null($relatedModel)) {
                 $relatedModel = $modelClass::where('mongo_id', $csv['related_mongo_id'])->first();
             }
 
-            if(is_null($relatedModel)) {
+            if (is_null($relatedModel)) {
                 //cannot find relationship
                 $progressbar->advance();
                 continue;

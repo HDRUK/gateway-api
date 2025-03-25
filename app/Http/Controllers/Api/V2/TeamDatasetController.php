@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V2;
 use Config;
 use Auditor;
 use Exception;
-
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
@@ -14,16 +13,12 @@ use App\Jobs\LinkageExtraction;
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
 use App\Http\Traits\CheckAccess;
-
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-
 use App\Http\Traits\MetadataOnboard;
 use App\Http\Traits\MetadataVersioning;
 use App\Models\Traits\ModelHelpers;
-
 use Maatwebsite\Excel\Facades\Excel;
-
 use MetadataManagementController as MMC;
 use App\Http\Traits\DatasetsV2Helpers;
 use App\Http\Traits\RequestTransformation;
@@ -801,13 +796,13 @@ class TeamDatasetController extends Controller
             );
 
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active
-            if($request['status'] === Dataset::STATUS_ACTIVE) {
+            if ($request['status'] === Dataset::STATUS_ACTIVE) {
 
                 LinkageExtraction::dispatch(
                     $currDataset->id,
                     $datasetVersionId,
                 );
-                if(Config::get('ted.enabled')) {
+                if (Config::get('ted.enabled')) {
                     $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
 
                     TermExtraction::dispatch(
@@ -916,7 +911,7 @@ class TeamDatasetController extends Controller
 
             $metadata = DatasetVersion::where('dataset_id', $id)->latest()->first();
 
-            if($request['status'] === Dataset::STATUS_ACTIVE) {
+            if ($request['status'] === Dataset::STATUS_ACTIVE) {
                 LinkageExtraction::dispatch(
                     $datasetModel->id,
                     $metadata->id,

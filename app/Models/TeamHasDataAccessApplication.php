@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Observers\TeamHasDataAccessApplicationObserver;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

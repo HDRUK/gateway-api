@@ -20,6 +20,7 @@ use App\Http\Traits\DataAccessApplicationHelpers;
 use App\Jobs\SendEmailJob;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationAnswer;
+use App\Models\DataAccessTemplate;
 use App\Models\EmailTemplate;
 use App\Models\Team;
 use App\Models\TeamHasDataAccessApplication;
@@ -173,7 +174,7 @@ class UserDataAccessApplicationController extends Controller
                 ->get();
 
             if ($field === 'action_required') {
-                $counts = $this->actionRequiredCounts(array_column($applications->toArray(), 'id'));
+                $counts = $this->actionRequiredCounts($applications, null);
             } else {
                 $counts = array();
                 foreach ($applications as $app) {
@@ -191,6 +192,62 @@ class UserDataAccessApplicationController extends Controller
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'User DAR application count',
+            ]);
+
+            return response()->json([
+                'data' => $counts
+            ]);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v1/users/{userId}/dar/applications/count",
+     *    tags={"UserDataAccessApplications"},
+     *    summary="UserDataAccessApplicationController@allCounts",
+     *    description="Get Counts for all status fields in the model",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="object",
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function allCounts(Request $request, int $userId): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            if ($jwtUser['id'] != $userId) {
+                throw new UnauthorizedException('Logged in user does match user id in endpoint.');
+            }
+
+            $applications = DataAccessApplication::where('applicant_id', $userId)
+                ->with('teams')
+                ->get();
+
+            $counts = $this->statusCounts($applications, null);
+
+            $actionCounts = $this->actionRequiredCounts($applications, null);
+            $counts = array_merge($counts, $actionCounts);
+            $counts['ALL'] = count(TeamHasDataAccessApplication::whereIn(
+                'dar_application_id',
+                array_column($applications->toArray(), 'id')
+            )->get());
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "User DAR application count",
             ]);
 
             return response()->json([
@@ -274,7 +331,18 @@ class UserDataAccessApplicationController extends Controller
                 throw new UnauthorizedException('User does not have permission to use this endpoint to view this application.');
             }
 
-            $this->getApplicationWithQuestions($application);
+            if ($application->application_type === 'FORM') {
+                $this->getApplicationWithQuestions($application);
+            } else {
+                $teams = TeamHasDataAccessApplication::where('dar_application_id', $id)
+                    ->select('team_id')
+                    ->pluck('team_id');
+                $templates = DataAccessTemplate::whereIn('team_id', $teams)
+                    ->where('template_type', 'DOCUMENT')
+                    ->select('id')
+                    ->get();
+                $application['templates'] = $templates;
+            }
 
             if ($application) {
                 Auditor::log([

@@ -12,9 +12,7 @@ use Database\Seeders\SectorSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
-
 use Database\Seeders\MinimalUserSeeder;
-
 use Database\Seeders\TypeCategorySeeder;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -14,7 +14,6 @@ use App\Models\DurHasTool;
 use Illuminate\Http\Request;
 use App\Models\DurHasKeyword;
 use App\Models\DatasetVersion;
-use Illuminate\Support\Carbon;
 use App\Http\Traits\CheckAccess;
 use App\Http\Requests\Dur\GetDur;
 use App\Models\DurHasPublication;
@@ -26,7 +25,6 @@ use App\Http\Requests\Dur\DeleteDur;
 use App\Http\Requests\Dur\UpdateDur;
 use App\Http\Requests\Dur\UploadDur;
 use App\Models\DurHasDatasetVersion;
-
 use App\Exceptions\NotFoundException;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Traits\MapOrganisationSector;
@@ -532,7 +530,6 @@ class DurController extends Controller
             'organisation_sector',
             'lay_summary',
             'technical_summary',
-            'latest_approval_date',
             'manual_upload',
             'rejection_reason',
             'sublicence_arrangements',
@@ -560,6 +557,9 @@ class DurController extends Controller
             'mongo_id',
             'applicant_id',
             'status',
+            'project_start_date',
+            'project_end_date',
+            'latest_approval_date',
         ];
         $array = $this->checkEditArray($input, $arrayKeys);
         $array['team_id'] = array_key_exists('team_id', $input) ? $input['team_id'] : null;
@@ -807,7 +807,6 @@ class DurController extends Controller
                 'organisation_sector',
                 'lay_summary',
                 'technical_summary',
-                'latest_approval_date',
                 'manual_upload',
                 'rejection_reason',
                 'sublicence_arrangements',
@@ -834,6 +833,9 @@ class DurController extends Controller
                 'mongo_id',
                 'applicant_id',
                 'status',
+                'project_start_date',
+                'project_end_date',
+                'latest_approval_date',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
@@ -1115,7 +1117,6 @@ class DurController extends Controller
                     'organisation_sector',
                     'lay_summary',
                     'technical_summary',
-                    'latest_approval_date',
                     'manual_upload',
                     'rejection_reason',
                     'sublicence_arrangements',
@@ -1142,6 +1143,9 @@ class DurController extends Controller
                     'mongo_id',
                     'applicant_id',
                     'status',
+                    'project_start_date',
+                    'project_end_date',
+                    'latest_approval_date',
                 ];
                 $array = $this->checkEditArray($input, $arrayKeys);
 
@@ -1258,10 +1262,8 @@ class DurController extends Controller
             DurHasKeyword::where(['dur_id' => $id])->delete();
             DurHasPublication::where(['dur_id' => $id])->delete();
             DurHasTool::where(['dur_id' => $id])->delete();
-            $dur = Dur::where(['id' => $id])->first();
-            $dur->deleted_at = Carbon::now();
-            $dur->status = Dur::STATUS_ARCHIVED;
-            $dur->save();
+            Dur::where(['dur_id' => $id])->update(['status' => Dur::STATUS_ARCHIVED]);
+            Dur::where(['dur_id' => $id])->delete();
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1811,7 +1813,7 @@ class DurController extends Controller
     {
         $kws = DurHasKeyword::where('dur_id', $durId)->get();
 
-        foreach($kws as $kw) {
+        foreach ($kws as $kw) {
             $kwId = $kw->keyword_id;
             $checkKeyword = Keyword::where('id', $kwId)->first();
 
@@ -1893,7 +1895,7 @@ class DurController extends Controller
     {
         $tools = DurHasTool::where('dur_id', $durId)->get();
 
-        foreach($tools as $tool) {
+        foreach ($tools as $tool) {
             $toolId = $tool->tool_id;
             $checkTool = Tool::where('id', $toolId)->first();
 

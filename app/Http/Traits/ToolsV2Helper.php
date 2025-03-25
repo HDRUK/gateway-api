@@ -217,12 +217,12 @@ trait ToolsV2Helper
      */
     public function createNewTagIfNotExists(mixed $value)
     {
-        if(!is_numeric($value) && !empty($value)) {
+        if (!is_numeric($value) && !empty($value)) {
             $tag = Tag::where([
                 'description' => $value,
             ])->first();
 
-            if(is_null($tag)) {
+            if (is_null($tag)) {
                 $createdTag = Tag::create([
                     'type' => TagType::TOPICS,
                     'description' => $value,
@@ -258,7 +258,7 @@ trait ToolsV2Helper
                 // This whole thing could be an updateOrCreate, but Eloquent can't cope with the fact
                 // this model has no single primary key column so we have to go around the houses.
 
-                if(is_null($createdTagId)) {
+                if (is_null($createdTagId)) {
                     $toolHasTag = ToolHasTag::where(
                         [
                         'tool_id' => (int)$toolId,

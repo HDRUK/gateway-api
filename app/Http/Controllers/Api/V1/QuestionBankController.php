@@ -150,7 +150,7 @@ class QuestionBankController extends Controller
             )
             ->paginate(
                 function ($total) use ($perPage) {
-                    if($perPage === -1) {
+                    if ($perPage === -1) {
                         return $total;
                     }
                     return $perPage;
@@ -309,7 +309,7 @@ class QuestionBankController extends Controller
             )
             ->paginate(
                 function ($total) use ($perPage) {
-                    if($perPage === -1) {
+                    if ($perPage === -1) {
                         return $total;
                     }
                     return $perPage;
@@ -468,7 +468,7 @@ class QuestionBankController extends Controller
             )
             ->paginate(
                 function ($total) use ($perPage) {
-                    if($perPage === -1) {
+                    if ($perPage === -1) {
                         return $total;
                     }
                     return $perPage;
@@ -626,7 +626,7 @@ class QuestionBankController extends Controller
             )
             ->paginate(
                 function ($total) use ($perPage) {
-                    if($perPage === -1) {
+                    if ($perPage === -1) {
                         return $total;
                     }
                     return $perPage;

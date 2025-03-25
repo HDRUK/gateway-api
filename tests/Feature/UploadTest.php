@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Dur;
-
 use Tests\TestCase;
 use App\Models\Team;
 use App\Models\Upload;
@@ -12,14 +11,11 @@ use App\Models\Collection;
 use App\Models\DataAccessApplication;
 use App\Models\QuestionBank;
 use Tests\Traits\Authorization;
-
 use Illuminate\Http\UploadedFile;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\MinimalUserSeeder;
-
-
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
 use Database\Seeders\CollectionHasUserSeeder;

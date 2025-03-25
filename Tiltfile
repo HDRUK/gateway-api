@@ -55,7 +55,8 @@ cfg = read_json("tiltconf.json")
 include(cfg.get("gatewayWeb2Root") + "/Tiltfile")
 
 # Load our service layer for deployment - if enabled
-
+if cfg.get("dtaWebEnabled"):
+    include(cfg.get("dtaWebRoot") + "/Tiltfile")
 if cfg.get("traserEnabled"):
     include(cfg.get("traserServiceRoot") + "/Tiltfile")
 
