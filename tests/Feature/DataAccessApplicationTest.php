@@ -330,7 +330,9 @@ class DataAccessApplicationTest extends TestCase
                             'submission_status',
                             'approval_status',
                         ]
-                    ]
+                    ],
+                    'days_since_submission',
+                    'submission_date',
                 ],
             ]);
 
@@ -351,7 +353,9 @@ class DataAccessApplicationTest extends TestCase
                             'submission_status',
                             'approval_status',
                         ]
-                    ]
+                    ],
+                    'days_since_submission',
+                    'submission_date',
                 ],
             ]);
     }
@@ -2209,6 +2213,26 @@ class DataAccessApplicationTest extends TestCase
 
         // Check for 2 new status entries - submission and approval
         $this->assertEquals($statusCountNew, $statusCountInit + 2);
+
+        // Test team can push application back to DRAFT and null approval status
+        $response = $this->json(
+            'PATCH',
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId,
+            [
+                'submission_status' => 'DRAFT',
+                'approval_status' => null,
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $this->assertEquals($content['data']['teams'][0]['submission_status'], 'DRAFT');
+        $this->assertEquals($content['data']['teams'][0]['approval_status'], null);
     }
 
     /**
