@@ -344,6 +344,9 @@ class UserDataAccessApplicationController extends Controller
                 $application['templates'] = $templates;
             }
 
+            $submissions = $this->submissionAudit($id);
+            $application = array_merge($application->toArray(), $submissions);
+
             if ($application) {
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
