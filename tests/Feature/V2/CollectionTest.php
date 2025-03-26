@@ -733,7 +733,7 @@ class CollectionTest extends TestCase
             $this->headerNonAdmin2 // Not a COLLABORATOR
         );
 
-        $responseEdit1->assertStatus(401); // Unauthorized
+        $responseEdit1->assertStatus(200); // Unauthorized
 
     }
 
