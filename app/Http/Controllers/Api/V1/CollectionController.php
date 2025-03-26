@@ -901,6 +901,7 @@ class CollectionController extends Controller
                         CollectionHasTool::withTrashed()->where('collection_id', $id)->restore();
                         CollectionHasDur::withTrashed()->where('collection_id', $id)->restore();
                         CollectionHasPublication::withTrashed()->where('collection_id', $id)->restore();
+                        CollectionHasKeyword::withTrashed()->where('collection_id', $id)->restore();
 
                         Auditor::log([
                             'user_id' => (int)$jwtUser['id'],
@@ -1069,8 +1070,6 @@ class CollectionController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
-
 
         try {
             $collection = Collection::where(['id' => $id])->first();
@@ -1078,13 +1077,13 @@ class CollectionController extends Controller
             $owningTeamId = $collection->team_id;
             $this->checkAccess($input, $owningTeamId, null, 'team');
 
-            $initialStatus = $collection->status;
             if ($collection) {
                 CollectionHasDatasetVersion::where(['collection_id' => $id])->delete();
                 CollectionHasTool::where(['collection_id' => $id])->delete();
                 CollectionHasDur::where(['collection_id' => $id])->delete();
                 CollectionHasKeyword::where(['collection_id' => $id])->delete();
                 CollectionHasPublication::where(['collection_id' => $id])->delete();
+                CollectionHasUser::where(['collection_id' => $id])->delete();
                 Collection::where(['id' => $id])->update(['status' => Collection::STATUS_ARCHIVED]);
                 Collection::where(['id' => $id])->delete();
 
@@ -1281,7 +1280,7 @@ class CollectionController extends Controller
                     CollectionHasDatasetVersion::where([
                         'collection_id' => $collectionId,
                         'dataset_version_id' => $commonDatasetVersionId,
-                    ])->delete();
+                    ])->forceDelete();
                 }
                 continue;
             }
@@ -1317,7 +1316,7 @@ class CollectionController extends Controller
                         CollectionHasDatasetVersion::where([
                             'collection_id' => $collectionId,
                             'dataset_version_id' => $commonDatasetVersionId,
-                        ])->delete();
+                        ])->forceDelete();
                     }
                 }
             }
@@ -1397,7 +1396,7 @@ class CollectionController extends Controller
             return CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
                 'dataset_version_id' => $datasetVersionId,
-            ])->delete();
+            ])->forceDelete();
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -1494,7 +1493,7 @@ class CollectionController extends Controller
             return CollectionHasTool::where([
                 'collection_id' => $collectionId,
                 'tool_id' => $toolId,
-            ])->delete();
+            ])->forceDelete();
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -1515,7 +1514,7 @@ class CollectionController extends Controller
                 CollectionHasDur::where([
                     'collection_id' => $collectionId,
                     'dur_id' => $col->dur_id,
-                ])->delete();
+                ])->forceDelete();
             }
         }
 
@@ -1657,7 +1656,7 @@ class CollectionController extends Controller
             return CollectionHasPublication::where([
                 'collection_id' => $collectionId,
                 'publication_id' => $publicationId,
-            ])->delete();
+            ])->forceDelete();
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -1739,7 +1738,7 @@ class CollectionController extends Controller
     private function deleteCollectionHasKeywords($keywordId)
     {
         try {
-            return CollectionHasKeyword::where(['keyword_id' => $keywordId])->delete();
+            return CollectionHasKeyword::where(['keyword_id' => $keywordId])->forceDelete();
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -1789,7 +1788,7 @@ class CollectionController extends Controller
         CollectionHasUser::where([
             'collection_id' => $collectionId,
             'role' => 'COLLABORATOR',
-        ])->delete();
+        ])->forceDelete();
 
         foreach ($collaboratorIds as $collaboratorId) {
             CollectionHasUser::create([
