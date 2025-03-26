@@ -1208,8 +1208,8 @@ class UserDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $application = DataAccessApplication::where('id', $id)->with('teams')->first();
-            if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
+            $application = DataAccessApplication::with('teams')->findOrFail($id);
+            if (($jwtUser['id'] !== $userId) || ($jwtUser['id'] !== $application->applicant_id)) {
                 throw new UnauthorizedException('User does not have permission to use this endpoint to delete this file.');
             }
 

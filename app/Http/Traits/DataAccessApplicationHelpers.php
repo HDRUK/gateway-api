@@ -390,18 +390,35 @@ trait DataAccessApplicationHelpers
 
     public function getNamesInComments(Collection $reviews): void
     {
+        $teamIds = [];
+        $userIds = [];
+        foreach ($reviews as $review) {
+            $teamIds = array_merge(
+                $teamIds,
+                array_column($review['comments']->toArray(), 'team_id')
+            );
+            $userIds = array_merge(
+                $userIds,
+                array_column($review['comments']->toArray(), 'user_id')
+            );
+        }
+
+        $teams = Team::whereIn('id', array_filter(array_unique($teamIds)))
+            ->select('id', 'name')
+            ->get()
+            ->toArray();
+        $users = User::whereIn('id', array_filter(array_unique($userIds)))
+            ->select('id', 'name')
+            ->get()
+            ->toArray();
+
+        $teamsMap = array_combine(array_column($teams, 'id'), array_column($teams, 'name'));
+        $usersMap = array_combine(array_column($users, 'id'), array_column($users, 'name'));
+
         foreach ($reviews as $review) {
             foreach ($review['comments'] as $comment) {
-                if ($comment['team_id']) {
-                    $comment['team_name'] = Team::where('id', $comment['team_id'])->value('name');
-                } else {
-                    $comment['team_name'] = null;
-                }
-                if ($comment['user_id']) {
-                    $comment['user_name'] = User::where('id', $comment['user_id'])->value('name');
-                } else {
-                    $comment['user_name'] = null;
-                }
+                $comment['team_name'] = $comment['team_id'] ? $teamsMap[$comment['team_id']] : null;
+                $comment['user_name'] = $comment['user_id'] ? $usersMap[$comment['user_id']] : null;
             }
         }
     }
