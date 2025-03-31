@@ -162,9 +162,9 @@ class CohortRequestController extends Controller
                 ->join('users', 'cohort_requests.user_id', '=', 'users.id')
                 ->leftJoin('sectors', 'users.sector_id', '=', 'sectors.id')
                 ->when($email, function ($query) use ($email) {
-                    $query->where(function ($q) use ($email) {
-                        $q->where('users.email', 'LIKE', '%' . $email . '%')
-                          ->orWhere('users.secondary_email', 'LIKE', '%' . $email . '%');
+                    $query->whereHas('user', function ($query) use ($email) {
+                        $query->where('email', 'LIKE', '%' . $email . '%')
+                            ->orWhere('secondary_email', 'LIKE', '%' . $email . '%');
                     });
                 })
                 ->when($name, function ($query) use ($name) {
@@ -205,7 +205,6 @@ class CohortRequestController extends Controller
                 }
             }
 
-            $query = $query->select('cohort_requests.*')->distinct();
             $cohortRequests = $query->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
