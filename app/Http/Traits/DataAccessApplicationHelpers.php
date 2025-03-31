@@ -20,6 +20,7 @@ use App\Models\TeamHasDataAccessApplication;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Builder;
 
 trait DataAccessApplicationHelpers
 {
@@ -305,11 +306,16 @@ trait DataAccessApplicationHelpers
 
     public function getPrimaryApplicantInfo(int $id): array
     {
-        $applicantQuestions = QuestionBank::whereRelation(
+        $applicantQuestions = QuestionBank::whereHas(
             'section',
-            'name',
-            'Primary Applicant'
-        )->with('latestVersion')->get();
+            function (Builder $query) {
+                $query->whereRaw(
+                    'LOWER(name) LIKE ?',
+                    ['%' . strtolower('Primary Applicant') . '%']
+                );
+            }
+        )
+        ->with('latestVersion')->get();
 
         $applicantNameQuestion = null;
         $applicantOrgQuestion = null;
@@ -326,7 +332,7 @@ trait DataAccessApplicationHelpers
             'question_id' => $applicantNameQuestion,
         ])->first();
         if ($nameAnswer) {
-            $applicantName = $nameAnswer->answer['value'];
+            $applicantName = $nameAnswer->answer;
         } else {
             $applicantName = null;
         }
@@ -336,7 +342,7 @@ trait DataAccessApplicationHelpers
             'question_id' => $applicantOrgQuestion,
         ])->first();
         if ($orgAnswer) {
-            $applicantOrg = $orgAnswer->answer['value'];
+            $applicantOrg = $orgAnswer->answer;
         } else {
             $applicantOrg = null;
         }

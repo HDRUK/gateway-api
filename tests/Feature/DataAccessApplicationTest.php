@@ -7,6 +7,7 @@ use Config;
 use Tests\TestCase;
 use App\Models\Team;
 use App\Models\Dataset;
+use App\Models\DataAccessTemplate;
 use App\Jobs\SendEmailJob;
 use App\Jobs\TermExtraction;
 use App\Jobs\LinkageExtraction;
@@ -1802,6 +1803,121 @@ class DataAccessApplicationTest extends TestCase
                     'info_required',
                 ]
             ]);
+    }
+
+    /**
+     * Extract primary application and org information
+     *
+     * @return void
+     */
+    public function test_the_application_can_extract_primary_applicant_info()
+    {
+        $entityIds = $this->createDatasetForDar();
+        $datasetId = $entityIds['datasetId'];
+        $teamId = $entityIds['teamId'];
+        $questionId = $entityIds['questionId'];
+
+        // Get questions ids for primary applicant name and org
+        $nameQuestion = 1;
+        $orgQuestion = 6;
+
+        // Get the team's DAR template
+        $response = $this->get('api/v1/teams/' . $teamId . '/dar/templates/', $this->header);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $templateId = $response->decodeResponseJson()['data'][0]['id'];
+
+        // Add those questions to the team's DAR template
+        $response = $this->json(
+            'PATCH',
+            'api/v1/dar/templates/' . $templateId . '?section_id=2',
+            [
+                'questions' => [
+                    0 => [
+                        'id' => $nameQuestion,
+                        'required' => true,
+                        'guidance' => 'Custom guidance',
+                        'order' => 2,
+                    ],
+                    1 => [
+                        'id' => $orgQuestion,
+                        'required' => true,
+                        'guidance' => 'Custom guidance',
+                        'order' => 3,
+                    ]
+                ]
+            ],
+            $this->header
+        );
+
+        $template = DataAccessTemplate::where('id', $templateId)->with('questions')->first();
+
+        // Create DAR application for that dataset
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'DRAFT',
+                'project_title' => 'Test DAR',
+                'dataset_ids' => [$datasetId],
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+        $applicationId = $response->decodeResponseJson()['data'];
+
+        // Add answers to the primary applicant name and org questions
+        $response = $this->json(
+            'PUT',
+            'api/v1/users/1/dar/applications/' . $applicationId . '/answers',
+            [
+                'answers' => [
+                    0 => [
+                        'question_id' => $nameQuestion,
+                        'answer' => 'Andrea Test'
+                    ],
+                    1 => [
+                        'question_id' => $orgQuestion,
+                        'answer' => 'Test University'
+                    ],
+                ]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        $response = $this->get('api/v1/users/1/dar/applications/' . $applicationId . '/answers', $this->header);
+
+        // Call the dashboard endpoint
+        // Check the values of primary applicant name and org match answers
+        $response = $this->json(
+            'GET',
+            'api/v1/users/1/dar/applications',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    0 => [
+                        'id',
+                        'primary_applicant' => [
+                            'name',
+                            'organisation',
+                        ],
+                    ]
+                ],
+            ]);
+
+        $content = $response->decodeResponseJson();
+
+        $this->assertEquals('Andrea Test', $content['data'][0]['primary_applicant']['name']);
+        $this->assertEquals('Test University', $content['data'][0]['primary_applicant']['organisation']);
     }
 
     /**
