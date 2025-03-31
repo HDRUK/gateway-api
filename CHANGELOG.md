@@ -1,3 +1,9 @@
+## [2.4.1](https://github.com/HDRUK/gateway-api/compare/v2.4.0...v2.4.1) (2025-03-31)
+
+### 🐛 Bug Fixes
+
+* **GAT-6665:** Fix answer fetching and section matching in primary applicant info ([126c794](https://github.com/HDRUK/gateway-api/commit/126c7949efeca2272d678203276b2fa4851b88b3))
+
 ## [2.4.0](https://github.com/HDRUK/gateway-api/compare/v2.3.3...v2.4.0) (2025-03-25)
 
 ### ✨ Features
