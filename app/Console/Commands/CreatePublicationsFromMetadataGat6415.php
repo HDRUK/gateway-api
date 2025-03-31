@@ -110,6 +110,18 @@ class CreatePublicationsFromMetadataGat6415 extends Command
 
         foreach ($publications as $publication) {
             $this->info($publication);
+
+            // check if gateway url
+            if (str_contains($publication, env('GATEWAY_URL'))) {
+                $exploded = explode('/', $publication);
+                $publicationId = (int) end($exploded);
+                $pub = Publication::where('id', $publicationId)->first();
+                if (!is_null($pub)) {
+                    $this->createLinkPublicationDatasetVersion($publicationId, $datasetVersionId, $type);
+                    continue;
+                }
+            }
+
             $checkPublication = Publication::where('paper_doi', 'like', '%' . $publication . '%')->first();
 
             if (!is_null($checkPublication)) {
