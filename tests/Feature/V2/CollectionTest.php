@@ -2048,7 +2048,7 @@ class CollectionTest extends TestCase
             ],
             $this->header
         );
-        $responseTeam->assertStatus(200);
+        $responseTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
 
         $content = $responseTeam->decodeResponseJson();
         $teamId = $content['data'];

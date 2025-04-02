@@ -684,7 +684,7 @@ class TeamUserTest extends TestCase
             $this->header,
         );
 
-        $responseNewTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $responseNewTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
 
         return $responseNewTeam['data'];
     }
@@ -703,7 +703,7 @@ class TeamUserTest extends TestCase
         ]);
     }
 
-    private function createUser(string $email = null)
+    private function createUser(?string $email = null)
     {
         $responseNewUser = $this->json(
             'POST',

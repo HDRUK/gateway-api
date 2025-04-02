@@ -137,7 +137,6 @@ class ToolController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $matches = [];
             $mongoId = $request->query('mongo_id', null);
             $teamId = $request->query('team_id', null);
             $userId = $request->query('user_id', null);
@@ -1348,7 +1347,7 @@ class ToolController extends Controller
     }
 
     // publications
-    private function checkPublications(int $toolId, array $inPublications, int $userId = null)
+    private function checkPublications(int $toolId, array $inPublications, ?int $userId = null)
     {
         $pubs = PublicationHasTool::where(['tool_id' => $toolId])->get();
         foreach ($pubs as $pub) {
@@ -1366,7 +1365,7 @@ class ToolController extends Controller
         }
     }
 
-    private function addPublicationHasTool(int $toolId, array $publication, int $userId = null)
+    private function addPublicationHasTool(int $toolId, array $publication, ?int $userId = null)
     {
         try {
             $arrCreate = [
@@ -1444,7 +1443,7 @@ class ToolController extends Controller
     }
 
     // collections
-    private function checkCollections(int $toolId, array $inCollections, int $userId = null)
+    private function checkCollections(int $toolId, array $inCollections, ?int $userId = null)
     {
         $colls = CollectionHasTool::where(['tool_id' => $toolId])->get();
         foreach ($colls as $coll) {
@@ -1462,7 +1461,7 @@ class ToolController extends Controller
         }
     }
 
-    private function addCollectionHasTool(int $toolId, array $collection, int $userId = null)
+    private function addCollectionHasTool(int $toolId, array $collection, ?int $userId = null)
     {
         try {
             $arrCreate = [
