@@ -264,7 +264,7 @@ class EnquiryThreadTest extends TestCase
             ],
             $this->header
         );
-        $responseTeam->assertStatus(200);
+        $responseTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
 
         $content = $responseTeamTwo->decodeResponseJson();
         $teamIdTwo = $content['data'];
