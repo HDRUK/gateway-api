@@ -669,3 +669,767 @@ Accept: application/json
         ]
     }
 }
+
+### test
+# POST {{baseUrl}}/validate?input_schema=GWDM&input_version=2.0
+POST https://hdr-gateway-traser-dev-qmnkcg5qjq-ew.a.run.app/validate?input_schema=HDRUK&input_version=2.1.2
+Content-Type: application/json
+Accept: application/json
+
+{
+    "metadata": {
+      "accessibility": {
+        "access": {
+          "accessRequestCost": "To be agreed per project by SDE program",
+          "accessRights": "",
+          "accessService": "  ",
+          "dataController": "Kent and Medway ICB",
+          "dataProcessor": "Kent and Medway Data Warehouse",
+          "deliveryLeadTime": "1-2 MONTHS",
+          "jurisdiction": [
+            "GB-ENG"
+          ]
+        },
+        "formatAndStandards": {
+          "conformsTo": [
+            "LOCAL"
+          ],
+          "format": [
+            "Text"
+          ],
+          "language": [
+            "en"
+          ],
+          "vocabularyEncodingScheme": [
+            "READ",
+            "NHS NATIONAL CODES",
+            "ODS"
+          ]
+        },
+        "usage": {
+          "dataUseLimitation": [
+            "RESEARCH SPECIFIC RESTRICTIONS"
+          ],
+          "dataUseRequirements": [
+            "ETHICS APPROVAL REQUIRED",
+            "GEOGRAPHICAL RESTRICTIONS",
+            "NOT FOR PROFIT USE",
+            "PROJECT SPECIFIC RESTRICTIONS",
+            "TIME LIMIT ON USE",
+            "USER SPECIFIC RESTRICTION"
+          ],
+          "resourceCreator": [
+            "Kent and Mewday ICB",
+            "Kent and Medway Data Warehouse"
+          ]
+        }
+      },
+      "coverage": {
+        "followup": "UNKNOWN",
+        "physicalSampleAvailability": [
+          "NOT AVAILABLE"
+        ],
+        "spatial": "Kent and Medway",
+        "typicalAgeRange": "0-120"
+      },
+      "documentation": {
+        "description": "Primary Care Event information, recording the intereactions that patients with medical staff at GP practices and some read-coded numeric data",
+        "isPartOf": [
+          "Primary Care Data"
+        ]
+      },
+      "identifier": "242c84be-a866-ac0c-0000-000000001bbe",
+      "issued": "2024-03-09T23:22:07+00:00",
+      "modified": "2024-07-03T09:55:18+00:00",
+      "observations": [
+        {
+          "disambiguatingDescription": "     ",
+          "measuredProperty": "COUNT",
+          "measuredValue": 1756178,
+          "observationDate": "2019-06-24",
+          "observedNode": "PERSONS"
+        },
+        {
+          "disambiguatingDescription": "     ",
+          "measuredProperty": "COUNT",
+          "measuredValue": 732236154,
+          "observationDate": "2019-06-24",
+          "observedNode": "EVENTS"
+        }
+      ],
+      "provenance": {
+        "origin": {
+          "collectionSituation": [
+            "PRIMARY CARE"
+          ],
+          "purpose": [
+            "CARE"
+          ],
+          "source": [
+            "EPR"
+          ]
+        },
+        "temporal": {
+          "accrualPeriodicity": "STATIC",
+          "distributionReleaseDate": "2019-06-24",
+          "endDate": "2019-06-24",
+          "startDate": "1901-01-01",
+          "timeLag": "NOT APPLICABLE"
+        }
+      },
+      "revisions": [
+        {
+          "url": "https://nhse-ics-kms-uat5-ui.metadata.works/browser/dataset?id=7102",
+          "version": "1.0.0"
+        }
+      ],
+      "structuralMetadata": [
+        {
+          "description": "Primary Care Event Table",
+          "elements": [
+            {
+              "dataType": "String",
+              "description": "Unique reference to the record",
+              "name": "Unique_ID",
+              "sensitive": false
+            },
+            {
+              "dataType": "String",
+              "description": "Commissioner for the event",
+              "name": "Commissioner_Code",
+              "sensitive": false
+            },
+            {
+              "dataType": "String",
+              "description": "Code for GP practice that is as at the activity date",
+              "name": "Practice_Code",
+              "sensitive": false
+            },
+            {
+              "dataType": "Integer",
+              "description": "Age of patient at activity date",
+              "name": "Age  ",
+              "sensitive": false
+            },
+            {
+              "dataType": "String",
+              "description": "Sex of patient at activity date",
+              "name": "Sex  ",
+              "sensitive": false
+            },
+            {
+              "dataType": "String",
+              "description": "Read code of the event",
+              "name": "Event_Read_Code",
+              "sensitive": false
+            },
+            {
+              "dataType": "floating point",
+              "description": "Numeric result of the event",
+              "name": "Num_Result",
+              "sensitive": false
+            },
+            {
+              "dataType": "floating point",
+              "description": "Second numeric result of the event",
+              "name": "Num_Result_2",
+              "sensitive": false
+            },
+            {
+              "dataType": "date",
+              "description": "Date of the event activity",
+              "name": "Activity_Date",
+              "sensitive": false
+            },
+            {
+              "dataType": "String",
+              "description": "NHS number of patient, encrypted with 256 bit SHA with salt",
+              "name": "Pseudonymised_NHS_Number",
+              "sensitive": false
+            },
+            {
+              "dataType": "String",
+              "description": "Unique reference to the consultation record",
+              "name": "Unique_Consultation_ID",
+              "sensitive": false
+            },
+            {
+              "dataType": "bigint",
+              "description": "SNOMED concept of Event (https://www.datadictionary.nhs.uk/data_elements/snomed_ct_code.html)",
+              "name": "SNOMED_Concept",
+              "sensitive": false
+            },
+            {
+              "dataType": "bigint",
+              "description": "SNOMED description of Event",
+              "name": "SNOMED_Description",
+              "sensitive": false
+            }
+          ],
+          "name": "GP_Event"
+        }
+      ],
+      "summary": {
+        "abstract": "Primary Care Event information, recording the intereactions that patients with medical staff at GP practices and some read-coded numeric data",
+        "contactPoint": "kmicb.bi@nhs.net",
+        "doiName": "10.81022/wfv3-tz28",
+        "keywords": [
+          "General practitioner",
+          "Event",
+          "GP   ",
+          "HDRUK",
+          "Primary care"
+        ],
+        "publisher": {
+          "contactPoint": [
+            "kmicb.bi@nhs.net"
+          ],
+          "description": "https://www.kentandmedway.icb.nhs.uk/about-us",
+          "logo": "https://www.kentandmedway.icb.nhs.uk/application/files/cache/thumbnails/b9a92ca7b10d21ae1cdf056d95e99659.png",
+          "memberOf": "OTHER",
+          "name": "Kent & Medway Data Warehouse"
+        },
+        "title": "Kent Integrated Dataset - GP Event"
+      },
+      "version": "1.0.0"
+    }
+}
+
+
+
+### test translation 1.1
+# POST {{baseUrl}}/validate?input_schema=GWDM&input_version=2.0
+POST https://hdr-gateway-traser-dev-qmnkcg5qjq-ew.a.run.app/translate?output_schema=GWDM&output_version=1.1&validate_input=1&validate_output=1 
+Content-Type: application/json
+Accept: application/json
+
+{
+    "extra": {
+        "id": "placeholder",
+        "pid": "placeholder",
+        "datasetType": "Health and disease",
+        "publisherId": "21",
+        "publisherName": "Kent & Medway Data Warehouse"
+    },
+    "metadata": {
+      "accessibility": {
+        "access": {
+          "accessRequestCost": "To be agreed per project by SDE program",
+          "accessRights": "",
+          "accessService": "  ",
+          "dataController": "Kent and Medway ICB",
+          "dataProcessor": "Kent and Medway Data Warehouse",
+          "deliveryLeadTime": "1-2 MONTHS",
+          "jurisdiction": [
+            "GB-ENG"
+          ]
+        },
+        "formatAndStandards": {
+          "conformsTo": [
+            "LOCAL"
+          ],
+          "format": [
+            "Text"
+          ],
+          "language": [
+            "en"
+          ],
+          "vocabularyEncodingScheme": [
+            "READ",
+            "NHS NATIONAL CODES",
+            "ODS"
+          ]
+        },
+        "usage": {
+          "dataUseLimitation": [
+            "RESEARCH SPECIFIC RESTRICTIONS"
+          ],
+          "dataUseRequirements": [
+            "ETHICS APPROVAL REQUIRED",
+            "GEOGRAPHICAL RESTRICTIONS",
+            "NOT FOR PROFIT USE",
+            "PROJECT SPECIFIC RESTRICTIONS",
+            "TIME LIMIT ON USE",
+            "USER SPECIFIC RESTRICTION"
+          ],
+          "resourceCreator": [
+            "Kent and Mewday ICB",
+            "Kent and Medway Data Warehouse"
+          ]
+        }
+      },
+      "coverage": {
+        "followup": "UNKNOWN",
+        "physicalSampleAvailability": [
+          "NOT AVAILABLE"
+        ],
+        "spatial": "Kent and Medway",
+        "typicalAgeRange": "0-120"
+      },
+      "documentation": {
+        "description": "Primary Care Event information, recording the intereactions that patients with medical staff at GP practices and some read-coded numeric data",
+        "isPartOf": [
+          "Primary Care Data"
+        ]
+      },
+      "identifier": "242c84be-a866-ac0c-0000-000000001bbe",
+      "issued": "2024-03-09T23:22:07+00:00",
+      "modified": "2024-07-03T09:55:18+00:00",
+      "observations": [
+        {
+          "disambiguatingDescription": "     ",
+          "measuredProperty": "COUNT",
+          "measuredValue": 1756178,
+          "observationDate": "2019-06-24",
+          "observedNode": "PERSONS"
+        },
+        {
+          "disambiguatingDescription": "     ",
+          "measuredProperty": "COUNT",
+          "measuredValue": 732236154,
+          "observationDate": "2019-06-24",
+          "observedNode": "EVENTS"
+        }
+      ],
+      "provenance": {
+        "origin": {
+          "collectionSituation": [
+            "PRIMARY CARE"
+          ],
+          "purpose": [
+            "CARE"
+          ],
+          "source": [
+            "EPR"
+          ]
+        },
+        "temporal": {
+          "accrualPeriodicity": "STATIC",
+          "distributionReleaseDate": "2019-06-24",
+          "endDate": "2019-06-24",
+          "startDate": "1901-01-01",
+          "timeLag": "NOT APPLICABLE"
+        }
+      },
+      "revisions": [
+        {
+          "url": "https://nhse-ics-kms-uat5-ui.metadata.works/browser/dataset?id=7102",
+          "version": "1.0.0"
+        }
+      ],
+      "structuralMetadata": [
+        {
+          "description": "Primary Care Event Table",
+          "elements": [
+            {
+              "dataType": "String",
+              "description": "Unique reference to the record",
+              "name": "Unique_ID",
+              "sensitive": false
+            },
+            {
+              "dataType": "String",
+              "description": "Commissioner for the event",
+              "name": "Commissioner_Code",
+              "sensitive": false
+            },
+            {
+              "dataType": "String",
+              "description": "Code for GP practice that is as at the activity date",
+              "name": "Practice_Code",
+              "sensitive": false
+            },
+            {
+              "dataType": "Integer",
+              "description": "Age of patient at activity date",
+              "name": "Age  ",
+              "sensitive": false
+            },
+            {
+              "dataType": "String",
+              "description": "Sex of patient at activity date",
+              "name": "Sex  ",
+              "sensitive": false
+            },
+            {
+              "dataType": "String",
+              "description": "Read code of the event",
+              "name": "Event_Read_Code",
+              "sensitive": false
+            },
+            {
+              "dataType": "floating point",
+              "description": "Numeric result of the event",
+              "name": "Num_Result",
+              "sensitive": false
+            },
+            {
+              "dataType": "floating point",
+              "description": "Second numeric result of the event",
+              "name": "Num_Result_2",
+              "sensitive": false
+            },
+            {
+              "dataType": "date",
+              "description": "Date of the event activity",
+              "name": "Activity_Date",
+              "sensitive": false
+            },
+            {
+              "dataType": "String",
+              "description": "NHS number of patient, encrypted with 256 bit SHA with salt",
+              "name": "Pseudonymised_NHS_Number",
+              "sensitive": false
+            },
+            {
+              "dataType": "String",
+              "description": "Unique reference to the consultation record",
+              "name": "Unique_Consultation_ID",
+              "sensitive": false
+            },
+            {
+              "dataType": "bigint",
+              "description": "SNOMED concept of Event (https://www.datadictionary.nhs.uk/data_elements/snomed_ct_code.html)",
+              "name": "SNOMED_Concept",
+              "sensitive": false
+            },
+            {
+              "dataType": "bigint",
+              "description": "SNOMED description of Event",
+              "name": "SNOMED_Description",
+              "sensitive": false
+            }
+          ],
+          "name": "GP_Event"
+        }
+      ],
+      "summary": {
+        "abstract": "Primary Care Event information, recording the intereactions that patients with medical staff at GP practices and some read-coded numeric data",
+        "contactPoint": "kmicb.bi@nhs.net",
+        "doiName": "10.81022/wfv3-tz28",
+        "keywords": [
+          "General practitioner",
+          "Event",
+          "GP   ",
+          "HDRUK",
+          "Primary care"
+        ],
+        "publisher": {
+          "contactPoint": [
+            "kmicb.bi@nhs.net"
+          ],
+          "description": "https://www.kentandmedway.icb.nhs.uk/about-us",
+          "logo": "https://www.kentandmedway.icb.nhs.uk/application/files/cache/thumbnails/b9a92ca7b10d21ae1cdf056d95e99659.png",
+          "memberOf": "OTHER",
+          "name": "Kent & Medway Data Warehouse"
+        },
+        "title": "Kent Integrated Dataset - GP Event"
+      },
+      "version": "1.0.0"
+    }
+}
+
+
+
+### test translation 1.2
+# POST {{baseUrl}}/validate?input_schema=GWDM&input_version=2.0
+POST https://hdr-gateway-traser-dev-qmnkcg5qjq-ew.a.run.app/translate?output_schema=GWDM&output_version=1.2&validate_input=1&validate_output=1 
+Content-Type: application/json
+Accept: application/json
+
+{
+    "metadata": {
+        "required": {
+            "gatewayId": "placeholder",
+            "gatewayPid": "placeholder",
+            "issued": "2024-03-09T23:22:07+00:00",
+            "modified": "2024-07-03T09:55:18+00:00",
+            "revisions": [
+            {
+                "version": "1.0.0",
+                "url": "https://nhse-ics-kms-uat5-ui.metadata.works/browser/dataset?id=7102"
+            }
+            ],
+            "version": "1.0.0"
+        },
+        "summary": {
+            "abstract": "Primary Care Event information, recording the intereactions that patients with medical staff at GP practices and some read-coded numeric data",
+            "contactPoint": "kmicb.bi@nhs.net",
+            "keywords": "General practitioner;,;Event;,;GP   ;,;HDRUK;,;Primary care",
+            "controlledKeywords": null,
+            "datasetType": "Health and disease",
+            "description": "Primary Care Event information, recording the intereactions that patients with medical staff at GP practices and some read-coded numeric data",
+            "doiName": "10.81022/wfv3-tz28",
+            "shortTitle": "Kent Integrated Dataset - GP Event",
+            "title": "Kent Integrated Dataset - GP Event",
+            "publisher": {
+            "name": "Kent & Medway Data Warehouse",
+            "gatewayId": "21",
+            "rorId": null
+            },
+            "populationSize": 1756178,
+            "datasetSubType": null
+        },
+        "coverage": {
+            "pathway": null,
+            "spatial": "Kent and Medway",
+            "followup": "UNKNOWN",
+            "typicalAgeRange": "0-120",
+            "gender": null,
+            "biologicalsamples": null,
+            "psychological": null,
+            "physical": null,
+            "anthropometric": null,
+            "lifestyle": null,
+            "socioeconomic": null
+        },
+        "provenance": {
+            "origin": {
+            "purpose": "CARE",
+            "source": "EPR",
+            "collectionSituation": "PRIMARY CARE"
+            },
+            "temporal": {
+            "endDate": "2019-06-24",
+            "startDate": "1901-01-01",
+            "timeLag": "NOT APPLICABLE",
+            "accrualPeriodicity": "STATIC",
+            "distributionReleaseDate": "2019-06-24"
+            }
+        },
+        "accessibility": {
+            "access": {
+            "deliveryLeadTime": "1-2 MONTHS",
+            "jurisdiction": "GB-ENG",
+            "dataController": "Kent and Medway ICB",
+            "dataProcessor": "Kent and Medway Data Warehouse",
+            "accessRights": null,
+            "accessService": "  ",
+            "accessRequestCost": "To be agreed per project by SDE program"
+            },
+            "usage": {
+            "dataUseLimitation": "RESEARCH SPECIFIC RESTRICTIONS",
+            "dataUseRequirement": "ETHICS APPROVAL REQUIRED;,;GEOGRAPHICAL RESTRICTIONS;,;NOT FOR PROFIT USE;,;PROJECT SPECIFIC RESTRICTIONS;,;TIME LIMIT ON USE;,;USER SPECIFIC RESTRICTION",
+            "resourceCreator": {
+                "name": "Kent and Mewday ICB;,;Kent and Medway Data Warehouse",
+                "gatewayId": null,
+                "rorId": null
+            }
+            },
+            "formatAndStandards": {
+            "vocabularyEncodingSchemes": "READ;,;NHS NATIONAL CODES;,;ODS",
+            "conformsTo": "LOCAL",
+            "languages": "en",
+            "formats": "Text"
+            }
+        },
+        "linkage": {
+            "associatedMedia": null,
+            "isReferenceIn": null,
+            "datasetLinkage": {
+            "isPartOf": "Primary Care Data",
+            "isDerivedFrom": null,
+            "isMemberOf": null,
+            "linkedDatasets": null
+            },
+            "investigations": null,
+            "isGeneratedUsing": null,
+            "dataUses": null,
+            "tools": null
+        },
+        "observations": [
+            {
+            "observedNode": "PERSONS",
+            "measuredValue": 1756178,
+            "observationDate": "2019-06-24",
+            "measuredProperty": "COUNT",
+            "disambiguatingDescription": "     "
+            },
+            {
+            "observedNode": "EVENTS",
+            "measuredValue": 732236154,
+            "observationDate": "2019-06-24",
+            "measuredProperty": "COUNT",
+            "disambiguatingDescription": "     "
+            }
+        ],
+        "structuralMetadata": [
+            {
+            "description": "Primary Care Event Table",
+            "name": "GP_Event",
+            "columns": [
+                {
+                "dataType": "String",
+                "description": "Unique reference to the record",
+                "name": "Unique_ID",
+                "sensitive": false,
+                "values": [
+                    {
+                    "name": "Male",
+                    "frequency": 50,
+                    "description": null
+                    }
+                ]
+                },
+                {
+                "dataType": "String",
+                "description": "Commissioner for the event",
+                "name": "Commissioner_Code",
+                "sensitive": false,
+                "values": [
+                    {
+                    "name": "Male",
+                    "frequency": 50,
+                    "description": null
+                    }
+                ]
+                },
+                {
+                "dataType": "String",
+                "description": "Code for GP practice that is as at the activity date",
+                "name": "Practice_Code",
+                "sensitive": false,
+                "values": [
+                    {
+                    "name": "Male",
+                    "frequency": 50,
+                    "description": null
+                    }
+                ]
+                },
+                {
+                "dataType": "Integer",
+                "description": "Age of patient at activity date",
+                "name": "Age  ",
+                "sensitive": false,
+                "values": [
+                    {
+                    "name": "Male",
+                    "frequency": 50,
+                    "description": null
+                    }
+                ]
+                },
+                {
+                "dataType": "String",
+                "description": "Sex of patient at activity date",
+                "name": "Sex  ",
+                "sensitive": false,
+                "values": [
+                    {
+                    "name": "Male",
+                    "frequency": 50,
+                    "description": null
+                    }
+                ]
+                },
+                {
+                "dataType": "String",
+                "description": "Read code of the event",
+                "name": "Event_Read_Code",
+                "sensitive": false,
+                "values": [
+                    {
+                    "name": "Male",
+                    "frequency": 50,
+                    "description": null
+                    }
+                ]
+                },
+                {
+                "dataType": "floating point",
+                "description": "Numeric result of the event",
+                "name": "Num_Result",
+                "sensitive": false,
+                "values": [
+                    {
+                    "name": "Male",
+                    "frequency": 50,
+                    "description": null
+                    }
+                ]
+                },
+                {
+                "dataType": "floating point",
+                "description": "Second numeric result of the event",
+                "name": "Num_Result_2",
+                "sensitive": false,
+                "values": [
+                    {
+                    "name": "Male",
+                    "frequency": 50,
+                    "description": null
+                    }
+                ]
+                },
+                {
+                "dataType": "date",
+                "description": "Date of the event activity",
+                "name": "Activity_Date",
+                "sensitive": false,
+                "values": [
+                    {
+                    "name": "Male",
+                    "frequency": 50,
+                    "description": null
+                    }
+                ]
+                },
+                {
+                "dataType": "String",
+                "description": "NHS number of patient, encrypted with 256 bit SHA with salt",
+                "name": "Pseudonymised_NHS_Number",
+                "sensitive": false,
+                "values": [
+                    {
+                    "name": "Male",
+                    "frequency": 50,
+                    "description": null
+                    }
+                ]
+                },
+                {
+                "dataType": "String",
+                "description": "Unique reference to the consultation record",
+                "name": "Unique_Consultation_ID",
+                "sensitive": false,
+                "values": [
+                    {
+                    "name": "Male",
+                    "frequency": 50,
+                    "description": null
+                    }
+                ]
+                },
+                {
+                "dataType": "bigint",
+                "description": "SNOMED concept of Event (https://www.datadictionary.nhs.uk/data_elements/snomed_ct_code.html)",
+                "name": "SNOMED_Concept",
+                "sensitive": false,
+                "values": [
+                    {
+                    "name": "Male",
+                    "frequency": 50,
+                    "description": null
+                    }
+                ]
+                },
+                {
+                "dataType": "bigint",
+                "description": "SNOMED description of Event",
+                "name": "SNOMED_Description",
+                "sensitive": false,
+                "values": [
+                    {
+                    "name": "Male",
+                    "frequency": 50,
+                    "description": null
+                    }
+                ]
+                }
+            ]
+            }
+        ],
+        "tissuesSampleCollection": null
+    }
+}
