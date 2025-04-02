@@ -327,7 +327,7 @@ class ToolTest extends TestCase
             $this->header,
         );
 
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
         ->assertJsonStructure([
             'message',
             'data',
@@ -364,7 +364,7 @@ class ToolTest extends TestCase
             $this->header,
         );
 
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
         ->assertJsonStructure([
             'message',
             'data',
@@ -1628,6 +1628,8 @@ class ToolTest extends TestCase
             'PUT',
             '/api/v1/tools/' . $toolId,
             [
+                'name' => 'Tool A',
+                'user_id' => $idUserAOne,
                 'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
                 'dataset' => $this->generateDatasets($datasets),
                 'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
@@ -1736,6 +1738,8 @@ class ToolTest extends TestCase
             'PUT',
             '/api/v1/tools/' . $toolId,
             [
+                'name' => 'Tool A',
+                'user_id' => $idUserATwo,
                 'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
                 'dataset' => $this->generateDatasets($datasets),
                 'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
@@ -1847,6 +1851,8 @@ class ToolTest extends TestCase
             'PUT',
             '/api/v1/tools/' . $toolId,
             [
+                'name' => 'Tool A',
+                'user_id' => $idUserBOne,
                 'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
                 'dataset' => $this->generateDatasets($datasets),
                 'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
