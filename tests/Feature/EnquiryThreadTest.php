@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Config;
 use App\Http\Enums\TeamMemberOf;
 use App\Jobs\SendEmailJob;
 use App\Models\Dataset;
@@ -166,7 +167,7 @@ class EnquiryThreadTest extends TestCase
             ],
             $this->header
         );
-        $responseTeam->assertStatus(200);
+        $responseTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
 
         $content = $responseTeam->decodeResponseJson();
         $teamId = $content['data'];
@@ -568,7 +569,7 @@ class EnquiryThreadTest extends TestCase
             ],
             $this->header
         );
-        $responseTeam->assertStatus(200);
+        $responseTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
 
         $content = $responseTeam->decodeResponseJson();
         $teamId = $content['data'];
