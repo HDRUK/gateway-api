@@ -34,6 +34,8 @@ class DatasetVersionTest extends TestCase
     public const TEST_URL_NOTIFICATION = '/api/v1/notifications';
     public const TEST_URL_USER = '/api/v1/users';
 
+    public $metadata;
+
     public function setUp(): void
     {
         $this->commonSetUp();
