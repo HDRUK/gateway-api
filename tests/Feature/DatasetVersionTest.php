@@ -94,7 +94,7 @@ class DatasetVersionTest extends TestCase
             $this->header,
         );
 
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
         ->assertJsonStructure([
             'message',
             'data',
@@ -222,7 +222,7 @@ class DatasetVersionTest extends TestCase
             $this->header,
         );
 
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
         ->assertJsonStructure([
             'message',
             'data',
