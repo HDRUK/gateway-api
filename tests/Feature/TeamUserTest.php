@@ -703,7 +703,7 @@ class TeamUserTest extends TestCase
         ]);
     }
 
-    private function createUser(string $email = null)
+    private function createUser(?string $email = null)
     {
         $responseNewUser = $this->json(
             'POST',

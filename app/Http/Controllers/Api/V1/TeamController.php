@@ -657,7 +657,7 @@ class TeamController extends Controller
             return response()->json([
                 'message' => 'success',
                 'data' => $team->id,
-            ], 200);
+            ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
