@@ -155,7 +155,7 @@ class ReindexEntities extends Command
         }
 
         $nTotal = Tool::count();
-        $toolIds = Tool::where('status', Tool::STATUS_ACTIVE)
+        $toolIds = Tool::where('status', Tool::STATUS_DRAFT)
             ->select('id')
             ->pluck('id')
             ->toArray();
