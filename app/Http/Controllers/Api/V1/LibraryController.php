@@ -116,7 +116,7 @@ class LibraryController extends Controller
                 $library->setAttribute('data_provider_name', $team->name);
                 $library->setAttribute('data_provider_dar_enabled', $team->is_question_bank);
                 $library->setAttribute('data_provider_member_of', $team->member_of);
-
+                $library->setAttribute('dataset_is_cohort_discovery', $dataset->is_cohort_discovery);
 
                 unset($library->dataset);
                 return $library;
