@@ -1,3 +1,15 @@
+## [2.5.0](https://github.com/HDRUK/gateway-api/compare/v2.4.1...v2.5.0) (2025-04-07)
+
+### ✨ Features
+
+* **GAT-5446:** Unit testing for CRUD permission error for Analysis Scripts & Software (#1170) ([83072f9](https://github.com/HDRUK/gateway-api/commit/83072f91e4ee84523250d3f3811919286b066a2a)), closes [GAT-5446](GAT-5446)
+* **GAT-5639:** related entities deleted when collection archived (#1163) ([987f77a](https://github.com/HDRUK/gateway-api/commit/987f77aeb0776c07d2097b955173086a9cf12219)), closes [GAT-5639](GAT-5639)
+* **GAT-5763:** Limit Collections on Data Custodian page to those created by the DataCustodian (#1155) ([f7c6864](https://github.com/HDRUK/gateway-api/commit/f7c686478f08b5c9c86830a40275909b233d4de5)), closes [GAT-5763](GAT-5763)
+* **GAT-6414:** Extend linkage extraction job (under apps/jobs) for tools and publications in Dataset & BioSample metadata (#1166) ([0b80bb4](https://github.com/HDRUK/gateway-api/commit/0b80bb4d8243c7ac22071f138fcb5e3711cd89af)), closes [GAT-6414](GAT-6414)
+* **GAT-6607:** Count and filtering on dar templates (#1152) ([550617a](https://github.com/HDRUK/gateway-api/commit/550617a6afb962a8175e501c3a1ddfbfbee6cb24)), closes [GAT-6607](GAT-6607)
+* **GAT-6612:** endpoint for user to delete a DAR (#1159) ([18f9d73](https://github.com/HDRUK/gateway-api/commit/18f9d7378faf8e430deeb45d032e808d9aa65af7)), closes [GAT-6612](GAT-6612)
+* **GAT-6713:** Add Access Cohort Discovery to Library endpoint (#1172) ([c2b0456](https://github.com/HDRUK/gateway-api/commit/c2b0456b93f13b2f39f0a9dc0a5366ce38bd98e6)), closes [GAT-6713](GAT-6713)
+
 ## [2.4.1](https://github.com/HDRUK/gateway-api/compare/v2.4.0...v2.4.1) (2025-03-31)
 
 ### 🐛 Bug Fixes
