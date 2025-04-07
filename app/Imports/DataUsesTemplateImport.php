@@ -37,7 +37,7 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
     */
     public function model(array $row)
     {
-        if (trim($row[0]) === '') {
+        if (trim($row[1]) === '') {
             return null;
         }
 
@@ -93,7 +93,7 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
     public function rules(): array
     {
         return [
-            '0' => [
+            '1' => [
                 function ($attribute, $value, $fail) {
                     // Skip validation if the cell is empty
                     if (is_null($value) || trim($value) === '' || strlen(trim($value)) === 0) {
