@@ -4,7 +4,7 @@ namespace App\Http\Requests\DataAccessApplication;
 
 use App\Http\Requests\BaseFormRequest;
 
-class EditDataAccessApplication extends BaseFormRequest
+class DeleteUserDataAccessApplication extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -19,26 +19,10 @@ class EditDataAccessApplication extends BaseFormRequest
                 'required',
                 'exists:dar_applications,id',
             ],
-            'teamId' => [
+            'userId' => [
                 'int',
                 'required',
-                'exists:teams,id',
-            ],
-            'applicant_id' => [
-                'integer',
                 'exists:users,id',
-            ],
-            'submission_status' => [
-                'string',
-                'in:DRAFT,SUBMITTED',
-            ],
-            'project_title' => [
-                'string',
-            ],
-            'approval_status' => [
-                'string',
-                'nullable',
-                'in:APPROVED,APPROVED_COMMENTS,FEEDBACK,REJECTED',
             ],
         ];
     }
@@ -52,7 +36,7 @@ class EditDataAccessApplication extends BaseFormRequest
     {
         $this->merge([
             'id' => $this->route('id'),
-            'teamId' => $this->route('teamId'),
+            'userId' => $this->route('userId'),
         ]);
     }
 }

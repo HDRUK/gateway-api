@@ -315,6 +315,9 @@ class TeamDataAccessApplicationController extends Controller
 
             $this->getApplicationWithQuestions($application);
 
+            $submissions = $this->submissionAudit($id);
+            $application = array_merge($application->toArray(), $submissions);
+
             if ($application) {
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
