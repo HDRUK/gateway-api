@@ -7,7 +7,7 @@ Follow these steps to install and run the project on your local machine.
 
 ## Prerequisites
 There are two ways to run our API.
-- With Tilt/Helm into a local Kubernetes cluster
+- With Tilt/Helm into a local Kubernetes cluster.
 - Or manually, via `php artisan octane:frankenphp --host=0.0.0.0 --port=8100`
 
 Let's take you through both!
