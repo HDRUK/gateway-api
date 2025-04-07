@@ -743,7 +743,7 @@ class DurTest extends TestCase
             $this->header,
         );
 
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
             'message',
             'data',

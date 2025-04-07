@@ -331,9 +331,7 @@ class DataAccessApplicationTest extends TestCase
                             'submission_status',
                             'approval_status',
                         ]
-                    ],
-                    'days_since_submission',
-                    'submission_date',
+                    ]
                 ],
             ]);
 
@@ -354,9 +352,7 @@ class DataAccessApplicationTest extends TestCase
                             'submission_status',
                             'approval_status',
                         ]
-                    ],
-                    'days_since_submission',
-                    'submission_date',
+                    ]
                 ],
             ]);
     }
@@ -1251,8 +1247,6 @@ class DataAccessApplicationTest extends TestCase
                                 'team_id',
                                 'user_id',
                                 'comment',
-                                'team_name',
-                                'user_name',
                             ]
                         ],
                         'files',
@@ -2331,26 +2325,6 @@ class DataAccessApplicationTest extends TestCase
 
         // Check for 2 new status entries - submission and approval
         $this->assertEquals($statusCountNew, $statusCountInit + 2);
-
-        // Test team can push application back to DRAFT and null approval status
-        $response = $this->json(
-            'PATCH',
-            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId,
-            [
-                'submission_status' => 'DRAFT',
-                'approval_status' => null,
-            ],
-            $this->header
-        );
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-            ->assertJsonStructure([
-                'message',
-                'data',
-            ]);
-
-        $content = $response->decodeResponseJson();
-        $this->assertEquals($content['data']['teams'][0]['submission_status'], 'DRAFT');
-        $this->assertEquals($content['data']['teams'][0]['approval_status'], null);
     }
 
     /**
@@ -2584,68 +2558,6 @@ class DataAccessApplicationTest extends TestCase
             ]);
     }
 
-    /**
-     * Tests a user can delete a dar application
-     *
-     * @return void
-     */
-    public function test_user_can_delete_a_dar_application()
-    {
-
-        $response = $this->json(
-            'POST',
-            'api/v1/dar/applications',
-            [
-                'applicant_id' => 1,
-                'submission_status' => 'DRAFT',
-                'project_title' => 'A test DAR',
-                'dataset_ids' => [1,2],
-            ],
-            $this->header
-        );
-        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
-        $content = $response->decodeResponseJson();
-
-        $response = $this->json(
-            'DELETE',
-            'api/v1/users/1/dar/applications/' . $content['data'],
-            [],
-            $this->header
-        );
-
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-            ->assertJsonStructure([
-                'message',
-            ]);
-
-        // Test user cannot delete after submission
-        $response = $this->json(
-            'POST',
-            'api/v1/dar/applications',
-            [
-                'applicant_id' => 1,
-                'submission_status' => 'SUBMITTED',
-                'project_title' => 'A test DAR',
-                'dataset_ids' => [1,2],
-            ],
-            $this->header
-        );
-        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
-        $content = $response->decodeResponseJson();
-
-        $response = $this->json(
-            'DELETE',
-            'api/v1/users/1/dar/applications/' . $content['data'],
-            [],
-            $this->header
-        );
-
-        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'))
-            ->assertJsonStructure([
-                'message',
-            ]);
-    }
-
     private function createQuestion(string $title): int
     {
         $response = $this->json(
@@ -2708,7 +2620,7 @@ class DataAccessApplicationTest extends TestCase
             ],
             $this->header
         );
-        $responseTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $responseTeam->assertStatus(200);
 
         $content = $responseTeam->decodeResponseJson();
         $teamId = $content['data'];

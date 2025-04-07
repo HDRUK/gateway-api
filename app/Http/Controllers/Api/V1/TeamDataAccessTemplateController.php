@@ -27,16 +27,6 @@ class TeamDataAccessTemplateController extends Controller
      *      tags={"TeamDataAccessTemplate"},
      *      summary="TeamDataAccessTemplate@index",
      *      security={{"bearerAuth":{}}},
-     *      @OA\Parameter(
-     *        name="published",
-     *        in="query",
-     *        description="Template publication status to filter by (true, false)",
-     *        example="true",
-     *        @OA\Schema(
-     *          type="string",
-     *          description="Template publication status to filter by",
-     *        ),
-     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -64,32 +54,13 @@ class TeamDataAccessTemplateController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $filterPublished = isset($input['published']) ? $request->boolean('published') : null;
-            $filterPublishedDefined = !is_null($filterPublished);
-
             $templates = DataAccessTemplate::where('team_id', $teamId)
-            ->when($filterPublishedDefined, function ($query) use ($filterPublished) {
-                return $query->where('published', $filterPublished);
-            })
-            ->with(['questions','files']);
-
-            $counts = $templates->get()
-                ->select('published')
-                ->groupBy('published')
-                ->map->count();
-
-            $countsRenamed = collect([
-                'active_count' => $counts[1] ?? 0,
-                'non_active_count' => $counts[0] ?? 0,
-            ]);
-
-            $templates = $templates->paginate(
+            ->with(['questions','files'])
+            ->paginate(
                 Config::get('constants.per_page'),
                 ['*'],
                 'page'
             );
-
-            $templates = $countsRenamed->merge($templates);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

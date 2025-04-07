@@ -22,7 +22,7 @@ class LibraryTest extends TestCase
     public const TEST_URL = '/api/v1/libraries';
 
     protected $header = [];
-    protected $user = null;
+    protected $user = [];
 
 
     public function setUp(): void
@@ -68,7 +68,6 @@ class LibraryTest extends TestCase
                     'data_provider_name',
                     'data_provider_dar_enabled',
                     'data_provider_member_of',
-                    'dataset_is_cohort_discovery',
                 ],
             ],
             'first_page_url',
@@ -131,7 +130,6 @@ class LibraryTest extends TestCase
                     'data_provider_name',
                     'data_provider_dar_enabled',
                     'data_provider_member_of',
-                    'dataset_is_cohort_discovery',
                 ],
             ]);
     }

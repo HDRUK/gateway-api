@@ -4227,20 +4227,6 @@ return [
             'userId' => '[0-9]+',
         ],
     ],
-    [
-        'name' => 'dar/applications',
-        'method' => 'delete',
-        'path' => '/users/{userId}/dar/applications/{id}',
-        'methodController' => 'UserDataAccessApplicationController@destroy',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-            'userId' => '[0-9]+',
-        ],
-    ],
 
     // dar/applications/reviews
     [

@@ -19,9 +19,9 @@ trait CheckAccess
      */
     public function checkAccess(
         array $input = [],
-        ?int $dbTeamId = null,
-        ?int $dbUserId = null,
-        ?string $checkType = null
+        int $dbTeamId = null,
+        int $dbUserId = null,
+        string $checkType = null
     ) {
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         if (!count($jwtUser)) {
@@ -58,7 +58,7 @@ trait CheckAccess
      */
     public function checkAccessCollaborators(
         array $input = [],
-        ?array $dbUserIds = null
+        array $dbUserIds = null
     ) {
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         if (!count($jwtUser)) {
@@ -117,6 +117,8 @@ trait CheckAccess
             return true;
         }
     }
+
+
 
     private function checkAccessUser($jwtUserId, $dbUserId)
     {

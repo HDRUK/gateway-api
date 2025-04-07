@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
-use App\Http\Enums\TeamMemberOf;
 use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\DataAccessTemplateSeeder;
@@ -46,8 +45,6 @@ class DataAccessTemplateTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'current_page',
-                'active_count',
-                'non_active_count',
                 'data' => [
                     0 => [
                         'id',
@@ -175,13 +172,11 @@ class DataAccessTemplateTest extends TestCase
      */
     public function test_the_application_can_list_dar_templates_by_team()
     {
-        $teamId = $this->createTeam();
-
         $response = $this->json(
             'POST',
             'api/v1/dar/templates',
             [
-                'team_id' => $teamId,
+                'team_id' => 1,
                 'published' => false,
                 'locked' => false,
             ],
@@ -195,35 +190,13 @@ class DataAccessTemplateTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $templateId1 = $content['data'];
+        $templateId = $content['data'];
 
-        $response = $this->json(
-            'POST',
-            'api/v1/dar/templates',
-            [
-                'team_id' => $teamId,
-                'published' => true,
-                'locked' => false,
-            ],
-            $this->header
-        );
-
-        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
-            ->assertJsonStructure([
-                'message',
-                'data',
-            ]);
-
-        $content = $response->decodeResponseJson();
-        $templateId2 = $content['data'];
-
-        $response = $this->get('api/v1/teams/' . $teamId . '/dar/templates/', $this->header);
+        $response = $this->get('api/v1/teams/' . 1 . '/dar/templates/', $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'current_page',
-                'active_count',
-                'non_active_count',
                 'data' => [
                     0 => [
                         'id',
@@ -248,22 +221,9 @@ class DataAccessTemplateTest extends TestCase
                 'to',
                 'total',
             ]);
-        $content = $response->decodeResponseJson();
-        $templates = $content['data'];
-
-        $this->assertContains($templateId1, array_column($templates, 'id'));
-        $this->assertContains($templateId2, array_column($templates, 'id'));
-
-        $this->assertEquals(1, $content['active_count']);
-        $this->assertEquals(1, $content['non_active_count']);
-
-        $response = $this->get('api/v1/teams/' . $teamId . '/dar/templates?published=false', $this->header);
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $templates = $response->decodeResponseJson()['data'];
 
-        $this->assertContains($templateId1, array_column($templates, 'id'));
-        $this->assertNotContains($templateId2, array_column($templates, 'id'));
-
+        $this->assertContains($templateId, array_column($templates, 'id'));
     }
 
     /**
@@ -810,40 +770,5 @@ class DataAccessTemplateTest extends TestCase
         $qId = $response->decodeResponseJson()['data'];
 
         return $qId;
-    }
-
-    private function createTeam(): int
-    {
-        // Create team for the user to belong to
-        $responseTeam = $this->json(
-            'POST',
-            'api/v1/teams',
-            [
-                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
-                'enabled' => 1,
-                'allows_messaging' => 1,
-                'workflow_enabled' => 1,
-                'access_requests_management' => 1,
-                'uses_5_safes' => 1,
-                'is_admin' => 1,
-                'member_of' => TeamMemberOf::HUB,
-                'contact_point' => 'dinos345@mail.com',
-                'application_form_updated_by' => 'Someone Somewhere',
-                'application_form_updated_on' => '2023-04-06 15:44:41',
-                'is_question_bank' => 1,
-                'users' => [],
-                'notifications' => [],
-                'url' => 'https://fakeimg.pl/350x200/ff0000/000',
-                'introduction' => fake()->sentence(),
-                'dar_modal_content' => fake()->sentence(),
-                'service' => 'https://service.local/test',
-            ],
-            $this->header
-        );
-        $responseTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
-
-        $content = $responseTeam->decodeResponseJson();
-        $teamId = $content['data'];
-        return $teamId;
     }
 }

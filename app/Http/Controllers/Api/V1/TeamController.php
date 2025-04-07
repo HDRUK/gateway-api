@@ -480,8 +480,7 @@ class TeamController extends Controller
                 $tool['user'] = $user;
             }
 
-            $collections = Collection::where(['team_id' => $id ])
-                ->whereIn('id', $this->collections)
+            $collections = Collection::whereIn('id', $this->collections)
                 ->select('id', 'name', 'image_link', 'created_at', 'updated_at', 'status', 'public')
                 ->get()
                 ->toArray();
@@ -657,7 +656,7 @@ class TeamController extends Controller
             return response()->json([
                 'message' => 'success',
                 'data' => $team->id,
-            ], Config::get('statuscodes.STATUS_CREATED.code'));
+            ], 200);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

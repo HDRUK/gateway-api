@@ -6,7 +6,6 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DataAccessApplicationComment extends Model
 {
@@ -27,27 +26,4 @@ class DataAccessApplicationComment extends Model
         'team_id',
         'comment',
     ];
-
-    protected $appends = ['user_name', 'team_name'];
-
-    protected $hidden = ['user', 'team'];
-
-    public function team(): BelongsTo
-    {
-        return $this->belongsTo(Team::class, 'team_id');
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
-    public function getUserNameAttribute(): ?string
-    {
-        return $this->user ? $this->user->name : null;
-    }
-    public function getTeamNameAttribute(): ?string
-    {
-        return $this->team ? $this->team->name : null;
-    }
 }

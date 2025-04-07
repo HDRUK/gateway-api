@@ -250,7 +250,7 @@ class ScanFileUpload implements ShouldQueue
                 'status' => 'PROCESSED',
                 'file_location' => $loc,
                 'entity_type' => 'dur',
-                'entity_id' => $durIds[0] ?? null,
+                'entity_id' => $durIds[0]
             ]);
 
             CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');

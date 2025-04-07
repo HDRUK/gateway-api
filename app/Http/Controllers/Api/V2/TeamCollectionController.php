@@ -965,7 +965,6 @@ class TeamCollectionController extends Controller
                 CollectionHasDur::where(['collection_id' => $id])->delete();
                 CollectionHasKeyword::where(['collection_id' => $id])->delete();
                 CollectionHasPublication::where(['collection_id' => $id])->delete();
-                CollectionHasUser::where(['collection_id' => $id])->delete();
                 Collection::where(['id' => $id])->delete();
 
                 $this->deleteCollectionFromElastic($id);
