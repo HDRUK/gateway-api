@@ -76,6 +76,7 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
             'enabled' => true,
             'user_id' => $this->data['user_id'],
             'team_id' => $this->data['team_id'],
+            'sector_id' => $row[3] ? $this->mapOrganisationSector($row[3]) : null,
         ]);
 
         $this->durIds[] = (int) $dur->id;
