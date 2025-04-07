@@ -13,7 +13,7 @@ class UpdateUserPassword extends Command
      *
      * @var string
      */
-    protected $signature = 'user:update-password';
+    protected $signature = 'app:update-user-password';
 
     /**
      * The console command description.

@@ -32,11 +32,6 @@ class DataAccessTemplate extends Model
         'template_type',
     ];
 
-    protected $casts = [
-        'published' => 'boolean',
-        'locked' => 'boolean',
-    ];
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

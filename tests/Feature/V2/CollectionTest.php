@@ -704,7 +704,6 @@ class CollectionTest extends TestCase
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
             "status" => "DRAFT",
-            'collaborators' => [$this->nonAdmin2User['id']],
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -733,7 +732,7 @@ class CollectionTest extends TestCase
             $this->headerNonAdmin2 // Not a COLLABORATOR
         );
 
-        $responseEdit1->assertStatus(200); // Unauthorized
+        $responseEdit1->assertStatus(401); // Unauthorized
 
     }
 
@@ -776,11 +775,9 @@ class CollectionTest extends TestCase
 
         // delete collection
         $response = $this->json(
-            'PATCH',
+            'DELETE',
             self::TEST_URL_V2 . '/' . $idIn,
-            [
-                'status' => 'ARCHIVED',
-            ],
+            [],
             $this->headerNonAdmin
         );
         $response->assertStatus(200);
@@ -2048,7 +2045,7 @@ class CollectionTest extends TestCase
             ],
             $this->header
         );
-        $responseTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $responseTeam->assertStatus(200);
 
         $content = $responseTeam->decodeResponseJson();
         $teamId = $content['data'];

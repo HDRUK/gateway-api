@@ -12,7 +12,6 @@ use App\Exceptions\UnauthorizedException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DataAccessApplication\CreateUserDataAccessApplicationAnswer;
 use App\Http\Requests\DataAccessApplication\EditUserDataAccessApplication;
-use App\Http\Requests\DataAccessApplication\DeleteUserDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\DeleteUserDataAccessApplicationFile;
 use App\Http\Requests\DataAccessApplication\GetUserDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\GetUserDataAccessApplicationFile;
@@ -21,7 +20,6 @@ use App\Http\Traits\DataAccessApplicationHelpers;
 use App\Jobs\SendEmailJob;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationAnswer;
-use App\Models\DataAccessApplicationHasDataset;
 use App\Models\DataAccessTemplate;
 use App\Models\EmailTemplate;
 use App\Models\Team;
@@ -345,9 +343,6 @@ class UserDataAccessApplicationController extends Controller
                     ->get();
                 $application['templates'] = $templates;
             }
-
-            $submissions = $this->submissionAudit($id);
-            $application = array_merge($application->toArray(), $submissions);
 
             if ($application) {
                 Auditor::log([
@@ -1140,107 +1135,6 @@ class UserDataAccessApplicationController extends Controller
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
 
-        } catch (Exception $e) {
-            Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Delete(
-     *      path="/api/v1/users/{userId}/dar/applications/{id}",
-     *      summary="Delete a user's DAR application",
-     *      description="Delete a user's DAR application",
-     *      tags={"DataAccessApplication"},
-     *      summary="DataAccessApplication@destroy",
-     *      security={{"bearerAuth":{}}},
-     *      @OA\Parameter(
-     *         name="userId",
-     *         in="path",
-     *         description="User id",
-     *         required=true,
-     *         example="1",
-     *         @OA\Schema(
-     *            type="integer",
-     *            description="User id",
-     *         ),
-     *      ),
-     *      @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         description="DAR application id",
-     *         required=true,
-     *         example="1",
-     *         @OA\Schema(
-     *            type="integer",
-     *            description="DAR application id",
-     *         ),
-     *      ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthorized",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="unauthorized")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Success",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="success")
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=500,
-     *          description="Error",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="error")
-     *          )
-     *      )
-     * )
-     */
-    public function destroy(DeleteUserDataAccessApplication $request, int $userId, int $id): JsonResponse
-    {
-        $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
-        try {
-            $application = DataAccessApplication::with('teams')->findOrFail($id);
-            if (($jwtUser['id'] !== $userId) || ($jwtUser['id'] !== $application->applicant_id)) {
-                throw new UnauthorizedException('User does not have permission to use this endpoint to delete this file.');
-            }
-
-            $status = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status')) ? 'DRAFT' : 'SUBMITTED';
-            if ($status === 'SUBMITTED') {
-                throw new Exception('A data access request cannot be deleted after it has been submitted.');
-            }
-
-            TeamHasDataAccessApplication::where('dar_application_id', $id)->delete();
-            DataAccessApplicationHasDataset::where('dar_application_id', $id)->delete();
-            DataAccessApplicationAnswer::where('application_id', $id)->delete();
-            $application->delete();
-
-            Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
-                'action_type' => 'DELETE',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'DataAccessApplication ' . $id . ' deleted',
-            ]);
-
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-            ], Config::get('statuscodes.STATUS_OK.code'));
-
-        } catch (UnauthorizedException $e) {
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

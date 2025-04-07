@@ -89,7 +89,7 @@ class TeamObserverTest extends TestCase
             $this->header
         );
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'message',
                 'data',
@@ -197,7 +197,7 @@ class TeamObserverTest extends TestCase
             $this->header
         );
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'message',
                 'data',
