@@ -1,3 +1,9 @@
+## [2.6.0](https://github.com/HDRUK/gateway-api/compare/v2.5.0...v2.6.0) (2025-04-08)
+
+### ✨ Features
+
+* **GAT-1234:** Revert the reverted changes from main ([dbb3e3e](https://github.com/HDRUK/gateway-api/commit/dbb3e3e8047c4c8073a26f13cf229a484034b693)), closes [GAT-1234](GAT-1234) [GAT-1234](GAT-1234)
+
 ## [2.5.0](https://github.com/HDRUK/gateway-api/compare/v2.4.1...v2.5.0) (2025-04-07)
 
 ### ✨ Features
