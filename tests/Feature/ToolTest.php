@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use Config;
 use Exception;
+use App\Models\Tag;
 use Tests\TestCase;
 use App\Models\Tool;
+use App\Models\User;
 use ReflectionClass;
 use App\Models\Dataset;
 use App\Models\License;
@@ -13,6 +15,7 @@ use App\Models\Collection;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Models\Publication;
+use Illuminate\Support\Str;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
@@ -36,6 +39,7 @@ use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TypeCategorySeeder;
 use App\Models\ToolHasProgrammingPackage;
+use Database\Seeders\EmailTemplateSeeder;
 use App\Models\ToolHasProgrammingLanguage;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
@@ -44,6 +48,11 @@ use Database\Seeders\DurHasPublicationSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
+use App\Models\Category;
+use App\Models\Dur;
+use App\Models\ProgrammingLanguage;
+use App\Models\ProgrammingPackage;
+use App\Models\TypeCategory;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\DatasetVersionHasToolSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -97,6 +106,7 @@ class ToolTest extends TestCase
             CollectionHasToolSeeder::class,
             DatasetVersionHasToolSeeder::class,
             CollectionHasUserSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
     }
 
@@ -105,7 +115,7 @@ class ToolTest extends TestCase
      *
      * @return void
      */
-    public function test_get_all_tools_with_success(): void
+    public function test_v1_get_all_tools_with_success(): void
     {
         $countTool = Tool::where('enabled', 1)->count();
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
@@ -161,7 +171,7 @@ class ToolTest extends TestCase
      *
      * @return void
      */
-    public function test_get_tool_by_id_with_success(): void
+    public function test_v1_get_tool_by_id_with_success(): void
     {
         $toolId = Tool::where('enabled', 1)->get()->random()->id;
         $response = $this->json('GET', self::TEST_URL . '/' . $toolId, [], $this->header);
@@ -204,7 +214,7 @@ class ToolTest extends TestCase
      *
      * @return void
      */
-    public function test_add_new_tool_with_success(): void
+    public function test_v1_add_new_tool_with_success(): void
     {
         ECC::shouldReceive("indexDocument")
             ->times(1);
@@ -268,7 +278,7 @@ class ToolTest extends TestCase
      *
      * @return void
      */
-    public function test_get_all_team_tools_with_success(): void
+    public function test_v1_get_all_team_tools_with_success(): void
     {
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -317,7 +327,7 @@ class ToolTest extends TestCase
             $this->header,
         );
 
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
         ->assertJsonStructure([
             'message',
             'data',
@@ -354,7 +364,7 @@ class ToolTest extends TestCase
             $this->header,
         );
 
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
         ->assertJsonStructure([
             'message',
             'data',
@@ -583,15 +593,12 @@ class ToolTest extends TestCase
         $responseDeleteUser->assertStatus(200);
     }
 
-
-
-
     /**
      * Insert data into tool_has_tags table with success
      *
      * @return void
      */
-    public function test_insert_data_in_tool_has_tags(): void
+    public function test_v1_insert_data_in_tool_has_tags(): void
     {
         ToolHasTag::truncate();
 
@@ -622,7 +629,7 @@ class ToolTest extends TestCase
      *
      * @return void
      */
-    public function test_update_tool_with_success(): void
+    public function test_v1_update_tool_with_success(): void
     {
 
         ECC::shouldReceive("indexDocument")
@@ -777,7 +784,7 @@ class ToolTest extends TestCase
      *
      * @return void
      */
-    public function test_edit_tool_with_success(): void
+    public function test_v1_edit_tool_with_success(): void
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         // insert
@@ -927,7 +934,7 @@ class ToolTest extends TestCase
      *
      * @return void
      */
-    public function test_create_archive_unarchive_tool_with_success(): void
+    public function test_v1_create_archive_unarchive_tool_with_success(): void
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
 
@@ -1012,7 +1019,7 @@ class ToolTest extends TestCase
      *
      * @return void
      */
-    public function test_update_tool_and_generate_exception(): void
+    public function test_v1_update_tool_and_generate_exception(): void
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockData = array(
@@ -1058,7 +1065,7 @@ class ToolTest extends TestCase
      *
      * @return void
      */
-    public function test_soft_delete_tool_with_success(): void
+    public function test_v1_soft_delete_tool_with_success(): void
     {
         $tools = Tool::first();
         $countBefore = Tool::onlyTrashed()->count();
@@ -1072,6 +1079,932 @@ class ToolTest extends TestCase
             $countAfter,
             "actual value is equals to expected"
         );
+    }
+
+    public function test_v1_create_tool_A_with_success()
+    {
+        // create User a.one@test.com
+        $idUserAOne = $this->createTestUser('a.one@test.com');
+
+        // create Team A
+        $idTeamA = $this->createTestTeam();
+
+        // assign User a.one@test.com to Team A
+        $permissions = ["developer", "custodian.dar.manager"];
+        $this->assignUserToTeam($idTeamA, $idUserAOne, $permissions);
+
+        // generate jwt for user a.one@test.com
+        $jwtUserAOne = $this->getTestUserAuthorization('a.one@test.com');
+
+        // user a.one@test.com create Tool AOne with Team A
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $categoryId = Category::where('enabled', 1)->get()->random()->id;
+        $tags = Tag::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $datasets = Dataset::where('status', Dataset::STATUS_ACTIVE)->inRandomOrder()->take(3)->select('id')->get()->toArray();
+        $programmingLanguags = ProgrammingLanguage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $programmingPackages = ProgrammingPackage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $typeCategories = TypeCategory::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $durs = Dur::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+        $responseCreateTool = $this->json(
+            'POST',
+            '/api/v1/tools',
+            [
+                'mongo_object_id' => strtolower(Str::random(24)),
+                'name' => 'Tool A',
+                'url' => fake()->url(),
+                'description' => 'Test Tool A Description',
+                'results_insights' => 'mazing insights',
+                'license' => $licenseId,
+                'tech_stack' => fake()->words(3, true),
+                'category_id' => $categoryId,
+                'user_id' => $idUserAOne,
+                'team_id' => $idTeamA,
+                'enabled' => 1,
+                'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
+                'dataset' => $this->generateDatasets($datasets),
+                'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
+                'programming_package' => convertArrayToArrayWithKeyName($programmingPackages, 'id'),
+                'type_category' => convertArrayToArrayWithKeyName($typeCategories, 'id'),
+                'publications' => $generatedPublications,
+                'durs' => convertArrayToArrayWithKeyName($durs, 'id'),
+                'collections' => $generatedCollections,
+                'any_dataset' => false,
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtUserAOne,
+            ]
+        );
+
+        // success
+        $responseCreateTool->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+    }
+
+    public function test_v1_create_tool_A_with_no_success()
+    {
+        // create User a.one@test.com
+        $idUserAOne = $this->createTestUser('a.one@test.com');
+
+        // create Team A
+        $idTeamA = $this->createTestTeam();
+
+        // create Team B
+        $idTeamB = $this->createTestTeam();
+
+        // assign User a.one@test.com to Team A
+        $permissions = ["developer", "custodian.dar.manager"];
+        $this->assignUserToTeam($idTeamA, $idUserAOne, $permissions);
+
+        // generate jwt for user a.one@test.com
+        $jwtUserAOne = $this->getTestUserAuthorization('a.one@test.com');
+
+        // user a.one@test.com create Tool AOne with Team A
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $categoryId = Category::where('enabled', 1)->get()->random()->id;
+        $tags = Tag::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $datasets = Dataset::where('status', Dataset::STATUS_ACTIVE)->inRandomOrder()->take(3)->select('id')->get()->toArray();
+        $programmingLanguags = ProgrammingLanguage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $programmingPackages = ProgrammingPackage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $typeCategories = TypeCategory::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $durs = Dur::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+        $responseCreateTool = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'mongo_object_id' => strtolower(Str::random(24)),
+                'name' => 'Tool A',
+                'url' => fake()->url(),
+                'description' => fake()->sentence(),
+                'results_insights' => fake()->sentence(),
+                'license' => $licenseId,
+                'tech_stack' => fake()->words(3, true),
+                'category_id' => $categoryId,
+                'user_id' => $idUserAOne,
+                'team_id' => $idTeamB,
+                'enabled' => 1,
+                'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
+                'dataset' => $this->generateDatasets($datasets),
+                'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
+                'programming_package' => convertArrayToArrayWithKeyName($programmingPackages, 'id'),
+                'type_category' => convertArrayToArrayWithKeyName($typeCategories, 'id'),
+                'publications' => $generatedPublications,
+                'durs' => convertArrayToArrayWithKeyName($durs, 'id'),
+                'collections' => $generatedCollections,
+                'any_dataset' => false,
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtUserAOne,
+            ]
+        );
+
+        // no success
+        $responseCreateTool->assertStatus(401);
+    }
+
+    public function test_v1_edit_tool_A_same_user_with_success()
+    {
+        // create User a.one@test.com
+        $idUserAOne = $this->createTestUser('a.one@test.com');
+
+        // create Team A
+        $idTeamA = $this->createTestTeam();
+
+        // assign User a.one@test.com to Team A
+        $permissions = ["developer", "custodian.dar.manager"];
+        $this->assignUserToTeam($idTeamA, $idUserAOne, $permissions);
+
+        // generate jwt for user a.one@test.com
+        $jwtUserAOne = $this->getTestUserAuthorization('a.one@test.com');
+
+        // user a.one@test.com create Tool AOne with Team A
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $categoryId = Category::where('enabled', 1)->get()->random()->id;
+        $tags = Tag::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $datasets = Dataset::where('status', Dataset::STATUS_ACTIVE)->inRandomOrder()->take(3)->select('id')->get()->toArray();
+        $programmingLanguags = ProgrammingLanguage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $programmingPackages = ProgrammingPackage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $typeCategories = TypeCategory::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $durs = Dur::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+        $responseCreateTool = $this->json(
+            'POST',
+            '/api/v1/tools',
+            [
+                'mongo_object_id' => strtolower(Str::random(24)),
+                'name' => 'Tool A',
+                'url' => fake()->url(),
+                'description' => fake()->sentence(),
+                'results_insights' => fake()->sentence(),
+                'license' => $licenseId,
+                'tech_stack' => fake()->words(3, true),
+                'category_id' => $categoryId,
+                'user_id' => $idUserAOne,
+                'team_id' => $idTeamA,
+                'enabled' => 1,
+                'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
+                'dataset' => $this->generateDatasets($datasets),
+                'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
+                'programming_package' => convertArrayToArrayWithKeyName($programmingPackages, 'id'),
+                'type_category' => convertArrayToArrayWithKeyName($typeCategories, 'id'),
+                'publications' => $generatedPublications,
+                'durs' => convertArrayToArrayWithKeyName($durs, 'id'),
+                'collections' => $generatedCollections,
+                'any_dataset' => false,
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtUserAOne,
+            ]
+        );
+
+        // success
+        $responseCreateTool->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $toolId = $responseCreateTool['data'];
+
+        // edit tool
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $categoryId = Category::where('enabled', 1)->get()->random()->id;
+        $tags = Tag::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $datasets = Dataset::where('status', Dataset::STATUS_ACTIVE)->inRandomOrder()->take(3)->select('id')->get()->toArray();
+        $programmingLanguags = ProgrammingLanguage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $programmingPackages = ProgrammingPackage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $typeCategories = TypeCategory::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $durs = Dur::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+        $responseEdit = $this->json(
+            'PATCH',
+            '/api/v1/tools/' . $toolId,
+            [
+                'mongo_object_id' => strtolower(Str::random(24)),
+                'name' => 'Tool A',
+                'url' => fake()->url(),
+                'description' => fake()->sentence(),
+                'results_insights' => fake()->sentence(),
+                'license' => $licenseId,
+                'tech_stack' => fake()->words(3, true),
+                'category_id' => 1,
+                'user_id' => 1,
+                'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
+                'dataset' => $this->generateDatasets($datasets),
+                'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
+                'programming_package' => convertArrayToArrayWithKeyName($programmingPackages, 'id'),
+                'type_category' => convertArrayToArrayWithKeyName($typeCategories, 'id'),
+                'enabled' => 1,
+                'publications' => $generatedPublications,
+                'durs' => convertArrayToArrayWithKeyName($durs, 'id'),
+                'collections' => $generatedCollections,
+                'any_dataset' => false,
+                'status' => "DRAFT"
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtUserAOne,
+            ]
+        );
+
+        // success
+        $responseEdit->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+    }
+
+    public function test_v1_edit_tool_A_by_another_user_from_same_team_with_no_success()
+    {
+        // create User a.one@test.com
+        $idUserAOne = $this->createTestUser('a.one@test.com');
+
+        // create Team A
+        $idTeamA = $this->createTestTeam();
+
+        // assign User a.one@test.com to Team A
+        $permissions = ["developer", "custodian.dar.manager"];
+        $this->assignUserToTeam($idTeamA, $idUserAOne, $permissions);
+
+        // generate jwt for user a.one@test.com
+        $jwtUserAOne = $this->getTestUserAuthorization('a.one@test.com');
+
+        // user a.one@test.com create Tool AOne with Team A
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $categoryId = Category::where('enabled', 1)->get()->random()->id;
+        $tags = Tag::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $datasets = Dataset::where('status', Dataset::STATUS_ACTIVE)->inRandomOrder()->take(3)->select('id')->get()->toArray();
+        $programmingLanguags = ProgrammingLanguage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $programmingPackages = ProgrammingPackage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $typeCategories = TypeCategory::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $durs = Dur::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+        $responseCreateTool = $this->json(
+            'POST',
+            '/api/v1/tools',
+            [
+                'mongo_object_id' => strtolower(Str::random(24)),
+                'name' => 'Tool A',
+                'url' => fake()->url(),
+                'description' => fake()->sentence(),
+                'results_insights' => fake()->sentence(),
+                'license' => $licenseId,
+                'tech_stack' => fake()->words(3, true),
+                'category_id' => $categoryId,
+                'user_id' => $idUserAOne,
+                'team_id' => $idTeamA,
+                'enabled' => 1,
+                'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
+                'dataset' => $this->generateDatasets($datasets),
+                'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
+                'programming_package' => convertArrayToArrayWithKeyName($programmingPackages, 'id'),
+                'type_category' => convertArrayToArrayWithKeyName($typeCategories, 'id'),
+                'publications' => $generatedPublications,
+                'durs' => convertArrayToArrayWithKeyName($durs, 'id'),
+                'collections' => $generatedCollections,
+                'any_dataset' => false,
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtUserAOne,
+            ]
+        );
+
+        // success
+        $responseCreateTool->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $toolId = $responseCreateTool['data'];
+
+        // create User a.two@test.com
+        $idUserATwo = $this->createTestUser('a.two@test.com');
+
+        // assign User a.one@test.com to Team A
+        $permissions = ["custodian.team.admin"];
+        $this->assignUserToTeam($idTeamA, $idUserATwo, $permissions);
+
+        // generate jwt for user a.one@test.com
+        $jwtUserATwo = $this->getTestUserAuthorization('a.two@test.com');
+
+        // edit tool
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $categoryId = Category::where('enabled', 1)->get()->random()->id;
+        $tags = Tag::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $datasets = Dataset::where('status', Dataset::STATUS_ACTIVE)->inRandomOrder()->take(3)->select('id')->get()->toArray();
+        $programmingLanguags = ProgrammingLanguage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $programmingPackages = ProgrammingPackage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $typeCategories = TypeCategory::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $durs = Dur::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+
+        $responseEdit = $this->json(
+            'PATCH',
+            '/api/v1/tools/' . $toolId,
+            [
+                'mongo_object_id' => strtolower(Str::random(24)),
+                'name' => 'Tool A',
+                'url' => fake()->url(),
+                'description' => fake()->sentence(),
+                'results_insights' => fake()->sentence(),
+                'license' => $licenseId,
+                'tech_stack' => fake()->words(3, true),
+                'category_id' => 1,
+                'user_id' => 1,
+                'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
+                'dataset' => $this->generateDatasets($datasets),
+                'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
+                'programming_package' => convertArrayToArrayWithKeyName($programmingPackages, 'id'),
+                'type_category' => convertArrayToArrayWithKeyName($typeCategories, 'id'),
+                'enabled' => 1,
+                'publications' => $generatedPublications,
+                'durs' => convertArrayToArrayWithKeyName($durs, 'id'),
+                'collections' => $generatedCollections,
+                'any_dataset' => false,
+                'status' => "DRAFT"
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtUserATwo,
+            ]
+        );
+
+        // error
+        $responseEdit->assertStatus(401);
+    }
+
+    public function test_v1_edit_tool_A_by_another_user_from_another_team_with_no_success()
+    {
+        // create User a.one@test.com
+        $idUserAOne = $this->createTestUser('a.one@test.com');
+
+        // create Team A
+        $idTeamA = $this->createTestTeam();
+
+        // assign User a.one@test.com to Team A
+        $permissions = ["developer", "custodian.dar.manager"];
+        $this->assignUserToTeam($idTeamA, $idUserAOne, $permissions);
+
+        // generate jwt for user a.one@test.com
+        $jwtUserAOne = $this->getTestUserAuthorization('a.one@test.com');
+
+        // user a.one@test.com create Tool AOne with Team A
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $categoryId = Category::where('enabled', 1)->get()->random()->id;
+        $tags = Tag::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $datasets = Dataset::where('status', Dataset::STATUS_ACTIVE)->inRandomOrder()->take(3)->select('id')->get()->toArray();
+        $programmingLanguags = ProgrammingLanguage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $programmingPackages = ProgrammingPackage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $typeCategories = TypeCategory::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $durs = Dur::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+        $responseCreateTool = $this->json(
+            'POST',
+            '/api/v1/tools',
+            [
+                'mongo_object_id' => strtolower(Str::random(24)),
+                'name' => 'Tool A',
+                'url' => fake()->url(),
+                'description' => fake()->sentence(),
+                'results_insights' => fake()->sentence(),
+                'license' => $licenseId,
+                'tech_stack' => fake()->words(3, true),
+                'category_id' => $categoryId,
+                'user_id' => $idUserAOne,
+                'team_id' => $idTeamA,
+                'enabled' => 1,
+                'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
+                'dataset' => $this->generateDatasets($datasets),
+                'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
+                'programming_package' => convertArrayToArrayWithKeyName($programmingPackages, 'id'),
+                'type_category' => convertArrayToArrayWithKeyName($typeCategories, 'id'),
+                'publications' => $generatedPublications,
+                'durs' => convertArrayToArrayWithKeyName($durs, 'id'),
+                'collections' => $generatedCollections,
+                'any_dataset' => false,
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtUserAOne,
+            ]
+        );
+
+        // success
+        $responseCreateTool->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $toolId = $responseCreateTool['data'];
+
+        // create User b.one@test.com
+        $idUserBOne = $this->createTestUser('b.one@test.com');
+
+        // create Team A
+        $idTeamB = $this->createTestTeam();
+
+        // assign User b.one@test.com to Team B
+        $permissions = ["custodian.team.admin"];
+        $this->assignUserToTeam($idTeamB, $idUserBOne, $permissions);
+
+        // generate jwt for user b.one@test.com
+        $jwtUserBOne = $this->getTestUserAuthorization('b.one@test.com');
+
+        // edit tool
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $categoryId = Category::where('enabled', 1)->get()->random()->id;
+        $tags = Tag::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $datasets = Dataset::where('status', Dataset::STATUS_ACTIVE)->inRandomOrder()->take(3)->select('id')->get()->toArray();
+        $programmingLanguags = ProgrammingLanguage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $programmingPackages = ProgrammingPackage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $typeCategories = TypeCategory::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $durs = Dur::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+
+        $responseEdit = $this->json(
+            'PATCH',
+            '/api/v1/tools/' . $toolId,
+            [
+                'mongo_object_id' => strtolower(Str::random(24)),
+                'name' => 'Tool A',
+                'url' => fake()->url(),
+                'description' => fake()->sentence(),
+                'results_insights' => fake()->sentence(),
+                'license' => $licenseId,
+                'tech_stack' => fake()->words(3, true),
+                'category_id' => 1,
+                'user_id' => 1,
+                'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
+                'dataset' => $this->generateDatasets($datasets),
+                'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
+                'programming_package' => convertArrayToArrayWithKeyName($programmingPackages, 'id'),
+                'type_category' => convertArrayToArrayWithKeyName($typeCategories, 'id'),
+                'enabled' => 1,
+                'publications' => $generatedPublications,
+                'durs' => convertArrayToArrayWithKeyName($durs, 'id'),
+                'collections' => $generatedCollections,
+                'any_dataset' => false,
+                'status' => "DRAFT"
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtUserBOne,
+            ]
+        );
+
+        // error
+        $responseEdit->assertStatus(401);
+    }
+
+    public function test_v1_update_tool_A_by_same_user_with_success()
+    {
+        // create User a.one@test.com
+        $idUserAOne = $this->createTestUser('a.one@test.com');
+
+        // create Team A
+        $idTeamA = $this->createTestTeam();
+
+        // assign User a.one@test.com to Team A
+        $permissions = ["developer", "custodian.dar.manager"];
+        $this->assignUserToTeam($idTeamA, $idUserAOne, $permissions);
+
+        // generate jwt for user a.one@test.com
+        $jwtUserAOne = $this->getTestUserAuthorization('a.one@test.com');
+
+        // user a.one@test.com create Tool AOne with Team A
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $categoryId = Category::where('enabled', 1)->get()->random()->id;
+        $tags = Tag::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $datasets = Dataset::where('status', Dataset::STATUS_ACTIVE)->inRandomOrder()->take(3)->select('id')->get()->toArray();
+        $programmingLanguags = ProgrammingLanguage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $programmingPackages = ProgrammingPackage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $typeCategories = TypeCategory::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $durs = Dur::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+        $responseCreateTool = $this->json(
+            'POST',
+            '/api/v1/tools',
+            [
+                'mongo_object_id' => strtolower(Str::random(24)),
+                'name' => 'Tool A',
+                'url' => fake()->url(),
+                'description' => fake()->sentence(),
+                'results_insights' => fake()->sentence(),
+                'license' => $licenseId,
+                'tech_stack' => fake()->words(3, true),
+                'category_id' => $categoryId,
+                'user_id' => $idUserAOne,
+                'team_id' => $idTeamA,
+                'enabled' => 1,
+                'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
+                'dataset' => $this->generateDatasets($datasets),
+                'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
+                'programming_package' => convertArrayToArrayWithKeyName($programmingPackages, 'id'),
+                'type_category' => convertArrayToArrayWithKeyName($typeCategories, 'id'),
+                'publications' => $generatedPublications,
+                'durs' => convertArrayToArrayWithKeyName($durs, 'id'),
+                'collections' => $generatedCollections,
+                'any_dataset' => false,
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtUserAOne,
+            ]
+        );
+
+        // success
+        $responseCreateTool->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $toolId = $responseCreateTool['data'];
+
+        // update tool
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $categoryId = Category::where('enabled', 1)->get()->random()->id;
+        $tags = Tag::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $datasets = Dataset::where('status', Dataset::STATUS_ACTIVE)->inRandomOrder()->take(3)->select('id')->get()->toArray();
+        $programmingLanguags = ProgrammingLanguage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $programmingPackages = ProgrammingPackage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $typeCategories = TypeCategory::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $durs = Dur::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+        $responseUpdate = $this->json(
+            'PUT',
+            '/api/v1/tools/' . $toolId,
+            [
+                'name' => 'Tool A',
+                'user_id' => $idUserAOne,
+                'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
+                'dataset' => $this->generateDatasets($datasets),
+                'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
+                'programming_package' => convertArrayToArrayWithKeyName($programmingPackages, 'id'),
+                'type_category' => convertArrayToArrayWithKeyName($typeCategories, 'id'),
+                'enabled' => 1,
+                'publications' => $generatedPublications,
+                'durs' => convertArrayToArrayWithKeyName($durs, 'id'),
+                'collections' => $generatedCollections,
+                'any_dataset' => false,
+                'status' => 'ACTIVE',
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtUserAOne,
+            ]
+        );
+
+        // success
+        $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+    }
+
+    public function test_v1_update_tool_A_by_another_user_from_same_team_with_no_success()
+    {
+        // create User a.one@test.com
+        $idUserAOne = $this->createTestUser('a.one@test.com');
+
+        // create Team A
+        $idTeamA = $this->createTestTeam();
+
+        // assign User a.one@test.com to Team A
+        $permissions = ["developer", "custodian.dar.manager"];
+        $this->assignUserToTeam($idTeamA, $idUserAOne, $permissions);
+
+        // generate jwt for user a.one@test.com
+        $jwtUserAOne = $this->getTestUserAuthorization('a.one@test.com');
+
+        // user a.one@test.com create Tool AOne with Team A
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $categoryId = Category::where('enabled', 1)->get()->random()->id;
+        $tags = Tag::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $datasets = Dataset::where('status', Dataset::STATUS_ACTIVE)->inRandomOrder()->take(3)->select('id')->get()->toArray();
+        $programmingLanguags = ProgrammingLanguage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $programmingPackages = ProgrammingPackage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $typeCategories = TypeCategory::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $durs = Dur::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+        $responseCreateTool = $this->json(
+            'POST',
+            '/api/v1/tools',
+            [
+                'mongo_object_id' => strtolower(Str::random(24)),
+                'name' => 'Tool A',
+                'url' => fake()->url(),
+                'description' => fake()->sentence(),
+                'results_insights' => fake()->sentence(),
+                'license' => $licenseId,
+                'tech_stack' => fake()->words(3, true),
+                'category_id' => $categoryId,
+                'user_id' => $idUserAOne,
+                'team_id' => $idTeamA,
+                'enabled' => 1,
+                'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
+                'dataset' => $this->generateDatasets($datasets),
+                'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
+                'programming_package' => convertArrayToArrayWithKeyName($programmingPackages, 'id'),
+                'type_category' => convertArrayToArrayWithKeyName($typeCategories, 'id'),
+                'publications' => $generatedPublications,
+                'durs' => convertArrayToArrayWithKeyName($durs, 'id'),
+                'collections' => $generatedCollections,
+                'any_dataset' => false,
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtUserAOne,
+            ]
+        );
+
+        // success
+        $responseCreateTool->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $toolId = $responseCreateTool['data'];
+
+        // create User a.two@test.com
+        $idUserATwo = $this->createTestUser('a.two@test.com');
+
+        // assign User a.one@test.com to Team A
+        $permissions = ["custodian.team.admin"];
+        $this->assignUserToTeam($idTeamA, $idUserATwo, $permissions);
+
+        // generate jwt for user a.one@test.com
+        $jwtUserATwo = $this->getTestUserAuthorization('a.two@test.com');
+
+        // update tool
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $categoryId = Category::where('enabled', 1)->get()->random()->id;
+        $tags = Tag::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $datasets = Dataset::where('status', Dataset::STATUS_ACTIVE)->inRandomOrder()->take(3)->select('id')->get()->toArray();
+        $programmingLanguags = ProgrammingLanguage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $programmingPackages = ProgrammingPackage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $typeCategories = TypeCategory::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $durs = Dur::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+        $responseUpdate = $this->json(
+            'PUT',
+            '/api/v1/tools/' . $toolId,
+            [
+                'name' => 'Tool A',
+                'user_id' => $idUserATwo,
+                'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
+                'dataset' => $this->generateDatasets($datasets),
+                'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
+                'programming_package' => convertArrayToArrayWithKeyName($programmingPackages, 'id'),
+                'type_category' => convertArrayToArrayWithKeyName($typeCategories, 'id'),
+                'enabled' => 1,
+                'publications' => $generatedPublications,
+                'durs' => convertArrayToArrayWithKeyName($durs, 'id'),
+                'collections' => $generatedCollections,
+                'any_dataset' => false,
+                'status' => 'ACTIVE'
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtUserATwo,
+            ]
+        );
+
+        // error
+        $responseUpdate->assertStatus(401);
+    }
+
+    public function test_v1_update_tool_A_by_another_user_from_another_team_with_no_success()
+    {
+        // create User a.one@test.com
+        $idUserAOne = $this->createTestUser('a.one@test.com');
+
+        // create Team A
+        $idTeamA = $this->createTestTeam();
+
+        // assign User a.one@test.com to Team A
+        $permissions = ["developer", "custodian.dar.manager"];
+        $this->assignUserToTeam($idTeamA, $idUserAOne, $permissions);
+
+        // generate jwt for user a.one@test.com
+        $jwtUserAOne = $this->getTestUserAuthorization('a.one@test.com');
+
+        // user a.one@test.com create Tool AOne with Team A
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $categoryId = Category::where('enabled', 1)->get()->random()->id;
+        $tags = Tag::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $datasets = Dataset::where('status', Dataset::STATUS_ACTIVE)->inRandomOrder()->take(3)->select('id')->get()->toArray();
+        $programmingLanguags = ProgrammingLanguage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $programmingPackages = ProgrammingPackage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $typeCategories = TypeCategory::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $durs = Dur::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+        $responseCreateTool = $this->json(
+            'POST',
+            '/api/v1/tools',
+            [
+                'mongo_object_id' => strtolower(Str::random(24)),
+                'name' => 'Tool A',
+                'url' => fake()->url(),
+                'description' => fake()->sentence(),
+                'results_insights' => fake()->sentence(),
+                'license' => $licenseId,
+                'tech_stack' => fake()->words(3, true),
+                'category_id' => $categoryId,
+                'user_id' => $idUserAOne,
+                'team_id' => $idTeamA,
+                'enabled' => 1,
+                'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
+                'dataset' => $this->generateDatasets($datasets),
+                'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
+                'programming_package' => convertArrayToArrayWithKeyName($programmingPackages, 'id'),
+                'type_category' => convertArrayToArrayWithKeyName($typeCategories, 'id'),
+                'publications' => $generatedPublications,
+                'durs' => convertArrayToArrayWithKeyName($durs, 'id'),
+                'collections' => $generatedCollections,
+                'any_dataset' => false,
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtUserAOne,
+            ]
+        );
+
+        // success
+        $responseCreateTool->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $toolId = $responseCreateTool['data'];
+
+        // create User b.one@test.com
+        $idUserBOne = $this->createTestUser('b.one@test.com');
+
+        // create Team B
+        $idTeamB = $this->createTestTeam();
+
+        // assign User a.one@test.com to Team B
+        $permissions = ["custodian.team.admin"];
+        $this->assignUserToTeam($idTeamB, $idUserBOne, $permissions);
+
+        // generate jwt for user b.one@test.com
+        $jwtUserBOne = $this->getTestUserAuthorization('b.one@test.com');
+
+        // update tool
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $categoryId = Category::where('enabled', 1)->get()->random()->id;
+        $tags = Tag::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $datasets = Dataset::where('status', Dataset::STATUS_ACTIVE)->inRandomOrder()->take(3)->select('id')->get()->toArray();
+        $programmingLanguags = ProgrammingLanguage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $programmingPackages = ProgrammingPackage::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $typeCategories = TypeCategory::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $durs = Dur::inRandomOrder()->select('id')->take(2)->get()->toArray();
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+        $responseUpdate = $this->json(
+            'PUT',
+            '/api/v1/tools/' . $toolId,
+            [
+                'name' => 'Tool A',
+                'user_id' => $idUserBOne,
+                'tag' => convertArrayToArrayWithKeyName($tags, 'id'),
+                'dataset' => $this->generateDatasets($datasets),
+                'programming_language' => convertArrayToArrayWithKeyName($programmingLanguags, 'id'),
+                'programming_package' => convertArrayToArrayWithKeyName($programmingPackages, 'id'),
+                'type_category' => convertArrayToArrayWithKeyName($typeCategories, 'id'),
+                'enabled' => 1,
+                'publications' => $generatedPublications,
+                'durs' => convertArrayToArrayWithKeyName($durs, 'id'),
+                'collections' => $generatedCollections,
+                'any_dataset' => false,
+                'status' => 'ACTIVE'
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtUserBOne,
+            ]
+        );
+
+        // error
+        $responseUpdate->assertStatus(401);
+    }
+
+    public function assignUserToTeam(int $teamId, int $userId, array $permissions)
+    {
+        $url = 'api/v1/teams/' . $teamId . '/users';
+        $payload = [
+            "userId" => $userId,
+            "roles" => $permissions,
+        ];
+
+        $response = $this->json('POST', $url, $payload, $this->header);
+        $response->assertStatus(201);
+
+        return;
+    }
+
+    public function createTestTeam()
+    {
+        $userNotificationId = User::all()->random()->id;
+        $responseNotification = $this->json(
+            'POST',
+            'api/v1/notifications',
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => fake()->words(3, true),
+                'email' => null,
+                'user_id' => $userNotificationId,
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header
+        );
+        $responseNotification->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        $responseTeam = $this->json(
+            'POST',
+            'api/v1/teams',
+            [
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => fake()->unique()->safeEmail(),
+                'application_form_updated_by' => fake()->words(3, true),
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$responseNotification['data']],
+                'is_question_bank' => 1,
+                'users' => [],
+                'url' => 'https://fakeimg.pl/350x200/ff0000/000',
+                'introduction' => fake()->sentence(),
+                'dar_modal_content' => fake()->sentence(),
+                'service' => 'https://service.local/test',
+            ],
+            $this->header
+        );
+        $responseTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        return $responseTeam['data'];
+    }
+
+
+    public function createTestUser(string $email)
+    {
+        $password = 'Passw@rd1!';
+        $provider = 'service';
+        $userNotificationId = User::all()->random()->id;
+        $responseNotification = $this->json(
+            'POST',
+            'api/v1/notifications',
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => fake()->words(3, true),
+                'email' => null,
+                'user_id' => $userNotificationId,
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header
+        );
+        $responseNotification->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        $responseUser = $this->json(
+            'POST',
+            '/api/v1/users',
+            [
+                'firstname' => fake()->firstName(),
+                'lastname' => fake()->lastName(),
+                'email' => $email,
+                'secondary_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
+                'password' => $password,
+                'sector_id' => 1,
+                'organisation' => 'Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'provider' => $provider,
+                'providerid' => '123456',
+                'bio' => fake()->words(2, true),
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/75697342",
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'mongo_id' => fake()->randomNumber(9, true),
+                'mongo_object_id' => strtolower(Str::random(24)),
+                'notifications' => [$responseNotification['data']],
+            ],
+            $this->header
+        );
+        $responseNotification->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        return $responseUser['data'];
+    }
+
+    public function getTestUserAuthorization(string $email)
+    {
+        $password = 'Passw@rd1!';
+        $response = $this->json('POST', '/api/v1/auth', [
+            'email' => $email,
+            'password' => $password,
+        ], [
+            'Accept' => 'application/json'
+        ]);
+
+        return $response['access_token'];
     }
 
     private function generatePublications()
@@ -1103,4 +2036,18 @@ class ToolTest extends TestCase
         // remove duplicate entries - doesn't use array_unique directly as that fails for multi-d arrays.
         return array_map("unserialize", array_unique(array_map("serialize", $return)));
     }
+
+    private function generateDatasets(array $datasets)
+    {
+        $response = [];
+        foreach ($datasets as $dataset) {
+            $response[] = [
+                'id' => $dataset['id'],
+                'link_type' => fake()->randomElement(['Used on', 'Other', 'Used in (Tool)', 'Derived from (Tool)'])
+            ];
+        }
+
+        return $response;
+    }
+
 }

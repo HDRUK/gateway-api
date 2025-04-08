@@ -151,7 +151,7 @@ trait CollectionsV2Helpers
                     CollectionHasDatasetVersion::where([
                         'collection_id' => $collectionId,
                         'dataset_version_id' => $commonDatasetVersionId,
-                    ])->delete();
+                    ])->forceDelete();
                 }
                 continue;
             }
@@ -187,7 +187,7 @@ trait CollectionsV2Helpers
                         CollectionHasDatasetVersion::where([
                             'collection_id' => $collectionId,
                             'dataset_version_id' => $commonDatasetVersionId,
-                        ])->delete();
+                        ])->forceDelete();
                     }
                 }
             }
@@ -266,7 +266,7 @@ trait CollectionsV2Helpers
             return CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
                 'dataset_version_id' => $datasetVersionId,
-            ])->delete();
+            ])->forceDelete();
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -363,7 +363,7 @@ trait CollectionsV2Helpers
             return CollectionHasTool::where([
                 'collection_id' => $collectionId,
                 'tool_id' => $toolId,
-            ])->delete();
+            ])->forceDelete();
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -384,7 +384,7 @@ trait CollectionsV2Helpers
                 CollectionHasDur::where([
                     'collection_id' => $collectionId,
                     'dur_id' => $col->dur_id,
-                ])->delete();
+                ])->forceDelete();
             }
         }
 
@@ -526,7 +526,7 @@ trait CollectionsV2Helpers
             return CollectionHasPublication::where([
                 'collection_id' => $collectionId,
                 'publication_id' => $publicationId,
-            ])->delete();
+            ])->forceDelete();
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -608,7 +608,7 @@ trait CollectionsV2Helpers
     private function deleteCollectionHasKeywords($keywordId)
     {
         try {
-            return CollectionHasKeyword::where(['keyword_id' => $keywordId])->delete();
+            return CollectionHasKeyword::where(['keyword_id' => $keywordId])->forceDelete();
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -658,7 +658,7 @@ trait CollectionsV2Helpers
         CollectionHasUser::where([
             'collection_id' => $collectionId,
             'role' => 'COLLABORATOR',
-        ])->delete();
+        ])->forceDelete();
 
         foreach ($collaboratorIds as $collaboratorId) {
             CollectionHasUser::create([

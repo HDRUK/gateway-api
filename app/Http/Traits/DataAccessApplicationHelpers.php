@@ -211,21 +211,31 @@ trait DataAccessApplicationHelpers
                 $d['custodian'] = $custodian;
             }
 
-            $submissionAudit = DataAccessApplicationStatus::where([
-                'application_id' => $app->id,
-                'submission_status' => 'SUBMITTED',
-            ])->first();
-            if ($submissionAudit) {
-                $app['days_since_submission'] = $submissionAudit
-                    ->updated_at
-                    ->diffInDays(Carbon::today());
-            } else {
-                $app['days_since_submission'] = null;
-            }
-
+            $app['days_since_submission'] = $this->submissionAudit($app->id)['days_since_submission'];
             $app['primary_applicant'] = $this->getPrimaryApplicantInfo($app->id);
         }
         return $applications;
+    }
+
+    public function submissionAudit(int $applicationId): array
+    {
+        $submissions = array(
+            'days_since_submission' => null,
+            'submission_date' => null,
+        );
+        $submissionAudit = DataAccessApplicationStatus::where([
+            'application_id' => $applicationId,
+            'submission_status' => 'SUBMITTED',
+        ])->first();
+        if ($submissionAudit) {
+            $submissions['days_since_submission'] = $submissionAudit
+                ->updated_at
+                ->diffInDays(Carbon::today());
+            $submissions['submission_date'] = $submissionAudit->updated_at;
+            return $submissions;
+        } else {
+            return $submissions;
+        }
     }
 
     public function statusCounts(Collection $applications, ?int $teamId): array

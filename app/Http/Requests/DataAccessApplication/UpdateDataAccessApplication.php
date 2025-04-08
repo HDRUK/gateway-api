@@ -40,6 +40,7 @@ class UpdateDataAccessApplication extends BaseFormRequest
             ],
             'approval_status' => [
                 'string',
+                'nullable',
                 'in:APPROVED,APPROVED_COMMENTS,FEEDBACK,REJECTED',
             ],
         ];

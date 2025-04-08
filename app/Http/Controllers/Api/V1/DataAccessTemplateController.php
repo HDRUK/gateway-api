@@ -46,6 +46,16 @@ class DataAccessTemplateController extends Controller
      *            description="Include questions in response",
      *         ),
      *      ),
+     *      @OA\Parameter(
+     *        name="published",
+     *        in="query",
+     *        description="Template publication status to filter by (true, false)",
+     *        example="true",
+     *        @OA\Schema(
+     *          type="string",
+     *          description="Template publication status to filter by",
+     *        ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -75,13 +85,31 @@ class DataAccessTemplateController extends Controller
         try {
 
             $withQuestions = $request->boolean('with_questions', false);
+            $filterPublished = isset($input['published']) ? $request->boolean('published') : null;
+            $filterPublishedDefined = !is_null($filterPublished);
 
             $templates = DataAccessTemplate::when($withQuestions, fn ($query) => $query->with('questions'))
-            ->paginate(
+            ->when($filterPublishedDefined, function ($query) use ($filterPublished) {
+                return $query->where('published', $filterPublished);
+            });
+
+            $counts = $templates->get()
+                ->select('published')
+                ->groupBy('published')
+                ->map->count();
+
+            $countsRenamed = collect([
+                'active_count' => $counts[1] ?? 0,
+                'non_active_count' => $counts[0] ?? 0,
+            ]);
+
+            $templates = $templates->paginate(
                 Config::get('constants.per_page'),
                 ['*'],
                 'page'
             );
+
+            $templates = $countsRenamed->merge($templates);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

@@ -133,7 +133,7 @@ class TeamTest extends TestCase
             $this->header
         );
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
                 'message',
                 'data',
@@ -275,7 +275,7 @@ class TeamTest extends TestCase
             $this->header
         );
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
                 'message',
                 'data',
@@ -357,7 +357,7 @@ class TeamTest extends TestCase
             $this->header
         );
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
                 'message',
                 'data',
@@ -518,7 +518,7 @@ class TeamTest extends TestCase
             $this->header
         );
 
-        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
         ->assertJsonStructure([
             'message',
             'data',
@@ -680,7 +680,7 @@ class TeamTest extends TestCase
             $this->header
         );
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
                 'message',
                 'data',

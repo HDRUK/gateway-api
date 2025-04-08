@@ -159,6 +159,10 @@ class CohortRequestController extends Controller
             }
 
             $query = CohortRequest::with(['user.teams', 'logs', 'logs.user', 'permissions', 'user.sector'])
+                ->join('users', 'cohort_requests.user_id', '=', 'users.id')
+                ->leftJoin('sectors', 'users.sector_id', '=', 'sectors.id')
+                ->select('cohort_requests.*', 'users.name', 'users.organisation', 'sectors.name as sector_name')
+                ->distinct()
                 ->when($email, function ($query) use ($email) {
                     $query->whereHas('user', function ($query) use ($email) {
                         $query->where('email', 'LIKE', '%' . $email . '%')
@@ -196,6 +200,10 @@ class CohortRequestController extends Controller
 
                 if (in_array($key, ['name', 'organisation'])) {
                     $query->orderBy('users.' . $key, strtoupper($value));
+                }
+
+                if (in_array($key, ['sector'])) {
+                    $query->orderBy('sectors.name', strtoupper($value));
                 }
             }
 
