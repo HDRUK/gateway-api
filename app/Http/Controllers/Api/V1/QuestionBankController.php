@@ -1622,7 +1622,7 @@ class QuestionBankController extends Controller
                                     'question_type' => $questionType,
                                 ]);
 
-                                $childQuestionJson = $childVersion->questionJson;
+                                $childQuestionJson = $childVersion->question_json;
 
                                 $field = [
                                     'component' => $child['component'] ?? $childQuestionJson['field']['component'],
