@@ -1,0 +1,588 @@
+[
+      {
+            "title": "Additional information & files",
+            "description": "Any additional information or files requested by the Data Custodian of the datasets you are requesting to access can be uploaded in this section.",
+            "subSections": [
+                  {
+                        "name": "Invoice contact",
+                        "description": "",
+                        "sub_section": "additionalinfo",
+                        "questions": [
+                              {
+                                    "title": "Full name",
+                                    "guidance": "Please provide the name of the person to whom we should send the invoice.",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "Job title",
+                                    "guidance": "Please provide the job title for the person to whom we should send the invoice.",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "Registered address (line 1)",
+                                    "guidance": "Please include the organisation's business address.",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "Registered address (line 2)",
+                                    "guidance": "Please include the organisation's business address.",
+                                    "required": false,
+                                    "force_required": false,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "City",
+                                    "guidance": "Please specify the city where the organisation is located.",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "Postcode",
+                                    "guidance": "Please include the organisation's business address postcode.",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "Country",
+                                    "guidance": "Please specify the country where the organisation is located.",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "Telephone",
+                                    "guidance": "Please provide the telephone number for the person to whom we should send the invoice.",
+                                    "required": false,
+                                    "force_required": false,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "Email",
+                                    "guidance": "Please provide an email address for the person to whom we should send the invoice.",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              }
+                        ]
+                  },
+                  {
+                        "name": "Data Sharing Agreement signatory",
+                        "description": "",
+                        "sub_section": "additionalinfo",
+                        "questions": [
+                              {
+                                    "title": "Full name",
+                                    "guidance": "Please provide the name of the person who can sign the Data Sharing Agreement on behalf of your organisation.",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "Job title",
+                                    "guidance": "Please provide the job title for the person who can sign the Data Sharing Agreement on behalf of your organisation.",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "Registered address (line 1)",
+                                    "guidance": "Please provide the business address for the person who can sign the Data Sharing Agreement on behalf of your organisation.",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "Registered address (line 2)",
+                                    "guidance": "Please include the organisation's business address.",
+                                    "required": false,
+                                    "force_required": false,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "City",
+                                    "guidance": "Please specify the city where the organisation is located.",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "Postcode",
+                                    "guidance": "Please include the organisation's business address postcode.",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "Country",
+                                    "guidance": "Please specify the country where the organisation is located.",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "Telephone",
+                                    "guidance": "Please specify the country where the organisation is located.",
+                                    "required": false,
+                                    "force_required": false,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "Email",
+                                    "guidance": "Please provide an email address for the person who can sign the Data Sharing Agreement on behalf of your organisation.",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              }
+                        ]
+                  },
+                  {
+                        "name": "Files",
+                        "description": "",
+                        "sub_section": "additionalinfo",
+                        "questions": [
+                              {
+                                    "title": "Any additional information or files requested by the Data Custodian of the datasets you are requesting to access can be uploaded in this section.",
+                                    "guidance": "Please upload all additional documentation as requested in the DAR form.",
+                                    "required": false,
+                                    "force_required": false,
+                                    "field": {
+                                          "component": "FileUploadMultiple",
+                                          "options": [],
+                                          "validations": []
+                                    }
+                              }
+                        ]
+                  }
+           ]
+      },
+      {
+            "title": "Safe data",
+            "description": "Safe data ensure that researchers have a clear legal basis for accessing the data and do not inadvertently learn something about the data subjects during the course of their analysis, minimising the risks of re-identification.\nThe minimisation of this risk could be achieved by removing direct identifiers, aggregating values, banding variables, or other statistical techniques that may make re-identification more difficult. Sensitive or confidential data could not be considered to be completely safe because of the residual risk to a data subject\u2019s confidentiality.  Hence other limitations on access will need to be applied.\n\nThe purpose of this section is to ensure that: \n- there is a clear legal basis for accessing the requested data\n- the data requested is proportionate to the requirement of the project \n- all data requested is necessary in order to achieve the public benefit declared \n- data subjects cannot be identified by your team by cross-referencing datasets from anywhere else.",
+            "subSections": [
+                  {
+                        "name": "Statistical Analysis",
+                        "description": "",
+                        "sub_section": "safedata",
+                        "questions": [
+                              {
+                                    "title": "What forms of statistical analysis are planned?",
+                                    "guidance": "Please specify what type of statistical analyses you are planning.",
+                                    "required": false,
+                                    "force_required": false,
+                                    "field": {
+                                          "component": "TextArea",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "How is it intended that this will be presented in the final output?",
+                                    "guidance": "Please explain how you intend to present this in the final output.",
+                                    "required": false,
+                                    "force_required": false,
+                                    "field": {
+                                          "component": "TextArea",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "What is the smallest cell value that is likely to be generated by this analysis and how will this be managed to avoid disclosure?",
+                                    "guidance": "For example, an age range of 90-100 in a rare disease may result in a cell value of 1.",
+                                    "required": false,
+                                    "force_required": false,
+                                    "field": {
+                                          "component": "TextArea",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "What are your plans for addressing confounding?",
+                                    "guidance": "",
+                                    "required": false,
+                                    "force_required": false,
+                                    "field": {
+                                          "component": "TextArea",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "What are your plans for addressing missing data?",
+                                    "guidance": "",
+                                    "required": false,
+                                    "force_required": false,
+                                    "field": {
+                                          "component": "TextArea",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "Please present your feasibility calculation.",
+                                    "guidance": "",
+                                    "required": false,
+                                    "force_required": false,
+                                    "field": {
+                                          "component": "TextArea",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "Has the size of the study been informed by a formal statistical power calculation?",
+                                    "guidance": "",
+                                    "required": false,
+                                    "force_required": false,
+                                    "field": {
+                                          "component": "RadioGroup",
+                                          "options": [
+                                                {
+                                                      "value": "Yes",
+                                                      "label": "Yes",
+                                                      "conditional": null
+                                                },
+                                                {
+                                                      "value": "No",
+                                                      "label": "No",
+                                                      "conditional": null
+                                                }
+                                          ],
+                                          "validations": []
+                                    }
+                              },
+                              {
+                                    "title": "Has a statistician given an opinion about the statistical aspects of the research?",
+                                    "guidance": "",
+                                    "required": false,
+                                    "force_required": false,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [
+                                                {
+                                                      "value": "Yes",
+                                                      "label": "Yes",
+                                                      "conditional": [
+                                                            {
+                                                                  "input": {
+                                                                        "type": "textareaInput"
+                                                                  },
+                                                                  "question": "If yes, please give a brief summary of advice offered."
+                                                            }
+                                                      ]
+                                                },
+                                                {
+                                                      "value": "No",
+                                                      "label": "No",
+                                                      "conditional": null
+                                                }
+                                          ],
+                                          "validations": []
+                                    }
+                              },
+                              {
+                                    "title": "",
+                                    "guidance": "",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "",
+                                    "guidance": "",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "",
+                                    "guidance": "",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              },
+                              {
+                                    "title": "",
+                                    "guidance": "",
+                                    "required": false,
+                                    "force_required": true,
+                                    "field": {
+                                          "component": "TextField",
+                                          "options": [],
+                                          "validations": [
+                                                {
+                                                      "message": "Please enter a value",
+                                                      "min": 1
+                                                }
+                                          ]
+                                    }
+                              }
+                        ]
+                  },
+
+
+
+
+
+Has a statistician given an opinion about the statistical aspects of the research?
+Nested option: Yes
+Nested options: If yes, please give a brief summary of advice offered
+Question Type: Text area
+Nested option: No
+Question Type: Radio Group
+Will the data requested be used for algorithm generation and training?
+Nested option: Yes
+Nested option: No
+Question Type: Radio Group
+Guidance: These questions are to help us understand the different uses to which the data is being put to.
+Will the data requested be used for internal validation?
+Nested option: Yes
+Nested option: No
+Question Type: Radio Group
+Guidance: These questions are to help us understand the different uses to which the data is being put to.
+Will the data requested be used for external validation?
+Nested option: Yes
+Nested option: No
+Nested option: Other
+If other, please specify
+Question Type: Text area
+Question Type: Radio Group
+Guidance: Guidance: These questions are to help us understand the different uses to which the data is being put to.
+Will the data be subject to any machine learning (ML) techniques?
+Nested option: Yes
+Nested options: If yes, please specify the type of machine learning technique
+Question Type: Text area
+Nested option: No
+Question Type: Radio Group
+Guidance: These questions are to help us understand the different uses to which the data is being put to.
+]
+      }
+]
