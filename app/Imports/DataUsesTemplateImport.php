@@ -37,7 +37,7 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
     */
     public function model(array $row)
     {
-        if (trim($row[0]) === '') {
+        if (trim($row[1]) === '') {
             return null;
         }
 
@@ -45,7 +45,7 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
             'project_id_text' => $row[0],
             'organisation_name' => $row[1],
             'organisation_id' => $row[2],
-            'organisation_sector' => $row[3] ? $this->mapOrganisationSector($row[3]) : null,
+            'organisation_sector' => $row[3] ?? null,
             'non_gateway_applicants' => explode(",", $row[4]),
             'applicant_id' => $row[5],
             'funders_and_sponsors' => explode(",", $row[6]),
@@ -76,6 +76,7 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
             'enabled' => true,
             'user_id' => $this->data['user_id'],
             'team_id' => $this->data['team_id'],
+            'sector_id' => $row[3] ? $this->mapOrganisationSector($row[3]) : null,
         ]);
 
         $this->durIds[] = (int) $dur->id;
@@ -92,7 +93,7 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
     public function rules(): array
     {
         return [
-            '0' => [
+            '1' => [
                 function ($attribute, $value, $fail) {
                     // Skip validation if the cell is empty
                     if (is_null($value) || trim($value) === '' || strlen(trim($value)) === 0) {

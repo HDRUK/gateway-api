@@ -1,19 +1,35 @@
-# HDR UK - Gateway 2.0 API
+# HDR UK Gateway - API (Laravel)
 
-### TODO - Flesh this out further as we continue
+Welcome to the HDR UK Gateway API, a Laravel application that powers the Gateway.
+
+# Getting Started
+Follow these steps to install and run the project on your local machine.
 
 ## Prerequisites
+There are two ways to run our API.
+- With Tilt/Helm into a local Kubernetes cluster
+- Or manually, via `php artisan octane:frankenphp --host=0.0.0.0 --port=8100`
 
-Rancher-Desktop: https://rancherdesktop.io/
+Let's take you through both!
 
+# Tilt/Helm & Kubernetes
+Start by installing Rancher-Desktop: https://rancherdesktop.io/
 -   Ensure that Kubernetes is enabled and running
--   Can be tested by running `kubectl get all` - if running, you'll be presented with a list
-    of running pods
+-   This can be tested by running `kubectl get all` - if running, you'll be presented with a list of running pods, something similar to the following:
 
-Helm: https://helm.sh/docs/intro/install/
+```
+NAME                               READY   STATUS    RESTARTS        AGE
+gateway-web                         1/1     Running   0              83d
+gateway-api                         1/1     Running   2              151d
+metadata-fed-766d88664b-mpxk2       1/1     Running   1              161d
+```
 
-With Rancher-desktop and Helm installed, you'll need an instance of mysql. Using Helm you can run the following commands:
+Once confirmed your cluster is up and running, you can now install the remaining tools.
 
+- Helm: https://helm.sh/docs/intro/install/
+- Tilt: https://docs.tilt.dev/install.html
+
+With Rancher-desktop, Helm and Tilt installed, you'll need an instance of mysql. Using Helm you can run the following commands:
 -   To install the mysql repo: `helm repo add bitnami https://charts.bitnami.com/bitnami`
 -   To install mysql container: `helm install mysql bitnami/mysql`
     -   alternatively you can use mariadb: `helm install mariadb oci://registry-1.docker.io/bitnamicharts/mariadb`
@@ -21,66 +37,96 @@ With Rancher-desktop and Helm installed, you'll need an instance of mysql. Using
 
 If you don't have a mysql client installed you can use the following to deploy a pod to k8s and act as your mysql client: ` kubectl run mysql-client --rm --tty -i --restart='Never' --image  docker.io/bitnami/mysql:8.0.31-debian-11-r30 --namespace default --env MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD --command -- bash`
 
--   In order to connect to your mysql pod locally (via any other client), you must ensure you port-forward the mysql port `3306` with the following: `kubectl port-forward <deployed-pod-name> 3306:3306`
+-   In order to connect to your mysql pod locally (via any other client), you must ensure you port-forward the mysql port `3306` with the following: `kubectl port-forward <deployed-pod-name> 3306:3306` within a terminal or command window.
 
-### Increase the sort_buffer_size to 1G (1 Gigabyte) in your MySQL instance
-List pods:
-```
-kubectl get pods
-```
+If all went well, you're ready to update the `.env` file! Copy the `.env.example` file, to the root of your cloned project and rename it to `.env`. The important parts to update are as follows:
 
-Connect to the pod:
-```
-kubectl exec -it <mysql-pod-name> -- bash
-```
-
-Login mysql:
-```
-mysql -u root -p
-```
-
-Set `set_buffer_size` to `1G`:
-```
-SET GLOBAL sort_buffer_size = 1073741824; -- 1G in bytes
-```
-
-Verify the Change:
-```
-SHOW VARIABLES LIKE 'sort_buffer_size';
-```
-
-## Configuring
-
-Copy `.env.example` to `.env` and fill in the required parameters. Namely the database connectivity credentials and host address
-
--   Your .env should look something like this
+### Database config
 
 ```
-DB_CONNECTION=mysql
-DB_HOST=mysql
+DB_CONNECTION=mysql # As we named above, when installing with Helm
+DB_HOST="mysql" # As we named above, when installing with Helm
 DB_PORT=3306
-DB_DATABASE=gateway
-DB_USERNAME=<username> 
-DB_PASSWORD=<password>
+DB_DATABASE="YOUR_DB_NAME" # After creating a database within mysql, enter the name here
+DB_USERNAME=YOUR_MYSQL_USERNAME
+DB_PASSWORD=YOUR_MYSQL_PASSWORD
 ```
 
--   When port-forwarding mysql port to your localhost (as specified above), you can connect to mysql locally with either `127.0.0.1` or `localhost`. Generally speaking your mysql instance will be available on `mysql.default.svc.cluster.local`
+Once that's complete. You should be able to test the APIs connection to the database, by running: `php artisan migrate` - this will connect to the database, and start creating the base table schema required.
 
-Create a new (gitignore'd) `tiltconf.json` following the same format as below:
+Provided that all completed without error, then its time to update the mail server settings:
+
+```
+MAIL_MAILER=smtp
+MAIL_HOST=your.smtp.host
+MAIL_PORT=25
+MAIL_USERNAME=YOUR_SMTP_USERNAME
+MAIL_PASSWORD=YOUR_SMTP_PASSWORD
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+### tiltconf.json
+If you've opted to use Tilt/Helm, then you'll need to create a `tiltconf.json` file within the root of your cloned project. The file should contain the following:
 
 ```
 {
-    "gatewayWeb2Root": "/Users/lokisinclair/Development/HDRUK/gateway-web-2",
-    "name": "gateway-api"
+    "name": "gateway-api",
+
+    "gatewayWeb2Root": "/path/to/gateway-web/repo",
+
+    "elasticServiceRoot": "/path/to/elastic/repo",
+    "traserServiceRoot": "/path/to/traser/repo",
+    "tedServiceRoot": "/path/to/ted/repo",
+    "fmaServiceRoot": "/path/to/gmi/repo",
+    "searchServiceRoot": "/path/to/search-service/repo",
+    "qbServiceRoot": "/path/to/qb-service/repo",
+    "darasServiceRoot": "/path/to/daras/repo",
+    "clamavServiceRoot": "/path/to/clamav/repo",
+
+    "elasticEnabled": true||false,
+    "traserEnabled": true||false,
+    "tedEnabled": true||false,
+    "fmaEnabled": true||false,
+    "searchEnabled": true||false,
+    "qbEnabled": true||false,
+    "darasEnabled": true||false,
+    "clamavEnabled": true||false
 }
 ```
 
--   gatewayWeb2Root - should be the path to you gateway web cloned repo.
--   name - should be `gateway-api`. This is used by Tilt/Helm and K8s to name your final built and deployed image.
+The configuration above, can be tweaked to your needs. You can choose to run the components you need and ignore the rest. Provided the `ServiceRoot`'s are representative of your cloned directories, everything should work!
 
-## Building
+### Running the API.
 
-From the root of the cloned gateway-api directory run `tilt up`. This will run both the API.
+#### Tilt & Helm
+
+-   If you've opted to use Tilt/Helm, then, within the root of your cloned directory, run the following command:
+
+```
+tilt up
+```
+
+You'll see that Tilt starts invoking Docker to build an image, and ultimately instructs Helm to deploy the pod/service to your local cluster. If you've configured `web` and any of the other services, then these are built and deployed at the same time!
+
+#### Manual
+- If you've opted to run manually, then within the root of your cloned directory, run the following command:
+
+```
+php artisan octane:frankenphp --host=0.0.0.0 --port=8100
+```
+Note: This will run only the API. No other services, nor the web client.
+
+By default, the application, under both forms of running, will be available at: `http://localhost:8100/api/v1/...`
+
+## Available Composer Scripts
+- `composer run phpstan` - Runs PHPStan to perform static analysis on code
+- `composer run behat` - Runs Behat BDD tests
+- `composer run phpcs` - Runs PHP Code Sniffer linting checks
+- `composer run pest` - Runs the main Unit/Feature tests
+- `composer run lint` - Runs Laravel Pint for PSR specific linting
+
 
 ## Migration and Databse Seeding
 ### Migration
@@ -103,213 +149,8 @@ To migrate and seed at the same time you can do:
 kubectl exec -it $(kubectl get pods | awk '/gateway-api/ {print $1}') -- php artisan migrate:fresh --seed 
 ```
 
-### Production
+## Contributions
 
-For production we don't want to seed all the fake data used for development, you can instead just migrate and run the baseline database seeder like so:
-```
-kubectl exec -it $(kubectl get pods | awk '/gateway-api/ {print $1}') -- php artisan migrate:fresh --seed --seeder=BaseDatabaseSeeder 
-```
+Gateway API follows the existing Laravel coding standards which can be found at https://laravel.com/docs/10.x/contributions
 
-Follows steps in the mongo-migration-suite to migrate real data.
-
-
-
-## Contribution
-
-Gateway-api-2 follows the existing Laravel coding standards which can be found at https://laravel.com/docs/9.x/contributions
-
-## PhpStan
-
-command
-
-```
-php -d memory_limit=4G vendor/bin/phpstan analyse
-```
-
-or
-
-```
-.vendor/bin/phpstan analyse
-```
-
-## Temporary endpoints
-
-To test the validity of your build and deployment you can call the following API to determine if everything is running as
-expected
-
-`http://localhost:8000/api/status`
-
-If everything went to plan, you'll see a response of
-
-```json
-{
-    "message": "OK"
-}
-```
-
-### Register User - simple registration
-
-```
-POST /api/v1/register HTTP/1.1
-Accept: application/json
-Content-Type: application/json
-
-{
-    "name": "name",
-    "email": "email@email.com",
-    "password": "password"
-}
-```
-
-### Authorization - simple registration
-
-```
-POST /api/v1/auth HTTP/1.1
-Accept: application/json
-Content-Type: application/json
-
-{
-    "email": "email@email.com",
-    "password": "password"
-}
-```
-
-### Using Jwt - for testing purposes
-
-```
-GET /api/v1/test HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3Q6MzAwNiIsInN1YiI6IiIsImF1ZCI6IkxhcmF2ZWwiLCJpYXQiOiIxNjc3ODUzMTI2IiwibmJmIjoiMTY3Nzg1MzEyNiIsImV4cCI6IjE2Nzg0NTc5MjYiLCJqdGkiOiI3RGdLZ2ZWdm9jRE5yVnp4WEpQUjNma0p1cGxOMFBzSVE0UEluampiQUVIUkRtRkx4d3BIYnZDYkxQUHRpc2lNIiwidXNlciI6eyJwcm92aWRlcmlkIjoiMTAwNzQyMTI4ODY0Mzk1MjQ5NzkxIiwibmFtZSI6IkRhbiBOaXRhIiwiZmlyc3RuYW1lIjoiRGFuIiwibGFzdG5hbWUiOiJOaXRhIiwiZW1haWwiOiJkYW4ubml0YS5oZHJ1a0BnbWFpbC5jb20iLCJwcm92aWRlciI6Imdvb2dsZSIsInVwZGF0ZWRfYXQiOiIyMDIzLTAzLTAzVDE0OjE4OjQ2LjAwMDAwMFoiLCJjcmVhdGVkX2F0IjoiMjAyMy0wMy0wM1QxNDoxODo0Ni4wMDAwMDBaIiwiaWQiOjF9fQ.2qPNxpVRxykJJ3XdKAIedE-xlEQPTc03QSrUHzEaufc
-Cookie: sessionId=s%3AHfJi8k9SMiyRHI5YXO_hkBeeyIG7AoW6.jMV%2BFjZKCOGPCW8IqZc%2F%2B8nvYULQ7Wq%2BbmusGfhKzcE
-```
-
-### Login - google / linkedin / azure auth
-
-```
-GET [host]/api/v1/auth/{provider}
-```
-
-where provider can take values like:
-
-```
-google or linkedin or azure
-```
-
-### Tests
-
-Commands:
-
-```
-vendor/bin/phpunit
-```
-
-or
-
-```
-vendor/bin/phpunit --testdox
-```
-
-or
-
-```
-php -d memory_limit=2048M ./vendor/bin/phpunit
-```
-
-or for one single file test
-
-```
-vendor/bin/phpunit --testdox --filter ActivityLogTest
-```
-
-or
-
-```
-php -d memory_limit=2048M ./vendor/bin/phpunit --testdox --filter ActivityLogTest
-```
-
-### Laravel Status Code
-
-```
-https://gist.github.com/jeffochoa/a162fc4381d69a2d862dafa61cda0798
-```
-
-
-
-## OMOP database
-
-### Setup
-Point your `.env` to the OMOP db
-```
-DB_OMOP_CONNECTION=mysql
-DB_OMOP_HOST=
-DB_OMOP_PORT=
-DB_OMOP_DATABASE=
-DB_OMOP_USERNAME=
-DB_OMOP_PASSWORD=
-```
-
-### Create Tables
-Create the tables from the omop folder
-```
-kubectl exec -it $(kubectl get pods | awk '/gateway-api/ {print $1}') --  php artisan migrate --database=localomop --path ./database/migrations/omop
-
-```
-
-### Seed tables
-```
- kubectl exec -it $(kubectl get pods | awk '/gateway-api/ {print $1}') --  php artisan db:seed --class=Database\\Seeders\\Omop\\ConceptSeeder  --database=localomop
-```
-
-### Authentication problems 
-If the auth process does work and times out, try:
-```
-php artisan key:generate
-php artisan config:cache
-```
-
-### Laravel Queues
-Laravel queues, now uses Horizon (https://laravel.com/docs/10.x/horizon) - which makes use of Redis. This means that a redis instance is required within your cluster. To install, run `helm install redis-local oci://registry-1.docker.io/bitnamicharts/redis`, once provisioned, you can use the following to retrieve the configured password: `export REDIS_PASSWORD=$(kubectl get secret --namespace default redis-local -o jsonpath="{.data.redis-password}" | base64 -d)`
-
-Then update your local .env file to reflect the use of redis within the local cluster as follows:
-
-```
-REDIS_HOST="CLUSTER_URL_FROM_INSTALLATION_OUTPUT"
-REDIS_PASSWORD=PASSWORD_FROM_ABOVE_COMMAND
-REDIS_PORT=6379
-
-# You also need to update your local QUEUE_CONNECTION config to
-QUEUE_CONNECTION=redis
-
-```
-
-
-### Setup email locally
-
-```
-helm repo add codecentric https://codecentric.github.io/helm-charts
-helm install mailhog codecentric/mailhog
-```
-
-- cluster: `mailhog.default.svc.cluster.local`
-
-start:
-port forward Kubernetes mailhog service
-```
-kubectl port-forward <mailhog-port-name> 1025:1025 8025:8025
-```
-
-After running the command, port forwarding will be established, allowing you to access MailHog’s SMTP server and web interface from your local machine.
-
-- To access the SMTP server, you can configure your email client or use a command-line tool like telnet to connect to localhost:1025
-- To access the web interface, you can open your web browser and go to `http://localhost:8025`
-
-setup in laravel env
-```
-MAIL_MAILER=smtp
-MAIL_HOST=mailhog
-MAIL_PORT=1025
-MAIL_USERNAME=null
-MAIL_PASSWORD=null
-MAIL_ENCRYPTION=null
-MAIL_FROM_ADDRESS="hello@example.com"
-MAIL_FROM_NAME="${APP_NAME}"
-```
+Contributions will be accepted in the form of a raised PR against `dev` branch. Github pipeline includes all linting and testing components to ensure stability.

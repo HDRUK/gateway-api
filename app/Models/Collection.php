@@ -117,7 +117,11 @@ class Collection extends Model
 
     public function keywords(): BelongsToMany
     {
-        return $this->belongsToMany(Keyword::class, 'collection_has_keywords');
+        return $this->belongsToMany(
+            Keyword::class,
+            'collection_has_keywords'
+        )
+        ->whereNull('collection_has_keywords.deleted_at');
     }
 
     // Accessor for all datasets associated with this object
