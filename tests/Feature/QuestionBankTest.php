@@ -1282,40 +1282,175 @@ class QuestionBankTest extends TestCase
      */
     public function test_the_application_can_edit_a_question()
     {
+        // create a question with children
         $response = $this->json(
             'POST',
             'api/v1/questions',
             [
-                'section_id' => 1,
-                'user_id' => 1,
-                'force_required' => 0,
-                'allow_guidance_override' => 1,
-                'options' => [],
-                'all_custodians' => true,
-                'component' => 'TextArea',
-                'validations' => [
-                    'min' => 1,
-                    'message' => 'Please enter a value'
-                ],
-                'title' => 'Test question',
-                'guidance' => 'Something helpful',
-                'required' => 0,
                 'default' => 0,
-                'version' => 1,
+                'required' => false,
+                'section_id' => 17,
+                'user_id' => 1,
+                'locked' => false,
+                'archived' => false,
+                'archived_date' => null,
+                'force_required' => false,
+                'allow_guidance_override' => true,
                 'is_child' => 0,
+                'question_type' => 'STANDARD',
+                'all_custodians' => true,
+                'title' => 'Please provide the legal basis to process confidential information',
+                'guidance' => 'Please confirm if consent is in place or underway for all disclosures of confidential information, if you have Section 251 exemption, or any other legal basis that you require for the project.\n\nFor England and Wales, please specify if Section 251 exemption is currently being sought and if so, please provide a Confidentiality Advisory group reference code.\n\nIn Scotland applications are required for the consented and unconsented use of data.\n',
+                'options' => [
+                    [
+                        'label' => 'Informed consent',
+                        'children' => [
+                            [
+                                'label' => 'Informed consent',
+                                'title' => 'Informed consent evidence',
+                                'guidance' => 'Please ensure a copy of the consent form(s) and patient information sheet have been provided. Documents can be uploaded in the Additional Files section of this form.',
+                                'required' => false,
+                                'component' => 'checkboxOptionsInput',
+                                'options' => [],
+                                'force_required' => true,
+                                'allow_guidance_override' => false,
+                                'validations' => []
+                            ]
+                        ]
+                    ],
+                    [
+                        'label' => 'Section 251 support',
+                        'children' => [
+                            [
+                                'label' => 'Section 251 support',
+                                'title' => 'Section 251 exemption evidence',
+                                'guidance' => 'Please ensure a copy of the Section 251 exemption has been provided. Documents can be uploaded in the Additional Files section of this form.',
+                                'required' => false,
+                                'component' => 'checkboxOptionsInput',
+                                'options' => [
+                                    [
+                                        'label' => 'Yes'
+                                    ],
+                                    [
+                                        'label' => 'No'
+                                    ]
+                                ],
+                                'force_required' => false,
+                                'allow_guidance_override' => false,
+                                'validations' => []
+                            ],
+                            [
+                                'label' => 'Section 251 support',
+                                'title' => 'The section 251 approval enables the applicant to',
+                                'guidance' => 'Please indicate what the Section 251 exemption permits you to do as part of your project.',
+                                'required' => false,
+                                'component' => 'checkboxOptionsInput',
+                                'options' => [],
+                                'validations' => [],
+                                'force_required' => false,
+                                'allow_guidance_override' => true
+                            ]
+                        ]
+                    ],
+                    [
+                        'label' => 'Not applicable',
+                        'children' => []
+                    ]
+                ],
+                'component' => 'RadioGroup',
+                'validations' => []
             ],
             $this->header
         );
-        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
         $content = $response->decodeResponseJson();
         $questionId = $content['data'];
 
+        // Get question and check number of children
+        // Get the ids also...
+        $response = $this->get('api/v1/questions/' . $questionId, $this->header);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $content = $response->decodeResponseJson();
+
+        $childVersionOne = 0;
+        $childQuestionOne = 0;
+        $childVersionTwo = 0;
+        $childQuestionTwo = 0;
+        foreach ($content['data']['options'] as $option) {
+            if ($option['label'] === 'Informed Consent') {
+                $this->assertEquals(count($option['children']), 1);
+                $this->assertEquals($option['children'][0]['title'], 'Informed consent evidence');
+                $childVersionOne = $option['children'][0]['version_id'];
+                $childQuestionOne = $option['children'][0]['question_id'];
+            } elseif ($option['label'] === 'Section 251 support') {
+                $this->assertEquals(count($option['children']), 2);
+                $this->assertEquals($option['children'][0]['title'], 'Section 251 exemption evidence');
+                $childVersionTwo = $option['children'][0]['version_id'];
+                $childQuestionTwo = $option['children'][0]['question_id'];
+            }
+        }
+
+        // Edit children - remove one child question and make children required
         $response = $this->json(
             'PATCH',
             'api/v1/questions/' . $questionId,
             [
                 'section_id' => 2,
-                'title' => 'Updated test question'
+                'title' => 'Updated test question',
+                'options' => [
+                    [
+                        'label' => 'Informed consent',
+                        'children' => [
+                            [
+                                'label' => 'Informed consent',
+                                'version_id' => $childVersionOne,
+                                'question_id' => $childQuestionOne,
+                                'title' => 'Informed consent evidence - edited',
+                                'guidance' => 'Please ensure a copy of the consent form(s) and patient information sheet have been provided. Documents can be uploaded in the Additional Files section of this form.',
+                                'required' => true,
+                                'component' => 'checkboxOptionsInput',
+                                'options' => [],
+                                'force_required' => true,
+                                'allow_guidance_override' => false,
+                                'validations' => []
+                            ]
+                        ]
+                    ],
+                    [
+                        'label' => 'Section 251 support',
+                        'children' => [
+                            [
+                                'label' => 'Section 251 support',
+                                'version_id' => $childVersionTwo,
+                                'question_id' => $childQuestionTwo,
+                                'title' => 'Section 251 exemption evidence - edited',
+                                'guidance' => 'Please ensure a copy of the Section 251 exemption has been provided. Documents can be uploaded in the Additional Files section of this form.',
+                                'required' => true,
+                                'component' => 'checkboxOptionsInput',
+                                'options' => [
+                                    [
+                                        'label' => 'Yes'
+                                    ],
+                                    [
+                                        'label' => 'No'
+                                    ]
+                                ],
+                                'force_required' => false,
+                                'allow_guidance_override' => false,
+                                'validations' => []
+                            ]
+                        ]
+                    ],
+                    [
+                        'label' => 'Not applicable',
+                        'children' => []
+                    ]
+                ]
             ],
             $this->header
         );
@@ -1340,6 +1475,22 @@ class QuestionBankTest extends TestCase
         $this->assertEquals($version['version'], 1);
         $this->assertEquals($version['question_json']['title'], 'Updated test question');
         $this->assertEquals($version['required'], false);
+
+        // Get question and check number of children
+        // Get the ids also...
+        $response = $this->get('api/v1/questions/' . $questionId, $this->header);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $content = $response->decodeResponseJson();
+
+        foreach ($content['data']['options'] as $option) {
+            if ($option['label'] === 'Informed Consent') {
+                $this->assertEquals(count($option['children']), 1);
+                $this->assertEquals($option['children'][0]['title'], 'Informed consent evidence - edited');
+            } elseif ($option['label'] === 'Section 251 support') {
+                $this->assertEquals(count($option['children']), 1);
+                $this->assertEquals($option['children'][0]['title'], 'Section 251 exemption evidence - edited');
+            }
+        }
 
         // Test that a new version is not created when question content is not updated
         // e.g. when a question is locked
