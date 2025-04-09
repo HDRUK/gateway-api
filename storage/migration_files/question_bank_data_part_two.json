@@ -384,7 +384,7 @@
                               },
                               {
                                     "title": "What are your plans for addressing confounding?",
-                                    "guidance": "",
+                                    "guidance": "These questions are to help us understand the different uses to which the data is being put to.",
                                     "required": false,
                                     "force_required": false,
                                     "field": {
@@ -400,7 +400,7 @@
                               },
                               {
                                     "title": "What are your plans for addressing missing data?",
-                                    "guidance": "",
+                                    "guidance": "These questions are to help us understand the different uses to which the data is being put to.",
                                     "required": false,
                                     "force_required": false,
                                     "field": {
@@ -416,7 +416,7 @@
                               },
                               {
                                     "title": "Please present your feasibility calculation.",
-                                    "guidance": "",
+                                    "guidance": "These questions are to help us understand the different uses to which the data is being put to.",
                                     "required": false,
                                     "force_required": false,
                                     "field": {
@@ -432,7 +432,7 @@
                               },
                               {
                                     "title": "Has the size of the study been informed by a formal statistical power calculation?",
-                                    "guidance": "",
+                                    "guidance": "These questions are to help us understand the different uses to which the data is being put to.",
                                     "required": false,
                                     "force_required": false,
                                     "field": {
@@ -454,11 +454,11 @@
                               },
                               {
                                     "title": "Has a statistician given an opinion about the statistical aspects of the research?",
-                                    "guidance": "",
+                                    "guidance": "These questions are to help us understand the different uses to which the data is being put to.",
                                     "required": false,
                                     "force_required": false,
                                     "field": {
-                                          "component": "TextField",
+                                          "component": "RadioGroup",
                                           "options": [
                                                 {
                                                       "value": "Yes",
@@ -466,7 +466,7 @@
                                                       "conditional": [
                                                             {
                                                                   "input": {
-                                                                        "type": "textareaInput"
+                                                                        "type": "TextArea"
                                                                   },
                                                                   "question": "If yes, please give a brief summary of advice offered."
                                                             }
@@ -482,107 +482,114 @@
                                     }
                               },
                               {
-                                    "title": "",
-                                    "guidance": "",
+                                    "title": "Will the data requested be used for algorithm generation and training?",
+                                    "guidance": "These questions are to help us understand the different uses to which the data is being put to.",
                                     "required": false,
-                                    "force_required": true,
+                                    "force_required": false,
                                     "field": {
-                                          "component": "TextField",
-                                          "options": [],
-                                          "validations": [
+                                          "component": "RadioGroup",
+                                          "options": [
                                                 {
-                                                      "message": "Please enter a value",
-                                                      "min": 1
+                                                      "value": "Yes",
+                                                      "label": "Yes",
+                                                      "conditional": null
+                                                },
+                                                {
+                                                      "value": "No",
+                                                      "label": "No",
+                                                      "conditional": null
                                                 }
-                                          ]
+                                          ],
+                                          "validations": []
                                     }
                               },
                               {
-                                    "title": "",
-                                    "guidance": "",
+                                    "title": "Will the data requested be used for internal validation?",
+                                    "guidance": "These questions are to help us understand the different uses to which the data is being put to.",
                                     "required": false,
-                                    "force_required": true,
+                                    "force_required": false,
                                     "field": {
-                                          "component": "TextField",
-                                          "options": [],
-                                          "validations": [
+                                          "component": "RadioGroup",
+                                          "options": [
                                                 {
-                                                      "message": "Please enter a value",
-                                                      "min": 1
+                                                      "value": "Yes",
+                                                      "label": "Yes",
+                                                      "conditional": null
+                                                },
+                                                {
+                                                      "value": "No",
+                                                      "label": "No",
+                                                      "conditional": null
                                                 }
-                                          ]
+                                          ],
+                                          "validations": []
                                     }
                               },
                               {
-                                    "title": "",
-                                    "guidance": "",
+                                    "title": "Will the data requested be used for external validation?",
+                                    "guidance": "These questions are to help us understand the different uses to which the data is being put to.",
                                     "required": false,
-                                    "force_required": true,
+                                    "force_required": false,
                                     "field": {
-                                          "component": "TextField",
-                                          "options": [],
-                                          "validations": [
+                                          "component": "RadioGroup",
+                                          "options": [
                                                 {
-                                                      "message": "Please enter a value",
-                                                      "min": 1
+                                                      "value": "Yes",
+                                                      "label": "Yes",
+                                                      "conditional": null
+                                                },
+                                                {
+                                                      "value": "No",
+                                                      "label": "No",
+                                                      "conditional": null
+                                                },
+                                                {
+                                                      "value": "Other",
+                                                      "label": "Other",
+                                                      "conditional": [
+                                                            {
+                                                                  "input": {
+                                                                        "type": "TextArea"
+                                                                  },
+                                                                  "question": "If other, please specify."
+                                                            }
+                                                      ]
                                                 }
-                                          ]
+                                          ],
+                                          "validations": []
                                     }
                               },
                               {
-                                    "title": "",
-                                    "guidance": "",
+                                    "title": "Will the data be subject to any machine learning (ML) techniques?",
+                                    "guidance": "These questions are to help us understand the different uses to which the data is being put to.",
                                     "required": false,
-                                    "force_required": true,
+                                    "force_required": false,
                                     "field": {
-                                          "component": "TextField",
-                                          "options": [],
-                                          "validations": [
+                                          "component": "RadioGroup",
+                                          "options": [
                                                 {
-                                                      "message": "Please enter a value",
-                                                      "min": 1
+                                                      "value": "Yes",
+                                                      "label": "Yes",
+                                                      "conditional": [
+                                                            {
+                                                                  "input": {
+                                                                        "type": "TextArea"
+                                                                  },
+                                                                  "question": "If yes, please specify the type of machine learning technique."
+                                                            }
+                                                      ]
+                                                },
+                                                {
+                                                      "value": "No",
+                                                      "label": "No",
+                                                      "conditional": null
                                                 }
-                                          ]
+                                          ],
+                                          "validations": []
                                     }
                               }
                         ]
-                  },
-
-
-
-
-
-Has a statistician given an opinion about the statistical aspects of the research?
-Nested option: Yes
-Nested options: If yes, please give a brief summary of advice offered
-Question Type: Text area
-Nested option: No
-Question Type: Radio Group
-Will the data requested be used for algorithm generation and training?
-Nested option: Yes
-Nested option: No
-Question Type: Radio Group
-Guidance: These questions are to help us understand the different uses to which the data is being put to.
-Will the data requested be used for internal validation?
-Nested option: Yes
-Nested option: No
-Question Type: Radio Group
-Guidance: These questions are to help us understand the different uses to which the data is being put to.
-Will the data requested be used for external validation?
-Nested option: Yes
-Nested option: No
-Nested option: Other
-If other, please specify
-Question Type: Text area
-Question Type: Radio Group
-Guidance: Guidance: These questions are to help us understand the different uses to which the data is being put to.
-Will the data be subject to any machine learning (ML) techniques?
-Nested option: Yes
-Nested options: If yes, please specify the type of machine learning technique
-Question Type: Text area
-Nested option: No
-Question Type: Radio Group
-Guidance: These questions are to help us understand the different uses to which the data is being put to.
-]
+                  }
+            ]
       }
 ]

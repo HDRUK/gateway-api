@@ -67,6 +67,9 @@ class DataAccessSectionTest extends TestCase
                 'total',
             ]);
 
+        $response = $this->get('api/v1/dar/sections?per_page=-1', $this->header);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
     }
 
     /**
