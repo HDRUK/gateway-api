@@ -1,3 +1,9 @@
+## [2.7.0](https://github.com/HDRUK/gateway-api/compare/v2.6.0...v2.7.0) (2025-04-09)
+
+### ✨ Features
+
+* **GAT-6005:** Revert - add sde concierge and redirect enquiries (#1165) (#1182) ([d527d14](https://github.com/HDRUK/gateway-api/commit/d527d14d947f5a39671c796231ec0cddab7c39b6)), closes [GAT-6005](GAT-6005)
+
 ## [2.6.0](https://github.com/HDRUK/gateway-api/compare/v2.5.0...v2.6.0) (2025-04-08)
 
 ### ✨ Features
