@@ -1000,7 +1000,7 @@ class UserDataAccessApplicationController extends Controller
                     'dar_application_id' => $id
                 ])->get();
 
-                if (($newStatus === 'SUBMITTED') && ($status != 'SUBMITTED')) {
+                if (($newStatus === 'SUBMITTED') && ($status !== 'SUBMITTED')) {
                     foreach ($thd as $t) {
                         $t->update(['submission_status' => $newStatus]);
                     }
