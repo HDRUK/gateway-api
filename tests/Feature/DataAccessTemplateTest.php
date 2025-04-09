@@ -282,8 +282,15 @@ class DataAccessTemplateTest extends TestCase
                     'non_active_count',
                 ]
             ]);
+    }
 
-        // And by team
+    /**
+     * List counts of team dar templates.
+     *
+     * @return void
+     */
+    public function test_the_application_can_count_team_dar_templates()
+    {
         $teamId = $this->createTeam();
 
         $response = $this->json(

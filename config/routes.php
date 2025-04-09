@@ -4474,7 +4474,9 @@ return [
             'jwt.verify',
             'check.access:permissions,data-access-template.read',
         ],
-        'constraint' => [],
+        'constraint' => [
+            'field' => 'published|locked|template_type',
+        ],
     ],
     [
         'name' => 'dar/templates',
@@ -4500,6 +4502,7 @@ return [
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
+            'field' => 'published|locked|template_type',
         ],
     ],
     [
