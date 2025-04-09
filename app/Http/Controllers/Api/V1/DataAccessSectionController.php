@@ -28,6 +28,17 @@ class DataAccessSectionController extends Controller
      *      tags={"DataAccessSection"},
      *      summary="DataAccessSection@index",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="per page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="per page",
+     *          ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -54,9 +65,15 @@ class DataAccessSectionController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $perPage = (int) request('per_page', Config::get('constants.per_page'));
 
             $sections = DataAccessSection::paginate(
-                Config::get('constants.per_page'),
+                function ($total) use ($perPage) {
+                    if ($perPage === -1) {
+                        return $total;
+                    }
+                    return $perPage;
+                },
                 ['*'],
                 'page'
             );
