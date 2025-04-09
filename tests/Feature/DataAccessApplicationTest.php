@@ -2293,6 +2293,30 @@ class DataAccessApplicationTest extends TestCase
         $content = $response->decodeResponseJson();
         $this->assertEquals($content['data']['teams'][0]['submission_status'], 'SUBMITTED');
 
+        // Test the user can push the submitted application to DRAFT
+        $response = $this->json(
+            'PATCH',
+            'api/v1/users/1/dar/applications/' . $applicationId,
+            [
+                'submission_status' => 'DRAFT',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $content = $response->decodeResponseJson();
+        $this->assertEquals($content['data']['teams'][0]['submission_status'], 'DRAFT');
+
+        // Resubmit
+        $response = $this->json(
+            'PATCH',
+            'api/v1/users/1/dar/applications/' . $applicationId,
+            [
+                'submission_status' => 'SUBMITTED',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
         // Clear test queue
         Queue::fake();
 
@@ -2329,8 +2353,19 @@ class DataAccessApplicationTest extends TestCase
 
         $statusCountNew = count($responseStatus->decodeResponseJson()['data']);
 
-        // Check for 2 new status entries - submission and approval
-        $this->assertEquals($statusCountNew, $statusCountInit + 2);
+        // Check for 4 new status entries - submission, draft, resubmission and approval
+        $this->assertEquals($statusCountNew, $statusCountInit + 4);
+
+        // Test that user cannot change application to DRAFT now it has been approved
+        $response = $this->json(
+            'PATCH',
+            'api/v1/users/1/dar/applications/' . $applicationId,
+            [
+                'submission_status' => 'DRAFT',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
 
         // Test team can push application back to DRAFT and null approval status
         $response = $this->json(
