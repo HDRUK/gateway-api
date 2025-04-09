@@ -993,15 +993,25 @@ class UserDataAccessApplicationController extends Controller
 
             $status = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status')) ? 'DRAFT' : 'SUBMITTED';
             $newStatus = $input['submission_status'] ?? null;
+            $preApproval = empty(array_filter(array_column($application['teams']->toArray(), 'approval_status')));
 
-            if (($newStatus === 'SUBMITTED') && ($status != 'SUBMITTED')) {
+            if (!is_null($newStatus)) {
                 $thd = TeamHasDataAccessApplication::where([
                     'dar_application_id' => $id
                 ])->get();
-                foreach ($thd as $t) {
-                    $t->update(['submission_status' => $newStatus]);
+
+                if (($newStatus === 'SUBMITTED') && ($status != 'SUBMITTED')) {
+                    foreach ($thd as $t) {
+                        $t->update(['submission_status' => $newStatus]);
+                    }
+                    $this->emailSubmissionNotification($id, $userId, $application);
+                } elseif (($newStatus === 'DRAFT') && $preApproval) {
+                    foreach ($thd as $t) {
+                        $t->update(['submission_status' => $newStatus]);
+                    }
+                } else {
+                    throw new Exception('The status of this data access request cannot be updated from ' . $status . ' to ' . $newStatus);
                 }
-                $this->emailSubmissionNotification($id, $userId, $application);
             }
 
             $this->editDataAccessApplication($application, $input);
