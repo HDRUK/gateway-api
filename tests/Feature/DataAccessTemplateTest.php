@@ -267,6 +267,75 @@ class DataAccessTemplateTest extends TestCase
     }
 
     /**
+     * List counts of dar templates.
+     *
+     * @return void
+     */
+    public function test_the_application_can_count_dar_templates()
+    {
+        $response = $this->get('api/v1/dar/templates/count/published', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'active_count',
+                    'non_active_count',
+                ]
+            ]);
+
+        // And by team
+        $teamId = $this->createTeam();
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/templates',
+            [
+                'team_id' => $teamId,
+                'published' => false,
+                'locked' => false,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/templates',
+            [
+                'team_id' => $teamId,
+                'published' => true,
+                'locked' => false,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $response = $this->get('api/v1/teams/' . $teamId . '/dar/templates/count/published', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'active_count',
+                    'non_active_count',
+                ]
+            ]);
+        $content = $response->decodeResponseJson();
+
+        $this->assertEquals($content['data']['active_count'], 1);
+        $this->assertEquals($content['data']['non_active_count'], 1);
+    }
+
+    /**
      * Fails to return a single dar template
      *
      * @return void
