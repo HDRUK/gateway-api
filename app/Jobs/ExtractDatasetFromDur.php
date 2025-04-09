@@ -45,7 +45,7 @@ class ExtractDatasetFromDur implements ShouldQueue
     private function linkDatasets(int $durId): void
     {
         $dur = Dur::findOrFail($durId);
-        $nonGatewayDatasets = array_filter(array_map('trim', $dur['non_gateway_datasets'])) ?? [];
+        $nonGatewayDatasets = array_filter(array_map('trim', $dur['non_gateway_datasets'] ?? [])) ?? [];
         $unmatched = array();
         foreach ($nonGatewayDatasets as $nonGatewayDataset) {
             $nonDataset = trim($nonGatewayDataset);

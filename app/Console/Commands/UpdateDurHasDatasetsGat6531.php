@@ -31,7 +31,7 @@ class UpdateDurHasDatasetsGat6531 extends Command
         $durs = Dur::select('id', 'non_gateway_datasets')->get();
 
         foreach ($durs as $dur) {
-            $nonGatewayDatasets = array_filter(array_map('trim', $dur['non_gateway_datasets']));
+            $nonGatewayDatasets = array_filter(array_map('trim', $dur['non_gateway_datasets'] ?? []));
             $this->info("non_gateway_datasets before :: " . json_encode($nonGatewayDatasets));
             $durId = $dur->id;
             $unmatched = [];
