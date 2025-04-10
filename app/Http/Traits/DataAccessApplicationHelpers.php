@@ -193,10 +193,8 @@ trait DataAccessApplicationHelpers
                     if ((bool) $filterAction === $actionRequired) {
                         $actionMatches[] = $m;
                     }
-                } else {
-                    if ((bool) $filterAction) {
-                        $actionMatches[] = $m;
-                    }
+                } elseif ((bool) $filterAction) {
+                    $actionMatches[] = $m;
                 }
             }
             $matches = array_intersect($matches, $actionMatches);
@@ -359,21 +357,13 @@ trait DataAccessApplicationHelpers
             'application_id' => $id,
             'question_id' => $applicantNameQuestion,
         ])->first();
-        if ($nameAnswer) {
-            $applicantName = $nameAnswer->answer;
-        } else {
-            $applicantName = null;
-        }
+        $applicantName = $nameAnswer ? $nameAnswer->answer : null;
 
         $orgAnswer = DataAccessApplicationAnswer::where([
             'application_id' => $id,
             'question_id' => $applicantOrgQuestion,
         ])->first();
-        if ($orgAnswer) {
-            $applicantOrg = $orgAnswer->answer;
-        } else {
-            $applicantOrg = null;
-        }
+        $applicantOrg = $orgAnswer ? $orgAnswer->answer : null;
 
         return [
             'name' => $applicantName,
