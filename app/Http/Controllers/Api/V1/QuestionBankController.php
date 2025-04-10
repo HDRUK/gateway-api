@@ -1537,45 +1537,13 @@ class QuestionBankController extends Controller
                     $children = $option['children'];
 
                     foreach ($children as $child) {
-                        $childQuestion = QuestionBank::create([
-                            'section_id' => $input['section_id'],
-                            'user_id' => $input['user_id'] ?? $jwtUser['id'],
-                            'force_required' => $child['force_required'],
-                            'allow_guidance_override' => $child['allow_guidance_override'],
-                            'locked' => $child['locked'] ?? false,
-                            'archived' => $child['archived'] ?? false,
-                            'archived_date' => ($child['archived'] ?? false) ? Carbon::now() : null,
-                            'is_child' => true,
-                            'question_type' => $input['all_custodians'] ? QuestionBank::STANDARD_TYPE : QuestionBank::CUSTOM_TYPE,
-                        ]);
-
-                        $field = [
-                            'component' => $child['component'],
-                            'validations' => $child['validations'],
-                            'options' => array_column($child['options'], 'label'),
-                        ];
-
-                        $questionJson = [
-                            'field' => $field,
-                            'title' => $child['title'],
-                            'guidance' => $child['guidance'],
-                        ];
-
-                        $childQuestionVersion = QuestionBankVersion::create([
-                            'question_json' => $questionJson,
-                            'required' => $child['required'] ?? false,
-                            'default' => $input['default'],
-                            'question_id' => $childQuestion->id,
-                            'version' =>  $versionNumber,
-                        ]);
-
-                        $questionHasChild = QuestionBankVersionHasChildVersion::create([
-                            'parent_qbv_id' => $questionVersion->id,
-                            'child_qbv_id' => $childQuestionVersion->id,
-                            'condition' => $label,
-                        ]);
-
-                        $this->updateQuestionHasTeams($childQuestion, $input);
+                        $this->createChildQuestion(
+                            $input,
+                            $jwtUser,
+                            $child,
+                            $questionVersion,
+                            $label,
+                        );
                     }
                 }
             }
@@ -1605,98 +1573,136 @@ class QuestionBankController extends Controller
                             $childQuestion = QuestionBank::where('id', $child['question_id'])->first();
                             $childVersion = QuestionBankVersion::where('id', $child['version_id'])->first();
                             if (($childQuestion) && ($childVersion)) {
-                                if (array_key_exists('all_custodians', $input)) {
-                                    $questionType = $input['all_custodians'] ? QuestionBank::STANDARD_TYPE : QuestionBank::CUSTOM_TYPE;
-                                } else {
-                                    $questionType = $parent->question_type;
-                                }
-                                $childQuestion->update([
-                                    'section_id' => $input['section_id'] ?? $parent->section_id,
-                                    'user_id' => $input['user_id'] ?? $jwtUser['id'],
-                                    'force_required' => $child['force_required'] ?? $childQuestion->force_required,
-                                    'allow_guidance_override' => $child['allow_guidance_override'] ?? $childQuestion->allow_guidance_override,
-                                    'locked' => $child['locked'] ?? $childQuestion->locked,
-                                    'archived' => $child['archived'] ?? $childQuestion->archived,
-                                    'archived_date' => ($child['archived'] ?? false) ? Carbon::now() : null,
-                                    'is_child' => true,
-                                    'question_type' => $questionType,
-                                ]);
-
-                                $childQuestionJson = $childVersion->question_json;
-
-                                $field = [
-                                    'component' => $child['component'] ?? $childQuestionJson['field']['component'],
-                                    'validations' => $child['validations'] ?? $childQuestionJson['field']['validations'],
-                                    'options' => isset($child['options']) ? array_column($child['options'], 'label') : $childQuestionJson['field']['options'],
-                                ];
-
-                                $questionJson = [
-                                    'field' => $field,
-                                    'title' => $child['title'] ?? $childQuestionJson['title'],
-                                    'guidance' => $child['guidance'] ?? $childQuestionJson['guidance'],
-                                ];
-
-                                $childVersion->update([
-                                    'question_json' => $questionJson,
-                                    'required' => $child['required'] ?? $childVersion['required'],
-                                    'default' => $input['default'] ?? $childVersion['default'],
-                                ]);
-
-                                $questionHasChild = QuestionBankVersionHasChildVersion::create([
-                                    'parent_qbv_id' => $questionVersion->id,
-                                    'child_qbv_id' => $childVersion->id,
-                                    'condition' => $label,
-                                ]);
-
-                                $this->updateQuestionHasTeams($childQuestion, $input);
-
+                                $this->updateChildQuestion(
+                                    $input,
+                                    $parent,
+                                    $jwtUser,
+                                    $childQuestion,
+                                    $child,
+                                    $childVersion,
+                                    $questionVersion,
+                                    $label,
+                                );
                             }
                         } else {
                             // Child does not exist - create it
-                            $childQuestion = QuestionBank::create([
-                                'section_id' => $input['section_id'],
-                                'user_id' => $input['user_id'] ?? $jwtUser['id'],
-                                'force_required' => $child['force_required'],
-                                'allow_guidance_override' => $child['allow_guidance_override'],
-                                'locked' => $child['locked'] ?? false,
-                                'archived' => $child['archived'] ?? false,
-                                'archived_date' => ($child['archived'] ?? false) ? Carbon::now() : null,
-                                'is_child' => true,
-                                'question_type' => $input['all_custodians'] ? QuestionBank::STANDARD_TYPE : QuestionBank::CUSTOM_TYPE,
-                            ]);
-
-                            $field = [
-                                'component' => $child['component'],
-                                'validations' => $child['validations'],
-                                'options' => array_column($child['options'], 'label'),
-                            ];
-
-                            $questionJson = [
-                                'field' => $field,
-                                'title' => $child['title'],
-                                'guidance' => $child['guidance'],
-                            ];
-
-                            $childQuestionVersion = QuestionBankVersion::create([
-                                'question_json' => $questionJson,
-                                'required' => $child['required'] ?? false,
-                                'default' => $input['default'],
-                                'question_id' => $childQuestion->id,
-                                'version' =>  $questionVersion->version,
-                            ]);
-
-                            $questionHasChild = QuestionBankVersionHasChildVersion::create([
-                                'parent_qbv_id' => $questionVersion->id,
-                                'child_qbv_id' => $childQuestionVersion->id,
-                                'condition' => $label,
-                            ]);
-
-                            $this->updateQuestionHasTeams($childQuestion, $input);
+                            $this->createChildQuestion(
+                                $input,
+                                $jwtUser,
+                                $child,
+                                $questionVersion,
+                                $label,
+                            );
                         }
                     }
                 }
             }
         }
+    }
+
+    private function createChildQuestion(
+        array $input,
+        array $jwtUser,
+        array $child,
+        QuestionBankVersion $questionVersion,
+        string $label,
+    ): void {
+
+        $childQuestion = QuestionBank::create([
+            'section_id' => $input['section_id'],
+            'user_id' => $input['user_id'] ?? $jwtUser['id'],
+            'force_required' => $child['force_required'],
+            'allow_guidance_override' => $child['allow_guidance_override'],
+            'locked' => $child['locked'] ?? false,
+            'archived' => $child['archived'] ?? false,
+            'archived_date' => ($child['archived'] ?? false) ? Carbon::now() : null,
+            'is_child' => true,
+            'question_type' => $input['all_custodians'] ? QuestionBank::STANDARD_TYPE : QuestionBank::CUSTOM_TYPE,
+        ]);
+
+        $field = [
+            'component' => $child['component'],
+            'validations' => $child['validations'],
+            'options' => array_column($child['options'], 'label'),
+        ];
+
+        $questionJson = [
+            'field' => $field,
+            'title' => $child['title'],
+            'guidance' => $child['guidance'],
+        ];
+
+        $childQuestionVersion = QuestionBankVersion::create([
+            'question_json' => $questionJson,
+            'required' => $child['required'] ?? false,
+            'default' => $input['default'],
+            'question_id' => $childQuestion->id,
+            'version' =>  $questionVersion->version,
+        ]);
+
+        $questionHasChild = QuestionBankVersionHasChildVersion::create([
+            'parent_qbv_id' => $questionVersion->id,
+            'child_qbv_id' => $childQuestionVersion->id,
+            'condition' => $label,
+        ]);
+
+        $this->updateQuestionHasTeams($childQuestion, $input);
+    }
+
+    private function updateChildQuestion(
+        array $input,
+        QuestionBank $parent,
+        array $jwtUser,
+        QuestionBank $childQuestion,
+        array $child,
+        QuestionBankVersion $childVersion,
+        QuestionBankVersion $questionVersion,
+        string $label,
+    ): void {
+        if (array_key_exists('all_custodians', $input)) {
+            $questionType = $input['all_custodians'] ? QuestionBank::STANDARD_TYPE : QuestionBank::CUSTOM_TYPE;
+        } else {
+            $questionType = $parent->question_type;
+        }
+        $childQuestion->update([
+            'section_id' => $input['section_id'] ?? $parent->section_id,
+            'user_id' => $input['user_id'] ?? $jwtUser['id'],
+            'force_required' => $child['force_required'] ?? $childQuestion->force_required,
+            'allow_guidance_override' => $child['allow_guidance_override'] ?? $childQuestion->allow_guidance_override,
+            'locked' => $child['locked'] ?? $childQuestion->locked,
+            'archived' => $child['archived'] ?? $childQuestion->archived,
+            'archived_date' => ($child['archived'] ?? false) ? Carbon::now() : null,
+            'is_child' => true,
+            'question_type' => $questionType,
+        ]);
+
+        $childQuestionJson = $childVersion->question_json;
+
+        $field = [
+            'component' => $child['component'] ?? $childQuestionJson['field']['component'],
+            'validations' => $child['validations'] ?? $childQuestionJson['field']['validations'],
+            'options' => isset($child['options']) ? array_column($child['options'], 'label') : $childQuestionJson['field']['options'],
+        ];
+
+        $questionJson = [
+            'field' => $field,
+            'title' => $child['title'] ?? $childQuestionJson['title'],
+            'guidance' => $child['guidance'] ?? $childQuestionJson['guidance'],
+        ];
+
+        $childVersion->update([
+            'question_json' => $questionJson,
+            'required' => $child['required'] ?? $childVersion['required'],
+            'default' => $input['default'] ?? $childVersion['default'],
+        ]);
+
+        $questionHasChild = QuestionBankVersionHasChildVersion::create([
+            'parent_qbv_id' => $questionVersion->id,
+            'child_qbv_id' => $childVersion->id,
+            'condition' => $label,
+        ]);
+
+        $this->updateQuestionHasTeams($childQuestion, $input);
     }
 
     private function updateQuestionHasTeams(QuestionBank $question, array $input)
