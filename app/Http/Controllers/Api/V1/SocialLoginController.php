@@ -174,10 +174,6 @@ class SocialLoginController extends Controller
                 config([
                     "services.$provider.redirect" => $redirectUrl
                 ]);
-
-                config([
-                    "services.$provider.redirect" => 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback'
-                ]);
                 return Socialite::driver($provider)->redirect();
             } else {
                 return Socialite::driver($provider)->redirect();
