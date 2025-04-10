@@ -169,7 +169,7 @@ class SocialLoginController extends Controller
             }
             if ($isDTA) {
                 return Socialite::driver($provider)
-                ->with(['redirect_uri' => 'https://api.dev.hdruk.cloud/api/v1/auth/dta/google/callback'])
+                ->with(['redirect_uri' => 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback'])
                 ->stateless()
                 ->redirect();
             } else {
@@ -334,9 +334,9 @@ class SocialLoginController extends Controller
             ]);
             $cookies = [Cookie::make('token', $jwt)];
 
-            if ($isDTA) {
-                $cookies = [Cookie::make('token', $jwt, 0, $baseRedirectUrl)];
-            }
+            // if ($isDTA) {
+            //     $cookies = [Cookie::make('token', $jwt, 0, $baseRedirectUrl)];
+            // }
 
 
             if ($user['name'] === '' || $user['email'] === '') {
