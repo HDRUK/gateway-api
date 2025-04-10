@@ -168,8 +168,7 @@ class SocialLoginController extends Controller
                 $provider = 'linkedin-openid';
             }
             if ($isDTA) {
-                return Socialite::driver($provider)->with(['redirect_uri' => "https://api.dev.dementia-trials-accelerator.org/api/v1/auth/google/callback"])->stateless()->redirect();
-
+                return Socialite::driver($provider)->redirectUrl('https://api.dev.hdruk.cloud/api/v1/auth/dta/google/callback')->redirect();
             } else {
                 return Socialite::driver($provider)->redirect();
             }
@@ -215,7 +214,7 @@ class SocialLoginController extends Controller
          */
     public function dtaCallback(Request $request, string $provider): mixed
     {
-        return $this->handleCallback($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_DTA_URL'));
+        return $this->handleCallback($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_DTA_URL'), true);
     }
 
     /**
@@ -255,9 +254,9 @@ class SocialLoginController extends Controller
      */
     public function callback(Request $request, string $provider): mixed
     {
-        return $this->handleCallback($request, $provider, env('GATEWAY_URL'), env('OPENATHENS_REDIRECT_URL'));
+        return $this->handleCallback($request, $provider, env('GATEWAY_URL'), env('OPENATHENS_REDIRECT_URL'), false);
     }
-    private function handleCallback(Request $request, string $provider, string $baseRedirectUrl, string $openAthensRedirectUrl): mixed
+    private function handleCallback(Request $request, string $provider, string $baseRedirectUrl, string $openAthensRedirectUrl, $isDTA): mixed
     {
         $user = null;
 
@@ -330,8 +329,13 @@ class SocialLoginController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'User ' . $user->id . ' with login through ' . $user->provider . ' has been connected',
             ]);
+            $cookies;
+            if ($isDTA) {
+                $cookies = [Cookie::make('token', $jwt, 0, $baseRedirectUrl)];
+            } else {
+                $cookies = [Cookie::make('token', $jwt)];
+            }
 
-            $cookies = [Cookie::make('token', $jwt)];
 
             if ($user['name'] === '' || $user['email'] === '') {
                 return redirect()->away($baseRedirectUrl . '/account/profile')->withCookies($cookies);
