@@ -168,11 +168,10 @@ class SocialLoginController extends Controller
                 $provider = 'linkedin-openid';
             }
             if ($isDTA) {
-                // config([
-                //     "services.$provider.redirect" => config("services.$provider.redirect").'?isDta='.$isDTA
-                // ]);
-                return Socialite::driver($provider)
-                ->with(['redirect_uri' => 'https://api.dev.hdruk.cloud/api/v1/auth/dta/google/callback'])->redirect();
+                config([
+                    "services.$provider.redirect" => 'https://api.dev.hdruk.cloud/api/v1/auth/dta/google/callback'
+                ]);
+                return Socialite::driver($provider)->redirect();
             } else {
                 return Socialite::driver($provider)->redirect();
             }
