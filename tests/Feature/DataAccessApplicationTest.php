@@ -249,6 +249,7 @@ class DataAccessApplicationTest extends TestCase
             $this->header
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $reviewId = $response->decodeResponseJson()['data'];
 
         $response = $this->get('api/v1/users/1/dar/applications/count', $this->header);
 
@@ -282,6 +283,24 @@ class DataAccessApplicationTest extends TestCase
         $this->assertEquals(1, $content['FEEDBACK']);
         $this->assertEquals(1, $content['info_required']);
         $this->assertEquals(1, $content['ALL']);
+
+        $response = $this->json(
+            'PUT',
+            'api/v1/users/1/dar/applications/' . $applicationId3 . '/reviews/' . $reviewId,
+            [
+                'comment' => 'A test reply from the user',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $response = $this->get('api/v1/teams/' . $teamId3 . '/dar/applications/count', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $content = $response->decodeResponseJson()['data'];
+        $this->assertEquals(1, $content['FEEDBACK']);
+        $this->assertEquals(0, $content['info_required']);
+        $this->assertEquals(1, $content['action_required']);
     }
 
     /**
