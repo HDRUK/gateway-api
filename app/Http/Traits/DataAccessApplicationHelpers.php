@@ -181,13 +181,22 @@ trait DataAccessApplicationHelpers
 
         if (!is_null($filterAction)) {
             $actionMatches = [];
-            foreach ($matches as $m) {
-                $reviews = DataAccessApplicationReview::where('application_id', $m)
-                    ->select(['resolved'])->pluck('resolved')->toArray();
-                $resolved = in_array(false, $reviews) ? false : true;
+            foreach ($matches as $i => $m) {
+                $review = DataAccessApplicationReview::where('application_id', $m)
+                    ->latest()
+                    ->with('comments')
+                    ->first();
+                if ($review) {
+                    $latestComment = $review['comments'][array_key_last($review['comments']->toArray())];
+                    $actionRequired = is_null($latestComment['team_id']) ? true : false;
 
-                if ((bool) $filterAction === $resolved) {
-                    $actionMatches[] = $m;
+                    if ((bool) $filterAction === $actionRequired) {
+                        $actionMatches[] = $m;
+                    }
+                } else {
+                    if ((bool) $filterAction) {
+                        $actionMatches[] = $m;
+                    }
                 }
             }
             $matches = array_intersect($matches, $actionMatches);
@@ -286,6 +295,11 @@ trait DataAccessApplicationHelpers
             $reviews = DataAccessApplicationReview::where('application_id', $a)
                 ->with('comments')->get();
 
+            if (!count($reviews)) {
+                $actionRequired += 1;
+                continue;
+            }
+
             $reviewIds = [];
             if ($teamId) {
                 foreach ($reviews as $r) {
@@ -299,10 +313,14 @@ trait DataAccessApplicationHelpers
                 $reviewIds = array_column($reviews->toArray(), 'id');
             }
 
-            $reviews = DataAccessApplicationReview::whereIn('id', $reviewIds)
-                ->select(['resolved'])->pluck('resolved')->toArray();
-            $resolved = in_array(false, $reviews) ? false : true;
-            if ($resolved) {
+            $review = DataAccessApplicationReview::whereIn('id', $reviewIds)
+                ->latest()
+                ->with('comments')
+                ->first();
+            $latestComment = $review['comments'][array_key_last($review['comments']->toArray())];
+            $isActionRequired = is_null($latestComment['team_id']) ? true : false;
+
+            if ($isActionRequired) {
                 $actionRequired += 1;
             } else {
                 $infoRequired += 1;
