@@ -217,7 +217,7 @@ class SocialLoginController extends Controller
          */
     public function dtaCallback(Request $request, string $provider): mixed
     {
-        return $this->handleCallback($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_DTA_URL'), true);
+        return $this->handleCallback($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_URL'), true);
     }
 
     /**
