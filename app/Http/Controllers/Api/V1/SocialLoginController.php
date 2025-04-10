@@ -172,7 +172,7 @@ class SocialLoginController extends Controller
                 //     "services.$provider.redirect" => config("services.$provider.redirect").'?isDta='.$isDTA
                 // ]);
                 return Socialite::driver($provider)
-                ->with(['redirect_uri' => 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback'])->redirect();
+                ->with(['redirect_uri' => 'https://api.dev.hdruk.cloud/api/v1/auth/dta/google/callback'])->redirect();
             } else {
                 return Socialite::driver($provider)->redirect();
             }
