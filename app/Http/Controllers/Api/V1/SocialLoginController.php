@@ -345,7 +345,7 @@ class SocialLoginController extends Controller
             $cookies = [Cookie::make('token', $jwt)];
 
             if ($isDTA) {
-                $cookies = [Cookie::make('token', $jwt, 0, '/', 'web.dev.dementia-trials-accelerator.org')];
+                $cookies = [Cookie::make('token', $jwt, 0, '/', 'dev.dementia-trials-accelerator.org')];
             }
 
 
