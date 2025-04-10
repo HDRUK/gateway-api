@@ -329,11 +329,10 @@ class SocialLoginController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'User ' . $user->id . ' with login through ' . $user->provider . ' has been connected',
             ]);
-            $cookies;
+            $cookies = [Cookie::make('token', $jwt)];
+
             if ($isDTA) {
                 $cookies = [Cookie::make('token', $jwt, 0, $baseRedirectUrl)];
-            } else {
-                $cookies = [Cookie::make('token', $jwt)];
             }
 
 
