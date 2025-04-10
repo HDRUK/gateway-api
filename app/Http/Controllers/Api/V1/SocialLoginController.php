@@ -168,10 +168,11 @@ class SocialLoginController extends Controller
                 $provider = 'linkedin-openid';
             }
             if ($isDTA) {
+                // config([
+                //     "services.$provider.redirect" => config("services.$provider.redirect").'?isDta='.$isDTA
+                // ]);
                 return Socialite::driver($provider)
-                ->with(['redirect_uri' => 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/google/callback'])
-                ->stateless()
-                ->redirect();
+                ->with(['redirect_uri' => 'https://api.dev.dementia-trials-accelerator.org/dta/google/callback'])->redirect();
             } else {
                 return Socialite::driver($provider)->redirect();
             }
