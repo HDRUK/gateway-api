@@ -63,23 +63,24 @@ trait DataAccessApplicationHelpers
             'project_title' => $input['project_title'],
         ]);
 
-        $isDraft = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status'));
+        $answers = $input['answers'] ?? null;
+        if (!$answers) {
+            return;
+        }
 
-        $answers = $input['answers'] ?? [];
-        if (count($answers)) {
-            if ($isDraft) {
-                DataAccessApplicationAnswer::where('application_id', $id)->delete();
-                foreach ($answers as $answer) {
-                    DataAccessApplicationAnswer::create([
-                        'question_id' => $answer['question_id'],
-                        'application_id' => $id,
-                        'answer' => $answer['answer'],
-                        'contributor_id' => $input['applicant_id'],
-                    ]);
-                }
-            } else {
-                throw new Exception('DAR form answers cannot be updated after submission.');
-            }
+        $isDraft = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status'));
+        if (!$isDraft) {
+            throw new Exception('DAR form answers cannot be updated after submission.');
+        }
+
+        DataAccessApplicationAnswer::where('application_id', $id)->delete();
+        foreach ($answers as $answer) {
+            DataAccessApplicationAnswer::create([
+                'question_id' => $answer['question_id'],
+                'application_id' => $id,
+                'answer' => $answer['answer'],
+                'contributor_id' => $input['applicant_id'],
+            ]);
         }
     }
 
@@ -94,23 +95,24 @@ trait DataAccessApplicationHelpers
         $array = $this->checkEditArray($input, $arrayKeys);
         $application->update($array);
 
-        $isDraft = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status'));
+        $answers = $input['answers'] ?? null;
+        if (!$answers) {
+            return;
+        }
 
-        $answers = $input['answers'] ?? [];
-        if (count($answers)) {
-            if ($isDraft) {
-                DataAccessApplicationAnswer::where('application_id', $id)->delete();
-                foreach ($answers as $answer) {
-                    DataAccessApplicationAnswer::create([
-                        'question_id' => $answer['question_id'],
-                        'application_id' => $id,
-                        'answer' => $answer['answer'],
-                        'contributor_id' => $application->applicant_id,
-                    ]);
-                }
-            } else {
-                throw new Exception('DAR form answers cannot be updated after submission.');
-            }
+        $isDraft = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status'));
+        if (!$isDraft) {
+            throw new Exception('DAR form answers cannot be edited after submission.');
+        }
+
+        DataAccessApplicationAnswer::where('application_id', $id)->delete();
+        foreach ($answers as $answer) {
+            DataAccessApplicationAnswer::create([
+                'question_id' => $answer['question_id'],
+                'application_id' => $id,
+                'answer' => $answer['answer'],
+                'contributor_id' => $application->applicant_id,
+            ]);
         }
     }
 
