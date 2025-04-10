@@ -80,7 +80,7 @@ class SocialLoginController extends Controller
     */
     public function dtaLogin(Request $request, string $provider): mixed
     {
-        return $this->handleLogin($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_DTA_URL'));
+        return $this->handleLogin($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_DTA_URL'), true);
     }
 
 
@@ -131,12 +131,14 @@ class SocialLoginController extends Controller
      */
     public function login(Request $request, string $provider): mixed
     {
-        return $this->handleLogin($request, $provider, env('GATEWAY_URL'), env('OPENATHENS_REDIRECT_URL'));
+        return $this->handleLogin($request, $provider, env('GATEWAY_URL'), env('OPENATHENS_REDIRECT_URL'), false);
 
     }
 
-    private function handleLogin(Request $request, string $provider, string $baseRedirectUrl, $openAthensRedirectUrl): mixed
+    private function handleLogin(Request $request, string $provider, string $baseRedirectUrl, $openAthensRedirectUrl, $isDTA): mixed
     {
+
+
         $redirectUrl = $baseRedirectUrl;
         if ($request->has("redirect")) {
             $redirectUrl .= $request->query('redirect');
@@ -165,7 +167,15 @@ class SocialLoginController extends Controller
             if (strtolower($provider) === 'linkedin') {
                 $provider = 'linkedin-openid';
             }
-            return Socialite::driver($provider)->redirect();
+            if ($isDTA) {
+                return Socialite::driver($provider)
+
+                ->with(['redirect_uri' => "https://api.dev.dementia-trials-accelerator.org/api/v1/auth/google/callback"])->redirect();
+
+            } else {
+                return Socialite::driver($provider)->redirect();
+            }
+
         }
     }
 
