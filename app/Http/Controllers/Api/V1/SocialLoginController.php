@@ -167,20 +167,21 @@ class SocialLoginController extends Controller
             if (strtolower($provider) === 'linkedin') {
                 $provider = 'linkedin-openid';
             }
-            if ($isDTA) {
-                $redirectUrl = config("services.$provider.redirect");
-                // $redirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $redirectUrl);
+            return Socialite::driver($provider)->redirect();
+            // if ($isDTA) {
+            //     $redirectUrl = config("services.$provider.redirect");
+            //     // $redirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $redirectUrl);
 
-                // config([
-                //     "services.$provider.redirect" => $redirectUrl
-                // ]);
-                config([
-                    "services.$provider.redirect" => 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback'
-                ]);
-                return Socialite::driver($provider)->redirect();
-            } else {
-                return Socialite::driver($provider)->redirect();
-            }
+            //     // config([
+            //     //     "services.$provider.redirect" => $redirectUrl
+            //     // ]);
+            //     config([
+            //         "services.$provider.redirect" => 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback'
+            //     ]);
+            //     return Socialite::driver($provider)->redirect();
+            // } else {
+
+            // }
 
         }
     }
