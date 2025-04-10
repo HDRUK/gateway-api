@@ -217,7 +217,7 @@ class SocialLoginController extends Controller
          */
     public function dtaCallback(Request $request, string $provider): mixed
     {
-        return $this->handleCallback($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_URL'), true);
+        return $this->handleCallback($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_URL'));
     }
 
     /**
@@ -257,9 +257,9 @@ class SocialLoginController extends Controller
      */
     public function callback(Request $request, string $provider): mixed
     {
-        return $this->handleCallback($request, $provider, env('GATEWAY_URL'), env('OPENATHENS_REDIRECT_URL'), false);
+        return $this->handleCallback($request, $provider, env('GATEWAY_URL'), env('OPENATHENS_REDIRECT_URL'));
     }
-    private function handleCallback(Request $request, string $provider, string $baseRedirectUrl, string $openAthensRedirectUrl, $isDTA): mixed
+    private function handleCallback(Request $request, string $provider, string $baseRedirectUrl, string $openAthensRedirectUrl): mixed
     {
         $user = null;
 
