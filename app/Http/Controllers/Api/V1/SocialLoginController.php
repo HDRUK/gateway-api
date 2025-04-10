@@ -219,7 +219,7 @@ class SocialLoginController extends Controller
          */
     public function dtaCallback(Request $request, string $provider): mixed
     {
-        return $this->handleCallback($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_URL'), true);
+        return $this->handleCallback($request, $provider, env('GATEWAY_URL'), env('OPENATHENS_REDIRECT_URL'), true);
     }
 
     /**
@@ -265,11 +265,11 @@ class SocialLoginController extends Controller
     {
         $user = null;
         if ($isDTA) {
-            // $redirectUrl = config("services.$provider.redirect");
-            // $redirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $redirectUrl);
+            $redirectUrl = config("services.$provider.redirect");
+            $redirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $redirectUrl);
 
             config([
-                "services.$provider.redirect" => "https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback"
+                "services.$provider.redirect" => $redirectUrl
             ]);
 
         }
@@ -344,9 +344,9 @@ class SocialLoginController extends Controller
             ]);
             $cookies = [Cookie::make('token', $jwt)];
 
-            // if ($isDTA) {
-            //     $cookies = [Cookie::make('token', $jwt, 0, $baseRedirectUrl)];
-            // }
+            if ($isDTA) {
+                $cookies = [Cookie::make('token', $jwt, 0, 'web.dev.dementia-trials-accelerator.org')];
+            }
 
 
             if ($user['name'] === '' || $user['email'] === '') {
