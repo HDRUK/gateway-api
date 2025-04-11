@@ -330,7 +330,7 @@ class SocialLoginController extends Controller
             $cookieValue = $jwt;
             $cookieExpiration = 0;
             $cookiePath = '/';
-            $cookieDomain = 'web.dev.dementia-trials-accelerator.org';
+            $cookieDomain = 'dev.dementia-trials-accelerator.org';
             $cookieSecure = true;
             $cookieHttpOnly = true;
 
