@@ -286,7 +286,7 @@ class SocialLoginController extends Controller
                         ->redirectUrl($cbRedirectUrl)
                         ->user();
                 } catch (Exception $e) {
-                    Log::error('Socialite login failed: ' . $e->getMessage());
+                    Log::error('Socialite login failed: ' . $e->getTrace());
                     throw new Exception($e->getMessage());
                 }
                 Log::info('<<<<<<<<<<<<<< 2');
