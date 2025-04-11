@@ -114,6 +114,87 @@ class TeamDataAccessTemplateController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *    path="/api/v1/teams/{teamId}/dar/templates/count/{field}",
+     *    operationId="team_dar_template_count_unique_fields",
+     *    tags={"TeamDataAccessTemplates"},
+     *    summary="TeamDataAccessTemplateController@count",
+     *    description="Get Counts for distinct entries of a field in the model",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="Team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="Team id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="field",
+     *       in="path",
+     *       description="name of the field to perform a count on",
+     *       required=true,
+     *       example="published",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="published field",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="object",
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function count(GetTeamDataAccessTemplate $request, int $teamId, string $field): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $counts = DataAccessTemplate::where('team_id', '=', $teamId)
+                ->select($field)
+                ->get()
+                ->groupBy($field)
+                ->map->count();
+
+            if ($field === 'published') {
+                $counts = collect([
+                    'active_count' => $counts[1] ?? 0,
+                    'non_active_count' => $counts[0] ?? 0,
+                ]);
+            }
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'TeamDataAccessTemplate count',
+            ]);
+
+            return response()->json([
+                'data' => $counts
+            ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
      * @OA\Delete(
      *      path="/api/v1/teams/{teamId}/dar/templates/{id}/files/{fileId}",
      *      summary="Delete a file associated with a DAR template",

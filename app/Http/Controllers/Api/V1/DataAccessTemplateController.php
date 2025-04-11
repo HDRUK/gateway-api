@@ -226,6 +226,75 @@ class DataAccessTemplateController extends Controller
 
     /**
      * @OA\Get(
+     *    path="/api/v1/dar/templates/count/{field}",
+     *    operationId="dar_template_count_unique_fields",
+     *    tags={"DataAccessTemplates"},
+     *    summary="DataAccessTemplateController@count",
+     *    description="Get Counts for distinct entries of a field in the model",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="field",
+     *       in="path",
+     *       description="name of the field to perform a count on",
+     *       required=true,
+     *       example="published",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="published field",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="object",
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function count(Request $request, string $field): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $counts = DataAccessTemplate::select($field)
+                ->get()
+                ->groupBy($field)
+                ->map->count();
+
+            if ($field === 'published') {
+                $counts = collect([
+                    'active_count' => $counts[1] ?? 0,
+                    'non_active_count' => $counts[0] ?? 0,
+                ]);
+            }
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'DataAccessTemplate count',
+            ]);
+
+            return response()->json([
+                'data' => $counts
+            ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
      *      path="/ap1/v1/dar/templates/{id}/download",
      *      summary="Download the template for a file based DAR application",
      *      description="Download the template for a file based DAR application",
