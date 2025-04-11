@@ -268,7 +268,7 @@ class SocialLoginController extends Controller
         if ($isDTA) {
             //$cbRedirectUrl = config("services.$provider.redirect");
             //$cbRedirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $cbRedirectUrl);
-            $cbRedirectUrl = 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback'
+            $cbRedirectUrl = 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback';
 
             config([
                 "services.$provider.redirect" => $cbRedirectUrl
