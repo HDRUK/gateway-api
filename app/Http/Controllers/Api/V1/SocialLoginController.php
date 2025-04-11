@@ -169,14 +169,19 @@ class SocialLoginController extends Controller
                 $provider = 'linkedin-openid';
             }
             if ($isDTA) {
-                $cbRedirectUrl = config("services.$provider.redirect");
-                $cbRedirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $cbRedirectUrl);
-                $cbRedirectUrl = 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback';
-                Log::info('<<<<<<<<<<<<<<'.$cbRedirectUrl);
+                // $cbRedirectUrl = config("services.$provider.redirect");
+                // $cbRedirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $cbRedirectUrl);
 
-                config([
-                    "services.$provider.redirect" => $cbRedirectUrl
-                ]);
+                $cbRedirectUrl = 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback';
+                // // Log::info('<<<<<<<<<<<<<<'.$cbRedirectUrl);
+
+                // config([
+                //     "services.$provider.redirect" => $cbRedirectUrl
+                // ]);
+                return Socialite::driver($provider)
+                ->redirectUrl($cbRedirectUrl)
+                //->with(['redirect_uri' => $cbRedirectUrl])
+                ->redirect();
 
             }
             return Socialite::driver($provider)->redirect();
@@ -275,8 +280,16 @@ class SocialLoginController extends Controller
                 $user = User::where('providerid', $socialUserDetails['providerid'])->first();
             } else {
                 Log::info('<<<<<<<<<<<<<< 1');
-                Log::info('$provider'.$provider);
-                $socialUser = Socialite::driver($provider)->user();
+                $cbRedirectUrl = 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback';
+                // // Log::info('<<<<<<<<<<<<<<'.$cbRedirectUrl);
+
+                // config([
+                //     "services.$provider.redirect" => $cbRedirectUrl
+                // ]);
+
+                $socialUser = Socialite::driver($provider)
+                ->redirectUrl($cbRedirectUrl)
+                ->user();
                 Log::info('<<<<<<<<<<<<<< 2');
                 $socialUserDetails = [];
                 switch (strtolower($provider)) {
