@@ -170,10 +170,10 @@ class SocialLoginController extends Controller
             if ($isDTA) {
                 $redirectUrl = config("services.$provider.redirect");
                 $redirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $redirectUrl);
-
-                // config([
-                //     "services.$provider.redirect" => "https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback"
-                // ]);
+                // dd($isDTA);
+                config([
+                    "services.$provider.redirect" => $redirectUrl
+                ]);
 
             }
             return Socialite::driver($provider)->redirect();
@@ -263,6 +263,7 @@ class SocialLoginController extends Controller
     }
     private function handleCallback(Request $request, string $provider, string $baseRedirectUrl, string $openAthensRedirectUrl, $isDTA): mixed
     {
+
         $user = null;
         if ($isDTA) {
             $redirectUrl = config("services.$provider.redirect");
@@ -346,6 +347,7 @@ class SocialLoginController extends Controller
 
             if ($isDTA) {
                 $cookies = Cookie::make('token', $jwt, 0, '/', 'dev.dementia-trials-accelerator.org', true, true);
+                //dd($cookies);
             } else {
                 $cookies = [Cookie::make('token', $jwt)];
             }
