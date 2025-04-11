@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Cookie;
 use App\Http\Controllers\JwtController;
 use Laravel\Socialite\Facades\Socialite;
 use Jumbojett\OpenIDConnectClient;
+use Illuminate\Support\Facades\Log;
 
 class SocialLoginController extends Controller
 {
@@ -168,12 +169,14 @@ class SocialLoginController extends Controller
                 $provider = 'linkedin-openid';
             }
             if ($isDTA) {
-                //$cbRedirectUrl = config("services.$provider.redirect");
+                $cbRedirectUrl = config("services.$provider.redirect");
                 //$cbRedirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $cbRedirectUrl);
-                $cbRedirectUrl = 'https://api.dev.hdruk.cloud/api/v1/auth/dta/google/callback';
-                config([
-                    "services.$provider.redirect" => $cbRedirectUrl
-                ]);
+                //$cbRedirectUrl = 'https://api.dev.hdruk.cloud/api/v1/auth/dta/google/callback';
+                Log::info('<<<<<<<<<<<<<<'.$cbRedirectUrl);
+
+                // config([
+                //     "services.$provider.redirect" => $cbRedirectUrl
+                // ]);
 
             }
             return Socialite::driver($provider)->redirect();
@@ -267,12 +270,12 @@ class SocialLoginController extends Controller
         $user = null;
         if ($isDTA) {
             //$cbRedirectUrl = config("services.$provider.redirect");
-            //$cbRedirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $cbRedirectUrl);
-            $cbRedirectUrl = 'https://api.dev.hdruk.cloud/api/v1/auth/dta/google/callback';
-
-            config([
-                "services.$provider.redirect" => $cbRedirectUrl
-            ]);
+            $cbRedirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $cbRedirectUrl);
+            //$cbRedirectUrl = 'https://api.dev.hdruk.cloud/api/v1/auth/dta/google/callback';
+            Log::info('<<<<<<<<<<<<<<'.$cbRedirectUrl);
+            // config([
+            //     "services.$provider.redirect" => $cbRedirectUrl
+            // ]);
 
         }
         try {
