@@ -275,6 +275,7 @@ class SocialLoginController extends Controller
                 $user = User::where('providerid', $socialUserDetails['providerid'])->first();
             } else {
                 Log::info('<<<<<<<<<<<<<< 1');
+                Log::info('$provider', $provider);
                 $socialUser = Socialite::driver($provider)->user();
                 Log::info('<<<<<<<<<<<<<< 2');
                 $socialUserDetails = [];
