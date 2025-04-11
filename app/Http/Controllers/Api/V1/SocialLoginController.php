@@ -283,7 +283,8 @@ class SocialLoginController extends Controller
                 $cbRedirectUrl = 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback';
                 try {
                     $socialUser = Socialite::driver($provider)
-                        ->redirectUrl($cbRedirectUrl)
+                        -- > stateless()
+
                         ->user();
                 } catch (Exception $e) {
                     Log::error('Socialite login failed: ' . $e);
