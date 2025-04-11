@@ -344,10 +344,19 @@ class SocialLoginController extends Controller
                 'description' => 'User ' . $user->id . ' with login through ' . $user->provider . ' has been connected',
             ]);
 
-            $cookies = [Cookie::make('token', $jwt)];
-            if ($isDTA) {
-                $cookies = Cookie::make('token', $jwt, 0, '/', 'dev.dementia-trials-accelerator.org', true, true);
-            }
+            //$cookies = [Cookie::make('token', $jwt)];
+            $cookieName = 'token';
+            $cookieValue = $jwt;
+            $cookieExpiration = 0;
+            $cookiePath = '/';
+            $cookieDomain = $isDTA ? 'dev.dementia-trials-accelerator.org' : null;
+            $cookieSecure = true;
+            $cookieHttpOnly = true;
+
+            $cookies = [Cookie::make($cookieName, $cookieValue, $cookieExpiration, $cookiePath, $cookieDomain, $cookieSecure, $cookieHttpOnly)];            // dd($cookies);
+            // if ($isDTA) {
+            //     $cookies = Cookie::make('token', $jwt, 0, '/', 'dev.dementia-trials-accelerator.org', true, true);
+            // }
 
 
             if ($user['name'] === '' || $user['email'] === '') {
