@@ -335,9 +335,7 @@ class SocialLoginController extends Controller
             $cookieHttpOnly = true;
 
             $cookies = [Cookie::make($cookieName, $cookieValue, $cookieExpiration, $cookiePath, $cookieDomain, $cookieSecure, $cookieHttpOnly)];            // dd($cookies);
-            if ($isDTA) {
-                dd($cookies);
-            }
+
 
 
             if ($user['name'] === '' || $user['email'] === '') {
