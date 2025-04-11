@@ -63,23 +63,24 @@ trait DataAccessApplicationHelpers
             'project_title' => $input['project_title'],
         ]);
 
-        $isDraft = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status'));
+        $answers = $input['answers'] ?? null;
+        if (!$answers) {
+            return;
+        }
 
-        $answers = $input['answers'] ?? [];
-        if (count($answers)) {
-            if ($isDraft) {
-                DataAccessApplicationAnswer::where('application_id', $id)->delete();
-                foreach ($answers as $answer) {
-                    DataAccessApplicationAnswer::create([
-                        'question_id' => $answer['question_id'],
-                        'application_id' => $id,
-                        'answer' => $answer['answer'],
-                        'contributor_id' => $input['applicant_id'],
-                    ]);
-                }
-            } else {
-                throw new Exception('DAR form answers cannot be updated after submission.');
-            }
+        $isDraft = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status'));
+        if (!$isDraft) {
+            throw new Exception('DAR form answers cannot be updated after submission.');
+        }
+
+        DataAccessApplicationAnswer::where('application_id', $id)->delete();
+        foreach ($answers as $answer) {
+            DataAccessApplicationAnswer::create([
+                'question_id' => $answer['question_id'],
+                'application_id' => $id,
+                'answer' => $answer['answer'],
+                'contributor_id' => $input['applicant_id'],
+            ]);
         }
     }
 
@@ -94,23 +95,24 @@ trait DataAccessApplicationHelpers
         $array = $this->checkEditArray($input, $arrayKeys);
         $application->update($array);
 
-        $isDraft = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status'));
+        $answers = $input['answers'] ?? null;
+        if (!$answers) {
+            return;
+        }
 
-        $answers = $input['answers'] ?? [];
-        if (count($answers)) {
-            if ($isDraft) {
-                DataAccessApplicationAnswer::where('application_id', $id)->delete();
-                foreach ($answers as $answer) {
-                    DataAccessApplicationAnswer::create([
-                        'question_id' => $answer['question_id'],
-                        'application_id' => $id,
-                        'answer' => $answer['answer'],
-                        'contributor_id' => $application->applicant_id,
-                    ]);
-                }
-            } else {
-                throw new Exception('DAR form answers cannot be updated after submission.');
-            }
+        $isDraft = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status'));
+        if (!$isDraft) {
+            throw new Exception('DAR form answers cannot be edited after submission.');
+        }
+
+        DataAccessApplicationAnswer::where('application_id', $id)->delete();
+        foreach ($answers as $answer) {
+            DataAccessApplicationAnswer::create([
+                'question_id' => $answer['question_id'],
+                'application_id' => $id,
+                'answer' => $answer['answer'],
+                'contributor_id' => $application->applicant_id,
+            ]);
         }
     }
 
@@ -181,12 +183,19 @@ trait DataAccessApplicationHelpers
 
         if (!is_null($filterAction)) {
             $actionMatches = [];
-            foreach ($matches as $m) {
-                $reviews = DataAccessApplicationReview::where('application_id', $m)
-                    ->select(['resolved'])->pluck('resolved')->toArray();
-                $resolved = in_array(false, $reviews) ? false : true;
+            foreach ($matches as $i => $m) {
+                $review = DataAccessApplicationReview::where('application_id', $m)
+                    ->latest()
+                    ->with('comments')
+                    ->first();
+                if ($review) {
+                    $latestComment = $review['comments'][array_key_last($review['comments']->toArray())];
+                    $actionRequired = is_null($latestComment['team_id']) ? true : false;
 
-                if ((bool) $filterAction === $resolved) {
+                    if ((bool) $filterAction === $actionRequired) {
+                        $actionMatches[] = $m;
+                    }
+                } elseif ((bool) $filterAction) {
                     $actionMatches[] = $m;
                 }
             }
@@ -286,6 +295,11 @@ trait DataAccessApplicationHelpers
             $reviews = DataAccessApplicationReview::where('application_id', $a)
                 ->with('comments')->get();
 
+            if (!count($reviews)) {
+                $actionRequired += 1;
+                continue;
+            }
+
             $reviewIds = [];
             if ($teamId) {
                 foreach ($reviews as $r) {
@@ -299,10 +313,14 @@ trait DataAccessApplicationHelpers
                 $reviewIds = array_column($reviews->toArray(), 'id');
             }
 
-            $reviews = DataAccessApplicationReview::whereIn('id', $reviewIds)
-                ->select(['resolved'])->pluck('resolved')->toArray();
-            $resolved = in_array(false, $reviews) ? false : true;
-            if ($resolved) {
+            $review = DataAccessApplicationReview::whereIn('id', $reviewIds)
+                ->latest()
+                ->with('comments')
+                ->first();
+            $latestComment = $review['comments'][array_key_last($review['comments']->toArray())];
+            $isActionRequired = is_null($latestComment['team_id']) ? true : false;
+
+            if ($isActionRequired) {
                 $actionRequired += 1;
             } else {
                 $infoRequired += 1;
@@ -341,21 +359,13 @@ trait DataAccessApplicationHelpers
             'application_id' => $id,
             'question_id' => $applicantNameQuestion,
         ])->first();
-        if ($nameAnswer) {
-            $applicantName = $nameAnswer->answer;
-        } else {
-            $applicantName = null;
-        }
+        $applicantName = $nameAnswer ? $nameAnswer->answer : null;
 
         $orgAnswer = DataAccessApplicationAnswer::where([
             'application_id' => $id,
             'question_id' => $applicantOrgQuestion,
         ])->first();
-        if ($orgAnswer) {
-            $applicantOrg = $orgAnswer->answer;
-        } else {
-            $applicantOrg = null;
-        }
+        $applicantOrg = $orgAnswer ? $orgAnswer->answer : null;
 
         return [
             'name' => $applicantName,
