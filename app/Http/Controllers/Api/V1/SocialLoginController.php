@@ -354,9 +354,9 @@ class SocialLoginController extends Controller
             $cookieHttpOnly = true;
 
             $cookies = [Cookie::make($cookieName, $cookieValue, $cookieExpiration, $cookiePath, $cookieDomain, $cookieSecure, $cookieHttpOnly)];            // dd($cookies);
-            // if ($isDTA) {
-            //     $cookies = Cookie::make('token', $jwt, 0, '/', 'dev.dementia-trials-accelerator.org', true, true);
-            // }
+            if ($isDTA) {
+                dd($cookies);
+            }
 
 
             if ($user['name'] === '' || $user['email'] === '') {
