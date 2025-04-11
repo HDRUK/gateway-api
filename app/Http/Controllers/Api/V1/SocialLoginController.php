@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Cookie;
 use App\Http\Controllers\JwtController;
 use Laravel\Socialite\Facades\Socialite;
 use Jumbojett\OpenIDConnectClient;
-use Illuminate\Support\Facades\Log;
 
 class SocialLoginController extends Controller
 {
@@ -169,18 +168,12 @@ class SocialLoginController extends Controller
                 $provider = 'linkedin-openid';
             }
             if ($isDTA) {
-                // $cbRedirectUrl = config("services.$provider.redirect");
-                // $cbRedirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $cbRedirectUrl);
-
-                $cbRedirectUrl = 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback';
-                // // Log::info('<<<<<<<<<<<<<<'.$cbRedirectUrl);
-
-                // config([
-                //     "services.$provider.redirect" => $cbRedirectUrl
-                // ]);
+                $providerURL = config("services.$provider.redirect");
+                if (env('APP_ENV') !== 'local') {
+                    $providerURL = str_replace(env('APP_URL').'/api/v1/auth', env('DTA_API_URL').'/api/v1/auth/dta', $providerURL);
+                }
                 return Socialite::driver($provider)
-                ->redirectUrl($cbRedirectUrl)
-                //->with(['redirect_uri' => $cbRedirectUrl])
+                ->redirectUrl($providerURL)
                 ->redirect();
 
             }
@@ -230,18 +223,6 @@ class SocialLoginController extends Controller
         $openAthensRedirectUrl = env('OPENATHENS_REDIRECT_URL');
 
         $user = null;
-        // $currentUrl = config("services.$provider.redirect");
-        // Log::info('<<<<<<<<<<<<<< URL BEFORE CHANGE'.$currentUrl);
-
-
-        //$cbRedirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $cbRedirectUrl);
-        // $cbRedirectUrl = 'https://api.dev.hdruk.cloud/api/v1/auth/dta/google/callback';
-
-        // config([
-        //     "services.$provider.redirect" => $cbRedirectUrl
-        // ]);
-        // $providerURL = config("services.$provider.redirect");
-        // Log::info('<<<<<<<<<<<<<< providerURL from Config'.$providerURL);
         try {
             if (strtolower($provider) === 'linkedin') {
                 $provider = 'linkedin-openid';
@@ -279,23 +260,18 @@ class SocialLoginController extends Controller
 
                 $user = User::where('providerid', $socialUserDetails['providerid'])->first();
             } else {
-                Log::info('<<<<<<<<<<<<<< 1');
-                $cbRedirectUrl = 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback';
-                try {
-                    $socialUser = Socialite::driver($provider)
-                        ->redirectUrl($cbRedirectUrl)
-                        ->stateless()
-                        ->user();
-                } catch (Exception $e) {
-                    Log::error('Socialite login failed: ' . $e);
-                    throw new Exception($e->getMessage());
-                }
-                Log::info('<<<<<<<<<<<<<< 2');
+                $providerURL = config("services.$provider.redirect");
+                if (env('APP_ENV') !== 'local') {
+                    $providerURL = str_replace(env('APP_URL').'/api/v1/auth', env('DTA_API_URL').'/api/v1/auth/dta', $providerURL);
+                }                $socialUser = Socialite::driver($provider)
+                ->redirectUrl($providerURL)
+                ->stateless()
+                ->user();
+
                 $socialUserDetails = [];
                 switch (strtolower($provider)) {
                     case 'google':
                         $socialUserDetails = $this->googleResponse($socialUser, $provider);
-                        Log::info('<<<<<<<<<<<<<< 3');
                         break;
 
                     case 'linkedin-openid':
@@ -306,7 +282,6 @@ class SocialLoginController extends Controller
                         break;
                 }
                 $user = User::where('email', $socialUserDetails['email'])->first();
-                Log::info('<<<<<<<<<<<<<< 4');
             }
 
             if (!$user) {
@@ -316,7 +291,6 @@ class SocialLoginController extends Controller
             }
 
             $jwt = $this->createJwt($user);
-            Log::info('<<<<<<<<<<<<<< 5');
             Auditor::log([
                 'target_user_id' => $user->id,
                 'action_type' => 'LOGIN',
@@ -324,31 +298,20 @@ class SocialLoginController extends Controller
                 'description' => 'User ' . $user->id . ' with login through ' . $user->provider . ' has been connected',
             ]);
 
-            // $cookies = [Cookie::make('token', $jwt)];
-            Log::info('<<<<<<<<<<<<<< 6');
-            $cookieName = 'token';
-            $cookieValue = $jwt;
-            $cookieExpiration = 0;
-            $cookiePath = '/';
-            $cookieDomain = 'dev.dementia-trials-accelerator.org';
-            $cookieSecure = true;
-            $cookieHttpOnly = true;
+            $cookies = [Cookie::make('token', $jwt, 0, '/', env('DTA_DOMAIN'), true, true)];
 
-            $cookies = [Cookie::make($cookieName, $cookieValue, $cookieExpiration, $cookiePath, $cookieDomain, $cookieSecure, $cookieHttpOnly)];            // dd($cookies);
-
+            if (env('APP_ENV') === 'local') {
+                $cookies = [Cookie::make('token', $jwt)];
+            }
 
 
             if ($user['name'] === '' || $user['email'] === '') {
-                Log::info('<<<<<<<<<<<<<< 7a');
                 return redirect()->away(env('DTA_URL') . '/account/profile')->withCookies($cookies);
             } else {
                 $redirectUrl = session('redirectUrl');
-                Log::info('<<<<<<<<<<<<<< 7b');
-                Log::info('<<<<<<<<<<<<<< 7b $redirectUrl'.$redirectUrl);
                 return redirect()->away(env('DTA_URL'))->withCookies($cookies);
             }
         } catch (Exception $e) {
-            Log::info('<<<<<<<<<<<<<< 2');
             Auditor::log([
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
@@ -396,11 +359,8 @@ class SocialLoginController extends Controller
      */
     public function callback(Request $request, string $provider): mixed
     {
-        return $this->handleCallback($request, $provider, env('GATEWAY_URL'), env('OPENATHENS_REDIRECT_URL'));
-    }
-    private function handleCallback(Request $request, string $provider, string $baseRedirectUrl, string $openAthensRedirectUrl): mixed
-    {
-
+        $baseRedirectUrl = env('GATEWAY_URL');
+        $openAthensRedirectUrl =  env('OPENATHENS_REDIRECT_URL');
         $user = null;
         try {
             if (strtolower($provider) === 'linkedin') {
@@ -490,6 +450,7 @@ class SocialLoginController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
     /**
      * Uniform response from Google
      *
