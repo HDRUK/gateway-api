@@ -225,18 +225,18 @@ class SocialLoginController extends Controller
         $openAthensRedirectUrl = env('OPENATHENS_REDIRECT_URL');
 
         $user = null;
-        $currentUrl = config("services.$provider.redirect");
-        Log::info('<<<<<<<<<<<<<< URL BEFORE CHANGE'.$currentUrl);
+        // $currentUrl = config("services.$provider.redirect");
+        // Log::info('<<<<<<<<<<<<<< URL BEFORE CHANGE'.$currentUrl);
 
 
         //$cbRedirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $cbRedirectUrl);
-        $cbRedirectUrl = 'https://api.dev.hdruk.cloud/api/v1/auth/dta/google/callback';
+        // $cbRedirectUrl = 'https://api.dev.hdruk.cloud/api/v1/auth/dta/google/callback';
 
-        config([
-            "services.$provider.redirect" => $cbRedirectUrl
-        ]);
-        $newURL = config("services.$provider.redirect");
-        Log::info('<<<<<<<<<<<<<< URL AFTER CHANGE'.$newURL);
+        // config([
+        //     "services.$provider.redirect" => $cbRedirectUrl
+        // ]);
+        $providerURL = config("services.$provider.redirect");
+        Log::info('<<<<<<<<<<<<<< providerURL from Config'.$providerURL);
         try {
             if (strtolower($provider) === 'linkedin') {
                 $provider = 'linkedin-openid';
