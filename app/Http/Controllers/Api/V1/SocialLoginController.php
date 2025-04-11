@@ -168,11 +168,11 @@ class SocialLoginController extends Controller
                 $provider = 'linkedin-openid';
             }
             if ($isDTA) {
-                $redirectUrl = config("services.$provider.redirect");
-                $redirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $redirectUrl);
-                // dd($isDTA);
+                //$cbRedirectUrl = config("services.$provider.redirect");
+                //$cbRedirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $cbRedirectUrl);
+                $cbRedirectUrl = 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback';
                 config([
-                    "services.$provider.redirect" => $redirectUrl
+                    "services.$provider.redirect" => $cbRedirectUrl
                 ]);
 
             }
@@ -266,11 +266,12 @@ class SocialLoginController extends Controller
 
         $user = null;
         if ($isDTA) {
-            $redirectUrl = config("services.$provider.redirect");
-            $redirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $redirectUrl);
+            //$cbRedirectUrl = config("services.$provider.redirect");
+            //$cbRedirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $cbRedirectUrl);
+            $cbRedirectUrl = 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback'
 
             config([
-                "services.$provider.redirect" => $redirectUrl
+                "services.$provider.redirect" => $cbRedirectUrl
             ]);
 
         }
@@ -344,19 +345,20 @@ class SocialLoginController extends Controller
                 'description' => 'User ' . $user->id . ' with login through ' . $user->provider . ' has been connected',
             ]);
 
-            //$cookies = [Cookie::make('token', $jwt)];
-            $cookieName = 'token';
-            $cookieValue = $jwt;
-            $cookieExpiration = 0;
-            $cookiePath = '/';
-            $cookieDomain = $isDTA ? 'dev.dementia-trials-accelerator.org' : null;
-            $cookieSecure = true;
-            $cookieHttpOnly = true;
+            $cookies = [Cookie::make('token', $jwt)];
 
-            $cookies = [Cookie::make($cookieName, $cookieValue, $cookieExpiration, $cookiePath, $cookieDomain, $cookieSecure, $cookieHttpOnly)];            // dd($cookies);
-            if ($isDTA) {
-                dd($cookies);
-            }
+            // $cookieName = 'token';
+            // $cookieValue = $jwt;
+            // $cookieExpiration = 0;
+            // $cookiePath = '/';
+            // $cookieDomain = $isDTA ? 'dev.dementia-trials-accelerator.org' : null;
+            // $cookieSecure = true;
+            // $cookieHttpOnly = true;
+
+            // $cookies = [Cookie::make($cookieName, $cookieValue, $cookieExpiration, $cookiePath, $cookieDomain, $cookieSecure, $cookieHttpOnly)];            // dd($cookies);
+            // if ($isDTA) {
+            //     dd($cookies);
+            // }
 
 
             if ($user['name'] === '' || $user['email'] === '') {
