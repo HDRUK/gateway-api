@@ -240,8 +240,8 @@ class SocialLoginController extends Controller
         // config([
         //     "services.$provider.redirect" => $cbRedirectUrl
         // ]);
-        $providerURL = config("services.$provider.redirect");
-        Log::info('<<<<<<<<<<<<<< providerURL from Config'.$providerURL);
+        // $providerURL = config("services.$provider.redirect");
+        // Log::info('<<<<<<<<<<<<<< providerURL from Config'.$providerURL);
         try {
             if (strtolower($provider) === 'linkedin') {
                 $provider = 'linkedin-openid';
@@ -281,15 +281,14 @@ class SocialLoginController extends Controller
             } else {
                 Log::info('<<<<<<<<<<<<<< 1');
                 $cbRedirectUrl = 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback';
-                // // Log::info('<<<<<<<<<<<<<<'.$cbRedirectUrl);
-
-                // config([
-                //     "services.$provider.redirect" => $cbRedirectUrl
-                // ]);
-
-                $socialUser = Socialite::driver($provider)
-                ->redirectUrl($cbRedirectUrl)
-                ->user();
+                try {
+                    $socialUser = Socialite::driver($provider)
+                        ->redirectUrl($cbRedirectUrl)
+                        ->user();
+                } catch (Exception $e) {
+                    Log::error('Socialite login failed: ' . $e->getMessage());
+                    throw new Exception($e->getMessage());
+                }
                 Log::info('<<<<<<<<<<<<<< 2');
                 $socialUserDetails = [];
                 switch (strtolower($provider)) {
@@ -350,6 +349,7 @@ class SocialLoginController extends Controller
                 return redirect()->away(env('DTA_URL'))->withCookies($cookies);
             }
         } catch (Exception $e) {
+            Log::info('<<<<<<<<<<<<<< 2');
             Auditor::log([
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
