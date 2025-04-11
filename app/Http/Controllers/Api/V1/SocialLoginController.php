@@ -324,20 +324,20 @@ class SocialLoginController extends Controller
                 'description' => 'User ' . $user->id . ' with login through ' . $user->provider . ' has been connected',
             ]);
 
-            $cookies = [Cookie::make('token', $jwt)];
+            // $cookies = [Cookie::make('token', $jwt)];
             Log::info('<<<<<<<<<<<<<< 6');
-            // $cookieName = 'token';
-            // $cookieValue = $jwt;
-            // $cookieExpiration = 0;
-            // $cookiePath = '/';
-            // $cookieDomain = $isDTA ? 'dev.dementia-trials-accelerator.org' : null;
-            // $cookieSecure = true;
-            // $cookieHttpOnly = true;
+            $cookieName = 'token';
+            $cookieValue = $jwt;
+            $cookieExpiration = 0;
+            $cookiePath = '/';
+            $cookieDomain = 'dev.dementia-trials-accelerator.org';
+            $cookieSecure = true;
+            $cookieHttpOnly = true;
 
-            // $cookies = [Cookie::make($cookieName, $cookieValue, $cookieExpiration, $cookiePath, $cookieDomain, $cookieSecure, $cookieHttpOnly)];            // dd($cookies);
-            // if ($isDTA) {
-            //     dd($cookies);
-            // }
+            $cookies = [Cookie::make($cookieName, $cookieValue, $cookieExpiration, $cookiePath, $cookieDomain, $cookieSecure, $cookieHttpOnly)];            // dd($cookies);
+            if ($isDTA) {
+                dd($cookies);
+            }
 
 
             if ($user['name'] === '' || $user['email'] === '') {
