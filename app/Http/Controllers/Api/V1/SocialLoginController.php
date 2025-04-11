@@ -170,13 +170,13 @@ class SocialLoginController extends Controller
             }
             if ($isDTA) {
                 $cbRedirectUrl = config("services.$provider.redirect");
-                //$cbRedirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $cbRedirectUrl);
-                //$cbRedirectUrl = 'https://api.dev.hdruk.cloud/api/v1/auth/dta/google/callback';
+                $cbRedirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $cbRedirectUrl);
+                $cbRedirectUrl = 'https://api.dev.dementia-trials-accelerator.org/api/v1/auth/dta/google/callback';
                 Log::info('<<<<<<<<<<<<<<'.$cbRedirectUrl);
 
-                // config([
-                //     "services.$provider.redirect" => $cbRedirectUrl
-                // ]);
+                config([
+                    "services.$provider.redirect" => $cbRedirectUrl
+                ]);
 
             }
             return Socialite::driver($provider)->redirect();
@@ -222,7 +222,128 @@ class SocialLoginController extends Controller
          */
     public function dtaCallback(Request $request, string $provider): mixed
     {
-        return $this->handleCallback($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_URL'), true);
+        $openAthensRedirectUrl = env('OPENATHENS_REDIRECT_URL');
+
+        $user = null;
+        $currentUrl = config("services.$provider.redirect");
+        Log::info('<<<<<<<<<<<<<< URL BEFORE CHANGE'.$currentUrl);
+
+
+        //$cbRedirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $cbRedirectUrl);
+        $cbRedirectUrl = 'https://api.dev.hdruk.cloud/api/v1/auth/dta/google/callback';
+
+        config([
+            "services.$provider.redirect" => $cbRedirectUrl
+        ]);
+        $newURL = config("services.$provider.redirect");
+        Log::info('<<<<<<<<<<<<<< URL AFTER CHANGE'.$newURL);
+        try {
+            if (strtolower($provider) === 'linkedin') {
+                $provider = 'linkedin-openid';
+            }
+            if (strtolower($provider) === 'openathens') {
+                $provider = 'open-athens';
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+                $input = $request->all();
+                $code = array_key_exists('code', $input) ? $input['code'] : '';
+                $_REQUEST['code'] = $code;
+                $state = array_key_exists('state', $input) ? $input['state'] : '';
+                $_REQUEST['state'] = $state;
+                $_SESSION['openid_connect_state'] = $state;
+
+                $oidc = new OpenIDConnectClient(
+                    Config::get('services.openathens.issuer'),
+                    Config::get('services.openathens.client_id'),
+                    Config::get('services.openathens.client_secret')
+                );
+                $oidc->providerConfigParam([
+                    'authorization_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/auth',
+                    'jwks_uri' => env('OPENATHENS_ISSUER_URL') . '/oidc/jwks',
+                    'token_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/token',
+                    'userinfo_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/userinfo',
+                ]);
+
+                $oidc->setRedirectUrl($openAthensRedirectUrl);
+                $oidc->authenticate();
+
+                $response = $oidc->requestUserInfo();
+                $socialUser = json_decode(json_encode($response), true);
+                $socialUserDetails = $this->openathensResponse($socialUser, $provider);
+
+                $user = User::where('providerid', $socialUserDetails['providerid'])->first();
+            } else {
+                Log::info('<<<<<<<<<<<<<< 1');
+                $socialUser = Socialite::driver($provider)->user();
+                Log::info('<<<<<<<<<<<<<< 2');
+                $socialUserDetails = [];
+                switch (strtolower($provider)) {
+                    case 'google':
+                        $socialUserDetails = $this->googleResponse($socialUser, $provider);
+                        Log::info('<<<<<<<<<<<<<< 3');
+                        break;
+
+                    case 'linkedin-openid':
+                        $socialUserDetails = $this->linkedinOpenIdResponse($socialUser, $provider);
+                        break;
+                    case 'azure':
+                        $socialUserDetails = $this->azureResponse($socialUser, $provider);
+                        break;
+                }
+                $user = User::where('email', $socialUserDetails['email'])->first();
+                Log::info('<<<<<<<<<<<<<< 4');
+            }
+
+            if (!$user) {
+                $user = $this->saveUser($socialUserDetails, $provider);
+            } else {
+                $user = $this->updateUser($user, $socialUserDetails, $provider);
+            }
+
+            $jwt = $this->createJwt($user);
+            Log::info('<<<<<<<<<<<<<< 5');
+            Auditor::log([
+                'target_user_id' => $user->id,
+                'action_type' => 'LOGIN',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'User ' . $user->id . ' with login through ' . $user->provider . ' has been connected',
+            ]);
+
+            $cookies = [Cookie::make('token', $jwt)];
+            Log::info('<<<<<<<<<<<<<< 6');
+            // $cookieName = 'token';
+            // $cookieValue = $jwt;
+            // $cookieExpiration = 0;
+            // $cookiePath = '/';
+            // $cookieDomain = $isDTA ? 'dev.dementia-trials-accelerator.org' : null;
+            // $cookieSecure = true;
+            // $cookieHttpOnly = true;
+
+            // $cookies = [Cookie::make($cookieName, $cookieValue, $cookieExpiration, $cookiePath, $cookieDomain, $cookieSecure, $cookieHttpOnly)];            // dd($cookies);
+            // if ($isDTA) {
+            //     dd($cookies);
+            // }
+
+
+            if ($user['name'] === '' || $user['email'] === '') {
+                Log::info('<<<<<<<<<<<<<< 7a');
+                return redirect()->away(env('DTA_URL') . '/account/profile')->withCookies($cookies);
+            } else {
+                $redirectUrl = session('redirectUrl');
+                Log::info('<<<<<<<<<<<<<< 7b');
+                Log::info('<<<<<<<<<<<<<< 7b $redirectUrl'.$redirectUrl);
+                return redirect()->away(env('DTA_URL'))->withCookies($cookies);
+            }
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -262,22 +383,12 @@ class SocialLoginController extends Controller
      */
     public function callback(Request $request, string $provider): mixed
     {
-        return $this->handleCallback($request, $provider, env('GATEWAY_URL'), env('OPENATHENS_REDIRECT_URL'), false);
+        return $this->handleCallback($request, $provider, env('GATEWAY_URL'), env('OPENATHENS_REDIRECT_URL'));
     }
-    private function handleCallback(Request $request, string $provider, string $baseRedirectUrl, string $openAthensRedirectUrl, $isDTA): mixed
+    private function handleCallback(Request $request, string $provider, string $baseRedirectUrl, string $openAthensRedirectUrl): mixed
     {
 
         $user = null;
-        if ($isDTA) {
-            //$cbRedirectUrl = config("services.$provider.redirect");
-            $cbRedirectUrl = str_replace('/api/v1/auth', '/api/v1/auth/dta', $cbRedirectUrl);
-            //$cbRedirectUrl = 'https://api.dev.hdruk.cloud/api/v1/auth/dta/google/callback';
-            Log::info('<<<<<<<<<<<<<<'.$cbRedirectUrl);
-            // config([
-            //     "services.$provider.redirect" => $cbRedirectUrl
-            // ]);
-
-        }
         try {
             if (strtolower($provider) === 'linkedin') {
                 $provider = 'linkedin-openid';
@@ -349,20 +460,6 @@ class SocialLoginController extends Controller
             ]);
 
             $cookies = [Cookie::make('token', $jwt)];
-
-            // $cookieName = 'token';
-            // $cookieValue = $jwt;
-            // $cookieExpiration = 0;
-            // $cookiePath = '/';
-            // $cookieDomain = $isDTA ? 'dev.dementia-trials-accelerator.org' : null;
-            // $cookieSecure = true;
-            // $cookieHttpOnly = true;
-
-            // $cookies = [Cookie::make($cookieName, $cookieValue, $cookieExpiration, $cookiePath, $cookieDomain, $cookieSecure, $cookieHttpOnly)];            // dd($cookies);
-            // if ($isDTA) {
-            //     dd($cookies);
-            // }
-
 
             if ($user['name'] === '' || $user['email'] === '') {
                 return redirect()->away($baseRedirectUrl . '/account/profile')->withCookies($cookies);
