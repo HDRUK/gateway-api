@@ -4,11 +4,9 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use Tests\Traits\Authorization;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ValidationTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
 
     public const TEST_URL = '/api/v1/features';

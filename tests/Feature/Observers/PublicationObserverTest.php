@@ -11,11 +11,9 @@ use Tests\Traits\MockExternalApis;
 use App\Observers\PublicationObserver;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class PublicationObserverTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

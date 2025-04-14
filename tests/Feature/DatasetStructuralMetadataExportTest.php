@@ -10,11 +10,9 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use Database\Seeders\SpatialCoverageSeeder;
 use App\Exports\DatasetStructuralMetadataExport;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetStructuralMetadataExportTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

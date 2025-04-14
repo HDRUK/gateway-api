@@ -10,11 +10,9 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EmailServiceTest extends TestCase
 {
-    use RefreshDatabase;
     use WithFaker;
 
     public function setUp(): void

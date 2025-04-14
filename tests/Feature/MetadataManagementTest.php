@@ -11,11 +11,9 @@ use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class MetadataManagementTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

@@ -32,13 +32,11 @@ use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
 use Database\Seeders\DatasetVersionHasToolSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\DatasetVersionHasDatasetVersionSeeder;
 
 class SearchTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

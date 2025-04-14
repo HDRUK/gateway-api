@@ -11,12 +11,10 @@ use App\Models\Dataset;
 use App\Models\Team;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use MetadataManagementController as MMC;
 
 class TeamTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

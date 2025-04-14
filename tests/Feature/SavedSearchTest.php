@@ -9,11 +9,9 @@ use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SavedSearchSeeder;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SavedSearchTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

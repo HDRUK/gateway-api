@@ -335,7 +335,7 @@ class DataAccessApplicationController extends Controller
         try {
             $file = Upload::where('id', $fileId)->first();
 
-            Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
+            Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '_scanned')
                 ->delete($file->file_location);
 
             $file->delete();

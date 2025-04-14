@@ -23,12 +23,9 @@ use Database\Seeders\EnquiryMessageSeeder;
 use Database\Seeders\TeamUserHasRoleSeeder;
 use App\Exceptions\AliasReplyScannerException;
 use Webklex\PHPIMAP\Support\MessageCollection;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AliasReplyScannerTest extends TestCase
 {
-    use RefreshDatabase;
-
     use MockExternalApis {
         setUp as commonSetUp;
     }

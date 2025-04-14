@@ -8,11 +8,9 @@ use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\TypeCategorySeeder;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class TypeCategoryTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

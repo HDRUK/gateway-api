@@ -7,11 +7,9 @@ use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class LicenseTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

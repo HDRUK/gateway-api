@@ -6,12 +6,9 @@ use App\Models\License;
 use Tests\TestCase;
 use Database\Seeders\LicenseSeeder;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class UpdateLicensesTest extends TestCase
 {
-    use RefreshDatabase;
-
     public function setUp(): void
     {
         parent::setUp();

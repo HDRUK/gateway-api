@@ -4,16 +4,16 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use App\Models\User;
+use Tests\Traits\MockExternalApis;
+use Database\Seeders\ActivityLogSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ActivityLogTypeSeeder;
 use Database\Seeders\ActivityLogUserTypeSeeder;
-use Database\Seeders\ActivityLogSeeder;
-use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ActivityLogTest extends TestCase
 {
-    use RefreshDatabase;
+    //
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -26,12 +26,12 @@ class ActivityLogTest extends TestCase
     {
         $this->commonSetUp();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            ActivityLogTypeSeeder::class,
-            ActivityLogUserTypeSeeder::class,
-            ActivityLogSeeder::class,
-        ]);
+        // $this->seed([
+        //     MinimalUserSeeder::class,
+        //     ActivityLogTypeSeeder::class,
+        //     ActivityLogUserTypeSeeder::class,
+        //     ActivityLogSeeder::class,
+        // ]);
     }
 
     /**
@@ -83,6 +83,10 @@ class ActivityLogTest extends TestCase
      */
     public function test_the_application_can_list_a_single_activity_log()
     {
+        $userNotificationId = User::all()->random()->id;
+        $userNotificationId = User::all()->random()->id;
+        $userId = User::all()->random()->id;
+
         $response = $this->json(
             'POST',
             'api/v1/activity_logs',
@@ -90,7 +94,7 @@ class ActivityLogTest extends TestCase
                 'event_type' => 'test_case',
                 'user_type_id' => 1,
                 'log_type_id' => 1,
-                'user_id' => 1,
+                'user_id' => $userId,
                 'version' => '2.1.0',
                 'html' => '<b>something</b>',
                 'plain_text' => 'something',

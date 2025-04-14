@@ -8,11 +8,9 @@ use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProgrammingLanguageTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

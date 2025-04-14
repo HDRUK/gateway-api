@@ -21,11 +21,9 @@ use Database\Seeders\SpatialCoverageSeeder;
 use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\QuestionBankSeeder;
 use Database\Seeders\DataAccessApplicationSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class UploadTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

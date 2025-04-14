@@ -15,12 +15,10 @@ use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
 use App\Models\PublicationHasDatasetVersion;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Observers\PublicationHasDatasetVersionObserver;
 
 class PublicationHasDatasetVersionObserverTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

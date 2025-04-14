@@ -12,12 +12,10 @@ use App\Models\ApplicationHasPermission;
 use Database\Seeders\DarIntegrationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ApplicationSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Traits\MockExternalApis;
 
 class DarIntegrationTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }

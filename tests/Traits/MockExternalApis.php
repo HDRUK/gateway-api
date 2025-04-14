@@ -5,17 +5,19 @@ namespace Tests\Traits;
 use Config;
 use Http\Mock\Client;
 use Nyholm\Psr7\Response;
-use Database\Seeders\SectorSeeder;
-use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
-use Illuminate\Support\Facades\Queue;
+use App\Jobs\LinkageExtraction;
+use Database\Seeders\SectorSeeder;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use MetadataManagementController as MMC;
 
 trait MockExternalApis
 {
     use Authorization;
+    use RefreshDatabaseLite;
+
     private $dataset = null;
     private $datasetUpdate = null;
     protected $header = [];
@@ -74,6 +76,7 @@ trait MockExternalApis
     public function setUp(): void
     {
         parent::setUp();
+        $this->liteSetUp();
 
         $this->seed([
             SectorSeeder::class,
