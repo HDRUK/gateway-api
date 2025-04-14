@@ -26,10 +26,7 @@ class UpdateFiltersDatasetGat6395 extends Command
      */
     public function handle()
     {
-        Filter::updateOrCreate([
-            'type' => 'dataset',
-            'keys' => 'isCohortDiscovery',
-        ], [
+        Filter::firstOrCreate([
             'type' => 'dataset',
             'keys' => 'isCohortDiscovery',
         ]);
