@@ -21,14 +21,14 @@ class AddDataProviderNetwork extends Command
      *
      * @var string
      */
-    protected $description = 'Data Provider Network for import, based on file "../storage/migration_files/data_provider_networkv3.csv"';
+    protected $description = 'Data Provider Network for import, based on file "../storage/migration_files/data_provider_networkv3-Introduction.csv"';
 
     private $csvData = [];
 
     public function __construct()
     {
         parent::__construct();
-        $this->readMigrationFile(storage_path() . '/migration_files/data_provider_networkv3.csv');
+        $this->readMigrationFile(storage_path() . '/migration_files/data_provider_networkv3-Introduction.csv');
     }
 
     /**
@@ -36,7 +36,7 @@ class AddDataProviderNetwork extends Command
      */
     public function handle()
     {
-        $askDataProviderNetwork = $this->ask('Data Provider Network for import, based on file "../storage/migration_files/data_provider_networkv3.csv"? [default value all]', 'all');
+        $askDataProviderNetwork = $this->ask('Data Provider Network for import, based on file "../storage/migration_files/data_provider_networkv3-Introduction.csv"? [default value all]', 'all');
         $askInitDataProviderNetwork = $this->ask('Do you want to initialize the database for "Data Provider Network"? yes/no [default value no]', 'no');
 
         if ($askInitDataProviderNetwork === 'yes') {
@@ -50,8 +50,9 @@ class AddDataProviderNetwork extends Command
             foreach ($csvData as $item) {
                 $teamName = strtoupper(trim($item['Data provider/Team']));
                 $dataProviderName = strtoupper(trim($item['Data provider network']));
+                $dataProviderSummary = htmlentities(trim($item['Summary']));
 
-                $return = $this->dataProviderNetworkTeam($dataProviderName, $teamName);
+                $return = $this->dataProviderNetworkTeam($dataProviderName, $teamName, $dataProviderSummary);
                 if (!$return) {
                     continue;
                 }
@@ -64,13 +65,14 @@ class AddDataProviderNetwork extends Command
             foreach ($csvData as $item) {
                 $teamName = strtoupper(trim($item['Data provider/Team']));
                 $dataProviderName = strtoupper(trim($item['Data provider network']));
+                $dataProviderSummary = strtoupper(trim($item['Summary']));
 
                 if ($inputDataProviderName !== $dataProviderName) {
                     echo 'Found Data Provider Network name ' . $dataProviderName . '. skipping ...' . PHP_EOL;
                     continue;
                 }
 
-                $return = $this->dataProviderNetworkTeam($dataProviderName, $teamName);
+                $return = $this->dataProviderNetworkTeam($dataProviderName, $teamName, $dataProviderSummary);
                 if (!$return) {
                     continue;
                 }
@@ -78,7 +80,7 @@ class AddDataProviderNetwork extends Command
         }
     }
 
-    private function dataProviderNetworkTeam(string $dataProviderNetworkName, string $teamName): bool
+    private function dataProviderNetworkTeam(string $dataProviderNetworkName, string $teamName, string $dataProviderSummary = null): bool
     {
         // check in teams
         $team = Team::where('name', $teamName)->first();
@@ -94,6 +96,7 @@ class AddDataProviderNetwork extends Command
                 'name' => $dataProviderNetworkName,
                 'enabled' => 1,
                 'img_url' => null,
+                'summary' => $dataProviderSummary,
             ]);
 
             echo 'Data Provider network with name ' . $dataProviderNetworkName . ' was created.' . PHP_EOL;
