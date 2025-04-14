@@ -1352,20 +1352,24 @@ class UserDataAccessApplicationController extends Controller
 
     private function isFileAnswer(array | string $answer): array
     {
-        if (isset($answer['value']['filename'])) {
-            return [
-                'is_file' => true,
-                'multifile' => false,
-            ];
-        } elseif (isset($answer['value']) && is_array($answer['value'])) {
-            $result = isset($answer['value'][0]['filename']) ? ['is_file' => true, 'multifile' => true] : ['is_file' => false, 'multifile' => false];
-            return $result;
-        } else {
-            return [
-                'is_file' => false,
-                'multifile' => false,
-            ];
+        $isFile = false;
+        $isMulti = false;
+
+        if (isset($answer['value']) && is_array($answer['value'])) {
+            if (isset($answer['value']['filename'])) {
+                $isFile = true;
+            }
+
+            if (isset($answer['value'][0]['filename'])) {
+                $isFile = true;
+                $isMulti = true;
+            }
         }
+
+        return [
+            'is_file' => $isFile,
+            'multifile' => $isMulti,
+        ];
     }
 
 }
