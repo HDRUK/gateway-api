@@ -1132,6 +1132,30 @@ class UserDataAccessApplicationController extends Controller
                 throw new Exception('Files cannot be deleted after a data access request has been submitted.');
             }
 
+            $answers = DataAccessApplicationAnswer::where('application_id', $id)->get();
+
+            foreach ($answers as $k => $answer) {
+                $isFileAnswer = $this->isFileAnswer($answer->answer);
+                if (!$isFileAnswer['is_file']) {
+                    continue;
+                }
+                if ($isFileAnswer['multifile']) {
+                    $value = $answer->answer['value'];
+                    foreach ($value as $i => $a) {
+                        if ($a['id'] === $fileId) {
+                            unset($value[$i]);
+                            DataAccessApplicationAnswer::findOrFail($answer->id)->update([
+                                'answer' => ['value' => $value]
+                            ]);
+                        }
+                    }
+                } else {
+                    if ($answer->answer['value']['id'] === $fileId) {
+                        DataAccessApplicationAnswer::where('id', $answer->id)->delete();
+                    }
+                }
+            }
+
             $file = Upload::where('id', $fileId)->first();
 
             Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
@@ -1324,6 +1348,24 @@ class UserDataAccessApplicationController extends Controller
         }
 
         return $formatted;
+    }
+
+    private function isFileAnswer(array | string $answer): array
+    {
+        if (isset($answer['value']['filename'])) {
+            return [
+                'is_file' => true,
+                'multifile' => false,
+            ];
+        } elseif (isset($answer['value']) && is_array($answer['value'])) {
+            $result = isset($answer['value'][0]['filename']) ? ['is_file' => true, 'multifile' => true] : ['is_file' => false, 'multifile' => false];
+            return $result;
+        } else {
+            return [
+                'is_file' => false,
+                'multifile' => false,
+            ];
+        }
     }
 
 }
