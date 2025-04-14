@@ -134,6 +134,7 @@ class CollectionController extends Controller
             $name = $request->query('name', null);
             $filterTitle = $request->query('title', null);
             $filterStatus = $request->query('status', null);
+            $teamId = $request->query('team_id', null);
 
             $teamId = $request->query('team_id', null);
             $userId = $request->query('user_id', null);
@@ -145,6 +146,9 @@ class CollectionController extends Controller
 
             $collections = Collection::when($name, function ($query) use ($name) {
                 return $query->where('name', 'LIKE', '%' . $name . '%');
+            })
+            ->when($teamId, function ($query) use ($teamId) {
+                return $query->where('team_id', $teamId);
             })
             ->when(
                 $filterStatus,
