@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Http;
 
 class HubspotTest extends TestCase
 {
-    protected function setUp(): void
+    public function setUp(): void
     {
         parent::setUp();
 

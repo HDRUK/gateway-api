@@ -18,6 +18,14 @@ class CollectionHasUserSeeder extends Seeder
 
         foreach ($collections as $collection) {
             $userId = User::all()->random()->id;
+            $exists = CollectionHasUser::where([
+                'collection_id' => $collection->id,
+                'user_id' => $userId,
+            ])->first();
+
+            if (!is_null($exists)) {
+                continue;
+            }
 
             CollectionHasUser::create([
                 'collection_id' => $collection->id,

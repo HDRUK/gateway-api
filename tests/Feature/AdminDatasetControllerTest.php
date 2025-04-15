@@ -21,14 +21,14 @@ class AdminDatasetControllerTest extends TestCase
     }
     public const TEST_URL_DATASET = '/api/v1/datasets/admin_ctrl';
 
-    protected function setUp(): void
+    public function setUp(): void
     {
         $this->commonSetUp();
-        $this->seed([
-            MinimalUserSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-        ]);
+        // $this->seed([
+        //     MinimalUserSeeder::class,
+        //     DatasetSeeder::class,
+        //     DatasetVersionSeeder::class,
+        // ]);
     }
 
     public function testTriggerTermExtractionWithDefaults()

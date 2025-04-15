@@ -7,7 +7,6 @@ use Http\Mock\Client;
 use Nyholm\Psr7\Response;
 use App\Jobs\TermExtraction;
 use App\Jobs\LinkageExtraction;
-use Database\Seeders\SectorSeeder;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
@@ -16,7 +15,7 @@ use MetadataManagementController as MMC;
 trait MockExternalApis
 {
     use Authorization;
-    use RefreshDatabaseLite;
+    use RunMigrationOnce;
 
     private $dataset = null;
     private $datasetUpdate = null;
@@ -76,11 +75,7 @@ trait MockExternalApis
     public function setUp(): void
     {
         parent::setUp();
-        $this->liteSetUp();
-
-        $this->seed([
-            SectorSeeder::class,
-        ]);
+        // $this->runMigrationsOnce();
 
         Queue::fake([
             LinkageExtraction::class,
