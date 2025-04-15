@@ -5,7 +5,7 @@
             "subSections": [
                   {
                         "name": "Invoice contact",
-                        "description": "",
+                        "description": "Some custodians will only process Data Access Requests which include contact details for the invoice contact and the Data Sharing Agreement contact. If these questions are visible, it means that you have selected datasets from custodians who require this information. These contacts will only be approached if your application is approved.",
                         "sub_section": "additionalinfo",
                         "questions": [
                               {
@@ -156,7 +156,7 @@
                   },
                   {
                         "name": "Data Sharing Agreement signatory",
-                        "description": "",
+                        "description": "Some custodians will only process Data Access Requests which include contact details for the invoice contact and the Data Sharing Agreement contact. If these questions are visible, it means that you have selected datasets from custodians who require this information. These contacts will only be approached if your application is approved.",
                         "sub_section": "additionalinfo",
                         "questions": [
                               {
