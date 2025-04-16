@@ -13,7 +13,6 @@ trait RunMigrationOnce
 
     public function runMigrationsOnce(): void
     {
-        var_dump(static::$migrated);
         if (!static::$migrated) {
             Artisan::call('migrate:fresh');
             $this->disableObservers();
@@ -34,6 +33,7 @@ trait RunMigrationOnce
             'Database\\Seeders\\ActivityLogTypeSeeder',
             'Database\\Seeders\\ActivityLogUserTypeSeeder',
             'Database\\Seeders\\ActivityLogSeeder',
+            'Database\\Seeders\\AuditLogSeeder',
             'Database\\Seeders\\SpatialCoverageSeeder',
             'Database\\Seeders\\SectorSeeder',
             'Database\\Seeders\\CategorySeeder',
@@ -57,6 +57,7 @@ trait RunMigrationOnce
             'Database\\Seeders\\PublicationHasDatasetVersionSeeder',
             'Database\\Seeders\\CollectionHasPublicationSeeder',
             'Database\\Seeders\\CollectionHasUserSeeder',
+            'Database\\Seeders\\EmailTemplateSeeder',
         ];
 
         foreach ($seeders as $seederClass) {

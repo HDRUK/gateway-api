@@ -8,16 +8,16 @@ use Tests\Traits\MockExternalApis;
 
 class ActivityLogTypeTest extends TestCase
 {
-    use MockExternalApis {
-        setUp as commonSetUp;
-    }
+    // use MockExternalApis {
+    //     setUp as commonSetUp;
+    // }
 
     protected $header = [];
 
-    public function setUp(): void
-    {
-        $this->commonSetUp();
-    }
+    // public function setUp(): void
+    // {
+    //     $this->commonSetUp();
+    // }
 
     /**
      * List all ActivityLogType

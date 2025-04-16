@@ -4,27 +4,10 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\CategorySeeder;
-use Tests\Traits\MockExternalApis;
 
 class CategoryTest extends TestCase
 {
-    use MockExternalApis {
-        setUp as commonSetUp;
-    }
-
     protected $header = [];
-
-    public function setUp(): void
-    {
-        $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            CategorySeeder::class,
-        ]);
-    }
 
     /**
      * List all categories.
@@ -59,7 +42,6 @@ class CategoryTest extends TestCase
                 'to',
                 'total',
             ]);
-
     }
 
     /**
@@ -100,7 +82,6 @@ class CategoryTest extends TestCase
                     ]
                 ],
             ]);
-
     }
 
     /**

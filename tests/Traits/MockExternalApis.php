@@ -72,9 +72,9 @@ trait MockExternalApis
         return $json;
     }
 
-    public function setUp(): void
+    public function commonSetUp(): void
     {
-        parent::setUp();
+        // parent::setUp();
         // $this->runMigrationsOnce();
 
         Queue::fake([

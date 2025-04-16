@@ -4,29 +4,12 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\AuditLogSeeder;
-use Tests\Traits\MockExternalApis;
 
 class AuditLogTest extends TestCase
 {
-    use MockExternalApis {
-        setUp as commonSetUp;
-    }
-
     public const TEST_URL = '/api/v1/audit_logs';
 
     protected $header = [];
-
-    public function setUp(): void
-    {
-        $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            AuditLogSeeder::class,
-        ]);
-    }
 
     /**
      * List all AuditLog's

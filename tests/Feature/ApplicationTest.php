@@ -5,38 +5,16 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Application;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\ApplicationSeeder;
-use Tests\Traits\MockExternalApis;
 use App\Http\Traits\IntegrationOverride;
-use Database\Seeders\EmailTemplateSeeder;
 
 class ApplicationTest extends TestCase
 {
     use IntegrationOverride;
-    use MockExternalApis {
-        setUp as commonSetUp;
-    }
 
     public const TEST_URL = '/api/v1/applications';
 
     protected $header = [];
 
-    /**
-     * Set up the database
-     *
-     * @return void
-     */
-    public function setUp(): void
-    {
-        $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            ApplicationSeeder::class,
-            EmailTemplateSeeder::class,
-        ]);
-    }
 
     public function test_get_all_applications_with_success(): void
     {

@@ -13,28 +13,18 @@ class AuthTest extends TestCase
     public const TEST_URL_AUTH = '/api/v1/auth';
 
     /**
-     * Set up the database
-     *
-     * @return void
-     */
-    public function setUp(): void
-    {
-        parent::setUp();
-
-        $this->user = [
-            'name' => Config::get('constants.test.user.name'),
-            'email' => Config::get('constants.test.user.email'),
-            'password' => Config::get('constants.test.user.password'),
-        ];
-    }
-
-    /**
      * Test authorization with success
      *
      * @return void
      */
     public function test_authorization_with_success(): void
     {
+        $this->user = [
+            'name' => Config::get('constants.test.user.name'),
+            'email' => Config::get('constants.test.user.email'),
+            'password' => Config::get('constants.test.user.password'),
+        ];
+
         $this->authorisationUser();
 
         $response = $this->json(
@@ -59,6 +49,12 @@ class AuthTest extends TestCase
      */
     public function test_authorization_generate_exception(): void
     {
+        $this->user = [
+            'name' => Config::get('constants.test.user.name'),
+            'email' => Config::get('constants.test.user.email'),
+            'password' => Config::get('constants.test.user.password'),
+        ];
+
         $this->authorisationUser();
 
         $response = $this->json(

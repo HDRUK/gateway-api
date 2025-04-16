@@ -11,18 +11,18 @@ use Tests\Traits\MockExternalApis;
 
 class ActivityLogTest extends TestCase
 {
-    use MockExternalApis {
-        setUp as commonSetUp;
-    }
+    // use MockExternalApis {
+    //     setUp as commonSetUp;
+    // }
 
     public const TEST_URL = '/api/v1/users';
 
     protected $header = [];
 
-    public function setUp(): void
-    {
-        $this->commonSetUp();
-    }
+    // public function setUp(): void
+    // {
+    //     $this->commonSetUp();
+    // }
 
     /**
      * List all ActivityLogs

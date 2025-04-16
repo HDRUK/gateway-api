@@ -6,30 +6,13 @@ use App\Models\Dataset;
 use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
 use Tests\Traits\Authorization;
-use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\MinimalUserSeeder;
 
 class AdminDatasetControllerTest extends TestCase
 {
     use Authorization;
-    use MockExternalApis {
-        setUp as commonSetUp;
-    }
     public const TEST_URL_DATASET = '/api/v1/datasets/admin_ctrl';
-
-    public function setUp(): void
-    {
-        $this->commonSetUp();
-        // $this->seed([
-        //     MinimalUserSeeder::class,
-        //     DatasetSeeder::class,
-        //     DatasetVersionSeeder::class,
-        // ]);
-    }
 
     public function testTriggerTermExtractionWithDefaults()
     {

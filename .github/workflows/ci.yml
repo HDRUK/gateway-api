@@ -1,5 +1,6 @@
 name: Run quality checks
 run-name: ${{ github.actor }} triggered quality check pipeline
+
 on:
   push:
     branches:
@@ -18,52 +19,108 @@ env:
 
 jobs:
   test:
-    timeout-minutes: 30
+    name: Run Tests (MySQL)
     runs-on: ubuntu-latest
     environment: |-
-      ${{
+      ${{ 
          github.ref_name == 'dev' && 'dev'
       || github.base_ref == 'dev' && 'dev'
       ||                             'release'
       }}
 
+    # The "services" section spins up a MySQL container.
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: test    # The DB name you want to test with
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306
+        # healthcheck is optional but recommended
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
 
     steps:
     - name: Checkout
-      id: checkout
       uses: actions/checkout@v4
 
-    - name: Setup PHP with PECL extension
+    - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.3'
 
+    # Configure Laravel's env for tests
+    - name: Create .env.testing
+      run: |
+        cat <<EOF > .env.testing
+        APP_NAME=Testing
+        APP_ENV=testing
+        APP_KEY=base64:I9IIGKOLEXaZXIW2FrRe+XgfQPZEP/krNNIX1X86mCs=
+        APP_DEBUG=true
+
+        DB_CONNECTION=mysql
+        DB_HOST=127.0.0.1
+        DB_PORT=${{ job.services.mysql.ports[3306] }}
+        DB_DATABASE=test
+        DB_USERNAME=root
+        DB_PASSWORD=root
+
+        APP_LOCALE=en
+        APP_FALLBACK_LOCALE=en
+        APP_FAKER_LOCALE=en_US
+
+        APP_MAINTENANCE_DRIVER=file
+
+        PHP_CLI_SERVER_WORKERS=4
+
+        BCRYPT_ROUNDS=12
+
+        CACHE_DRIVER=array
+
+        LOG_CHANNEL=single
+        LOG_DEPRECATIONS_CHANNEL=null
+        LOG_LEVEL=debug
+        LOG_SQL=false
+
+        MAIL_MAILER=log
+        QUEUE_CONNECTION=sync
+        SESSION_DRIVER=array
+        TELESCOPE_ENABLED=false
+        GOOGLE_CLOUD_LOGGING_ENABLED=false
+        GOOGLE_CLOUD_PUBSUB_ENABLED=false
+        MEDIA_URL=http://media.url
+        JWT_SECRET=7DgKgfVvocDNrVzxXJPR3fkJuplN0PsIQ4PInjjbAEHRDmFLxwpHbvCbLPPtisiM
+        JWT_EXPIRATION=86400
+
+        # any additional environment variables you need
+        EOF
+
     - name: Composer install
-      id: composerinstall
-      run: "composer install"
+      run: composer install
+
+    - name: Run migrations
+      # If you need to run migrations before testing
+      run: php artisan migrate --env=testing --force
 
     - name: Run static analysis
-      id: composerphpstan
-      run: "composer run phpstan"
+      run: composer run phpstan
 
-    - name: Run unit tests
-      id: unittests
-      run: "composer run pest"
-  
-    # - name: Run one unit test file
-    #   id: unittests
-    #   run: "composer run pest -- --filter test_data_provider_colls_search_with_success"
+    - name: Run Pest tests
+      # If you’re using Pest
+      run: composer run pest -- --env=testing
 
     - name: Run code sniffer
-      id: codesniffer
-      run: "composer run phpcs"
+      run: composer run phpcs
 
     - name: Run Notification
-      id: runnotificationsent
       uses: act10ns/slack@v1
       with:
         status: ${{ job.status }}
         steps: ${{ toJson(steps) }}
         channel: ${{ env.SLACK_CHANNEL }}
-        message: Running CI tests on {{ env.GITHUB_REF_NAME }} branch ${{ job.status }}
+        message: Running CI tests on ${{ env.GITHUB_REF_NAME }} branch ${{ job.status }}
       if: always()
