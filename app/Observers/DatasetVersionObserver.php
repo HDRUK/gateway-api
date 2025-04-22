@@ -62,12 +62,16 @@ class DatasetVersionObserver
             'status' => Dataset::STATUS_ACTIVE,
         ])->select('id', 'status')->first();
 
+        if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE && $datasetVersion->active_date === null) {
+            $datasetVersion->active_date = now();
+            $datasetVersion->save();
+        }
+
         if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
             $this->reindexElastic($dataset->id);
             if ($dataset->team_id) {
                 $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
             }
-
         }
     }
 }

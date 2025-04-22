@@ -993,15 +993,25 @@ class UserDataAccessApplicationController extends Controller
 
             $status = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status')) ? 'DRAFT' : 'SUBMITTED';
             $newStatus = $input['submission_status'] ?? null;
+            $preApproval = empty(array_filter(array_column($application['teams']->toArray(), 'approval_status')));
 
-            if (($newStatus === 'SUBMITTED') && ($status != 'SUBMITTED')) {
+            if (!is_null($newStatus)) {
                 $thd = TeamHasDataAccessApplication::where([
                     'dar_application_id' => $id
                 ])->get();
-                foreach ($thd as $t) {
-                    $t->update(['submission_status' => $newStatus]);
+
+                if (($newStatus === 'SUBMITTED') && ($status !== 'SUBMITTED')) {
+                    foreach ($thd as $t) {
+                        $t->update(['submission_status' => $newStatus]);
+                    }
+                    $this->emailSubmissionNotification($id, $userId, $application);
+                } elseif (($newStatus === 'DRAFT') && $preApproval) {
+                    foreach ($thd as $t) {
+                        $t->update(['submission_status' => $newStatus]);
+                    }
+                } else {
+                    throw new Exception('The status of this data access request cannot be updated from ' . $status . ' to ' . $newStatus);
                 }
-                $this->emailSubmissionNotification($id, $userId, $application);
             }
 
             $this->editDataAccessApplication($application, $input);
@@ -1120,6 +1130,30 @@ class UserDataAccessApplicationController extends Controller
             $status = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status')) ? 'DRAFT' : 'SUBMITTED';
             if ($status === 'SUBMITTED') {
                 throw new Exception('Files cannot be deleted after a data access request has been submitted.');
+            }
+
+            $answers = DataAccessApplicationAnswer::where('application_id', $id)->get();
+
+            foreach ($answers as $k => $answer) {
+                $isFileAnswer = $this->isFileAnswer($answer->answer);
+                if (!$isFileAnswer['is_file']) {
+                    continue;
+                }
+                if ($isFileAnswer['multifile']) {
+                    $value = $answer->answer['value'];
+                    foreach ($value as $i => $a) {
+                        if ($a['id'] === $fileId) {
+                            unset($value[$i]);
+                            DataAccessApplicationAnswer::findOrFail($answer->id)->update([
+                                'answer' => ['value' => $value]
+                            ]);
+                        }
+                    }
+                } else {
+                    if ($answer->answer['value']['id'] === $fileId) {
+                        DataAccessApplicationAnswer::where('id', $answer->id)->delete();
+                    }
+                }
             }
 
             $file = Upload::where('id', $fileId)->first();
@@ -1314,6 +1348,28 @@ class UserDataAccessApplicationController extends Controller
         }
 
         return $formatted;
+    }
+
+    private function isFileAnswer(array | string $answer): array
+    {
+        $isFile = false;
+        $isMulti = false;
+
+        if (isset($answer['value']) && is_array($answer['value'])) {
+            if (isset($answer['value']['filename'])) {
+                $isFile = true;
+            }
+
+            if (isset($answer['value'][0]['filename'])) {
+                $isFile = true;
+                $isMulti = true;
+            }
+        }
+
+        return [
+            'is_file' => $isFile,
+            'multifile' => $isMulti,
+        ];
     }
 
 }

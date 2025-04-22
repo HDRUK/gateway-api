@@ -15,13 +15,10 @@ trait DatasetFetch
     public function getDatasetsViaDatasetVersion($linkageTable, $localTableId)
     {
         // Step 1: Get the dataset version IDs from the linkage table
-        $versionIds = $linkageTable::where($localTableId, $this->id)->pluck('dataset_version_id')->toArray();
+        $versionIds = convertArrayToArrayWithKeyName($linkageTable::where($localTableId, $this->id)->select('dataset_version_id')->get()->toArray(), 'dataset_version_id');
 
         // Step 2: Use the version IDs to find all related dataset IDs through the linkage table
-        $datasetIds = DatasetVersion::whereIn('id', $versionIds)
-            ->pluck('dataset_id')
-            ->unique()
-            ->toArray();
+        $datasetIds = array_unique(convertArrayToArrayWithKeyName(DatasetVersion::whereIn('id', $versionIds)->select('dataset_id')->get()->toArray(), 'dataset_id'));
 
         // Step 3: Retrieve all datasets using the collected dataset IDs
         $datasets = Dataset::whereIn('id', $datasetIds)->get();
@@ -29,11 +26,11 @@ trait DatasetFetch
         // Iterate through each dataset and add associated dataset versions
         foreach ($datasets as $dataset) {
             // Retrieve dataset version IDs associated with the current dataset
-            $datasetVersionIds = $dataset->versions()->whereIn('id', $versionIds)->pluck('id')->toArray();
-            $datasetMetadata = $dataset->latestMetadata()->whereIn('id', $versionIds)->pluck('metadata')->toArray(); // This can be modified to return metadata
+            $datasetVersionIds = convertArrayToArrayWithKeyName($dataset->versions()->whereIn('id', $versionIds)->select('id')->get()->toArray(), 'id');
+            $datasetMetadata = $dataset->latestMetadata()->whereIn('id', $versionIds)->select('metadata')->first(); // This can be modified to return metadata
 
-            if (count($datasetMetadata) > 0) {
-                $datasetTitle = $datasetMetadata[0]['metadata']['summary']['title'] ?? null;
+            if (!is_null($datasetMetadata)) {
+                $datasetTitle = $datasetMetadata['metadata']['metadata']['summary']['title'] ?? null;
                 $dataset->setAttribute('name', $datasetTitle); // This can be modified to return metadata
             }
             // Add associated dataset versions to the dataset object
