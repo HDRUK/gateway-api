@@ -1,3 +1,20 @@
+## [2.8.0](https://github.com/HDRUK/gateway-api/compare/v2.7.0...v2.8.0) (2025-04-22)
+
+### ✨ Features
+
+* **GAT-6005:** Revert - add sde concierge and redirect enquiries (#1165) (#1182) ([0cbb225](https://github.com/HDRUK/gateway-api/commit/0cbb2257a4f5ad6059f7c1bb37770455fe41b7c4)), closes [GAT-6005](GAT-6005)
+* **GAT-6395:** Add isCohortDiscovery dataset filter (#1193) ([f9762c8](https://github.com/HDRUK/gateway-api/commit/f9762c882f915a0b16581f95032b6db8c0c1f1a0)), closes [GAT-6395](GAT-6395)
+* **GAT-6657:** update DAR file deleting to delete associated answer (#1191) ([422c22c](https://github.com/HDRUK/gateway-api/commit/422c22cb8f651d1fe31607ea61af1cf50df1ec77)), closes [GAT-6657](GAT-6657)
+* **GAT-6682:** Add descriptions to subsections in seeder (#1194) ([34761ff](https://github.com/HDRUK/gateway-api/commit/34761ff725cc30d7cc98a91b3deed392776820e3)), closes [GAT-6682](GAT-6682)
+* **GAT-6682:** add missing questions and sections to question bank (#1185) ([31923ae](https://github.com/HDRUK/gateway-api/commit/31923ae3533e055ce68f732b377499757b074190)), closes [GAT-6682](GAT-6682)
+* **GAT-6695:** Enable user to push application back to draft (#1188) ([4177888](https://github.com/HDRUK/gateway-api/commit/41778884d6ea703f5a5731835784a50c0a750507)), closes [GAT-6695](GAT-6695)
+
+### 🐛 Bug Fixes
+
+* **GAT-6656:** fix action required counting logic (#1189) ([5046d20](https://github.com/HDRUK/gateway-api/commit/5046d20ea131f8cbaf1ab2fbcea159922e22b28d))
+* **GAT-6672:** update patch to handle nested questions (#1181) ([5ce74cd](https://github.com/HDRUK/gateway-api/commit/5ce74cd245c6c2afd73dfd16b9a7ced6aa8fb3a7)), closes [GAT-6672](GAT-6672)
+* **GAT-6870:** add dar template count endpoints (#1186) ([4236709](https://github.com/HDRUK/gateway-api/commit/4236709026216775870251d330e560c30945c82d)), closes [GAT-6870](GAT-6870)
+
 ## [2.7.0](https://github.com/HDRUK/gateway-api/compare/v2.6.0...v2.7.0) (2025-04-09)
 
 ### ✨ Features
