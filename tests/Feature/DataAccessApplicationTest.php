@@ -954,6 +954,7 @@ class DataAccessApplicationTest extends TestCase
             ]
         );
         $response->assertStatus(200);
+        $fileId = $response->decodeResponseJson()['data']['id'];
 
         // get answers
         $response = $this->json(
@@ -973,6 +974,28 @@ class DataAccessApplicationTest extends TestCase
             ]);
         $answer = $response->decodeResponseJson()['data'][0]['answer'];
         $this->assertEquals('test_dar_application.pdf', $answer['value']['filename']);
+
+        // test deleting file deletes the answer too
+        $response = $this->json(
+            'DELETE',
+            'api/v1/users/1/dar/applications/' . $applicationId . '/files/' . $fileId,
+            [],
+            $this->header,
+        );
+        $response->assertStatus(200);
+
+        $response = $this->json(
+            'GET',
+            'api/v1/users/1/dar/applications/' . $applicationId . '/answers',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+        $this->assertEquals(0, count($response->decodeResponseJson()['data']));
 
         // upload multiple files
         $file = UploadedFile::fake()->create('test_file_one.pdf');
@@ -1004,6 +1027,7 @@ class DataAccessApplicationTest extends TestCase
             ]
         );
         $response->assertStatus(200);
+        $fileIdTwo = $response->decodeResponseJson()['data']['id'];
 
         // get answers
         $response = $this->json(
@@ -1018,16 +1042,41 @@ class DataAccessApplicationTest extends TestCase
                 'data' => [
                     0 => [
                         'answer'
-                    ],
-                    1 => [
+                    ]
+                ]
+            ]);
+        $answer = $response->decodeResponseJson()['data'][0]['answer'];
+        $this->assertEquals(2, count($answer['value']));
+        $this->assertContains('test_file_one.pdf', array_column($answer['value'], 'filename'));
+        $this->assertContains('test_file_two.pdf', array_column($answer['value'], 'filename'));
+
+        // test deleting one of the files deletes the answer too
+        $response = $this->json(
+            'DELETE',
+            'api/v1/users/1/dar/applications/' . $applicationId . '/files/' . $fileIdTwo,
+            [],
+            $this->header,
+        );
+        $response->assertStatus(200);
+
+        $response = $this->json(
+            'GET',
+            'api/v1/users/1/dar/applications/' . $applicationId . '/answers',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data' => [
+                    0 => [
                         'answer'
                     ]
                 ]
             ]);
-        $answer = $response->decodeResponseJson()['data'][1]['answer'];
-        $this->assertEquals(2, count($answer['value']));
+        $answer = $response->decodeResponseJson()['data'][0]['answer'];
+        $this->assertEquals(1, count($answer['value']));
         $this->assertContains('test_file_one.pdf', array_column($answer['value'], 'filename'));
-        $this->assertContains('test_file_two.pdf', array_column($answer['value'], 'filename'));
     }
 
     /**

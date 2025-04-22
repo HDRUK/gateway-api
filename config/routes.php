@@ -4467,6 +4467,20 @@ return [
     [
         'name' => 'dar/templates',
         'method' => 'get',
+        'path' => '/dar/templates/count/{field}',
+        'methodController' => 'DataAccessTemplateController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-template.read',
+        ],
+        'constraint' => [
+            'field' => 'published|locked|template_type',
+        ],
+    ],
+    [
+        'name' => 'dar/templates',
+        'method' => 'get',
         'path' => '/teams/{teamId}/dar/templates',
         'methodController' => 'TeamDataAccessTemplateController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
@@ -4475,6 +4489,21 @@ return [
             'check.access:permissions,data-access-template.read',
         ],
         'constraint' => [],
+    ],
+    [
+        'name' => 'dar/templates',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/dar/templates/count/{field}',
+        'methodController' => 'TeamDataAccessTemplateController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,data-access-template.read',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'field' => 'published|locked|template_type',
+        ],
     ],
     [
         'name' => 'dar/templates',
