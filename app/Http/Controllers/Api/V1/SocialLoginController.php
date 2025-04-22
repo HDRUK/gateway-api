@@ -173,8 +173,8 @@ class SocialLoginController extends Controller
                     $providerURL = str_replace(env('APP_URL').'/api/v1/auth', env('DTA_API_URL').'/api/v1/auth/dta', $providerURL);
                 }
                 return Socialite::driver($provider)
-                //->with(['redirect_uri' => $providerURL])
-                ->redirectUrl($providerURL)
+                ->with(['redirect_uri' => $providerURL])
+                //->redirectUrl($providerURL)
                 ->redirect();
 
             }
@@ -265,8 +265,8 @@ class SocialLoginController extends Controller
                 if (env('APP_ENV') !== 'local') {
                     $providerURL = str_replace(env('APP_URL').'/api/v1/auth', env('DTA_API_URL').'/api/v1/auth/dta', $providerURL);
                 }                $socialUser = Socialite::driver($provider)
-                ->redirectUrl($providerURL)
-                //->with(['redirect_uri' => $providerURL])
+                //->redirectUrl($providerURL)
+                ->with(['redirect_uri' => $providerURL])
                 ->stateless()
                 ->user();
 
