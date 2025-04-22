@@ -11,7 +11,7 @@ parameters:
 
 #    ignoreErrors:
 #        - '#PHPDoc tag @var#'
-         - 'Call to an undefined method Laravel\Socialite\Contracts\Provider::with().'
+#        - 'Call to an undefined method Laravel\Socialite\Contracts\Provider::with().'
 #
 #    excludePaths:
 #        - ./*/*/FileToBeExcluded.php
