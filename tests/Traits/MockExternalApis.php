@@ -3,8 +3,10 @@
 namespace Tests\Traits;
 
 use Config;
+use App\Models\User;
 use Http\Mock\Client;
 use Nyholm\Psr7\Response;
+use Illuminate\Support\Str;
 use App\Jobs\TermExtraction;
 use App\Jobs\LinkageExtraction;
 use Illuminate\Support\Facades\Http;
@@ -16,6 +18,8 @@ trait MockExternalApis
 {
     use Authorization;
     use RunMigrationOnce;
+
+    private const USER_TEST_PASSWORD = 'Passw@rd1!';
 
     private $dataset = null;
     private $datasetUpdate = null;
@@ -74,9 +78,6 @@ trait MockExternalApis
 
     public function commonSetUp(): void
     {
-        // parent::setUp();
-        // $this->runMigrationsOnce();
-
         Queue::fake([
             LinkageExtraction::class,
             TermExtraction::class
@@ -1115,7 +1116,7 @@ trait MockExternalApis
                string $dataset,
                string $outputSchema,
                string $outputVersion,
-               string $inputSchema = null,
+               ?string $inputSchema = null,
                string $inputVersion = null,
                bool $validateInput = true,
                bool $validateOutput = true,
@@ -1194,5 +1195,123 @@ trait MockExternalApis
     public function countElasticClientRequests(object $client): int
     {
         return count($client->getTransport()->getClient()->getRequests());
+    }
+
+    public function createTestUser(?string $email = null)
+    {
+        if (is_null($email)) {
+            $email = fake()->email();
+        }
+
+        $user = User::where([
+            'email' => $email,
+        ])->first();
+
+        if (!is_null($user)) {
+            return [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ];
+        }
+
+        $provider = 'service';
+        $userNotificationId = User::all()->random()->id;
+        $responseNotification = $this->json(
+            'POST',
+            'api/v1/notifications',
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => fake()->words(3, true),
+                'email' => null,
+                'user_id' => $userNotificationId,
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header
+        );
+        $responseNotification->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        $responseUser = $this->json(
+            'POST',
+            '/api/v1/users',
+            [
+                'firstname' => fake()->firstName(),
+                'lastname' => fake()->lastName(),
+                'email' => $email,
+                'secondary_email' => fake()->email(),
+                'preferred_email' => 'primary',
+                'password' => self::USER_TEST_PASSWORD,
+                'sector_id' => 1,
+                'organisation' => 'Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'provider' => $provider,
+                'providerid' => '123456',
+                'bio' => fake()->words(2, true),
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/75697342",
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'mongo_id' => fake()->randomNumber(9, true),
+                'mongo_object_id' => strtolower(Str::random(24)),
+                'notifications' => [$responseNotification['data']],
+            ],
+            $this->header
+        );
+        $responseNotification->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        return [
+            'user_id' => $responseUser['data'],
+            'email' => $email,
+        ];
+    }
+
+    public function updateUserIsAdmin(array $user): void
+    {
+        User::where([
+            'id' => $user['user_id'],
+        ])->update([
+            'is_admin' => 1,
+        ]);
+    }
+
+    public function getTestUserAuthorization(string $email)
+    {
+        $response = $this->json('POST', '/api/v1/auth', [
+            'email' => $email,
+            'password' => self::USER_TEST_PASSWORD,
+        ], [
+            'Accept' => 'application/json'
+        ]);
+
+        return $response['access_token'];
+    }
+
+    public function testUserAdmin(?string $email = null)
+    {
+        $user = $this->createTestUser($email);
+        $this->updateUserIsAdmin($user);
+        $jwt = $this->getTestUserAuthorization($user['email']);
+        $header = [
+            'header' => [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwt,
+            ],
+        ];
+
+        return $header + $user;
+    }
+
+    public function testUserNoAdmin(?string $email = null)
+    {
+        $user = $this->createTestUser($email);
+        $jwt = $this->getTestUserAuthorization($user['email']);
+        $header = [
+            'header' => [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwt,
+            ],
+        ];
+
+        return $header + $user;
     }
 }

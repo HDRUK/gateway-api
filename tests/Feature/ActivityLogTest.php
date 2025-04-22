@@ -7,22 +7,12 @@ use App\Models\ActivityLogUserType;
 use Config;
 use Tests\TestCase;
 use App\Models\User;
-use Tests\Traits\MockExternalApis;
 
 class ActivityLogTest extends TestCase
 {
-    // use MockExternalApis {
-    //     setUp as commonSetUp;
-    // }
-
     public const TEST_URL = '/api/v1/users';
 
     protected $header = [];
-
-    // public function setUp(): void
-    // {
-    //     $this->commonSetUp();
-    // }
 
     /**
      * List all ActivityLogs
@@ -31,6 +21,7 @@ class ActivityLogTest extends TestCase
      */
     public function test_the_application_can_list_activity_logs()
     {
+        var_dump($this->baseUser);
         $response = $this->get('api/v1/activity_logs', $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))

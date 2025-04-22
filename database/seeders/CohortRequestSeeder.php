@@ -17,7 +17,7 @@ class CohortRequestSeeder extends Seeder
      */
     public function run(): void
     {
-        for ($count = 1; $count <= 50; $count++) {
+        for ($count = 1; $count <= 5; $count++) {
             $userId = User::all()->random()->id;
 
             $checkRequestByUserId = CohortRequest::where([

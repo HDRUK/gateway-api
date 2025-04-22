@@ -12,10 +12,16 @@ abstract class TestCase extends BaseTestCase
     use RunMigrationOnce;
     use MockExternalApis;
 
+    protected $baseUser = [];
+
     public function setUp(): void
     {
         parent::setUp();
         $this->runMigrationsOnce();
-        $this->commonSetUp();
+        if (!static::$migrated) {
+            $this->commonSetUp();
+        }
+
+        var_dump(static::$migrated);
     }
 }

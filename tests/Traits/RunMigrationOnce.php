@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Artisan;
 trait RunMigrationOnce
 {
     protected static bool $migrated = false;
-    // protected static $databaseConnection;
 
     public function runMigrationsOnce(): void
     {
@@ -58,6 +57,7 @@ trait RunMigrationOnce
             'Database\\Seeders\\CollectionHasPublicationSeeder',
             'Database\\Seeders\\CollectionHasUserSeeder',
             'Database\\Seeders\\EmailTemplateSeeder',
+            'Database\\Seeders\\CohortRequestSeeder',
         ];
 
         foreach ($seeders as $seederClass) {
