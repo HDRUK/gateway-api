@@ -80,7 +80,7 @@ class SocialLoginController extends Controller
     */
     public function dtaLogin(Request $request, string $provider): mixed
     {
-        return $this->handleLogin($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_DTA_URL'));
+        return $this->handleLogin($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_DTA_URL'), true);
     }
 
 
@@ -131,12 +131,14 @@ class SocialLoginController extends Controller
      */
     public function login(Request $request, string $provider): mixed
     {
-        return $this->handleLogin($request, $provider, env('GATEWAY_URL'), env('OPENATHENS_REDIRECT_URL'));
+        return $this->handleLogin($request, $provider, env('GATEWAY_URL'), env('OPENATHENS_REDIRECT_URL'), false);
 
     }
 
-    private function handleLogin(Request $request, string $provider, string $baseRedirectUrl, $openAthensRedirectUrl): mixed
+    private function handleLogin(Request $request, string $provider, string $baseRedirectUrl, $openAthensRedirectUrl, $isDTA): mixed
     {
+
+
         $redirectUrl = $baseRedirectUrl;
         if ($request->has("redirect")) {
             $redirectUrl .= $request->query('redirect');
@@ -165,7 +167,18 @@ class SocialLoginController extends Controller
             if (strtolower($provider) === 'linkedin') {
                 $provider = 'linkedin-openid';
             }
+            if ($isDTA) {
+                $providerURL = config("services.$provider.redirect");
+                if (env('APP_ENV') !== 'local') {
+                    $providerURL = str_replace(env('APP_URL').'/api/v1/auth', env('DTA_API_URL').'/api/v1/auth/dta', $providerURL);
+                }
+                return Socialite::driver($provider)
+                ->with(['redirect_uri' => $providerURL])
+                ->redirect();
+
+            }
             return Socialite::driver($provider)->redirect();
+
         }
     }
 
@@ -207,7 +220,106 @@ class SocialLoginController extends Controller
          */
     public function dtaCallback(Request $request, string $provider): mixed
     {
-        return $this->handleCallback($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_DTA_URL'));
+        $openAthensRedirectUrl = env('OPENATHENS_REDIRECT_URL');
+
+        $user = null;
+        try {
+            if (strtolower($provider) === 'linkedin') {
+                $provider = 'linkedin-openid';
+            }
+            if (strtolower($provider) === 'openathens') {
+                $provider = 'open-athens';
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+                $input = $request->all();
+                $code = array_key_exists('code', $input) ? $input['code'] : '';
+                $_REQUEST['code'] = $code;
+                $state = array_key_exists('state', $input) ? $input['state'] : '';
+                $_REQUEST['state'] = $state;
+                $_SESSION['openid_connect_state'] = $state;
+
+                $oidc = new OpenIDConnectClient(
+                    Config::get('services.openathens.issuer'),
+                    Config::get('services.openathens.client_id'),
+                    Config::get('services.openathens.client_secret')
+                );
+                $oidc->providerConfigParam([
+                    'authorization_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/auth',
+                    'jwks_uri' => env('OPENATHENS_ISSUER_URL') . '/oidc/jwks',
+                    'token_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/token',
+                    'userinfo_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/userinfo',
+                ]);
+
+                $oidc->setRedirectUrl($openAthensRedirectUrl);
+                $oidc->authenticate();
+
+                $response = $oidc->requestUserInfo();
+                $socialUser = json_decode(json_encode($response), true);
+                $socialUserDetails = $this->openathensResponse($socialUser, $provider);
+
+                $user = User::where('providerid', $socialUserDetails['providerid'])->first();
+            } else {
+                $providerURL = config("services.$provider.redirect");
+                if (env('APP_ENV') !== 'local') {
+                    $providerURL = str_replace(env('APP_URL').'/api/v1/auth', env('DTA_API_URL').'/api/v1/auth/dta', $providerURL);
+                }                $socialUser = Socialite::driver($provider)
+                ->with(['redirect_uri' => $providerURL])
+                ->stateless()
+                ->user();
+
+                $socialUserDetails = [];
+                switch (strtolower($provider)) {
+                    case 'google':
+                        $socialUserDetails = $this->googleResponse($socialUser, $provider);
+                        break;
+
+                    case 'linkedin-openid':
+                        $socialUserDetails = $this->linkedinOpenIdResponse($socialUser, $provider);
+                        break;
+                    case 'azure':
+                        $socialUserDetails = $this->azureResponse($socialUser, $provider);
+                        break;
+                }
+                $user = User::where('email', $socialUserDetails['email'])->first();
+            }
+
+            if (!$user) {
+                $user = $this->saveUser($socialUserDetails, $provider);
+            } else {
+                $user = $this->updateUser($user, $socialUserDetails, $provider);
+            }
+
+            $jwt = $this->createJwt($user);
+            Auditor::log([
+                'target_user_id' => $user->id,
+                'action_type' => 'LOGIN',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'User ' . $user->id . ' with login through ' . $user->provider . ' has been connected',
+            ]);
+
+            $cookies = [Cookie::make('token', $jwt, 0, '/', env('DTA_DOMAIN'), true, true)];
+
+            if (env('APP_ENV') === 'local') {
+                $cookies = [Cookie::make('token', $jwt)];
+            }
+
+
+            if ($user['name'] === '' || $user['email'] === '') {
+                return redirect()->away(env('DTA_URL') . '/account/profile')->withCookies($cookies);
+            } else {
+                $redirectUrl = session('redirectUrl');
+                return redirect()->away(env('DTA_URL'))->withCookies($cookies);
+            }
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -247,12 +359,9 @@ class SocialLoginController extends Controller
      */
     public function callback(Request $request, string $provider): mixed
     {
-        return $this->handleCallback($request, $provider, env('GATEWAY_URL'), env('OPENATHENS_REDIRECT_URL'));
-    }
-    private function handleCallback(Request $request, string $provider, string $baseRedirectUrl, string $openAthensRedirectUrl): mixed
-    {
+        $baseRedirectUrl = env('GATEWAY_URL');
+        $openAthensRedirectUrl =  env('OPENATHENS_REDIRECT_URL');
         $user = null;
-
         try {
             if (strtolower($provider) === 'linkedin') {
                 $provider = 'linkedin-openid';
@@ -341,6 +450,7 @@ class SocialLoginController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
     /**
      * Uniform response from Google
      *

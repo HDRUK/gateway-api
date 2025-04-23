@@ -9,6 +9,7 @@ class Cors
 {
     public function handle(Request $request, Closure $next)
     {
+
         $headers = [
             'Access-Control-Allow-Origin' => env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN'),
             'Access-Control-Allow-Credentials' => 'true',
@@ -24,6 +25,7 @@ class Cors
         foreach ($headers as $key => $value) {
             $response->headers->add([$key => $value]);
         }
+
         return $response;
     }
 }
