@@ -1618,9 +1618,10 @@ class DataAccessApplicationTest extends TestCase
         $content = $response->decodeResponseJson();
         $this->assertEquals(1, count($content['data']));
 
+        // filtering for APPROVED should also return APPROVED_COMMENTS
         $response = $this->json(
             'GET',
-            'api/v1/teams/' . $teamId . '/dar/applications?approval_status=APPROVED_COMMENTS',
+            'api/v1/teams/' . $teamId . '/dar/applications?approval_status=APPROVED',
             [],
             $this->header
         );

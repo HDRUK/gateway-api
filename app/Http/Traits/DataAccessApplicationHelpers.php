@@ -157,9 +157,9 @@ trait DataAccessApplicationHelpers
             $approvalMatches = [];
             foreach ($applications as $a) {
                 foreach ($a['teams'] as $t) {
-                    if ((isset($teamId)) && ($t->team_id === $teamId) && ($t->approval_status === $filterApproval)) {
+                    if ((isset($teamId)) && ($t->team_id === $teamId) && (str_contains($t->approval_status, $filterApproval))) {
                         $approvalMatches[] = $a->id;
-                    } elseif ((isset($userId)) && ($t->approval_status === $filterApproval)) {
+                    } elseif ((isset($userId)) && (str_contains($t->approval_status, $filterApproval))) {
                         $approvalMatches[] = $a->id;
                     }
                 }
