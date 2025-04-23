@@ -255,6 +255,7 @@ class EnquiryThreadController extends Controller
                 $teamNames[] = $team->name;
             }
 
+            $teamIds = array_unique($teamIds);
             $allThreadIds = array();
             $payload['message']['message_body']['[[TEAM_NAME]]'] = array_unique($teamNames);
             foreach ($teamIds as $teamId) {
