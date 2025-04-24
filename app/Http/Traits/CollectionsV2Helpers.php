@@ -121,15 +121,15 @@ trait CollectionsV2Helpers
     // datasets
     private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null)
     {
-        $collectionHastDatasetVersions = CollectionHasDatasetVersion::withTrashed()
+        $collectionHasDatasetVersions = CollectionHasDatasetVersion::withTrashed()
                                             ->where('collection_id', $collectionId)
                                             ->select('dataset_version_id')
                                             ->get()
                                             ->toArray();
 
-        $collectionHastDatasetVersionIds = [];
-        if (count($collectionHastDatasetVersions)) {
-            $collectionHastDatasetVersionIds = array_unique(convertArrayToArrayWithKeyName($collectionHastDatasetVersions, 'dataset_version_id'));
+        $collectionHasDatasetVersionIds = [];
+        if (count($collectionHasDatasetVersions)) {
+            $collectionHasDatasetVersionIds = array_unique(convertArrayToArrayWithKeyName($collectionHasDatasetVersions, 'dataset_version_id'));
         }
 
         foreach ($inDatasets as $dataset) {
@@ -138,7 +138,7 @@ trait CollectionsV2Helpers
             $datasetVersions = DatasetVersion::where('dataset_id', (int) $dataset['id'])->select('id')->get()->toArray();
 
             $datasetVersionIds = convertArrayToArrayWithKeyName($datasetVersions, 'id');
-            $commonDatasetVersionIds = array_intersect($collectionHastDatasetVersionIds, $datasetVersionIds);
+            $commonDatasetVersionIds = array_intersect($collectionHasDatasetVersionIds, $datasetVersionIds);
 
             if (count($commonDatasetVersionIds) === 0) {
                 $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
