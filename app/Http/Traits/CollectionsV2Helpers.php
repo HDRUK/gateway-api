@@ -138,13 +138,17 @@ trait CollectionsV2Helpers
             $datasetVersions = DatasetVersion::where('dataset_id', (int) $dataset['id'])->select('id')->get()->toArray();
 
             $datasetVersionIds = convertArrayToArrayWithKeyName($datasetVersions, 'id');
+            // This is the intersect of all versions of _this_ dataset, and all the versions in CollectionHasDatasetVersion for this Collection.
             $commonDatasetVersionIds = array_intersect($collectionHasDatasetVersionIds, $datasetVersionIds);
 
+            // If the supplied datasets are not in the existing set, then add them
             if (count($commonDatasetVersionIds) === 0) {
                 $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
                 continue;
             }
 
+            // else, if the latest version isn't in there, then add it, and remove all the previously existing dataset versions that were linked
+            // - this simply has the effect of updating the link to an already-linked dataset to its latest version id
             if (!in_array($datasetVersionLatestId, $commonDatasetVersionIds)) {
                 $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
                 foreach ($commonDatasetVersionIds as $commonDatasetVersionId) {
@@ -156,6 +160,7 @@ trait CollectionsV2Helpers
                 continue;
             }
 
+            // else if the latest version is already linked, then delete any links to older versions, and for the latest version, if it's been deleted previously, then re-add it
             if (in_array($datasetVersionLatestId, $commonDatasetVersionIds)) {
                 foreach ($commonDatasetVersionIds as $commonDatasetVersionId) {
                     if ((int) $datasetVersionLatestId === (int) $commonDatasetVersionId) {
@@ -191,6 +196,27 @@ trait CollectionsV2Helpers
                     }
                 }
             }
+        }
+
+        // Now delete existing links to any dataset version that wasn't supplied.
+        $collectionHasDatasetVersionsActive = CollectionHasDatasetVersion::where('collection_id', $collectionId)
+                                            ->select('dataset_version_id')
+                                            ->get()
+                                            ->toArray();
+
+        $wantedDatasetIds = convertArrayToArrayWithKeyName($inDatasets, 'id');
+        $wantedDatasetVersionIds = DatasetVersion::whereIn('dataset_id', $wantedDatasetIds)->select('id')->get()->toArray();
+
+        $unwantedDatasetVersionsIds = array_diff(
+            array_column($collectionHasDatasetVersionsActive, 'dataset_version_id'),
+            array_column($wantedDatasetVersionIds, 'id')
+        );
+
+        foreach ($unwantedDatasetVersionsIds as $datasetVersionId) {
+            CollectionHasDatasetVersion::where([
+                'collection_id' => $collectionId,
+                'dataset_version_id' => $datasetVersionId,
+            ])->forceDelete();
         }
     }
 
