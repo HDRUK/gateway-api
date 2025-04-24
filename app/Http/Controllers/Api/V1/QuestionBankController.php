@@ -1363,9 +1363,17 @@ class QuestionBankController extends Controller
                 }
             } elseif (in_array($status, ['archive', 'unarchive'])) {
                 $archived = $status === 'archive' ? true : false;
-                $question->update(['archived' => $archived]);
+                $archivedDate = $archived ? Carbon::now() : null;
+                $question->update([
+                    'archived' => $archived,
+                    'archived_date' => $archivedDate
+                ]);
                 foreach ($question['latestVersion']['childVersions'] as $v) {
-                    QuestionBank::where('id', $v['question_id'])->update(['archived' => $archived]);
+                    QuestionBank::where('id', $v['question_id'])
+                        ->update([
+                            'archived' => $archived,
+                            'archived_date' => $archivedDate
+                        ]);
                 }
             }
 
