@@ -212,8 +212,9 @@ class ReindexEntities extends Command
             echo "---> Deleted $nDeleted documents from the index \n";
         }
 
-        $nTotal = Collection::count();
+        $nTotal = Collection::whereNotNull('team_id')->where('status', Collection::STATUS_ACTIVE)->count();
         $collectionIds = Collection::where('status', Collection::STATUS_ACTIVE)
+            ->whereNotNull('team_id')
             ->select('id')
             ->pluck('id')
             ->toArray();
