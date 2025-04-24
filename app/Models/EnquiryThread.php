@@ -12,16 +12,18 @@ class EnquiryThread extends Model
     use HasFactory;
 
     protected $fillable = [
-       'user_id',
-       'team_ids',
-       'project_title',
-       'unique_key',
-       'enabled',
-       'is_dar_dialogue',
-       'is_dar_status',
-       'is_general_enquiry',
-       'is_feasibility_enquiry',
-       'is_dar_review',
+        'user_id',
+        'team_ids',
+        'project_title',
+        'unique_key',
+        'enabled',
+        'is_dar_dialogue',
+        'is_dar_status',
+        'is_general_enquiry',
+        'is_feasibility_enquiry',
+        'is_dar_review',
+        'created_at',
+        'updated_at',
     ];
 
     protected $casts = [
