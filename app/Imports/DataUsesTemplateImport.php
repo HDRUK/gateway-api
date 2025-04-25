@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use CloudLogger;
 use Carbon\Carbon;
 use App\Models\Dur;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -37,7 +38,67 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
     */
     public function model(array $row)
     {
-        if (trim($row[1]) === '') {
+        if (trim($row[1]) === '') { // Check if the organisation name is empty
+            CloudLogger::write([
+                'action_type' => 'Data use import',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Data use import :: missing organisation name',
+                'data' => $row,
+            ], 'WARNING');
+            return null;
+        }
+
+        if (trim($row[9]) === '') { // Check if the project title is empty
+            CloudLogger::write([
+                'action_type' => 'Data use import',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Data use import :: missing project title',
+            ], 'WARNING');
+            return null;
+        }
+
+        if (trim($row[10]) === '') { // Check if the lay summary is empty
+            CloudLogger::write([
+                'action_type' => 'Data use import',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Data use import :: missing lay summary',
+            ], 'WARNING');
+            return null;
+        }
+
+        if (trim($row[11]) === '') { // Check if the public benefit statement is empty
+            CloudLogger::write([
+                'action_type' => 'Data use import',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Data use import :: missing public benefit statement',
+            ], 'WARNING');
+            return null;
+        }
+
+        if (trim($row[17]) === '') { // Check if the latest approval date is empty
+            CloudLogger::write([
+                'action_type' => 'Data use import',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Data use import :: missing latest approval date',
+            ], 'WARNING');
+            return null;
+        }
+
+        if (trim($row[18]) === '') { // Check if the dataset(s) name is empty
+            CloudLogger::write([
+                'action_type' => 'Data use import',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Data use import :: missing dataset(s) name',
+            ], 'WARNING');
+            return null;
+        }
+
+        if (trim($row[28]) === '') { // Check if the access type is empty
+            CloudLogger::write([
+                'action_type' => 'Data use import',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Data use import :: missing access type',
+            ], 'WARNING');
             return null;
         }
 
@@ -94,14 +155,97 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
     public function rules(): array
     {
         return [
+             // organisation name
             '1' => [
                 function ($attribute, $value, $fail) {
-                    // Skip validation if the cell is empty
                     if (is_null($value) || trim($value) === '' || strlen(trim($value)) === 0) {
+                        CloudLogger::write([
+                            'action_type' => 'Data use import',
+                            'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                            'description' => 'Data use import :: missing organisation name',
+                        ], 'WARNING');
                         return;
                     }
                 },
-            ]
+            ],
+            // project title
+            '9' => [
+                function ($attribute, $value, $fail) {
+                    if (is_null($value) || trim($value) === '' || strlen(trim($value)) === 0) {
+                        CloudLogger::write([
+                            'action_type' => 'Data use import',
+                            'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                            'description' => 'Data use import :: missing project title',
+                        ], 'WARNING');
+                        return;
+                    }
+                },
+            ],
+            // lay summary
+            '10' => [
+                function ($attribute, $value, $fail) {
+                    if (is_null($value) || trim($value) === '' || strlen(trim($value)) === 0) {
+                        CloudLogger::write([
+                            'action_type' => 'Data use import',
+                            'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                            'description' => 'Data use import :: missing lay summary',
+                        ], 'WARNING');
+                        return;
+                    }
+                },
+            ],
+            // public benefit statement
+            '11' => [
+                function ($attribute, $value, $fail) {
+                    if (is_null($value) || trim($value) === '' || strlen(trim($value)) === 0) {
+                        CloudLogger::write([
+                            'action_type' => 'Data use import',
+                            'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                            'description' => 'Data use import :: missing public benefit statement',
+                        ], 'WARNING');
+                        return;
+                    }
+                },
+            ],
+            // latest approval date
+            '17' => [
+                function ($attribute, $value, $fail) {
+                    if (is_null($value) || trim($value) === '' || strlen(trim($value)) === 0) {
+                        CloudLogger::write([
+                            'action_type' => 'Data use import',
+                            'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                            'description' => 'Data use import :: missing latest approval date',
+                        ], 'WARNING');
+                        return;
+                    }
+                },
+            ],
+            // dataset(s) name
+            '18' => [
+                function ($attribute, $value, $fail) {
+                    if (is_null($value) || trim($value) === '' || strlen(trim($value)) === 0) {
+                        CloudLogger::write([
+                            'action_type' => 'Data use import',
+                            'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                            'description' => 'Data use import :: missing dataset(s) name',
+                        ], 'WARNING');
+                        return;
+                    }
+                },
+            ],
+            // access type
+            '28' => [
+                function ($attribute, $value, $fail) {
+                    if (is_null($value) || trim($value) === '' || strlen(trim($value)) === 0) {
+                        CloudLogger::write([
+                            'action_type' => 'Data use import',
+                            'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                            'description' => 'Data use import :: missing access type',
+                        ], 'WARNING');
+                        return;
+                    }
+                },
+            ],
         ];
     }
 }
