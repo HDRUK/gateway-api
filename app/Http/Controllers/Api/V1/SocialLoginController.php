@@ -298,12 +298,7 @@ class SocialLoginController extends Controller
                 'description' => 'User ' . $user->id . ' with login through ' . $user->provider . ' has been connected',
             ]);
 
-            $cookies = [Cookie::make('token', $jwt, 0, '/', env('DTA_DOMAIN'), true, true)];
-
-            if (env('APP_ENV') === 'local') {
-                $cookies = [Cookie::make('token', $jwt)];
-            }
-
+            $cookies = [Cookie::make('token', $jwt)];
 
             if ($user['name'] === '' || $user['email'] === '') {
                 return redirect()->away(env('DTA_URL') . '/account/profile')->withCookies($cookies);
