@@ -120,7 +120,7 @@ class ExtractToolsFromMetadata implements ShouldQueue
         }
     }
 
-    public function createLinkToolDatasetVersion(int $toolId, int $datasetVersionId, string $type)
+    public function createLinkToolDatasetVersion(int $toolId, int $datasetVersionId, string $type): ?DatasetVersionHasTool
     {
         $check = DatasetVersionHasTool::where([
                 'tool_id' => $toolId,
@@ -136,5 +136,7 @@ class ExtractToolsFromMetadata implements ShouldQueue
                 'link_type' => $type,
             ]);
         }
+
+        return null;
     }
 }
