@@ -120,7 +120,7 @@ class DatasetVersion extends Model
      */
     public function spatialCoverage(): BelongsToMany
     {
-        return $this->belongsToMany(NamedEntities::class, 'dataset_version_has_spatial_coverage');
+        return $this->belongsToMany(SpatialCoverage::class, 'dataset_version_has_spatial_coverage');
     }
 
 
@@ -129,7 +129,7 @@ class DatasetVersion extends Model
      */
     public function tools(): BelongsToMany
     {
-        return $this->belongsToMany(Tool::class, 'dataset_version_has_tool');
+        return $this->belongsToMany(Tool::class, 'dataset_version_has_tool', 'dataset_version_id', 'tool_id');
     }
 
     /**
@@ -154,6 +154,22 @@ class DatasetVersion extends Model
     public function collections(): HasMany
     {
         return $this->hasMany(CollectionHasDatasetVersion::class);
+    }
+
+    /**
+     * The durs that belong to the dataset version.
+     */
+    public function durs(): HasMany
+    {
+        return $this->hasMany(DurHasDatasetVersion::class);
+    }
+
+    /**
+     * The durs that belong to the dataset version.
+     */
+    public function publications(): HasMany
+    {
+        return $this->hasMany(PublicationHasDatasetVersion::class);
     }
 
     /**

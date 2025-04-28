@@ -411,29 +411,23 @@ class DatasetController extends Controller
             // objects on this, rather than excessively calling latestDataset()-><relation>.
             $latestVersionID = $dataset->latestVersionID($id);
 
-            // Inject attributes via the dataset version table
-            // notes Calum 12th August 2024...
-            // - This is a mess.. why is `pulibcations_count` returning something different than dataset->allPublications??
-            // - Tools linakge not returned
-            // - For the FE i just need a tools linkage count so i'm gonna return `count(dataset->allTools)` for now
-            // - Same for collections
-            // - Leaving this as it is as im not 100% sure what any FE knock-on effect would be
-            //
-            // LS - Have replaced publications and dur counts with a raw count of linked relations via
-            // the *_has_* lookups.
-            $dataset->setAttribute('durs_count', $this->countDursForDatasetVersion($latestVersionID));
-            $dataset->setAttribute('publications_count', $this->countPublicationsForDatasetVersion($latestVersionID));
-            // This needs looking into, as helpful as attributes are, they're actually
-            // really poor in terms of performance. It'd be quicker to directly mutate
-            // a model in memory. That is, however, lazy, and better still would be
-            // to translate these to raw sql, as I have done above.
-            $dataset->setAttribute('tools_count', count($dataset->allTools));
-            $dataset->setAttribute('collections_count', count($dataset->allCollections));
-            $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
-            $dataset->setAttribute('durs', $dataset->allDurs  ?? []);
-            $dataset->setAttribute('publications', $dataset->allActivePublications  ?? []);
-            $dataset->setAttribute('named_entities', $dataset->allNamedEntities  ?? []);
-            $dataset->setAttribute('collections', $dataset->allCollections  ?? []);
+            $datasetVersion = DatasetVersion::where('dataset_id', $id)
+                ->with(['tools', 'spatialCoverage', 'namedEntities', 'collections', 'durs', 'publications'])
+                ->select('id')
+                ->first();
+
+            $dataset->tools = $datasetVersion->tools;
+            $dataset->tools_count = $dataset->tools->count();
+            $dataset->durs = $datasetVersion->durs;
+            $dataset->durs_count = $dataset->durs->count();
+            $dataset->collections = $datasetVersion->collections;
+            $dataset->collections_count = $dataset->collections->count();
+            $dataset->publications = $datasetVersion->publications;
+            $dataset->publications_count = $dataset->publications->count();
+            $dataset->spatialCoverage = $datasetVersion->spatialCoverage;
+            $dataset->named_entities = $datasetVersion->namedEntities;
+
+            unset($datasetVersion);
 
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
