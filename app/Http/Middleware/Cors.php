@@ -12,12 +12,11 @@ class Cors
         $origin = $request->headers->get('origin');
 
         $allowedOrigins = [
-            'https://web.dev.hdruk.cloud',
-            'https://web.dementiatrials.dev.hdruk.cloud'
+            env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN'),
+            env('DTA_URL')
         ];
 
         $headers = [
-            'Access-Control-Allow-Origin' => env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN'),
             'Access-Control-Allow-Credentials' => 'true',
             'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
             'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization',
