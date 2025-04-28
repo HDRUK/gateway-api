@@ -13,7 +13,7 @@ class Cors
 
         $allowedOrigins = [
             'https://web.dev.hdruk.cloud',
-            'https://web.dementiatrials.dev.hdruk.cloud/'
+            'https://web.dementiatrials.dev.hdruk.cloud'
         ];
 
         $headers = [
