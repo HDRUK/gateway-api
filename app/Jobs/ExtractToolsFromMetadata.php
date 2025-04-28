@@ -122,14 +122,19 @@ class ExtractToolsFromMetadata implements ShouldQueue
 
     public function createLinkToolDatasetVersion(int $toolId, int $datasetVersionId, string $type)
     {
-        return DatasetVersionHasTool::updateOrCreate([
-            'tool_id' => $toolId,
-            'dataset_version_id' => $datasetVersionId,
-            'link_type' => $type,
-        ], [
-            'tool_id' => $toolId,
-            'dataset_version_id' => $datasetVersionId,
-            'link_type' => $type,
-        ]);
+        $check = DatasetVersionHasTool::where([
+                'tool_id' => $toolId,
+                'dataset_version_id' => $datasetVersionId,
+                'link_type' => $type,
+            ])
+            ->first();
+
+        if (is_null($check)) {
+            return DatasetVersionHasTool::create([
+                'tool_id' => $toolId,
+                'dataset_version_id' => $datasetVersionId,
+                'link_type' => $type,
+            ]);
+        }
     }
 }
