@@ -37,20 +37,24 @@ class CohortUserExpiry extends Command
      */
     public function handle(): void
     {
+        $warnings = array_map('intval', explode(',', Config::get('cohort.cohort_access_expiry_warning_times_in_days')));
         $users = User::withTrashed()->with('cohortRequests', 'cohortRequests.permissions')->get();
         foreach ($users as $u) {
             if (count($u->cohortRequests) > 0) {
                 foreach ($u->cohortRequests as $r) {
                     $now = Carbon::now();
-                    $diff = $r->updated_at->diffInDays($now);
 
-                    if ($diff >= Config::get('cohort.cohort_access_expiry_warning_time_in_days')) {
+                    $trueExpiryDate = $this->calculateTrueExpiry($r);
+
+                    $diff = $trueExpiryDate->diffInDays($now);
+
+                    if (in_array($diff, $warnings)) {
                         if ($r->request_status === 'APPROVED') {
                             $this->sendEmail($r->id, 'WILL_EXPIRE');
                         }
                     }
 
-                    if ($diff >= Config::get('cohort.cohort_access_expiry_time_in_days')) {
+                    if ($trueExpiryDate <= $now) {
                         if ($r->request_status === 'APPROVED') {
                             $r->update([
                                 'request_status' => 'EXPIRED',
@@ -115,9 +119,11 @@ class CohortUserExpiry extends Command
                 ],
             ];
 
+            $trueExpiryDate = $this->calculateTrueExpiry($cohort);
+
             $replacements = [
                 '[[USER_FIRSTNAME]]' => $user['firstname'],
-                '[[EXPIRE_DATE]]' => $cohort['request_expire_at'],
+                '[[EXPIRE_DATE]]' => $trueExpiryDate,
                 '[[CURRENT_YEAR]]' => date("Y"),
                 '[[USER_EMAIL]]' => $userEmail,
                 '[[COHORT_DISCOVERY_ACCESS_URL]]' => Config::get('cohort.cohort_discovery_access_url'),
@@ -135,5 +141,21 @@ class CohortUserExpiry extends Command
 
             throw new Exception('Cohort Request send email :: ' . $e->getMessage());
         }
+    }
+
+    private function calculateTrueExpiry($cohort) {
+        $request_expire_at = null;
+        if (!is_null($cohort->request_expire_at)) {
+            $request_expire_at = Carbon::createFromFormat('Y-m-d H:i:s', $cohort->request_expire_at);
+        }
+
+        return min(
+            array_diff([
+                $cohort->updated_at->addDays((int)Config::get('cohort.cohort_access_expiry_time_in_days')), 
+                $request_expire_at
+            ],
+            array(null)
+            )
+        );
     }
 }
