@@ -64,7 +64,7 @@ class UpdateEmailCohortGat7004 extends Command
                                     Dear [[USER_FIRSTNAME]],
                                 </mj-text>
                                 <mj-text line-height="30px">
-                                    Your Cohort Discovery account will expire [[EXPIRE_DATE]]. After it expires, please login to the Gateway and visit the <a style="text-decoration:none" href="https://healthdatagateway.org/en/about/cohort-discovery">Cohort Discovery information page</a> to review the current terms and conditions, and request renewal.
+                                    Your Cohort Discovery account will expire [[EXPIRE_DATE]]. After it expires, please login to the Gateway and visit the <a style="text-decoration:none" href="[[COHORT_DISCOVERY_ACCESS_URL]]">Cohort Discovery information page</a> to review the current terms and conditions, and request renewal.
                                 </mj-text>
                                 <mj-text>
                                     <mj-text>
