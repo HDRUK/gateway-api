@@ -143,18 +143,20 @@ class CohortUserExpiry extends Command
         }
     }
 
-    private function calculateTrueExpiry($cohort) {
+    private function calculateTrueExpiry($cohort)
+    {
         $request_expire_at = null;
         if (!is_null($cohort->request_expire_at)) {
             $request_expire_at = Carbon::createFromFormat('Y-m-d H:i:s', $cohort->request_expire_at);
         }
 
         return min(
-            array_diff([
-                $cohort->updated_at->addDays((int)Config::get('cohort.cohort_access_expiry_time_in_days')), 
+            array_diff(
+                [
+                $cohort->updated_at->addDays((int)Config::get('cohort.cohort_access_expiry_time_in_days')),
                 $request_expire_at
             ],
-            array(null)
+                array(null)
             )
         );
     }
