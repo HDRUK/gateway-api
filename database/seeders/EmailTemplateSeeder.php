@@ -1462,7 +1462,7 @@ class EmailTemplateSeeder extends Seeder
                                     Dear [[USER_FIRSTNAME]],
                                 </mj-text>
                                 <mj-text line-height="30px">
-                                    Your Cohort Discovery account will expire [[EXPIRE_DATE]]. Use the button below to renew your access.
+                                    Your Cohort Discovery account will expire [[EXPIRE_DATE]]. After it expires, please login to the Gateway and visit the <a style="text-decoration:none" href="[[COHORT_DISCOVERY_ACCESS_URL]]">Cohort Discovery information page</a> to review the current terms and conditions, and request renewal.
                                 </mj-text>
                                 <mj-text>
                                     <mj-text>
@@ -1470,7 +1470,6 @@ class EmailTemplateSeeder extends Seeder
                                         Gateway Cohort Discovery Admin.
                                     </mj-text>
                                 </mj-text>
-                                <mj-button css-class="main-section" background-color="#00ACCA" href="[[COHORT_DISCOVERY_RENEW_URL]]">Renew Cohort Discovery access</mj-button>
                             </mj-column>
                         </mj-section>
 
