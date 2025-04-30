@@ -16,6 +16,7 @@ class EnquiryThread extends Model
         'team_ids',
         'project_title',
         'unique_key',
+        'enquiry_unique_key',
         'enabled',
         'is_dar_dialogue',
         'is_dar_status',

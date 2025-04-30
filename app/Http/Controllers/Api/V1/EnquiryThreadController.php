@@ -207,6 +207,7 @@ class EnquiryThreadController extends Controller
                 'thread' => [
                     'user_id' => $user->id,
                     'team_ids' => [],
+                    'enquiry_unique_key' => Str::random(8),
                     'project_title' => isset($input['project_title']) ? $input['project_title'] : "",
                     'is_dar_dialogue' => $input['is_dar_dialogue'],
                     'is_dar_status' => $input['is_dar_status'],
