@@ -772,6 +772,7 @@ class TeamDataAccessApplicationController extends Controller
             $submissionStatusUpdate = $input['submission_status'] ?? null;
 
             $reviewId = null;
+            $review = null;
             if (isset($input['comment'])) {
                 if ($submissionStatusUpdate === 'DRAFT') {
                     $review = DataAccessApplicationReview::where('application_id', $id)->first();
