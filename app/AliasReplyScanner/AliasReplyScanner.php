@@ -147,13 +147,15 @@ class AliasReplyScanner
         ])->first();
 
         $teamNames = [];
-        $team = Team::where('id', $enquiryThread->team_id)->first();
-        $teamNames[] = $team->name;
+        foreach ($enquiryThread->team_ids as $item) {
+            $team = Team::where('id', $item)->first();
+            $teamNames[] = $team->name;
+        }
 
         $payload = [
             'thread' => [
                 'user_id' => $enquiryThread->user_id,
-                'team_id' => $enquiryThread->team_id,
+                'team_ids' => $enquiryThread->team_ids,
                 'team_names' => $teamNames,
                 'project_title' => $enquiryThread->project_title,
                 'unique_key' => $uniqueKey, // Not random, but should be unique
