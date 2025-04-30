@@ -13,9 +13,11 @@ class EnquiryThread extends Model
 
     protected $fillable = [
         'user_id',
+        'team_id',
         'team_ids',
         'project_title',
         'unique_key',
+        'enquiry_unique_key',
         'enabled',
         'is_dar_dialogue',
         'is_dar_status',
@@ -24,10 +26,6 @@ class EnquiryThread extends Model
         'is_dar_review',
         'created_at',
         'updated_at',
-    ];
-
-    protected $casts = [
-        'team_ids' => 'array',
     ];
 
     /**

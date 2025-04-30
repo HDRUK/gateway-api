@@ -108,6 +108,7 @@ class EnquiryThreadController extends Controller
      *                  @OA\Property(property="team_id", type="integer", example="1234"),
      *                  @OA\Property(property="project_title", type="string", example="Project Title"),
      *                  @OA\Property(property="unique_id", type="string", example="sdlkfjslkf83992874"),
+     *                  @OA\Property(property="enquiry_unique_key", type="string", example="sdlkfjslkf83992874"),
      *                  @OA\Property(property="enabled", type="boolean", example="true"),
      *              )
      *          ),
@@ -207,6 +208,7 @@ class EnquiryThreadController extends Controller
                 'thread' => [
                     'user_id' => $user->id,
                     'team_ids' => [],
+                    'enquiry_unique_key' => Str::random(8),
                     'project_title' => isset($input['project_title']) ? $input['project_title'] : "",
                     'is_dar_dialogue' => $input['is_dar_dialogue'],
                     'is_dar_status' => $input['is_dar_status'],
@@ -260,7 +262,7 @@ class EnquiryThreadController extends Controller
             $payload['message']['message_body']['[[TEAM_NAME]]'] = array_unique($teamNames);
             foreach ($teamIds as $teamId) {
                 $payload['thread']['unique_key'] = Str::random(8); // 8 chars in length
-                $payload['thread']['team_ids'] = [$teamId];
+                $payload['thread']['team_id'] = $teamId;
                 $enquiryThreadId = EMC::createEnquiryThread($payload['thread']);
                 $allThreadIds[] = $enquiryThreadId;
                 EMC::createEnquiryMessage($enquiryThreadId, $payload['message']);
