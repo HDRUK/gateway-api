@@ -1,3 +1,10 @@
+## [2.8.1](https://github.com/HDRUK/gateway-api/compare/v2.8.0...v2.8.1) (2025-04-30)
+
+### 🐛 Bug Fixes
+
+* **GAT-6913:** Update cohort expiry email job to run on certain days, and fix email button links (#1208) ([db19f25](https://github.com/HDRUK/gateway-api/commit/db19f257a449619f65ee97b56c45b535e781dbc5))
+* **GAT-7004:** Update cohort renewal reminder email to remove button (#1211) ([2f12883](https://github.com/HDRUK/gateway-api/commit/2f12883b1fcd8cb648e0a7371d310829182a27e2)), closes [GAT-7004](GAT-7004)
+
 ## [2.8.0](https://github.com/HDRUK/gateway-api/compare/v2.7.0...v2.8.0) (2025-04-22)
 
 ### ✨ Features
