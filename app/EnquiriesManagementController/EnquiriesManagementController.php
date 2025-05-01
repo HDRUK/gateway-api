@@ -85,7 +85,7 @@ class EnquiriesManagementController
     {
         $enquiryThread = EnquiryThread::create([
             'user_id' => $input['user_id'],
-            'team_ids' => $input['team_ids'],
+            'team_id' => $input['team_id'],
             'project_title' => isset($input['project_title']) ? $input['project_title'] : "",
             'unique_key' => $input['unique_key'],
             'enquiry_unique_key' => $input['enquiry_unique_key'],

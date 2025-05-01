@@ -14,6 +14,7 @@ class EnquiryThread extends Model
     protected $fillable = [
         'user_id',
         'team_ids',
+        'team_id',
         'project_title',
         'unique_key',
         'enquiry_unique_key',

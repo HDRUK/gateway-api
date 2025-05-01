@@ -13,9 +13,15 @@ return new class () extends Migration {
     {
         Schema::table('enquiry_threads', function (Blueprint $table) {
             $table->string('enquiry_unique_key', 32);
+            $table->bigInteger('team_id');
         });
 
         DB::statement('UPDATE enquiry_threads SET enquiry_unique_key = unique_key');
+        DB::statement('UPDATE enquiry_threads SET team_id = JSON_EXTRACT(team_ids, "$[0]")');
+
+        Schema::table('enquiry_threads', function (Blueprint $table) {
+            $table->dropColumn(['team_ids']);
+        });
     }
 
     /**
@@ -24,7 +30,14 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::table('enquiry_threads', function (Blueprint $table) {
-            $table->dropColumn('enquiry_unique_key');
+            $table->json('team_ids');
         });
+
+        DB::statement('UPDATE enquiry_threads SET team_ids = JSON_ARRAY(team_id)');
+
+        Schema::table('enquiry_threads', function (Blueprint $table) {
+            $table->dropColumn(['team_id', 'enquiry_unique_key']);
+        });
+
     }
 };

@@ -261,7 +261,7 @@ class EnquiryThreadController extends Controller
             $payload['message']['message_body']['[[TEAM_NAME]]'] = array_unique($teamNames);
             foreach ($teamIds as $teamId) {
                 $payload['thread']['unique_key'] = Str::random(8); // 8 chars in length
-                $payload['thread']['team_ids'] = [$teamId];
+                $payload['thread']['team_id'] = $teamId;
                 $enquiryThreadId = EMC::createEnquiryThread($payload['thread']);
                 $allThreadIds[] = $enquiryThreadId;
                 EMC::createEnquiryMessage($enquiryThreadId, $payload['message']);
