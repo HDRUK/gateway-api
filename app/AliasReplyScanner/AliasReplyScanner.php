@@ -125,7 +125,7 @@ class AliasReplyScanner
 
         $uniqueKey = $enquiryThread->unique_key;
 
-        $usersToNotify = EMC::getUsersByTeamIds($enquiryThread->team_ids, $enquiryThread->user_id);
+        $usersToNotify = EMC::getUsersByTeamIds([$enquiryThread->team_id], $enquiryThread->user_id);
 
         if (empty($usersToNotify)) {
             CloudLogger::write([
@@ -147,15 +147,13 @@ class AliasReplyScanner
         ])->first();
 
         $teamNames = [];
-        foreach ($enquiryThread->team_ids as $item) {
-            $team = Team::where('id', $item)->first();
-            $teamNames[] = $team->name;
-        }
+        $team = Team::where('id', $enquiryThread->team_id)->first();
+        $teamNames[] = $team->name;
 
         $payload = [
             'thread' => [
                 'user_id' => $enquiryThread->user_id,
-                'team_ids' => $enquiryThread->team_ids,
+                'team_ids' => [$enquiryThread->team_id],
                 'team_names' => $teamNames,
                 'project_title' => $enquiryThread->project_title,
                 'unique_key' => $uniqueKey, // Not random, but should be unique

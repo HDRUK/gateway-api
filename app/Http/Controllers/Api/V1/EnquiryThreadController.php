@@ -207,8 +207,8 @@ class EnquiryThreadController extends Controller
                 'thread' => [
                     'user_id' => $user->id,
                     'team_ids' => [],
+                    'enquiry_unique_key' => Str::random(8),
                     'project_title' => isset($input['project_title']) ? $input['project_title'] : "",
-                    'unique_key' => Str::random(8), // 8 chars in length
                     'is_dar_dialogue' => $input['is_dar_dialogue'],
                     'is_dar_status' => $input['is_dar_status'],
                     'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
@@ -256,46 +256,53 @@ class EnquiryThreadController extends Controller
                 $teamNames[] = $team->name;
             }
 
-            $payload['thread']['team_ids'] = array_unique($teamIds);
+            $teamIds = array_unique($teamIds);
+            $allThreadIds = array();
             $payload['message']['message_body']['[[TEAM_NAME]]'] = array_unique($teamNames);
-            $enquiryThreadId = EMC::createEnquiryThread($payload['thread']);
-            EMC::createEnquiryMessage($enquiryThreadId, $payload['message']);
-            $usersToNotify = EMC::getUsersByTeamIds($teamIds);
+            foreach ($teamIds as $teamId) {
+                $payload['thread']['unique_key'] = Str::random(8); // 8 chars in length
+                $payload['thread']['team_id'] = $teamId;
+                $enquiryThreadId = EMC::createEnquiryThread($payload['thread']);
+                $allThreadIds[] = $enquiryThreadId;
+                EMC::createEnquiryMessage($enquiryThreadId, $payload['message']);
+                $usersToNotify = EMC::getUsersByTeamIds([$teamId]);
 
-            if (empty($usersToNotify)) {
+                if (empty($usersToNotify)) {
+                    Auditor::log([
+                        'user_id' => (int)$jwtUser['id'],
+                        'action_type' => 'POST',
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => 'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' .
+                            $enquiryThreadId,
+                    ]);
+
+                    return response()->json([
+                        'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
+                        'data' => null,
+                    ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+                }
+
+                // Spawn email notifications to all DAR managers for this team
+                if ($input['is_feasibility_enquiry'] == true) {
+                    EMC::sendEmail('feasibilityenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
+                } elseif ($input['is_general_enquiry'] == true) {
+                    EMC::sendEmail('generalenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
+                } elseif ($input['is_dar_dialogue'] == true) {
+                    EMC::sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser);
+                }
+
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
-                    'action_type' => 'POST',
+                    'action_type' => 'CREATE',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' .
-                        $enquiryThreadId,
+                    'description' => 'EnquiryThread ' . $enquiryThreadId . ' created',
                 ]);
-
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
-                    'data' => null,
-                ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
             }
-
-            // Spawn email notifications to all DAR managers for this team
-            if ($input['is_feasibility_enquiry'] == true) {
-                EMC::sendEmail('feasibilityenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
-            } elseif ($input['is_general_enquiry'] == true) {
-                EMC::sendEmail('generalenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
-            } elseif ($input['is_dar_dialogue'] == true) {
-                EMC::sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser);
-            }
-
-            Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
-                'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'EnquiryThread ' . $enquiryThreadId . ' created',
-            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $enquiryThreadId,
+                'all_threads' => $allThreadIds,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
