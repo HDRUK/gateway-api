@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use Throwable;
 use CloudLogger;
 use Carbon\Carbon;
 use App\Models\Dur;
@@ -102,6 +103,28 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
             return null;
         }
 
+        try {
+            $latestApprovalDate = $this->calculateExcelDate('Latest Approval Date', $row[17]);
+
+            if (!Carbon::hasFormat($latestApprovalDate, 'Y-m-d')) {
+                CloudLogger::write([
+                    'action_type' => 'Data use import',
+                    'action_name' => class_basename($this) . '@model',
+                    'description' => 'Skipping row due to invalid latest approval date format',
+                    'data' => $row[17],
+                ], 'WARNING');
+                return null;
+            }
+        } catch (Throwable $e) {
+            CloudLogger::write([
+                'action_type' => 'Data use import',
+                'action_name' => class_basename($this) . '@model',
+                'description' => 'Skipping row due to exception in date parsing',
+                'data' => $row[17],
+            ], 'WARNING');
+            return null;
+        }
+
         $dur = Dur::create([
             'project_id_text' => $row[0],
             'organisation_name' => $row[1],
@@ -118,9 +141,9 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
             'request_category_type' => $row[12],
             'technical_summary' => $row[13],
             'other_approval_committees' => explode(",", $row[14]),
-            'project_start_date' => $row[15] ? $this->calculateExcelDate($row[15]) : null,
-            'project_end_date' =>  $row[16] ? $this->calculateExcelDate($row[16]) : null,
-            'latest_approval_date' => $row[17] ? $this->calculateExcelDate($row[17]) : null,
+            'project_start_date' => $row[15] ? $this->calculateExcelDate('Project Start Date', $row[15]) : null,
+            'project_end_date' =>  $row[16] ? $this->calculateExcelDate('Project End Date', $row[16]) : null,
+            'latest_approval_date' => $row[17] ? $this->calculateExcelDate('Latest Approval Date', $row[17]) : null,
             'non_gateway_datasets' => array_filter(array_map('trim', explode(',', $row[18]))), // ??? Gateway datasets or not ???
             'data_sensitivity_level' => $row[19],
             'legal_basis_for_data_article6' => $row[20],
@@ -129,7 +152,7 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
             'national_data_optout' => $row[23],
             'request_frequency' => $row[24],
             'confidential_data_description' => $row[26],
-            'access_date' => $row[27] ? $this->calculateExcelDate($row[27]) : null,
+            'access_date' => $row[27] ? $this->calculateExcelDate('Access Date', $row[27]) : null,
             'access_type' => $row[28],
             'privacy_enhancements' => $row[29],
             'non_gateway_outputs' => explode(",", $row[30]), // ??? non or gateway research outputs ???
@@ -147,9 +170,32 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
     }
 
     // $excelDate is Excel serial date
-    private function calculateExcelDate(int $excelDate)
+    private function calculateExcelDate(string $name, int $excelDate)
     {
-        return Carbon::createFromTimestamp(($excelDate - 25569) * 86400)->toDateString();
+
+        try {
+            $latestApprovalDate = Carbon::createFromTimestamp(($excelDate - 25569) * 86400)->toDateString();
+
+            if (!Carbon::hasFormat($latestApprovalDate, 'Y-m-d')) {
+                CloudLogger::write([
+                    'action_type' => 'Data use import',
+                    'action_name' => class_basename($this) . '@model',
+                    'description' => $name . ' Invalid date format',
+                    'data' => $excelDate,
+                ], 'WARNING');
+                return null;
+            }
+
+            return $latestApprovalDate;
+        } catch (Throwable $e) {
+            CloudLogger::write([
+                'action_type' => 'Data use import',
+                'action_name' => class_basename($this) . '@model',
+                'description' =>  $name . ' Invalid date format',
+                'data' => $excelDate,
+            ], 'WARNING');
+            return null;
+        }
     }
 
     public function rules(): array
@@ -216,6 +262,30 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
                             'action_name' => class_basename($this) . '@'.__FUNCTION__,
                             'description' => 'Data use import :: missing latest approval date',
                         ], 'WARNING');
+                        return;
+                    }
+
+                    try {
+                        $date = $this->calculateExcelDate('Latest approval date', $value);
+
+                        if (!Carbon::hasFormat($date, 'Y-m-d')) {
+                            CloudLogger::write([
+                                'action_type' => 'Data use import',
+                                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                                'description' => 'Data use import :: latest approval date has invalid format',
+                                'data' => $date,
+                            ], 'WARNING');
+
+                            return;
+                        }
+                    } catch (\Throwable $e) {
+                        CloudLogger::write([
+                            'action_type' => 'Data use import',
+                            'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                            'description' => 'Data use import :: unable to parse latest approval date',
+                            'data' => $value,
+                        ], 'WARNING');
+
                         return;
                     }
                 },
