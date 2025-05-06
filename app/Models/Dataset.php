@@ -82,6 +82,56 @@ class Dataset extends Model
         'status',
     ];
 
+    public function getToolsAttribute()
+    {
+        return $this->attributes['tools'] ?? collect();
+    }
+
+    public function getToolsCountAttribute()
+    {
+        return $this->attributes['tools_count'] ?? 0;
+    }
+
+    public function getDursAttribute()
+    {
+        return $this->attributes['durs'] ?? collect();
+    }
+
+    public function getDursCountAttribute()
+    {
+        return $this->attributes['durs_count'] ?? 0;
+    }
+
+    public function getCollectionsAttribute()
+    {
+        return $this->attributes['collections'] ?? collect();
+    }
+
+    public function getCollectionsCountAttribute()
+    {
+        return $this->attributes['collections_count'] ?? 0;
+    }
+
+    public function getPublicationsAttribute()
+    {
+        return $this->attributes['publications'] ?? collect();
+    }
+
+    public function getPublicationsCountAttribute()
+    {
+        return $this->attributes['publications_count'] ?? 0;
+    }
+
+    public function getSpatialCoverageAttribute()
+    {
+        return $this->attributes['spatialCoverage'] ?? 0;
+    }
+
+    public function getNamedEntitiesAttribute()
+    {
+        return $this->attributes['named_entities'] ?? 0;
+    }
+
     /**
      * The version history of metadata that respond to this dataset.
      */

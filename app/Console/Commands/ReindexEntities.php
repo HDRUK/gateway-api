@@ -212,8 +212,9 @@ class ReindexEntities extends Command
             echo "---> Deleted $nDeleted documents from the index \n";
         }
 
-        $nTotal = Collection::count();
+        $nTotal = Collection::whereNotNull('team_id')->where('status', Collection::STATUS_ACTIVE)->count();
         $collectionIds = Collection::where('status', Collection::STATUS_ACTIVE)
+            ->whereNotNull('team_id')
             ->select('id')
             ->pluck('id')
             ->toArray();
@@ -252,7 +253,7 @@ class ReindexEntities extends Command
             $nDeleted = ECC::deleteAllDocuments(ECC::ELASTIC_NAME_DATAPROVIDER);
             echo "---> Deleted $nDeleted documents from the index \n";
         }
-        $providerIds = array_unique(Dataset::pluck('team_id')->toArray());
+        $providerIds = array_unique(Dataset::where(['status' => Dataset::STATUS_ACTIVE])->pluck('team_id')->toArray());
         $nTotal = count($providerIds);
         $teamIds = Team::whereIn('id', $providerIds)->select('id')
             ->pluck('id')->toArray();

@@ -1618,9 +1618,10 @@ class DataAccessApplicationTest extends TestCase
         $content = $response->decodeResponseJson();
         $this->assertEquals(1, count($content['data']));
 
+        // filtering for APPROVED should also return APPROVED_COMMENTS
         $response = $this->json(
             'GET',
-            'api/v1/teams/' . $teamId . '/dar/applications?approval_status=APPROVED_COMMENTS',
+            'api/v1/teams/' . $teamId . '/dar/applications?approval_status=APPROVED',
             [],
             $this->header
         );
@@ -2442,6 +2443,7 @@ class DataAccessApplicationTest extends TestCase
             [
                 'submission_status' => 'DRAFT',
                 'approval_status' => null,
+                'comment' => 'A comment'
             ],
             $this->header
         );
@@ -2454,6 +2456,46 @@ class DataAccessApplicationTest extends TestCase
         $content = $response->decodeResponseJson();
         $this->assertEquals($content['data']['teams'][0]['submission_status'], 'DRAFT');
         $this->assertEquals($content['data']['teams'][0]['approval_status'], null);
+
+        // Test that a review was created
+        $response = $this->json(
+            'GET',
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/reviews',
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data' => [
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                        'application_id',
+                        'question_id',
+                        'resolved',
+                        'comments' => [
+                            0 => [
+                                'id',
+                                'created_at',
+                                'updated_at',
+                                'deleted_at',
+                                'team_id',
+                                'user_id',
+                                'comment',
+                            ]
+                        ],
+                        'files',
+                    ]
+                ]
+            ]);
+        $content = $response->decodeResponseJson()['data'];
+
+        $this->assertEquals(1, count($content[0]['comments']));
+        $this->assertEquals('A comment', $content[0]['comments'][0]['comment']);
+
     }
 
     /**

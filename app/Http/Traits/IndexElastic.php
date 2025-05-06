@@ -150,7 +150,16 @@ trait IndexElastic
     public function reindexElasticDataProvider(string $teamId, bool $returnParams = false): null|array
     {
         try {
-            $datasets = Dataset::where('team_id', $teamId)->get();
+            $datasets = Dataset::where([
+                'team_id' => $teamId,
+                'status' => Dataset::STATUS_ACTIVE,
+            ]);
+
+            if (is_null($datasets->first())) {
+                return null;
+            }
+
+            $datasets = $datasets->get();
 
             $datasetTitles = [];
             $datasetVersionIds = [];
@@ -758,6 +767,10 @@ trait IndexElastic
     {
         $bulkParams = [];
         foreach ($ids as $id) {
+            $check = $indexer($id, true);
+            if (is_null($check)) {
+                continue;
+            }
             $bulkParams[] = $indexer($id, true);
         }
         ECC::indexBulk($bulkParams);
