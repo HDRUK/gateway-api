@@ -504,15 +504,11 @@ class CollectionController extends Controller
         $this->checkAccessCollaborators($input, array_column($collHasUsers, 'user_id'));
 
         try {
-            $initCollection = Collection::withTrashed()->where('id', $id)->first();
+            $initCollection = Collection::where('id', $id)->first();
 
             // Don't allow us to edit a team-owned Collection via this endpoint
             if ($initCollection['team_id'] !== null) {
                 throw new UnauthorizedException('Cannot update a team-owned Collection via the individual Collection endpoint');
-            }
-
-            if ($initCollection['status'] === Collection::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
-                throw new Exception('Cannot update current collection! Status already "ARCHIVED"');
             }
 
             $arrayKeys = [
@@ -528,7 +524,7 @@ class CollectionController extends Controller
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
-            Collection::where('id', $id)->update($array);
+            Collection::where('id', $id)->first()->update($array);
 
             $datasets = $input['datasets'] ?? [];
             $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
@@ -551,7 +547,7 @@ class CollectionController extends Controller
 
             // updated_on
             if (array_key_exists('updated_on', $input)) {
-                Collection::where('id', $id)->update(['updated_on' => $input['updated_on']]);
+                Collection::where('id', $id)->first()->update(['updated_on' => $input['updated_on']]);
             }
 
             Auditor::log([
@@ -588,15 +584,6 @@ class CollectionController extends Controller
      *    summary="Edit a collection",
      *    description="Edit a collection",
      *    security={{"bearerAuth":{}}},
-     *    @OA\Parameter(
-     *       name="unarchive",
-     *       in="query",
-     *       description="Unarchive a collection",
-     *       @OA\Schema(
-     *          type="string",
-     *          description="instruction to unarchive collection",
-     *       ),
-     *    ),
      *    @OA\Parameter(
      *       name="id",
      *       in="path",
@@ -685,130 +672,87 @@ class CollectionController extends Controller
         $this->checkAccessCollaborators($input, array_column($collHasUsers, 'user_id'));
 
         try {
-            if ($request->has('unarchive')) {
-                $collectionModel = Collection::withTrashed()
-                    ->find($id);
+            // get initial colleciton
+            $initCollection = Collection::where('id', $id)->first();
 
-                // Don't allow us to edit a team-owned Collection via this endpoint
-                if ($collectionModel['team_id'] !== null) {
-                    throw new UnauthorizedException('Cannot update a team-owned Collection via the individual Collection endpoint');
-                }
-                if ($request['status'] !== Collection::STATUS_ARCHIVED) {
-                    if (in_array($request['status'], [
-                        Collection::STATUS_ACTIVE, Collection::STATUS_DRAFT
-                    ])) {
-                        $collectionModel->status = $request['status'];
-                        $collectionModel->deleted_at = null;
-                        $collectionModel->save();
-
-                        CollectionHasDatasetVersion::withTrashed()->where('collection_id', $id)->restore();
-                        CollectionHasTool::withTrashed()->where('collection_id', $id)->restore();
-                        CollectionHasDur::withTrashed()->where('collection_id', $id)->restore();
-                        CollectionHasPublication::withTrashed()->where('collection_id', $id)->restore();
-
-                        Auditor::log([
-                            'user_id' => (int)$jwtUser['id'],
-                            'action_type' => 'UPDATE',
-                            'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                            'description' => 'Personal Collection ' . $id . ' unarchived and marked as ' . strtoupper($request['status']),
-                        ]);
-                    }
-                }
-
-                return response()->json([
-                    'message' => 'success',
-                    'data' => $this->getCollectionById($id),
-                ], Config::get('statuscodes.STATUS_OK.code'));
-            } else {
-                $arrayKeys = [
-                    'name',
-                    'description',
-                    'image_link',
-                    'enabled',
-                    'public',
-                    'counter',
-                    'mongo_object_id',
-                    'mongo_id',
-                    'team_id',
-                    'status',
-                ];
-                $array = $this->checkEditArray($input, $arrayKeys);
-
-                if (array_key_exists('name', $input)) {
-                    $array['name'] = formatCleanInput($input['name']);
-                }
-
-                // Handle the 'deleted_at' field based on 'status'
-                if (isset($input['status']) && ($input['status'] === Collection::STATUS_ARCHIVED)) {
-                    $array['deleted_at'] = Carbon::now();
-
-                } else {
-                    $array['deleted_at'] = null;
-                }
-
-                // get initial colleciton
-                $initCollection = Collection::withTrashed()->where('id', $id)->first();
-
-                // Don't allow us to edit a team-owned Collection via this endpoint
-                if ($initCollection['team_id'] !== null) {
-                    throw new UnauthorizedException('Cannot edit a team-owned Collection via the individual Collection endpoint');
-                }
-
-                //update it
-                Collection::withTrashed()->where('id', $id)->update($array);
-                // get updated collection
-                $updatedCollection = Collection::withTrashed()->where('id', $id)->first();
-                // Check and update related datasets and tools etc if the collection is active
-
-
-                // collaborators
-                if (array_key_exists('collaborators', $input)) {
-                    $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
-                    $this->updateCollectionUsers((int)$id, $collaborators);
-                }
-
-                if (array_key_exists('datasets', $input)) {
-                    $datasets = $input['datasets'];
-                    $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
-                }
-
-                if (array_key_exists('tools', $input)) {
-                    $tools = $input['tools'];
-                    $this->checkTools($id, $tools, (int)$jwtUser['id']);
-                }
-
-                if (array_key_exists('dur', $input)) {
-                    $dur = $input['dur'];
-                    $this->checkDurs($id, $dur, (int)$jwtUser['id']);
-                }
-
-                if (array_key_exists('publications', $input)) {
-                    $publications = $input['publications'];
-                    $this->checkPublications($id, $publications, (int)$jwtUser['id']);
-                }
-
-                if (array_key_exists('keywords', $input)) {
-                    $keywords = $input['keywords'];
-                    $this->checkKeywords($id, $keywords);
-                }
-
-                // add in a team
-                if (array_key_exists('team_id', $input)) {
-                    Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
-                }
-
-                Auditor::log([
-                    'user_id' => (int)$jwtUser['id'],
-                    'action_type' => 'UPDATE',
-                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'Personal Collection ' . $id . ' updated',
-                ]);
-
-                return response()->json([
-                    'message' => 'success',
-                    'data' => $this->getCollectionById($id),
-                ], 200);
+            // Don't allow us to edit a team-owned Collection via this endpoint
+            if ($initCollection['team_id'] !== null) {
+                throw new UnauthorizedException('Cannot edit a team-owned Collection via the individual Collection endpoint');
             }
+
+            $arrayKeys = [
+                'name',
+                'description',
+                'image_link',
+                'enabled',
+                'public',
+                'counter',
+                'mongo_object_id',
+                'mongo_id',
+                'team_id',
+                'status',
+            ];
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            if (array_key_exists('name', $input)) {
+                $array['name'] = formatCleanInput($input['name']);
+            }
+
+            //update it
+            $initCollection->update($array);
+
+            // get updated collection
+            $updatedCollection = Collection::where('id', $id)->first();
+            // Check and update related datasets and tools etc if the collection is active
+
+
+            // collaborators
+            if (array_key_exists('collaborators', $input)) {
+                $collaborators = (array_key_exists('collaborators', $input)) ? $input['collaborators'] : [];
+                $this->updateCollectionUsers((int)$id, $collaborators);
+            }
+
+            if (array_key_exists('datasets', $input)) {
+                $datasets = $input['datasets'];
+                $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
+            }
+
+            if (array_key_exists('tools', $input)) {
+                $tools = $input['tools'];
+                $this->checkTools($id, $tools, (int)$jwtUser['id']);
+            }
+
+            if (array_key_exists('dur', $input)) {
+                $dur = $input['dur'];
+                $this->checkDurs($id, $dur, (int)$jwtUser['id']);
+            }
+
+            if (array_key_exists('publications', $input)) {
+                $publications = $input['publications'];
+                $this->checkPublications($id, $publications, (int)$jwtUser['id']);
+            }
+
+            if (array_key_exists('keywords', $input)) {
+                $keywords = $input['keywords'];
+                $this->checkKeywords($id, $keywords);
+            }
+
+            // add in a team
+            if (array_key_exists('team_id', $input)) {
+                $updatedCollection->update(['team_id' => $input['team_id']]);
+            }
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Personal Collection ' . $id . ' updated',
+            ]);
+
+            return response()->json([
+                'message' => 'success',
+                'data' => $this->getCollectionById($id),
+            ], 200);
         } catch (UnauthorizedException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
@@ -829,8 +773,8 @@ class CollectionController extends Controller
      * @OA\Delete(
      *    path="/api/v2/collections/{id}",
      *    tags={"Collections"},
-     *    summary="Delete a collection",
-     *    description="Delete a collection",
+     *    summary="Soft-delete a collection",
+     *    description="Soft-delete a collection",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
      *       name="id",
@@ -877,21 +821,13 @@ class CollectionController extends Controller
 
         try {
             $collection = Collection::where(['id' => $id])->first();
-
-            // Don't allow us to edit a team-owned Collection via this endpoint
-            if ($collection['team_id'] !== null) {
-                throw new UnauthorizedException('Cannot delete a team-owned Collection via the individual Collection endpoint');
-            }
-            $initialStatus = $collection->status;
             if ($collection) {
-                CollectionHasDatasetVersion::where(['collection_id' => $id])->delete();
-                CollectionHasTool::where(['collection_id' => $id])->delete();
-                CollectionHasDur::where(['collection_id' => $id])->delete();
-                CollectionHasKeyword::where(['collection_id' => $id])->delete();
-                CollectionHasPublication::where(['collection_id' => $id])->delete();
-                CollectionHasUser::where(['collection_id' => $id])->delete();
-                Collection::where(['id' => $id])->update(['status' => Collection::STATUS_ARCHIVED]);
-                Collection::where(['id' => $id])->delete();
+                // Don't allow us to edit a team-owned Collection via this endpoint
+                if ($collection['team_id'] !== null) {
+                    throw new UnauthorizedException('Cannot delete a team-owned Collection via the individual Collection endpoint');
+                }
+
+                $collection->delete();
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],

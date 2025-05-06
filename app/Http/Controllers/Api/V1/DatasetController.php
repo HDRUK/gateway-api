@@ -223,11 +223,11 @@ class DatasetController extends Controller
                         return $query->withTrashed();
                     }
                 )
-                ->when(
-                    $sortOnMetadata,
-                    fn ($query) => $query->orderByMetadata($sortField, $sortDirection),
-                    fn ($query) => $query->orderBy($sortField, $sortDirection)
-                )
+                // ->when(
+                //     $sortOnMetadata,
+                //     fn ($query) => $query->orderByMetadata($sortField, $sortDirection),
+                //     fn ($query) => $query->orderBy($sortField, $sortDirection)
+                // )
                 ->paginate($perPage, ['*'], 'page');
 
             Auditor::log([
