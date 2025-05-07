@@ -72,6 +72,7 @@ trait IndexElastic
             // inject relationships via Local functions
             $materialTypes = $this->getMaterialTypes($metadata);
             $containsTissue = $this->getContainsTissues($materialTypes);
+            $datasetTypes = $this->getDatasetTypes($metadata);
 
             $toIndex = [
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
@@ -83,8 +84,9 @@ trait IndexElastic
                 'publisherName' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.publisher.name', 'metadata.summary.publisher.publisherName'], ''),
                 'startDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.startDate'], null),
                 'endDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.endDate'], Carbon::now()->addYears(5)),
-                'dataType' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], '')),
-                'dataSubType' => array_filter(explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetSubType'], ''))),
+                'dataTypeNest' => $datasetTypes,
+                // 'dataType' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], '')),
+                // 'dataSubType' => array_filter(explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetSubType'], ''))),
                 'containsTissue' => $containsTissue,
                 'sampleAvailability' => $materialTypes,
                 'conformsTo' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
@@ -129,6 +131,29 @@ trait IndexElastic
 
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function getDatasetTypes($metadata): array
+    {
+        // This map should come from the schema - rather than being hard coded here
+        // This is just a subset of the dataset types for illustration purposes
+        $typesSubTypesMap = [
+            'Health and disease' => ['Mental health', 'Cardiovascular', 'Respiratory'],
+            'Measurements/Tests' => ['Laboratory', 'Other diagnostics'],
+            'Registry' => ['Births and deaths']
+        ];
+        $dataTypes = explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], ''));
+        $subtypes = array_filter(explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetSubType'], '')));
+        $results = ['dataType' => $dataTypes];
+        foreach ($dataTypes as $d) {
+            if (isset($typesSubTypesMap[$d])) {
+                $results[$d] = array_values(array_intersect($typesSubTypesMap[$d], $subtypes));
+            } else {
+                $results[$d] = [];
+            }
+        }
+        $results['All'] = $subtypes;
+        return $results;
     }
 
     private function formatAndStandard($value)
