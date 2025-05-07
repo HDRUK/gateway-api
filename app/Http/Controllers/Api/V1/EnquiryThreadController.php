@@ -14,7 +14,6 @@ use App\Models\EnquiryThread;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use EnquiriesManagementController as EMC;
-use Laravel\Pennant\Feature;
 
 class EnquiryThreadController extends Controller
 {
@@ -208,8 +207,8 @@ class EnquiryThreadController extends Controller
                 'thread' => [
                     'user_id' => $user->id,
                     'team_ids' => [],
+                    'enquiry_unique_key' => Str::random(8),
                     'project_title' => isset($input['project_title']) ? $input['project_title'] : "",
-                    'unique_key' => Str::random(8), // 8 chars in length
                     'is_dar_dialogue' => $input['is_dar_dialogue'],
                     'is_dar_status' => $input['is_dar_status'],
                     'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
@@ -251,91 +250,59 @@ class EnquiryThreadController extends Controller
             // if not, then a separate enquiry thread and message are created for that team also.
             $teamIds = [];
             $teamNames = [];
-            if (Feature::active('features.SDEConciergeServiceEnquiry')) {
-                list($conciergeId, $conciergeName) = $this->getNetworkConcierge();
-                $sdeNetwork = DataProviderColl::where('name', 'LIKE', '%SDE%')
-                    ->with('teams')
-                    ->first();
-                $sdeTeamIds = $sdeNetwork ? array_column($sdeNetwork['teams']->toArray(), 'id') : [];
-
-                if ($input['is_general_enquiry']) {
-                    foreach ($payload['thread']['datasets'] as $d) {
-                        $team = Team::where('id', $d['team_id'])->first();
-                        if (in_array($team->id, $sdeTeamIds) && (count($payload['thread']['datasets']) > 1)) {
-                            $teamIds[] = $conciergeId;
-                            $teamNames[] = $conciergeName;
-                        } else {
-                            $teamIds[] = $team->id;
-                            $teamNames[] = $team->name;
-                        }
-                    }
-                } elseif (($input['is_feasibility_enquiry']) || ($input['is_dar_dialogue'])) {
-                    foreach ($payload['thread']['datasets'] as $d) {
-                        $dataset = Dataset::findOrFail($d['dataset_id']);
-                        $metadata = $dataset->latestMetadata()->first();
-                        $gatewayId = $metadata->metadata['metadata']['summary']['publisher']['gatewayId'];
-                        if (is_numeric($gatewayId)) {
-                            $team = Team::where('id', $gatewayId)->first();
-                        } else {
-                            $team = Team::where('pid', $gatewayId)->first();
-                        }
-                        if (in_array($team->id, $sdeTeamIds) && (count($payload['thread']['datasets']) > 1)) {
-                            $teamIds[] = $conciergeId;
-                            $teamNames[] = $conciergeName;
-                        } else {
-                            $teamIds[] = $team->id;
-                            $teamNames[] = $team->name;
-                        }
-                    }
-                }
-            } else {
-
-                foreach ($payload['thread']['datasets'] as $d) {
-                    $team = Team::where('id', $d['team_id'])->first();
-                    $teamIds[] = $team->id;
-                    $teamNames[] = $team->name;
-                }
+            foreach ($payload['thread']['datasets'] as $d) {
+                $team = Team::where('id', $d['team_id'])->first();
+                $teamIds[] = $team->id;
+                $teamNames[] = $team->name;
             }
-            $payload['thread']['team_ids'] = array_unique($teamIds);
-            $payload['message']['message_body']['[[TEAM_NAME]]'] = array_unique($teamNames);
-            $enquiryThreadId = EMC::createEnquiryThread($payload['thread']);
-            EMC::createEnquiryMessage($enquiryThreadId, $payload['message']);
-            $usersToNotify = EMC::getUsersByTeamIds($teamIds);
 
-            if (empty($usersToNotify)) {
+            $teamIds = array_unique($teamIds);
+            $allThreadIds = array();
+            $payload['message']['message_body']['[[TEAM_NAME]]'] = array_unique($teamNames);
+            foreach ($teamIds as $teamId) {
+                $payload['thread']['unique_key'] = Str::random(8); // 8 chars in length
+                $payload['thread']['team_id'] = $teamId;
+                $enquiryThreadId = EMC::createEnquiryThread($payload['thread']);
+                $allThreadIds[] = $enquiryThreadId;
+                EMC::createEnquiryMessage($enquiryThreadId, $payload['message']);
+                $usersToNotify = EMC::getUsersByTeamIds([$teamId]);
+
+                if (empty($usersToNotify)) {
+                    Auditor::log([
+                        'user_id' => (int)$jwtUser['id'],
+                        'action_type' => 'POST',
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => 'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' .
+                            $enquiryThreadId,
+                    ]);
+
+                    return response()->json([
+                        'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
+                        'data' => null,
+                    ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+                }
+
+                // Spawn email notifications to all DAR managers for this team
+                if ($input['is_feasibility_enquiry'] == true) {
+                    EMC::sendEmail('feasibilityenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
+                } elseif ($input['is_general_enquiry'] == true) {
+                    EMC::sendEmail('generalenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
+                } elseif ($input['is_dar_dialogue'] == true) {
+                    EMC::sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser);
+                }
+
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
-                    'action_type' => 'POST',
+                    'action_type' => 'CREATE',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' .
-                        $enquiryThreadId,
+                    'description' => 'EnquiryThread ' . $enquiryThreadId . ' created',
                 ]);
-
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
-                    'data' => null,
-                ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
             }
-
-            // Spawn email notifications to all DAR managers for this team
-            if ($input['is_feasibility_enquiry'] == true) {
-                EMC::sendEmail('feasibilityenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
-            } elseif ($input['is_general_enquiry'] == true) {
-                EMC::sendEmail('generalenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
-            } elseif ($input['is_dar_dialogue'] == true) {
-                EMC::sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser);
-            }
-
-            Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
-                'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'EnquiryThread ' . $enquiryThreadId . ' created',
-            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $enquiryThreadId,
+                'all_threads' => $allThreadIds,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
@@ -351,14 +318,7 @@ class EnquiryThreadController extends Controller
             ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
         }
     }
-    private function getNetworkConcierge(): array
-    {
-        $team = Team::where('name', 'LIKE', '%SDE Network%')->first();
-        if ($team) {
-            return array($team->id, $team->name);
-        }
-        return array(null, null);
-    }
+
     private function mapDatasets(array $datasets): array
     {
         $arr = [];

@@ -1,3 +1,33 @@
+## [2.9.0](https://github.com/HDRUK/gateway-api/compare/v2.8.1...v2.9.0) (2025-05-06)
+
+### ✨ Features
+
+* **GAT-6458:** Allow DTA to Sign in (#1190) ([0ff24b0](https://github.com/HDRUK/gateway-api/commit/0ff24b0633fa636a5f548fa2394089c956cf9c9b)), closes [GAT-6458](GAT-6458)
+* **GAT-6759:** Added created_at and updated_at in enquiry_threads (#1205) ([aa33a40](https://github.com/HDRUK/gateway-api/commit/aa33a40951c7b4d6d729a5bb6d3d648f49a3ef55)), closes [GAT-6759](GAT-6759)
+* **GAT-6959:** update data provider network serp with teams (#1203) ([775d0d4](https://github.com/HDRUK/gateway-api/commit/775d0d426aee43158965b5905d0191c2923189d6)), closes [GAT-6959](GAT-6959)
+
+### 🐛 Bug Fixes
+
+* **GAT-6599:** Allow DTA sign in from sub (#1209) ([3b66370](https://github.com/HDRUK/gateway-api/commit/3b663708f2eba9b0ed7af1327c5c0a012b2b0d05)), closes [GAT-6599](GAT-6599)
+* **GAT-6678:** Bug Data uses are able to upload with missing mandatory information (#1207) ([5ae6599](https://github.com/HDRUK/gateway-api/commit/5ae6599f6893765e535052c7b7272a5a746708e6)), closes [GAT-6678](GAT-6678)
+* **GAT-6726:** update question archiving (#1202) ([7db3b4e](https://github.com/HDRUK/gateway-api/commit/7db3b4e03878c2cdf9e8cedcda50cb71ad17b100)), closes [GAT-6726](GAT-6726)
+* **GAT-6758:** [BE] Data Custodian Search UI (#1199) ([e27b0bb](https://github.com/HDRUK/gateway-api/commit/e27b0bb5ec454128583c7defca68bd8584feeb4d)), closes [GAT-6758](GAT-6758)
+* **GAT-6854:** Extend linkage extraction job (under apps/jobs) for tools - Its not rendering on the Tools Search UI (#1210) ([f75564c](https://github.com/HDRUK/gateway-api/commit/f75564c151ba6f560bfff605edfb249a6ec65860)), closes [GAT-6854](GAT-6854)
+* **GAT-6868:** Fix deletion of datasets from Collections (#1206) ([ee22f5a](https://github.com/HDRUK/gateway-api/commit/ee22f5a8349d53db8bdaa24bbf44e84afbdefada))
+* **GAT-6869:** Data Custodian filter on Collections/Networks search UI has blank option that doesn't function (#1204) ([428272e](https://github.com/HDRUK/gateway-api/commit/428272e147e6e35f75f33ed1a91e80e0b81d3a5f)), closes [GAT-6869](GAT-6869)
+* **GAT-6913:** Update cohort expiry email job to run on certain days, and fix email button links (#1208) ([3e33ea5](https://github.com/HDRUK/gateway-api/commit/3e33ea57792a5b2755fb4646ffa9e5a335fee5f1))
+* **GAT-6941:** Show approved/approved comments in dashboards (#1198) ([3a5d71d](https://github.com/HDRUK/gateway-api/commit/3a5d71dfa67e857272d8a6c2d9c689f5bfa0f0d1)), closes [GAT-6941](GAT-6941)
+* **GAT-6945:** Linked datasets field is missing in the Dur upload (#1200) ([d7db898](https://github.com/HDRUK/gateway-api/commit/d7db898b192861234dc658be089d67efe767d690)), closes [GAT-6945](GAT-6945)
+* **GAT-6984:** add message to review when status set to draft by custodian (#1213) ([1f7f2a3](https://github.com/HDRUK/gateway-api/commit/1f7f2a376a00b035221c6f3c9e6938efb45ebc36)), closes [GAT-6984](GAT-6984)
+* **GAT-7004:** Update cohort renewal reminder email to remove button (#1211) ([15fbb17](https://github.com/HDRUK/gateway-api/commit/15fbb17f61afcd3c6a972c49dbf250927bdcc0c7)), closes [GAT-7004](GAT-7004)
+
+## [2.8.1](https://github.com/HDRUK/gateway-api/compare/v2.8.0...v2.8.1) (2025-04-30)
+
+### 🐛 Bug Fixes
+
+* **GAT-6913:** Update cohort expiry email job to run on certain days, and fix email button links (#1208) ([db19f25](https://github.com/HDRUK/gateway-api/commit/db19f257a449619f65ee97b56c45b535e781dbc5))
+* **GAT-7004:** Update cohort renewal reminder email to remove button (#1211) ([2f12883](https://github.com/HDRUK/gateway-api/commit/2f12883b1fcd8cb648e0a7371d310829182a27e2)), closes [GAT-7004](GAT-7004)
+
 ## [2.8.0](https://github.com/HDRUK/gateway-api/compare/v2.7.0...v2.8.0) (2025-04-22)
 
 ### ✨ Features

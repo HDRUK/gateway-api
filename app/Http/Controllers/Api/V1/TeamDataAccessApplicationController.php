@@ -769,12 +769,20 @@ class TeamDataAccessApplicationController extends Controller
                 'dar_application_id' => $id,
             ])->first();
 
+            $submissionStatusUpdate = $input['submission_status'] ?? null;
+
             $reviewId = null;
+            $review = null;
             if (isset($input['comment'])) {
-                $review = DataAccessApplicationReview::create([
-                    'application_id' => $id,
-                    'resolved' => true,
-                ]);
+                if ($submissionStatusUpdate === 'DRAFT') {
+                    $review = DataAccessApplicationReview::where('application_id', $id)->first();
+                }
+                if (!$review) {
+                    $review = DataAccessApplicationReview::create([
+                        'application_id' => $id,
+                        'resolved' => true,
+                    ]);
+                }
                 $reviewId = $review->id;
 
                 DataAccessApplicationComment::create([

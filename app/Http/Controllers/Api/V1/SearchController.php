@@ -1834,10 +1834,10 @@ class SearchController extends Controller
             $datasets = Dataset::where([
                 'team_id' => $team['id'],
                 'status' => 'ACTIVE',
-                ])->with('versions')->select(['id'])->get();
+                ])->with(['versions:id,dataset_id,short_title'])->select(['id'])->get();
             foreach ($datasets as $dataset) {
                 $metadata = $dataset['versions'][0];
-                $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
+                $datasetTitles[] = $metadata['short_title'];
             }
         }
         usort($datasetTitles, 'strcasecmp');
