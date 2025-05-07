@@ -78,4 +78,23 @@ class AppServiceProvider extends ServiceProvider
             $this->defineFeatureFlags($featureFlags);
         }
     }
+    protected function defineFeatureFlags(array $flags, string $prefix = '')
+    {
+        foreach ($flags as $key => $value) {
+            $fullKey = $prefix ? "{$prefix}.{$key}" : $key;
+
+            if (is_array($value)) {
+                if (isset($value['enabled']) && is_bool($value['enabled'])) {
+                    \Laravel\Pennant\Feature::define($fullKey, $value['enabled']);
+                    logger()->info("Feature flag defined: {$fullKey} = " . ($value['enabled'] ? 'ENABLED' : 'DISABLED'));
+                }
+
+                foreach ($value as $subKey => $subVal) {
+                    if (is_array($subVal)) {
+                        $this->defineFeatureFlags([$subKey => $subVal], $fullKey);
+                    }
+                }
+            }
+        }
+    }
 }
