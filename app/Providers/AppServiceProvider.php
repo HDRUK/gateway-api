@@ -10,6 +10,7 @@ use App\Models\TeamHasDataAccessApplication;
 use App\Observers\TeamHasDataAccessApplicationObserver;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -62,7 +63,8 @@ class AppServiceProvider extends ServiceProvider
 
         TeamHasDataAccessApplication::observe(TeamHasDataAccessApplicationObserver::class);
 
-        $url = 'https://raw.githubusercontent.com/HDRUK/gateway-web/feat/GAT-6927/public/test.json';
+
+        $url = env('FEATURE_FLAGGING_CONFIG_URL');
 
         $featureFlags = Cache::remember('feature_flags', now()->addMinutes(60), function () use ($url) {
             $res = Http::get($url);
@@ -82,9 +84,11 @@ class AppServiceProvider extends ServiceProvider
     {
         foreach ($flags as $key => $value) {
             $fullKey = $prefix ? "{$prefix}.{$key}" : $key;
-
+            Log::info('flags');
             if (is_array($value)) {
+                Log::info('flag is array');
                 if (isset($value['enabled']) && is_bool($value['enabled'])) {
+                    Log::info('flag is enabled');
                     \Laravel\Pennant\Feature::define($fullKey, $value['enabled']);
                     logger()->info("Feature flag defined: {$fullKey} = " . ($value['enabled'] ? 'ENABLED' : 'DISABLED'));
                 }
