@@ -921,7 +921,6 @@ class CollectionController extends Controller
             */
             'team',
         ])
-        ->withTrashed()
         ->where(['id' => $collectionId])
         ->first();
 
