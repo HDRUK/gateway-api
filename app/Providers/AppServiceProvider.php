@@ -8,6 +8,8 @@ use Illuminate\Support\ServiceProvider;
 use App\Http\Controllers\SSO\CustomAccessToken;
 use App\Models\TeamHasDataAccessApplication;
 use App\Observers\TeamHasDataAccessApplicationObserver;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -55,10 +57,25 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         Passport::useAccessTokenEntity(CustomAccessToken::class);
-
         Passport::tokensExpireIn(now()->addDays(15));
         Passport::refreshTokensExpireIn(now()->addDays(30));
 
         TeamHasDataAccessApplication::observe(TeamHasDataAccessApplicationObserver::class);
+
+        $url = 'https://raw.githubusercontent.com/HDRUK/gateway-web/feat/GAT-6927/public/test.json';
+
+        $featureFlags = Cache::remember('feature_flags', now()->addMinutes(60), function () use ($url) {
+            $res = Http::get($url);
+            if ($res->successful()) {
+                return $res->json();
+            }
+
+            logger()->error('Failed to fetch feature flags from GitHub', ['url' => $url]);
+            return [];
+        });
+
+        if (is_array($featureFlags)) {
+            $this->defineFeatureFlags($featureFlags);
+        }
     }
 }
