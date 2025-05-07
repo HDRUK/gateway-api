@@ -587,6 +587,7 @@ class DatasetController extends Controller
             // Ensure title is present for creating a dataset
             if (empty($input['metadata']['metadata']['summary']['title'])) {
                 return response()->json([
+                    'mmmm' => $input['metadata'],
                     'message' => 'Title is required to save a dataset',
                 ], 400);
             }
