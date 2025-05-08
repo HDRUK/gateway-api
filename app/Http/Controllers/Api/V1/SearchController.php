@@ -849,22 +849,31 @@ class SearchController extends Controller
      */
     public function dataUses(Request $request): JsonResponse|BinaryFileResponse
     {
+        $input = $request->all();
+        $download = array_key_exists('download', $input) ? $input['download'] : false;
+        $sort = $request->query('sort', 'score:desc');
+
+        $tmp = explode(":", $sort);
+        $sortField = $tmp[0];
+
+        $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
+        $aggs = Filter::where('type', 'dataUseRegister')->get()->toArray();
+        $input['aggs'] = $aggs;
+
         try {
-            $input = $request->all();
-            $download = array_key_exists('download', $input) ? $input['download'] : false;
-            $sort = $request->query('sort', 'score:desc');
-
-            $tmp = explode(":", $sort);
-            $sortField = $tmp[0];
-
-            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
-
-            $aggs = Filter::where('type', 'dataUseRegister')->get()->toArray();
-            $input['aggs'] = $aggs;
-
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur';
             $response = Http::post($urlString, $input);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+            throw new Exception('Operation timeout: The search query is too long. Please try searching with fewer keywords');
+        }
 
+        try {
             $durArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
 
