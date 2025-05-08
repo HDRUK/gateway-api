@@ -242,7 +242,8 @@ class EnquiryThreadController extends Controller
 
             $payload['thread']['dataCustodians'] = [];
             $dataCustodians = [];
-
+            $teamIds = [];
+            $teamNames = [];
 
             if (Feature::active('features.SDEConciergeServiceEnquiry')) {
                 list($conciergeId, $conciergeName) = $this->getNetworkConcierge();
@@ -287,8 +288,7 @@ class EnquiryThreadController extends Controller
                     $t = Team::where('id', $d['team_id'])->first();
                     $dataCustodians[] = $t->name;
                 }
-                $teamIds = [];
-                $teamNames = [];
+
                 foreach ($payload['thread']['datasets'] as $d) {
                     $team = Team::where('id', $d['team_id'])->first();
                     $teamIds[] = $team->id;
