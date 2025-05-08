@@ -497,14 +497,14 @@ class DatasetController extends Controller
                 return Excel::download(new DatasetStructuralMetadataExport($export), 'dataset-structural-metadata.csv');
             }
 
-            // linkage
-            $dataset->linkages = $this->getLinkages($latestVersionID);
-
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Dataset get ' . $id,
             ]);
+
+            // linkages
+            $dataset->setAttribute('linkages', $this->getLinkages($latestVersionID));
 
             return response()->json([
                 'message' => 'success',
@@ -557,7 +557,7 @@ class DatasetController extends Controller
         ->filter()
         ->values();
 
-        return $datasetLinkages ?? [];
+        return $datasetLinkages;
     }
 
     /**
