@@ -79,7 +79,12 @@ class DataAccessApplicationController extends Controller
                 'project_title' => $input['project_title'],
             ]);
 
-            $submissionStatus = isset($input['submission_status']) ? $input['submission_status'] : 'DRAFT';
+            $projectId = $input['project_id'] ?? $application->id;
+            $isJoint = count($input['dataset_ids']) > 1 ? true : false;
+            $application->update([
+                'project_id' => $projectId,
+                'is_joint' => $isJoint,
+            ]);
 
             // find data provider for each dataset
             $teams = array();
@@ -118,7 +123,6 @@ class DataAccessApplicationController extends Controller
                 TeamHasDataAccessApplication::create([
                     'dar_application_id' => $application->id,
                     'team_id' => $team->id,
-                    'submission_status' => $submissionStatus
                 ]);
 
                 $teams[] = $team;

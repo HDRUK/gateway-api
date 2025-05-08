@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Traits\SortManager;
+use App\Observers\DataAccessApplicationObserver;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -29,13 +31,28 @@ class DataAccessApplication extends Model
     protected $fillable = [
         'applicant_id',
         'project_title',
+        'project_id',
         'application_type',
+        'submission_status',
+        'approval_status',
+        'is_joint',
     ];
+
+    protected $casts = [
+        'is_joint' => 'boolean',
+    ];
+
+    protected $appends = ['teams'];
 
     protected static array $sortableColumns = [
         'project_title',
         'updated_at',
     ];
+
+    protected static $observers = [
+        DataAccessApplicationObserver::class
+    ];
+
 
     public function user(): BelongsTo
     {
@@ -57,9 +74,25 @@ class DataAccessApplication extends Model
         return $this->hasMany(DataAccessApplicationHasDataset::class, 'dar_application_id');
     }
 
-    public function teams(): HasMany
+    // TODO: reinstate this teams method and remove the custom attribute when the
+    // web has been updated to get submission_status and approval_status from the
+    // application rather than from the team relation.
+
+    // public function teams(): HasMany
+    // {
+    //     return $this->hasMany(TeamHasDataAccessApplication::class, 'dar_application_id');
+    // }
+
+    public function teams(): Attribute
     {
-        return $this->hasMany(TeamHasDataAccessApplication::class, 'dar_application_id');
+        return Attribute::make(
+            get: fn () => $this->hasMany(TeamHasDataAccessApplication::class, 'dar_application_id')
+                ->get()->transform(function ($team) {
+                    $team->submission_status = $this->submission_status;
+                    $team->approval_status = $this->approval_status;
+                    return $team;
+                })
+        );
     }
 
 }
