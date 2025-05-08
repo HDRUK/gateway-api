@@ -49,6 +49,7 @@ use App\Http\Traits\GetValueByPossibleKeys;
 use App\Models\PublicationHasDatasetVersion;
 use Illuminate\Database\Eloquent\Casts\Json;
 use App\Http\Requests\Search\PublicationSearch;
+use Illuminate\Http\Client\ConnectionException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SearchController extends Controller
@@ -476,8 +477,24 @@ class SearchController extends Controller
             $aggs = Filter::where('type', 'tool')->get()->toArray();
             $input['aggs'] = $aggs;
 
-            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/tools';
-            $response = Http::post($urlString, $input);
+            try {
+                $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/tools';
+                $response = Http::post($urlString, $input);
+            } catch (ConnectionException $e) {
+                Auditor::log([
+                    'action_type' => 'EXCEPTION',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => $e->getMessage(),
+                ]);
+                throw new Exception('Operation timeout: The search query is too long. Please try searching with fewer keywords');
+            } catch (Exception $e) {
+                Auditor::log([
+                    'action_type' => 'EXCEPTION',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => $e->getMessage(),
+                ]);
+                throw new Exception($e->getMessage());
+            }
 
             $toolsArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
@@ -849,22 +866,38 @@ class SearchController extends Controller
      */
     public function dataUses(Request $request): JsonResponse|BinaryFileResponse
     {
+        $input = $request->all();
+        $download = array_key_exists('download', $input) ? $input['download'] : false;
+        $sort = $request->query('sort', 'score:desc');
+
+        $tmp = explode(":", $sort);
+        $sortField = $tmp[0];
+
+        $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
+        $aggs = Filter::where('type', 'dataUseRegister')->get()->toArray();
+        $input['aggs'] = $aggs;
+
         try {
-            $input = $request->all();
-            $download = array_key_exists('download', $input) ? $input['download'] : false;
-            $sort = $request->query('sort', 'score:desc');
-
-            $tmp = explode(":", $sort);
-            $sortField = $tmp[0];
-
-            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
-
-            $aggs = Filter::where('type', 'dataUseRegister')->get()->toArray();
-            $input['aggs'] = $aggs;
-
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur';
             $response = Http::post($urlString, $input);
+        } catch (ConnectionException $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+            throw new Exception('Operation timeout: The search query is too long. Please try searching with fewer keywords');
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+            throw new Exception($e->getMessage());
+        }
 
+        try {
             $durArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
 
@@ -1070,8 +1103,24 @@ class SearchController extends Controller
                 $aggs = Filter::where('type', 'paper')->get()->toArray();
                 $input['aggs'] = $aggs;
 
-                $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/publications';
-                $response = Http::post($urlString, $input);
+                try {
+                    $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/publications';
+                    $response = Http::post($urlString, $input);
+                } catch (ConnectionException $e) {
+                    Auditor::log([
+                        'action_type' => 'EXCEPTION',
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => $e->getMessage(),
+                    ]);
+                    throw new Exception('Operation timeout: The search query is too long. Please try searching with fewer keywords');
+                } catch (Exception $e) {
+                    Auditor::log([
+                        'action_type' => 'EXCEPTION',
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => $e->getMessage(),
+                    ]);
+                    throw new Exception($e->getMessage());
+                }
 
                 $pubArray = $response['hits']['hits'];
                 $totalResults = $response['hits']['total']['value'];
@@ -1130,7 +1179,24 @@ class SearchController extends Controller
                     }
                 }
                 $input['field'] = ['TITLE', 'ABSTRACT', 'METHODS'];
-                $response = Http::post($urlString, $input);
+
+                try {
+                    $response = Http::post($urlString, $input);
+                } catch (ConnectionException $e) {
+                    Auditor::log([
+                        'action_type' => 'EXCEPTION',
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => $e->getMessage(),
+                    ]);
+                    throw new Exception('Operation timeout: The search query is too long. Please try searching with fewer keywords');
+                } catch (Exception $e) {
+                    Auditor::log([
+                        'action_type' => 'EXCEPTION',
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => $e->getMessage(),
+                    ]);
+                    throw new Exception($e->getMessage());
+                }
 
                 $pubArray = $response['resultList']['result'] ?? [];
                 $totalResults = $response['hitCount'];
