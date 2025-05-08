@@ -49,6 +49,7 @@ use App\Http\Traits\GetValueByPossibleKeys;
 use App\Models\PublicationHasDatasetVersion;
 use Illuminate\Database\Eloquent\Casts\Json;
 use App\Http\Requests\Search\PublicationSearch;
+use Illuminate\Http\Client\ConnectionException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SearchController extends Controller
@@ -1070,8 +1071,24 @@ class SearchController extends Controller
                 $aggs = Filter::where('type', 'paper')->get()->toArray();
                 $input['aggs'] = $aggs;
 
-                $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/publications';
-                $response = Http::post($urlString, $input);
+                try {
+                    $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/publications';
+                    $response = Http::post($urlString, $input);
+                } catch (ConnectionException $e) {
+                    Auditor::log([
+                        'action_type' => 'EXCEPTION',
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => $e->getMessage(),
+                    ]);
+                    throw new Exception('Operation timeout: The search query is too long. Please try searching with fewer keywords');
+                } catch (Exception $e) {
+                    Auditor::log([
+                        'action_type' => 'EXCEPTION',
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => $e->getMessage(),
+                    ]);
+                    throw new Exception($e->getMessage());
+                }
 
                 $pubArray = $response['hits']['hits'];
                 $totalResults = $response['hits']['total']['value'];
