@@ -183,7 +183,7 @@ class UserDataAccessApplicationController extends Controller
                 ->get();
 
             if ($field === 'action_required') {
-                $counts = $this->actionRequiredCounts($applications, null);
+                $counts = $this->actionRequiredCounts($applications);
             } else {
                 $counts = array();
                 foreach ($applications as $app) {
@@ -241,9 +241,9 @@ class UserDataAccessApplicationController extends Controller
             $applications = DataAccessApplication::where('applicant_id', $userId)
                 ->get();
 
-            $counts = $this->statusCounts($applications, null);
+            $counts = $this->statusCounts($applications);
 
-            $actionCounts = $this->actionRequiredCounts($applications, null);
+            $actionCounts = $this->actionRequiredCounts($applications);
             $counts = array_merge($counts, $actionCounts);
             $counts['ALL'] = count(TeamHasDataAccessApplication::whereIn(
                 'dar_application_id',
@@ -753,12 +753,16 @@ class UserDataAccessApplicationController extends Controller
             $originalStatus = $application['submission_status'];
             $newStatus = $input['submission_status'] ?? null;
 
+            $this->updateDataAccessApplication($application, $input);
+
             if (($newStatus === 'SUBMITTED') && ($originalStatus != 'SUBMITTED')) {
-                $application->update(['submission_status' => $newStatus]);
+                $application->update([
+                    'submission_status' => $newStatus,
+                    'is_joint' => false,
+                ]);
+                $this->splitSubmittedApplication($application);
                 $this->emailSubmissionNotification($id, $userId, $application);
             }
-
-            $this->updateDataAccessApplication($application, $input);
 
             if (isset($input['approval_status'])) {
                 $application->update(['approval_status' => $input['approval_status']]);
