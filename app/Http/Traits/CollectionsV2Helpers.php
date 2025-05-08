@@ -121,8 +121,7 @@ trait CollectionsV2Helpers
     // datasets
     private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null)
     {
-        $collectionHasDatasetVersions = CollectionHasDatasetVersion::withTrashed()
-                                            ->where('collection_id', $collectionId)
+        $collectionHasDatasetVersions = CollectionHasDatasetVersion::where('collection_id', $collectionId)
                                             ->select('dataset_version_id')
                                             ->get()
                                             ->toArray();
@@ -160,35 +159,10 @@ trait CollectionsV2Helpers
                 continue;
             }
 
-            // else if the latest version is already linked, then delete any links to older versions, and for the latest version, if it's been deleted previously, then re-add it
+            // else if the latest version is already linked, then delete any links to older versions
             if (in_array($datasetVersionLatestId, $commonDatasetVersionIds)) {
                 foreach ($commonDatasetVersionIds as $commonDatasetVersionId) {
-                    if ((int) $datasetVersionLatestId === (int) $commonDatasetVersionId) {
-                        $checkCollectionWithLatestDatasetVersionActive = CollectionHasDatasetVersion::where([
-                            'collection_id' => $collectionId,
-                            'dataset_version_id' => $commonDatasetVersionId,
-                        ])->first();
-
-                        if (!is_null($checkCollectionWithLatestDatasetVersionActive)) {
-                            continue;
-                        }
-
-                        $checkCollectionWithLatestDatasetVersionDeleted = CollectionHasDatasetVersion::onlyTrashed()
-                            ->where([
-                                'collection_id' => $collectionId,
-                                'dataset_version_id' => $commonDatasetVersionId,
-                            ])->first();
-
-                        if (!is_null($checkCollectionWithLatestDatasetVersionDeleted)) {
-                            CollectionHasDatasetVersion::withTrashed()->where([
-                                'collection_id' => $collectionId,
-                                'dataset_version_id' => $commonDatasetVersionId,
-                            ])
-                            ->limit(1)
-                            ->update(['deleted_at' => null]);
-                            continue;
-                        }
-                    } else {
+                    if ((int) $datasetVersionLatestId !== (int) $commonDatasetVersionId) {
                         CollectionHasDatasetVersion::where([
                             'collection_id' => $collectionId,
                             'dataset_version_id' => $commonDatasetVersionId,
@@ -249,7 +223,7 @@ trait CollectionsV2Helpers
                 $arrCreate['created_at'] = $dataset['updated_at'];
                 $arrCreate['updated_at'] = $dataset['updated_at'];
             }
-
+            //TODO: this whole function may now be unnecessary or at least convoluted - we never have a soft-deleted CHDV so it's a simple UpdateOrCreate?
             $checkRow = CollectionHasDatasetVersion::where($searchArray)->first();
             if (is_null($checkRow)) {
                 return CollectionHasDatasetVersion::create($arrCreate);
@@ -271,7 +245,7 @@ trait CollectionsV2Helpers
     private function checkInCollectionHasDatasetVersions(int $collectionId, int $datasetVersionId)
     {
         try {
-            return CollectionHasDatasetVersion::withTrashed()->where([
+            return CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
                 'dataset_version_id' => $datasetVersionId,
             ])->first();

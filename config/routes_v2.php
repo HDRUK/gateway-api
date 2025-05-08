@@ -277,6 +277,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,collections.create',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
@@ -291,6 +292,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,collections.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -306,6 +308,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,collections.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -320,6 +323,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,collections.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
