@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use Config;
 use App\Http\Enums\TeamMemberOf;
-
+use App\Jobs\SendEmailJob;
 use App\Models\Dataset;
 use App\Models\EnquiryThread;
 use App\Models\Team;
@@ -14,6 +14,7 @@ use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SDENetworkConciergeSeeder;
 
 use Database\Seeders\SpatialCoverageSeeder;
+use Illuminate\Support\Facades\Queue;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
