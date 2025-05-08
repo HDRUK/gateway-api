@@ -36,6 +36,7 @@ class DataAccessApplication extends Model
         'submission_status',
         'approval_status',
         'is_joint',
+        'status_review_id',
     ];
 
     protected $casts = [
@@ -88,8 +89,8 @@ class DataAccessApplication extends Model
         return Attribute::make(
             get: fn () => $this->hasMany(TeamHasDataAccessApplication::class, 'dar_application_id')
                 ->get()->transform(function ($team) {
-                    $team->submission_status = $this->submission_status;
-                    $team->approval_status = $this->approval_status;
+                    $team['submission_status'] = $this->submission_status;
+                    $team['approval_status'] = $this->approval_status;
                     return $team;
                 })
         );
