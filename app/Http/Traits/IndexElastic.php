@@ -647,6 +647,7 @@ trait IndexElastic
                     'category',
                     'typeCategory',
                     'license',
+                    'team',
                 ])
                 ->first();
 
@@ -728,6 +729,7 @@ trait IndexElastic
                 'tags' => $tags,
                 'datasetTitles' => $datasetTitles,
                 'dataProviderColl' => $dataProviderColl,
+                'dataProvider' => $tool['team']['name'] ?? null,
                 'resultsInsights' => $tool['results_insights']
             ];
 
