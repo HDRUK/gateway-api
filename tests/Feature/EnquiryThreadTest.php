@@ -12,6 +12,7 @@ use Database\Seeders\EmailTemplateSeeder;
 use Database\Seeders\EnquiryThreadSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SDENetworkConciergeSeeder;
+use Laravel\Pennant\Feature;
 
 use Database\Seeders\SpatialCoverageSeeder;
 use Illuminate\Support\Facades\Queue;
@@ -350,6 +351,11 @@ class EnquiryThreadTest extends TestCase
      */
     public function test_add_new_sde_enquiry_thread_with_success(): void
     {
+        Feature::resolve(function () {
+            return [
+                'features.SDEConciergeServiceEnquiry' => true,
+            ];
+        });
         $uniqueUserId = $this->createUser();
         $teamId = $this->createTeam([$uniqueUserId]);
         $team = Team::findOrFail($teamId);

@@ -78,8 +78,6 @@ class AppServiceProvider extends ServiceProvider
             if (is_array($featureFlags)) {
                 $this->defineFeatureFlags($featureFlags);
             }
-        } else {
-            logger()->warning('FEATURE_FLAGGING_CONFIG_URL env not set');
         }
     }
     protected function defineFeatureFlags(array $flags, string $prefix = '')
