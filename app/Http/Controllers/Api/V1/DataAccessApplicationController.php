@@ -80,7 +80,7 @@ class DataAccessApplicationController extends Controller
             ]);
 
             $projectId = $input['project_id'] ?? $application->id;
-            $isJoint = count($input['dataset_ids']) > 1 ? true : false;
+            $isJoint = count($input['dataset_ids']) > 1;
             $application->update([
                 'project_id' => $projectId,
                 'is_joint' => $isJoint,
