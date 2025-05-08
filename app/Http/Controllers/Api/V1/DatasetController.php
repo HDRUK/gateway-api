@@ -28,6 +28,7 @@ use App\Http\Requests\Dataset\CreateDataset;
 use App\Http\Requests\Dataset\ExportDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
 use App\Exports\DatasetStructuralMetadataExport;
+use App\Models\DatasetVersionHasDatasetVersion;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -496,6 +497,9 @@ class DatasetController extends Controller
                 return Excel::download(new DatasetStructuralMetadataExport($export), 'dataset-structural-metadata.csv');
             }
 
+            // linkage
+            $dataset->linkages = $this->getLinkages($latestVersionID);
+
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
@@ -516,6 +520,44 @@ class DatasetController extends Controller
 
             throw new Exception($e->getMessage());
         }
+    }
+
+    public function getLinkages($datasetVersionId)
+    {
+        $datasetLinkages = DatasetVersionHasDatasetVersion::where([
+            'dataset_version_source_id' => $datasetVersionId,
+        ])
+        ->get()
+        ->map(function ($linkage) {
+            $dv = DatasetVersion::where([
+                'id' => $linkage->dataset_version_target_id,
+            ])->select(['id', 'dataset_id', 'short_title'])->first();
+
+            if (is_null($dv)) {
+                return null;
+            }
+
+            $d = Dataset::where([
+                'id' => $dv->dataset_id,
+            ])->select(['id', 'status'])->first();
+
+            if (is_null($d)) {
+                return null;
+            }
+
+            if ($d->status !== Dataset::STATUS_ACTIVE) {
+                return null;
+            }
+
+            return [
+                'title' => $dv->short_title,
+                'url' => env('GATEWAY_URL') . '/en/dataset/' . $d->id,
+            ];
+        })
+        ->filter()
+        ->values();
+
+        return $datasetLinkages ?? [];
     }
 
     /**
