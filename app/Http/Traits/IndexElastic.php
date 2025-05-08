@@ -729,7 +729,7 @@ trait IndexElastic
                 'tags' => $tags,
                 'datasetTitles' => $datasetTitles,
                 'dataProviderColl' => $dataProviderColl,
-                'dataProvider' => $tool['team']['name'],
+                'dataProvider' => $tool['team']['name'] ?? null,
                 'resultsInsights' => $tool['results_insights']
             ];
 
