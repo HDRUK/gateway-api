@@ -477,8 +477,24 @@ class SearchController extends Controller
             $aggs = Filter::where('type', 'tool')->get()->toArray();
             $input['aggs'] = $aggs;
 
-            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/tools';
-            $response = Http::post($urlString, $input);
+            try {
+                $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/tools';
+                $response = Http::post($urlString, $input);
+            } catch (ConnectionException $e) {
+                Auditor::log([
+                    'action_type' => 'EXCEPTION',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => $e->getMessage(),
+                ]);
+                throw new Exception('Operation timeout: The search query is too long. Please try searching with fewer keywords');
+            } catch (Exception $e) {
+                Auditor::log([
+                    'action_type' => 'EXCEPTION',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => $e->getMessage(),
+                ]);
+                throw new Exception($e->getMessage());
+            }
 
             $toolsArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
