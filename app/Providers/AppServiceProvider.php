@@ -10,7 +10,6 @@ use App\Models\TeamHasDataAccessApplication;
 use App\Observers\TeamHasDataAccessApplicationObserver;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -65,30 +64,30 @@ class AppServiceProvider extends ServiceProvider
 
 
         $url = env('FEATURE_FLAGGING_CONFIG_URL');
+        if ($url) {
+            $featureFlags = Cache::remember('feature_flags', now()->addMinutes(60), function () use ($url) {
+                $res = Http::get($url);
+                if ($res->successful()) {
+                    return $res->json();
+                }
 
-        $featureFlags = Cache::remember('feature_flags', now()->addMinutes(60), function () use ($url) {
-            $res = Http::get($url);
-            if ($res->successful()) {
-                return $res->json();
+                logger()->error('Failed to fetch feature flags from URL', ['url' => $url]);
+                return [];
+            });
+
+            if (is_array($featureFlags)) {
+                $this->defineFeatureFlags($featureFlags);
             }
-
-            logger()->error('Failed to fetch feature flags from GitHub', ['url' => $url]);
-            return [];
-        });
-
-        if (is_array($featureFlags)) {
-            $this->defineFeatureFlags($featureFlags);
+        } else {
+            logger()->warning('FEATURE_FLAGGING_CONFIG_URL env not set');
         }
     }
     protected function defineFeatureFlags(array $flags, string $prefix = '')
     {
         foreach ($flags as $key => $value) {
             $fullKey = $prefix ? "{$prefix}.{$key}" : $key;
-            Log::info('flags');
             if (is_array($value)) {
-                Log::info('flag is array');
                 if (isset($value['enabled']) && is_bool($value['enabled'])) {
-                    Log::info('flag is enabled');
                     \Laravel\Pennant\Feature::define($fullKey, $value['enabled']);
                     logger()->info("Feature flag defined: {$fullKey} = " . ($value['enabled'] ? 'ENABLED' : 'DISABLED'));
                 }
