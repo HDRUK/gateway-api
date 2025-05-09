@@ -397,14 +397,16 @@ class CohortRequestController extends Controller
             }
 
             if ($id) {
-                CohortRequest::where('id', $id)->update([
-                    'user_id' => (int) $jwtUser['id'],
-                    'request_status' => 'PENDING',
-                    'cohort_status' => false,
-                    'request_expire_at' => null,
-                    'created_at' => Carbon::today()->toDateTimeString(),
-                ]);
-                CohortRequestHasPermission::where('id', $id)->delete();
+                $cohortRequest = (object) [
+                    'id' => CohortRequest::where('id', $id)->update([
+                        'user_id' => (int) $jwtUser['id'],
+                        'request_status' => 'PENDING',
+                        'cohort_status' => false,
+                        'request_expire_at' => null,
+                        'created_at' => Carbon::today()->toDateTimeString(),
+                    ])
+                ];
+                CohortRequestHasPermission::where('cohort_request_id', $id)->delete();
             } else {
                 $cohortRequest = CohortRequest::create([
                     'user_id' => (int) $jwtUser['id'],
@@ -674,7 +676,7 @@ class CohortRequestController extends Controller
             $cohortRequest->update(['accept_declaration' => false]);
             $cohortRequest->delete();
 
-            CohortRequestHasPermission::where('id', $id)->delete();
+            CohortRequestHasPermission::where('cohort_request_id', $id)->delete();
 
             $this->updateOrCreateContact($id);
 
@@ -1161,7 +1163,7 @@ class CohortRequestController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception('Cohort Request send email :: ' . $e->getMessage());
+            throw new Exception('Cohort Request check access :: ' . $e->getMessage());
         }
     }
 
