@@ -8,12 +8,14 @@ use Exception;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
+use App\Models\DataProviderColl;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\EnquiryThread;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use EnquiriesManagementController as EMC;
+use Laravel\Pennant\Feature;
 
 class EnquiryThreadController extends Controller
 {
@@ -240,21 +242,64 @@ class EnquiryThreadController extends Controller
 
             $payload['thread']['dataCustodians'] = [];
             $dataCustodians = [];
-            foreach ($payload['thread']['datasets'] as $d) {
-                $t = Team::where('id', $d['team_id'])->first();
-                $dataCustodians[] = $t->name;
+            $teamIds = [];
+            $teamNames = [];
+
+            if (Feature::active('features.SDEConciergeServiceEnquiry')) {
+                list($conciergeId, $conciergeName) = $this->getNetworkConcierge();
+                $sdeNetwork = DataProviderColl::where('name', 'LIKE', '%SDE%')
+                    ->with('teams')
+                    ->first();
+                $sdeTeamIds = $sdeNetwork ? array_column($sdeNetwork['teams']->toArray(), 'id') : [];
+
+                if ($input['is_general_enquiry']) {
+                    foreach ($payload['thread']['datasets'] as $d) {
+                        $team = Team::where('id', $d['team_id'])->first();
+                        if (in_array($team->id, $sdeTeamIds) && (count($payload['thread']['datasets']) > 1)) {
+                            $teamIds[] = $conciergeId;
+                            $teamNames[] = $conciergeName;
+                        } else {
+                            $teamIds[] = $team->id;
+                            $teamNames[] = $team->name;
+                        }
+                    }
+                } elseif (($input['is_feasibility_enquiry']) || ($input['is_dar_dialogue'])) {
+                    foreach ($payload['thread']['datasets'] as $d) {
+                        $dataset = Dataset::findOrFail($d['dataset_id']);
+                        $metadata = $dataset->latestMetadata()->first();
+                        $gatewayId = $metadata->metadata['metadata']['summary']['publisher']['gatewayId'];
+                        if (is_numeric($gatewayId)) {
+                            $team = Team::where('id', $gatewayId)->first();
+                        } else {
+                            $team = Team::where('pid', $gatewayId)->first();
+                        }
+                        if (in_array($team->id, $sdeTeamIds) && (count($payload['thread']['datasets']) > 1)) {
+                            $teamIds[] = $conciergeId;
+                            $teamNames[] = $conciergeName;
+                        } else {
+                            $teamIds[] = $team->id;
+                            $teamNames[] = $team->name;
+                        }
+                    }
+                }
+            } else {
+
+                foreach ($payload['thread']['datasets'] as $d) {
+                    $t = Team::where('id', $d['team_id'])->first();
+                    $dataCustodians[] = $t->name;
+                }
+
+                foreach ($payload['thread']['datasets'] as $d) {
+                    $team = Team::where('id', $d['team_id'])->first();
+                    $teamIds[] = $team->id;
+                    $teamNames[] = $team->name;
+                }
             }
             $payload['thread']['dataCustodians'] = array_unique($dataCustodians);
 
             // For each dataset we need to determine if teams are responsible for the data providing
             // if not, then a separate enquiry thread and message are created for that team also.
-            $teamIds = [];
-            $teamNames = [];
-            foreach ($payload['thread']['datasets'] as $d) {
-                $team = Team::where('id', $d['team_id'])->first();
-                $teamIds[] = $team->id;
-                $teamNames[] = $team->name;
-            }
+
 
             $teamIds = array_unique($teamIds);
             $allThreadIds = array();
@@ -318,7 +363,14 @@ class EnquiryThreadController extends Controller
             ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
         }
     }
-
+    private function getNetworkConcierge(): array
+    {
+        $team = Team::where('name', 'LIKE', '%SDE Network%')->first();
+        if ($team) {
+            return array($team->id, $team->name);
+        }
+        return array(null, null);
+    }
     private function mapDatasets(array $datasets): array
     {
         $arr = [];
