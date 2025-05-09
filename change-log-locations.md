@@ -14,7 +14,7 @@ This document provides a centralized index of changelog files for the repositori
    - **Changelog:** [CHANGELOG.md](https://github.com/HDRUK/search-service/blob/main/CHANGELOG.md)
 
 4. **[search-explanation-extractor](https://github.com/HDRUK/search-explanation-extractor)**
-   - **Changelog:** Not found in the repository.
+   - **Changelog:** [CHANGELOG.md](https://github.com/HDRUK/search-explanation-extractor/blob/dev/CHANGELOG.md)
 
 5. **[metadata-federation-service](https://github.com/HDRUK/metadata-federation-service)**
    - **Changelog:** [CHANGELOG.md](https://github.com/HDRUK/metadata-federation-service/blob/main/CHANGELOG.md)
