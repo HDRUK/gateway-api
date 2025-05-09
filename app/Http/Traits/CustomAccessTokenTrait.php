@@ -90,7 +90,7 @@ trait CustomAccessTokenTrait
             ->withClaim('sid', $sessionState)
             ->withClaim('allowed-origins', $allowedOrigins)
             ->withClaim('email_verified', true)
-            ->withClaim('email', $user->email)
+            ->withClaim('email', ($user->provider === 'open-athens' || $user->preferred_email === 'secondary') ? $user->secondary_email : $user->email)
             ->withClaim('preferred_username', $user->name)
             ->withClaim('name', $user->lastname . ' ' . $user->firstname)
             ->withClaim('given_name', $user->firstname)

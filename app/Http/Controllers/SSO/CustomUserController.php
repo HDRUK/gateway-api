@@ -65,7 +65,7 @@ class CustomUserController extends Controller
                 'profile' => $profile,
                 'given_name' => $user->firstname,
                 'family_name' => $user->lastname,
-                'email' => $user->email,
+                'email' => ($user->provider === 'open-athens' || $user->preferred_email === 'secondary') ? $user->secondary_email : $user->email,
                 'rquestroles' => $rRoles,
             ]);
         } catch (Exception $e) {
