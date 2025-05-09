@@ -622,6 +622,7 @@ class DatasetTest extends TestCase
                 'versions',
                 'durs_count',
                 'publications_count',
+                'linkages',
             ]
         ]);
         $responseGetOneActive->assertStatus(200);
@@ -703,6 +704,7 @@ class DatasetTest extends TestCase
                 'versions',
                 'durs_count',
                 'publications_count',
+                'linkages',
             ]
         ]);
         $responseGetOneDraft->assertStatus(200);
