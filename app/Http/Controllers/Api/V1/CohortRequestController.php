@@ -1145,6 +1145,9 @@ class CohortRequestController extends Controller
             if (strlen(trim($email)) === 0 || !$email) {
                 throw new Exception('Unauthorized for access :: The user email not found');
             }
+            if (filter_var(trim($email), FILTER_VALIDATE_EMAIL) === false) {
+                throw new Exception('Unauthorized for access :: The user email is not valid');
+            }
 
             // oidc
             OauthUser::where('user_id', $userId)->delete();
