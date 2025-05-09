@@ -1135,6 +1135,20 @@ class CohortRequestController extends Controller
                 throw new Exception('Unauthorized for access :: There are not enough permissions allocated for the cohort request');
             }
 
+            $user = User::where([
+                'id' => $userId,
+            ])->first();
+            if (!$user) {
+                throw new Exception('Unauthorized for access :: The user not found');
+            }
+            $email = ($user->provider === 'open-athens' || $user->preferred_email === 'secondary') ? $user->secondary_email : $user->email;
+            if (strlen(trim($email)) === 0 || !$email) {
+                throw new Exception('Unauthorized for access :: The user email not found');
+            }
+            if (filter_var(trim($email), FILTER_VALIDATE_EMAIL) === false) {
+                throw new Exception('Unauthorized for access :: The user email is not valid');
+            }
+
             // oidc
             OauthUser::where('user_id', $userId)->delete();
             session(['cr_uid' => $userId]);
