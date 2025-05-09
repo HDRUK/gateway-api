@@ -86,11 +86,15 @@ class TeamDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $applicationIds = TeamHasDataAccessApplication::where([
+            $teamApplications = TeamHasDataAccessApplication::where([
                 'team_id' => $teamId,
-                'submission_status' => 'SUBMITTED',
             ])->select('dar_application_id')
                 ->pluck('dar_application_id');
+
+            $applicationIds = DataAccessApplication::whereIn('id', $teamApplications)
+                ->where('submission_status', 'SUBMITTED')
+                ->select('id')
+                ->pluck('id');
 
             $filterTitle = $request->query('project_title', null);
             $filterApproval = $request->query('approval_status', null);
@@ -107,6 +111,11 @@ class TeamDataAccessApplicationController extends Controller
                 $teamId,
                 null,
             );
+
+            $projectGroups = $request->boolean('project_groups', true);
+            if ($projectGroups) {
+                $application = $this->groupApplicationsByProject($applications);
+            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -169,20 +178,19 @@ class TeamDataAccessApplicationController extends Controller
                 ->pluck('dar_application_id');
 
             $applications = DataAccessApplication::whereIn('id', $applicationIds)
-                ->with('teams')
                 ->get();
 
             if ($field === 'action_required') {
-                $counts = $this->actionRequiredCounts($applications, $teamId);
+                $counts = $this->actionRequiredCounts($applications);
             } else {
                 $counts = array();
                 foreach ($applications as $app) {
                     foreach ($app['teams'] as $t) {
                         if ($t->team_id === $teamId) {
-                            if (array_key_exists($t[$field], $counts)) {
-                                $counts[$t[$field]] += 1;
+                            if (array_key_exists($app[$field], $counts)) {
+                                $counts[$app[$field]] += 1;
                             } else {
-                                $counts[$t[$field]] = 1;
+                                $counts[$app[$field]] = 1;
                             }
                         }
                     }
@@ -226,19 +234,18 @@ class TeamDataAccessApplicationController extends Controller
     {
         try {
             $applicationIds = TeamHasDataAccessApplication::where('team_id', $teamId)
-                ->whereNot('submission_status', 'DRAFT')
                 ->select('dar_application_id')
                 ->pluck('dar_application_id');
 
             $applications = DataAccessApplication::whereIn('id', $applicationIds)
-                ->with('teams')
+                ->whereNot('submission_status', 'DRAFT')
                 ->get();
 
-            $counts = $this->statusCounts($applications, $teamId);
+            $counts = $this->statusCounts($applications);
 
-            $actionCounts = $this->actionRequiredCounts($applications, $teamId);
+            $actionCounts = $this->actionRequiredCounts($applications);
             $counts = array_merge($counts, $actionCounts);
-            $counts['ALL'] = count($applicationIds);
+            $counts['ALL'] = count($applications);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -310,7 +317,7 @@ class TeamDataAccessApplicationController extends Controller
             $this->checkTeamAccess($teamId, $id, 'view');
 
             $application = DataAccessApplication::where('id', $id)
-                ->with(['questions', 'teams'])
+                ->with(['questions'])
                 ->first();
 
             $this->getApplicationWithQuestions($application);
@@ -406,10 +413,9 @@ class TeamDataAccessApplicationController extends Controller
 
         try {
             $this->checkTeamAccess($teamId, $id, 'view');
-            $application = DataAccessApplication::where('id', $id)->with('teams')->first();
+            $application = DataAccessApplication::where('id', $id)->first();
 
-            $status = $this->getTeamApplicationStatus($teamId, $id);
-            $isDraft = $status['submission_status'] === 'DRAFT';
+            $isDraft = $application['submission_status'] === 'DRAFT';
             if ($isDraft) {
                 throw new Exception('Files associated with a data access request cannot be viewed when the request is still a draft.');
             }
@@ -501,10 +507,9 @@ class TeamDataAccessApplicationController extends Controller
 
         try {
             $this->checkTeamAccess($teamId, $id, 'view');
-            $application = DataAccessApplication::where('id', $id)->with('teams')->first();
+            $application = DataAccessApplication::where('id', $id)->first();
 
-            $status = $this->getTeamApplicationStatus($teamId, $id);
-            $isDraft = $status['submission_status'] === 'DRAFT';
+            $isDraft = $application['submission_status'] === 'DRAFT';
             if ($isDraft) {
                 throw new Exception('Files associated with a data access request cannot be downloaded when the request is still a draft.');
             }
@@ -764,6 +769,8 @@ class TeamDataAccessApplicationController extends Controller
         try {
             $this->checkTeamAccess($teamId, $id, 'edit');
 
+            $application = DataAccessApplication::findOrFail($id);
+
             $teamHasDar = TeamHasDataAccessApplication::where([
                 'team_id' => $teamId,
                 'dar_application_id' => $id,
@@ -792,8 +799,7 @@ class TeamDataAccessApplicationController extends Controller
                 ]);
             }
 
-            $status = $this->getTeamApplicationStatus($teamId, $id);
-            $originalStatus = $status['approval_status'];
+            $originalStatus = $application['approval_status'];
             $newStatus = $input['approval_status'] ?? $originalStatus;
 
             // Team can only edit statuses of a DAR
@@ -802,11 +808,11 @@ class TeamDataAccessApplicationController extends Controller
                 'submission_status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
-            $array['review_id'] = $reviewId;
-            $teamHasDar->update($array);
+            $array['status_review_id'] = $reviewId;
+            $application->update($array);
 
             if ($newStatus !== $originalStatus) {
-                $application = DataAccessApplication::where('id', $id)->with('teams')->first();
+                $application = DataAccessApplication::where('id', $id)->first();
                 $this->emailStatusNotification($id, $application, $teamId);
             }
 
@@ -819,7 +825,7 @@ class TeamDataAccessApplicationController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => DataAccessApplication::where('id', $id)->with('teams')->first(),
+                'data' => DataAccessApplication::where('id', $id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
 
         } catch (UnauthorizedException $e) {
@@ -961,18 +967,5 @@ class TeamDataAccessApplicationController extends Controller
         ];
 
         SendEmailJob::dispatch($to, $template, $replacements);
-    }
-
-    private function getTeamApplicationStatus(int $teamId, int $id): array
-    {
-        $teamHasDar = TeamHasDataAccessApplication::where([
-            'team_id' => $teamId,
-            'dar_application_id' => $id
-        ])->first();
-
-        return [
-            'approval_status' => $teamHasDar->approval_status,
-            'submission_status' => $teamHasDar->submission_status,
-        ];
     }
 }
