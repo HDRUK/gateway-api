@@ -12,7 +12,7 @@ class FeatureServiceProvider extends ServiceProvider
     public function boot()
     {
         $url = env('FEATURE_FLAGGING_CONFIG_URL');
-        if (!$url) {
+        if (app()->environment('testing') || !$url) {
             return;
         }
         $featureFlags = Cache::remember('feature_flags', now()->addMinutes(60), function () use ($url) {

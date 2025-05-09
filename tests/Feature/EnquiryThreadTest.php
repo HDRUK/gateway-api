@@ -4,22 +4,21 @@ namespace Tests\Feature;
 
 use Config;
 use App\Http\Enums\TeamMemberOf;
-use App\Jobs\SendEmailJob;
 use App\Models\Dataset;
 use App\Models\EnquiryThread;
 use App\Models\Team;
+use App\Jobs\SendEmailJob;
+
 use Database\Seeders\EmailTemplateSeeder;
+
 use Database\Seeders\EnquiryThreadSeeder;
 use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SDENetworkConciergeSeeder;
-use Laravel\Pennant\Feature;
-
 use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Support\Facades\Queue;
-
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
+use Laravel\Pennant\Feature;
+use Illuminate\Support\Facades\Queue;
 
 class EnquiryThreadTest extends TestCase
 {
@@ -47,11 +46,10 @@ class EnquiryThreadTest extends TestCase
             SpatialCoverageSeeder::class,
             EmailTemplateSeeder::class,
             EnquiryThreadSeeder::class,
-            SDENetworkConciergeSeeder::class,
-
         ]);
 
         $this->metadata = $this->getMetadata();
+
     }
 
     /**
@@ -120,6 +118,8 @@ class EnquiryThreadTest extends TestCase
      */
     public function test_add_new_dar_enquiry_thread_with_success(): void
     {
+        Feature::define('features.SDEConciergeServiceEnquiry', false);
+
         // Create user with dar.reviewer role
         $responseCreateUser = $this->json(
             'POST',
@@ -175,7 +175,6 @@ class EnquiryThreadTest extends TestCase
 
         $content = $responseTeam->decodeResponseJson();
         $teamId = $content['data'];
-        $team = Team::findOrFail($teamId);
 
         // assign roles to user
         $url = '/api/v1/teams/' . $teamId . '/users';
@@ -192,18 +191,14 @@ class EnquiryThreadTest extends TestCase
         );
         $responseUserRole->assertStatus(201);
 
-        $metadata = $this->getMetadata();
-        $metadata['metadata']['summary']['publisher'] = [
-            'name' => $team->name,
-            'gatewayId' => $team->id
-        ];
+        // Create dataset belonging to the team
         $responseCreateDataset = $this->json(
             'POST',
             'api/v1/datasets',
             [
                 'team_id' => $teamId,
-                'user_id' => 1,
-                'metadata' => $metadata,
+                'user_id' => $uniqueUserId,
+                'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_ACTIVE,
             ],
@@ -344,18 +339,16 @@ class EnquiryThreadTest extends TestCase
 
         $this->assertEquals($numThreadsAfter, $numThreadsBefore + 2);
     }
+
     /**
-     * Create an enquiry with SDE datasets
-     *
-     * @return void
-     */
+    * Create an enquiry with SDE datasets
+    *
+    * @return void
+    */
     public function test_add_new_sde_enquiry_thread_with_success(): void
     {
-        Feature::resolve(function () {
-            return [
-                'features.SDEConciergeServiceEnquiry' => true,
-            ];
-        });
+        Feature::define('features.SDEConciergeServiceEnquiry', true);
+
         $uniqueUserId = $this->createUser();
         $teamId = $this->createTeam([$uniqueUserId]);
         $team = Team::findOrFail($teamId);
@@ -578,7 +571,7 @@ class EnquiryThreadTest extends TestCase
             ],
             $this->header
         );
-        $responseTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $responseTeam->assertStatus(201);
 
         $content = $responseTeam->decodeResponseJson();
         $teamId = $content['data'];
