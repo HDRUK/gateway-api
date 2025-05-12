@@ -2,14 +2,16 @@
 
 namespace App\MetadataManagementController;
 
+use Auditor;
 use Exception;
-use App\Exceptions\MMCException;
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use App\Models\Library;
+use App\Models\DatasetVersion;
 use Illuminate\Support\Carbon;
+use App\Exceptions\MMCException;
 use Illuminate\Support\Facades\Http;
 use App\Http\Traits\GetValueByPossibleKeys;
+use Illuminate\Http\Client\ConnectionException;
 
 class MetadataManagementController
 {
@@ -59,10 +61,27 @@ class MetadataManagementController
             // whereas ::post does not?!
             //
             // TODO: Needs further investigation. Enigma alert.
-            $response = Http::withBody(
-                $dataset,
-                'application/json'
-            )->post($urlString);
+
+            try {
+                $response = Http::withBody(
+                    $dataset,
+                    'application/json'
+                )->post($urlString);
+            } catch (ConnectionException $e) {
+                Auditor::log([
+                    'action_type' => 'EXCEPTION',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => $e->getMessage(),
+                ]);
+                throw new Exception('Translation Service error. Contact Technical Support if this issue persists.');
+            } catch (Exception $e) {
+                Auditor::log([
+                    'action_type' => 'EXCEPTION',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => $e->getMessage(),
+                ]);
+                throw new Exception($e->getMessage());
+            }
 
             $wasTranslated =  $response->status() === 200;
             $metadata = null;
