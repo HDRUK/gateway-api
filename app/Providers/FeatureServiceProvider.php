@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Pennant\Feature;
+use App\Services\FeatureFlagManager;
 
 class FeatureServiceProvider extends ServiceProvider
 {
@@ -25,33 +26,16 @@ class FeatureServiceProvider extends ServiceProvider
         if ($res->successful()) {
             $featureFlags = $res->json();
             if (is_array($featureFlags)) {
-                $this->defineFeatureFlags($featureFlags);
+                $flagManager->define($featureFlags);
             }
         } else {
             logger()->error('Failed to fetch feature flags from URL', ['url' => $url]);
         }
 
         if (is_array($featureFlags)) {
-            $this->defineFeatureFlags($featureFlags);
+            $flagManager->define($featureFlags);
         }
     }
 
-    protected function defineFeatureFlags(array $flags, string $prefix = '')
-    {
-        foreach ($flags as $key => $value) {
-            $fullKey = $prefix ? "{$prefix}.{$key}" : $key;
-            if (is_array($value)) {
-                if (isset($value['enabled']) && is_bool($value['enabled'])) {
-                    Feature::define($fullKey, $value['enabled']);
-                    logger()->info("Feature flag defined: {$fullKey} = " . ($value['enabled'] ? 'ENABLED' : 'DISABLED'));
-                }
-
-                foreach ($value as $subKey => $subVal) {
-                    if (is_array($subVal)) {
-                        $this->defineFeatureFlags([$subKey => $subVal], $fullKey);
-                    }
-                }
-            }
-        }
-    }
+    
 }
