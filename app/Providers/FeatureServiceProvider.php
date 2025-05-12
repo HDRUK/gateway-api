@@ -12,7 +12,7 @@ class FeatureServiceProvider extends ServiceProvider
 {
     public function boot()
     {
-        if (Feature::defined()->isNotEmpty()) {
+        if (!empty(Feature::defined())) {
             return;
         }
         $url = env('FEATURE_FLAGGING_CONFIG_URL');
