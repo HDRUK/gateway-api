@@ -11,19 +11,25 @@ class FeatureServiceProvider extends ServiceProvider
 {
     public function boot()
     {
+        if (Feature::defined()->isNotEmpty()) {
+            return;
+        }
         $url = env('FEATURE_FLAGGING_CONFIG_URL');
+
         if (app()->environment('testing') || !$url) {
             return;
         }
-        $featureFlags = Cache::remember('feature_flags', now()->addMinutes(60), function () use ($url) {
-            $res = Http::get($url);
-            if ($res->successful()) {
-                return $res->json();
-            }
 
+        $res = Http::get($url);
+
+        if ($res->successful()) {
+            $featureFlags = $res->json();
+            if (is_array($featureFlags)) {
+                $this->defineFeatureFlags($featureFlags);
+            }
+        } else {
             logger()->error('Failed to fetch feature flags from URL', ['url' => $url]);
-            return [];
-        });
+        }
 
         if (is_array($featureFlags)) {
             $this->defineFeatureFlags($featureFlags);
