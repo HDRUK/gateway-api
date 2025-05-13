@@ -1724,10 +1724,15 @@ class DataAccessApplicationTest extends TestCase
      */
     public function test_the_application_can_list_dar_applications_by_user()
     {
-        $entityIds = $this->createDatasetForDar();
-        $datasetId = $entityIds['datasetId'];
-        $teamId = $entityIds['teamId'];
-        $questionId = $entityIds['questionId'];
+        $entityIdsOne = $this->createDatasetForDar();
+        $datasetIdOne = $entityIdsOne['datasetId'];
+        $teamIdOne = $entityIdsOne['teamId'];
+        $questionIdOne = $entityIdsOne['questionId'];
+
+        $entityIdsTwo = $this->createDatasetForDar();
+        $datasetIdTwo = $entityIdsTwo['datasetId'];
+        $teamIdTwo = $entityIdsTwo['teamId'];
+        $questionIdTwo = $entityIdsTwo['questionId'];
 
         // Create first DAR application for that dataset
         $response = $this->json(
@@ -1737,7 +1742,7 @@ class DataAccessApplicationTest extends TestCase
                 'applicant_id' => 1,
                 'submission_status' => 'DRAFT',
                 'project_title' => 'First test DAR',
-                'dataset_ids' => [$datasetId],
+                'dataset_ids' => [$datasetIdOne],
             ],
             $this->header
         );
@@ -1756,7 +1761,7 @@ class DataAccessApplicationTest extends TestCase
             [
                 'applicant_id' => 1,
                 'project_title' => 'Second test DAR',
-                'dataset_ids' => [$datasetId],
+                'dataset_ids' => [$datasetIdOne, $datasetIdTwo],
             ],
             $this->header
         );
@@ -1781,7 +1786,7 @@ class DataAccessApplicationTest extends TestCase
         // Update approval status of application two
         $response = $this->json(
             'PATCH',
-            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationIdTwo,
+            'api/v1/teams/' . $teamIdTwo . '/dar/applications/' . $applicationIdTwo,
             [
                 'approval_status' => 'APPROVED_COMMENTS',
             ],
@@ -1792,10 +1797,10 @@ class DataAccessApplicationTest extends TestCase
         // Add a review to second DAR application
         $response = $this->json(
             'POST',
-            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationIdTwo . '/questions/' . $questionId . '/reviews',
+            'api/v1/teams/' . $teamIdTwo . '/dar/applications/' . $applicationIdTwo . '/questions/' . $questionIdOne . '/reviews',
             [
                 'comment' => 'A test review comment',
-                'team_id' => $teamId
+                'team_id' => $teamIdTwo
             ],
             $this->header
         );
@@ -1844,6 +1849,10 @@ class DataAccessApplicationTest extends TestCase
                         ],
                         'teams' => [
                             0 => [
+                                'submission_status',
+                                'approval_status',
+                            ],
+                            1 => [
                                 'submission_status',
                                 'approval_status',
                             ]
