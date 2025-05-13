@@ -418,4 +418,19 @@ trait DataAccessApplicationHelpers
             $page
         );
     }
+
+    public function returnApplicationsInProject(LengthAwarePaginator $applications): LengthAwarePaginator
+    {
+        $applications->getCollection()->transform(function ($application) {
+            $sameProject = DataAccessApplication::where('project_id', $application['project_id'])
+                ->get();
+            $teams = $sameProject->flatMap(function ($app) {
+                return $app['teams'];
+            })->unique('id')->values();
+
+            $application['teams'] = $teams;
+            return $application;
+        });
+        return $applications;
+    }
 }

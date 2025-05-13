@@ -116,6 +116,7 @@ class UserDataAccessApplicationController extends Controller
             if ($projectGroups) {
                 $applications = $this->groupApplicationsByProject($applications);
             }
+            $applications = $this->returnApplicationsInProject($applications);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
