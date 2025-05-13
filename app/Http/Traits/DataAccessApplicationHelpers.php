@@ -176,7 +176,6 @@ trait DataAccessApplicationHelpers
             $actionMatches = [];
             foreach ($matches as $i => $m) {
                 $review = DataAccessApplicationReview::where('application_id', $m)
-                    ->latest()
                     ->with('comments')
                     ->first();
                 if ($review) {
@@ -285,7 +284,6 @@ trait DataAccessApplicationHelpers
             $reviewIds = array_column($reviews->toArray(), 'id');
 
             $review = DataAccessApplicationReview::whereIn('id', $reviewIds)
-                ->latest()
                 ->with('comments')
                 ->first();
             $latestComment = $review['comments'][array_key_last($review['comments']->toArray())];
