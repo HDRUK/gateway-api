@@ -397,14 +397,16 @@ class CohortRequestController extends Controller
             }
 
             if ($id) {
-                CohortRequest::where('id', $id)->update([
-                    'user_id' => (int) $jwtUser['id'],
-                    'request_status' => 'PENDING',
-                    'cohort_status' => false,
-                    'request_expire_at' => null,
-                    'created_at' => Carbon::today()->toDateTimeString(),
-                ]);
-                CohortRequestHasPermission::where('id', $id)->delete();
+                $cohortRequest = (object) [
+                    'id' => CohortRequest::where('id', $id)->update([
+                        'user_id' => (int) $jwtUser['id'],
+                        'request_status' => 'PENDING',
+                        'cohort_status' => false,
+                        'request_expire_at' => null,
+                        'created_at' => Carbon::today()->toDateTimeString(),
+                    ])
+                ];
+                CohortRequestHasPermission::where('cohort_request_id', $id)->delete();
             } else {
                 $cohortRequest = CohortRequest::create([
                     'user_id' => (int) $jwtUser['id'],
@@ -674,7 +676,7 @@ class CohortRequestController extends Controller
             $cohortRequest->update(['accept_declaration' => false]);
             $cohortRequest->delete();
 
-            CohortRequestHasPermission::where('id', $id)->delete();
+            CohortRequestHasPermission::where('cohort_request_id', $id)->delete();
 
             $this->updateOrCreateContact($id);
 
@@ -1135,6 +1137,20 @@ class CohortRequestController extends Controller
                 throw new Exception('Unauthorized for access :: There are not enough permissions allocated for the cohort request');
             }
 
+            $user = User::where([
+                'id' => $userId,
+            ])->first();
+            if (!$user) {
+                throw new Exception('Unauthorized for access :: The user not found');
+            }
+            $email = ($user->provider === 'open-athens' || $user->preferred_email === 'secondary') ? $user->secondary_email : $user->email;
+            if (strlen(trim($email)) === 0 || !$email) {
+                throw new Exception('Unauthorized for access :: The user email not found');
+            }
+            if (filter_var(trim($email), FILTER_VALIDATE_EMAIL) === false) {
+                throw new Exception('Unauthorized for access :: The user email is not valid');
+            }
+
             // oidc
             OauthUser::where('user_id', $userId)->delete();
             session(['cr_uid' => $userId]);
@@ -1161,7 +1177,7 @@ class CohortRequestController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception('Cohort Request send email :: ' . $e->getMessage());
+            throw new Exception('Cohort Request check access :: ' . $e->getMessage());
         }
     }
 
