@@ -425,7 +425,7 @@ trait DataAccessApplicationHelpers
             $sameProject = DataAccessApplication::where('project_id', $application['project_id'])
                 ->get();
             $teams = $sameProject->flatMap(function ($app) {
-                return $app->teams;
+                return $app['teams'];
             })->unique('id')->values();
 
             $application['teams'] = $teams;
