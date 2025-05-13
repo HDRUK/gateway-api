@@ -424,10 +424,10 @@ trait DataAccessApplicationHelpers
         $applications->getCollection()->transform(function ($application) {
             $sameProject = DataAccessApplication::where('project_id', $application['project_id'])
                 ->get();
-            $teams = array();
-            foreach ($sameProject as $app) {
-                $teams = array_merge($teams, $app['teams']->toArray());
-            }
+            $teams = $sameProject->flatMap(function ($app) {
+                return $app->teams;
+            })->unique('id')->values();
+
             $application['teams'] = $teams;
             return $application;
         });
