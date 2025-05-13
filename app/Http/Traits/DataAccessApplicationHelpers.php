@@ -426,9 +426,8 @@ trait DataAccessApplicationHelpers
         foreach ($applications as $application) {
             $applicationArray = array();
             $sameProject = DataAccessApplication::where('project_id', $application['project_id'])
-                ->whereNot('id', $application['id'])
                 ->get();
-            $teams = $application['teams'];
+            $teams = array();
             foreach ($sameProject as $app) {
                 $teams = array_merge($teams, $app['teams']->toArray());
             }
