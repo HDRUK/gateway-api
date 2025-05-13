@@ -58,29 +58,23 @@ class FeatureFlagController extends Controller
      */
     public function index(Request $request, FeatureFlagManager $flagManager): JsonResponse
     {
-        //$secret = env('GITHUB_WEBHOOK_FEATURE_FLAG_SECRET');
-        $signature = $request->header('X-Hub-Signature-256');
+        $expectedToken = env('FEATURE_FLAG_API_TOKEN');
+        $authHeader = $request->header('Authorization');
 
-        // if (!$signature || !$secret) {
-        //     return response()->json(['message' => 'Unauthorized: Missing signature or secret.'], 401);
-        // }
-        if (!$signature) {
-            return response()->json(['message' => 'Unauthorized: Missing signature or secret.'], 401);
+        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+            return response()->json(['message' => 'Unauthorized: Missing or invalid Authorization header.'], 401);
         }
 
-        $hash = 'sha256=' . hash_hmac('sha256', $request->getContent(), 'test');
-
-        if (!hash_equals($hash, $signature)) {
-            Log::warning('Invalid GitHub signature', ['provided' => $signature, 'calculated' => $hash]);
-            return response()->json(['message' => 'Unauthorized: Signature mismatch.'], 401);
+        $providedToken = substr($authHeader, 7); // remove "Bearer "
+        if (!hash_equals($expectedToken, $providedToken)) {
+            Log::warning('Invalid API token', ['provided' => $providedToken]);
+            return response()->json(['message' => 'Unauthorized: Invalid token.'], 401);
         }
-
 
         $featureFlags = $request->json()->all();
 
         if (!empty($featureFlags)) {
             Log::info("Using feature flags from request body: " . print_r($featureFlags, true));
-
         } else {
             $url = env('FEATURE_FLAGGING_CONFIG_URL');
 
