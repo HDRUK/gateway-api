@@ -1302,7 +1302,6 @@ class TeamController extends Controller
         $this->collections = array_unique(array_merge($this->collections, Arr::pluck($dataset->allCollections, 'id')));
     }
 
-
     private function updateTeamAlias(int $teamId, array $arrayTeamAlias): void
     {
         TeamHasAlias::where('team_id', $teamId)->delete();
