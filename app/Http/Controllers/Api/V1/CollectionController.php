@@ -421,7 +421,7 @@ class CollectionController extends Controller
             Auditor::log([
                 'action_type' => 'SHOW',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'CohortRequest show ' . $id,
+                'description' => 'Collection show ' . $id,
             ]);
 
             return response()->json([

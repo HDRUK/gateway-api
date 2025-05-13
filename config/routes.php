@@ -4688,4 +4688,89 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+
+    // aliases
+    [
+        'name' => 'aliases',
+        'method' => 'get',
+        'path' => '/aliases',
+        'methodController' => 'AliasController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'aliases',
+        'method' => 'get',
+        'path' => '/aliases/{id}',
+        'methodController' => 'AliasController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'aliases',
+        'method' => 'post',
+        'path' => '/aliases',
+        'methodController' => 'AliasController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'aliases',
+        'method' => 'put',
+        'path' => '/aliases/{id}',
+        'methodController' => 'AliasController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'aliases',
+        'method' => 'patch',
+        'path' => '/aliases/{id}',
+        'methodController' => 'AliasController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'aliases',
+        'method' => 'delete',
+        'path' => '/aliases/{id}',
+        'methodController' => 'AliasController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 ];

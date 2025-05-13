@@ -4,8 +4,10 @@ namespace App\Http\Traits;
 
 use Config;
 use App\Models\User;
+use App\Models\Alias;
 use App\Models\TeamHasUser;
 use App\Models\Notification;
+use App\Models\TeamHasAlias;
 use App\Models\TeamHasNotification;
 use App\Models\TeamUserHasNotification;
 
@@ -105,11 +107,20 @@ trait TeamTransformation
             }
             $tmpTeam['notifications'] = $tmpNotification;
 
+            $aliases = TeamHasAlias::where('team_id', $tmpTeam['id'])->get()->toArray();
+            $tmpAlias = [];
+            foreach ($aliases as $value) {
+                $alias = Alias::where('id', $value['alias_id'])->firstOrFail();
+                $tmpAlias[] = $alias;
+            }
+            $tmpTeam['aliases'] = $tmpAlias;
+
             $response[] = $tmpTeam;
             unset($tmpTeam);
             unset($tmpUser);
             unset($notifications);
             unset($tmpNotification);
+            unset($tmpAlias);
         }
 
         if (count($response) > 1) {
