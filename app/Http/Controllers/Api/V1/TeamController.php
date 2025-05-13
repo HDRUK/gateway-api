@@ -142,7 +142,7 @@ class TeamController extends Controller
 
             $perPage = request('per_page', Config::get('constants.per_page'));
             $teams = $query
-                ->with('users')
+                ->with(['users', 'aliases'])
                 ->paginate($perPage, ['*'], 'page')
                 ->toArray();
 
@@ -214,6 +214,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *                  @OA\Property(property="introduction", type="string", example="info about the team"),
      *                  @OA\Property(property="service", type="string", example="https://example"),
+     *                  @OA\Property(property="aliases", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
      *              )
      *          ),
      *      ),
@@ -619,62 +620,62 @@ class TeamController extends Controller
         $superAdminIds = User::where('is_admin', true)->pluck('id');
         $team = Team::create($arrayTeam);
 
-        try {
-            if ($team) {
-                foreach ($arrayTeamNotification as $value) {
-                    TeamHasNotification::updateOrCreate([
-                        'team_id' => (int)$team->id,
-                        'notification_id' => (int)$value,
-                    ]);
-                }
-
-                $arrayTeamAlias && $this->updateTeamAlias((int)$team->id, $arrayTeamAlias);
-
-                //make sure the super admin is added to this team on creation
-                foreach ($superAdminIds as $adminId) {
-                    TeamHasUser::create(
-                        ['team_id' => $team->id, 'user_id' => $adminId],
-                    );
-                }
-
-                $roles = Role::where(['name' => 'custodian.team.admin'])->first();
-                foreach ($arrayTeamUsers as $value) {
-                    $teamHasUsers = TeamHasUser::create([
-                        'team_id' => (int)$team->id,
-                        'user_id' => (int)$value,
-                    ]);
-
-                    TeamUserHasRole::updateOrCreate([
-                        'team_has_user_id' => (int)$teamHasUsers->id,
-                        'role_id' => (int)$roles->id,
-                    ]);
-                }
-            } else {
-                throw new NotFoundException();
+        // try {
+        if ($team) {
+            foreach ($arrayTeamNotification as $value) {
+                TeamHasNotification::updateOrCreate([
+                    'team_id' => (int)$team->id,
+                    'notification_id' => (int)$value,
+                ]);
             }
 
-            Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
-                'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Team ' . $team->id . ' created',
-            ]);
+            $arrayTeamAlias && $this->updateTeamAlias((int)$team->id, $arrayTeamAlias);
 
-            return response()->json([
-                'message' => 'success',
-                'data' => $team->id,
-            ], Config::get('statuscodes.STATUS_CREATED.code'));
-        } catch (Exception $e) {
-            Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
-                'team_id' => $team->id,
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
+            //make sure the super admin is added to this team on creation
+            foreach ($superAdminIds as $adminId) {
+                TeamHasUser::create(
+                    ['team_id' => $team->id, 'user_id' => $adminId],
+                );
+            }
 
-            throw new Exception($e->getMessage());
+            $roles = Role::where(['name' => 'custodian.team.admin'])->first();
+            foreach ($arrayTeamUsers as $value) {
+                $teamHasUsers = TeamHasUser::create([
+                    'team_id' => (int)$team->id,
+                    'user_id' => (int)$value,
+                ]);
+
+                TeamUserHasRole::updateOrCreate([
+                    'team_has_user_id' => (int)$teamHasUsers->id,
+                    'role_id' => (int)$roles->id,
+                ]);
+            }
+        } else {
+            throw new NotFoundException();
         }
+
+        Auditor::log([
+            'user_id' => (int)$jwtUser['id'],
+            'action_type' => 'CREATE',
+            'action_name' => class_basename($this) . '@' . __FUNCTION__,
+            'description' => 'Team ' . $team->id . ' created',
+        ]);
+
+        return response()->json([
+            'message' => 'success',
+            'data' => $team->id,
+        ], Config::get('statuscodes.STATUS_CREATED.code'));
+        // } catch (Exception $e) {
+        //     Auditor::log([
+        //         'user_id' => (int)$jwtUser['id'],
+        //         'team_id' => $team->id,
+        //         'action_type' => 'EXCEPTION',
+        //         'action_name' => class_basename($this) . '@' . __FUNCTION__,
+        //         'description' => $e->getMessage(),
+        //     ]);
+
+        //     throw new Exception($e->getMessage());
+        // }
 
     }
 
@@ -821,7 +822,7 @@ class TeamController extends Controller
             }
 
             $arrayTeamAlias = array_key_exists('aliases', $input) ? $input['aliases'] : [];
-            $arrayTeamAlias && $this->updateTeamAlias($teamId, $arrayTeamAlias);
+            $arrayTeamAlias && $this->updateTeamAlias((int)$teamId, $arrayTeamAlias);
 
             $users = array_key_exists('users', $input) ? $input['users'] : [];
             $this->updateTeamAdminUsers($teamId, $users);
@@ -981,7 +982,7 @@ class TeamController extends Controller
             }
 
             $arrayTeamAlias = array_key_exists('aliases', $input) ? $input['aliases'] : [];
-            $arrayTeamAlias && $this->updateTeamAlias($teamId, $arrayTeamAlias);
+            $arrayTeamAlias && $this->updateTeamAlias((int)$teamId, $arrayTeamAlias);
 
             $users = array_key_exists('users', $input) ? $input['users'] : [];
             $this->updateTeamAdminUsers($teamId, $users);
@@ -1305,10 +1306,11 @@ class TeamController extends Controller
     private function updateTeamAlias(int $teamId, array $arrayTeamAlias): void
     {
         TeamHasAlias::where('team_id', $teamId)->delete();
+
         foreach ($arrayTeamAlias as $aliasId) {
             TeamHasAlias::updateOrCreate([
                 'team_id' => (int)$teamId,
-                'alias' => (int)$aliasId,
+                'alias_id' => (int)$aliasId,
             ]);
         }
     }
