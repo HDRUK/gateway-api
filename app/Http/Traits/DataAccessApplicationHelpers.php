@@ -421,10 +421,7 @@ trait DataAccessApplicationHelpers
 
     public function returnApplicationsInProject(LengthAwarePaginator $applications): LengthAwarePaginator
     {
-        $applicationsResult = array();
-
-        foreach ($applications as $application) {
-            $applicationArray = array();
+        $applications->getCollection()->transform(function ($application) {
             $sameProject = DataAccessApplication::where('project_id', $application['project_id'])
                 ->get();
             $teams = array();
@@ -432,17 +429,8 @@ trait DataAccessApplicationHelpers
                 $teams = array_merge($teams, $app['teams']->toArray());
             }
             $application['teams'] = $teams;
-            $applicationsResult[] = $application;
-        }
-
-        $page = $applications::resolveCurrentPage();
-        $perPage = Config::get('constants.per_page');
-
-        return new LengthAwarePaginator(
-            $applicationsResult,
-            count($applicationsResult),
-            $perPage,
-            $page
-        );
+            return $application;
+        });
+        return $applications;
     }
 }
