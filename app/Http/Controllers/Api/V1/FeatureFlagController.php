@@ -13,49 +13,68 @@ use App\Services\FeatureFlagManager;
 class FeatureFlagController extends Controller
 {
     /**
-     * @OA\Post(
-     *    path="/api/v1/feature-flags",
-     *    operationId="define_feature_flags_from_github",
-     *    tags={"Application"},
-     *    summary="Fetch and define feature flags from GitHub",
-     *    description="Validates a GitHub webhook signature, fetches a JSON config from the configured GitHub URL, and defines feature flags using Laravel Pennant.",
-     *    @OA\Parameter(
-     *        name="X-Hub-Signature-256",
-     *        in="header",
-     *        required=true,
-     *        description="HMAC SHA-256 signature of the request body using the GitHub webhook secret",
-     *        @OA\Schema(type="string")
-     *    ),
-     *    @OA\Response(
-     *        response=200,
-     *        description="Success",
-     *        @OA\JsonContent(
-     *            @OA\Property(property="message", type="string", example="Feature flags defined successfully.")
-     *        )
-     *    ),
-     *    @OA\Response(
-     *        response=401,
-     *        description="Unauthorized or invalid signature",
-     *        @OA\JsonContent(
-     *            @OA\Property(property="message", type="string", example="Unauthorized: Signature mismatch.")
-     *        )
-     *    ),
-     *    @OA\Response(
-     *        response=422,
-     *        description="Invalid feature flag format",
-     *        @OA\JsonContent(
-     *            @OA\Property(property="message", type="string", example="Invalid feature flag format.")
-     *        )
-     *    ),
-     *    @OA\Response(
-     *        response=500,
-     *        description="Failed to fetch flags",
-     *        @OA\JsonContent(
-     *            @OA\Property(property="message", type="string", example="Failed to fetch feature flags.")
-     *        )
-     *    )
-     * )
-     */
+      * @OA\Post(
+      *    path="/api/v1/feature-flags",
+      *    operationId="define_feature_flags_from_github",
+      *    tags={"Application"},
+      *    summary="Define feature flags from GitHub or request body",
+      *    description="Validates a bearer token, then either defines feature flags from the request body (JSON), or fetches them from GitHub using a configured URL. Defines features using Laravel Pennant.",
+      *    security={{"bearerAuth":{}}},
+      *    @OA\RequestBody(
+      *        required=false,
+      *        @OA\JsonContent(
+      *            type="object",
+      *            example={
+      *                "createDatasets": {
+      *                    "enabled": true
+      *                },
+      *                "upload": {
+      *                    "enabled": false
+      *                },
+      *                "gmi": {
+      *                    "enabled": true,
+      *                    "features": {
+      *                        "auth": {
+      *                            "enabled": true
+      *                        },
+      *                        "no-auth": {
+      *                            "enabled": false
+      *                        }
+      *                    }
+      *                }
+      *            }
+      *        )
+      *    ),
+      *    @OA\Response(
+      *        response=200,
+      *        description="Success",
+      *        @OA\JsonContent(
+      *            @OA\Property(property="message", type="string", example="Feature flags defined successfully.")
+      *        )
+      *    ),
+      *    @OA\Response(
+      *        response=401,
+      *        description="Unauthorized or invalid token",
+      *        @OA\JsonContent(
+      *            @OA\Property(property="message", type="string", example="Unauthorized: Invalid token.")
+      *        )
+      *    ),
+      *    @OA\Response(
+      *        response=422,
+      *        description="Invalid feature flag format",
+      *        @OA\JsonContent(
+      *            @OA\Property(property="message", type="string", example="Invalid feature flag format.")
+      *        )
+      *    ),
+      *    @OA\Response(
+      *        response=500,
+      *        description="Failed to fetch flags",
+      *        @OA\JsonContent(
+      *            @OA\Property(property="message", type="string", example="Failed to fetch feature flags.")
+      *        )
+      *    )
+      * )
+      */
     public function index(Request $request, FeatureFlagManager $flagManager): JsonResponse
     {
         $featureFlagToken = env('FEATURE_FLAG_API_TOKEN');
