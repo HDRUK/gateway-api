@@ -4698,7 +4698,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
     ],
@@ -4710,7 +4709,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -4724,8 +4722,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
-            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
     ],
@@ -4737,8 +4733,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
-            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -4752,8 +4746,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
-            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -4767,7 +4759,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
