@@ -620,62 +620,62 @@ class TeamController extends Controller
         $superAdminIds = User::where('is_admin', true)->pluck('id');
         $team = Team::create($arrayTeam);
 
-        // try {
-        if ($team) {
-            foreach ($arrayTeamNotification as $value) {
-                TeamHasNotification::updateOrCreate([
-                    'team_id' => (int)$team->id,
-                    'notification_id' => (int)$value,
-                ]);
+        try {
+            if ($team) {
+                foreach ($arrayTeamNotification as $value) {
+                    TeamHasNotification::updateOrCreate([
+                        'team_id' => (int)$team->id,
+                        'notification_id' => (int)$value,
+                    ]);
+                }
+
+                $arrayTeamAlias && $this->updateTeamAlias((int)$team->id, $arrayTeamAlias);
+
+                //make sure the super admin is added to this team on creation
+                foreach ($superAdminIds as $adminId) {
+                    TeamHasUser::create(
+                        ['team_id' => $team->id, 'user_id' => $adminId],
+                    );
+                }
+
+                $roles = Role::where(['name' => 'custodian.team.admin'])->first();
+                foreach ($arrayTeamUsers as $value) {
+                    $teamHasUsers = TeamHasUser::create([
+                        'team_id' => (int)$team->id,
+                        'user_id' => (int)$value,
+                    ]);
+
+                    TeamUserHasRole::updateOrCreate([
+                        'team_has_user_id' => (int)$teamHasUsers->id,
+                        'role_id' => (int)$roles->id,
+                    ]);
+                }
+            } else {
+                throw new NotFoundException();
             }
 
-            $arrayTeamAlias && $this->updateTeamAlias((int)$team->id, $arrayTeamAlias);
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team ' . $team->id . ' created',
+            ]);
 
-            //make sure the super admin is added to this team on creation
-            foreach ($superAdminIds as $adminId) {
-                TeamHasUser::create(
-                    ['team_id' => $team->id, 'user_id' => $adminId],
-                );
-            }
+            return response()->json([
+                'message' => 'success',
+                'data' => $team->id,
+            ], Config::get('statuscodes.STATUS_CREATED.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $team->id,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
 
-            $roles = Role::where(['name' => 'custodian.team.admin'])->first();
-            foreach ($arrayTeamUsers as $value) {
-                $teamHasUsers = TeamHasUser::create([
-                    'team_id' => (int)$team->id,
-                    'user_id' => (int)$value,
-                ]);
-
-                TeamUserHasRole::updateOrCreate([
-                    'team_has_user_id' => (int)$teamHasUsers->id,
-                    'role_id' => (int)$roles->id,
-                ]);
-            }
-        } else {
-            throw new NotFoundException();
+            throw new Exception($e->getMessage());
         }
-
-        Auditor::log([
-            'user_id' => (int)$jwtUser['id'],
-            'action_type' => 'CREATE',
-            'action_name' => class_basename($this) . '@' . __FUNCTION__,
-            'description' => 'Team ' . $team->id . ' created',
-        ]);
-
-        return response()->json([
-            'message' => 'success',
-            'data' => $team->id,
-        ], Config::get('statuscodes.STATUS_CREATED.code'));
-        // } catch (Exception $e) {
-        //     Auditor::log([
-        //         'user_id' => (int)$jwtUser['id'],
-        //         'team_id' => $team->id,
-        //         'action_type' => 'EXCEPTION',
-        //         'action_name' => class_basename($this) . '@' . __FUNCTION__,
-        //         'description' => $e->getMessage(),
-        //     ]);
-
-        //     throw new Exception($e->getMessage());
-        // }
 
     }
 
