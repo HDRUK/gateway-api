@@ -16,8 +16,8 @@ class FeatureServiceProvider extends ServiceProvider
             return;
         }
 
-        $url = env('FEATURE_FLAGGING_CONFIG_URL');
-
+        //$url = env('FEATURE_FLAGGING_CONFIG_URL');
+        $url = "https://raw.githubusercontent.com/HDRUK/hdruk-feature-configurations/refs/heads/feat/GAT-6927-2/dev/features.json";
         if (app()->environment('testing') || !$url) {
             return;
         }

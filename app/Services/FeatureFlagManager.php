@@ -2,14 +2,13 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Http;
 use Laravel\Pennant\Feature;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class FeatureFlagManager
 {
-    public const CACHE_KEY = 'defined_feature_flags';
-
     public function define(array $flags, string $prefix = ''): void
     {
         foreach ($flags as $key => $value) {
@@ -19,10 +18,6 @@ class FeatureFlagManager
                 if (array_key_exists('enabled', $value) && is_bool($value['enabled'])) {
                     Feature::define($fullKey, $value['enabled']);
 
-
-                    $defined = Cache::get(self::CACHE_KEY, []);
-                    $defined[] = $fullKey;
-                    Cache::put(self::CACHE_KEY, array_unique($defined));
 
                     Log::info("Feature flag defined: {$fullKey} = " . ($value['enabled'] ? 'ENABLED' : 'DISABLED'));
                 }
@@ -45,6 +40,21 @@ class FeatureFlagManager
 
     public function getAllFlags(): array
     {
-        return Cache::get(self::CACHE_KEY, []);
+        //$url = env('FEATURE_FLAGGING_CONFIG_URL');
+        $url = "https://raw.githubusercontent.com/HDRUK/hdruk-feature-configurations/refs/heads/feat/GAT-6927-2/dev/features.json";
+        $featureFlags = Cache::remember('getAllFlags', now()->addMinutes(60), function () use ($url) {
+            $res = Http::get($url);
+            if ($res->successful()) {
+                return $res->json();
+            }
+
+            logger()->error('Failed to fetch feature flags from URL', ['url' => $url]);
+            return [];
+        });
+
+
+
+
+        return $featureFlags;
     }
 }

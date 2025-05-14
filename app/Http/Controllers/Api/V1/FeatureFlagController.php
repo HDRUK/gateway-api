@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Controller;
 use Laravel\Pennant\Feature;
 use App\Services\FeatureFlagManager;
@@ -13,71 +14,46 @@ use App\Services\FeatureFlagManager;
 class FeatureFlagController extends Controller
 {
     /**
-      * @OA\Post(
-      *    path="/api/v1/feature-flags",
-      *    operationId="define_feature_flags_from_github",
-      *    tags={"Application"},
-      *    summary="Define feature flags from GitHub or request body",
-      *    description="Validates a bearer token, then either defines feature flags from the request body (JSON), or fetches them from GitHub using a configured URL. Defines features using Laravel Pennant.",
-      *    security={{"bearerAuth":{}}},
-      *    @OA\RequestBody(
-      *        required=false,
-      *        @OA\JsonContent(
-      *            type="object",
-      *            example={
-      *                "createDatasets": {
-      *                    "enabled": true
-      *                },
-      *                "upload": {
-      *                    "enabled": false
-      *                },
-      *                "gmi": {
-      *                    "enabled": true,
-      *                    "features": {
-      *                        "auth": {
-      *                            "enabled": true
-      *                        },
-      *                        "no-auth": {
-      *                            "enabled": false
-      *                        }
-      *                    }
-      *                }
-      *            }
-      *        )
-      *    ),
-      *    @OA\Response(
-      *        response=200,
-      *        description="Success",
-      *        @OA\JsonContent(
-      *            @OA\Property(property="message", type="string", example="Feature flags defined successfully.")
-      *        )
-      *    ),
-      *    @OA\Response(
-      *        response=401,
-      *        description="Unauthorized or invalid token",
-      *        @OA\JsonContent(
-      *            @OA\Property(property="message", type="string", example="Unauthorized: Invalid token.")
-      *        )
-      *    ),
-      *    @OA\Response(
-      *        response=422,
-      *        description="Invalid feature flag format",
-      *        @OA\JsonContent(
-      *            @OA\Property(property="message", type="string", example="Invalid feature flag format.")
-      *        )
-      *    ),
-      *    @OA\Response(
-      *        response=500,
-      *        description="Failed to fetch flags",
-      *        @OA\JsonContent(
-      *            @OA\Property(property="message", type="string", example="Failed to fetch feature flags.")
-      *        )
-      *    )
-      * )
-      */
+ * @OA\Post(
+ *    path="/api/v1/feature-flags",
+ *    operationId="define_feature_flags_from_github",
+ *    tags={"Application"},
+ *    summary="Fetch and define feature flags from a remote URL (e.g., GitHub)",
+ *    description="Validates a bearer token, then fetches feature flags from a configured remote URL and defines them using Laravel Pennant. If the URL is not set or environment is 'testing', the request is skipped.",
+ *    security={{"bearerAuth":{}}},
+ *    @OA\Response(
+ *        response=200,
+ *        description="Success or feature flagging skipped in the current environment",
+ *        @OA\JsonContent(
+ *            @OA\Property(property="message", type="string", example="Feature flags defined successfully.")
+ *        )
+ *    ),
+ *    @OA\Response(
+ *        response=401,
+ *        description="Unauthorized or invalid token",
+ *        @OA\JsonContent(
+ *            @OA\Property(property="message", type="string", example="Unauthorized: Invalid token.")
+ *        )
+ *    ),
+ *    @OA\Response(
+ *        response=422,
+ *        description="Invalid feature flag format",
+ *        @OA\JsonContent(
+ *            @OA\Property(property="message", type="string", example="Invalid feature flag format.")
+ *        )
+ *    ),
+ *    @OA\Response(
+ *        response=500,
+ *        description="Failed to fetch feature flags",
+ *        @OA\JsonContent(
+ *            @OA\Property(property="message", type="string", example="Failed to fetch feature flags.")
+ *        )
+ *    )
+ * )
+ */
     public function index(Request $request, FeatureFlagManager $flagManager): JsonResponse
     {
-        $featureFlagToken = env('FEATURE_FLAG_API_TOKEN');
+        //$featureFlagToken = env('FEATURE_FLAG_API_TOKEN');
         $authHeader = $request->header('Authorization');
 
         if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
@@ -87,37 +63,35 @@ class FeatureFlagController extends Controller
         $providedToken = substr($authHeader, 7); // remove "Bearer "
 
 
-        if ($providedToken !== $featureFlagToken) {
-            Log::warning('Invalid API token', ['provided' => $providedToken]);
-            return response()->json(['message' => 'Unauthorized: Invalid token.'], 401);
+        // if ($providedToken !== $featureFlagToken) {
+        //     Log::warning('Invalid API token', ['provided' => $providedToken]);
+        //     return response()->json(['message' => 'Unauthorized: Invalid token.'], 401);
+        // }
+
+        //$url = env('FEATURE_FLAGGING_CONFIG_URL');
+        $url = "https://raw.githubusercontent.com/HDRUK/hdruk-feature-configurations/refs/heads/feat/GAT-6927-2/dev/features.json";
+
+        if (app()->environment('testing') || !$url) {
+            return response()->json(['message' => 'Feature flagging disabled in this environment.'], 200);
         }
 
-        $featureFlags = $request->json()->all();
+        $res = Http::get($url);
 
-        if (!empty($featureFlags)) {
-            Log::info("Using feature flags from request body: " . print_r($featureFlags, true));
-        } else {
-            $url = env('FEATURE_FLAGGING_CONFIG_URL');
-
-            if (app()->environment('testing') || !$url) {
-                return response()->json(['message' => 'Feature flagging disabled in this environment.'], 200);
-            }
-
-            $res = Http::get($url);
-
-            if (!$res->successful()) {
-                Log::error('Failed to fetch feature flags from GitHub', ['url' => $url]);
-                return response()->json(['message' => 'Failed to fetch feature flags.'], 500);
-            }
-
-            $featureFlags = $res->json();
-
-            if (!is_array($featureFlags)) {
-                return response()->json(['message' => 'Invalid feature flag format.'], 422);
-            }
-
-            Log::info("Using feature flags from GitHub: " . print_r($featureFlags, true));
+        if (!$res->successful()) {
+            Log::error('Failed to fetch feature flags from GitHub', ['url' => $url]);
+            return response()->json(['message' => 'Failed to fetch feature flags.'], 500);
         }
+
+        $featureFlags = $res->json();
+
+        Cache::forget('getAllFlags');
+
+
+        if (!is_array($featureFlags)) {
+            return response()->json(['message' => 'Invalid feature flag format.'], 422);
+        }
+
+        Log::info("Using feature flags from GitHub: " . print_r($featureFlags, true));
 
         $flagManager->define($featureFlags);
 
@@ -142,14 +116,7 @@ class FeatureFlagController extends Controller
     public function getEnabledFeatures(Request $request, FeatureFlagManager $flagManager): JsonResponse
     {
         $allFlags = $flagManager->getAllFlags();
-        $enabledFlags = [];
 
-        foreach ($allFlags as $flag) {
-            if (Feature::active($flag)) {
-                $enabledFlags[] = $flag;
-            }
-        }
-
-        return response()->json(['enabled_features' => $enabledFlags], 200);
+        return response()->json($allFlags, 200);
     }
 }
