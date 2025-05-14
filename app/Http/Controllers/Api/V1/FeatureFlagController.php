@@ -58,7 +58,7 @@ class FeatureFlagController extends Controller
      */
     public function index(Request $request, FeatureFlagManager $flagManager): JsonResponse
     {
-        $expectedToken = env('FEATURE_FLAG_API_TOKEN');
+        $featureFlagToken = env('FEATURE_FLAG_API_TOKEN');
         $authHeader = $request->header('Authorization');
 
         if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
@@ -66,7 +66,9 @@ class FeatureFlagController extends Controller
         }
 
         $providedToken = substr($authHeader, 7); // remove "Bearer "
-        if (!hash_equals($expectedToken, $providedToken)) {
+
+
+        if ($providedToken !== $featureFlagToken) {
             Log::warning('Invalid API token', ['provided' => $providedToken]);
             return response()->json(['message' => 'Unauthorized: Invalid token.'], 401);
         }
@@ -102,5 +104,33 @@ class FeatureFlagController extends Controller
 
         return response()->json(['message' => 'Feature flags defined successfully.'], 200);
     }
+    /**
+         * @OA\Get(
+         *    path="/api/v1/feature-flags/enabled",
+         *    operationId="get_enabled_feature_flags",
+         *    tags={"Application"},
+         *    summary="Get all currently enabled feature flags",
+         *    description="Returns a list of currently enabled feature flags for the application.",
+         *    @OA\Response(
+         *        response=200,
+         *        description="List of enabled feature flags",
+         *        @OA\JsonContent(
+         *            @OA\Property(property="enabled_features", type="array", @OA\Items(type="string"))
+         *        )
+         *    )
+         * )
+         */
+    public function getEnabledFeatures(Request $request, FeatureFlagManager $flagManager): JsonResponse
+    {
+        $allFlags = $flagManager->getAllFlags();
+        $enabledFlags = [];
 
+        foreach ($allFlags as $flag) {
+            if (Feature::active($flag)) {
+                $enabledFlags[] = $flag;
+            }
+        }
+
+        return response()->json(['enabled_features' => $enabledFlags], 200);
+    }
 }
