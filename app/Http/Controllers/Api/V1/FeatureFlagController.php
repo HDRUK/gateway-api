@@ -53,7 +53,7 @@ class FeatureFlagController extends Controller
  */
     public function index(Request $request, FeatureFlagManager $flagManager): JsonResponse
     {
-        //$featureFlagToken = env('FEATURE_FLAG_API_TOKEN');
+        $featureFlagToken = env('FEATURE_FLAG_API_TOKEN');
         $authHeader = $request->header('Authorization');
 
         if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
@@ -63,13 +63,12 @@ class FeatureFlagController extends Controller
         $providedToken = substr($authHeader, 7); // remove "Bearer "
 
 
-        // if ($providedToken !== $featureFlagToken) {
-        //     Log::warning('Invalid API token', ['provided' => $providedToken]);
-        //     return response()->json(['message' => 'Unauthorized: Invalid token.'], 401);
-        // }
+        if ($providedToken !== $featureFlagToken) {
+            Log::warning('Invalid API token', ['provided' => $providedToken]);
+            return response()->json(['message' => 'Unauthorized: Invalid token.'], 401);
+        }
 
-        //$url = env('FEATURE_FLAGGING_CONFIG_URL');
-        $url = "https://raw.githubusercontent.com/HDRUK/hdruk-feature-configurations/refs/heads/feat/GAT-6927-2/dev/features.json";
+        $url = env('FEATURE_FLAGGING_CONFIG_URL');
 
         if (app()->environment('testing') || !$url) {
             return response()->json(['message' => 'Feature flagging disabled in this environment.'], 200);

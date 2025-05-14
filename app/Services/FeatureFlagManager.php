@@ -40,8 +40,7 @@ class FeatureFlagManager
 
     public function getAllFlags(): array
     {
-        //$url = env('FEATURE_FLAGGING_CONFIG_URL');
-        $url = "https://raw.githubusercontent.com/HDRUK/hdruk-feature-configurations/refs/heads/feat/GAT-6927-2/dev/features.json";
+        $url = env('FEATURE_FLAGGING_CONFIG_URL');
         $featureFlags = Cache::remember('getAllFlags', now()->addMinutes(60), function () use ($url) {
             $res = Http::get($url);
             if ($res->successful()) {
