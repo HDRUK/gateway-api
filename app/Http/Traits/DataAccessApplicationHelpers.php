@@ -68,7 +68,7 @@ trait DataAccessApplicationHelpers
             return;
         }
 
-        $isDraft = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status'));
+        $isDraft = $application['submission_status'] === 'DRAFT';
         if (!$isDraft) {
             throw new Exception('DAR form answers cannot be updated after submission.');
         }
@@ -100,7 +100,7 @@ trait DataAccessApplicationHelpers
             return;
         }
 
-        $isDraft = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status'));
+        $isDraft = $application['submission_status'] === 'DRAFT';
         if (!$isDraft) {
             throw new Exception('DAR form answers cannot be edited after submission.');
         }
@@ -142,7 +142,6 @@ trait DataAccessApplicationHelpers
         ?int $userId,
     ): LengthAwarePaginator {
         $applications = DataAccessApplication::whereIn('id', $applicationIds)
-            ->with('teams')
             ->when($filterTitle, function ($query) use ($filterTitle) {
                 return $query->where('project_title', 'LIKE', "%{$filterTitle}%");
             })
@@ -156,12 +155,8 @@ trait DataAccessApplicationHelpers
         if (!is_null($filterApproval)) {
             $approvalMatches = [];
             foreach ($applications as $a) {
-                foreach ($a['teams'] as $t) {
-                    if ((isset($teamId)) && ($t->team_id === $teamId) && (str_contains($t->approval_status, $filterApproval))) {
-                        $approvalMatches[] = $a->id;
-                    } elseif ((isset($userId)) && (str_contains($t->approval_status, $filterApproval))) {
-                        $approvalMatches[] = $a->id;
-                    }
+                if (str_contains($a->approval_status, $filterApproval)) {
+                    $approvalMatches[] = $a->id;
                 }
             }
             $matches = array_intersect($matches, $approvalMatches);
@@ -170,12 +165,8 @@ trait DataAccessApplicationHelpers
         if (!is_null($filterSubmission)) {
             $submissionMatches = [];
             foreach ($applications as $a) {
-                foreach ($a['teams'] as $t) {
-                    if ((isset($teamId)) && ($t->team_id === $teamId) && ($t->submission_status === $filterSubmission)) {
-                        $submissionMatches[] = $a->id;
-                    } elseif ((isset($userId)) && ($t->submission_status === $filterSubmission)) {
-                        $submissionMatches[] = $a->id;
-                    }
+                if ($a->submission_status === $filterSubmission) {
+                    $submissionMatches[] = $a->id;
                 }
             }
             $matches = array_intersect($matches, $submissionMatches);
@@ -185,7 +176,6 @@ trait DataAccessApplicationHelpers
             $actionMatches = [];
             foreach ($matches as $i => $m) {
                 $review = DataAccessApplicationReview::where('application_id', $m)
-                    ->latest()
                     ->with('comments')
                     ->first();
                 if ($review) {
@@ -203,7 +193,7 @@ trait DataAccessApplicationHelpers
         }
 
         $applications = DataAccessApplication::whereIn('id', $matches)
-            ->with(['user:id,name,organisation','datasets','teams'])
+            ->with(['user:id,name,organisation','datasets'])
             ->applySorting()
             ->paginate(
                 Config::get('constants.per_page'),
@@ -247,7 +237,7 @@ trait DataAccessApplicationHelpers
         }
     }
 
-    public function statusCounts(Collection $applications, ?int $teamId): array
+    public function statusCounts(Collection $applications): array
     {
         $counts = array(
             'DRAFT' => 0,
@@ -258,34 +248,25 @@ trait DataAccessApplicationHelpers
             'WITHDRAWN' => 0,
         );
         foreach ($applications as $app) {
-            foreach ($app['teams'] as $t) {
-                if (is_null($teamId) || $t->team_id === $teamId) {
-                    if ($t['submission_status'] === 'DRAFT') {
-                        $counts['DRAFT'] += 1;
-                    } elseif (is_null($t['approval_status'])) {
-                        $counts['SUBMITTED'] += 1;
-                    } elseif (str_contains($t['approval_status'], 'APPROVED')) {
-                        $counts['APPROVED'] += 1;
-                    } else {
-                        $counts[$t['approval_status']] += 1;
-                    }
-                }
+            if ($app['submission_status'] === 'DRAFT') {
+                $counts['DRAFT'] += 1;
+            } elseif (is_null($app['approval_status'])) {
+                $counts['SUBMITTED'] += 1;
+            } elseif (str_contains($app['approval_status'], 'APPROVED')) {
+                $counts['APPROVED'] += 1;
+            } else {
+                $counts[$app['approval_status']] += 1;
             }
         }
         return $counts;
     }
 
-    public function actionRequiredCounts(Collection $applications, ?int $teamId): array
+    public function actionRequiredCounts(Collection $applications): array
     {
         $feedbackApplications = [];
         foreach ($applications as $app) {
-            $teams = $app['teams'];
-            foreach ($teams as $team) {
-                if (is_null($teamId) || ($team->team_id === $teamId)) {
-                    if ($team['approval_status'] === 'FEEDBACK') {
-                        $feedbackApplications[] = $app['id'];
-                    }
-                }
+            if ($app['approval_status'] === 'FEEDBACK') {
+                $feedbackApplications[] = $app['id'];
             }
         }
 
@@ -300,21 +281,9 @@ trait DataAccessApplicationHelpers
                 continue;
             }
 
-            $reviewIds = [];
-            if ($teamId) {
-                foreach ($reviews as $r) {
-                    foreach ($r['comments'] as $c) {
-                        if ($c->team_id === $teamId) {
-                            $reviewIds[] = $c->review_id;
-                        }
-                    }
-                }
-            } else {
-                $reviewIds = array_column($reviews->toArray(), 'id');
-            }
+            $reviewIds = array_column($reviews->toArray(), 'id');
 
             $review = DataAccessApplicationReview::whereIn('id', $reviewIds)
-                ->latest()
                 ->with('comments')
                 ->first();
             $latestComment = $review['comments'][array_key_last($review['comments']->toArray())];
@@ -412,5 +381,54 @@ trait DataAccessApplicationHelpers
         }
 
         return $users;
+    }
+
+    public function groupApplicationsByProject(LengthAwarePaginator $applications): LengthAwarePaginator
+    {
+        $groups = $applications->groupBy('project_id');
+        $applicationsResult = array();
+
+        foreach ($groups as $projectId => $group) {
+            $groupArray = array();
+            $groupArray['project_id'] = $projectId;
+            $teams = array();
+            foreach ($group as $application) {
+                $app = [
+                    'approval_status' => $application['approval_status'],
+                    'submission_status' => $application['submission_status'],
+                    'project_title' => $application['project_title'],
+                ];
+                foreach ($application['teams'] as $t) {
+                    $teams[] = array_merge($app, $t->toArray());
+                }
+            }
+            $groupArray['teams'] = $teams;
+            $applicationsResult[] = array_merge($group[0]->toArray(), $groupArray);
+        }
+
+        $page = $applications::resolveCurrentPage();
+        $perPage = Config::get('constants.per_page');
+
+        return new LengthAwarePaginator(
+            $applicationsResult,
+            count($applicationsResult),
+            $perPage,
+            $page
+        );
+    }
+
+    public function returnApplicationsInProject(LengthAwarePaginator $applications): LengthAwarePaginator
+    {
+        $applications->getCollection()->transform(function ($application) {
+            $sameProject = DataAccessApplication::where('project_id', $application['project_id'])
+                ->get();
+            $teams = $sameProject->flatMap(function ($app) {
+                return $app['teams'];
+            })->unique('id')->values();
+
+            $application['teams'] = $teams;
+            return $application;
+        });
+        return $applications;
     }
 }

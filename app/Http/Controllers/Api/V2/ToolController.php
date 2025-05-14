@@ -540,6 +540,7 @@ class ToolController extends Controller
                 'name',
                 'url',
                 'description',
+                'results_insights',
                 'license',
                 'tech_stack',
                 'category_id',
@@ -557,6 +558,7 @@ class ToolController extends Controller
             if (array_key_exists('name', $input)) {
                 $array['name'] = formatCleanInput($input['name']);
             }
+
             Tool::where('id', $id)->first()->update($array);
 
             ToolHasTag::where('tool_id', $id)->forceDelete();
@@ -730,6 +732,7 @@ class ToolController extends Controller
                 'name',
                 'url',
                 'description',
+                'results_insights',
                 'license',
                 'tech_stack',
                 'category_id',

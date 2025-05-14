@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use Auditor;
 use Config;
 use Exception;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -22,6 +23,8 @@ use App\Jobs\SendEmailJob;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationAnswer;
 use App\Models\DataAccessApplicationHasDataset;
+use App\Models\DataAccessApplicationHasQuestion;
+use App\Models\DataAccessApplicationStatus;
 use App\Models\DataAccessTemplate;
 use App\Models\EmailTemplate;
 use App\Models\Team;
@@ -109,6 +112,12 @@ class UserDataAccessApplicationController extends Controller
                 $userId,
             );
 
+            $projectGroups = $request->boolean('project_groups', true);
+            if ($projectGroups) {
+                $applications = $this->groupApplicationsByProject($applications);
+            }
+            $applications = $this->returnApplicationsInProject($applications);
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
@@ -172,20 +181,17 @@ class UserDataAccessApplicationController extends Controller
             }
 
             $applications = DataAccessApplication::where('applicant_id', $userId)
-                ->with('teams')
                 ->get();
 
             if ($field === 'action_required') {
-                $counts = $this->actionRequiredCounts($applications, null);
+                $counts = $this->actionRequiredCounts($applications);
             } else {
                 $counts = array();
                 foreach ($applications as $app) {
-                    foreach ($app['teams'] as $t) {
-                        if (array_key_exists($t[$field], $counts)) {
-                            $counts[$t[$field]] += 1;
-                        } else {
-                            $counts[$t[$field]] = 1;
-                        }
+                    if (array_key_exists($app[$field], $counts)) {
+                        $counts[$app[$field]] += 1;
+                    } else {
+                        $counts[$app[$field]] = 1;
                     }
                 }
             }
@@ -234,12 +240,11 @@ class UserDataAccessApplicationController extends Controller
             }
 
             $applications = DataAccessApplication::where('applicant_id', $userId)
-                ->with('teams')
                 ->get();
 
-            $counts = $this->statusCounts($applications, null);
+            $counts = $this->statusCounts($applications);
 
-            $actionCounts = $this->actionRequiredCounts($applications, null);
+            $actionCounts = $this->actionRequiredCounts($applications);
             $counts = array_merge($counts, $actionCounts);
             $counts['ALL'] = count(TeamHasDataAccessApplication::whereIn(
                 'dar_application_id',
@@ -327,7 +332,7 @@ class UserDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $application = DataAccessApplication::where('id', $id)->with(['questions','teams'])->first();
+            $application = DataAccessApplication::where('id', $id)->with(['questions'])->first();
 
             if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
                 throw new UnauthorizedException('User does not have permission to use this endpoint to view this application.');
@@ -740,39 +745,28 @@ class UserDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $application = DataAccessApplication::where('id', $id)->with('teams')->first();
+            $application = DataAccessApplication::where('id', $id)->first();
 
             if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
                 throw new UnauthorizedException('User does not have permission to use this endpoint to update this application.');
             }
 
-            $statuses = array_unique(array_column($application['teams']->toArray(), 'submission_status'));
-            if ((count($statuses) === 1) && ($statuses[0] === 'SUBMITTED')) {
-                $originalStatus = 'SUBMITTED';
-            } else {
-                $originalStatus = 'NOT_SUBMITTED';
-            }
+            $originalStatus = $application['submission_status'];
             $newStatus = $input['submission_status'] ?? null;
-
-            if (($newStatus === 'SUBMITTED') && ($originalStatus != 'SUBMITTED')) {
-                $thd = TeamHasDataAccessApplication::where([
-                    'dar_application_id' => $id
-                ])->get();
-                foreach ($thd as $t) {
-                    $t->update(['submission_status' => $newStatus]);
-                }
-                $this->emailSubmissionNotification($id, $userId, $application);
-            }
 
             $this->updateDataAccessApplication($application, $input);
 
-            if (isset($input['approval_status'])) {
-                TeamHasDataAccessApplication::where([
-                    'dar_application_id' => $id
-                ])->update([
-                    'approval_status' => $input['approval_status']
+            if (($newStatus === 'SUBMITTED') && ($originalStatus != 'SUBMITTED')) {
+                $application->update([
+                    'submission_status' => $newStatus,
+                    'is_joint' => false,
                 ]);
-                // TODO: send notification that application has been withdrawn
+                $this->splitSubmittedApplication($application);
+                $this->emailSubmissionNotification($id, $userId, $application);
+            }
+
+            if (isset($input['approval_status'])) {
+                $application->update(['approval_status' => $input['approval_status']]);
             }
 
             Auditor::log([
@@ -784,7 +778,7 @@ class UserDataAccessApplicationController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => DataAccessApplication::where('id', $id)->with('teams')->first(),
+                'data' => DataAccessApplication::where('id', $id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (UnauthorizedException $e) {
             return response()->json([
@@ -868,13 +862,13 @@ class UserDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $application = DataAccessApplication::where('id', $id)->with('teams')->first();
+            $application = DataAccessApplication::where('id', $id)->first();
 
             if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
                 throw new UnauthorizedException('User does not have permission to use this endpoint to update this application.');
             }
 
-            $status = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status')) ? 'DRAFT' : 'SUBMITTED';
+            $status = $application['submission_status'];
 
             if ($status !== 'SUBMITTED') {
                 foreach ($input['answers'] as $answer) {
@@ -985,15 +979,17 @@ class UserDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $application = DataAccessApplication::where('id', $id)->with('teams')->first();
+            $application = DataAccessApplication::where('id', $id)->first();
 
             if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
                 throw new UnauthorizedException('User does not have permission to use this endpoint to edit this application.');
             }
 
-            $status = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status')) ? 'DRAFT' : 'SUBMITTED';
+            $status = $application['submission_status'];
             $newStatus = $input['submission_status'] ?? null;
-            $preApproval = empty(array_filter(array_column($application['teams']->toArray(), 'approval_status')));
+            $preApproval = is_null($application['approval_status']);
+
+            $this->editDataAccessApplication($application, $input);
 
             if (!is_null($newStatus)) {
                 $thd = TeamHasDataAccessApplication::where([
@@ -1001,28 +997,21 @@ class UserDataAccessApplicationController extends Controller
                 ])->get();
 
                 if (($newStatus === 'SUBMITTED') && ($status !== 'SUBMITTED')) {
-                    foreach ($thd as $t) {
-                        $t->update(['submission_status' => $newStatus]);
-                    }
+                    $application->update([
+                        'submission_status' => $newStatus,
+                        'is_joint' => false,
+                    ]);
+                    $this->splitSubmittedApplication($application);
                     $this->emailSubmissionNotification($id, $userId, $application);
                 } elseif (($newStatus === 'DRAFT') && $preApproval) {
-                    foreach ($thd as $t) {
-                        $t->update(['submission_status' => $newStatus]);
-                    }
+                    $application->update(['submission_status' => $newStatus]);
                 } else {
                     throw new Exception('The status of this data access request cannot be updated from ' . $status . ' to ' . $newStatus);
                 }
             }
 
-            $this->editDataAccessApplication($application, $input);
-
             if (isset($input['approval_status'])) {
-                TeamHasDataAccessApplication::where([
-                    'dar_application_id' => $id
-                ])->update([
-                    'approval_status' => $input['approval_status']
-                ]);
-                // TODO: send notification that application has been withdrawn
+                $application->update(['approval_status' => $input['approval_status']]);
             }
 
             Auditor::log([
@@ -1034,7 +1023,7 @@ class UserDataAccessApplicationController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => DataAccessApplication::where('id', $id)->with('teams')->first(),
+                'data' => DataAccessApplication::where('id', $id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (UnauthorizedException $e) {
             return response()->json([
@@ -1122,13 +1111,12 @@ class UserDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $application = DataAccessApplication::where('id', $id)->with('teams')->first();
+            $application = DataAccessApplication::where('id', $id)->first();
             if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
                 throw new UnauthorizedException('User does not have permission to use this endpoint to delete this file.');
             }
 
-            $status = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status')) ? 'DRAFT' : 'SUBMITTED';
-            if ($status === 'SUBMITTED') {
+            if ($application['submission_status'] === 'SUBMITTED') {
                 throw new Exception('Files cannot be deleted after a data access request has been submitted.');
             }
 
@@ -1189,8 +1177,8 @@ class UserDataAccessApplicationController extends Controller
     /**
      * @OA\Delete(
      *      path="/api/v1/users/{userId}/dar/applications/{id}",
-     *      summary="Delete a user's DAR application",
-     *      description="Delete a user's DAR application",
+     *      summary="Delete a users DAR application",
+     *      description="Delete a users DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@destroy",
      *      security={{"bearerAuth":{}}},
@@ -1245,13 +1233,12 @@ class UserDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $application = DataAccessApplication::with('teams')->findOrFail($id);
+            $application = DataAccessApplication::findOrFail($id);
             if (($jwtUser['id'] !== $userId) || ($jwtUser['id'] !== $application->applicant_id)) {
                 throw new UnauthorizedException('User does not have permission to use this endpoint to delete this file.');
             }
 
-            $status = in_array('DRAFT', array_column($application['teams']->toArray(), 'submission_status')) ? 'DRAFT' : 'SUBMITTED';
-            if ($status === 'SUBMITTED') {
+            if ($application['submission_status'] === 'SUBMITTED') {
                 throw new Exception('A data access request cannot be deleted after it has been submitted.');
             }
 
@@ -1370,6 +1357,68 @@ class UserDataAccessApplicationController extends Controller
             'is_file' => $isFile,
             'multifile' => $isMulti,
         ];
+    }
+
+    private function splitSubmittedApplication(DataAccessApplication $application): void
+    {
+        $id = $application->id;
+        $thd = TeamHasDataAccessApplication::where('dar_application_id', $id)->get()->toArray();
+        $datasets = DataAccessApplicationHasDataset::where('dar_application_id', $id)->get();
+        $questions = DataAccessApplicationHasQuestion::where('application_id', $id)->get();
+        $answers = DataAccessApplicationAnswer::where('application_id', $id)->get();
+        $status = DataAccessApplicationStatus::where('application_id', $id)->get();
+        $oneTeam = array_pop($thd);
+
+        foreach ($thd as $t) {
+            $newApplication = DataAccessApplication::create(
+                $this->extractFillables($application)
+            );
+            TeamHasDataAccessApplication::create([
+                'dar_application_id' => $newApplication->id,
+                'team_id' => $t['team_id'],
+            ]);
+            foreach ($datasets as $dataset) {
+                DataAccessApplicationHasDataset::create(
+                    array_merge(
+                        $this->extractFillables($dataset),
+                        ['dar_application_id' => $newApplication->id]
+                    )
+                );
+            }
+            foreach ($questions as $question) {
+                DataAccessApplicationHasQuestion::create(
+                    array_merge(
+                        $this->extractFillables($question),
+                        ['application_id' => $newApplication->id]
+                    )
+                );
+            }
+            foreach ($answers as $answer) {
+                DataAccessApplicationAnswer::create(
+                    array_merge(
+                        $this->extractFillables($answer),
+                        ['application_id' => $newApplication->id]
+                    )
+                );
+            }
+            foreach ($status as $s) {
+                DataAccessApplicationStatus::create(
+                    array_merge(
+                        $this->extractFillables($s),
+                        ['application_id' => $newApplication->id]
+                    )
+                );
+            }
+        }
+        $splitTeams = array_column($thd, 'team_id');
+        TeamHasDataAccessApplication::whereIn('team_id', $splitTeams)
+            ->where('dar_application_id', $id)
+            ->delete();
+    }
+
+    private function extractFillables(Model $model): array
+    {
+        return array_intersect_key($model->toArray(), array_flip($model->getFillable()));
     }
 
 }

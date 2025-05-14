@@ -1,3 +1,11 @@
+## [2.9.1](https://github.com/HDRUK/gateway-api/compare/v2.9.0...v2.9.1) (2025-05-13)
+
+### 🐛 Bug Fixes
+
+* **GAT-7112:** Fix Cohort Discovery logic to correctly update an expired request to PENDING. (#1227) ([356c37d](https://github.com/HDRUK/gateway-api/commit/356c37dd47d1421b2352c67e6d17aa99eeac4e25))
+* **GAT-7113:** Emails masked by OpenAthens breaks workflow to user creation on RQuest (#1226) ([1abff03](https://github.com/HDRUK/gateway-api/commit/1abff03dad2315ee927737ebbccd9da0655c38fe)), closes [GAT-7113](GAT-7113)
+* **GAT-7118:** Fixes incorrect usage of dataset id, instead of versio… (#1230) ([9fe420a](https://github.com/HDRUK/gateway-api/commit/9fe420aa752b992fec26768f516752b0370804fd))
+
 ## [2.9.0](https://github.com/HDRUK/gateway-api/compare/v2.8.1...v2.9.0) (2025-05-06)
 
 ### ✨ Features

@@ -412,7 +412,10 @@ class DatasetController extends Controller
             // objects on this, rather than excessively calling latestDataset()-><relation>.
             $latestVersionID = $dataset->latestVersionID($id);
 
-            $datasetVersion = DatasetVersion::where('dataset_id', $id)
+            // This was incorrectly using the dataset ID, not the version ID. Thus leaving us
+            // at the mercy of the sql optimiser and whatever order it decided to return at
+            // time. Changed to use the version ID to ensure we get the correct 'latest' version.
+            $datasetVersion = DatasetVersion::where('id', $latestVersionID)
                 ->with(['tools', 'spatialCoverage', 'namedEntities', 'collections', 'durs', 'publications'])
                 ->select('id')
                 ->first();
