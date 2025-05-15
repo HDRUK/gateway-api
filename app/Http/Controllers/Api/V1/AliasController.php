@@ -362,7 +362,10 @@ class AliasController extends Controller
         try {
             $input = $request->all();
 
-            Alias::where('id', $id)->update($input['name']);
+            Alias::where('id', $id)
+            ->update([
+                    'name' => $input['name'],
+                ]);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
