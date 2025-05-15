@@ -39,7 +39,6 @@ class AliasTest extends TestCase
     public function test_the_application_can_list_aliases()
     {
         $response = $this->get('api/v1/aliases', $this->header);
-
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [

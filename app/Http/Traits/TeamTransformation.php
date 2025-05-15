@@ -107,20 +107,14 @@ trait TeamTransformation
             }
             $tmpTeam['notifications'] = $tmpNotification;
 
-            $aliases = TeamHasAlias::where('team_id', $tmpTeam['id'])->get()->toArray();
-            $tmpAlias = [];
-            foreach ($aliases as $value) {
-                $alias = Alias::where('id', $value['alias_id'])->firstOrFail();
-                $tmpAlias[] = $alias;
-            }
-            $tmpTeam['aliases'] = $tmpAlias;
+            $aliasIds = TeamHasAlias::where('team_id', $tmpTeam['id'])->pluck('alias_id');
+            $tmpTeam['aliases'] = Alias::whereIn('id', $aliasIds)->get()->toArray();
 
             $response[] = $tmpTeam;
             unset($tmpTeam);
             unset($tmpUser);
             unset($notifications);
             unset($tmpNotification);
-            unset($tmpAlias);
         }
 
         if (count($response) > 1) {
