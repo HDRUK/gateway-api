@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 use App\Models\User;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Exceptions\NotFoundException;
+use App\Http\Traits\TeamTransformation;
+use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\Notification\GetNotification;
 use App\Http\Requests\Notification\EditNotification;
 use App\Http\Requests\Notification\CreateNotification;
 use App\Http\Requests\Notification\DeleteNotification;
 use App\Http\Requests\Notification\UpdateNotification;
-use App\Http\Traits\TeamTransformation;
-use App\Http\Traits\RequestTransformation;
-use App\Http\Requests\Notification\GetNotification;
 
 class NotificationController extends Controller
 {
@@ -311,10 +312,10 @@ class NotificationController extends Controller
      */
     public function update(UpdateNotification $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             Notification::where('id', $id)->update([
                 'notification_type' => $input['notification_type'],
                 'message' => $input['message'],
@@ -495,10 +496,10 @@ class NotificationController extends Controller
      */
     public function destroy(DeleteNotification $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $notification = Notification::findOrFail($id);
             if ($notification) {
                 $notification->delete();

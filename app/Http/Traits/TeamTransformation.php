@@ -4,8 +4,10 @@ namespace App\Http\Traits;
 
 use Config;
 use App\Models\User;
+use App\Models\Alias;
 use App\Models\TeamHasUser;
 use App\Models\Notification;
+use App\Models\TeamHasAlias;
 use App\Models\TeamHasNotification;
 use App\Models\TeamUserHasNotification;
 
@@ -104,6 +106,9 @@ trait TeamTransformation
                 $tmpNotification[] = $notification;
             }
             $tmpTeam['notifications'] = $tmpNotification;
+
+            $aliasIds = TeamHasAlias::where('team_id', $tmpTeam['id'])->pluck('alias_id');
+            $tmpTeam['aliases'] = Alias::whereIn('id', $aliasIds)->get()->toArray();
 
             $response[] = $tmpTeam;
             unset($tmpTeam);

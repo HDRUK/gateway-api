@@ -5,14 +5,16 @@ namespace Tests\Feature;
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
 use Tests\TestCase;
-use Tests\Traits\MockExternalApis;
-use App\Http\Enums\TeamMemberOf;
-use App\Models\Dataset;
 use App\Models\Team;
+use App\Models\Alias;
+use App\Models\Dataset;
+use App\Http\Enums\TeamMemberOf;
+use Database\Seeders\AliasSeeder;
+use Tests\Traits\MockExternalApis;
 use Database\Seeders\MinimalUserSeeder;
+use MetadataManagementController as MMC;
 use Database\Seeders\SpatialCoverageSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use MetadataManagementController as MMC;
 
 class TeamTest extends TestCase
 {
@@ -33,6 +35,7 @@ class TeamTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             SpatialCoverageSeeder::class,
+            AliasSeeder::class,
         ]);
 
         $this->metadata = $this->getMetadata();
@@ -84,6 +87,8 @@ class TeamTest extends TestCase
      */
     public function test_the_application_can_show_one_team()
     {
+        $aliasId = Alias::all()->random()->id;
+
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
             'POST',
@@ -129,6 +134,7 @@ class TeamTest extends TestCase
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
                 'service' => 'https://service.local/test',
+                'aliases' => [$aliasId],
             ],
             $this->header
         );
@@ -226,6 +232,8 @@ class TeamTest extends TestCase
      */
     public function test_the_application_can_create_a_team()
     {
+        $aliasId = Alias::all()->random()->id;
+
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
             'POST',
@@ -271,6 +279,7 @@ class TeamTest extends TestCase
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
                 'service' => 'https://service.local/test',
+                'aliases' => [$aliasId],
             ],
             $this->header
         );
@@ -306,6 +315,7 @@ class TeamTest extends TestCase
     public function test_the_application_can_update_a_team()
     {
         MMC::spy();
+        $aliasId = Alias::all()->random()->id;
 
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -353,6 +363,7 @@ class TeamTest extends TestCase
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
                 'service' => 'https://service.local/test',
+                'aliases' => [$aliasId],
             ],
             $this->header
         );
@@ -405,6 +416,7 @@ class TeamTest extends TestCase
                 'users' => [],
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
+                'aliases' => [$aliasId],
             ],
             $this->header
         );
@@ -469,6 +481,8 @@ class TeamTest extends TestCase
      */
     public function test_the_application_can_edit_a_team()
     {
+        $aliasId = Alias::all()->random()->id;
+
         // create notification
         $responseNotification = $this->json(
             'POST',
@@ -514,6 +528,7 @@ class TeamTest extends TestCase
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
                 'service' => 'https://service.local/test',
+                'aliases' => [$aliasId],
             ],
             $this->header
         );
@@ -554,6 +569,7 @@ class TeamTest extends TestCase
                 'users' => [],
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
+                'aliases' => [$aliasId],
             ],
             $this->header
         );
@@ -633,6 +649,8 @@ class TeamTest extends TestCase
      */
     public function test_the_application_can_delete_a_team()
     {
+        $aliasId = Alias::all()->random()->id;
+
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
             'POST',
@@ -676,6 +694,7 @@ class TeamTest extends TestCase
                 'users' => [],
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
                 'introduction' => fake()->sentence(),
+                'aliases' => [$aliasId],
             ],
             $this->header
         );
