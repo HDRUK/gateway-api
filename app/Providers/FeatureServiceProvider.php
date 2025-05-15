@@ -23,6 +23,7 @@ class FeatureServiceProvider extends ServiceProvider
 
         $featureFlags = Cache::remember('feature_flags', now()->addMinutes(60), function () use ($url) {
             $res = Http::get($url);
+            logger()->info('Called Github');
             if ($res->successful()) {
                 return $res->json();
             }
