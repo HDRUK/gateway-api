@@ -6,32 +6,23 @@ use Config;
 use Auditor;
 use Exception;
 use App\Models\Collection;
-use App\Models\Application;
-use App\Models\Dur;
+use App\Models\CollectionHasUser;
 use App\Http\Traits\CheckAccess;
 use App\Http\Traits\CollectionsV2Helpers;
-use App\Models\CollectionHasDur;
-use App\Http\Traits\IndexElastic;
-use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-use App\Models\CollectionHasKeyword;
-use App\Models\CollectionHasPublication;
 use App\Exceptions\UnauthorizedException;
 use App\Http\Traits\RequestTransformation;
-use App\Models\CollectionHasDatasetVersion;
 use App\Http\Requests\V2\Collection\CreateCollection;
 use App\Http\Requests\V2\Collection\DeleteCollection;
 use App\Http\Requests\V2\Collection\EditCollection;
 use App\Http\Requests\V2\Collection\GetCollection;
 use App\Http\Requests\V2\Collection\UpdateCollection;
-use App\Models\CollectionHasUser;
 
 class UserCollectionController extends Controller
 {
-    use IndexElastic;
     use RequestTransformation;
     use CheckAccess;
     use CollectionsV2Helpers;
@@ -485,10 +476,6 @@ class UserCollectionController extends Controller
                 $collection->update(['updated_on' => $input['updated_on']]);
             }
 
-            if ($collection->status === Collection::STATUS_ACTIVE) {
-                $this->indexElasticCollections((int) $collection->id);
-            }
-
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
@@ -608,16 +595,12 @@ class UserCollectionController extends Controller
         $this->checkAccessCollaborators($input, array_column($collHasUsers, 'user_id'));
 
         try {
-            $initCollection = Collection::withTrashed()->where('id', $id)->first();
+            $initCollection = Collection::where('id', $id)->first();
 
             // Don't allow us to edit a team-owned Collection via this endpoint
             if ($initCollection['team_id'] !== null) {
                 throw new UnauthorizedException('Cannot update a team-owned Collection via the individual Collection endpoint');
             }
-
-            // if ($initCollection['status'] === Collection::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
-            //     throw new Exception('Cannot update current collection! Status already "ARCHIVED"');
-            // }
 
             $arrayKeys = [
                 'name',
@@ -656,13 +639,6 @@ class UserCollectionController extends Controller
             // updated_on
             if (array_key_exists('updated_on', $input)) {
                 Collection::where('id', $id)->update(['updated_on' => $input['updated_on']]);
-            }
-
-            $currentCollection = Collection::where('id', $id)->first();
-            if ($currentCollection->status === Collection::STATUS_ACTIVE) {
-                $this->indexElasticCollections((int) $id);
-            } else {
-                $this->deleteCollectionFromElastic((int) $id);
             }
 
             Auditor::log([
@@ -815,7 +791,7 @@ class UserCollectionController extends Controller
             }
 
             //update it
-            Collection::where('id', $id)->update($array);
+            $initCollection->update($array);
             // get updated collection
             $updatedCollection = Collection::where('id', $id)->first();
             // Check and update related datasets and tools etc if the collection is active
@@ -853,12 +829,7 @@ class UserCollectionController extends Controller
 
             // add in a team
             if (array_key_exists('team_id', $input)) {
-                Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
-            }
-            if ($updatedCollection->status === Collection::STATUS_ACTIVE) {
-                $this->indexElasticCollections((int) $id);
-            } elseif ($initCollection->status === Collection::STATUS_ACTIVE) {
-                $this->deleteCollectionFromElastic((int) $id);
+                $updatedCollection->update(['team_id' => $input['team_id']]);
             }
 
             Auditor::log([
@@ -944,21 +915,12 @@ class UserCollectionController extends Controller
 
         try {
             $collection = Collection::where(['id' => $id])->first();
-
-            // Don't allow us to edit a team-owned Collection via this endpoint
-            if ($collection['team_id'] !== null) {
-                throw new UnauthorizedException('Cannot delete a team-owned Collection via the individual Collection endpoint');
-            }
             if ($collection) {
-                CollectionHasDatasetVersion::where(['collection_id' => $id])->delete();
-                CollectionHasTool::where(['collection_id' => $id])->delete();
-                CollectionHasDur::where(['collection_id' => $id])->delete();
-                CollectionHasKeyword::where(['collection_id' => $id])->delete();
-                CollectionHasPublication::where(['collection_id' => $id])->delete();
-                CollectionHasUser::where(['collection_id' => $id])->delete();
-                Collection::where(['id' => $id])->delete();
-
-                $this->deleteCollectionFromElastic($id);
+                // Don't allow us to edit a team-owned Collection via this endpoint
+                if ($collection['team_id'] !== null) {
+                    throw new UnauthorizedException('Cannot delete a team-owned Collection via the individual Collection endpoint');
+                }
+                $collection->delete();
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
