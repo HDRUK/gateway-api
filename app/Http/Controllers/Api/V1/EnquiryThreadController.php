@@ -245,7 +245,7 @@ class EnquiryThreadController extends Controller
             $teamIds = [];
             $teamNames = [];
 
-            if (Feature::active('SDEConciergeServiceEnquiry')) {
+            if (Feature::active('features.SDEConciergeServiceEnquiry')) {
                 list($conciergeId, $conciergeName) = $this->getNetworkConcierge();
                 $sdeNetwork = DataProviderColl::where('name', 'LIKE', '%SDE%')
                     ->with('teams')
