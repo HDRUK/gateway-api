@@ -1,3 +1,24 @@
+## [2.10.0](https://github.com/HDRUK/gateway-api/compare/v2.9.1...v2.10.0) (2025-05-20)
+
+### ✨ Features
+
+* **GAT-4070:** Add dataProvider to tools filters. (#1219) ([cd0b01c](https://github.com/HDRUK/gateway-api/commit/cd0b01ca1c147741f94d74f8199fc5f86bd8cf2e)), closes [GAT-4070](GAT-4070)
+* **GAT-4070:** Add team name to dataProvider field in tool indexing (#1220) ([8c77490](https://github.com/HDRUK/gateway-api/commit/8c7749041f51709a13b9a1cd6120250d31717fe8)), closes [GAT-4070](GAT-4070)
+* **GAT-6422:** Search on the dataUses is returning - There has been a server error cURL error 28 ...  (#1222) ([1b31f44](https://github.com/HDRUK/gateway-api/commit/1b31f444374105015d0ff3245cadf31901489928)), closes [GAT-6422](GAT-6422)
+* **GAT-6925:** Enable the use of aliases for Data Custodian names (#1236) ([e6d6ff2](https://github.com/HDRUK/gateway-api/commit/e6d6ff28747f9ac686494662ce573b4e9d7e7940)), closes [GAT-6925](GAT-6925)
+* **GAT-6993:** Split applications out after submission (#1221) ([807078f](https://github.com/HDRUK/gateway-api/commit/807078f1e029b512a3cf24bfac9c02035263defb)), closes [GAT-6993](GAT-6993)
+
+### 🐛 Bug Fixes
+
+* **GAT-5972:** update v2 tools put and patch (#1232) ([82befc7](https://github.com/HDRUK/gateway-api/commit/82befc79994de9c6efb473f3b285b9e6465846e4)), closes [GAT-5972](GAT-5972)
+* **GAT-6909:** Create separate enquiries for each team (#1197) ([6f8a56e](https://github.com/HDRUK/gateway-api/commit/6f8a56e92cbb606cfa6bcfbca95fd7d61d323890)), closes [GAT-6909](GAT-6909)
+* **GAT-6946:** Unable to view any Datasets & BioSamples - investigate Github issue (#1231) ([089f84e](https://github.com/HDRUK/gateway-api/commit/089f84eff5781885e1d22bf1ffc41a1bfdf475e7)), closes [GAT-6946](GAT-6946)
+* **GAT-6962:** Data Collections / Networks tab slow (#1216) ([f028148](https://github.com/HDRUK/gateway-api/commit/f02814821da7dd82496437b17ee60cec8c93ff0f)), closes [GAT-6962](GAT-6962)
+* **GAT-6982:** Filter DAR dashboard based on first review, not latest (#1235) ([1af137c](https://github.com/HDRUK/gateway-api/commit/1af137c57bdb5bb22de4c6e61384ded146d8f840)), closes [GAT-6982](GAT-6982)
+* **GAT-6985:** Getting 404 errors when clicking on derived from linked datasets (#1225) ([9b32e57](https://github.com/HDRUK/gateway-api/commit/9b32e575b21e7f69ce246345c90244a04c94f91e)), closes [GAT-6985](GAT-6985)
+* **GAT-6986:** Unable to upload data uses - London SDE (#1215) ([3e36fce](https://github.com/HDRUK/gateway-api/commit/3e36fce4c4a90e7dd7f4b057057dfab6769ccc63)), closes [GAT-6986](GAT-6986)
+* **GAT-6993:** For researcher add related applications to list (#1234) ([5b828e0](https://github.com/HDRUK/gateway-api/commit/5b828e0cc96ef3207f1c21156e3b424b42411399)), closes [GAT-6993](GAT-6993)
+
 ## [2.9.1](https://github.com/HDRUK/gateway-api/compare/v2.9.0...v2.9.1) (2025-05-13)
 
 ### 🐛 Bug Fixes
