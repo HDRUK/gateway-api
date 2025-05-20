@@ -506,7 +506,15 @@ class DataAccessTemplateTest extends TestCase
                         'team_id',
                         'published',
                         'locked',
-                        'files',
+                        'files' => [
+                            0 => [
+                                'id',
+                                'created_at',
+                                'updated_at',
+                                'file_location',
+                                'filename'
+                            ]
+                        ],
                     ],
                 ],
                 'first_page_url',
