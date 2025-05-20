@@ -305,4 +305,9 @@ class Team extends Model
     {
         return $this->belongsToMany(Federation::class, 'team_has_federations');
     }
+
+    public function aliases(): BelongsToMany
+    {
+        return $this->belongsToMany(Alias::class, 'team_has_aliases');
+    }
 }

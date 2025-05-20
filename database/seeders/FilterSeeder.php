@@ -66,6 +66,7 @@ class FilterSeeder extends Seeder
             'license',
             'dataProviderColl',
             'datasetTitles',
+            'dataProvider',
             'typeCategory'
         ];
 

@@ -62,7 +62,7 @@ class EnquiryThreadTest extends TestCase
                     0 => [
                         'id',
                         'user_id',
-                        'team_ids',
+                        'team_id',
                         'project_title',
                         'is_dar_dialogue',
                         'is_dar_status',
@@ -90,7 +90,7 @@ class EnquiryThreadTest extends TestCase
                 0 => [
                     'id',
                     'user_id',
-                    'team_ids',
+                    'team_id',
                     'project_title',
                     'unique_key',
                     'is_dar_dialogue',
@@ -324,10 +324,11 @@ class EnquiryThreadTest extends TestCase
         $response->assertJsonStructure([
             'message',
             'data',
+            'all_threads',
         ]);
 
         $numThreadsAfter = EnquiryThread::count();
 
-        $this->assertEquals($numThreadsAfter, $numThreadsBefore + 1);
+        $this->assertEquals($numThreadsAfter, $numThreadsBefore + 2);
     }
 }

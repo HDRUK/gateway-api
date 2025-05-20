@@ -35,6 +35,7 @@ use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\CheckAccess;
+use App\Models\TeamHasAlias;
 
 class TeamController extends Controller
 {
@@ -86,15 +87,16 @@ class TeamController extends Controller
      *                    @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *                    @OA\Property(property="introduction", type="string", example="info about the team"),
      *                    @OA\Property(property="service", type="string", example="https://example"),
+     *                    @OA\Property(property="aliases", type="array", example="[]", @OA\Items()),
      *                ),
      *             ),
-     *             @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
+     *             @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/teams?page=1"),
      *             @OA\Property(property="from", type="integer", example="1"),
      *             @OA\Property(property="last_page", type="integer", example="1"),
-     *             @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
+     *             @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/teams?page=1"),
      *             @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
      *             @OA\Property(property="next_page_url", type="string", example="null"),
-     *             @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests"),
+     *             @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/teams"),
      *             @OA\Property(property="per_page", type="integer", example="25"),
      *             @OA\Property(property="prev_page_url", type="string", example="null"),
      *             @OA\Property(property="to", type="integer", example="3"),
@@ -140,7 +142,7 @@ class TeamController extends Controller
 
             $perPage = request('per_page', Config::get('constants.per_page'));
             $teams = $query
-                ->with('users')
+                ->with(['users', 'aliases'])
                 ->paginate($perPage, ['*'], 'page')
                 ->toArray();
 
@@ -212,6 +214,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *                  @OA\Property(property="introduction", type="string", example="info about the team"),
      *                  @OA\Property(property="service", type="string", example="https://example"),
+     *                  @OA\Property(property="aliases", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
      *              )
      *          ),
      *      ),
@@ -230,7 +233,7 @@ class TeamController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->get()->toArray();
+            $userTeam = Team::where('id', $teamId)->with(['users', 'notifications', 'aliases'])->get()->toArray();
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -578,6 +581,7 @@ class TeamController extends Controller
      *              @OA\Property(property="introduction", type="string", example="info about the team"),
      *              @OA\Property(property="dar_modal_content", type="string", example="dar info"),
      *              @OA\Property(property="service", type="string", example="https://example"),
+     *              @OA\Property(property="aliases", type="array", example="[1, 2]", @OA\Items(type="array", @OA\Items())),
      *          ),
      *      ),
      *      @OA\Response(
@@ -610,7 +614,8 @@ class TeamController extends Controller
         $arrayTeam['name'] = formatCleanInput($input['name']);
         $arrayTeam['pid'] = (string) Str::uuid();
 
-        $arrayTeamNotification = $input['notifications'];
+        $arrayTeamNotification = $input['notifications'] ?? [];
+        $arrayTeamAlias = $input['aliases'] ?? [];
         $arrayTeamUsers = $input['users'];
         $superAdminIds = User::where('is_admin', true)->pluck('id');
         $team = Team::create($arrayTeam);
@@ -623,6 +628,8 @@ class TeamController extends Controller
                         'notification_id' => (int)$value,
                     ]);
                 }
+
+                $arrayTeamAlias && $this->updateTeamAlias((int)$team->id, $arrayTeamAlias);
 
                 //make sure the super admin is added to this team on creation
                 foreach ($superAdminIds as $adminId) {
@@ -805,6 +812,7 @@ class TeamController extends Controller
             Team::where('id', $teamId)->update($array);
 
             $arrayTeamNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
+
             TeamHasNotification::where('team_id', $teamId)->delete();
             foreach ($arrayTeamNotification as $value) {
                 TeamHasNotification::updateOrCreate([
@@ -812,6 +820,9 @@ class TeamController extends Controller
                     'notification_id' => (int) $value,
                 ]);
             }
+
+            $arrayTeamAlias = array_key_exists('aliases', $input) ? $input['aliases'] : [];
+            $arrayTeamAlias && $this->updateTeamAlias((int)$teamId, $arrayTeamAlias);
 
             $users = array_key_exists('users', $input) ? $input['users'] : [];
             $this->updateTeamAdminUsers($teamId, $users);
@@ -970,6 +981,9 @@ class TeamController extends Controller
                 ]);
             }
 
+            $arrayTeamAlias = array_key_exists('aliases', $input) ? $input['aliases'] : [];
+            $arrayTeamAlias && $this->updateTeamAlias((int)$teamId, $arrayTeamAlias);
+
             $users = array_key_exists('users', $input) ? $input['users'] : [];
             $this->updateTeamAdminUsers($teamId, $users);
 
@@ -1044,26 +1058,19 @@ class TeamController extends Controller
 
         try {
             $team = Team::findOrFail($teamId);
-            if ($team) {
-                $existsDatasets = Dataset::where('team_id', $teamId)->select('id')->first();
+            $existsDatasets = Dataset::where('team_id', $teamId)->select('id')->first();
 
-                if (!is_null($existsDatasets)) {
-                    throw new Exception('The team cannot be deleted as there are datasets currently assigned to it.');
-                }
-
-                TeamHasNotification::where('team_id', $teamId)->delete();
-
-                $deletePermanently = false;
-                if ($request->has('deletePermanently')) {
-                    $deletePermanently = (bool)$request->query('deletePermanently');
-                }
-
-                $team->delete();
-
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                ], Config::get('statuscodes.STATUS_OK.code'));
+            if (!is_null($existsDatasets)) {
+                throw new Exception('The team cannot be deleted as there are datasets currently assigned to it.');
             }
+
+            TeamHasNotification::where('team_id', $teamId)->delete();
+
+            $team->delete();
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1294,4 +1301,17 @@ class TeamController extends Controller
         $this->tools = array_unique(array_merge($this->tools, Arr::pluck($dataset->allTools, 'id')));
         $this->collections = array_unique(array_merge($this->collections, Arr::pluck($dataset->allCollections, 'id')));
     }
+
+    private function updateTeamAlias(int $teamId, array $arrayTeamAlias): void
+    {
+        TeamHasAlias::where('team_id', $teamId)->delete();
+
+        foreach ($arrayTeamAlias as $aliasId) {
+            TeamHasAlias::updateOrCreate([
+                'team_id' => (int)$teamId,
+                'alias_id' => (int)$aliasId,
+            ]);
+        }
+    }
+
 }

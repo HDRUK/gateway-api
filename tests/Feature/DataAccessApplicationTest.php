@@ -78,14 +78,23 @@ class DataAccessApplicationTest extends TestCase
             'api/v1/dar/applications',
             [
                 'applicant_id' => 1,
-                'submission_status' => 'SUBMITTED',
                 'project_title' => 'A test DAR',
-                'approval_status' => 'APPROVED_COMMENTS',
                 'dataset_ids' => [$datasetId]
             ],
             $this->header
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $applicationId = $response->decodeResponseJson()['data'];
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/users/1/dar/applications/' . $applicationId,
+            [
+                'submission_status' => 'SUBMITTED',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $response = $this->get('api/v1/teams/' . $teamId . '/dar/applications', $this->header);
 
@@ -183,7 +192,6 @@ class DataAccessApplicationTest extends TestCase
             'api/v1/dar/applications',
             [
                 'applicant_id' => 1,
-                'submission_status' => 'SUBMITTED',
                 'project_title' => 'A test joint DAR',
                 'dataset_ids' => [$datasetId1, $datasetId2]
             ],
@@ -194,7 +202,17 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PATCH',
-            'api/v1/teams/' . $teamId1 . '/dar/applications/' . $applicationId2,
+            'api/v1/users/1/dar/applications/' . $applicationId2,
+            [
+                'submission_status' => 'SUBMITTED',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/teams/' . $teamId1 . '/dar/applications/' . $applicationId2 + 1,
             [
                 'approval_status' => 'APPROVED_COMMENTS',
             ],
@@ -221,7 +239,6 @@ class DataAccessApplicationTest extends TestCase
             'api/v1/dar/applications',
             [
                 'applicant_id' => 1,
-                'submission_status' => 'SUBMITTED',
                 'project_title' => 'A test joint DAR',
                 'dataset_ids' => [$datasetId1, $datasetId3]
             ],
@@ -229,6 +246,16 @@ class DataAccessApplicationTest extends TestCase
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
         $applicationId3 = $response->decodeResponseJson()['data'];
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/users/1/dar/applications/' . $applicationId3,
+            [
+                'submission_status' => 'SUBMITTED',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $response = $this->json(
             'PATCH',
@@ -345,6 +372,8 @@ class DataAccessApplicationTest extends TestCase
                     'applicant_id',
                     'project_title',
                     'questions',
+                    'submission_status',
+                    'approval_status',
                     'teams' => [
                         0 => [
                             'submission_status',
@@ -368,6 +397,8 @@ class DataAccessApplicationTest extends TestCase
                     'applicant_id',
                     'project_title',
                     'questions',
+                    'submission_status',
+                    'approval_status',
                     'teams' => [
                         0 => [
                             'submission_status',
@@ -627,6 +658,8 @@ class DataAccessApplicationTest extends TestCase
 
         $this->assertEquals('DRAFT', $response['data']['teams'][0]['submission_status']);
         $this->assertNull($response['data']['teams'][0]['approval_status']);
+        $this->assertEquals('DRAFT', $response['data']['submission_status']);
+        $this->assertNull($response['data']['approval_status']);
     }
 
     /**
@@ -712,6 +745,8 @@ class DataAccessApplicationTest extends TestCase
                     'applicant_id',
                     'project_title',
                     'questions',
+                    'submission_status',
+                    'approval_status',
                     'teams' => [
                         0 => [
                             'submission_status',
@@ -1499,7 +1534,6 @@ class DataAccessApplicationTest extends TestCase
             'api/v1/dar/applications',
             [
                 'applicant_id' => 1,
-                'submission_status' => 'SUBMITTED',
                 'project_title' => 'Second test DAR',
                 'dataset_ids' => [$datasetId],
             ],
@@ -1512,6 +1546,16 @@ class DataAccessApplicationTest extends TestCase
                 'data'
             ]);
         $applicationIdTwo = $response->decodeResponseJson()['data'];
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/users/1/dar/applications/' . $applicationIdTwo,
+            [
+                'submission_status' => 'SUBMITTED',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // Update approval status of application two
         $response = $this->json(
@@ -1557,6 +1601,8 @@ class DataAccessApplicationTest extends TestCase
                         'deleted_at',
                         'applicant_id',
                         'project_title',
+                        'submission_status',
+                        'approval_status',
                         'days_since_submission',
                         'primary_applicant' => [
                             'name',
@@ -1678,10 +1724,15 @@ class DataAccessApplicationTest extends TestCase
      */
     public function test_the_application_can_list_dar_applications_by_user()
     {
-        $entityIds = $this->createDatasetForDar();
-        $datasetId = $entityIds['datasetId'];
-        $teamId = $entityIds['teamId'];
-        $questionId = $entityIds['questionId'];
+        $entityIdsOne = $this->createDatasetForDar();
+        $datasetIdOne = $entityIdsOne['datasetId'];
+        $teamIdOne = $entityIdsOne['teamId'];
+        $questionIdOne = $entityIdsOne['questionId'];
+
+        $entityIdsTwo = $this->createDatasetForDar();
+        $datasetIdTwo = $entityIdsTwo['datasetId'];
+        $teamIdTwo = $entityIdsTwo['teamId'];
+        $questionIdTwo = $entityIdsTwo['questionId'];
 
         // Create first DAR application for that dataset
         $response = $this->json(
@@ -1691,7 +1742,7 @@ class DataAccessApplicationTest extends TestCase
                 'applicant_id' => 1,
                 'submission_status' => 'DRAFT',
                 'project_title' => 'First test DAR',
-                'dataset_ids' => [$datasetId],
+                'dataset_ids' => [$datasetIdOne],
             ],
             $this->header
         );
@@ -1709,9 +1760,8 @@ class DataAccessApplicationTest extends TestCase
             'api/v1/dar/applications',
             [
                 'applicant_id' => 1,
-                'submission_status' => 'SUBMITTED',
                 'project_title' => 'Second test DAR',
-                'dataset_ids' => [$datasetId],
+                'dataset_ids' => [$datasetIdOne, $datasetIdTwo],
             ],
             $this->header
         );
@@ -1723,10 +1773,20 @@ class DataAccessApplicationTest extends TestCase
             ]);
         $applicationIdTwo = $response->decodeResponseJson()['data'];
 
+        $response = $this->json(
+            'PATCH',
+            'api/v1/users/1/dar/applications/' . $applicationIdTwo,
+            [
+                'submission_status' => 'SUBMITTED',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
         // Update approval status of application two
         $response = $this->json(
             'PATCH',
-            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationIdTwo,
+            'api/v1/teams/' . $teamIdTwo . '/dar/applications/' . $applicationIdTwo,
             [
                 'approval_status' => 'APPROVED_COMMENTS',
             ],
@@ -1737,10 +1797,10 @@ class DataAccessApplicationTest extends TestCase
         // Add a review to second DAR application
         $response = $this->json(
             'POST',
-            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationIdTwo . '/questions/' . $questionId . '/reviews',
+            'api/v1/teams/' . $teamIdTwo . '/dar/applications/' . $applicationIdTwo . '/questions/' . $questionIdOne . '/reviews',
             [
                 'comment' => 'A test review comment',
-                'team_id' => $teamId
+                'team_id' => $teamIdTwo
             ],
             $this->header
         );
@@ -1789,6 +1849,10 @@ class DataAccessApplicationTest extends TestCase
                         ],
                         'teams' => [
                             0 => [
+                                'submission_status',
+                                'approval_status',
+                            ],
+                            1 => [
                                 'submission_status',
                                 'approval_status',
                             ]
@@ -2140,6 +2204,8 @@ class DataAccessApplicationTest extends TestCase
                     'deleted_at',
                     'applicant_id',
                     'project_title',
+                    'submission_status',
+                    'approval_status',
                     'teams' => [
                         0 => [
                             'submission_status',
@@ -2276,6 +2342,7 @@ class DataAccessApplicationTest extends TestCase
 
         $content = $response->decodeResponseJson();
         $this->assertEquals($content['data']['teams'][0]['submission_status'], 'DRAFT');
+        $this->assertEquals($content['data']['submission_status'], 'DRAFT');
     }
 
     /**
@@ -2331,6 +2398,8 @@ class DataAccessApplicationTest extends TestCase
         $content = $response->decodeResponseJson();
         $this->assertEquals($content['data']['teams'][0]['submission_status'], 'DRAFT');
         $this->assertNull($content['data']['teams'][0]['approval_status']);
+        $this->assertEquals($content['data']['submission_status'], 'DRAFT');
+        $this->assertNull($content['data']['approval_status']);
 
         $responseStatus = $this->json(
             'GET',
@@ -2361,6 +2430,7 @@ class DataAccessApplicationTest extends TestCase
 
         $content = $response->decodeResponseJson();
         $this->assertEquals($content['data']['teams'][0]['submission_status'], 'SUBMITTED');
+        $this->assertEquals($content['data']['submission_status'], 'SUBMITTED');
 
         // Test the user can push the submitted application to DRAFT
         $response = $this->json(
@@ -2374,6 +2444,7 @@ class DataAccessApplicationTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $content = $response->decodeResponseJson();
         $this->assertEquals($content['data']['teams'][0]['submission_status'], 'DRAFT');
+        $this->assertEquals($content['data']['submission_status'], 'DRAFT');
 
         // Resubmit
         $response = $this->json(
@@ -2405,6 +2476,7 @@ class DataAccessApplicationTest extends TestCase
 
         $content = $response->decodeResponseJson();
         $this->assertEquals($content['data']['teams'][0]['approval_status'], 'APPROVED');
+        $this->assertEquals($content['data']['approval_status'], 'APPROVED');
         Queue::assertPushed(SendEmailJob::class, 1);
 
         // Test status history has been updated
@@ -2456,6 +2528,8 @@ class DataAccessApplicationTest extends TestCase
         $content = $response->decodeResponseJson();
         $this->assertEquals($content['data']['teams'][0]['submission_status'], 'DRAFT');
         $this->assertEquals($content['data']['teams'][0]['approval_status'], null);
+        $this->assertEquals($content['data']['submission_status'], 'DRAFT');
+        $this->assertEquals($content['data']['approval_status'], null);
 
         // Test that a review was created
         $response = $this->json(
@@ -2769,18 +2843,27 @@ class DataAccessApplicationTest extends TestCase
             'api/v1/dar/applications',
             [
                 'applicant_id' => 1,
-                'submission_status' => 'SUBMITTED',
                 'project_title' => 'A test DAR',
                 'dataset_ids' => [1,2],
             ],
             $this->header
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
-        $content = $response->decodeResponseJson();
+        $applicationId = $response->decodeResponseJson()['data'];
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/users/1/dar/applications/' . $applicationId,
+            [
+                'submission_status' => 'SUBMITTED',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $response = $this->json(
             'DELETE',
-            'api/v1/users/1/dar/applications/' . $content['data'],
+            'api/v1/users/1/dar/applications/' . $applicationId,
             [],
             $this->header
         );

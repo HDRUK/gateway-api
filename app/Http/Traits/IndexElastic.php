@@ -225,6 +225,14 @@ trait IndexElastic
                 $collectionNames = convertArrayToStringWithKeyName($collections, 'name');
             }
 
+            // aliases
+            $aliases = Team::where('id', $teamId)->with(['aliases'])->select(['id'])->first();
+            $aliases = $aliases->toArray();
+            $aliases = $aliases['aliases'] ?? [];
+            $aliases = array_map(function ($alias) {
+                return $alias['name'];
+            }, $aliases);
+
             $toIndex = [
                 'name' => Team::findOrFail($teamId)->name,
                 'datasetTitles' => array_values(array_unique($datasetTitles)),
@@ -234,6 +242,7 @@ trait IndexElastic
                 'toolNames' => $toolNames,
                 'publicationTitles' => $publicationTitles,
                 'collectionNames' => $collectionNames,
+                'teamAliases' => $aliases,
             ];
 
             $params = [
@@ -647,6 +656,7 @@ trait IndexElastic
                     'category',
                     'typeCategory',
                     'license',
+                    'team',
                 ])
                 ->first();
 
@@ -728,6 +738,7 @@ trait IndexElastic
                 'tags' => $tags,
                 'datasetTitles' => $datasetTitles,
                 'dataProviderColl' => $dataProviderColl,
+                'dataProvider' => $tool['team']['name'] ?? null,
                 'resultsInsights' => $tool['results_insights']
             ];
 
