@@ -122,6 +122,7 @@ class CohortRequestController extends Controller
      *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="logs", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="accept_declaration", type="boolean", example="0"),
+     *                   @OA\Property(property="nhse_sde_approval", type="boolean", example="0"),
      *                ),
      *             ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
@@ -396,6 +397,8 @@ class CohortRequestController extends Controller
                 $id = $checkRequestByUserId ? $checkRequestByUserId->id : 0;
             }
 
+            $nhseSdeApproval = array_key_exists('nhse_sde_approval', $input) ? $input['nhse_sde_approval'] : false;
+
             if ($id) {
                 $cohortRequest = (object) [
                     'id' => CohortRequest::where('id', $id)->update([
@@ -404,6 +407,7 @@ class CohortRequestController extends Controller
                         'cohort_status' => false,
                         'request_expire_at' => null,
                         'created_at' => Carbon::today()->toDateTimeString(),
+                        'nhse_sde_approval' => $nhseSdeApproval,
                     ])
                 ];
                 CohortRequestHasPermission::where('cohort_request_id', $id)->delete();
@@ -413,6 +417,7 @@ class CohortRequestController extends Controller
                     'request_status' => 'PENDING',
                     'cohort_status' => false,
                     'created_at' => Carbon::now(),
+                    'nhse_sde_approval' => $nhseSdeApproval,
                 ]);
             }
 
@@ -420,6 +425,7 @@ class CohortRequestController extends Controller
                 'user_id' => (int) $jwtUser['id'],
                 'details' => $input['details'],
                 'request_status' => 'PENDING',
+                'nhse_sde_approval' => $nhseSdeApproval,
             ]);
 
             CohortRequestHasLog::create([
@@ -530,6 +536,7 @@ class CohortRequestController extends Controller
 
         try {
             $requestStatus = strtoupper(trim($input['request_status']));
+            $nhseSdeApproval = array_key_exists('nhse_sde_approval', $input) ? $input['nhse_sde_approval'] : false;
 
             $currCohortRequest = CohortRequest::where('id', $id)->first();
             $currRequestStatus = strtoupper(trim($currCohortRequest['request_status']));
@@ -555,6 +562,7 @@ class CohortRequestController extends Controller
                     'cohort_status' => true,
                     'request_expire_at' => ($requestStatus !== 'APPROVED') ? null : Carbon::now()->addDays(Config::get('cohort.cohort_access_expiry_time_in_days')),
                     'accept_declaration' => $requestStatus === 'APPROVED',
+                    'nhse_sde_approval' => $nhseSdeApproval,
                 ]);
             }
 
