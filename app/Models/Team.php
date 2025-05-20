@@ -218,7 +218,7 @@ class Team extends Model
         $mediaUrl = Config::get('services.media.base_url');
         $escapedMediaUrl = preg_quote($mediaUrl, '/');
         $allowedExtensions = 'jpeg|jpg|png|gif|bmp|webp';
-        $customPattern = "/^(" . $escapedMediaUrl . ")?\/teams\/[a-zA-Z0-9 _-]+\.(?:$allowedExtensions)$/";
+        $customPattern = "/^(" . $escapedMediaUrl . ")?\/teams\/[a-zA-Z0-9 _\-()]+\.(?:$allowedExtensions)$/";
 
         $validator = Validator::make($this->attributes, [
             'team_logo' => [
