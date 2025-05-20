@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DataAccessTemplate extends Model
@@ -52,8 +53,15 @@ class DataAccessTemplate extends Model
         return $this->hasMany(DataAccessTemplateHasQuestion::class, 'template_id');
     }
 
-    public function files(): HasMany
+    public function files(): HasManyThrough
     {
-        return $this->hasMany(DataAccessTemplateHasFile::class, 'template_id');
+        return $this->hasManyThrough(
+            Upload::class,
+            DataAccessTemplateHasFile::class,
+            'template_id',
+            'id',
+            'id',
+            'upload_id'
+        );
     }
 }
