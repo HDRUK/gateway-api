@@ -15,6 +15,7 @@ use App\Http\Requests\Alias\DeleteAlias;
 use App\Http\Requests\Alias\UpdateAlias;
 use App\Models\TeamHasAlias;
 use App\Http\Controllers\Controller;
+use Laravel\Pennant\Feature;
 
 class AliasController extends Controller
 {
@@ -43,6 +44,12 @@ class AliasController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        if (!Feature::active('Aliases')) {
+            return response()->json([
+                'message' => 'Resource not found',
+            ])->setStatusCode(404);
+        }
+
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
@@ -112,6 +119,12 @@ class AliasController extends Controller
      */
     public function show(GetAlias $request, int $id): JsonResponse
     {
+        if (!Feature::active('Aliases')) {
+            return response()->json([
+                'message' => 'Resource not found',
+            ])->setStatusCode(404);
+        }
+
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
@@ -180,6 +193,12 @@ class AliasController extends Controller
      */
     public function store(CreateAlias $request): JsonResponse
     {
+        if (!Feature::active('Aliases')) {
+            return response()->json([
+                'message' => 'Resource not found',
+            ])->setStatusCode(404);
+        }
+
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
@@ -269,6 +288,12 @@ class AliasController extends Controller
      */
     public function update(UpdateAlias $request, int $id): JsonResponse
     {
+        if (!Feature::active('Aliases')) {
+            return response()->json([
+                'message' => 'Resource not found',
+            ])->setStatusCode(404);
+        }
+
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
@@ -356,6 +381,12 @@ class AliasController extends Controller
      */
     public function edit(EditAlias $request, int $id): JsonResponse
     {
+        if (!Feature::active('Aliases')) {
+            return response()->json([
+                'message' => 'Resource not found',
+            ])->setStatusCode(404);
+        }
+
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
@@ -434,6 +465,12 @@ class AliasController extends Controller
      */
     public function destroy(DeleteAlias $request, int $id): JsonResponse
     {
+        if (!Feature::active('Aliases')) {
+            return response()->json([
+                'message' => 'Resource not found',
+            ])->setStatusCode(404);
+        }
+
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
