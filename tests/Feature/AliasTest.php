@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Alias;
+use Laravel\Pennant\Feature;
 use Database\Seeders\AliasSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\MinimalUserSeeder;
@@ -39,27 +40,31 @@ class AliasTest extends TestCase
     public function test_the_application_can_list_aliases()
     {
         $response = $this->get('api/v1/aliases', $this->header);
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-            ->assertJsonStructure([
-                'data' => [
-                    0 => [
-                        'id',
-                        'name',
+        if (!Feature::active('Aliases')) {
+            $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } else {
+            $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+                ->assertJsonStructure([
+                    'data' => [
+                        0 => [
+                            'id',
+                            'name',
+                        ],
                     ],
-                ],
-                'current_page',
-                'first_page_url',
-                'from',
-                'last_page',
-                'last_page_url',
-                'links',
-                'next_page_url',
-                'path',
-                'per_page',
-                'prev_page_url',
-                'to',
-                'total',
-            ]);
+                    'current_page',
+                    'first_page_url',
+                    'from',
+                    'last_page',
+                    'last_page_url',
+                    'links',
+                    'next_page_url',
+                    'path',
+                    'per_page',
+                    'prev_page_url',
+                    'to',
+                    'total',
+                ]);
+        }
     }
 
     /**
@@ -78,23 +83,27 @@ class AliasTest extends TestCase
             $this->header,
         );
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        if (!Feature::active('Aliases')) {
+            $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } else {
+            $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
                 'message',
                 'data',
             ]);
 
-        $content = $response->decodeResponseJson();
+            $content = $response->decodeResponseJson();
 
-        $response = $this->get('api/v1/aliases/' . $content['data'], $this->header);
+            $response = $this->get('api/v1/aliases/' . $content['data'], $this->header);
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-            ->assertJsonStructure([
-                'data' => [
-                    'id',
-                    'name',
-                ],
-            ]);
+            $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+                ->assertJsonStructure([
+                    'data' => [
+                        'id',
+                        'name',
+                    ],
+                ]);
+        }
     }
 
     /**
@@ -113,17 +122,21 @@ class AliasTest extends TestCase
             $this->header,
         );
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
-            ->assertJsonStructure([
-                'message',
-                'data',
-            ]);
+        if (!Feature::active('Aliases')) {
+            $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } else {
+            $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+                ->assertJsonStructure([
+                    'message',
+                    'data',
+                ]);
 
-        $content = $response->decodeResponseJson();
-        $this->assertEquals(
-            $content['message'],
-            Config::get('statuscodes.STATUS_CREATED.message')
-        );
+            $content = $response->decodeResponseJson();
+            $this->assertEquals(
+                $content['message'],
+                Config::get('statuscodes.STATUS_CREATED.message')
+            );
+        }
     }
 
     /**
@@ -133,8 +146,6 @@ class AliasTest extends TestCase
      */
     public function test_the_application_can_update_an_alias()
     {
-        // Start by creating a new activity log record for updating
-        // within this test case
         $response = $this->json(
             'POST',
             'api/v1/aliases',
@@ -144,31 +155,35 @@ class AliasTest extends TestCase
             $this->header,
         );
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
-            ->assertJsonStructure([
-                'message',
-                'data',
-            ]);
+        if (!Feature::active('Aliases')) {
+            $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } else {
+            $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+                ->assertJsonStructure([
+                    'message',
+                    'data',
+                ]);
 
-        $content = $response->decodeResponseJson();
-        $this->assertEquals(
-            $content['message'],
-            Config::get('statuscodes.STATUS_CREATED.message')
-        );
+            $content = $response->decodeResponseJson();
+            $this->assertEquals(
+                $content['message'],
+                Config::get('statuscodes.STATUS_CREATED.message')
+            );
 
-        $updateAlias = $this->getUniqueAlias();
-        $response = $this->json(
-            'PUT',
-            'api/v1/aliases/' . $content['data'],
-            [
-                'name' => $updateAlias,
-            ],
-            $this->header,
-        );
+            $updateAlias = $this->getUniqueAlias();
+            $response = $this->json(
+                'PUT',
+                'api/v1/aliases/' . $content['data'],
+                [
+                    'name' => $updateAlias,
+                ],
+                $this->header,
+            );
 
-        $content = $response->decodeResponseJson();
+            $content = $response->decodeResponseJson();
 
-        $this->assertEquals($content['data']['name'], $updateAlias);
+            $this->assertEquals($content['data']['name'], $updateAlias);
+        }
     }
 
     /**
@@ -178,8 +193,6 @@ class AliasTest extends TestCase
      */
     public function test_it_can_delete_an_alias()
     {
-        // Start by creating a new activity log record for updating
-        // within this test case
         $response = $this->json(
             'POST',
             'api/v1/aliases',
@@ -189,37 +202,41 @@ class AliasTest extends TestCase
             $this->header,
         );
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
-            ->assertJsonStructure([
-                'message',
-                'data',
-            ]);
+        if (!Feature::active('Aliases')) {
+            $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } else {
+            $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+                ->assertJsonStructure([
+                    'message',
+                    'data',
+                ]);
 
-        $content = $response->decodeResponseJson();
-        $this->assertEquals(
-            $content['message'],
-            Config::get('statuscodes.STATUS_CREATED.message')
-        );
+            $content = $response->decodeResponseJson();
+            $this->assertEquals(
+                $content['message'],
+                Config::get('statuscodes.STATUS_CREATED.message')
+            );
 
-        // Finally, delete the last entered activity log to
-        // prove functionality
-        $response = $this->json(
-            'DELETE',
-            'api/v1/aliases/' . $content['data'],
-            [],
-            $this->header,
-        );
+            // Finally, delete the last entered activity log to
+            // prove functionality
+            $response = $this->json(
+                'DELETE',
+                'api/v1/aliases/' . $content['data'],
+                [],
+                $this->header,
+            );
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-            ->assertJsonStructure([
-                'message',
-            ]);
+            $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+                ->assertJsonStructure([
+                    'message',
+                ]);
 
-        $content = $response->decodeResponseJson();
-        $this->assertEquals(
-            $content['message'],
-            Config::get('statuscodes.STATUS_OK.message')
-        );
+            $content = $response->decodeResponseJson();
+            $this->assertEquals(
+                $content['message'],
+                Config::get('statuscodes.STATUS_OK.message')
+            );
+        }
     }
 
     private function getUniqueAlias()
