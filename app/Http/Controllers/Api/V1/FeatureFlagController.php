@@ -67,6 +67,9 @@ class FeatureFlagController extends Controller
             Log::warning('Invalid API token', ['provided' => $providedToken]);
             return response()->json(['message' => 'Unauthorized: Invalid token.'], 401);
         }
+        Cache::forget('getAllFlags');
+        Cache::forget('feature_flags');
+
 
         $url = env('FEATURE_FLAGGING_CONFIG_URL');
 
@@ -83,14 +86,14 @@ class FeatureFlagController extends Controller
 
         $featureFlags = $res->json();
 
-        Cache::forget('getAllFlags');
+
 
 
         if (!is_array($featureFlags)) {
             return response()->json(['message' => 'Invalid feature flag format.'], 422);
         }
 
-        Log::info("Using feature flags from GitHub: " . print_r($featureFlags, true));
+        Log::info("Using feature flags from Bucket: " . print_r($featureFlags, true));
 
         $flagManager->define($featureFlags);
 
