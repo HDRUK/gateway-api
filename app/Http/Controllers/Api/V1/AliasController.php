@@ -47,7 +47,7 @@ class AliasController extends Controller
         if (!Feature::active('Aliases')) {
             return response()->json([
                 'message' => 'Resource not found',
-            ])->setStatusCode(404);
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         }
 
         $input = $request->all();
@@ -122,7 +122,7 @@ class AliasController extends Controller
         if (!Feature::active('Aliases')) {
             return response()->json([
                 'message' => 'Resource not found',
-            ])->setStatusCode(404);
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         }
 
         $input = $request->all();
@@ -196,7 +196,7 @@ class AliasController extends Controller
         if (!Feature::active('Aliases')) {
             return response()->json([
                 'message' => 'Resource not found',
-            ])->setStatusCode(404);
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         }
 
         $input = $request->all();
@@ -291,7 +291,7 @@ class AliasController extends Controller
         if (!Feature::active('Aliases')) {
             return response()->json([
                 'message' => 'Resource not found',
-            ])->setStatusCode(404);
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         }
 
         $input = $request->all();
@@ -384,7 +384,7 @@ class AliasController extends Controller
         if (!Feature::active('Aliases')) {
             return response()->json([
                 'message' => 'Resource not found',
-            ])->setStatusCode(404);
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         }
 
         $input = $request->all();
@@ -468,7 +468,7 @@ class AliasController extends Controller
         if (!Feature::active('Aliases')) {
             return response()->json([
                 'message' => 'Resource not found',
-            ])->setStatusCode(404);
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         }
 
         $input = $request->all();
