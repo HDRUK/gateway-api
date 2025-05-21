@@ -11,7 +11,7 @@ return new class () extends Migration {
     public function up(): void
     {
         Schema::table('cohort_requests', function (Blueprint $table) {
-            $table->boolean('nhse_sde_approval')->default(false)->after('cohort_status');
+            $table->boolean('is_nhse_sde_approval')->default(false)->after('cohort_status');
         });
     }
 
@@ -21,7 +21,7 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::table('cohort_requests', function (Blueprint $table) {
-            $table->dropColumn('nhse_sde_approval');
+            $table->dropColumn('is_nhse_sde_approval');
         });
     }
 };

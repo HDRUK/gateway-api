@@ -32,13 +32,13 @@ class CohortRequest extends Model
         'request_expire_at',
         'created_at',
         'accept_declaration',
-        'nhse_sde_approval',
+        'is_nhse_sde_approval',
     ];
 
     protected $casts = [
         'cohort_status' => 'boolean',
         'accept_declaration' => 'boolean',
-        'nhse_sde_approval' => 'boolean',
+        'is_nhse_sde_approval' => 'boolean',
     ];
 
     public function user(): BelongsTo

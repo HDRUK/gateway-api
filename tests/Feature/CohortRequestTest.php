@@ -69,7 +69,7 @@ class CohortRequestTest extends TestCase
                     'user_id',
                     'user',
                     'request_status',
-                    'nhse_sde_approval',
+                    'is_nhse_sde_approval',
                     'cohort_status',
                     'request_expire_at',
                     'created_at',
