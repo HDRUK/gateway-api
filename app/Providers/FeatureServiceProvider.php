@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
-use Laravel\Pennant\Feature;
 use App\Services\FeatureFlagManager;
 use Illuminate\Support\Facades\Cache;
 
@@ -12,32 +11,25 @@ class FeatureServiceProvider extends ServiceProvider
 {
     public function boot()
     {
-        if (count(Feature::defined()) > 0) {
-            return;
-        }
+        $this->app->booted(function () {
+            logger()->info('Starting features');
+            $url = env('FEATURE_FLAGGING_CONFIG_URL');
 
-        $url = env('FEATURE_FLAGGING_CONFIG_URL');
-        if (app()->environment('testing') || !$url) {
-            return;
-        }
-
-        $featureFlags = Cache::remember('feature_flags', now()->addMinutes(60), function () use ($url) {
-            $res = Http::get($url);
-            logger()->info('Called Github');
-            if ($res->successful()) {
-                return $res->json();
+            if (app()->environment('testing') || !$url) {
+                return;
             }
 
-            logger()->error('Failed to fetch feature flags from URL', ['url' => $url]);
-            return [];
+            $featureFlags = Cache::remember('feature_flags', now()->addMinutes(60), function () use ($url) {
+                $res = Http::retry(3, 5000)->get($url);
+                logger()->info('Called Bucket');
+
+                return $res->successful() ? $res->json() : [];
+            });
+
+            if (is_array($featureFlags)) {
+                app(FeatureFlagManager::class)->define($featureFlags);
+            }
         });
-
-        if (is_array($featureFlags)) {
-            $flagManager = app(FeatureFlagManager::class);
-            $flagManager->define($featureFlags);
-        }
-
-
     }
 
 
