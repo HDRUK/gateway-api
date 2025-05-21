@@ -21,6 +21,11 @@ class CohortRequestLog extends Model
         'user_id',
         'details',
         'request_status',
+        'is_nhse_sde_approval',
+    ];
+
+    protected $casts = [
+        'is_nhse_sde_approval' => 'boolean',
     ];
 
     public function user(): BelongsTo

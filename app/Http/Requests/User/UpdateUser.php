@@ -107,7 +107,9 @@ class UpdateUser extends BaseFormRequest
             'terms' => [
                 'boolean',
             ],
-
+            'is_nhse_sde_approval' => [
+                'boolean',
+            ],
         ];
     }
 

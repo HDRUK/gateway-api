@@ -69,6 +69,7 @@ class CohortRequestTest extends TestCase
                     'user_id',
                     'user',
                     'request_status',
+                    'is_nhse_sde_approval',
                     'cohort_status',
                     'request_expire_at',
                     'created_at',
@@ -77,7 +78,6 @@ class CohortRequestTest extends TestCase
                     'accept_declaration',
                     'logs',
                     'permissions',
-
                 ]
             ],
             'first_page_url',
