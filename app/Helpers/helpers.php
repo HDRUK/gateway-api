@@ -21,8 +21,8 @@ if (!function_exists('formatCleanInput')) {
         $config = HTMLPurifier_Config::createDefault();
         $purifier = new HTMLPurifier($config);
         $sanitized_input = $purifier->purify($decoded_input);
-
-        return $sanitized_input;
+        return str_replace('&amp;', '&', $sanitized_input);
+        ;
     }
 }
 
