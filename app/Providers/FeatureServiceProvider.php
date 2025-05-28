@@ -21,7 +21,13 @@ class FeatureServiceProvider extends ServiceProvider
 
             $featureFlags = Cache::remember('feature_flags', now()->addMinutes(10), function () use ($url) {
                 logger()->info('Calling that Bucket');
-                $res = Http::retry(3, 5000)->get($url);
+                $res = Http::retry(3, 5000, function ($exception, $requestNumber) use ($url) {
+                    logger()->warning('Retrying feature flag fetch', [
+                        'url' => $url,
+                        'attempt' => $requestNumber,
+                        'error' => $exception->getMessage(),
+                    ]);
+                })->get($url);
 
                 if (!$res->successful()) {
                     logger()->error('Failed to fetch feature flags', ['url' => $url, 'status' => $res->status()]);
