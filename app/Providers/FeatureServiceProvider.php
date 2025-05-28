@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
 use App\Services\FeatureFlagManager;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Client\ConnectionException;
 
 class FeatureServiceProvider extends ServiceProvider
 {
@@ -21,19 +22,35 @@ class FeatureServiceProvider extends ServiceProvider
 
             $featureFlags = Cache::remember('feature_flags', now()->addMinutes(10), function () use ($url) {
                 logger()->info('Calling that Bucket');
-                $res = Http::retry(3, 5000, function ($exception, $requestNumber) use ($url) {
-                    logger()->warning('Retrying feature flag fetch', [
-                        'url' => $url,
-                        'attempt' => $requestNumber,
-                        'error' => $exception->getMessage(),
-                    ]);
-                })->get($url);
 
-                if (!$res->successful()) {
-                    logger()->error('Failed to fetch feature flags', ['url' => $url, 'status' => $res->status()]);
+                try {
+                    $res = Http::timeout(60)
+                        ->retry(3, 2000, function ($exception, $requestNumber) use ($url) {
+                            logger()->warning('Retrying feature flag fetch', [
+                                'url' => $url,
+                                'attempt' => $requestNumber,
+                                'error' => $exception->getMessage(),
+                            ]);
+                        })
+                        ->get($url);
+                } catch (ConnectionException $e) {
+                    logger()->error('ConnectionException when fetching feature flags', [
+                        'url' => $url,
+                        'error' => $e->getMessage(),
+                    ]);
+                    return [];
                 }
 
-                return $res->successful() ? $res->json() : [];
+                if (!$res->successful()) {
+                    logger()->error('Failed to fetch feature flags', [
+                        'url' => $url,
+                        'status' => $res->status(),
+                        'body' => $res->body(),
+                    ]);
+                    return [];
+                }
+
+                return $res->json();
             });
 
             if (is_array($featureFlags) && !empty($featureFlags)) {
