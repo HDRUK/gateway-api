@@ -25,7 +25,7 @@ class FeatureServiceProvider extends ServiceProvider
 
                 try {
                     $res = Http::timeout(60)
-                        ->retry(3, 5000, function ($exception, $requestNumber) use ($url) {
+                        ->retry(3, 2000, function ($exception, $requestNumber) use ($url) {
                             logger()->warning('Retrying feature flag fetch', [
                                 'url' => $url,
                                 'attempt' => $requestNumber,
