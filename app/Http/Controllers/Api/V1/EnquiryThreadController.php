@@ -8,17 +8,18 @@ use Exception;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
-use App\Models\DataProviderColl;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use App\Models\EnquiryThread;
-use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
-use EnquiriesManagementController as EMC;
 use Laravel\Pennant\Feature;
+use App\Models\EnquiryThread;
+use App\Models\DataProviderColl;
+use Illuminate\Http\JsonResponse;
+use App\Http\Traits\EnquiriesTrait;
+use App\Http\Controllers\Controller;
 
 class EnquiryThreadController extends Controller
 {
+    use EnquiriesTrait;
     /**
      * @OA\Get(
      *      path="/api/v1/enquiry_threads",
@@ -307,10 +308,10 @@ class EnquiryThreadController extends Controller
             foreach ($teamIds as $teamId) {
                 $payload['thread']['unique_key'] = Str::random(8); // 8 chars in length
                 $payload['thread']['team_id'] = $teamId;
-                $enquiryThreadId = EMC::createEnquiryThread($payload['thread']);
+                $enquiryThreadId = $this->createEnquiryThread($payload['thread']);
                 $allThreadIds[] = $enquiryThreadId;
-                EMC::createEnquiryMessage($enquiryThreadId, $payload['message']);
-                $usersToNotify = EMC::getUsersByTeamIds([$teamId]);
+                $this->createEnquiryMessage($enquiryThreadId, $payload['message']);
+                $usersToNotify = $this->getUsersByTeamIds([$teamId]);
 
                 if (empty($usersToNotify)) {
                     Auditor::log([
@@ -329,11 +330,11 @@ class EnquiryThreadController extends Controller
 
                 // Spawn email notifications to all DAR managers for this team
                 if ($input['is_feasibility_enquiry'] == true) {
-                    EMC::sendEmail('feasibilityenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
+                    $this->sendEmail('feasibilityenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
                 } elseif ($input['is_general_enquiry'] == true) {
-                    EMC::sendEmail('generalenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
+                    $this->sendEmail('generalenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
                 } elseif ($input['is_dar_dialogue'] == true) {
-                    EMC::sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser);
+                    $this->sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser);
                 }
 
                 Auditor::log([
