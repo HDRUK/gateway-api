@@ -19,15 +19,27 @@ class FeatureServiceProvider extends ServiceProvider
                 return;
             }
 
-            $featureFlags = Cache::remember('feature_flags', now()->addMinutes(60), function () use ($url) {
-                $res = Http::retry(3, 5000)->get($url);
-                logger()->info('Called Bucket');
+            $featureFlags = Cache::remember('feature_flags', now()->addMinutes(10), function () use ($url) {
+                logger()->info('Calling that Bucket');
+                $res = Http::retry(3, 5000, function ($exception, $requestNumber) use ($url) {
+                    logger()->warning('Retrying feature flag fetch', [
+                        'url' => $url,
+                        'attempt' => $requestNumber,
+                        'error' => $exception->getMessage(),
+                    ]);
+                })->get($url);
+
+                if (!$res->successful()) {
+                    logger()->error('Failed to fetch feature flags', ['url' => $url, 'status' => $res->status()]);
+                }
 
                 return $res->successful() ? $res->json() : [];
             });
 
-            if (is_array($featureFlags)) {
+            if (is_array($featureFlags) && !empty($featureFlags)) {
                 app(FeatureFlagManager::class)->define($featureFlags);
+            } else {
+                logger()->warning('No feature flags were defined - empty or failed response.', ['url' => $url]);
             }
         });
     }
