@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Dataset;
 use Illuminate\Support\Arr;
 use Illuminate\Bus\Queueable;
+use App\Http\Traits\IndexElastic;
 use App\Models\DatasetVersionHasTool;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -21,6 +22,7 @@ class ExtractToolsFromMetadata implements ShouldQueue
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
+    use IndexElastic;
 
     private int $datasetVersionId = 0;
 
@@ -130,11 +132,13 @@ class ExtractToolsFromMetadata implements ShouldQueue
             ->first();
 
         if (is_null($check)) {
-            return DatasetVersionHasTool::create([
+            DatasetVersionHasTool::create([
                 'tool_id' => $toolId,
                 'dataset_version_id' => $datasetVersionId,
                 'link_type' => $type,
             ]);
+            $this->indexElasticTools((int) $toolId);
+            return null;
         }
 
         return null;
