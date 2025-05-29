@@ -9,7 +9,6 @@ use App\Models\Dataset;
 use App\Models\Publication;
 use Illuminate\Support\Arr;
 use Illuminate\Bus\Queueable;
-use App\Http\Traits\IndexElastic;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -23,7 +22,6 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
-    use IndexElastic;
 
     private int $datasetVersionId = 0;
 

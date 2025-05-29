@@ -82,6 +82,8 @@ class ExtractToolsFromMetadata implements ShouldQueue
         $datasetUserId = (int) $dataset->user_id;
         $datasetTeamId = (int) $dataset->team_id;
 
+        $this->cleanToolDatasetVersion($datasetVersionId, $type, (int)$dataset->id);
+
         $data = null;
         if ($metadata->metadata_type === 'OBJECT') {
             $data = json_decode($metadata->metadata, true);
@@ -120,6 +122,29 @@ class ExtractToolsFromMetadata implements ShouldQueue
                 }
             }
         }
+    }
+
+    public function cleanToolDatasetVersion(int $datasetVersionId, string $type, int $datasetId): void
+    {
+        $datasetVersionHasTools = DatasetVersionHasTool::where([
+            'dataset_version_id' => $datasetVersionId,
+            'link_type' => $type,
+        ])->get();
+
+        foreach($datasetVersionHasTools as $datasetVersionHasTool) {
+            $toolId = $datasetVersionHasTool->tool_id;
+
+            DatasetVersionHasTool::where([
+                'dataset_version_id' => $datasetVersionId,
+                'link_type' => $type,
+                'tool_id' => $toolId,
+            ])
+            ->delete();
+
+            $this->indexElasticTools((int) $toolId);
+        }
+
+        $this->reindexElastic((int) $datasetId);
     }
 
     public function createLinkToolDatasetVersion(int $toolId, int $datasetVersionId, string $type): ?DatasetVersionHasTool
