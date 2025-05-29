@@ -54,8 +54,6 @@ class DatasetVersionObserver
 
     public function elasticDatasetVersion(DatasetVersion $datasetVersion)
     {
-        ExtractPublicationsFromMetadata::dispatch($datasetVersion->id);
-        ExtractToolsFromMetadata::dispatch($datasetVersion->id);
         $datasetId = $datasetVersion->dataset_id;
         $dataset = Dataset::where([
             'id' => $datasetId,
@@ -68,6 +66,9 @@ class DatasetVersionObserver
         }
 
         if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
+            ExtractPublicationsFromMetadata::dispatch($datasetVersion->id);
+            ExtractToolsFromMetadata::dispatch($datasetVersion->id);
+
             $this->reindexElastic($dataset->id);
             if ($dataset->team_id) {
                 $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
