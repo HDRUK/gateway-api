@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\AliasReplyScanner\AliasReplyScanner;
+use App\Services\AliasReplyScannerService;
 use Illuminate\Support\ServiceProvider;
 
 class AliasReplyScannerProvider extends ServiceProvider
@@ -14,7 +14,9 @@ class AliasReplyScannerProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(AliasReplyScannerService::class, function ($app) {
+            return new AliasReplyScannerService();
+        });
     }
 
     /**
@@ -24,8 +26,6 @@ class AliasReplyScannerProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->app->bind('aliasreplyscanner', function () {
-            return new AliasReplyScanner();
-        });
+        //
     }
 }

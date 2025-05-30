@@ -1,22 +1,22 @@
 <?php
 
-namespace App\EnquiriesManagementController;
+namespace App\Http\Traits;
 
 use Auditor;
 use Exception;
-use App\Jobs\SendEmailJob;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
-use App\Models\DatasetVersion;
+use App\Jobs\SendEmailJob;
 use App\Models\TeamHasUser;
-use App\Models\EnquiryThread;
 use App\Models\EmailTemplate;
+use App\Models\EnquiryThread;
+use App\Models\DatasetVersion;
 use App\Models\EnquiryMessage;
 use App\Models\TeamUserHasRole;
 use App\Models\EnquiryThreadHasDatasetVersion;
 
-class EnquiriesManagementController
+trait EnquiriesTrait
 {
     public function getUsersByTeamIds(array $teamIds, int $currUserId = 0)
     {
