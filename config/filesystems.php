@@ -88,6 +88,17 @@ return [
         ],
 
         'gcs' => [
+            'feature_flags' => [
+                'driver' => 'gcs',
+                'key_file_path' => env('GOOGLE_APPLICATION_CREDENTIALS'),
+                'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
+                'bucket' => env('GOOGLE_CLOUD_FEATURE_FLAGS_BUCKET'),
+                'path_prefix' => env('GOOGLE_CLOUD_FEATURE_FLAGS_PATH_PREFIX', ''),
+                'storage_api_uri' => env('GOOGLE_CLOUD_STORAGE_API_URI', null),
+                'apiEndpoint' => env('GOOGLE_CLOUD_STORAGE_API_ENDPOINT', null),
+                'visibility' => 'public',
+                'throw' => false,
+            ],
             'unscanned' => [
                 'driver' => 'gcs',
                 'key_file_path' => env('GOOGLE_APPLICATION_CREDENTIALS'),

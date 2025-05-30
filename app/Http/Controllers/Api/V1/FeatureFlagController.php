@@ -4,12 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Controller;
 use Laravel\Pennant\Feature;
-use App\Services\FeatureFlagManager;
+use App\FeatureFlags\FeatureFlagManager;
 
 class FeatureFlagController extends Controller
 {
@@ -51,7 +49,7 @@ class FeatureFlagController extends Controller
  *    )
  * )
  */
-    public function index(Request $request, FeatureFlagManager $flagManager): JsonResponse
+    public function reload(FeatureFlagManager $resolver): JsonResponse
     {
         $featureFlagToken = env('FEATURE_FLAG_API_TOKEN');
         $authHeader = $request->header('Authorization');
@@ -67,37 +65,13 @@ class FeatureFlagController extends Controller
             Log::warning('Invalid API token', ['provided' => $providedToken]);
             return response()->json(['message' => 'Unauthorized: Invalid token.'], 401);
         }
-        Cache::forget('getAllFlags');
-        Cache::forget('feature_flags');
 
+        $resolver->reload();
 
-        $url = env('FEATURE_FLAGGING_CONFIG_URL');
+        return response()->json([
+            'message' => 'Feature flags reloaded from GCS.'
+        ]);
 
-        if (app()->environment('testing') || !$url) {
-            return response()->json(['message' => 'Feature flagging disabled in this environment.'], 200);
-        }
-
-        $res = Http::get($url);
-
-        if (!$res->successful()) {
-            Log::error('Failed to fetch feature flags from GitHub', ['url' => $url]);
-            return response()->json(['message' => 'Failed to fetch feature flags.'], 500);
-        }
-
-        $featureFlags = $res->json();
-
-
-
-
-        if (!is_array($featureFlags)) {
-            return response()->json(['message' => 'Invalid feature flag format.'], 422);
-        }
-
-        Log::info("Using feature flags from Bucket: " . print_r($featureFlags, true));
-
-        $flagManager->define($featureFlags);
-
-        return response()->json(['message' => 'Feature flags defined successfully.'], 200);
     }
     /**
          * @OA\Get(
@@ -115,9 +89,9 @@ class FeatureFlagController extends Controller
          *    )
          * )
          */
-    public function getEnabledFeatures(Request $request, FeatureFlagManager $flagManager): JsonResponse
+    public function getEnabledFeatures(FeatureFlagManager $resolver): JsonResponse
     {
-        $allFlags = $flagManager->getAllFlags();
+        $allFlags = $resolver->getEnabledFeatures();
 
         return response()->json($allFlags, 200);
     }
