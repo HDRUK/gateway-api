@@ -384,6 +384,11 @@ class EnquiryThreadController extends Controller
         ];
     }
 
+    private function getTeamConfiguration(array $input, array $datasets): array
+    {
+
+    }
+
     private function getNetworkConcierge(): array
     {
         $team = Team::where('name', 'LIKE', '%SDE Network%')->first();
