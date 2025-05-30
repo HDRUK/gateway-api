@@ -20,6 +20,7 @@ use App\Http\Controllers\Controller;
 class EnquiryThreadController extends Controller
 {
     use EnquiriesTrait;
+
     /**
      * @OA\Get(
      *      path="/api/v1/enquiry_threads",
@@ -201,45 +202,25 @@ class EnquiryThreadController extends Controller
         $enquiryMessageId = null;
 
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $input['jwt_user'] ?? [];
 
         $user = User::where('id', $jwtUser['id'])->first();
+        if (is_null($user)) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'POST',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'User not found for id: ' . $jwtUser['id'],
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
+                'data' => null,
+            ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+        }
 
         try {
-            $payload = [
-                'thread' => [
-                    'user_id' => $user->id,
-                    'team_ids' => [],
-                    'enquiry_unique_key' => Str::random(8),
-                    'project_title' => isset($input['project_title']) ? $input['project_title'] : "",
-                    'is_dar_dialogue' => $input['is_dar_dialogue'],
-                    'is_dar_status' => $input['is_dar_status'],
-                    'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
-                    'is_general_enquiry' => $input['is_general_enquiry'],
-                    'is_dar_review' => $input['is_dar_review'] ?? false,
-                    'datasets' => $this->mapDatasets($input['datasets']),
-                    'enabled' => true,
-                ],
-                'message' => [
-                    'from' => $input['from'],
-                    'message_body' => [
-                        '[[TEAM_NAME]]' => [],
-                        '[[USER_FIRST_NAME]]' => $user->firstname,
-                        '[[USER_LAST_NAME]]' => $user->lastname,
-                        '[[USER_ORGANISATION]]' => isset($user->organisation) ? $user->organisation : $input['organisation'],
-                        '[[CONTACT_NUMBER]]' => isset($input['contact_number']) ? $input['contact_number'] : "",
-                        '[[PROJECT_TITLE]]' => isset($input['project_title']) ? $input['project_title'] : "",
-                        '[[RESEARCH_AIM]]' => isset($input['research_aim']) ? $input['research_aim'] : "",
-                        '[[OTHER_DATASETS_YES_NO]]' => isset($input['other_datasets']) ? $input['other_datasets'] : "",
-                        '[[DATASETS_PARTS_YES_NO]]' => isset($input['dataset_parts_known']) ? $input['dataset_parts_known'] : "",
-                        '[[FUNDING]]' => isset($input['funding']) ? $input['funding'] : "",
-                        '[[PUBLIC_BENEFIT]]' => isset($input['potential_research_benefit']) ? $input['potential_research_benefit'] : "",
-                        '[[QUERY]]' => isset($input['query']) ? $input['query'] : "",
-                        '[[MESSAGE]]' => isset($input['message']) ? $input['message'] : "",
-                        '[[CURRENT_YEAR]]' => date('Y'),
-                    ],
-                ],
-            ];
+            $payload = $this->buildPayload($input, $user);
 
             $payload['thread']['dataCustodians'] = [];
             $dataCustodians = [];
@@ -364,6 +345,45 @@ class EnquiryThreadController extends Controller
             ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
         }
     }
+
+    private function buildPayload(array $input, User $user): array
+    {
+        return [
+            'thread' => [
+                'user_id' => $user->id,
+                'team_ids' => [],
+                'enquiry_unique_key' => Str::random(8),
+                'project_title' => $input['project_title'] ?? "",
+                'is_dar_dialogue' => $input['is_dar_dialogue'],
+                'is_dar_status' => $input['is_dar_status'],
+                'is_feasibility_enquiry' => $input['is_feasibility_enquiry'],
+                'is_general_enquiry' => $input['is_general_enquiry'],
+                'is_dar_review' => $input['is_dar_review'] ?? false,
+                'datasets' => $this->mapDatasets($input['datasets']),
+                'enabled' => true,
+            ],
+            'message' => [
+                'from' => $input['from'],
+                'message_body' => [
+                    '[[TEAM_NAME]]' => [],
+                    '[[USER_FIRST_NAME]]' => $user->firstname,
+                    '[[USER_LAST_NAME]]' => $user->lastname,
+                    '[[USER_ORGANISATION]]' => $user->organisation ?? $input['organisation'],
+                    '[[CONTACT_NUMBER]]' => $input['contact_number'] ?? "",
+                    '[[PROJECT_TITLE]]' => $input['project_title'] ?? "",
+                    '[[RESEARCH_AIM]]' => $input['research_aim'] ?? "",
+                    '[[OTHER_DATASETS_YES_NO]]' => $input['other_datasets'] ?? "",
+                    '[[DATASETS_PARTS_YES_NO]]' => $input['dataset_parts_known'] ?? "",
+                    '[[FUNDING]]' => $input['funding'] ?? "",
+                    '[[PUBLIC_BENEFIT]]' => $input['potential_research_benefit'] ?? "",
+                    '[[QUERY]]' => $input['query'] ?? "",
+                    '[[MESSAGE]]' => $input['message'] ?? "",
+                    '[[CURRENT_YEAR]]' => date('Y'),
+                ],
+            ],
+        ];
+    }
+
     private function getNetworkConcierge(): array
     {
         $team = Team::where('name', 'LIKE', '%SDE Network%')->first();
