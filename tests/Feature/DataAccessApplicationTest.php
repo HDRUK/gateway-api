@@ -170,7 +170,7 @@ class DataAccessApplicationTest extends TestCase
         $datasetId1 = $entityIds1['datasetId'];
         $teamId1 = $entityIds1['teamId'];
 
-        $response = $this->json(
+        $responseDraft = $this->json(
             'POST',
             'api/v1/dar/applications',
             [
@@ -181,7 +181,7 @@ class DataAccessApplicationTest extends TestCase
             ],
             $this->header
         );
-        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $responseDraft->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
 
         $entityIds2 = $this->createDatasetForDar();
         $datasetId2 = $entityIds2['datasetId'];
