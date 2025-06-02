@@ -127,7 +127,7 @@ class AliasReplyScannerService
 
         $uniqueKey = $enquiryThread->unique_key;
 
-        $usersToNotify = $this->getUsersByTeamIds([$enquiryThread->team_id], $enquiryThread->user_id);
+        $usersToNotify = $this->getUsersByTeamIds([$enquiryThread->team_id], $enquiryThread->user_id, $enquiryThread->user_preferred_email);
 
         if (empty($usersToNotify)) {
             CloudLogger::write([
@@ -155,6 +155,7 @@ class AliasReplyScannerService
         $payload = [
             'thread' => [
                 'user_id' => $enquiryThread->user_id,
+                'user_preferred_email' => $enquiryThread->user_preferred_email,
                 'team_ids' => [$enquiryThread->team_id],
                 'team_names' => $teamNames,
                 'project_title' => $enquiryThread->project_title,

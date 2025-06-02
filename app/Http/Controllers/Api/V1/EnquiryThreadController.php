@@ -221,16 +221,15 @@ class EnquiryThreadController extends Controller
 
         try {
             $payload = $this->buildPayload($input, $user);
-            $teamConfig = $this->getTeamConfiguration($payload, $payload['thread']['datasets']);
-
+            $teamConfig = $this->getTeamConfiguration($input, $payload['thread']['datasets']);
 
             $payload['thread']['dataCustodians'] = $teamConfig['data_custodians'] ?? [];
-            $payload['message']['message_body']['[[TEAM_NAME]]'] = array_unique($input['team_names'] ?? []);
+            $payload['message']['message_body']['[[TEAM_NAME]]'] = array_unique($teamConfig['team_names'] ?? []);
 
             // For each dataset we need to determine if teams are responsible for the data providing
             // if not, then a separate enquiry thread and message are created for that team also.
 
-            $teamIds = array_unique($input['team_ids'] ?? []);
+            $teamIds = array_unique($teamConfig['team_ids'] ?? []);
             $allThreadIds = [];
             foreach ($teamIds as $teamId) {
                 $payload['thread']['unique_key'] = Str::random(8); // 8 chars in length
@@ -256,6 +255,7 @@ class EnquiryThreadController extends Controller
                 }
 
                 // Spawn email notifications to all DAR managers for this team
+
                 if ($input['is_feasibility_enquiry'] == true) {
                     $this->sendEmail('feasibilityenquiry.firstmessage', $payload, $usersToNotify, $jwtUser, $payload['thread']['user_preferred_email']);
                 } elseif ($input['is_general_enquiry'] == true) {
