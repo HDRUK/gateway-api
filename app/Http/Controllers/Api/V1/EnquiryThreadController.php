@@ -406,6 +406,11 @@ class EnquiryThreadController extends Controller
         return $sdeNetwork ? $sdeNetwork->teams->pluck('id')->toArray() : [];
     }
 
+    private function shouldUseConcierge(int $teamId, array $sdeTeamIds, bool $multipleDatasets): bool
+    {
+        return in_array($teamId, $sdeTeamIds) && $multipleDatasets;
+    }
+
     private function getNetworkConcierge(): array
     {
         $team = Team::where('name', 'LIKE', '%SDE Network%')->first();
