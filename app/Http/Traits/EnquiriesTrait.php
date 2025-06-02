@@ -18,7 +18,7 @@ use App\Models\EnquiryThreadHasDatasetVersion;
 
 trait EnquiriesTrait
 {
-    public function getUsersByTeamIds(array $teamIds, int $currUserId = 0)
+    public function getUsersByTeamIds(array $teamIds, int $currUserId = 0, string $currentUserPrefferedEmail = null): array
     {
         $users = [];
 
@@ -52,28 +52,30 @@ trait EnquiriesTrait
             }
         }
 
-        $user = User::where('id', $currUserId)
-                    ->select(['id', 'name', 'firstname', 'lastname', 'email', 'secondary_email', 'preferred_email'])
-                    ->first();
+        if ($currUserId) {
+            $user = User::where('id', $currUserId)
+                        ->select(['id', 'name', 'firstname', 'lastname', 'email', 'secondary_email', 'preferred_email'])
+                        ->first();
 
-        if ($currUserId && !is_null($user)) {
-            foreach ($teamIds as $teamId) {
-                $team = Team::where('id', $teamId)->first();
-                if (is_null($team)) {
-                    continue;
-                }
+            if (!is_null($user)) {
+                foreach ($teamIds as $teamId) {
+                    $team = Team::where('id', $teamId)->first();
+                    if (is_null($team)) {
+                        continue;
+                    }
 
-                $teamHasUsers = TeamHasUser::where([
-                    'team_id' => $teamId,
-                    'user_id' => $currUserId,
-                ])->first();
+                    $teamHasUsers = TeamHasUser::where([
+                        'team_id' => $teamId,
+                        'user_id' => $currUserId,
+                    ])->first();
 
-                if (!is_null($teamHasUsers)) {
-                    $users[] = [
-                        'user' => $user->toArray(),
-                        'team' => $team->toArray(),
-                    ];
+                    if (!is_null($teamHasUsers)) {
+                        $users[] = [
+                            'user' => $user->toArray(),
+                            'team' => $team->toArray(),
+                        ];
 
+                    }
                 }
             }
         }
@@ -85,6 +87,7 @@ trait EnquiriesTrait
     {
         $enquiryThread = EnquiryThread::create([
             'user_id' => $input['user_id'],
+            'user_preferred_email' => $input['user_preferred_email'],
             'team_id' => $input['team_id'],
             'project_title' => isset($input['project_title']) ? $input['project_title'] : "",
             'unique_key' => $input['unique_key'],
@@ -128,7 +131,7 @@ trait EnquiriesTrait
         return $enquiryMessage->id;
     }
 
-    public function sendEmail(string $ident, array $threadDetail, array $usersToNotify, array $jwtUser): void
+    public function sendEmail(string $ident, array $threadDetail, array $usersToNotify, array $jwtUser, string $currentUserPrefferedEmail = null): void
     {
         $something = null;
         $imapUsername = env('ARS_IMAP_USERNAME', 'devreply@healthdatagateway.org');
@@ -168,15 +171,24 @@ trait EnquiriesTrait
             foreach ($usersToNotify as $user) {
                 $replacements['[[RECIPIENT_NAME]]'] = $user['user']['name'];
                 $replacements['[[TEAM_NAME]]'] = $user['team']['name'];
-                $to = [
-                    'to' => [
-                        'email' => $user['user']['email'],
-                        'name' => $user['user']['firstname'] . ' ' . $user['user']['lastname'],
-                    ],
-                ];
+                if ((int)$jwtUser['id'] === (int)$user['user']['id']) {
+                    $to = [
+                        'to' => [
+                            'email' => ($currentUserPrefferedEmail === 'primary') ? $user['user']['email'] : $user['user']['secondary_email'],
+                            'name' => $user['user']['firstname'] . ' ' . $user['user']['lastname'],
+                        ],
+                    ];
+                } else {
+                    $to = [
+                        'to' => [
+                            'email' => ($user['user']['preferred_email'] === 'primary') ? $user['user']['email'] : $user['user']['secondary_email'],
+                            'name' => $user['user']['firstname'] . ' ' . $user['user']['lastname'],
+                        ],
+                    ];
+                }
 
                 $from = $username . '+' . $threadDetail['thread']['unique_key'] . '@' . $domain;
-                $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
+                SendEmailJob::dispatch($to, $template, $replacements, $from);
             }
 
             unset(

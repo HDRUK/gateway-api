@@ -11,7 +11,7 @@ return new class () extends Migration {
     public function up(): void
     {
         Schema::table('enquiry_threads', function (Blueprint $table) {
-            $table->enum('preferred_email', ['primary', 'secondary'])->default('primary');
+            $table->enum('user_preferred_email', ['primary', 'secondary'])->default('primary')->after('user_id');
         });
     }
 
@@ -22,7 +22,7 @@ return new class () extends Migration {
     {
         Schema::table('enquiry_threads', function (Blueprint $table) {
             $table->dropColumn([
-                'preferred_email',
+                'user_preferred_email',
             ]);
         });
     }

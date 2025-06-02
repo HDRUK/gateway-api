@@ -221,71 +221,17 @@ class EnquiryThreadController extends Controller
 
         try {
             $payload = $this->buildPayload($input, $user);
+            $teamConfig = $this->getTeamConfiguration($payload, $payload['thread']['datasets']);
+            // [$teamIds, $teamNames, $dataCustodians]
 
-            $payload['thread']['dataCustodians'] = [];
-            $dataCustodians = [];
-            $teamIds = [];
-            $teamNames = [];
-
-            if (Feature::active('SDEConciergeServiceEnquiry')) {
-                list($conciergeId, $conciergeName) = $this->getNetworkConcierge();
-                $sdeNetwork = DataProviderColl::where('name', 'LIKE', '%SDE%')
-                    ->with('teams')
-                    ->first();
-                $sdeTeamIds = $sdeNetwork ? array_column($sdeNetwork['teams']->toArray(), 'id') : [];
-
-                if ($input['is_general_enquiry']) {
-                    foreach ($payload['thread']['datasets'] as $d) {
-                        $team = Team::where('id', $d['team_id'])->first();
-                        if (in_array($team->id, $sdeTeamIds) && (count($payload['thread']['datasets']) > 1)) {
-                            $teamIds[] = $conciergeId;
-                            $teamNames[] = $conciergeName;
-                        } else {
-                            $teamIds[] = $team->id;
-                            $teamNames[] = $team->name;
-                        }
-                    }
-                } elseif (($input['is_feasibility_enquiry']) || ($input['is_dar_dialogue'])) {
-                    foreach ($payload['thread']['datasets'] as $d) {
-                        $dataset = Dataset::findOrFail($d['dataset_id']);
-                        $metadata = $dataset->latestMetadata()->first();
-                        $gatewayId = $metadata->metadata['metadata']['summary']['publisher']['gatewayId'];
-                        if (is_numeric($gatewayId)) {
-                            $team = Team::where('id', $gatewayId)->first();
-                        } else {
-                            $team = Team::where('pid', $gatewayId)->first();
-                        }
-                        if (in_array($team->id, $sdeTeamIds) && (count($payload['thread']['datasets']) > 1)) {
-                            $teamIds[] = $conciergeId;
-                            $teamNames[] = $conciergeName;
-                        } else {
-                            $teamIds[] = $team->id;
-                            $teamNames[] = $team->name;
-                        }
-                    }
-                }
-            } else {
-
-                foreach ($payload['thread']['datasets'] as $d) {
-                    $t = Team::where('id', $d['team_id'])->first();
-                    $dataCustodians[] = $t->name;
-                }
-
-                foreach ($payload['thread']['datasets'] as $d) {
-                    $team = Team::where('id', $d['team_id'])->first();
-                    $teamIds[] = $team->id;
-                    $teamNames[] = $team->name;
-                }
-            }
-            $payload['thread']['dataCustodians'] = array_unique($dataCustodians);
+            $payload['thread']['dataCustodians'] = $teamConfig['data_custodians'] ?? [];
+            $payload['message']['message_body']['[[TEAM_NAME]]'] = array_unique($input['team_names'] ?? []);
 
             // For each dataset we need to determine if teams are responsible for the data providing
             // if not, then a separate enquiry thread and message are created for that team also.
 
-
-            $teamIds = array_unique($teamIds);
-            $allThreadIds = array();
-            $payload['message']['message_body']['[[TEAM_NAME]]'] = array_unique($teamNames);
+            $teamIds = array_unique($input['team_ids'] ?? []);
+            $allThreadIds = [];
             foreach ($teamIds as $teamId) {
                 $payload['thread']['unique_key'] = Str::random(8); // 8 chars in length
                 $payload['thread']['team_id'] = $teamId;
@@ -311,11 +257,11 @@ class EnquiryThreadController extends Controller
 
                 // Spawn email notifications to all DAR managers for this team
                 if ($input['is_feasibility_enquiry'] == true) {
-                    $this->sendEmail('feasibilityenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
+                    $this->sendEmail('feasibilityenquiry.firstmessage', $payload, $usersToNotify, $jwtUser, $payload['thread']['user_preferred_email']);
                 } elseif ($input['is_general_enquiry'] == true) {
-                    $this->sendEmail('generalenquiry.firstmessage', $payload, $usersToNotify, $jwtUser);
+                    $this->sendEmail('generalenquiry.firstmessage', $payload, $usersToNotify, $jwtUser, $payload['thread']['user_preferred_email']);
                 } elseif ($input['is_dar_dialogue'] == true) {
-                    $this->sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser);
+                    $this->sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser, $payload['thread']['user_preferred_email']);
                 }
 
                 Auditor::log([
@@ -351,6 +297,7 @@ class EnquiryThreadController extends Controller
         return [
             'thread' => [
                 'user_id' => $user->id,
+                'user_preferred_email' => $input['user_preferred_email'] ?? $user->preferred_email,
                 'team_ids' => [],
                 'enquiry_unique_key' => Str::random(8),
                 'project_title' => $input['project_title'] ?? "",
@@ -386,7 +333,77 @@ class EnquiryThreadController extends Controller
 
     private function getTeamConfiguration(array $input, array $datasets): array
     {
+        $teamIds = [];
+        $teamNames = [];
+        $dataCustodians = [];
 
+        if (!Feature::active('SDEConciergeServiceEnquiry')) {
+            return $this->getStandardTeamConfiguration($datasets);
+        }
+
+        [$conciergeId, $conciergeName] = $this->getNetworkConcierge();
+        $sdeTeamIds = $this->getSdeTeamIds();
+        $multipleDatasets = count($datasets) > 1;
+
+        if ($input['is_general_enquiry']) {
+            foreach ($datasets as $dataset) {
+                $team = Team::find($dataset['team_id']);
+                if ($this->shouldUseConcierge($team->id, $sdeTeamIds, $multipleDatasets)) {
+                    $teamIds[] = $conciergeId;
+                    $teamNames[] = $conciergeName;
+                } else {
+                    $teamIds[] = $team->id;
+                    $teamNames[] = $team->name;
+                }
+            }
+        } elseif ($input['is_feasibility_enquiry'] || $input['is_dar_dialogue']) {
+            // Batch load datasets to avoid N+1 queries
+            $datasetIds = collect($datasets)->pluck('dataset_id');
+            $datasetsWithMetadata = Dataset::with('latestMetadata')
+                ->whereIn('id', $datasetIds)
+                ->get()
+                ->keyBy('id');
+
+            foreach ($datasets as $dataset) {
+                $datasetModel = $datasetsWithMetadata[$dataset['dataset_id']];
+                $team = $this->getTeamFromDataset($datasetModel);
+
+                if ($this->shouldUseConcierge($team->id, $sdeTeamIds, $multipleDatasets)) {
+                    $teamIds[] = $conciergeId;
+                    $teamNames[] = $conciergeName;
+                } else {
+                    $teamIds[] = $team->id;
+                    $teamNames[] = $team->name;
+                }
+            }
+        }
+
+        return [
+            'team_ids' => array_unique($teamIds),
+            'team_names' => array_unique($teamNames),
+            'data_custodians' => array_unique($dataCustodians),
+        ];
+    }
+
+    private function getStandardTeamConfiguration(array $datasets): array
+    {
+        $teamIds = collect($datasets)->pluck('team_id')->unique();
+        $teams = Team::whereIn('id', $teamIds)->get()->keyBy('id');
+
+        return [
+            'team_ids' => $teamIds->toArray(),
+            'team_names' => $teams->pluck('name')->toArray(),
+            'data_custodians' => $teams->pluck('name')->toArray(),
+        ];
+    }
+
+    private function getSdeTeamIds(): array
+    {
+        $sdeNetwork = DataProviderColl::where('name', 'LIKE', '%SDE%')
+            ->with('teams')
+            ->first();
+
+        return $sdeNetwork ? $sdeNetwork->teams->pluck('id')->toArray() : [];
     }
 
     private function getNetworkConcierge(): array
