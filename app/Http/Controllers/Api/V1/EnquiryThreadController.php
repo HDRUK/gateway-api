@@ -411,6 +411,16 @@ class EnquiryThreadController extends Controller
         return in_array($teamId, $sdeTeamIds) && $multipleDatasets;
     }
 
+    private function getTeamFromDataset($dataset): Team
+    {
+        $metadata = $dataset->latestMetadata;
+        $gatewayId = $metadata->metadata['metadata']['summary']['publisher']['gatewayId'];
+
+        return is_numeric($gatewayId)
+            ? Team::find($gatewayId)
+            : Team::where('pid', $gatewayId)->first();
+    }
+
     private function getNetworkConcierge(): array
     {
         $team = Team::where('name', 'LIKE', '%SDE Network%')->first();
