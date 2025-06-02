@@ -222,7 +222,7 @@ class EnquiryThreadController extends Controller
         try {
             $payload = $this->buildPayload($input, $user);
             $teamConfig = $this->getTeamConfiguration($payload, $payload['thread']['datasets']);
-            // [$teamIds, $teamNames, $dataCustodians]
+
 
             $payload['thread']['dataCustodians'] = $teamConfig['data_custodians'] ?? [];
             $payload['message']['message_body']['[[TEAM_NAME]]'] = array_unique($input['team_names'] ?? []);
