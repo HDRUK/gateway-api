@@ -382,6 +382,15 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'csat',
+        'method' => 'patch',
+        'path' => '/csat/{id}',
+        'methodController' => 'CustomerSatisfactionController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
         'name' => 'sitemap',
         'method' => 'get',
         'path' => '/sitemap',
