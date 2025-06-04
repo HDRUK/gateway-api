@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Exception;
+use Config;
 
 class CustomerSatisfactionController extends Controller
 {
@@ -66,13 +67,13 @@ class CustomerSatisfactionController extends Controller
                 'id' => $csat->id,
                 ]
 
-            ], 201);
+            ], Config::get('statuscodes.STATUS_CREATED.code'));
 
         } catch (Exception $e) {
             return response()->json([
-                'message' => 'An unexpected error occurred',
+                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
                 'error' => $e->getMessage(),
-            ], 500);
+            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
         }
     }
 
@@ -123,13 +124,13 @@ class CustomerSatisfactionController extends Controller
 
             return response()->json([
                 'message' => 'Survey updated',
-            ], 200);
+            ], Config::get('statuscodes.STATUS_OK.code'));
 
         } catch (Exception $e) {
             return response()->json([
-                'message' => 'Failed to update',
+                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
                 'error' => $e->getMessage(),
-            ], 500);
+            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
         }
     }
 }
