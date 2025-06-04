@@ -1,3 +1,31 @@
+## [2.11.0](https://github.com/HDRUK/gateway-api/compare/v2.10.0...v2.11.0) (2025-06-04)
+
+### ✨ Features
+
+* **GAT-6925:** Enable the use of aliases for Data Custodian names (#1236) ([219645e](https://github.com/HDRUK/gateway-api/commit/219645e391430cdeda4ebc841aee0052b022e81a)), closes [GAT-6925](GAT-6925)
+* **GAT-6925:** Enable use of aliases for Data Custodian names for team summary (#1245) ([572d9fd](https://github.com/HDRUK/gateway-api/commit/572d9fd1e1a4b80f625bae018808cc080eb389ea)), closes [GAT-6925](GAT-6925)
+* **GAT-6927:** feature flag endpoint for action (#1229) ([eb4cd16](https://github.com/HDRUK/gateway-api/commit/eb4cd1602e41cd3b742926e4764c97a4f2b87060)), closes [GAT-6927](GAT-6927)
+* **GAT-6927:** Feature flagging provider (#1242) ([ca97226](https://github.com/HDRUK/gateway-api/commit/ca972269ab9352cd8e14737a59491cb0a1b70d36)), closes [GAT-6927](GAT-6927)
+* **GAT-6927:** feature flagging with enquries (#1218) ([afabd68](https://github.com/HDRUK/gateway-api/commit/afabd683072128fd5557ee72635b3821b2ac7e9c)), closes [GAT-6927](GAT-6927)
+* **GAT-6993:** Split applications out after submission (#1221) ([30dff8d](https://github.com/HDRUK/gateway-api/commit/30dff8ded05754dcbbbb3dc7e6fe755e1b4c3f0c)), closes [GAT-6993](GAT-6993)
+* **GAT-7123:** Add detail to doc based templates (#1238) ([5d276a5](https://github.com/HDRUK/gateway-api/commit/5d276a5895e9338aa1e86e909ad0b33998f192d5)), closes [GAT-7123](GAT-7123)
+* **GAT-7207:** Add nhse_sde_approval to Gateway Cohort Request table (#1241) ([92419f7](https://github.com/HDRUK/gateway-api/commit/92419f742b40a193f27fcc59ef71adfc353741a8)), closes [GAT-7207](GAT-7207)
+* **GAT-7208:** Add feature flag for Alias (#1243) ([24d0891](https://github.com/HDRUK/gateway-api/commit/24d08917f2767e606deb807cbd59f8a0cf272837)), closes [GAT-7208](GAT-7208)
+
+### 🐛 Bug Fixes
+
+* **GAT-5970:** Collection name - poorly formatted (#1244) ([d060835](https://github.com/HDRUK/gateway-api/commit/d060835b1ffa0302d2a1ac7d9d673df68c790333)), closes [GAT-5970](GAT-5970)
+* **GAT-5972:** update v2 tools put and patch (#1232) ([bcc8434](https://github.com/HDRUK/gateway-api/commit/bcc8434bf286404cbd348dbf0a7de8d5ebdef265)), closes [GAT-5972](GAT-5972)
+* **GAT-6907:** Getting this error message when creating new team (#1239) ([5d53427](https://github.com/HDRUK/gateway-api/commit/5d53427bb3b2f40fd55bcb0c6e2f382cf6b122ab)), closes [GAT-6907](GAT-6907)
+* **GAT-6927:** handle error gracefully for features (#1248) ([28f2057](https://github.com/HDRUK/gateway-api/commit/28f205798fb7c49b1d16b7cbedc97054a362d952)), closes [GAT-6927](GAT-6927)
+* **GAT-6927:** more logging and dont define if empty array (#1246) ([dafb5db](https://github.com/HDRUK/gateway-api/commit/dafb5db59961fa1aaa0a74facd5bad4d76673528)), closes [GAT-6927](GAT-6927)
+* **GAT-6946:** Unable to view any Datasets & BioSamples - investigate Github issue (#1231) ([1c80899](https://github.com/HDRUK/gateway-api/commit/1c80899aa6a4299005dfc4cf95e033c080c5c526)), closes [GAT-6946](GAT-6946)
+* **GAT-6982:** Filter DAR dashboard based on first review, not latest (#1235) ([552606b](https://github.com/HDRUK/gateway-api/commit/552606b7c2346f4a7d2f929246f440b443bd0d93)), closes [GAT-6982](GAT-6982)
+* **GAT-6993:** For researcher add related applications to list (#1234) ([3bf83da](https://github.com/HDRUK/gateway-api/commit/3bf83da7334fb38858eaedf54ec458c831e80b68)), closes [GAT-6993](GAT-6993)
+* **GAT-7112:** Fix Cohort Discovery logic to correctly update an expired request to PENDING. (#1227) ([283c268](https://github.com/HDRUK/gateway-api/commit/283c26870d15ae145f00c58968dc4851bce475a2))
+* **GAT-7113:** Emails masked by OpenAthens breaks workflow to user creation on RQuest (#1226) ([d8d57c9](https://github.com/HDRUK/gateway-api/commit/d8d57c952c14a9a80ad81e3c33ebb706599a73e0)), closes [GAT-7113](GAT-7113)
+* **GAT-7118:** Fixes incorrect usage of dataset id, instead of versio… (#1230) ([0b2123c](https://github.com/HDRUK/gateway-api/commit/0b2123ce5d3d8aac53270d6e5b53d3934170d685))
+
 ## [2.10.0](https://github.com/HDRUK/gateway-api/compare/v2.9.1...v2.10.0) (2025-05-20)
 
 ### ✨ Features
