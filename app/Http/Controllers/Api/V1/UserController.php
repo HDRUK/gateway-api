@@ -291,14 +291,10 @@ class UserController extends Controller
                 'firstname' => $input['firstname'],
                 'lastname' => $input['lastname'],
                 'email' => $input['email'],
-                'secondary_email' => array_key_exists('secondary_email', $input) ?
-                    $input['secondary_email'] : null,
-                'preferred_email' => array_key_exists('preferred_email', $input) ?
-                    $input['preferred_email'] : 'primary',
-                'provider' =>  array_key_exists('provider', $input) ?
-                    $input['provider'] : Config::get('constants.provider.service'),
-                'providerid' => array_key_exists('providerid', $input) ?
-                    $input['providerid'] : null,
+                'secondary_email' => array_key_exists('secondary_email', $input) ? $input['secondary_email'] : null,
+                'preferred_email' => array_key_exists('preferred_email', $input) ? $input['preferred_email'] : 'primary',
+                'provider' =>  array_key_exists('provider', $input) ? $input['provider'] : Config::get('constants.provider.service'),
+                'providerid' => array_key_exists('providerid', $input) ? $input['providerid'] : null,
                 'password' => Hash::make($input['password']),
                 'sector_id' => $input['sector_id'],
                 'organisation' => $input['organisation'],
@@ -311,6 +307,7 @@ class UserController extends Controller
                 'mongo_id' => $input['mongo_id'],
                 'mongo_object_id' => $input['mongo_object_id'],
                 'terms' => array_key_exists('terms', $input) ? $input['terms'] : 0,
+                'is_nhse_sde_approval' => array_key_exists('is_nhse_sde_approval', $input) ? $input['is_nhse_sde_approval'] : 0,
             ];
 
             // TODO - At this stage we may want to use the is_admin
@@ -467,6 +464,7 @@ class UserController extends Controller
                     'mongo_id' => $input['mongo_id'],
                     'mongo_object_id' => $input['mongo_object_id'],
                     'terms' => array_key_exists('terms', $input) ? $input['terms'] : 0,
+                    'is_nhse_sde_approval' => array_key_exists('is_nhse_sde_approval', $input) ? $input['is_nhse_sde_approval'] : 0,
                 ];
 
                 if (array_key_exists('secondary_email', $input)) {
@@ -635,6 +633,7 @@ class UserController extends Controller
                 'mongo_id',
                 'mongo_object_id',
                 'terms',
+                'is_nhse_sde_approval',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);

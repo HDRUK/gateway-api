@@ -31,12 +31,14 @@ class CohortRequest extends Model
         'cohort_status',
         'request_expire_at',
         'created_at',
-        'accept_declaration', // Add the new field to the fillable array
+        'accept_declaration',
+        'is_nhse_sde_approval',
     ];
 
     protected $casts = [
         'cohort_status' => 'boolean',
-        'accept_declaration' => 'boolean', // Add the new field to the casts array
+        'accept_declaration' => 'boolean',
+        'is_nhse_sde_approval' => 'boolean',
     ];
 
     public function user(): BelongsTo

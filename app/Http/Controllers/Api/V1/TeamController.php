@@ -35,6 +35,7 @@ use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\CheckAccess;
+use App\Models\Alias;
 use App\Models\TeamHasAlias;
 
 class TeamController extends Controller
@@ -502,6 +503,12 @@ class TeamController extends Controller
 
             $service = array_values(array_filter(explode(",", $dp->service)));
 
+            $aliasesIds = TeamHasAlias::where(['team_id' => $id])->pluck('alias_id')->toArray();
+            $aliases = Alias::whereIn('id', $aliasesIds)
+                ->select('id', 'name')
+                ->get()
+                ->toArray();
+
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
@@ -533,6 +540,7 @@ class TeamController extends Controller
                         ->get()
                         ->toArray(),
                     'collections' => $collections,
+                    'aliases' => $aliases,
                 ],
             ]);
         } catch (Exception $e) {

@@ -49,6 +49,7 @@ class User extends Authenticatable
         'mongo_object_id',
         'is_admin',
         'terms',
+        'is_nhse_sde_approval',
     ];
 
     /**
@@ -68,6 +69,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'terms' => 'boolean',
+        'is_nhse_sde_approval' => 'boolean',
     ];
 
 
