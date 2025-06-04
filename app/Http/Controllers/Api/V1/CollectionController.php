@@ -83,6 +83,17 @@ class CollectionController extends Controller
      *       @OA\Schema(type="string"),
      *       description="Filter collections by status (DRAFT, ACTIVE, ARCHIVED)"
      *    ),
+     *      @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="per page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="per page",
+     *          ),
+     *      ),
      *    @OA\Response(
      *       response=200,
      *       description="Success",
@@ -130,7 +141,7 @@ class CollectionController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
+            $perPage = $request->has('per_page') ? (int) $request->get('per_page') : Config::get('constants.per_page');
             $name = $request->query('name', null);
             $filterTitle = $request->query('title', null);
             $filterStatus = $request->query('status', null);

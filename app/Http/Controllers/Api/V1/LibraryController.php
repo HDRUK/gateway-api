@@ -32,7 +32,7 @@ class LibraryController extends Controller
      *      description="Returns a paginated list of libraries along with associated datasets and teams.",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
-     *          name="perPage",
+     *          name="per_page",
      *          in="query",
      *          description="Specify the number of libraries per page",
      *          required=false,
@@ -90,7 +90,7 @@ class LibraryController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $perPage = (int) request('perPage', Config::get('constants.per_page'));
+            $perPage = (int) request('per_page', Config::get('constants.per_page'));
 
             $libraries = Library::where('user_id', $jwtUser['id'])
                 ->with(['dataset.team']);

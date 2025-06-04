@@ -49,6 +49,17 @@ class IntegrationDurController extends Controller
      *           type="project_title:asc,updated_at:asc"
      *       )
      *    ),
+     *    @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="per page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="per page",
+     *          ),
+     *      ),
      *    @OA\Response(
      *       response=200,
      *       description="Success",
@@ -144,7 +155,7 @@ class IntegrationDurController extends Controller
 
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
-            $perPage = request('perPage', Config::get('constants.per_page'));
+            $perPage = request('per_page', Config::get('constants.per_page'));
             $durs = Dur::where('enabled', 1)
                 ->with([
                     'publications',

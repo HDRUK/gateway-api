@@ -23,6 +23,17 @@ class CategoryController extends Controller
      *      tags={"Category"},
      *      summary="Category@index",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="per page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="per page",
+     *          ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -47,7 +58,7 @@ class CategoryController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $perPage = request('perPage', Config::get('constants.per_page'));
+            $perPage = request('per_page', Config::get('constants.per_page'));
             $categories = Category::where('enabled', 1)->paginate($perPage);
 
             Auditor::log([

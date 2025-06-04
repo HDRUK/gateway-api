@@ -32,7 +32,7 @@ class SavedSearchController extends Controller
      *      summary="SavedSearch@index",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
-     *          name="perPage",
+     *          name="per_page",
      *          in="query",
      *          description="Specify number of results per page",
      *          @OA\Schema(type="integer")
@@ -65,7 +65,7 @@ class SavedSearchController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $jwtUserIsAdmin = $jwtUser['is_admin'];
 
-            $perPage = request('perPage', Config::get('constants.per_page'));
+            $perPage = request('per_page', Config::get('constants.per_page'));
             if ($jwtUserIsAdmin) {
                 $savedSearches = SavedSearch::where('enabled', 1)->with('filters');
             } else {

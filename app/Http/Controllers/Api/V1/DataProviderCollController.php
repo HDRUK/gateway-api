@@ -40,6 +40,17 @@ class DataProviderCollController extends Controller
      *      tags={"DataProviderColl"},
      *      summary="DataProviderColl@index",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="per page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="per page",
+     *          ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -66,7 +77,7 @@ class DataProviderCollController extends Controller
         try {
             $input = $request->all();
 
-            $perPage = request('perPage', Config::get('constants.per_page'));
+            $perPage = request('per_page', Config::get('constants.per_page'));
             $mediaBaseUrl = Config::get('services.media.base_url');
 
             $dpc = DataProviderColl::with([

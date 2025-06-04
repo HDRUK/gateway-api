@@ -51,6 +51,17 @@ class IntegrationCollectionController extends Controller
      *       @OA\Schema(type="string"),
      *       description="Filter collections by name"
      *    ),
+     *      @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="per page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="per page",
+     *          ),
+     *      ),
      *    @OA\Response(
      *       response=200,
      *       description="Success",
@@ -102,7 +113,7 @@ class IntegrationCollectionController extends Controller
         try {
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
-            $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
+            $perPage = $request->has('per_page') ? (int) $request->get('per_page') : Config::get('constants.per_page');
             $name = $request->query('name', null);
 
             $collections = Collection::when($name, function ($query) use ($name) {

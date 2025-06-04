@@ -36,7 +36,7 @@ class KeywordController extends Controller
      *      summary="KeywordController@index",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
-     *          name="perPage",
+     *          name="per_page",
      *          in="query",
      *          description="Alternative output schema version.",
      *          @OA\Schema(type="integer")
@@ -76,7 +76,7 @@ class KeywordController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $perPage = (int) request('perPage', Config::get('constants.per_page'));
+            $perPage = (int) request('per_page', Config::get('constants.per_page'));
             $keywords = Keyword::where('enabled', 1)
                 ->paginate(function ($total) use ($perPage) {
                     if ($perPage === -1) {
