@@ -815,10 +815,6 @@ class DataAccessTemplateController extends Controller
     {
         $allTemplates = DataAccessTemplate::where('team_id', $teamId)
             ->whereNot('id', $id)
-            ->get();
-        foreach ($allTemplates as $t) {
-            $t->published = false;
-            $t->save();
-        }
+            ->update(['published' => false]);
     }
 }
