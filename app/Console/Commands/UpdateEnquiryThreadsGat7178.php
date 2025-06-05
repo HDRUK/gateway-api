@@ -21,7 +21,7 @@ class UpdateEnquiryThreadsGat7178 extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Command for task GAT-7178: Incorrect data storage in Enquiry Tables';
 
     /**
      * Execute the console command.
@@ -112,8 +112,8 @@ class UpdateEnquiryThreadsGat7178 extends Command
                 ]);
                 $this->info("Created new enquiry thread with ID: {$newEnquiryThread->id} for team ID: {$teamId} and for original ID: {$id}");
 
-                $messages = EnquiryMessage::where('thread_id', $newEnquiryThread->id)->get();
-                $datasets = EnquiryThreadHasDatasetVersion::where('enquiry_thread_id', $newEnquiryThread->id)->get();
+                $messages = EnquiryMessage::where('thread_id', $id)->get();
+                $datasets = EnquiryThreadHasDatasetVersion::where('enquiry_thread_id', $id)->get();
 
                 foreach ($messages as $message) {
                     EnquiryMessage::create([
@@ -121,7 +121,7 @@ class UpdateEnquiryThreadsGat7178 extends Command
                         'from' => $message->from,
                         'message_body' => $message->message_body,
                     ]);
-                    $this->info("Copied message from thread ID: {$message->thread_id} to new thread ID: {$newEnquiryThread->id}");
+                    $this->info("Copied message from thread ID: {$message->thread_id} to new thread ID: {$newEnquiryThread->id} from thread ID: {$id}");
                 }
 
                 foreach ($datasets as $dataset) {
@@ -130,7 +130,7 @@ class UpdateEnquiryThreadsGat7178 extends Command
                         'dataset_version_id' => $dataset->dataset_version_id,
                         'interest_type' => $dataset->interest_type,
                     ]);
-                    $this->info("Copied dataset version ID: {$dataset->dataset_version_id} to new thread ID: {$newEnquiryThread->id}");
+                    $this->info("Copied dataset version ID: {$dataset->dataset_version_id} to new thread ID: {$newEnquiryThread->id} from thread ID: {$id}");
                 }
             }
         }
