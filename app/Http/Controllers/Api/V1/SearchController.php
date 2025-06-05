@@ -94,7 +94,7 @@ class SearchController extends Controller
      *                  @OA\Property(property="query", type="string", example="asthma dataset"),
      *                  @OA\Property(property="sort", type="string", example="score"),
      *                  @OA\Property(property="direction", type="string", example="desc"),
-     *                  @OA\Property(property="filters", type="string", example={"filtersExample": @OA\Schema(ref="#/components/examples/filtersExample")})
+     *                  @OA\Property(property="filters", type="string", example={"filtersExample": @OA\Schema(ref="#/components/examples/filtersExample")}),
      *                  @OA\Property(property="per_page", type="integer", example=25)
      *              )
      *          )
@@ -417,7 +417,7 @@ class SearchController extends Controller
      *              description="Sort direction",
      *          ),
      *      ),
-     * 
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -747,7 +747,7 @@ class SearchController extends Controller
 
             $collectionArray = $this->sortSearchResult($collectionArray, $sortField, $sortDirection);
 
-            $perPage = request('perPage', Config::get('constants.per_page'));
+            $perPage = request('per_page', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $collectionArray, $perPage);
             unset($collectionArray);
 
@@ -947,7 +947,7 @@ class SearchController extends Controller
 
             $durArray = $this->sortSearchResult($durArray, $sortField, $sortDirection);
 
-            $perPage = request('perPage', Config::get('constants.per_page'));
+            $perPage = request('per_page', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $durArray, $perPage);
             unset($durArray);
 
@@ -1230,7 +1230,7 @@ class SearchController extends Controller
 
             $pubArray = $this->sortSearchResult($pubArray, $sortField, $sortDirection);
 
-            $perPage = request('perPage', Config::get('constants.per_page'));
+            $perPage = request('per_page', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $pubArray, $perPage);
             unset($pubArray);
 
@@ -1571,7 +1571,7 @@ class SearchController extends Controller
 
             $dataProviderCollArray = $this->sortSearchResult($dataProviderCollArray, $sortField, $sortDirection);
 
-            $perPage = request('perPage', Config::get('constants.per_page'));
+            $perPage = request('per_page', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $dataProviderCollArray, $perPage);
             unset($dataProviderCollArray);
 
