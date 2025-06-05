@@ -10,6 +10,7 @@ use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationAnswer;
 use App\Models\DataAccessApplicationReview;
 use App\Models\DataAccessApplicationStatus;
+use App\Models\DataAccessSection;
 use App\Models\Dataset;
 use App\Models\Role;
 use App\Models\QuestionBank;
@@ -52,6 +53,28 @@ trait DataAccessApplicationHelpers
                 );
             }
         }
+    }
+
+    public function groupArraySections(array $application): array
+    {
+        $questionsResult = array();
+        $questionsGrouped = collect($application['questions'])->groupBy('section_id')->all();
+
+        foreach ($questionsGrouped as $sec => $questions) {
+            $section = DataAccessSection::findOrFail($sec);
+            if ($section->is_array_section) {
+                $sectionQuestion = [
+                    'title' => $section->name . ' - array',
+                    'component' => 'ArrayField',
+                    'fields' => $questions,
+                ];
+                $questionsResult[] = $sectionQuestion;
+            } else {
+                $questionsResult = array_merge($questionsResult, $questions->toArray());
+            }
+        }
+
+        return $questionsResult;
     }
 
     public function updateDataAccessApplication(DataAccessApplication $application, array $input): void

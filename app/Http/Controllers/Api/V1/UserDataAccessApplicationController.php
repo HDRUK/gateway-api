@@ -338,6 +338,8 @@ class UserDataAccessApplicationController extends Controller
                 throw new UnauthorizedException('User does not have permission to use this endpoint to view this application.');
             }
 
+            $groupArrays = $request->boolean('group_arrays', false);
+
             if ($application->application_type === 'FORM') {
                 $this->getApplicationWithQuestions($application);
             } else {
@@ -351,8 +353,15 @@ class UserDataAccessApplicationController extends Controller
                 $application['templates'] = $templates;
             }
 
+            $application = $application->toArray();
+
+            if ($groupArrays) {
+                $questionsGrouped = $this->groupArraySections($application);
+                $application = array_merge($application, ['questions' => $questionsGrouped]);
+            }
+
             $submissions = $this->submissionAudit($id);
-            $application = array_merge($application->toArray(), $submissions);
+            $application = array_merge($application, $submissions);
 
             if ($application) {
                 Auditor::log([

@@ -320,10 +320,18 @@ class TeamDataAccessApplicationController extends Controller
                 ->with(['questions'])
                 ->first();
 
+            $groupArrays = $request->boolean('group_arrays', false);
+
             $this->getApplicationWithQuestions($application);
+            $application = $application->toArray();
+
+            if ($groupArrays) {
+                $questionsGrouped = $this->groupArraySections($application);
+                $application = array_merge($application, ['questions' => $questionsGrouped]);
+            }
 
             $submissions = $this->submissionAudit($id);
-            $application = array_merge($application->toArray(), $submissions);
+            $application = array_merge($application, $submissions);
 
             if ($application) {
                 Auditor::log([
