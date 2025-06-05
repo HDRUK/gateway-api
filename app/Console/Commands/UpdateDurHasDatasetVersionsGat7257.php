@@ -84,5 +84,8 @@ class UpdateDurHasDatasetVersionsGat7257 extends Command
         Schema::drop('tmp_dur_has_dataset_version');
 
         Schema::enableForeignKeyConstraints();
+
+        $this->info('DurHasDatasetVersion table updated successfully, duplicates removed.');
+        return 0;
     }
 }
