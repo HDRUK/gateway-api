@@ -11,5 +11,5 @@ class CustomerSatisfaction extends Model
 
     protected $table = 'customer_satisfactions';
 
-    protected $fillable = ['score'];
+    protected $fillable = ['score', 'reason'];
 }
