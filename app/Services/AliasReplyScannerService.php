@@ -1,6 +1,6 @@
 <?php
 
-namespace App\AliasReplyScanner;
+namespace App\Services;
 
 use Exception;
 use CloudLogger;
@@ -11,10 +11,12 @@ use App\Models\EmailTemplate;
 use App\Models\EnquiryThread;
 use App\Models\EnquiryMessage;
 use Webklex\PHPIMAP\ClientManager;
-use EnquiriesManagementController as EMC;
+use App\Http\Traits\EnquiriesTrait;
 
-class AliasReplyScanner
+class AliasReplyScannerService
 {
+    use EnquiriesTrait;
+
     public function getImapClient()
     {
         $cm = new ClientManager($options = []);
@@ -125,7 +127,7 @@ class AliasReplyScanner
 
         $uniqueKey = $enquiryThread->unique_key;
 
-        $usersToNotify = EMC::getUsersByTeamIds([$enquiryThread->team_id], $enquiryThread->user_id);
+        $usersToNotify = $this->getUsersByTeamIds([$enquiryThread->team_id], $enquiryThread->user_id, $enquiryThread->user_preferred_email);
 
         if (empty($usersToNotify)) {
             CloudLogger::write([
@@ -153,6 +155,7 @@ class AliasReplyScanner
         $payload = [
             'thread' => [
                 'user_id' => $enquiryThread->user_id,
+                'user_preferred_email' => $enquiryThread->user_preferred_email,
                 'team_ids' => [$enquiryThread->team_id],
                 'team_names' => $teamNames,
                 'project_title' => $enquiryThread->project_title,
