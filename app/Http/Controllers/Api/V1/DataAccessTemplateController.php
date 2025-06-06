@@ -429,6 +429,11 @@ class DataAccessTemplateController extends Controller
                 $this->insertTemplateHasQuestions($input['questions'], $template, $input['team_id']);
             }
 
+            $madeActive = isset($input['published']) ? $input['published'] : false;
+            if ($madeActive) {
+                $this->markOtherTemplatesInactive($template->id, $template->team_id);
+            }
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
@@ -533,6 +538,11 @@ class DataAccessTemplateController extends Controller
             if (isset($input['questions'])) {
                 DataAccessTemplateHasQuestion::where('template_id', $id)->delete();
                 $this->insertTemplateHasQuestions($input['questions'], $template, $input['team_id']);
+            }
+
+            $madeActive = isset($input['published']) ? $input['published'] : false;
+            if ($madeActive) {
+                $this->markOtherTemplatesInactive($id, $template->team_id);
             }
 
             Auditor::log([
@@ -662,6 +672,11 @@ class DataAccessTemplateController extends Controller
                     DataAccessTemplateHasQuestion::where('template_id', $id)->delete();
                 }
                 $this->insertTemplateHasQuestions($input['questions'], $template, $template->team_id);
+            }
+
+            $madeActive = isset($input['published']) ? $input['published'] : false;
+            if ($madeActive) {
+                $this->markOtherTemplatesInactive($id, $template->team_id);
             }
 
             Auditor::log([
@@ -794,5 +809,12 @@ class DataAccessTemplateController extends Controller
             ]);
             $count += 1;
         }
+    }
+
+    private function markOtherTemplatesInactive($id, $teamId): void
+    {
+        $allTemplates = DataAccessTemplate::where('team_id', $teamId)
+            ->whereNot('id', $id)
+            ->update(['published' => false]);
     }
 }
