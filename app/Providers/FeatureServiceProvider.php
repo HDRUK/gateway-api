@@ -57,7 +57,7 @@ class FeatureServiceProvider extends ServiceProvider
                             ]);
 
                             // Temporary fallback values
-                            return $defaultTempFlag;
+                            return $defaultTempFlags;
                         }
 
                         if (!$res->successful()) {
@@ -82,7 +82,7 @@ class FeatureServiceProvider extends ServiceProvider
                     ]);
 
                     // Fallback to cached flags (if available) or defaults
-                    $featureFlags = Cache::get('feature_flags', $defaultTempFlag);
+                    $featureFlags = Cache::get('feature_flags', $defaultTempFlags);
                 }
             }
 
