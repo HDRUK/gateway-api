@@ -4,7 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Laravel\Pennant\Feature;
-use Illuminate\Support\Facades\Cache;
+// use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class FeatureFlagManager
@@ -41,15 +41,20 @@ class FeatureFlagManager
     public function getAllFlags(): array
     {
         $url = env('FEATURE_FLAGGING_CONFIG_URL');
-        $featureFlags = Cache::remember('getAllFlags', now()->addMinutes(60), function () use ($url) {
-            $res = Http::get($url);
-            if ($res->successful()) {
-                return $res->json();
-            }
+        // $featureFlags = Cache::remember('getAllFlags', now()->addMinutes(60), function () use ($url) {
+        //     $res = Http::get($url);
+        //     if ($res->successful()) {
+        //         return $res->json();
+        //     }
 
-            logger()->error('Failed to fetch feature flags from URL', ['url' => $url]);
-            return [];
-        });
+        //     logger()->error('Failed to fetch feature flags from URL', ['url' => $url]);
+        //     return [];
+        // });
+
+        $featureFlags = [
+                    'SDEConciergeServiceEnquiry' => ['enabled' => env('SDEConciergeServiceEnquiry', true)],
+                    'Aliases' => ['enabled' => true],
+        ];
 
 
 
