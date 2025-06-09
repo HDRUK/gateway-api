@@ -4,7 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Laravel\Pennant\Feature;
-// use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class FeatureFlagManager
@@ -41,24 +41,59 @@ class FeatureFlagManager
     public function getAllFlags(): array
     {
         $url = env('FEATURE_FLAGGING_CONFIG_URL');
-        // $featureFlags = Cache::remember('getAllFlags', now()->addMinutes(60), function () use ($url) {
-        //     $res = Http::get($url);
-        //     if ($res->successful()) {
-        //         return $res->json();
-        //     }
 
-        //     logger()->error('Failed to fetch feature flags from URL', ['url' => $url]);
-        //     return [];
-        // });
+        $featureFlags = Cache::get('getAllFlags');
 
-        $featureFlags = [
-                    'SDEConciergeServiceEnquiry' => ['enabled' => env('SDEConciergeServiceEnquiry', true)],
-                    'Aliases' => ['enabled' => true],
-        ];
+        if (!$featureFlags) {
+            $lock = Cache::lock('getAllFlags_lock', 10);
 
+            try {
+                $featureFlags = $lock->block(3, function () use ($url) {
+                    logger()->info('Fetching all feature flags with lock');
 
+                    try {
+                        $res = Http::timeout(10)
+                            ->withOptions(['read_timeout' => 30])
+                            ->retry(3, 2000, function ($exception, $attempt) use ($url) {
+                                logger()->warning('Retrying getAllFlags request', [
+                                    'url' => $url,
+                                    'attempt' => $attempt,
+                                    'error' => $exception->getMessage(),
+                                ]);
+                            })
+                            ->get($url);
+                    } catch (\Throwable $e) {
+                        logger()->error('Exception fetching all flags', ['error' => $e->getMessage()]);
+                        return [];
+                    }
 
+                    if (!$res->successful()) {
+                        logger()->error('Failed to fetch feature flags from URL', [
+                            'url' => $url,
+                            'status' => $res->status(),
+                            'body' => $res->body(),
+                        ]);
+                        return [];
+                    }
+
+                    $flags = $res->json();
+
+                    // Cache the result for 60 minutes
+                    Cache::put('getAllFlags', $flags, now()->addMinutes(60));
+
+                    return $flags;
+                });
+            } catch (\Illuminate\Contracts\Cache\LockTimeoutException $e) {
+                logger()->warning('Could not acquire lock for getAllFlags', ['error' => $e->getMessage()]);
+
+                $featureFlags = Cache::get('getAllFlags', [
+                        'SDEConciergeServiceEnquiry' => ['enabled' => env('SDEConciergeServiceEnquiry', true)],
+                        'Aliases' => ['enabled' => true],
+            ]);
+            }
+        }
 
         return $featureFlags;
     }
+
 }

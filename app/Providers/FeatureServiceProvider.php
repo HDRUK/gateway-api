@@ -7,6 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use App\Services\FeatureFlagManager;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 
 class FeatureServiceProvider extends ServiceProvider
 {
@@ -14,65 +15,82 @@ class FeatureServiceProvider extends ServiceProvider
     {
         $this->app->booted(function () {
             logger()->info('Starting features');
+
+            $defaultTempFlags = [
+                        'SDEConciergeServiceEnquiry' => ['enabled' => env('SDEConciergeServiceEnquiry', true)],
+                        'Aliases' => ['enabled' => true],
+            ];
+
             $url = env('FEATURE_FLAGGING_CONFIG_URL');
 
             if (app()->environment('testing') || !$url) {
                 return;
             }
 
-            // $featureFlags = Cache::remember('feature_flags', now()->addMinutes(10), function () use ($url) {
-            //     logger()->info('Calling that Bucket');
+            // Try to load feature flags from cache
+            $featureFlags = Cache::get('feature_flags');
 
-            //     try {
-            //         // this is the thing that fails, it does not retry and falls over because during a random split second http protocol does not exist...
-            //         // this error we are getting is VERY similiar to the reddis connection problems.. they are likely the same underlying issue.
-            //         $res = Http::timeout(60)
-            //             ->retry(3, 2000, function ($exception, $requestNumber) use ($url) {
-            //                 logger()->warning('Retrying feature flag fetch', [
-            //                     'url' => $url,
-            //                     'attempt' => $requestNumber,
-            //                     'error' => $exception->getMessage(),
-            //                 ]);
-            //             })
-            //             ->get($url);
-            //     } catch (ConnectionException $e) {
-            //         logger()->error('ConnectionException when fetching feature flags', [
-            //             'url' => $url,
-            //             'error' => $e->getMessage(),
-            //         ]);
-            //         /// this is temp until the new GCS solution JB is in place
-            //         return [
-            //         'SDEConciergeServiceEnquiry' => ['enabled' => env('SDEConciergeServiceEnquiry', true)],
-            //         'Aliases' => ['enabled' => true],
-            //     ];
-            //     }
+            if (!$featureFlags) {
+                // Use a cache lock to prevent multiple processes from calling the URL at once
+                $lock = Cache::lock('feature_flags_lock', 10); // Lock held for 10 seconds
 
-            //     if (!$res->successful()) {
-            //         logger()->error('Failed to fetch feature flags', [
-            //             'url' => $url,
-            //             'status' => $res->status(),
-            //             'body' => $res->body(),
-            //         ]);
-            //         return [];
-            //     }
+                try {
+                    // Attempt to acquire the lock, wait max 3 seconds
+                    $featureFlags = $lock->block(3, function () use ($url) {
+                        logger()->info('Acquired lock for feature flag fetch');
 
-            //     return $res->json();
-            // });
+                        try {
+                            $res = Http::timeout(10)
+                                ->withOptions(['read_timeout' => 30])
+                                ->retry(3, 2000, function ($exception, $requestNumber) use ($url) {
+                                    logger()->warning('Retrying feature flag fetch', [
+                                        'url' => $url,
+                                        'attempt' => $requestNumber,
+                                        'error' => $exception->getMessage(),
+                                    ]);
+                                })
+                                ->get($url);
+                        } catch (ConnectionException $e) {
+                            logger()->error('ConnectionException when fetching feature flags', [
+                                'url' => $url,
+                                'error' => $e->getMessage(),
+                            ]);
 
-            $featureFlags = [
-                    'SDEConciergeServiceEnquiry' => ['enabled' => env('SDEConciergeServiceEnquiry', true)],
-                    'Aliases' => ['enabled' => true],
-            ];
-            app(FeatureFlagManager::class)->define($featureFlags);
+                            // Temporary fallback values
+                            return $defaultTempFlag;
+                        }
 
+                        if (!$res->successful()) {
+                            logger()->error('Failed to fetch feature flags', [
+                                'url' => $url,
+                                'status' => $res->status(),
+                                'body' => $res->body(),
+                            ]);
+                            return [];
+                        }
 
-            // if (is_array($featureFlags) && !empty($featureFlags)) {
-            //     app(FeatureFlagManager::class)->define($featureFlags);
-            // } else {
-            //     logger()->warning('No feature flags were defined - empty or failed response.', ['url' => $url]);
-            // }
+                        $flags = $res->json();
+
+                        // Cache flags for 60 minutes
+                        Cache::put('feature_flags', $flags, now()->addMinutes(60));
+
+                        return $flags;
+                    });
+                } catch (LockTimeoutException $e) {
+                    logger()->warning('Could not acquire lock to fetch feature flags; using stale or default', [
+                        'error' => $e->getMessage(),
+                    ]);
+
+                    // Fallback to cached flags (if available) or defaults
+                    $featureFlags = Cache::get('feature_flags', $defaultTempFlag);
+                }
+            }
+
+            if (is_array($featureFlags) && !empty($featureFlags)) {
+                app(FeatureFlagManager::class)->define($featureFlags);
+            } else {
+                logger()->warning('No feature flags were defined - empty or failed response.', ['url' => $url]);
+            }
         });
     }
-
-
 }
