@@ -63,12 +63,14 @@ class FeatureServiceProvider extends ServiceProvider
                     'SDEConciergeServiceEnquiry' => ['enabled' => env('SDEConciergeServiceEnquiry', true)],
                     'Aliases' => ['enabled' => true],
             ];
+            app(FeatureFlagManager::class)->define($featureFlags);
 
-            if (is_array($featureFlags) && !empty($featureFlags)) {
-                app(FeatureFlagManager::class)->define($featureFlags);
-            } else {
-                logger()->warning('No feature flags were defined - empty or failed response.', ['url' => $url]);
-            }
+
+            // if (is_array($featureFlags) && !empty($featureFlags)) {
+            //     app(FeatureFlagManager::class)->define($featureFlags);
+            // } else {
+            //     logger()->warning('No feature flags were defined - empty or failed response.', ['url' => $url]);
+            // }
         });
     }
 
