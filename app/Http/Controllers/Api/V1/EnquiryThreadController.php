@@ -199,7 +199,6 @@ class EnquiryThreadController extends Controller
     public function store(Request $request): JsonResponse
     {
         $enquiryThreadId = null;
-        $enquiryMessageId = null;
 
         $input = $request->all();
         $jwtUser = $input['jwt_user'] ?? [];
@@ -255,7 +254,6 @@ class EnquiryThreadController extends Controller
                 }
 
                 // Spawn email notifications to all DAR managers for this team
-
                 if ($input['is_feasibility_enquiry'] == true) {
                     $this->sendEmail('feasibilityenquiry.firstmessage', $payload, $usersToNotify, $jwtUser, $payload['thread']['user_preferred_email']);
                 } elseif ($input['is_general_enquiry'] == true) {
