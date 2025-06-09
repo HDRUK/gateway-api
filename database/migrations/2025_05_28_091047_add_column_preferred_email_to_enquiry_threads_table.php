@@ -10,8 +10,8 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::table('publication_has_dataset_version', function (Blueprint $table) {
-            $table->text('description')->nullable()->after('link_type');
+        Schema::table('enquiry_threads', function (Blueprint $table) {
+            $table->enum('user_preferred_email', ['primary', 'secondary'])->default('primary')->after('user_id');
         });
     }
 
@@ -20,8 +20,10 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        Schema::table('publication_has_dataset_version', function (Blueprint $table) {
-            $table->dropColumn('description');
+        Schema::table('enquiry_threads', function (Blueprint $table) {
+            $table->dropColumn([
+                'user_preferred_email',
+            ]);
         });
     }
 };
