@@ -18,7 +18,7 @@ use App\Models\EnquiryThreadHasDatasetVersion;
 
 trait EnquiriesTrait
 {
-    public function getUsersByTeamIds(array $teamIds, int $currUserId = 0, string $currentUserPrefferedEmail = null): array
+    public function getUsersByTeamIds(array $teamIds, int $currUserId = 0, ?string $currentUserPreferredEmail = null): array
     {
         $users = [];
 
@@ -58,6 +58,7 @@ trait EnquiriesTrait
                         ->first();
 
             if (!is_null($user)) {
+                $user->preferred_email = $currentUserPreferredEmail ?? $user->preferred_email;
                 foreach ($teamIds as $teamId) {
                     $team = Team::where('id', $teamId)->first();
                     if (is_null($team)) {
@@ -131,7 +132,7 @@ trait EnquiriesTrait
         return $enquiryMessage->id;
     }
 
-    public function sendEmail(string $ident, array $threadDetail, array $usersToNotify, array $jwtUser, string $currentUserPrefferedEmail = 'primary'): void
+    public function sendEmail(string $ident, array $threadDetail, array $usersToNotify, array $jwtUser, string $currentUserPreferredEmail = 'primary'): void
     {
         $something = null;
         $imapUsername = env('ARS_IMAP_USERNAME', 'devreply@healthdatagateway.org');
@@ -174,7 +175,7 @@ trait EnquiriesTrait
                 if ((int)$jwtUser['id'] === (int)$user['user']['id']) {
                     $to = [
                         'to' => [
-                            'email' => ($currentUserPrefferedEmail === 'primary') ? $user['user']['email'] : $user['user']['secondary_email'],
+                            'email' => ($currentUserPreferredEmail === 'primary') ? $user['user']['email'] : $user['user']['secondary_email'],
                             'name' => $user['user']['firstname'] . ' ' . $user['user']['lastname'],
                         ],
                     ];
