@@ -66,17 +66,23 @@ class DataAccessSectionController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $perPage = (int) request('per_page', Config::get('constants.per_page'));
+            $page = (int) $request->query('page', 1);
 
-            $sections = DataAccessSection::paginate(
-                function ($total) use ($perPage) {
-                    if ($perPage === -1) {
-                        return $total;
-                    }
-                    return $perPage;
-                },
-                ['*'],
-                'page'
-            );
+            if ($page === -1) {
+                $sections = ['data' => DataAccessSection::all()];
+            } else {
+                $sections = DataAccessSection::paginate(
+                    function ($total) use ($perPage) {
+                        if ($perPage === -1) {
+                            return $total;
+                        }
+                        return $perPage;
+                    },
+                    ['*'],
+                    'page'
+                );
+            }
+
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
