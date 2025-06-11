@@ -69,7 +69,7 @@ class DataAccessSectionController extends Controller
             $page = (int) $request->query('page', 1);
 
             if ($page === -1) {
-                $sections = DataAccessSection::all();
+                $sections = ['data' => DataAccessSection::all()];
             } else {
                 $sections = DataAccessSection::paginate(
                     function ($total) use ($perPage) {
