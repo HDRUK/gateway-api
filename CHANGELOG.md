@@ -1,3 +1,21 @@
+## [2.12.0](https://github.com/HDRUK/gateway-api/compare/v2.11.0...v2.12.0) (2025-06-16)
+
+### ✨ Features
+
+* **GAT-6328:** Customer Satisfaction patch and post amendments (#1254) ([7009a3a](https://github.com/HDRUK/gateway-api/commit/7009a3a40e700fba76c7a5f04c2f7b6fce4edbac)), closes [GAT-6328](GAT-6328)
+* **GAT-6544:** only one active template allowed at a time (#1261) ([880e69e](https://github.com/HDRUK/gateway-api/commit/880e69eadcf0e96de59d0af5d34237d618066172)), closes [GAT-6544](GAT-6544)
+* **GAT-6927:** Temp deadsafe for feature flagging (#1252) ([498e850](https://github.com/HDRUK/gateway-api/commit/498e8500ffcba550556e7faadc68917588801b72)), closes [GAT-6927](GAT-6927)
+* **GAT-6995:** Update Extend linkage extraction job (under apps/jobs) for tools - Its not rendering on the Tools Search UI (#1249) ([ae52351](https://github.com/HDRUK/gateway-api/commit/ae52351cb7f446e2020424c2143da470b6945830)), closes [GAT-6995](GAT-6995)
+* **GAT-6995:** Update Extend linkage extraction job tools from metadata (#1250) ([4531f12](https://github.com/HDRUK/gateway-api/commit/4531f12bf59ab30ae31a66455d3559799b41fc7f)), closes [GAT-6995](GAT-6995)
+* **GAT-7283:** Add option for arrays of questions (#1258) ([d7250c1](https://github.com/HDRUK/gateway-api/commit/d7250c1811c55f1fe21443ddc79e7eedf5cb7e41)), closes [GAT-7283](GAT-7283)
+
+### 🐛 Bug Fixes
+
+* **GAT-1234:** update team aliases (#1253) ([1d661c8](https://github.com/HDRUK/gateway-api/commit/1d661c83be1575159c0c00616dffbb5dfa94e487)), closes [GAT-1234](GAT-1234)
+* **GAT-6985:** update LinkageExtraction job (#1265) ([938bb17](https://github.com/HDRUK/gateway-api/commit/938bb17f498264f748d0f69baf9705444e1f611c)), closes [GAT-6985](GAT-6985)
+* **GAT-7178:** Incorrect data storage in Enquiry Tables (#1259) ([bef97db](https://github.com/HDRUK/gateway-api/commit/bef97db84282c3c532f272a0f8765a2e3bed994a)), closes [GAT-7178](GAT-7178)
+* **GAT-7325:** missing sections on dars (#1264) ([79a7e76](https://github.com/HDRUK/gateway-api/commit/79a7e7618586fe8c30c6096da7b7d2a30978a1e3)), closes [GAT-7325](GAT-7325)
+
 ## [2.11.0](https://github.com/HDRUK/gateway-api/compare/v2.10.0...v2.11.0) (2025-06-04)
 
 ### ✨ Features
