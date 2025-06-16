@@ -42,11 +42,17 @@ class LinkageExtraction implements ShouldQueue
             $this->sourceDatasetId = $datasetId;
             $this->sourceDatasetVersionId = $datasetVersionId;
             $this->gwdmVersion = $version->metadata['gwdmVersion'];
-            $this->datasetLinkages = $version->metadata['metadata']['linkage']['datasetLinkage'] ?? null;
-            $this->publicationAboutDatasetLinkages = $version->metadata['metadata']['linkage']['publicationAboutDataset'] ?? null;
-            $this->publicationUsingDatasetLinkages = $version->metadata['metadata']['linkage']['publicationUsingDataset'] ?? null;
-            $this->description = 'Extracted from GWDM';
 
+            $datasetLinkage = $version->metadata['metadata']['linkage']['datasetLinkage'] ?? null;
+            $this->datasetLinkages = $datasetLinkage !== '' ? $datasetLinkage : null;
+
+            $publicationAboutDatasetLinkages = $version->metadata['metadata']['linkage']['publicationAboutDataset'] ?? null;
+            $this->publicationAboutDatasetLinkages = $publicationAboutDatasetLinkages !== '' ? $publicationAboutDatasetLinkages : null;
+
+            $publicationUsingDatasetLinkages = $version->metadata['metadata']['linkage']['publicationUsingDataset'] ?? null;
+            $this->publicationUsingDatasetLinkages = $publicationUsingDatasetLinkages !== '' ? $publicationUsingDatasetLinkages : null;
+
+            $this->description = 'Extracted from GWDM';
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
