@@ -44,7 +44,7 @@ class TeamToolController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v2/teams/{teamId}/tools/{status}",
+     *     path="/api/v2/teams/{teamId}/tools/status/{status}",
      *     operationId="fetch_all_tool_by_team_and_status_v2",
      *     tags={"Tool"},
      *     summary="TeamToolController@indexStatus",
