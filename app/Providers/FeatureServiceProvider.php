@@ -24,6 +24,8 @@ class FeatureServiceProvider extends ServiceProvider
                 logger()->info('Calling that Bucket');
 
                 try {
+                    // this is the thing that fails, it does not retry and falls over because during a random split second http protocol does not exist...
+                    // this error we are getting is VERY similiar to the reddis connection problems.. they are likely the same underlying issue.
                     $res = Http::timeout(60)
                         ->retry(3, 2000, function ($exception, $requestNumber) use ($url) {
                             logger()->warning('Retrying feature flag fetch', [
@@ -38,7 +40,11 @@ class FeatureServiceProvider extends ServiceProvider
                         'url' => $url,
                         'error' => $e->getMessage(),
                     ]);
-                    return [];
+                    /// this is temp until the new GCS solution JB is in place
+                    return [
+                    'SDEConciergeServiceEnquiry' => ['enabled' => env('SDEConciergeServiceEnquiry', true)],
+                    'Aliases' => ['enabled' => true],
+                ];
                 }
 
                 if (!$res->successful()) {

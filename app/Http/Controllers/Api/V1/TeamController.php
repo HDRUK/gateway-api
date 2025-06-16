@@ -829,8 +829,8 @@ class TeamController extends Controller
                 ]);
             }
 
-            $arrayTeamAlias = array_key_exists('aliases', $input) ? $input['aliases'] : [];
-            $arrayTeamAlias && $this->updateTeamAlias((int)$teamId, $arrayTeamAlias);
+            $arrayTeamAlias = $input['aliases'] ?? [];
+            $this->updateTeamAlias((int)$teamId, $arrayTeamAlias);
 
             $users = array_key_exists('users', $input) ? $input['users'] : [];
             $this->updateTeamAdminUsers($teamId, $users);
@@ -989,8 +989,8 @@ class TeamController extends Controller
                 ]);
             }
 
-            $arrayTeamAlias = array_key_exists('aliases', $input) ? $input['aliases'] : [];
-            $arrayTeamAlias && $this->updateTeamAlias((int)$teamId, $arrayTeamAlias);
+            $arrayTeamAlias = $input['aliases'] ?? [];
+            $this->updateTeamAlias((int)$teamId, $arrayTeamAlias);
 
             $users = array_key_exists('users', $input) ? $input['users'] : [];
             $this->updateTeamAdminUsers($teamId, $users);

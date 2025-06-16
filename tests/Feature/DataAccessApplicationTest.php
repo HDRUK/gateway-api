@@ -7,7 +7,9 @@ use Config;
 use Tests\TestCase;
 use App\Models\Team;
 use App\Models\Dataset;
+use App\Models\DataAccessSection;
 use App\Models\DataAccessTemplate;
+use App\Models\QuestionBank;
 use App\Jobs\SendEmailJob;
 use App\Jobs\TermExtraction;
 use App\Jobs\LinkageExtraction;
@@ -397,6 +399,109 @@ class DataAccessApplicationTest extends TestCase
                     'applicant_id',
                     'project_title',
                     'questions',
+                    'submission_status',
+                    'approval_status',
+                    'teams' => [
+                        0 => [
+                            'submission_status',
+                            'approval_status',
+                        ]
+                    ],
+                    'days_since_submission',
+                    'submission_date',
+                ],
+            ]);
+    }
+
+    /**
+     * Returns a single dar application with grouped questions
+     *
+     * @return void
+     */
+    public function test_the_application_can_list_a_dar_application_with_grouped_questions()
+    {
+        $entityIds = $this->createDatasetForDar();
+        $datasetId = $entityIds['datasetId'];
+        $teamId = $entityIds['teamId'];
+        $questionId = $entityIds['questionId'];
+
+        // Update the question to be in an array section
+        $section = DataAccessSection::findOrFail(2);
+        $section->is_array_section = true;
+        $section->save();
+
+        $question = QuestionBank::findOrFail($questionId);
+        $question->section_id = $section->id;
+        $question->save();
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => 1,
+                'submission_status' => 'DRAFT',
+                'project_title' => 'A test DAR',
+                'approval_status' => 'APPROVED_COMMENTS',
+                'dataset_ids' => [$datasetId]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $content = $response->decodeResponseJson();
+
+        $response = $this->get('api/v1/teams/' . $teamId . '/dar/applications/' . $content['data'] . '?group_arrays=true', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'applicant_id',
+                    'project_title',
+                    'questions' => [
+                        0 => [
+                            'title',
+                            'component',
+                            'fields'
+                        ]
+                    ],
+                    'submission_status',
+                    'approval_status',
+                    'teams' => [
+                        0 => [
+                            'submission_status',
+                            'approval_status',
+                        ]
+                    ],
+                    'days_since_submission',
+                    'submission_date',
+                ],
+            ]);
+
+        $response = $this->get('api/v1/users/1/dar/applications/' . $content['data'] . '?group_arrays=true', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'applicant_id',
+                    'project_title',
+                    'questions' => [
+                        0 => [
+                            'title',
+                            'component',
+                            'fields'
+                        ]
+                    ],
                     'submission_status',
                     'approval_status',
                     'teams' => [

@@ -31,6 +31,17 @@ class FilterController extends Controller
      *      tags={"Filter"},
      *      summary="Filter@index",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="per page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="per page",
+     *          ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -91,7 +102,7 @@ class FilterController extends Controller
                 }
             }
 
-            $perPage = request('perPage', Config::get('constants.per_page'));
+            $perPage = request('per_page', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $filters, $perPage);
 
             Auditor::log([

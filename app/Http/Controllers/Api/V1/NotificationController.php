@@ -59,7 +59,7 @@ class NotificationController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $perPage = request('perPage', Config::get('constants.per_page'));
+            $perPage = request('per_page', Config::get('constants.per_page'));
             $notifications = Notification::where('enabled', 1)->paginate($perPage);
 
             Auditor::log([

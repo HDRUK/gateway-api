@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use App\Models\CustomerSatisfaction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Exception;
+use Config;
 
 class CustomerSatisfactionController extends Controller
 {
@@ -36,6 +38,7 @@ class CustomerSatisfactionController extends Controller
      *          description="Validation Error",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="Validation error"),
+     *              @OA\Property(property="id", type="integer", example=123),
      *              @OA\Property(property="errors", type="object"),
      *          )
      *      ),
@@ -44,7 +47,7 @@ class CustomerSatisfactionController extends Controller
      *          description="Internal Server Error",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="error")
-     *          )
+     *          ),
      *      )
      * )
      */
@@ -55,15 +58,79 @@ class CustomerSatisfactionController extends Controller
                 'score' => 'required|integer|min:0|max:5',
             ]);
 
-            CustomerSatisfaction::create([
+            $csat = CustomerSatisfaction::create([
                 'score' => $validated['score']
             ]);
-            return response()->json(['message' => 'Score saved successfully'], 201);
+
+            return response()->json([
+                'data' => [
+                'id' => $csat->id,
+                ]
+
+            ], Config::get('statuscodes.STATUS_CREATED.code'));
+
         } catch (Exception $e) {
             return response()->json([
-                'message' => 'An unexpected error occurred',
+                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
                 'error' => $e->getMessage(),
-            ], 500);
+            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *      path="/api/v1/csat/{id}",
+     *      tags={"CustomerSatisfaction"},
+     *      summary="Update Customer Satisfaction Description",
+     *      description="Update a description for a satisfaction score entry",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          description="ID of the CSAT entry",
+     *          required=true,
+     *          @OA\Schema(type="integer")
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Reason to update",
+     *          @OA\JsonContent(
+     *              required={"reason", "score"},
+     *              @OA\Property(property="reason", type="string", example="Your feedback goes here..."),
+     *              @OA\Property(property="score", type="integer", example=1),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Update successful",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="reason updated")
+     *          )
+     *      )
+     * )
+     */
+    public function update(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'reason' => 'required|string|max:500',
+                'score' => 'required|integer|min:0|max:5',
+            ]);
+
+            $csat = CustomerSatisfaction::findOrFail($id);
+            $csat->reason = $validated['reason'];
+            $csat->score = $validated['score'];
+            $csat->save();
+
+            return response()->json([
+                'message' => 'Survey updated',
+            ], Config::get('statuscodes.STATUS_OK.code'));
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+                'error' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
         }
     }
 }

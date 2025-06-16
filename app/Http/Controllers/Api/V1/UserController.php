@@ -75,7 +75,7 @@ class UserController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $perPage = request('perPage', Config::get('constants.per_page'));
+        $perPage = request('per_page', Config::get('constants.per_page'));
         $mini = $request->has('mini');
         $users = [];
 

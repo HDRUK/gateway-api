@@ -60,6 +60,17 @@ class DurController extends Controller
      *       @OA\Schema(type="string"),
      *       description="Filter tools by project title"
      *    ),
+     *    @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="per page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="per page",
+     *          ),
+     *      ),
      *    @OA\Response(
      *       response=200,
      *       description="Success",
@@ -159,7 +170,7 @@ class DurController extends Controller
             $teamId = $request->query('team_id', null);
             $projectId = $request->query('project_id', null);
             $filterStatus = $request->query('status', null);
-            $perPage = request('perPage', Config::get('constants.per_page'));
+            $perPage = request('per_page', Config::get('constants.per_page'));
             $withRelated = $request->boolean('with_related', true);
             $durs = Dur::when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);

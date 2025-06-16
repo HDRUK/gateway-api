@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Dataset;
 use Illuminate\Support\Arr;
 use Illuminate\Bus\Queueable;
+use App\Http\Traits\IndexElastic;
 use App\Models\DatasetVersionHasTool;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -21,6 +22,7 @@ class ExtractToolsFromMetadata implements ShouldQueue
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
+    use IndexElastic;
 
     private int $datasetVersionId = 0;
 
@@ -80,6 +82,8 @@ class ExtractToolsFromMetadata implements ShouldQueue
         $datasetUserId = (int) $dataset->user_id;
         $datasetTeamId = (int) $dataset->team_id;
 
+        $this->cleanToolDatasetVersion($datasetVersionId, $type, (int)$dataset->id);
+
         $data = null;
         if ($metadata->metadata_type === 'OBJECT') {
             $data = json_decode($metadata->metadata, true);
@@ -120,6 +124,29 @@ class ExtractToolsFromMetadata implements ShouldQueue
         }
     }
 
+    public function cleanToolDatasetVersion(int $datasetVersionId, string $type, int $datasetId): void
+    {
+        $datasetVersionHasTools = DatasetVersionHasTool::where([
+            'dataset_version_id' => $datasetVersionId,
+            'link_type' => $type,
+        ])->get();
+
+        foreach($datasetVersionHasTools as $datasetVersionHasTool) {
+            $toolId = $datasetVersionHasTool->tool_id;
+
+            DatasetVersionHasTool::where([
+                'dataset_version_id' => $datasetVersionId,
+                'link_type' => $type,
+                'tool_id' => $toolId,
+            ])
+            ->delete();
+
+            $this->indexElasticTools((int) $toolId);
+        }
+
+        $this->reindexElastic((int) $datasetId);
+    }
+
     public function createLinkToolDatasetVersion(int $toolId, int $datasetVersionId, string $type): ?DatasetVersionHasTool
     {
         $check = DatasetVersionHasTool::where([
@@ -130,11 +157,13 @@ class ExtractToolsFromMetadata implements ShouldQueue
             ->first();
 
         if (is_null($check)) {
-            return DatasetVersionHasTool::create([
+            DatasetVersionHasTool::create([
                 'tool_id' => $toolId,
                 'dataset_version_id' => $datasetVersionId,
                 'link_type' => $type,
             ]);
+            $this->indexElasticTools((int) $toolId);
+            return null;
         }
 
         return null;

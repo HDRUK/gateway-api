@@ -96,7 +96,7 @@ class SearchTest extends TestCase
      */
     public function test_datasets_search_with_success(): void
     {
-        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets?perPage=1", ["query" => "asthma"], ['Accept' => 'application/json']);
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets?per_page=1", ["query" => "asthma"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [

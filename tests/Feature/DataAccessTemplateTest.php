@@ -719,7 +719,7 @@ class DataAccessTemplateTest extends TestCase
             'api/v1/dar/templates',
             [
                 'team_id' => 1,
-                'published' => false,
+                'published' => true,
                 'locked' => false,
             ],
             $this->header
@@ -744,8 +744,46 @@ class DataAccessTemplateTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals(false, $content['data']['published']);
+        $this->assertEquals(true, $content['data']['published']);
         $this->assertEquals(true, $content['data']['locked']);
+
+        // Create a second template for the team
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/templates',
+            [
+                'team_id' => 1,
+                'published' => false,
+                'locked' => false,
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $content = $response->decodeResponseJson();
+        $templateId2 = $content['data'];
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/dar/templates/' . $templateId2,
+            [
+                'published' => true,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $this->assertEquals(true, $content['data']['published']);
+
+        // test that first template was marked as inactive when second was made active
+        $response = $this->get('api/v1/dar/templates/' . $templateId, $this->header);
+        $content = $response->decodeResponseJson();
+        $this->assertEquals(false, $content['data']['published']);
     }
 
     /**
