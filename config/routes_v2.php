@@ -1059,7 +1059,7 @@ return [
         ],
     ],
     [
-        'name' => 'publications.edit',
+        'name' => 'tools.edit',
         'method' => 'patch',
         'path' => '/users/{userId}/tools/{id}',
         'methodController' => 'UserToolController@edit',
@@ -1071,7 +1071,7 @@ return [
         ],
     ],
     [
-        'name' => 'publications.destroy',
+        'name' => 'tools.destroy',
         'method' => 'delete',
         'path' => '/users/{userId}/tools/{id}',
         'methodController' => 'UserToolController@destroy',
