@@ -30,6 +30,10 @@ class UpdateDatasetLinkageGat6985 extends Command
         $datasets = Dataset::select(['id', 'status'])->get();
 
         foreach ($datasets as $dataset) {
+            if ($dataset->id !== 958) {
+                continue;
+            }
+
             $this->info("dataset with ID: {$dataset->id} has status: {$dataset->status}");
             $latestVersion = $dataset->latestVersion();
             $datasetVersionId = $latestVersion->id;
