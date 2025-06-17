@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -212,4 +213,10 @@ class DatasetVersion extends Model
         short_title as shortTitle");
     }
 
+    public function dataset(): BelongsTo
+    {
+        return $this->belongsTo(Dataset::class, 'dataset_id', 'id')
+            ->where('status', 'ACTIVE')
+            ->select(['id', 'status']);
+    }
 }
