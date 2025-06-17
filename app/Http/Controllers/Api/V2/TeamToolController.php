@@ -28,7 +28,6 @@ use App\Http\Requests\V2\Tool\EditToolByTeamIdById;
 use App\Http\Requests\V2\Tool\DeleteToolByTeamIdById;
 use App\Http\Requests\V2\Tool\GetToolByTeamAndStatus;
 use App\Http\Requests\V2\Tool\UpdateToolByTeamIdById;
-use App\Http\Requests\V2\Tool\GetToolByTeamByIdByStatus;
 use App\Http\Requests\V2\Tool\GetToolCountByTeamAndStatus;
 
 class TeamToolController extends Controller
@@ -278,94 +277,6 @@ class TeamToolController extends Controller
     {
         try {
             $tool = $this->getToolByTeamIdAndById($teamId, $id, true);
-
-            Auditor::log([
-                'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Tool get ' . $id,
-            ]);
-
-            return response()->json([
-                'message' => 'success',
-                'data' => $tool,
-            ], 200);
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Get(
-     *    path="/api/v2/teams/{teamId}/tools/{id}/status/{status}",
-     *    operationId="fetch_tools_by_team_and_by_id_by_status_v2",
-     *    tags={"Tool"},
-     *    summary="TeamToolController@showStatus",
-     *    description="Get tool by team id and by id by status",
-     *    security={{"bearerAuth":{}}},
-     *    @OA\Parameter(
-     *       name="teamId",
-     *       in="path",
-     *       description="team id",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema( type="integer",  description="team id" ),
-     *    ),
-     *    @OA\Parameter(
-     *       name="id",
-     *       in="path",
-     *       description="tool id",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema( type="integer", description="tool id" ),
-     *    ),
-     *    @OA\Parameter(
-     *       name="status",
-     *       in="path",
-     *       description="tool status",
-     *       required=true,
-     *       example="active",
-     *       @OA\Schema( type="string", description="tool status" ),
-     *    ),
-     *    @OA\Response(
-     *       response="200",
-     *       description="Success response",
-     *       @OA\JsonContent(
-     *          @OA\Property( property="message", type="string", example="success" ),
-     *          @OA\Property( property="data", type="array", example="[]", @OA\Items( type="array", @OA\Items() ) ),
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *       response=401,
-     *       description="Unauthorized",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="unauthorized")
-     *       )
-     *    ),
-     *    @OA\Response(
-     *       response=404,
-     *       description="Not found response",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="not found"),
-     *       ),
-     *    ),
-     * )
-     *
-     * @param  GetToolByTeamByIdByStatus  $request
-     * @param  int  $teamId
-     * @param  int  $id
-     * @param  string  $status
-     * @return JsonResponse
-     */
-    public function showStatus(GetToolByTeamByIdByStatus $request, int $teamId, int $id, string $status): JsonResponse
-    {
-        try {
-            $tool = $this->getToolByTeamIdAndByIdByStatus($teamId, $id, $status);
 
             Auditor::log([
                 'action_type' => 'GET',
