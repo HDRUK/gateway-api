@@ -86,12 +86,16 @@ class UserToolController extends Controller
     {
         try {
             $perPage = request('per_page', Config::get('constants.per_page'));
+            $filterTitle = request('title', null);
 
             // Perform query for the matching tools with filters, sorting, and pagination
             $tools = Tool::where([
                 'user_id' => $userId,
                 'status' => strtoupper($status),
             ])
+            ->when($filterTitle, function ($query) use ($filterTitle) {
+                return $query->where('name', 'like', '%' . $filterTitle . '%');
+            })
             ->with([
                 'user',
                 'tag',
