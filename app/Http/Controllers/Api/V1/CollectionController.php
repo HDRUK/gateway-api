@@ -1168,6 +1168,7 @@ class CollectionController extends Controller
                 });
             },
             'datasetVersions' => function ($query) use ($trimmed) {
+                $query->whereHas('dataset', fn ($q) => $q->where('status', 'ACTIVE'));
                 $query->when($trimmed, function ($q) {
                     $q->selectRaw('
                         dataset_versions.id,dataset_versions.dataset_id,
@@ -1178,13 +1179,6 @@ class CollectionController extends Controller
                     ');
                 });
             },
-            /*'userDatasets', //not sure what this is, legacy code? commenting out for now - Calum 17/10/24
-            'userTools',
-            'userPublications',
-            'applicationDatasets',
-            'applicationTools',
-            'applicationPublications',
-            */
             'team',
         ])
         ->withTrashed()
