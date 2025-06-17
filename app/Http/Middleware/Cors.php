@@ -19,7 +19,7 @@ class Cors
         $headers = [
             'Access-Control-Allow-Credentials' => 'true',
             'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization',
+            'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization, x-request-session-id',
         ];
 
         if (in_array($origin, $allowedOrigins)) {
