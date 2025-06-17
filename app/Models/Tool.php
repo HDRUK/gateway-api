@@ -69,6 +69,7 @@ class Tool extends Model
     ];
 
     protected static array $sortableColumns = [
+        'created_at',
         'updated_at',
         'name',
     ];
