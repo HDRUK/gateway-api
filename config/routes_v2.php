@@ -913,6 +913,19 @@ return [
         ],
     ],
     [
+        'name' => 'tools.get.count',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/tools/count/{field}',
+        'methodController' => 'TeamToolController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
         'name' => 'tools.get.one',
         'method' => 'get',
         'path' => '/teams/{teamId}/tools/{id}',
