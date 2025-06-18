@@ -38,8 +38,6 @@ class DatasetIntegrationTest extends TestCase
     private $integration = null;
 
     protected $header = [];
-    protected $adminHeader = [];
-    protected $superUserJwt = null;
 
 
     /**
@@ -82,12 +80,9 @@ class DatasetIntegrationTest extends TestCase
             ]);
         }
 
-        $this->authorisationUser();
-        $this->superUserJwt = $this->getAuthorisationJwt();
-        $this->adminHeader = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $this->superUserJwt,
-        ];
+        // Add Integration auth keys to the header generated in commonSetUp
+        $this->header['x-application-id'] = $this->integration->app_id;
+        $this->header['x-client-id'] = $this->integration->client_id;
 
         // Lengthy process, but a more consistent representation
         // of an incoming dataset
