@@ -137,7 +137,7 @@ class UserToolController extends Controller
         }
     }
 
-/**
+    /**
      * @OA\Get(
      *    path="/api/v2/users/{userId}/tools/count/{field}",
      *    operationId="count_user_unique_fields_tools_v2",
