@@ -292,6 +292,10 @@ class TeamToolController extends Controller
                 'message' => 'success',
                 'data' => $tool,
             ], 200);
+        } catch (NotFoundException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',

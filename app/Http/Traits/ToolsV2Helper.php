@@ -17,89 +17,12 @@ use App\Models\CollectionHasTool;
 use App\Models\PublicationHasTool;
 use App\Models\ToolHasTypeCategory;
 use App\Models\DatasetVersionHasTool;
+use App\Exceptions\NotFoundException;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
 
 trait ToolsV2Helper
 {
-    public function getToolByUserIdAndByIdByStatus(int $userId, int $toolId, string $status)
-    {
-        $tool = Tool::with([
-            'user',
-            'tag',
-            'team',
-            'license',
-            'programmingLanguages',
-            'programmingPackages',
-            'typeCategory',
-            'publications' => function ($query) use ($status) {
-                $query->where('status', strtoupper($status));
-            },
-            'durs' => function ($query) use ($status) {
-                $query->where('status', strtoupper($status));
-            },
-            'collections' => function ($query) use ($status) {
-                $query->where('status', strtoupper($status));
-            },
-            'category',
-        ])
-        ->where([
-            'user_id' => $userId,
-            'id' => $toolId,
-            'status' => strtoupper($status),
-        ])
-        ->first();
-
-        if (is_null($tool)) {
-            return null;
-        }
-
-        $tool->name = html_entity_decode($tool->name);
-        $tool->description = html_entity_decode($tool->description);
-        $tool->results_insights = html_entity_decode($tool->results_insights);
-        $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
-        return $tool;
-    }
-
-    public function getToolByTeamIdAndByIdByStatus(int $teamId, int $toolId, string $status)
-    {
-        $tool = Tool::with([
-            'user',
-            'tag',
-            'team',
-            'license',
-            'programmingLanguages',
-            'programmingPackages',
-            'typeCategory',
-            'publications' => function ($query) use ($status) {
-                $query->where('status', strtoupper($status));
-            },
-            'durs' => function ($query) use ($status) {
-                $query->where('status', strtoupper($status));
-            },
-            'collections' => function ($query) use ($status) {
-                $query->where('status', strtoupper($status));
-            },
-            'category',
-        ])
-        ->where([
-            'team_id' => $teamId,
-            'id' => $toolId,
-            'status' => strtoupper($status),
-        ])
-        ->first();
-
-        if (is_null($tool)) {
-            return null;
-        }
-
-        $tool->name = html_entity_decode($tool->name);
-        $tool->description = html_entity_decode($tool->description);
-        $tool->results_insights = html_entity_decode($tool->results_insights);
-        $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
-        return $tool;
-    }
-
     public function getToolByUserIdAndById(int $userId, int $toolId, bool $onlyActive = false)
     {
         $tool = Tool::with([
@@ -132,6 +55,9 @@ trait ToolsV2Helper
             'id' => $toolId,
             ])
         ->first();
+        if (!$tool) {
+            throw new NotFoundException();
+        }
 
         $tool->name = html_entity_decode($tool->name);
         $tool->description = html_entity_decode($tool->description);
@@ -172,6 +98,9 @@ trait ToolsV2Helper
             'id' => $toolId,
             ])
         ->first();
+        if (!$tool) {
+            throw new NotFoundException();
+        }
 
         $tool->name = html_entity_decode($tool->name);
         $tool->description = html_entity_decode($tool->description);
@@ -182,6 +111,7 @@ trait ToolsV2Helper
 
     public function getToolById(int $toolId, bool $onlyActive = false)
     {
+        // try {
         $tool = Tool::with([
             'user',
             'tag',
@@ -209,6 +139,9 @@ trait ToolsV2Helper
         ])
         ->where(['id' => $toolId])
         ->first();
+        if (!$tool) {
+            throw new NotFoundException();
+        }
 
         $tool->name = html_entity_decode($tool->name);
         $tool->description = html_entity_decode($tool->description);

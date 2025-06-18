@@ -272,6 +272,10 @@ class ToolController extends Controller
                 'message' => 'success',
                 'data' => $tool,
             ], 200);
+        } catch (NotFoundException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -618,6 +622,10 @@ class ToolController extends Controller
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $this->getToolById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (NotFoundException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -811,6 +819,10 @@ class ToolController extends Controller
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $this->getToolById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (NotFoundException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
