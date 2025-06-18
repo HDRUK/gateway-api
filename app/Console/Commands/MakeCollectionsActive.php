@@ -24,17 +24,12 @@ class MakeCollectionsActive extends Command
     protected $description = 'Command description';
 
 
-    public function __construct()
-    {
-        parent::__construct();
-        $this->readMigrationFile(storage_path() . '/migration_files/collections_make_active.csv');
-    }
-
     /**
      * Execute the console command.
      */
     public function handle()
     {
+        $this->readMigrationFile(storage_path() . '/migration_files/collections_make_active.csv');
 
         $progressbar = $this->output->createProgressBar(count($this->csvData));
         foreach ($this->csvData as $csv) {

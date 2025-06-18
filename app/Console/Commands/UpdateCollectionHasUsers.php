@@ -25,17 +25,12 @@ class UpdateCollectionHasUsers extends Command
 
     private $csvData = [];
 
-    public function __construct()
-    {
-        parent::__construct();
-        $this->readMigrationFile(storage_path() . '/migration_files/production.collections.csv');
-    }
-
     /**
      * Execute the console command.
      */
     public function handle()
     {
+        $this->readMigrationFile(storage_path() . '/migration_files/production.collections.csv');
         foreach ($this->csvData as $item) {
             $collectionMongoId = strtoupper(trim($item['_id']));
             $userAdmin = User::where('is_admin', 1)->first();
