@@ -323,8 +323,8 @@ return [
         'methodController' => 'DarIntegrationController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,dar.read.all',
+            'jwt.verify',
+            'check.access:permissions,dar.read.all',
         ],
         'constraint' => [],
     ],
@@ -335,8 +335,8 @@ return [
         'methodController' => 'DarIntegrationController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,dar.read.all',
+            'jwt.verify',
+            'check.access:permissions,dar.read.all',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -349,9 +349,9 @@ return [
         'methodController' => 'DarIntegrationController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
+            'jwt.verify',
             'sanitize.input',
-            'check.integration.access:permissions,dar.update',
+            'check.access:permissions,dar.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -364,9 +364,9 @@ return [
         'methodController' => 'DarIntegrationController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
+            'jwt.verify',
             'sanitize.input',
-            'check.integration.access:permissions,dar.update',
+            'check.access:permissions,dar.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -640,8 +640,8 @@ return [
         'methodController' => 'IntegrationToolController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,tools.read',
+            'jwt.verify',
+            'check.access:permissions,tools.read',
             'sanitize.input',
         ],
         'constraint' => [],
@@ -653,8 +653,8 @@ return [
         'methodController' => 'IntegrationToolController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,tools.read',
+            'jwt.verify',
+            'check.access:permissions,tools.read',
             'sanitize.input',
         ],
         'constraint' => [
@@ -668,8 +668,8 @@ return [
         'methodController' => 'IntegrationToolController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,tools.create',
+            'jwt.verify',
+            'check.access:permissions,tools.create',
             'sanitize.input',
         ],
         'constraint' => [],
@@ -681,8 +681,8 @@ return [
         'methodController' => 'IntegrationToolController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,tools.update',
+            'jwt.verify',
+            'check.access:permissions,tools.update',
             'sanitize.input',
         ],
         'constraint' => [
@@ -696,8 +696,8 @@ return [
         'methodController' => 'IntegrationToolController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,tools.update',
+            'jwt.verify',
+            'check.access:permissions,tools.update',
             'sanitize.input',
         ],
         'constraint' => [
@@ -711,8 +711,8 @@ return [
         'methodController' => 'IntegrationToolController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,tools.delete',
+            'jwt.verify',
+            'check.access:permissions,tools.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1515,8 +1515,8 @@ return [
         'methodController' => 'IntegrationCollectionController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,collections.read',
+            'jwt.verify',
+            'check.access:permissions,collections.read',
         ],
         'constraint' => [],
     ],
@@ -1527,8 +1527,8 @@ return [
         'methodController' => 'IntegrationCollectionController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,collections.read',
+            'jwt.verify',
+            'check.access:permissions,collections.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1541,8 +1541,8 @@ return [
         'methodController' => 'IntegrationCollectionController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,collections.create',
+            'jwt.verify',
+            'check.access:permissions,collections.create',
         ],
         'constraint' => [],
     ],
@@ -1553,8 +1553,8 @@ return [
         'methodController' => 'IntegrationCollectionController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,collections.update',
+            'jwt.verify',
+            'check.access:permissions,collections.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1567,8 +1567,8 @@ return [
         'methodController' => 'IntegrationCollectionController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,collections.update',
+            'jwt.verify',
+            'check.access:permissions,collections.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1581,8 +1581,8 @@ return [
         'methodController' => 'IntegrationCollectionController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,collections.delete',
+            'jwt.verify',
+            'check.access:permissions,collections.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1682,8 +1682,8 @@ return [
         'methodController' => 'IntegrationDurController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,dur.read',
+            'jwt.verify',
+            'check.access:permissions,dur.read',
         ],
         'constraint' => [],
     ],
@@ -1694,8 +1694,8 @@ return [
         'methodController' => 'IntegrationDurController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,dur.read',
+            'jwt.verify',
+            'check.access:permissions,dur.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1708,8 +1708,8 @@ return [
         'methodController' => 'IntegrationDurController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,dur.create',
+            'jwt.verify',
+            'check.access:permissions,dur.create',
             'sanitize.input',
         ],
         'constraint' => [],
@@ -1721,8 +1721,8 @@ return [
         'methodController' => 'IntegrationDurController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,dur.update',
+            'jwt.verify',
+            'check.access:permissions,dur.update',
             'sanitize.input',
         ],
         'constraint' => [
@@ -1736,8 +1736,8 @@ return [
         'methodController' => 'IntegrationDurController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,dur.update',
+            'jwt.verify',
+            'check.access:permissions,dur.update',
             'sanitize.input',
         ],
         'constraint' => [
@@ -1751,8 +1751,8 @@ return [
         'methodController' => 'IntegrationDurController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,dur.delete',
+            'jwt.verify',
+            'check.access:permissions,dur.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2263,8 +2263,8 @@ return [
         'methodController' => 'IntegrationDatasetController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,datasets.read',
+            'jwt.verify',
+            'check.access:permissions,datasets.read',
         ],
         'constraint' => [],
     ],
@@ -2275,8 +2275,8 @@ return [
         'methodController' => 'IntegrationDatasetController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,datasets.read',
+            'jwt.verify',
+            'check.access:permissions,datasets.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2289,8 +2289,8 @@ return [
         'methodController' => 'IntegrationDatasetController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,datasets.create',
+            'jwt.verify',
+            'check.access:permissions,datasets.create',
             'sanitize.input',
         ],
         'constraint' => [],
@@ -2302,8 +2302,8 @@ return [
         'methodController' => 'IntegrationDatasetController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,datasets.update',
+            'jwt.verify',
+            'check.access:permissions,datasets.update',
             'sanitize.input',
         ],
         'constraint' => [],
@@ -2315,8 +2315,8 @@ return [
         'methodController' => 'IntegrationDatasetController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
-            'check.integration.access:permissions,datasets.delete',
+            'jwt.verify',
+            'check.access:permissions,datasets.delete',
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -2329,7 +2329,7 @@ return [
         'methodController' => 'IntegrationDatasetController@datasetTest',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'integration.auth',
+            'jwt.verify',
             'sanitize.input',
         ],
         'constraint' => [],
