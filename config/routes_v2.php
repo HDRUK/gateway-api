@@ -537,6 +537,17 @@ return [
         ],
     ],
 
+    // v2 data uses
+    [
+        'name' => 'durs',
+        'method' => 'get',
+        'path' => '/dur',
+        'methodController' => 'DurController@indexActive',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+
     // publications
     [
         'name' => 'publications.index',
