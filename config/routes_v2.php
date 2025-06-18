@@ -890,7 +890,7 @@ return [
 
     // teams & tools
     [
-        'name' => 'tools.get.active',
+        'name' => 'team.tools.get.active',
         'method' => 'get',
         'path' => '/teams/{teamId}/tools',
         'methodController' => 'TeamToolController@indexStatus',
@@ -901,7 +901,7 @@ return [
         ],
     ],
     [
-        'name' => 'tools.get.active',
+        'name' => 'team.tools.get.active',
         'method' => 'get',
         'path' => '/teams/{teamId}/tools/status/{status}',
         'methodController' => 'TeamToolController@indexStatus',
@@ -913,7 +913,20 @@ return [
         ],
     ],
     [
-        'name' => 'tools.get.one',
+        'name' => 'team.tools.get.count',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/tools/count/{field}',
+        'methodController' => 'TeamToolController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.tools.get.one',
         'method' => 'get',
         'path' => '/teams/{teamId}/tools/{id}',
         'methodController' => 'TeamToolController@show',
@@ -925,20 +938,7 @@ return [
         ],
     ],
     [
-        'name' => 'tools.get.one',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/tools/{id}/status/{status}',
-        'methodController' => 'TeamToolController@showStatus',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => ['jwt.verify'],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'id' => '[0-9]+',
-            'status' => 'active|draft|archived'
-        ],
-    ],
-    [
-        'name' => 'tools.create',
+        'name' => 'team.tools.create',
         'method' => 'post',
         'path' => '/teams/{teamId}/tools',
         'methodController' => 'TeamToolController@store',
@@ -949,7 +949,7 @@ return [
         ],
     ],
     [
-        'name' => 'tools.update',
+        'name' => 'team.tools.update',
         'method' => 'put',
         'path' => '/teams/{teamId}/tools/{id}',
         'methodController' => 'TeamToolController@update',
@@ -961,7 +961,7 @@ return [
         ],
     ],
     [
-        'name' => 'publications.edit',
+        'name' => 'team.tools.edit',
         'method' => 'patch',
         'path' => '/teams/{teamId}/tools/{id}',
         'methodController' => 'TeamToolController@edit',
@@ -973,7 +973,7 @@ return [
         ],
     ],
     [
-        'name' => 'publications.destroy',
+        'name' => 'team.tools.destroy',
         'method' => 'delete',
         'path' => '/teams/{teamId}/tools/{id}',
         'methodController' => 'TeamToolController@destroy',
@@ -988,7 +988,7 @@ return [
 
     // users & tools
     [
-        'name' => 'tools.get.active',
+        'name' => 'user.tools.get.active',
         'method' => 'get',
         'path' => '/users/{userId}/tools',
         'methodController' => 'UserToolController@indexStatus',
@@ -999,7 +999,7 @@ return [
         ],
     ],
     [
-        'name' => 'tools.get.active',
+        'name' => 'user.tools.get.active',
         'method' => 'get',
         'path' => '/users/{userId}/tools/status/{status}',
         'methodController' => 'UserToolController@indexStatus',
@@ -1010,8 +1010,21 @@ return [
             'status' => 'active|draft|archived'
         ],
     ],
+        [
+        'name' => 'user.tools.get.count',
+        'method' => 'get',
+        'path' => '/users/{userId}/tools/count/{field}',
+        'methodController' => 'UserToolController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
     [
-        'name' => 'tools.get.one',
+        'name' => 'user.tools.get.one',
         'method' => 'get',
         'path' => '/users/{userId}/tools/{id}',
         'methodController' => 'UserToolController@show',
@@ -1023,20 +1036,7 @@ return [
         ],
     ],
     [
-        'name' => 'tools.get.one',
-        'method' => 'get',
-        'path' => '/users/{userId}/tools/{id}/status/{status}',
-        'methodController' => 'UserToolController@showStatus',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => ['jwt.verify'],
-        'constraint' => [
-            'userId' => '[0-9]+',
-            'id' => '[0-9]+',
-            'status' => 'active|draft|archived'
-        ],
-    ],
-    [
-        'name' => 'tools.create',
+        'name' => 'user.tools.create',
         'method' => 'post',
         'path' => '/users/{userId}/tools',
         'methodController' => 'UserToolController@store',
@@ -1047,7 +1047,7 @@ return [
         ],
     ],
     [
-        'name' => 'tools.update',
+        'name' => 'user.tools.update',
         'method' => 'put',
         'path' => '/users/{userId}/tools/{id}',
         'methodController' => 'UserToolController@update',
@@ -1059,7 +1059,7 @@ return [
         ],
     ],
     [
-        'name' => 'publications.edit',
+        'name' => 'user.tools.edit',
         'method' => 'patch',
         'path' => '/users/{userId}/tools/{id}',
         'methodController' => 'UserToolController@edit',
@@ -1071,7 +1071,7 @@ return [
         ],
     ],
     [
-        'name' => 'publications.destroy',
+        'name' => 'user.tools.destroy',
         'method' => 'delete',
         'path' => '/users/{userId}/tools/{id}',
         'methodController' => 'UserToolController@destroy',
