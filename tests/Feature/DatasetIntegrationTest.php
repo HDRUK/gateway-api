@@ -38,8 +38,6 @@ class DatasetIntegrationTest extends TestCase
     private $integration = null;
 
     protected $header = [];
-    protected $adminHeader = [];
-    protected $superUserJwt = null;
 
     /**
      * Set up the database
