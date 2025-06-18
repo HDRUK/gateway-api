@@ -1,3 +1,9 @@
+## [2.13.0](https://github.com/HDRUK/gateway-api/compare/v2.12.0...v2.13.0) (2025-06-18)
+
+### ✨ Features
+
+* **GAT-6927:** Remove cache (redis) from feature flagging (#1262) ([ec1b639](https://github.com/HDRUK/gateway-api/commit/ec1b639d33ac6defc53afeae5ced45620548bddb)), closes [GAT-6927](GAT-6927)
+
 ## [2.12.0](https://github.com/HDRUK/gateway-api/compare/v2.11.0...v2.12.0) (2025-06-16)
 
 ### ✨ Features
