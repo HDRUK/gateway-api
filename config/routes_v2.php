@@ -340,17 +340,8 @@ return [
     [
         'name' => 'datasets',
         'method' => 'get',
-        'path' => '/datasets/count/{field}',
-        'methodController' => 'DatasetController@count',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'datasets',
-        'method' => 'get',
         'path' => '/datasets/{id}',
-        'methodController' => 'DatasetController@show',
+        'methodController' => 'DatasetController@showActive',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [],
         'constraint' => [
