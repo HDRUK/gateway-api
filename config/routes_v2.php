@@ -530,10 +530,37 @@ return [
 
     // v2 data uses
     [
-        'name' => 'durs',
+        'name' => 'durs.get.active',
         'method' => 'get',
         'path' => '/dur',
         'methodController' => 'DurController@indexActive',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'durs.get.one',
+        'method' => 'get',
+        'path' => '/dur/{id}',
+        'methodController' => 'DurController@showActive',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'durs.export',
+        'method' => 'get',
+        'path' => '/dur/export',
+        'methodController' => 'DurController@export',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'durs.exportTemplate',
+        'method' => 'get',
+        'path' => '/dur/template',
+        'methodController' => 'DurController@exportTemplate',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [],
         'constraint' => [],
