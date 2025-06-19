@@ -338,7 +338,7 @@ class DurController extends Controller
     public function showActive(GetDur $request, int $id): JsonResponse
     {
         try {
-            $dur = $this->getDurById($id);
+            $dur = $this->getActiveDurById($id);
 
             if (!empty($dur['user'])) {
                 $dur['user'] = array_intersect_key($dur['user'], array_flip(['id', 'firstname', 'lastname']));
@@ -365,6 +365,10 @@ class DurController extends Controller
                 'message' => 'success',
                 'data' => [$dur],
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (NotFoundException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -542,31 +546,38 @@ class DurController extends Controller
     }
 
     // Get a single DUR with associated items
-    private function getDurById(int $durId)
+    private function getActiveDurById(int $durId)
     {
-        $dur = Dur::where(['id' => $durId])
-            ->with([
-                'keywords',
-                'publications',
-                'tools',
-                'userDatasets' => function ($query) {
-                    $query->distinct('id');
-                },
-                'userPublications' => function ($query) {
-                    $query->distinct('id');
-                },
-                'applicationDatasets' => function ($query) {
-                    $query->distinct('id');
-                },
-                'applicationPublications' => function ($query) {
-                    $query->distinct('id');
-                },
-                'user',
-                'team',
-                'collections' => function ($query) {
-                    $query->where('status', Collection::STATUS_ACTIVE);
-                },
-            ])->first();
+        $dur = Dur::with([
+            'keywords',
+            'publications',
+            'tools',
+            'userDatasets' => function ($query) {
+                $query->distinct('id');
+            },
+            'userPublications' => function ($query) {
+                $query->distinct('id');
+            },
+            'applicationDatasets' => function ($query) {
+                $query->distinct('id');
+            },
+            'applicationPublications' => function ($query) {
+                $query->distinct('id');
+            },
+            'user',
+            'team',
+            'collections' => function ($query) {
+                $query->where('status', Collection::STATUS_ACTIVE);
+            },
+        ])
+        ->where([
+            'id' => $durId,
+            'status' => 'ACTIVE'
+            ])
+        ->first();
+        if (!$dur) {
+            throw new NotFoundException();
+        }
 
         $userDatasets = $dur->userDatasets;
         $userPublications = $dur->userPublications;
