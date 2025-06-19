@@ -16,11 +16,6 @@ class FeatureServiceProvider extends ServiceProvider
         $this->app->booted(function () {
             logger()->info('Starting features');
 
-            $defaultTempFlags = [
-                        'SDEConciergeServiceEnquiry' => ['enabled' => env('SDEConciergeServiceEnquiry', true)],
-                        'Aliases' => ['enabled' => true],
-            ];
-
             $url = env('FEATURE_FLAGGING_CONFIG_URL');
 
             if (app()->environment('testing') || !$url) {
