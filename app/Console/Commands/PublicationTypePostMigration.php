@@ -25,17 +25,12 @@ class PublicationTypePostMigration extends Command
      */
     protected $description = 'CLI command to post-process migrated publications from mk1 mongo db. Updates Publication::publication_type with values from file by matching publication titles';
 
-    public function __construct()
-    {
-        parent::__construct();
-        $this->csvData = $this->readMigrationFile(storage_path() . '/migration_files/mapped_publications_types.csv');
-    }
-
     /**
      * Execute the console command.
      */
     public function handle()
     {
+        $this->csvData = $this->readMigrationFile(storage_path() . '/migration_files/mapped_publications_types.csv');
         $reindex = $this->argument('reindex');
         $reindexEnabled = $reindex !== null;
 

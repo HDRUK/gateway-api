@@ -31,17 +31,12 @@ class UpdateMissingPublications extends Command
 
     private $csvData = [];
 
-    public function __construct()
-    {
-        parent::__construct();
-        $this->readMigrationFile(storage_path() . '/migration_files/finding.publications.update.csv');
-    }
-
     /**
      * Execute the console command.
      */
     public function handle()
     {
+        $this->readMigrationFile(storage_path() . '/migration_files/finding.publications.update.csv');
         $userAdmin = User::where('is_admin', 1)->first();
 
         $progressbar = $this->output->createProgressBar(count($this->csvData));
