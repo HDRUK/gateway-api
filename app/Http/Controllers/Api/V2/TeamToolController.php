@@ -48,7 +48,7 @@ class TeamToolController extends Controller
      *     operationId="fetch_all_tool_by_team_and_status_v2",
      *     tags={"Tool"},
      *     summary="TeamToolController@indexStatus",
-     *     description="Returns a list of a teams tools",
+     *     description="Returns a list of a teams tools with given status",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="teamId",
@@ -126,7 +126,7 @@ class TeamToolController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Tool get all',
+                'description' => 'Tool get all by status',
             ]);
 
             return response()->json(
@@ -280,7 +280,7 @@ class TeamToolController extends Controller
     public function show(GetToolByTeamAndId $request, int $teamId, int $id): JsonResponse
     {
         try {
-            $tool = $this->getToolByTeamIdAndById($teamId, $id, true);
+            $tool = $this->getToolById($id, teamId: $teamId, onlyActiveRelated: true);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -291,7 +291,7 @@ class TeamToolController extends Controller
             return response()->json([
                 'message' => 'success',
                 'data' => $tool,
-            ], 200);
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (NotFoundException $e) {
             return response()->json([
                 'message' => $e->getMessage(),

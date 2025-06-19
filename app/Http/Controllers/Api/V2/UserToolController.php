@@ -260,7 +260,7 @@ class UserToolController extends Controller
     public function show(GetToolByUserAndId $request, int $userId, int $id): JsonResponse
     {
         try {
-            $tool = $this->getToolByUserIdAndById($userId, $id, true);
+            $tool = $this->getToolById($id, user_id: $userId, onlyAcitvRelated: true);
 
             Auditor::log([
                 'action_type' => 'GET',

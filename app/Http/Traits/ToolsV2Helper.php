@@ -23,7 +23,7 @@ use App\Models\ToolHasProgrammingLanguage;
 
 trait ToolsV2Helper
 {
-    public function getToolByUserIdAndById(int $userId, int $toolId, bool $onlyActive = false)
+    public function getToolById(int $toolId, ?int $teamId, ?int $userId, bool $onlyActiveRelated = false)
     {
         $tool = Tool::with([
             'user',
@@ -33,111 +33,30 @@ trait ToolsV2Helper
             'programmingLanguages',
             'programmingPackages',
             'typeCategory',
-            'publications' => function ($query) use ($onlyActive) {
-                if ($onlyActive) {
+            'publications' => function ($query) use ($onlyActiveRelated) {
+                if ($onlyActiveRelated) {
                     $query->where('status', Publication::STATUS_ACTIVE);
                 }
             },
-            'durs' => function ($query) use ($onlyActive) {
-                if ($onlyActive) {
+            'durs' => function ($query) use ($onlyActiveRelated) {
+                if ($onlyActiveRelated) {
                     $query->where('status', Dur::STATUS_ACTIVE);
                 }
             },
-            'collections' => function ($query) use ($onlyActive) {
-                if ($onlyActive) {
-                    $query->where('status', Collection::STATUS_ACTIVE);
-                }
-            },
-            'category',
-        ])
-        ->where([
-            'user_id' => $userId,
-            'id' => $toolId,
-            ])
-        ->first();
-        if (!$tool) {
-            throw new NotFoundException();
-        }
-
-        $tool->name = html_entity_decode($tool->name);
-        $tool->description = html_entity_decode($tool->description);
-        $tool->results_insights = html_entity_decode($tool->results_insights);
-        $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
-        return $tool;
-    }
-
-    public function getToolByTeamIdAndById(int $teamId, int $toolId, bool $onlyActive = false)
-    {
-        $tool = Tool::with([
-            'user',
-            'tag',
-            'team',
-            'license',
-            'programmingLanguages',
-            'programmingPackages',
-            'typeCategory',
-            'publications' => function ($query) use ($onlyActive) {
-                if ($onlyActive) {
-                    $query->where('status', Publication::STATUS_ACTIVE);
-                }
-            },
-            'durs' => function ($query) use ($onlyActive) {
-                if ($onlyActive) {
-                    $query->where('status', Dur::STATUS_ACTIVE);
-                }
-            },
-            'collections' => function ($query) use ($onlyActive) {
-                if ($onlyActive) {
-                    $query->where('status', Collection::STATUS_ACTIVE);
-                }
-            },
-            'category',
-        ])
-        ->where([
-            'team_id' => $teamId,
-            'id' => $toolId,
-            ])
-        ->first();
-        if (!$tool) {
-            throw new NotFoundException();
-        }
-
-        $tool->name = html_entity_decode($tool->name);
-        $tool->description = html_entity_decode($tool->description);
-        $tool->results_insights = html_entity_decode($tool->results_insights);
-        $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
-        return $tool;
-    }
-
-    public function getToolById(int $toolId, bool $onlyActive = false)
-    {
-        // try {
-        $tool = Tool::with([
-            'user',
-            'tag',
-            'team',
-            'license',
-            'programmingLanguages',
-            'programmingPackages',
-            'typeCategory',
-            'publications' => function ($query) use ($onlyActive) {
-                if ($onlyActive) {
-                    $query->where('status', Publication::STATUS_ACTIVE);
-                }
-            },
-            'durs' => function ($query) use ($onlyActive) {
-                if ($onlyActive) {
-                    $query->where('status', Dur::STATUS_ACTIVE);
-                }
-            },
-            'collections' => function ($query) use ($onlyActive) {
-                if ($onlyActive) {
+            'collections' => function ($query) use ($onlyActiveRelated) {
+                if ($onlyActiveRelated) {
                     $query->where('status', Collection::STATUS_ACTIVE);
                 }
             },
             'category',
         ])
         ->where(['id' => $toolId])
+        ->when($teamId, function ($query) use ($teamId) {
+            return $query->where(['team_id' => $teamId]);
+        })
+        ->when($userId, function ($query) use ($userId) {
+            return $query->where(['user_id' => $userId]);
+        })
         ->first();
         if (!$tool) {
             throw new NotFoundException();

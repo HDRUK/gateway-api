@@ -260,7 +260,7 @@ class ToolController extends Controller
     public function show(GetTool $request, int $id): JsonResponse
     {
         try {
-            $tool = $this->getToolById($id, true);
+            $tool = $this->getToolById($id, onlyActiveRelated: true);
 
             Auditor::log([
                 'action_type' => 'GET',
