@@ -41,6 +41,68 @@ class DurTest extends TestCase
     public const TEST_URL_TEAM = '/api/v1/teams';
     public const TEST_URL_NOTIFICATION = '/api/v1/notifications';
     public const TEST_URL_USER = '/api/v1/users';
+    public const EXPECTED_DUR_RESPONSE_DATA = [
+                'id',
+                'non_gateway_datasets',
+                'non_gateway_applicants',
+                'funders_and_sponsors',
+                'other_approval_committees',
+                'gateway_outputs_tools',
+                'gateway_outputs_papers',
+                'non_gateway_outputs',
+                'project_title',
+                'project_id_text',
+                'organisation_name',
+                'organisation_sector',
+                'lay_summary',
+                'technical_summary',
+                'latest_approval_date',
+                'manual_upload',
+                'rejection_reason',
+                'sublicence_arrangements',
+                'public_benefit_statement',
+                'data_sensitivity_level',
+                'project_start_date',
+                'project_end_date',
+                'access_date',
+                'accredited_researcher_status',
+                'confidential_data_description',
+                'dataset_linkage_description',
+                'duty_of_confidentiality',
+                'legal_basis_for_data_article6',
+                'legal_basis_for_data_article9',
+                'national_data_optout',
+                'organisation_id',
+                'privacy_enhancements',
+                'request_category_type',
+                'request_frequency',
+                'access_type',
+                'mongo_object_dar_id',
+                'enabled',
+                'last_activity',
+                'counter',
+                'mongo_object_id',
+                'mongo_id',
+                'user_id',
+                'team_id',
+                'created_at',
+                'updated_at',
+                'datasets' => [
+                    0 => [
+                        'id',
+                        'shortTitle',
+                    ]
+                ],
+                'publications',
+                'tools',
+                'keywords',
+                'applications',
+                'team',
+                'user',
+                'application_id',
+                'applications',
+                'status',
+            ];
 
     protected $metadata;
     protected $metadataAlt;
@@ -531,7 +593,6 @@ class DurTest extends TestCase
                 $responseDeleteDur->assertJsonStructure([
                     'message'
                 ]);
-                var_dump($responseDeleteDur->decodeResponseJson());
                 $responseDeleteDur->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
 
                 $responseDeleteDur = $this->json(
@@ -564,6 +625,154 @@ class DurTest extends TestCase
             // delete team
             $this->deleteTeam($i);
         }
+    }
+
+    /**
+     * Get Dataset by Id with success
+     *
+     * @return void
+     */
+    public function test_get_one_dur_by_id(): void
+    {
+        // create team
+        // First create a notification to be used by the new team
+        $notificationID = $this->createNotification();
+
+        // Create the new team
+        $teamId = $this->createTeam([], [$notificationID]);
+
+        // create user
+        $userId = $this->createUser();
+
+        // Create a second team for testing
+        $teamId2 = $this->createTeam([], [$notificationID]);
+
+        // create active dataset
+        $responseCreateActiveDur = $this->json(
+            'POST',
+            $this->team_durs_url($teamId),
+            [
+                'project_title' => 'ABC',
+                'datasets' => $this->generateDatasets(),
+                'publications' => $this->generatePublications(),
+                'keywords' => $this->generateKeywords(),
+                'tools' => $this->generateTools(),
+                'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+                'latest_approval_date' => '2017-09-12T01:00:00',
+                'organisation_sector' => 'academia',
+                'status' => 'ACTIVE',
+            ],
+            $this->header,
+        );
+
+        $responseCreateActiveDur->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $contentCreateActiveDur = $responseCreateActiveDur->decodeResponseJson();
+        $activeDurId = $contentCreateActiveDur['data'];
+
+        // get one active dataset via V2 endpoint
+        $responseGetOneActive = $this->json(
+            'GET',
+            self::TEST_URL_DUR_V2 . '/' . $activeDurId,
+            [],
+            $this->header
+        );
+
+        $responseGetOneActive->assertJsonStructure([
+            'message',
+            'data' => self::EXPECTED_DUR_RESPONSE_DATA,
+        ]);
+        $responseGetOneActive->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $responseGetAll = $this->json('GET', $this->team_durs_url($teamId), [], $this->header);
+
+        // get one active DUR via V2 teams endpoint
+        $responseGetOneActive = $this->json('GET', $this->team_durs_url($teamId) . '/' . $activeDurId, [], $this->header);
+
+        $responseGetOneActive->assertJsonStructure([
+            'message',
+            'data' => self::EXPECTED_DUR_RESPONSE_DATA,
+        ]);
+        $responseGetOneActive->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // try and fail get one active dataset via V2 teams endpoint with wrong team id
+        $responseGetOneActive = $this->json(
+            'GET',
+            $this->team_durs_url($teamId2) . '/' . $activeDurId,
+            [],
+            $this->header
+        );
+        $responseGetOneActive->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+
+        // delete active DUR
+        $responseDeleteActive = $this->json(
+            'DELETE',
+            $this->team_durs_url($teamId) . '/' . $activeDurId,
+            [],
+            $this->header
+        );
+        $responseDeleteActive->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteActive->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // create draft DUR
+        $responseCreateDraft = $this->json(
+            'POST',
+            $this->team_durs_url($teamId),
+            [
+                'project_title' => 'ABC',
+                'datasets' => $this->generateDatasets(),
+                'publications' => $this->generatePublications(),
+                'keywords' => $this->generateKeywords(),
+                'tools' => $this->generateTools(),
+                'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+                'latest_approval_date' => '2017-09-12T01:00:00',
+                'organisation_sector' => 'academia',
+                'status' => 'DRAFT',
+            ],
+            $this->header,
+        );
+
+        $responseCreateDraft->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $contentCreateDraft = $responseCreateDraft->decodeResponseJson();
+        $draftDurId = $contentCreateDraft['data'];
+
+        // fail to get draft DUR via V2 endpoint because only active are returned
+        $responseGetOneDraftV2 = $this->json(
+            'GET',
+            self::TEST_URL_DUR_V2 . '/' . $draftDurId,
+            [],
+            $this->header
+        );
+        $responseGetOneDraftV2->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        $responseGetOneDraftV2->assertJson(['message' => 'Not Found']);
+
+        // get draft DUR via V2 team endpoint
+        $responseGetOneDraftV2 = $this->json(
+            'GET',
+            $this->team_durs_url($teamId) . '/' . $draftDurId,
+            [],
+            $this->header
+        );
+        $responseGetOneDraftV2->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // delete draft DUR
+        $responseDeleteDraft = $this->json(
+            'DELETE',
+            $this->team_durs_url($teamId) . '/' . $draftDurId,
+            [],
+            $this->header
+        );
+        $responseDeleteDraft->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteDraft->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // delete team
+        $this->deleteTeam($teamId);
+
+        // delete user
+        $this->deleteUser($userId);
     }
 
     private function team_durs_url(int $teamId)

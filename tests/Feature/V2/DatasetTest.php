@@ -406,7 +406,6 @@ class DatasetTest extends TestCase
                 $responseDeleteDataset->assertJsonStructure([
                     'message'
                 ]);
-                // var_dump($responseDeleteDataset->decodeResponseJson());
                 $responseDeleteDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
             } else {
                 // attempt to
