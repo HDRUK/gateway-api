@@ -19,7 +19,6 @@ return new class () extends Migration {
             $table->text('errors')->nullable();
             $table->string('session_id')->nullable();
             $table->timestamps();
-            $table->foreign('federations_id')->references('id')->on('federations')->onDelete('cascade');
         });
     }
 
