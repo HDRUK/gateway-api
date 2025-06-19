@@ -19,7 +19,7 @@ use App\Exceptions\NotFoundException;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
 
-trait DurV2Helper
+trait DurV2Helpers
 {
     public function getDurById(int $durId, ?int $teamId)
     {

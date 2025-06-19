@@ -4,7 +4,7 @@ namespace App\Http\Requests\V2\Dur;
 
 use App\Http\Requests\BaseFormRequest;
 
-class DeleteDurByTeamIdById extends BaseFormRequest
+class DeleteDurByTeamAndId extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.

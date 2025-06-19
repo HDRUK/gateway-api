@@ -13,14 +13,15 @@ use App\Models\DurHasTool;
 use Illuminate\Http\Request;
 use App\Models\DurHasKeyword;
 use App\Models\DatasetVersion;
+use App\Models\CollectionHasDur;
 use App\Http\Traits\CheckAccess;
-use App\Http\Traits\DurV2Helper;
+use App\Http\Traits\DurV2Helpers;
 use Illuminate\Http\JsonResponse;
 use App\Models\DurHasPublication;
 use App\Models\DurHasDatasetVersion;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Dur\DeleteDur;
-use App\Http\Requests\Dur\UploadDur;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\UnauthorizedException;
 use App\Http\Requests\V2\Dur\CreateDurByTeam;
 use App\Http\Requests\V2\Dur\GetDurByTeamAndId;
 use App\Http\Requests\V2\Dur\EditDurByTeamAndId;
@@ -28,17 +29,15 @@ use App\Http\Requests\V2\Dur\DeleteDurByTeamAndId;
 use App\Http\Requests\V2\Dur\UpdateDurByTeamAndId;
 use App\Http\Requests\V2\Dur\GetDurByTeamAndStatus;
 use App\Http\Requests\V2\Dur\GetDurCountByTeamAndStatus;
-use Illuminate\Support\Facades\Storage;
 use App\Http\Traits\MapOrganisationSector;
 use App\Http\Traits\RequestTransformation;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TeamDurController extends Controller
 {
     use RequestTransformation;
     use MapOrganisationSector;
     use CheckAccess;
-    use DurV2Helper;
+    use DurV2Helpers;
 
     /**
      * @OA\Get(
@@ -182,6 +181,10 @@ class TeamDurController extends Controller
     public function indexStatus(GetDurByTeamAndStatus $request, int $teamId, ?string $status = 'active'): JsonResponse
     {
         $input = $request->all();
+
+        if (!is_null($teamId)) {
+            $this->checkAccess($input, $teamId, null, 'team');
+        }
 
         try {
             $projectTitle = $request->query('project_title', null);
@@ -1180,7 +1183,7 @@ class TeamDurController extends Controller
                 $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
             }
 
-            Dur::where('id', $id)->first()->update($array);
+            Dur::where(['id' => $id, 'team_id' => $teamId])->first()->update($array);
 
             // link/unlink dur with datasets
             if (array_key_exists('datasets', $input)) {
@@ -1272,12 +1275,19 @@ class TeamDurController extends Controller
      *    )
      * )
      */
-    public function destroy(DeleteDurByTeamAndId $request, int $id): JsonResponse
+    public function destroy(DeleteDurByTeamAndId $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $initDur = Dur::where(['id' => $id, 'team_id' => $teamId])->first();
+
+        $initDur = Dur::where(['id' => $id])->first();
+        if (!$initDur) {
+            throw new NotFoundException();
+        }
         $this->checkAccess($input, $initDur->team_id, null, 'team');
+        if ($initDur->team_id !== $teamId) {
+            throw new UnauthorizedException();
+        }
 
         try {
             DurHasDatasetVersion::where(['dur_id' => $id])->delete();

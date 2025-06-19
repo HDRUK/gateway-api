@@ -566,6 +566,105 @@ return [
         'constraint' => [],
     ],
 
+    // v2 team & data uses
+    [
+        'name' => 'team.durs.indexStatus',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/dur/status/{status}',
+        'methodController' => 'TeamDurController@indexStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'team.durs.count',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/dur/count/{field}',
+        'methodController' => 'TeamDurController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'field' => 'status'
+        ],
+    ],
+    [
+        'name' => 'team.durs.get.one',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/dur/{id}',
+        'methodController' => 'TeamDurController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.durs.create',
+        'method' => 'post',
+        'path' => '/teams/{teamId}/dur',
+        'methodController' => 'TeamDurController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.durs.update',
+        'method' => 'put',
+        'path' => '/teams/{teamId}/dur/{id}',
+        'methodController' => 'TeamDurController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.durs.edit',
+        'method' => 'patch',
+        'path' => '/teams/{teamId}/dur/{id}',
+        'methodController' => 'TeamDurController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.durs.delete',
+        'method' => 'delete',
+        'path' => '/teams/{teamId}/dur/{id}',
+        'methodController' => 'TeamDurController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+
     // publications
     [
         'name' => 'publications.index',
@@ -942,7 +1041,7 @@ return [
         ],
     ],
     [
-        'name' => 'team.tools.get.count',
+        'name' => 'team.tools.count',
         'method' => 'get',
         'path' => '/teams/{teamId}/tools/count/{field}',
         'methodController' => 'TeamToolController@count',
