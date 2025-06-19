@@ -83,7 +83,6 @@ class Dur extends Model
         'request_frequency',
         'access_type',
         'mongo_object_dar_id',
-        'technicalSummary',
         'enabled',
         'last_activity',
         'counter',
