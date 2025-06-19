@@ -5,18 +5,19 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use App\Models\NamedEntities;
+use App\Models\DatasetVersion;
 use Illuminate\Support\Carbon;
+use App\Jobs\LinkageExtraction;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
+use Database\Seeders\EmailTemplateSeeder;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Queue;
 use Database\Seeders\MinimalUserSeeder;
+use Illuminate\Support\Facades\Storage;
 use Database\Seeders\SpatialCoverageSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Queue;
-use App\Jobs\LinkageExtraction;
 
 class DatasetTest extends TestCase
 {
@@ -44,6 +45,7 @@ class DatasetTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             SpatialCoverageSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
 
         $this->metadata = $this->getMetadata();
@@ -327,8 +329,6 @@ class DatasetTest extends TestCase
 
         $this->assertTrue($first->gt($second));
 
-
-
         //create an archived dataset from team1
         $specificTime = Carbon::parse('2023-02-01 00:00:00');
         Carbon::setTestNow($specificTime);
@@ -407,7 +407,6 @@ class DatasetTest extends TestCase
         $this->assertCount(1, $responseArchivedDatasets['data']);
         $this->assertArrayHasKey('latest_metadata', $responseArchivedDatasets['data'][0]);
         $this->assertNotEmpty($responseArchivedDatasets['data'][0]['latest_metadata']);
-
 
         /*
         * reverse this sorting
@@ -649,8 +648,6 @@ class DatasetTest extends TestCase
             $this->assertEquals($namedEntity->name, $entity['name'], 'The name in the response does not match the name in the database.');
         }
 
-
-
         /*
         // - need to temporary disable - this wont be filled because TED runs as a job
         if(config('ted.enabled')) {
@@ -763,7 +760,6 @@ class DatasetTest extends TestCase
      */
     public function test_create_archive_delete_dataset_with_success(): void
     {
-
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -1612,5 +1608,276 @@ class DatasetTest extends TestCase
         foreach ($dsv as $d) {
             $this->assertTrue($d->metadata['metadata']['summary']['title'] === 'updated test title');
         }
+    }
+
+    public function test_update_dataset_from_other_team_without_success(): void
+    {
+        $userOneEmail = fake()->email();
+        $userTwoEmail = fake()->email();
+        $password = 'Passw@rd1!';
+
+        // create user 1
+        $userOne = $this->createUser($userOneEmail, $password);
+        // create team 1
+        $teamOne = $this->createTeam($userOne);
+        // assign user 1 to team 1
+        $this->assignUserToTeamWithRoles($teamOne, $userOne, ['custodian.metadata.manager']);
+        // create jwt 1
+        $jwtOne = $this->getJwtByUser($userOneEmail, $password);
+
+        // create dataset 1 with jwt 1
+        $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        $responseCreateDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamOne,
+                'user_id' => $userOne,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtOne,
+            ]
+        );
+        Queue::assertPushed(LinkageExtraction::class);
+        $responseCreateDataset->assertStatus(201);
+        $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
+        $datasetId = $contentCreateDataset['data'];
+
+        // create user 2
+        $userTwo = $this->createUser($userTwoEmail, $password);
+        // create team 2
+        $teamTwo = $this->createTeam($userTwo);
+        // assign user 2 to team 2
+        $this->assignUserToTeamWithRoles($teamTwo, $userTwo, ['custodian.metadata.manager']);
+        // create jwt 2
+        $jwtTwo = $this->getJwtByUser($userTwoEmail, $password);
+
+        // update dataset 1 with jwt 2
+        $responseUpdateDataset = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET . '/' . $datasetId,
+            [
+                'team_id' => $teamTwo,
+                'user_id' => $userTwo,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtTwo,
+            ]
+        );
+
+        $responseUpdateDataset->assertStatus(401);
+    }
+
+    public function test_update_dataset_from_same_team_with_success(): void
+    {
+        $userOneEmail = fake()->email();
+        $userTwoEmail = fake()->email();
+        $password = 'Passw@rd1!';
+
+        // create user 1
+        $userOne = $this->createUser($userOneEmail, $password);
+        // create team 1
+        $teamOne = $this->createTeam($userOne);
+        // assign user 1 to team 1
+        $this->assignUserToTeamWithRoles($teamOne, $userOne, ['custodian.metadata.manager']);
+        // create jwt 1
+        $jwtOne = $this->getJwtByUser($userOneEmail, $password);
+
+        // create dataset 1 with jwt 1
+        $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        $responseCreateDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamOne,
+                'user_id' => $userOne,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtOne,
+            ]
+        );
+        Queue::assertPushed(LinkageExtraction::class);
+        $responseCreateDataset->assertStatus(201);
+        $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
+        $datasetId = $contentCreateDataset['data'];
+
+        // create user 2
+        $userTwo = $this->createUser($userTwoEmail, $password);
+        // assign user 2 to team 1
+        $this->assignUserToTeamWithRoles($teamOne, $userTwo, ['custodian.metadata.manager']);
+        // create jwt 2
+        $jwtTwo = $this->getJwtByUser($userTwoEmail, $password);
+
+        // update dataset 1 with jwt 2
+        $responseUpdateDataset = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET . '/' . $datasetId,
+            [
+                'team_id' => $teamOne,
+                'user_id' => $userTwo,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtTwo,
+            ]
+        );
+
+        $responseUpdateDataset->assertStatus(200);
+    }
+
+    public function test_create_dataset_by_user_without_success(): void
+    {
+        $userOneEmail = fake()->email();
+        $password = 'Passw@rd1!';
+
+        // create user 1
+        $userOne = $this->createUser($userOneEmail, $password);
+        // create team 1
+        $teamOne = $this->createTeam($userOne);
+        // assign user 1 to team 1
+        $this->assignUserToTeamWithRoles($teamOne, $userOne, ['developer']);
+        // create jwt 1
+        $jwtOne = $this->getJwtByUser($userOneEmail, $password);
+
+        // create dataset 1 with jwt 1
+        $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        $responseCreateDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamOne,
+                'user_id' => $userOne,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtOne,
+            ]
+        );
+        $responseCreateDataset->assertStatus(401);
+    }
+
+    private function createTeam($userId)
+    {
+        $responseNotification = $this->json(
+            'POST',
+            'api/v1/notifications',
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'email' => null,
+                'user_id' => $userId,
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header,
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        $responseNewTeam = $this->json(
+            'POST',
+            'api/v1/teams',
+            [
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => now(),
+                'notifications' => [$notificationID],
+                'users' => [],
+            ],
+            $this->header,
+        );
+
+        $responseNewTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        return $responseNewTeam['data'];
+    }
+
+    private function createUser(string $email, string $password)
+    {
+        $responseNewUser = $this->json(
+            'POST',
+            '/api/v1/users',
+            [
+                'firstname' => 'Firstname',
+                'lastname' => 'Lastname',
+                'email' => $email,
+                'secondary_email' => fake()->unique()->safeEmail(),
+                'preferred_email' => 'primary',
+                'password' => $password,
+                'sector_id' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/75697342",
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'mongo_id' => fake()->numberBetween(0, 100),
+                'mongo_object_id' => fake()->regexify('[0-9a-f]{24}'),
+            ],
+            $this->header,
+        );
+
+        $responseNewUser->assertStatus(201);
+
+        return $responseNewUser['data'];
+    }
+
+    private function getJwtByUser(string $email, string $password): string
+    {
+        $authData = [
+            'email' => $email,
+            'password' => $password,
+        ];
+
+        // Authenticate the user and get the JWT token
+        $response = $this->json('POST', '/api/v1/auth', $authData, ['Accept' => 'application/json']);
+
+        return $response['access_token'];
+    }
+
+    private function assignUserToTeamWithRoles(int $tId, int $uId, array $roles)
+    {
+        $responseNewRoles = $this->json(
+            'POST',
+            '/api/v1/teams/' . $tId . '/users',
+            [
+                "userId" => $uId,
+                "roles" => $roles,
+            ],
+            $this->header,
+        );
+        $responseNewRoles->assertStatus(201);
     }
 }
