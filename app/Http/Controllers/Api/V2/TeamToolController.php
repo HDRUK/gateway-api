@@ -606,7 +606,7 @@ class TeamToolController extends Controller
                 'status',
             ];
 
-            $array = $this->checkEditArray($input, $arrayKeys);
+            $array = $this->checkUpdateArray($input, $arrayKeys);
             if (array_key_exists('name', $input)) {
                 $array['name'] = formatCleanInput($input['name']);
             }
@@ -619,33 +619,23 @@ class TeamToolController extends Controller
             ToolHasTag::where('tool_id', $id)->forceDelete();
             $this->insertToolHasTag($input['tag'], (int)$id);
 
-            if (array_key_exists('dataset', $input)) {
-                DatasetVersionHasTool::where('tool_id', $id)->forceDelete();
-                $this->insertDatasetVersionHasTool($input['dataset'], (int)$id);
-            }
+            DatasetVersionHasTool::where('tool_id', $id)->forceDelete();
+            $this->insertDatasetVersionHasTool($input['dataset'] ?? [], (int)$id);
 
-            if (array_key_exists('programming_language', $input)) {
-                ToolHasProgrammingLanguage::where('tool_id', $id)->forceDelete();
-                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int)$id);
-            }
+            ToolHasProgrammingLanguage::where('tool_id', $id)->forceDelete();
+            $this->insertToolHasProgrammingLanguage($input['programming_language'] ?? [], (int)$id);
 
-            if (array_key_exists('programming_package', $input)) {
-                ToolHasProgrammingPackage::where('tool_id', $id)->forceDelete();
-                $this->insertToolHasProgrammingPackage($input['programming_package'], (int)$id);
-            }
+            ToolHasProgrammingPackage::where('tool_id', $id)->forceDelete();
+            $this->insertToolHasProgrammingPackage($input['programming_package'] ?? [], (int)$id);
 
-            if (array_key_exists('type_category', $input)) {
-                ToolHasTypeCategory::where('tool_id', $id)->forceDelete();
-                $this->insertToolHasTypeCategory($input['type_category'], (int)$id);
-            }
+            ToolHasTypeCategory::where('tool_id', $id)->forceDelete();
+            $this->insertToolHasTypeCategory($input['type_category'] ?? [], (int)$id);
 
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($id, $publications, (int)$jwtUser['id']);
 
             DurHasTool::where('tool_id', $id)->forceDelete();
-            if (array_key_exists('durs', $input)) {
-                $this->insertDurHasTool($input['durs'], (int)$id);
-            }
+            $this->insertDurHasTool($input['durs'] ?? [], (int)$id);
 
             $collections = array_key_exists('collections', $input) ? $input['collections'] : [];
             $this->checkCollections($id, $collections, (int)$jwtUser['id']);
@@ -811,16 +801,11 @@ class TeamToolController extends Controller
                 $array['name'] = formatCleanInput($input['name']);
             }
             $array['team_id'] = $teamId;
-            $initTool = Tool::where('id', $id)->first();
-
-            if ($initTool['status'] === Tool::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
-                throw new Exception('Cannot update current tool! Status already "ARCHIVED"');
-            }
 
             Tool::where([
                 'id' => $id,
                 'team_id' => $teamId,
-            ])->update($array);
+            ])->first()->update($array);
 
             if (array_key_exists('tag', $input)) {
                 ToolHasTag::where('tool_id', $id)->forceDelete();
