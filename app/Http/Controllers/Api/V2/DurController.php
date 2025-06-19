@@ -6,26 +6,13 @@ use Config;
 use Auditor;
 use Exception;
 use App\Models\Dur;
-use App\Models\Tool;
 use App\Models\Dataset;
-use App\Models\Keyword;
 use App\Models\Collection;
-use App\Models\DurHasTool;
 use Illuminate\Http\Request;
-use App\Models\DurHasKeyword;
-use App\Models\DatasetVersion;
 use App\Http\Traits\CheckAccess;
 use App\Http\Requests\Dur\GetDur;
-use App\Models\DurHasPublication;
 use Illuminate\Http\JsonResponse;
-use App\Http\Requests\Dur\EditDur;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Dur\CreateDur;
-use App\Http\Requests\Dur\DeleteDur;
-use App\Http\Requests\Dur\UpdateDur;
-use App\Http\Requests\Dur\UploadDur;
-use App\Models\DurHasDatasetVersion;
-use App\Exceptions\NotFoundException;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Traits\MapOrganisationSector;
 use App\Http\Traits\RequestTransformation;
@@ -170,8 +157,10 @@ class DurController extends Controller
 
             $durs = Dur::when($projectTitle, function ($query) use ($projectTitle) {
                 return $query->where('project_title', 'like', '%'. $projectTitle .'%');
-            })->where('status', '=', 'ACTIVE'
-                
+            })->where(
+                'status',
+                '=',
+                'ACTIVE'
             )->when(
                 $withRelated,
                 fn ($query) => $query
