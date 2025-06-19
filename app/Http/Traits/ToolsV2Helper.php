@@ -23,7 +23,7 @@ use App\Models\ToolHasProgrammingLanguage;
 
 trait ToolsV2Helper
 {
-    public function getToolById(int $toolId, ?int $teamId, ?int $userId, bool $onlyActiveRelated = false)
+    public function getToolById(int $toolId, ?int $teamId, ?int $userId, ?bool $onlyActive, ?bool $onlyActiveRelated)
     {
         $tool = Tool::with([
             'user',
@@ -56,6 +56,9 @@ trait ToolsV2Helper
         })
         ->when($userId, function ($query) use ($userId) {
             return $query->where(['user_id' => $userId]);
+        })
+        ->when($onlyActive, function ($query) use ($onlyActive) {
+            return $query->where(['status' => Tool::STATUS_ACTIVE]);
         })
         ->first();
         if (!$tool) {

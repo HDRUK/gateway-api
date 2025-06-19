@@ -222,7 +222,7 @@ class ToolController extends Controller
      *    path="/api/v2/tools/{id}",
      *    operationId="fetch_tools_v2",
      *    tags={"Tools"},
-     *    summary="ToolController@show",
+     *    summary="ToolController@showActive",
      *    description="Get tool by id",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
@@ -257,10 +257,10 @@ class ToolController extends Controller
      *    )
      * )
      */
-    public function show(GetTool $request, int $id): JsonResponse
+    public function showActive(GetTool $request, int $id): JsonResponse
     {
         try {
-            $tool = $this->getToolById($id, onlyActiveRelated: true);
+            $tool = $this->getToolById($id, onlyActive: true, onlyActiveRelated: true);
 
             Auditor::log([
                 'action_type' => 'GET',

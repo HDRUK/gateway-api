@@ -856,7 +856,7 @@ return [
         'name' => 'tools',
         'method' => 'get',
         'path' => '/tools/{id}',
-        'methodController' => 'ToolController@show',
+        'methodController' => 'ToolController@showActive',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [],
         'constraint' => [
