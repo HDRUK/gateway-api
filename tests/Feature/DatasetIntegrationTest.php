@@ -37,6 +37,7 @@ class DatasetIntegrationTest extends TestCase
     private $integration = null;
 
     protected $header = [];
+    protected $adminHeader = [];
 
 
     /**
@@ -81,6 +82,13 @@ class DatasetIntegrationTest extends TestCase
         // Add Integration auth keys to the header generated in commonSetUp
         $this->header['x-application-id'] = $this->integration->app_id;
         $this->header['x-client-id'] = $this->integration->client_id;
+
+        $this->authorisationUser();
+        $jwt = $this->getAuthorisationJwt();
+        $this->adminHeader = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwt,
+        ];
 
         // Lengthy process, but a more consistent representation
         // of an incoming dataset
@@ -141,7 +149,7 @@ class DatasetIntegrationTest extends TestCase
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
-            $this->header,
+            $this->adminHeader,
         );
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
@@ -170,7 +178,7 @@ class DatasetIntegrationTest extends TestCase
                 'notifications' => [$notificationID],
                 'users' => [],
             ],
-            $this->header,
+            $this->adminHeader,
         );
 
         $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -202,7 +210,7 @@ class DatasetIntegrationTest extends TestCase
                 'mongo_id' => 1234566,
                 'mongo_object_id' => "12345abcde",
             ],
-            $this->header,
+            $this->adminHeader,
         );
         $responseCreateUser->assertStatus(201);
         $contentCreateUser = $responseCreateUser->decodeResponseJson();
@@ -249,7 +257,7 @@ class DatasetIntegrationTest extends TestCase
             'DELETE',
             self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
             [],
-            $this->header
+            $this->adminHeader,
         );
         $responseDeleteTeam->assertJsonStructure([
             'message'
@@ -262,7 +270,7 @@ class DatasetIntegrationTest extends TestCase
             'DELETE',
             self::TEST_URL_USER . '/' . $userId,
             [],
-            $this->header
+            $this->adminHeader,
         );
         $responseDeleteUser->assertJsonStructure([
             'message'
@@ -290,7 +298,7 @@ class DatasetIntegrationTest extends TestCase
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
-            $this->header,
+            $this->adminHeader,
         );
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
@@ -319,7 +327,7 @@ class DatasetIntegrationTest extends TestCase
                 'notifications' => [$notificationID],
                 'users' => [],
             ],
-            $this->header,
+            $this->adminHeader,
         );
 
         $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -351,7 +359,7 @@ class DatasetIntegrationTest extends TestCase
                 'mongo_id' => 1234566,
                 'mongo_object_id' => "12345abcde",
             ],
-            $this->header,
+            $this->adminHeader,
         );
         $responseCreateUser->assertStatus(201);
         $contentCreateUser = $responseCreateUser->decodeResponseJson();
@@ -387,7 +395,7 @@ class DatasetIntegrationTest extends TestCase
             'DELETE',
             self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
             [],
-            $this->header
+            $this->adminHeader,
         );
         $responseDeleteTeam->assertJsonStructure([
             'message'
@@ -399,7 +407,7 @@ class DatasetIntegrationTest extends TestCase
             'DELETE',
             self::TEST_URL_USER . '/' . $userId,
             [],
-            $this->header
+            $this->adminHeader,
         );
         $responseDeleteUser->assertJsonStructure([
             'message'
