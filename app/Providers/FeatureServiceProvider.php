@@ -16,6 +16,7 @@ class FeatureServiceProvider extends ServiceProvider
         $this->app->booted(function () {
             logger()->info('Starting features');
 
+
             $url = env('FEATURE_FLAGGING_CONFIG_URL');
 
             if (app()->environment('testing') || !$url) {
@@ -51,8 +52,7 @@ class FeatureServiceProvider extends ServiceProvider
                                 'error' => $e->getMessage(),
                             ]);
 
-                            // Temporary fallback values
-                            return $defaultTempFlags;
+                            return [];
                         }
 
                         if (!$res->successful()) {
@@ -76,8 +76,7 @@ class FeatureServiceProvider extends ServiceProvider
                         'error' => $e->getMessage(),
                     ]);
 
-                    // Fallback to cached flags (if available) or defaults
-                    $featureFlags = Cache::get('feature_flags', $defaultTempFlags);
+                    $featureFlags = [];
                 }
             }
 
