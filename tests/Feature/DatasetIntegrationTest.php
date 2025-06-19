@@ -85,7 +85,6 @@ class DatasetIntegrationTest extends TestCase
 
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
-        $this->currentUser = $this->getUserFromJwt($jwt);
         $this->adminHeader = [
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $jwt,
