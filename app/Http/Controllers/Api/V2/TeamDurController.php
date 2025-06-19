@@ -135,7 +135,6 @@ class TeamDurController extends Controller
      *                @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *                @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *                @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
-     *                @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *                @OA\Property(property="counter", type="integer", example="34319"),
@@ -424,7 +423,6 @@ class TeamDurController extends Controller
      *                @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *                @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *                @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
-     *                @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *                @OA\Property(property="counter", type="integer", example="34319"),
@@ -550,7 +548,6 @@ class TeamDurController extends Controller
      *             @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *             @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *             @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
-     *             @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *             @OA\Property(property="enabled", type="boolean", example="1"),
      *             @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="counter", type="integer", example="34319"),
@@ -632,7 +629,6 @@ class TeamDurController extends Controller
             'request_frequency',
             'access_type',
             'mongo_object_dar_id',
-            'technicalSummary',
             'enabled',
             'last_activity',
             'counter',
@@ -765,7 +761,6 @@ class TeamDurController extends Controller
      *             @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *             @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *             @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
-     *             @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *             @OA\Property(property="enabled", type="boolean", example="1"),
      *             @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="counter", type="integer", example="34319"),
@@ -835,7 +830,6 @@ class TeamDurController extends Controller
      *                   @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *                   @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *                   @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
-     *                   @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *                   @OA\Property(property="enabled", type="boolean", example="1"),
      *                   @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="counter", type="integer", example="34319"),
@@ -903,7 +897,6 @@ class TeamDurController extends Controller
                 'request_frequency',
                 'access_type',
                 'mongo_object_dar_id',
-                'technicalSummary',
                 'enabled',
                 'last_activity',
                 'counter',
@@ -917,7 +910,7 @@ class TeamDurController extends Controller
             ];
             $array = $this->checkUpdateArray($input, $arrayKeys);
 
-            if (array_key_exists('organisation_sector', $array)) {
+            if ($array['organisation_sector']) {
                 $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
             }
 
@@ -1029,7 +1022,6 @@ class TeamDurController extends Controller
      *             @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *             @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *             @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
-     *             @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *             @OA\Property(property="enabled", type="boolean", example="1"),
      *             @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="counter", type="integer", example="34319"),
@@ -1099,7 +1091,6 @@ class TeamDurController extends Controller
      *                   @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *                   @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *                   @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
-     *                   @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *                   @OA\Property(property="enabled", type="boolean", example="1"),
      *                   @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="counter", type="integer", example="34319"),
@@ -1167,7 +1158,6 @@ class TeamDurController extends Controller
                 'request_frequency',
                 'access_type',
                 'mongo_object_dar_id',
-                'technicalSummary',
                 'enabled',
                 'last_activity',
                 'counter',
@@ -1179,7 +1169,7 @@ class TeamDurController extends Controller
                 'project_end_date',
                 'latest_approval_date',
             ];
-            $array = $this->checkUpdateArray($input, $arrayKeys);
+            $array = $this->checkEditArray($input, $arrayKeys);
 
             if (array_key_exists('organisation_sector', $array)) {
                 $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
