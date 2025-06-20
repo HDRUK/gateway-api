@@ -614,11 +614,6 @@ class DurTest extends TestCase
                 $responseDeleteDur->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
             }
         }
-
-        for ($i = 1; $i <= 2; $i++) {
-            // delete team
-            $this->deleteTeam($i);
-        }
     }
 
     /**
