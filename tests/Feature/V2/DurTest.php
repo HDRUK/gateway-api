@@ -21,6 +21,7 @@ use Database\Seeders\DatasetSeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
+use Illuminate\Support\Facades\Storage;
 use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
@@ -129,10 +130,6 @@ class DurTest extends TestCase
             ToolSeeder::class,
             CollectionSeeder::class,
         ]);
-
-        // $this->metadata = $this->getMetadata();
-        // $this->metadataAlt = $this->metadata;
-        // $this->metadataAlt['metadata']['summary']['title'] = 'ABC title';
 
         // Generate non-admin user for general usage
         $this->authorisationUser(false);
@@ -897,6 +894,155 @@ class DurTest extends TestCase
 
         // delete user
         $this->deleteUser($userId);
+    }
+
+    public function test_download_dur_table_with_success_v2(): void
+    {
+        // Profiler middleware can't handle with streamed response,
+        // but as it's a download, its implied that it may take a
+        // bit longer, therefore we can safely ignore this for
+        // profiling.
+        Config::set('profiling.profiler_active', false);
+
+        // First create a notification to be used by the new team
+        $notificationID = $this->createNotification();
+
+        // Create the new team
+        $teamId = $this->createTeam([], [$notificationID]);
+
+        // create user
+        $userId = $this->createUser();
+
+        // create dur
+        $countBefore = Dur::count();
+        $mockData = [
+            'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
+            'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
+            'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+            'latest_approval_date' => '2017-09-12T01:00:00',
+            'organisation_sector' => 'academia',
+            'status' => 'ACTIVE',
+        ];
+
+        $response = $this->json(
+            'POST',
+            $this->team_durs_url($teamId),
+            $mockData,
+            $this->header
+        );
+        $response->assertStatus(201);
+        $durId = (int) $response['data'];
+
+        $countAfter = Dur::count();
+        $countNewRow = $countAfter - $countBefore;
+
+        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+
+        $responseDownload = $this->json(
+            'GET',
+            self::TEST_URL_DUR_V2 . '/export',
+            [],
+            $this->header,
+        );
+
+        $content = $responseDownload->streamedContent();
+        $this->assertMatchesRegularExpression('/Non-Gateway Datasets/', $content);
+    }
+
+    public function test_can_download_template_file()
+    {
+        // Profiler middleware can't handle with streamed response,
+        // but as it's a download, its implied that it may take a
+        // bit longer, therefore we can safely ignore this for
+        // profiling.
+        Config::set('profiling.profiler_active', false);
+
+        // Mock the storage disk
+        Storage::fake('mock');
+
+        // Put a fake file in the mock disk
+        $filePath = 'data_use_template_file.xlsx';
+        Storage::disk('mock')->put($filePath, 'file content');
+
+        // Mock the config
+        Config::set('mock_data.data_use_upload_template', $filePath);
+
+        // Make the request
+        $response = $this->get(self::TEST_URL_DUR_V2 . '/template');
+
+        // Assert the file is downloaded
+        $response->assertStatus(200);
+        $response->assertHeader('content-disposition', 'attachment; filename=' . $filePath);
+
+        // Clean up
+        Storage::disk('mock')->delete($filePath);
+    }
+
+    public function test_download_template_file_with_file_not_found()
+    {
+        // Profiler middleware can't handle with streamed response,
+        // but as it's a download, its implied that it may take a
+        // bit longer, therefore we can safely ignore this for
+        // profiling.
+        Config::set('profiling.profiler_active', false);
+
+        // Mock the config
+        Config::set('mock_data.data_use_upload_template', 'non_existent_file.xlsx');
+
+        // Make the request
+        $response = $this->get(self::TEST_URL_DUR_V2 . '/template');
+
+        // Assert the file is not found
+        $response->assertStatus(404);
+        $response->assertJson(['error' => 'File not found.']);
+    }
+
+    public function test_the_application_can_search_on_project_title(): void
+    {
+        // First create a notification to be used by the new team
+        $notificationID = $this->createNotification();
+
+        // Create the new team
+        $teamId = $this->createTeam([], [$notificationID]);
+
+        $mockData = [
+            'project_title' => '12345-67890',
+            'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
+            'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
+            'team_id' => $teamId,
+            'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+            'latest_approval_date' => '2017-09-12T01:00:00',
+            'organisation_sector' => 'academia',
+            'status' => 'ACTIVE',
+        ];
+
+        $response = $this->json(
+            'POST',
+            $this->team_durs_url($teamId),
+            $mockData,
+            $this->header
+        );
+
+        $response->assertStatus(201);
+
+        $response = $this->json(
+            'GET',
+            $this->team_durs_url($teamId) . '/status/active?project_title=' . $mockData['project_title'],
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson()['data'];
+        $this->assertTrue($content[0]['project_title'] === $mockData['project_title']);
+        $this->assertTrue(count($content) === 1);
+
+        // delete team
+        $this->deleteTeam($teamId);
     }
 
     private function team_durs_url(int $teamId)

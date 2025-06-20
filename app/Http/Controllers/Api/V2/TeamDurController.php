@@ -642,6 +642,7 @@ class TeamDurController extends Controller
         ];
         $array = $this->checkEditArray($input, $arrayKeys);
         $array['team_id'] = $teamId;
+        $array['user_id'] = $jwtUser['id'];
 
         if (isset($array['organisation_sector'])) {
             $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
@@ -928,7 +929,7 @@ class TeamDurController extends Controller
                 $array['status'] = Dur::STATUS_DRAFT;
             }
 
-            Dur::where(['id' => $id, 'team_id' => $teamId])->first()->update($array); //TODO: can't use update if we want to use Observers - need to edit the model and then save
+            Dur::where(['id' => $id, 'team_id' => $teamId])->first()->update($array);
 
             // link/unlink dur with datasets
             $datasets = $input['datasets'] ?? [];

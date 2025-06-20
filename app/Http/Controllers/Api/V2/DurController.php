@@ -10,7 +10,7 @@ use App\Models\Dataset;
 use App\Models\Collection;
 use Illuminate\Http\Request;
 use App\Http\Traits\CheckAccess;
-use App\Http\Requests\Dur\GetDur;
+use App\Http\Requests\V2\Dur\GetDur;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
@@ -131,13 +131,13 @@ class DurController extends Controller
      *                @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *             ),
      *          ),
-     *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
+     *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v2\/dur?page=1"),
      *          @OA\Property(property="from", type="integer", example="1"),
      *          @OA\Property(property="last_page", type="integer", example="1"),
-     *          @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
+     *          @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v2\/dur?page=1"),
      *          @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
      *          @OA\Property(property="next_page_url", type="string", example="null"),
-     *          @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections"),
+     *          @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v2\/dur"),
      *          @OA\Property(property="per_page", type="integer", example="25"),
      *          @OA\Property(property="prev_page_url", type="string", example="null"),
      *          @OA\Property(property="to", type="integer", example="3"),
@@ -386,7 +386,7 @@ class DurController extends Controller
      *    description="Export CSV of one or more DURs",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
-     *       name="dur_id",
+     *       name="id",
      *       in="query",
      *       description="dur id",
      *       required=false,
@@ -420,7 +420,7 @@ class DurController extends Controller
         try {
             Config::set('profiling.profiler_active', false);
 
-            $durId = $request->query('dur_id', null);
+            $durId = $request->query('id', null);
             $durs = Dur::when($durId, function ($query) use ($durId) {
                 return $query->where('id', '=', $durId);
             })->get();
