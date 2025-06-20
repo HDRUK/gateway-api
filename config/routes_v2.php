@@ -406,40 +406,15 @@ return [
     [
         'name' => 'datasets',
         'method' => 'get',
-        'path' => '/teams/{teamId}/datasets',
-        'methodController' => 'TeamDatasetController@indexActive',
+        'path' => '/teams/{teamId}/datasets/status/{status}',
+        'methodController' => 'TeamDatasetController@indexStatus',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'datasets',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/datasets/status/draft',
-        'methodController' => 'TeamDatasetController@indexDraft',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'datasets',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/datasets/status/archived',
-        'methodController' => 'TeamDatasetController@indexArchived',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
+            'status' => 'active|draft|archived'
         ],
     ],
     [

@@ -7,7 +7,6 @@ use Auditor;
 use Exception;
 use App\Models\Dur;
 use App\Models\Dataset;
-use App\Models\Collection;
 use Illuminate\Http\Request;
 use App\Http\Traits\CheckAccess;
 use App\Http\Traits\DurV2Helpers;

@@ -325,6 +325,8 @@ class TeamDurController extends Controller
      */
     public function count(GetDurCountByTeamAndStatus $request, int $teamId, string $field): JsonResponse
     {
+        $this->checkAccess($request->all(), $teamId, null, 'team');
+
         try {
             $counts = Dur::where('team_id', $teamId)->applyCount();
 

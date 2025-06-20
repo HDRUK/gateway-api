@@ -43,201 +43,11 @@ class TeamDatasetController extends Controller
 
     /**
      * @OA\Get(
-     *    path="/api/v2/teams/{teamId}/datasets",
-     *    operationId="fetch_team_active_datasets_v2",
+     *    path="/api/v2/teams/{teamId}/datasets/status/{status}",
+     *    operationId="fetch_team_datasets_status",
      *    tags={"Datasets"},
-     *    summary="TeamDatasetController@indexActive",
-     *    description="Returns a list of a team's active datasets",
-     *    security={{"bearerAuth":{}}},
-     *    @OA\Parameter(
-     *       name="teamId",
-     *       in="path",
-     *       description="ID of the team to filter by",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema(
-     *          type="integer",
-     *          description="team id field",
-     *       ),
-     *    ),
-     *    @OA\Parameter(
-     *       name="sort",
-     *       in="query",
-     *       description="Field and direction (colon separated) to sort by (default: 'created:desc') ... <br/> <br/>
-        - ?sort=\<field\>:\<direction\> <br/>
-        - \<direction\> can only be 'asc' or 'desc'  <br/>
-        - \<field\> can only be a valid field for the dataset table that can be ordered on  <br/>
-        - \<field\> can start with the prefix 'metadata.' so that nested values within the field 'metadata'  <br/>
-            (represented by the GWDM JSON structure) can be used to order on.  <br/>  <br/>",
-     *       example="created:desc",
-     *       @OA\Schema(
-     *          type="string",
-     *       ),
-     *    ),
-     *    @OA\Parameter(
-     *       name="with_metadata",
-     *       in="query",
-     *       description="Boolean whether to return dataset metadata",
-     *       example="true",
-     *       @OA\Schema(
-     *          type="string",
-     *          description="Boolean whether to return dataset metadata",
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *       response="200",
-     *       description="Success response",
-     *       @OA\JsonContent(
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
-     *          )
-     *       )
-     *    )
-     * )
-     */
-    public function indexActive(Request $request, int $teamId): JsonResponse
-    {
-        try {
-            $withMetadata = $request->boolean('with_metadata', true);
-
-            $perPage = request('per_page', Config::get('constants.per_page'));
-
-            $datasets = $this->indexTeamDataset(
-                $teamId,
-                Dataset::STATUS_ACTIVE,
-                $perPage,
-                $withMetadata,
-            );
-
-            Auditor::log([
-                'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'Dataset team active index v2',
-            ]);
-
-            return response()->json(
-                $datasets
-            );
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Get(
-     *    path="/api/v2/teams/{teamId}/datasets/status/draft",
-     *    operationId="fetch_team_draft_datasets_v2",
-     *    tags={"Datasets"},
-     *    summary="TeamDatasetController@indexDraft",
-     *    description="Returns a list of a team's draft datasets",
-     *    security={{"bearerAuth":{}}},
-     *    @OA\Parameter(
-     *       name="teamId",
-     *       in="path",
-     *       description="ID of the team to filter by",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema(
-     *          type="integer",
-     *          description="team id field",
-     *       ),
-     *    ),
-     *    @OA\Parameter(
-     *       name="sort",
-     *       in="query",
-     *       description="Field and direction (colon separated) to sort by (default: 'created:desc') ... <br/> <br/>
-        - ?sort=\<field\>:\<direction\> <br/>
-        - \<direction\> can only be 'asc' or 'desc'  <br/>
-        - \<field\> can only be a valid field for the dataset table that can be ordered on  <br/>
-        - \<field\> can start with the prefix 'metadata.' so that nested values within the field 'metadata'  <br/>
-            (represented by the GWDM JSON structure) can be used to order on.  <br/>  <br/>",
-     *       example="created:desc",
-     *       @OA\Schema(
-     *          type="string",
-     *       ),
-     *    ),
-     *    @OA\Parameter(
-     *       name="with_metadata",
-     *       in="query",
-     *       description="Boolean whether to return dataset metadata",
-     *       example="true",
-     *       @OA\Schema(
-     *          type="string",
-     *          description="Boolean whether to return dataset metadata",
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *       response="200",
-     *       description="Success response",
-     *       @OA\JsonContent(
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
-     *          )
-     *       )
-     *    )
-     * )
-     */
-    public function indexDraft(Request $request, int $teamId): JsonResponse
-    {
-        $this->checkAccess($request->all(), $teamId, null, 'team');
-
-        try {
-            $withMetadata = $request->boolean('with_metadata', true);
-
-            $perPage = request('per_page', Config::get('constants.per_page'));
-
-            $datasets = $this->indexTeamDataset(
-                $teamId,
-                Dataset::STATUS_DRAFT,
-                $perPage,
-                $withMetadata,
-            );
-
-            Auditor::log([
-                'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'Dataset team draft index v2',
-            ]);
-
-            return response()->json(
-                $datasets
-            );
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Get(
-     *    path="/api/v2/teams/{teamId}/datasets/status/archived",
-     *    operationId="fetch_team_archived_datasets_v2",
-     *    tags={"Datasets"},
-     *    summary="TeamDatasetController@indexArchived",
-     *    description="Returns a list of a team's archived datasets",
+     *    summary="TeamDatasetController@indexStatus",
+     *    description="Returns a list of a team's datasets with the given status",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
      *       name="teamId",
@@ -291,7 +101,7 @@ class TeamDatasetController extends Controller
      *    )
      * )
      */
-    public function indexArchived(Request $request, int $teamId): JsonResponse
+    public function indexStatus(Request $request, int $teamId, ?string $status = 'active'): JsonResponse
     {
         $this->checkAccess($request->all(), $teamId, null, 'team');
 
@@ -302,7 +112,7 @@ class TeamDatasetController extends Controller
 
             $datasets = $this->indexTeamDataset(
                 $teamId,
-                Dataset::STATUS_ARCHIVED,
+                $status,
                 $perPage,
                 $withMetadata,
             );
@@ -310,7 +120,7 @@ class TeamDatasetController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'Dataset team archived index v2',
+                'description' => 'Team Dataset get all by status',
             ]);
 
             return response()->json(
@@ -371,6 +181,8 @@ class TeamDatasetController extends Controller
      */
     public function count(Request $request, int $teamId, string $field): JsonResponse
     {
+        $this->checkAccess($request->all(), $teamId, null, 'team');
+
         try {
             $counts = Dataset::where('team_id', $teamId)->applyCount();
 
@@ -1042,7 +854,7 @@ class TeamDatasetController extends Controller
 
     private function indexTeamDataset(int $teamId, string $status, int $perPage, int $withMetadata)
     {
-        $datasets = Dataset::where(['team_id' => $teamId, 'status' => $status])
+        $datasets = Dataset::where(['team_id' => $teamId, 'status' => strtoupper($status)])
             ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
             ->applySorting()
             ->paginate((int) $perPage, ['*'], 'page');
