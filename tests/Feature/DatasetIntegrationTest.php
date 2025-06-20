@@ -82,10 +82,6 @@ class DatasetIntegrationTest extends TestCase
             ]);
         }
 
-        // Add Integration auth keys to the header generated in commonSetUp
-        // $this->header['x-application-id'] = $this->integration->app_id;
-        // $this->header['x-client-id'] = $this->integration->client_id;
-
         $this->authorisationUser();
         $this->superUserJwt = $this->getAuthorisationJwt();
         $this->adminHeader = [
