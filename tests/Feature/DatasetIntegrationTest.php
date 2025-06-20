@@ -38,7 +38,8 @@ class DatasetIntegrationTest extends TestCase
     private $integration = null;
 
     protected $header = [];
-
+    protected $adminHeader = [];
+    protected $superUserJwt = null;
 
     /**
      * Set up the database
@@ -85,6 +86,13 @@ class DatasetIntegrationTest extends TestCase
             'Accept' => 'application/json',
             'x-application-id' => $this->integration->app_id,
             'x-client-id' => $this->integration->client_id,
+        ];
+
+        $this->authorisationUser();
+        $this->superUserJwt = $this->getAuthorisationJwt();
+        $this->adminHeader = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $this->superUserJwt,
         ];
 
         // Lengthy process, but a more consistent representation
@@ -576,7 +584,7 @@ class DatasetIntegrationTest extends TestCase
                 'x-client-id' => $appTwo['client_id'],
             ],
         );
-        $responseUpdateDataset->assertStatus(500);
+        $responseUpdateDataset->assertStatus(401);
     }
 
     public function test_create_dataset_by_team_without_success(): void
