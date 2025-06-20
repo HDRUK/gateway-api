@@ -23,7 +23,7 @@ use App\Models\ToolHasProgrammingLanguage;
 
 trait ToolsV2Helper
 {
-    public function getToolById(int $toolId, ?int $teamId, ?int $userId, ?bool $onlyActive, ?bool $onlyActiveRelated)
+    public function getToolById(int $toolId, ?int $teamId = null, ?int $userId = null, ?bool $onlyActive = false, ?bool $onlyActiveRelated = false)
     {
         $tool = Tool::with([
             'user',

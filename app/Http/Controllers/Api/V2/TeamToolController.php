@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V2;
 use Config;
 use Auditor;
 use Exception;
-use Carbon\Carbon;
 use App\Models\Tool;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
@@ -943,9 +942,6 @@ class TeamToolController extends Controller
 
         try {
             if ($tool) {
-                $tool->deleted_at = Carbon::now();
-                $tool->status = Tool::STATUS_ARCHIVED;
-                $tool->save();
                 ToolHasTag::where('tool_id', $id)->delete();
                 DatasetVersionHasTool::where('tool_id', $id)->delete();
                 ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
@@ -954,6 +950,7 @@ class TeamToolController extends Controller
                 PublicationHasTool::where('tool_id', $id)->delete();
                 DurHasTool::where('tool_id', $id)->delete();
                 CollectionHasTool::where('tool_id', $id)->delete();
+                Tool::where('id', $id)->delete();
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
