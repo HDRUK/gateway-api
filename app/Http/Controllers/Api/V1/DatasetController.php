@@ -26,6 +26,7 @@ use App\Http\Requests\Dataset\EditDataset;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Requests\Dataset\CreateDataset;
 use App\Http\Requests\Dataset\ExportDataset;
+use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
 use App\Exports\DatasetStructuralMetadataExport;
 use App\Models\DatasetVersionHasDatasetVersion;
@@ -124,8 +125,9 @@ class DatasetController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
+            list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
+
             $matches = [];
-            $teamId = $request->query('team_id', null);
             $filterStatus = $request->query('status', null);
             $datasetId = $request->query('dataset_id', null);
             $mongoPId = $request->query('mongo_pid', null);
@@ -232,6 +234,8 @@ class DatasetController extends Controller
                 ->paginate($perPage, ['*'], 'page');
 
             Auditor::log([
+                'user_id' => $userId,
+                'team_id' => $teamId,
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Dataset get all',
@@ -242,6 +246,8 @@ class DatasetController extends Controller
             );
         } catch (Exception $e) {
             Auditor::log([
+                'user_id' => $userId,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
@@ -404,6 +410,8 @@ class DatasetController extends Controller
             // Retrieve the dataset with collections, publications, and counts
             $dataset = Dataset::with("team")->find($id);
 
+            list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
+
             if (!$dataset) {
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
@@ -501,6 +509,8 @@ class DatasetController extends Controller
             }
 
             Auditor::log([
+                'user_id' => $userId,
+                'team_id' => $teamId,
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Dataset get ' . $id,
@@ -516,6 +526,8 @@ class DatasetController extends Controller
 
         } catch (Exception $e) {
             Auditor::log([
+                'user_id' => $userId,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
@@ -614,10 +626,11 @@ class DatasetController extends Controller
      */
     public function store(CreateDataset $request): JsonResponse
     {
+        list($userId, $teamId, $createOrigin, $status) = $this->getAccessorUserAndTeam($request);
+
         $input = $request->all();
-        $teamId = (int)$input['team_id'];
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $this->checkAccess($input, $teamId, null, 'team');
+        $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         try {
             $elasticIndexing = $request->boolean('elastic_indexing', false);
@@ -625,6 +638,10 @@ class DatasetController extends Controller
             $team = Team::where('id', $teamId)->first()->toArray();
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
+            $input['status'] = $status;
+            $input['user_id'] = $userId;
+            $input['team_id'] = $teamId;
+            $input['create_origin'] = $createOrigin;
 
             $inputSchema = $request->query('input_schema', null);
             $inputVersion = $request->query('input_version', null);
@@ -646,8 +663,8 @@ class DatasetController extends Controller
 
             if ($metadataResult['translated']) {
                 Auditor::log([
-                    'user_id' => (int)$jwtUser['id'],
-                    'team_id' => $team['id'],
+                    'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                    'team_id' => $teamId,
                     'action_type' => 'CREATE',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Dataset ' . $metadataResult['dataset_id'] . ' with version ' .
@@ -667,11 +684,13 @@ class DatasetController extends Controller
             }
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -734,17 +753,16 @@ class DatasetController extends Controller
      */
     public function update(UpdateDataset $request, int $id)
     {
+        list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
+
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $initDataset = Dataset::withTrashed()->where('id', $id)->first();
-        $this->checkAccess($input, $initDataset->team_id, null, 'team');
+        $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
 
         try {
             $elasticIndexing = $request->boolean('elastic_indexing', false);
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
-
-            $teamId = (int)$input['team_id'];
-            $userId = (int)$input['user_id'];
 
             $user = User::where('id', $userId)->first();
             $team = Team::where('id', $teamId)->first();
@@ -792,12 +810,12 @@ class DatasetController extends Controller
             // Update the existing dataset parent record with incoming data
             $updateTime = now();
             $currDataset->update([
-                'user_id' => $input['user_id'],
-                'team_id' => $input['team_id'],
+                'user_id' => $userId,
+                'team_id' => $teamId,
                 'updated' => $updateTime,
                 'pid' => $currentPid,
-                'create_origin' => $input['create_origin'],
-                'status' => $request['status'],
+                'create_origin' => $createOrigin,
+                'status' => $input['status'] ?? 'ACTIVE',
                 'is_cohort_discovery' => $isCohortDiscovery,
             ]);
 
@@ -853,6 +871,8 @@ class DatasetController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
+                'user_id' => $userId,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -898,13 +918,14 @@ class DatasetController extends Controller
     public function edit(EditDataset $request, int $id)
     {
         $input = $request->all();
+        list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $initDataset = Dataset::withTrashed()->where('id', $id)->first();
-        $this->checkAccess($input, $initDataset->team_id, null, 'team');
+        $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
 
         try {
             if ($request->has('unarchive')) {
-                $datasetModel = Dataset::withTrashed() ->where(['id' => $id]) ->first();
+                $datasetModel = Dataset::withTrashed()->where(['id' => $id]) ->first();
 
                 if (in_array($request['status'], [Dataset::STATUS_ACTIVE, Dataset::STATUS_DRAFT])) {
                     $datasetModel->status = $request['status'];
@@ -923,18 +944,19 @@ class DatasetController extends Controller
                     }
 
                     Auditor::log([
-                        'user_id' => (int)$jwtUser['id'],
-                        'team_id' => $datasetModel['team_id'],
+                        'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                        'team_id' => $teamId,
                         'action_type' => 'UPDATE',
                         'action_name' => class_basename($this) . '@' . __FUNCTION__,
                         'description' => 'Dataset ' . $id . ' marked as ' . strtoupper($request['status']) . ' updated',
                     ]);
+
                 } else {
                     $message = 'unknown status type';
 
                     Auditor::log([
-                        'user_id' => (int)$jwtUser['id'],
-                        'team_id' => $datasetModel['team_id'],
+                        'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                        'team_id' => $teamId,
                         'action_type' => 'EXCEPTION',
                         'action_name' => class_basename($this) . '@' . __FUNCTION__,
                         'description' => $message,
@@ -985,13 +1007,14 @@ class DatasetController extends Controller
                 // body validate, translate if needed, update Mauro data model, etc.
 
                 Auditor::log([
-                    'user_id' => (int)$jwtUser['id'],
-                    'team_id' => $datasetModel['team_id'],
+                    'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                    'team_id' => $teamId,
                     'action_type' => 'UPDATE',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Dataset ' . $id . ' marked as ' .
                         strtoupper($request['status']) . ' updated',
                 ]);
+
             }
 
             return response()->json([
@@ -999,7 +1022,8 @@ class DatasetController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -1055,9 +1079,10 @@ class DatasetController extends Controller
     public function destroy(Request $request, string $id) // softdelete
     {
         $input = $request->all();
+        list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $initDataset = Dataset::where('id', $id)->first();
-        $this->checkAccess($input, $initDataset->team_id, null, 'team');
+        $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
 
         try {
             $dataset = Dataset::where('id', $id)->first();
@@ -1065,7 +1090,8 @@ class DatasetController extends Controller
             MMC::deleteDataset($id, true);
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                'team_id' => $teamId,
                 'action_type' => 'DELETE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Dataset ' . $id . ' deleted',
@@ -1076,11 +1102,95 @@ class DatasetController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *    path="/api/v1/datasets/test",
+     *    operationId="datasets_test",
+     *    tags={"datasets test"},
+     *    summary="DatasetController@datasetTest",
+     *    description="Datasets test",
+     *    security={{"bearerAppAuth":{}}},
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass datasets payload",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *          )
+     *       )
+     *    ),
+     *      @OA\Response(
+     *          response=201,
+     *          description="Created",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(property="data", type="integer", example="100")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      )
+     * )
+     */
+    public function datasetTest(TestDataset $request)
+    {
+        try {
+            $input = $request->all();
+
+            //send the payload to traser
+            // - traser will return the input unchanged if the data is
+            //   already in the GWDM with GWDM_CURRENT_VERSION
+            // - if it is not, traser will try to work out what the metadata is
+            //   and translate it into the GWDM
+            // - otherwise traser will return a non-200 error
+            $traserResponse = MMC::translateDataModelType(
+                json_encode($input['metadata']),
+                Config::get('metadata.GWDM.name'),
+                Config::get('metadata.GWDM.version')
+            );
+
+            if ($traserResponse['wasTranslated']) {
+                return response()->json([
+                    'message' => 'success',
+                    'payload_received' => $input,
+                ], 200);
+            }
+
+            return response()->json([
+                'message' => 'metadata is in an unknown format and cannot be processed',
+                'details' => $traserResponse,
+                'payload_received' => $input,
+            ], 400);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
