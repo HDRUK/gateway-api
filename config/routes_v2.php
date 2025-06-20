@@ -366,6 +366,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,datasets.create',
         ],
         'constraint' => [],
     ],
@@ -378,6 +379,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,datasets.update',
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -392,6 +394,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,datasets.update',
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -405,6 +408,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,datasets.delete',
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -487,6 +491,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,datasets.create',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
@@ -501,6 +506,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,datasets.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -516,6 +522,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,datasets.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -530,6 +537,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,datasets.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
