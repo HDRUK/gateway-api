@@ -4,8 +4,8 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Laravel\Pennant\Feature;
-// use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Client\ConnectionException;
 
 class FeatureFlagManager
 {
