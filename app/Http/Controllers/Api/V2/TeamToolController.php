@@ -609,7 +609,15 @@ class TeamToolController extends Controller
             if (array_key_exists('name', $input)) {
                 $array['name'] = formatCleanInput($input['name']);
             }
+            if (is_null($array['any_dataset'])) {
+                $array['any_dataset'] = 0;
+            }
+            if (is_null($array['status'])) {
+                $array['status'] = Tool::STATUS_DRAFT;
+            }
             $array['team_id'] = $teamId;
+            $array['user_id'] = $jwtUser['id'];
+
             Tool::where([
                 'id' => $id,
                 'team_id' => $teamId,
