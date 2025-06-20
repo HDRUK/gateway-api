@@ -57,7 +57,7 @@ trait ToolsV2Helper
         ->when($userId, function ($query) use ($userId) {
             return $query->where(['user_id' => $userId]);
         })
-        ->when($onlyActive, function ($query) use ($onlyActive) {
+        ->when($onlyActive, function ($query) {
             return $query->where(['status' => Tool::STATUS_ACTIVE]);
         })
         ->first();
