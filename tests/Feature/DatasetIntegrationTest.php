@@ -38,6 +38,8 @@ class DatasetIntegrationTest extends TestCase
     private $integration = null;
 
     protected $header = [];
+    protected $adminHeader = [];
+    protected $superUserJwt = null;
 
     /**
      * Set up the database
@@ -85,7 +87,6 @@ class DatasetIntegrationTest extends TestCase
             'x-application-id' => $this->integration->app_id,
             'x-client-id' => $this->integration->client_id,
         ];
-<<<<<<< HEAD
 
         $this->authorisationUser();
         $this->superUserJwt = $this->getAuthorisationJwt();
@@ -93,8 +94,6 @@ class DatasetIntegrationTest extends TestCase
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $this->superUserJwt,
         ];
-=======
->>>>>>> 7c75b08c (merge dataset integration controller and add perms to dataset v2 endpoints)
 
         // Lengthy process, but a more consistent representation
         // of an incoming dataset
