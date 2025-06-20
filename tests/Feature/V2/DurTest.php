@@ -9,7 +9,6 @@ use App\Models\Tool;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Publication;
-use App\Models\NamedEntities;
 use Illuminate\Support\Carbon;
 use Database\Seeders\DurSeeder;
 use Tests\Traits\Authorization;
@@ -26,8 +25,6 @@ use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Queue;
-use App\Jobs\LinkageExtraction;
 
 class DurTest extends TestCase
 {
@@ -767,6 +764,133 @@ class DurTest extends TestCase
             'message'
         ]);
         $responseDeleteDraft->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // delete team
+        $this->deleteTeam($teamId);
+
+        // delete user
+        $this->deleteUser($userId);
+    }
+
+    /**
+     * Create/archive/unarchive DUR with success
+     *
+     * @return void
+     */
+    public function test_create_archive_update_delete_dur_with_success(): void
+    {
+
+        // create team
+        // First create a notification to be used by the new team
+        $notificationID = $this->createNotification();
+
+        // Create the new team
+        $teamId = $this->createTeam([], [$notificationID]);
+
+        // create user
+        $userId = $this->createUser();
+
+        // create DUR
+        $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        $responseCreate = $this->json(
+            'POST',
+            $this->team_durs_url($teamId),
+            [
+                'project_title' => 'ABC',
+                'datasets' => $this->generateDatasets(),
+                'publications' => $this->generatePublications(),
+                'keywords' => $this->generateKeywords(),
+                'tools' => $this->generateTools(),
+                'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+                'latest_approval_date' => '2017-09-12T01:00:00',
+                'organisation_sector' => 'academia',
+                'status' => 'DRAFT',
+            ],
+            $this->header,
+        );
+
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $contentCreate = $responseCreate->decodeResponseJson();
+        $durId = $contentCreate['data'];
+
+        // archive DUR
+        $responseArchive = $this->json(
+            'PATCH',
+            $this->team_durs_url($teamId) . '/' . $durId,
+            [
+                'status' => Dur::STATUS_ARCHIVED,
+            ],
+            $this->header
+        );
+        $responseArchive->assertJsonStructure([
+            'message'
+        ]);
+        $responseArchive->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // unarchive DUR
+        $responseUnarchive = $this->json(
+            'PATCH',
+            $this->team_durs_url($teamId) . '/' . $durId,
+            [
+                'status' => Dur::STATUS_ACTIVE,
+            ],
+            $this->header
+        );
+        $responseUnarchive->assertJsonStructure([
+            'message'
+        ]);
+        $responseUnarchive->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // update DUR
+        $responseUpdate = $this->json(
+            'PUT',
+            $this->team_durs_url($teamId) . '/' . $durId,
+            [
+                'project_title' => 'ABC',
+                'datasets' => $this->generateDatasets(),
+                'publications' => $this->generatePublications(),
+                'keywords' => $this->generateKeywords(),
+                'tools' => $this->generateTools(),
+                'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+                'latest_approval_date' => '2017-09-12T01:00:00',
+                'organisation_sector' => 'academia',
+                'status' => 'DRAFT',
+            ],
+            $this->header,
+        );
+        $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // (fail to) check status has updated correctly
+        $responseGet = $this->json(
+            'GET',
+            self::TEST_URL_DUR_V2 . '/' . $durId,
+            [],
+            $this->header,
+        );
+        $responseGet->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+
+        // check status has updated correctly
+        $responseGet = $this->json(
+            'GET',
+            $this->team_durs_url($teamId) . '/' . $durId,
+            [],
+            $this->header,
+        );
+        $contentGet = $responseGet->decodeResponseJson();
+        $responseGet->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertEquals(Dur::STATUS_DRAFT, $contentGet['data']['status']);
+
+        // delete DUR
+        $responseDelete = $this->json(
+            'DELETE',
+            $this->team_durs_url($teamId) . '/' . $durId,
+            [],
+            $this->header
+        );
+        $responseDelete->assertJsonStructure([
+            'message'
+        ]);
+        $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // delete team
         $this->deleteTeam($teamId);

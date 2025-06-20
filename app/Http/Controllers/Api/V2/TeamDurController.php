@@ -914,23 +914,37 @@ class TeamDurController extends Controller
                 $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
             }
 
-            Dur::where(['id' => $id, 'team_id' => $teamId])->first()->update($array);
+            // if not supplied, set fields which have a NOT NULL constraint to their defaults
+            if (is_null($array['manual_upload'])) {
+                $array['manual_upload'] = 1;
+            }
+            if (is_null($array['enabled'])) {
+                $array['enabled'] = 1;
+            }
+            if (is_null($array['counter'])) {
+                $array['counter'] = 0;
+            }
+            if (is_null($array['status'])) {
+                $array['status'] = Dur::STATUS_DRAFT;
+            }
+
+            Dur::where(['id' => $id, 'team_id' => $teamId])->first()->update($array); //TODO: can't use update if we want to use Observers - need to edit the model and then save
 
             // link/unlink dur with datasets
             $datasets = $input['datasets'] ?? [];
-            $this->checkDatasets($durId, $datasets, (int)$jwtUser['id']);
+            $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
 
             // link/unlink dur with publications
             $publications = $input['publications'] ?? [];
-            $this->checkPublications($durId, $publications, (int)$jwtUser['id']);
+            $this->checkPublications($id, $publications, (int)$jwtUser['id']);
 
             // link/unlink dur with keywords
             $keywords = $input['keywords'] ?? [];
-            $this->checkKeywords($durId, $keywords);
+            $this->checkKeywords($id, $keywords);
 
             // link/unlink dur with tools
             $tools = $input['tools'] ?? [];
-            $this->checkTools($durId, $tools);
+            $this->checkTools($id, $tools);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
