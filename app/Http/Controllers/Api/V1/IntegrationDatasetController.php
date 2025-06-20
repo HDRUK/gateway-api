@@ -1181,28 +1181,38 @@ class IntegrationDatasetController extends Controller
         return $formattedVersion;
     }
 
-    private function extractMetadata(Mixed $metadata)
+    private function extractMetadata(mixed $metadata)
     {
-
         if (isset($metadata['metadata']['metadata'])) {
             $metadata = $metadata['metadata'];
         }
 
+        if (is_string($metadata) && $this->isJsonString($metadata)) {
+            $metadata = json_decode($metadata, true);
+        }
         // Pre-process check for incoming data from a resource that passes strings
         // when we expect an associative array. GMI passes strings, this
         // is a safe-guard to ensure execution is unaffected by other data types.
-        if (isset($metadata['metadata'])) {
-            if (is_string($metadata['metadata'])) {
-                $tmpMetadata['metadata'] = json_decode($metadata['metadata'], true);
-                unset($metadata['metadata']);
-                $metadata = $tmpMetadata;
-            }
-        } elseif (is_string($metadata)) {
-            $tmpMetadata['metadata'] = json_decode($metadata, true);
-            unset($metadata);
+
+
+        if (isset($metadata['metadata']) && is_string($metadata['metadata']) && $this->isJsonString($metadata['metadata'])) {
+            $tmpMetadata['metadata'] = json_decode($metadata['metadata'], true);
+            unset($metadata['metadata']);
             $metadata = $tmpMetadata;
         }
+
+
+
         return $metadata;
+    }
+
+    private function isJsonString($value): bool
+    {
+        if (!is_string($value)) {
+            return false;
+        }
+        json_decode($value);
+        return json_last_error() === JSON_ERROR_NONE;
     }
 
 
