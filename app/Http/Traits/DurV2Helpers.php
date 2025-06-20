@@ -21,7 +21,7 @@ use App\Models\ToolHasProgrammingLanguage;
 
 trait DurV2Helpers
 {
-    public function getDurById(int $durId, ?int $teamId)
+    public function getDurById(int $durId, ?int $teamId = null, ?string $status = null)
     {
         $dur = Dur::where(['id' => $durId])
         ->with([
@@ -48,6 +48,9 @@ trait DurV2Helpers
         ])
         ->when($teamId, function ($query) use ($teamId) {
             return $query->where(['team_id' => $teamId]);
+        })
+        ->when($status, function ($query) use ($status) {
+            return $query->where(['status' => $status]);
         })
         ->first();
 

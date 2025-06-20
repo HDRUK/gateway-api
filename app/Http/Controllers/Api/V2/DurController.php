@@ -10,8 +10,9 @@ use App\Models\Dataset;
 use App\Models\Collection;
 use Illuminate\Http\Request;
 use App\Http\Traits\CheckAccess;
-use App\Http\Requests\V2\Dur\GetDur;
+use App\Http\Traits\DurV2Helpers;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\V2\Dur\GetDur;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use Illuminate\Support\Facades\Storage;
@@ -24,6 +25,7 @@ class DurController extends Controller
     use RequestTransformation;
     use MapOrganisationSector;
     use CheckAccess;
+    use DurV2Helpers;
 
     /**
      * @OA\Get(
@@ -335,7 +337,7 @@ class DurController extends Controller
     public function showActive(GetDur $request, int $id): JsonResponse
     {
         try {
-            $dur = $this->getActiveDurById($id);
+            $dur = $this->getDurById($id, status: 'ACTIVE');
 
             if (!empty($dur['user'])) {
                 $dur['user'] = array_intersect_key($dur['user'], array_flip(['id', 'firstname', 'lastname']));
@@ -542,75 +544,4 @@ class DurController extends Controller
         return $title;
     }
 
-    // Get a single DUR with associated items
-    private function getActiveDurById(int $durId)
-    {
-        $dur = Dur::with([
-            'keywords',
-            'publications',
-            'tools',
-            'userDatasets' => function ($query) {
-                $query->distinct('id');
-            },
-            'userPublications' => function ($query) {
-                $query->distinct('id');
-            },
-            'applicationDatasets' => function ($query) {
-                $query->distinct('id');
-            },
-            'applicationPublications' => function ($query) {
-                $query->distinct('id');
-            },
-            'user',
-            'team',
-            'collections' => function ($query) {
-                $query->where('status', Collection::STATUS_ACTIVE);
-            },
-        ])
-        ->where([
-            'id' => $durId,
-            'status' => 'ACTIVE'
-            ])
-        ->first();
-        if (!$dur) {
-            throw new NotFoundException();
-        }
-
-        $userDatasets = $dur->userDatasets;
-        $userPublications = $dur->userPublications;
-        $users = $userDatasets->merge($userPublications)
-            ->unique('id');
-        $dur->setRelation('users', $users);
-
-        $applicationDatasets = $dur->applicationDatasets;
-        $applicationPublications = $dur->applicationPublications;
-        $applications = $applicationDatasets->merge($applicationPublications)
-            ->unique('id');
-        $dur->setRelation('applications', $applications);
-
-        unset(
-            $users,
-            $userDatasets,
-            $userPublications,
-            $applications,
-            $applicationDatasets,
-            $applicationPublications,
-            $dur->userDatasets,
-            $dur->userPublications,
-            $dur->applicationDatasets,
-            $dur->applicationPublications
-        );
-
-        // Fetch datasets using the accessor
-        $datasets = $dur->allDatasets  ?? [];
-
-        foreach ($datasets as &$dataset) {
-            $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);
-        }
-
-        // Update the relationship with the modified datasets
-        $dur->setAttribute('datasets', $datasets);
-
-        return $dur->toArray();
-    }
 }
