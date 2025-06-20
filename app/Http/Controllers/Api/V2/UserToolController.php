@@ -260,7 +260,7 @@ class UserToolController extends Controller
     public function show(GetToolByUserAndId $request, int $userId, int $id): JsonResponse
     {
         try {
-            $tool = $this->getToolByUserIdAndById($userId, $id, true);
+            $tool = $this->getToolById($id, userId: $userId, onlyActiveRelated: true);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -272,6 +272,10 @@ class UserToolController extends Controller
                 'message' => 'success',
                 'data' => $tool,
             ], 200);
+        } catch (NotFoundException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V2;
 use Config;
 use Auditor;
 use Exception;
-use Carbon\Carbon;
 use App\Models\Tool;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
@@ -48,7 +47,7 @@ class TeamToolController extends Controller
      *     operationId="fetch_all_tool_by_team_and_status_v2",
      *     tags={"Tool"},
      *     summary="TeamToolController@indexStatus",
-     *     description="Returns a list of a teams tools",
+     *     description="Returns a list of a teams tools with given status",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="teamId",
@@ -126,7 +125,7 @@ class TeamToolController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Tool get all',
+                'description' => 'Tool get all by status',
             ]);
 
             return response()->json(
@@ -280,7 +279,7 @@ class TeamToolController extends Controller
     public function show(GetToolByTeamAndId $request, int $teamId, int $id): JsonResponse
     {
         try {
-            $tool = $this->getToolByTeamIdAndById($teamId, $id, true);
+            $tool = $this->getToolById($id, teamId: $teamId, onlyActiveRelated: true);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -291,7 +290,11 @@ class TeamToolController extends Controller
             return response()->json([
                 'message' => 'success',
                 'data' => $tool,
-            ], 200);
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (NotFoundException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -602,11 +605,19 @@ class TeamToolController extends Controller
                 'status',
             ];
 
-            $array = $this->checkEditArray($input, $arrayKeys);
+            $array = $this->checkUpdateArray($input, $arrayKeys);
             if (array_key_exists('name', $input)) {
                 $array['name'] = formatCleanInput($input['name']);
             }
+            if (is_null($array['any_dataset'])) {
+                $array['any_dataset'] = 0;
+            }
+            if (is_null($array['status'])) {
+                $array['status'] = Tool::STATUS_DRAFT;
+            }
             $array['team_id'] = $teamId;
+            $array['user_id'] = $jwtUser['id'];
+
             Tool::where([
                 'id' => $id,
                 'team_id' => $teamId,
@@ -615,33 +626,23 @@ class TeamToolController extends Controller
             ToolHasTag::where('tool_id', $id)->forceDelete();
             $this->insertToolHasTag($input['tag'], (int)$id);
 
-            if (array_key_exists('dataset', $input)) {
-                DatasetVersionHasTool::where('tool_id', $id)->forceDelete();
-                $this->insertDatasetVersionHasTool($input['dataset'], (int)$id);
-            }
+            DatasetVersionHasTool::where('tool_id', $id)->forceDelete();
+            $this->insertDatasetVersionHasTool($input['dataset'] ?? [], (int)$id);
 
-            if (array_key_exists('programming_language', $input)) {
-                ToolHasProgrammingLanguage::where('tool_id', $id)->forceDelete();
-                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int)$id);
-            }
+            ToolHasProgrammingLanguage::where('tool_id', $id)->forceDelete();
+            $this->insertToolHasProgrammingLanguage($input['programming_language'] ?? [], (int)$id);
 
-            if (array_key_exists('programming_package', $input)) {
-                ToolHasProgrammingPackage::where('tool_id', $id)->forceDelete();
-                $this->insertToolHasProgrammingPackage($input['programming_package'], (int)$id);
-            }
+            ToolHasProgrammingPackage::where('tool_id', $id)->forceDelete();
+            $this->insertToolHasProgrammingPackage($input['programming_package'] ?? [], (int)$id);
 
-            if (array_key_exists('type_category', $input)) {
-                ToolHasTypeCategory::where('tool_id', $id)->forceDelete();
-                $this->insertToolHasTypeCategory($input['type_category'], (int)$id);
-            }
+            ToolHasTypeCategory::where('tool_id', $id)->forceDelete();
+            $this->insertToolHasTypeCategory($input['type_category'] ?? [], (int)$id);
 
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($id, $publications, (int)$jwtUser['id']);
 
             DurHasTool::where('tool_id', $id)->forceDelete();
-            if (array_key_exists('durs', $input)) {
-                $this->insertDurHasTool($input['durs'], (int)$id);
-            }
+            $this->insertDurHasTool($input['durs'] ?? [], (int)$id);
 
             $collections = array_key_exists('collections', $input) ? $input['collections'] : [];
             $this->checkCollections($id, $collections, (int)$jwtUser['id']);
@@ -807,16 +808,11 @@ class TeamToolController extends Controller
                 $array['name'] = formatCleanInput($input['name']);
             }
             $array['team_id'] = $teamId;
-            $initTool = Tool::where('id', $id)->first();
-
-            if ($initTool['status'] === Tool::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
-                throw new Exception('Cannot update current tool! Status already "ARCHIVED"');
-            }
 
             Tool::where([
                 'id' => $id,
                 'team_id' => $teamId,
-            ])->update($array);
+            ])->first()->update($array);
 
             if (array_key_exists('tag', $input)) {
                 ToolHasTag::where('tool_id', $id)->forceDelete();
@@ -954,9 +950,6 @@ class TeamToolController extends Controller
 
         try {
             if ($tool) {
-                $tool->deleted_at = Carbon::now();
-                $tool->status = Tool::STATUS_ARCHIVED;
-                $tool->save();
                 ToolHasTag::where('tool_id', $id)->delete();
                 DatasetVersionHasTool::where('tool_id', $id)->delete();
                 ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
@@ -965,6 +958,7 @@ class TeamToolController extends Controller
                 PublicationHasTool::where('tool_id', $id)->delete();
                 DurHasTool::where('tool_id', $id)->delete();
                 CollectionHasTool::where('tool_id', $id)->delete();
+                Tool::where('id', $id)->delete();
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],

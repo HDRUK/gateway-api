@@ -340,17 +340,8 @@ return [
     [
         'name' => 'datasets',
         'method' => 'get',
-        'path' => '/datasets/count/{field}',
-        'methodController' => 'DatasetController@count',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'datasets',
-        'method' => 'get',
         'path' => '/datasets/{id}',
-        'methodController' => 'DatasetController@show',
+        'methodController' => 'DatasetController@showActive',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [],
         'constraint' => [
@@ -415,40 +406,15 @@ return [
     [
         'name' => 'datasets',
         'method' => 'get',
-        'path' => '/teams/{teamId}/datasets',
-        'methodController' => 'TeamDatasetController@indexActive',
+        'path' => '/teams/{teamId}/datasets/status/{status}',
+        'methodController' => 'TeamDatasetController@indexStatus',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'datasets',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/datasets/status/draft',
-        'methodController' => 'TeamDatasetController@indexDraft',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'datasets',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/datasets/status/archived',
-        'methodController' => 'TeamDatasetController@indexArchived',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
+            'status' => 'active|draft|archived'
         ],
     ],
     [
@@ -534,6 +500,143 @@ return [
         'constraint' => [
             'id' => '[0-9]+',
             'teamId' => '[0-9]+',
+        ],
+    ],
+
+    // v2 data uses
+    [
+        'name' => 'durs.get.active',
+        'method' => 'get',
+        'path' => '/dur',
+        'methodController' => 'DurController@indexActive',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'durs.export',
+        'method' => 'get',
+        'path' => '/dur/export',
+        'methodController' => 'DurController@export',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'durs.exportTemplate',
+        'method' => 'get',
+        'path' => '/dur/template',
+        'methodController' => 'DurController@exportTemplate',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'durs.get.one',
+        'method' => 'get',
+        'path' => '/dur/{id}',
+        'methodController' => 'DurController@showActive',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+
+    // v2 team & data uses
+    [
+        'name' => 'team.durs.indexStatus',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/dur/status/{status}',
+        'methodController' => 'TeamDurController@indexStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'team.durs.count',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/dur/count/{field}',
+        'methodController' => 'TeamDurController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'field' => 'status'
+        ],
+    ],
+    [
+        'name' => 'team.durs.get.one',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/dur/{id}',
+        'methodController' => 'TeamDurController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.durs.create',
+        'method' => 'post',
+        'path' => '/teams/{teamId}/dur',
+        'methodController' => 'TeamDurController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.durs.update',
+        'method' => 'put',
+        'path' => '/teams/{teamId}/dur/{id}',
+        'methodController' => 'TeamDurController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.durs.edit',
+        'method' => 'patch',
+        'path' => '/teams/{teamId}/dur/{id}',
+        'methodController' => 'TeamDurController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.durs.delete',
+        'method' => 'delete',
+        'path' => '/teams/{teamId}/dur/{id}',
+        'methodController' => 'TeamDurController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
         ],
     ],
 
@@ -827,7 +930,7 @@ return [
         'name' => 'tools',
         'method' => 'get',
         'path' => '/tools/{id}',
-        'methodController' => 'ToolController@show',
+        'methodController' => 'ToolController@showActive',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [],
         'constraint' => [
@@ -913,7 +1016,7 @@ return [
         ],
     ],
     [
-        'name' => 'team.tools.get.count',
+        'name' => 'team.tools.count',
         'method' => 'get',
         'path' => '/teams/{teamId}/tools/count/{field}',
         'methodController' => 'TeamToolController@count',

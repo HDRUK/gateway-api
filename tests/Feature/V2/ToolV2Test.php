@@ -164,7 +164,7 @@ class ToolV2Test extends TestCase
      */
     public function test_v2_get_tool_by_id_with_success(): void
     {
-        $toolId = Tool::where('enabled', 1)->get()->random()->id;
+        $toolId = Tool::where(['enabled' => 1, 'status' => 'ACTIVE'])->get()->random()->id;
         $response = $this->json('GET', self::TEST_URL . '/' . $toolId, [], $this->header);
         $response->assertJsonStructure([
             'data' => [
