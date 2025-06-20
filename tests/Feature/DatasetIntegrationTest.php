@@ -585,6 +585,97 @@ class DatasetIntegrationTest extends TestCase
         $responseUpdateDataset->assertStatus(500);
     }
 
+    public function test_create_dataset_by_team_without_success(): void
+    {
+        $userOneEmail = fake()->email();
+        $userTwoEmail = fake()->email();
+        $password = 'Passw@rd1!';
+
+        // create user
+        $userOne = $this->createUser($userOneEmail, $password);
+        // create team one
+        $teamOne = $this->createTeam($userOne);
+        // assign user one to team one
+        $this->assignUserToTeamWithRoles($teamOne, $userOne, ['developer', 'custodian.metadata.manager']);
+        // get jwt for user one
+        $jwtOne = $this->getJwtByUser($userOneEmail, $password);
+        // create application one for team one
+        $appOne = $this->newApplication($teamOne, $userOne, $jwtOne, ['datasets.read']);
+        // create dateset with application one
+        $responseCreateDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'metadata' => $this->metadata,
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtOne,
+                'x-application-id' => $appOne['app_id'],
+                'x-client-id' => $appOne['client_id'],
+            ],
+        );
+        $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
+
+        $this->assertEquals(
+            $contentCreateDataset['message'],
+            'Application permissions do not allow this request'
+        );
+    }
+
+    public function test_update_dataset_by_team_without_success(): void
+    {
+        $userOneEmail = fake()->email();
+        $userTwoEmail = fake()->email();
+        $password = 'Passw@rd1!';
+
+        // create user
+        $userOne = $this->createUser($userOneEmail, $password);
+        // create team one
+        $teamOne = $this->createTeam($userOne);
+        // assign user one to team one
+        $this->assignUserToTeamWithRoles($teamOne, $userOne, ['developer', 'custodian.metadata.manager']);
+        // get jwt for user one
+        $jwtOne = $this->getJwtByUser($userOneEmail, $password);
+        // create application one for team one
+        $appOne = $this->newApplication($teamOne, $userOne, $jwtOne, ['datasets.create', 'datasets.read', 'datasets.delete']);
+        // create dateset with application one
+        $responseCreateDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'metadata' => $this->metadata,
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtOne,
+                'x-application-id' => $appOne['app_id'],
+                'x-client-id' => $appOne['client_id'],
+            ],
+        );
+        $responseCreateDataset->assertStatus(201);
+        $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
+        $datasetId = $contentCreateDataset['data'];
+
+        $responseUpdateDataset = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET . '/' . $datasetId,
+            [
+                'metadata' => $this->metadata,
+            ],
+            [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $jwtOne,
+                'x-application-id' => $appOne['app_id'],
+                'x-client-id' => $appOne['client_id'],
+            ],
+        );
+        $this->assertEquals(
+            $responseUpdateDataset['message'],
+            'Application permissions do not allow this request'
+        );
+    }
+
     private function createTeam($userId)
     {
         $responseNotification = $this->json(
