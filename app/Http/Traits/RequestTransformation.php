@@ -25,7 +25,7 @@ trait RequestTransformation
 
         foreach ($keys as $key) {
             $response[$key] = null;
-            if (in_array($key, $input)) {
+            if (array_key_exists($key, $input)) {
                 $response[$key] = $input[$key];
             }
         }
