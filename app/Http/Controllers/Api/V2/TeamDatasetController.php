@@ -181,7 +181,7 @@ class TeamDatasetController extends Controller
      */
     public function count(Request $request, int $teamId, string $field): JsonResponse
     {
-        $this->checkAccess($request->all(), $teamId, null, 'team');
+        $this->checkAccess($request->all(), $teamId, null, 'team', $request->header());
 
         try {
             $counts = Dataset::where('team_id', $teamId)->applyCount();

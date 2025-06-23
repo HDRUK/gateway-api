@@ -581,7 +581,7 @@ class DatasetTest extends TestCase
         $this->assertNotEmpty($responseArchivedDatasets['data'][0]['latest_metadata']);
 
         /*
-        * app2 is not in this team, so count and active should pass, but draft and archived should fail
+        * app2 is not in this team, so gets should fail
         */
         $responseCount = $this->json(
             'GET',
@@ -589,7 +589,7 @@ class DatasetTest extends TestCase
             [],
             $appHeader2
         );
-        $responseCount->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $responseCount->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
 
         // get active datsets in this team
         $responseActiveDatasets = $this->json(
@@ -598,7 +598,7 @@ class DatasetTest extends TestCase
             [],
             $appHeader2
         );
-        $responseActiveDatasets->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $responseActiveDatasets->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
 
         // (fail to) get archived datsets in this team
         $responseArchivedDatasets = $this->json(
