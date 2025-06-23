@@ -65,7 +65,7 @@ class UpdateEmailTemplateTeamNotifications extends Command
                                     Dear [[TEAM_NAME]],
                                 </mj-text>
                                 <mj-text  line-height="20px">
-                                    Roles within [[TEAM_NAME]] have beed updated:
+                                    Roles within [[TEAM_NAME]] have been updated:
                                 </mj-text>
                                 <mj-text line-height="20px">
                                     [[USER_CHANGES]]
