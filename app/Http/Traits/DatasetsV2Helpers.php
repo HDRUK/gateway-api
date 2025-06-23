@@ -86,7 +86,7 @@ trait DatasetsV2Helpers
         return $dataset;
     }
 
-    private function extractMetadata(mixed $metadata)
+    private function extractMetadata(Mixed $metadata)
     {
         if (isset($metadata['metadata']['metadata'])) {
             $metadata = $metadata['metadata'];

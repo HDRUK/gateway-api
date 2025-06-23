@@ -1549,7 +1549,7 @@ class DatasetController extends Controller
             throw new Exception($e->getMessage());
         }
     }
-    private function extractMetadata(mixed $metadata)
+    private function extractMetadata(Mixed $metadata)
     {
         if (isset($metadata['metadata']['metadata'])) {
             $metadata = $metadata['metadata'];

@@ -1181,7 +1181,7 @@ class IntegrationDatasetController extends Controller
         return $formattedVersion;
     }
 
-    private function extractMetadata(mixed $metadata)
+    private function extractMetadata(Mixed $metadata)
     {
         if (isset($metadata['metadata']['metadata'])) {
             $metadata = $metadata['metadata'];
