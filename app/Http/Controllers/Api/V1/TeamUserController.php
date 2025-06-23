@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
 use App\Jobs\SendEmailJob;
 use App\Models\TeamHasUser;
+use App\Models\Notification;
 use App\Models\EmailTemplate;
 use App\Models\TeamUserHasRole;
 use Illuminate\Http\JsonResponse;
@@ -23,6 +24,7 @@ use App\Http\Requests\TeamUser\CreateTeamUser;
 use App\Http\Requests\TeamUser\DeleteTeamUser;
 use App\Http\Requests\TeamUser\UpdateTeamUser;
 use App\Http\Requests\TeamUser\UpdateBulkTeamUser;
+use App\Models\TeamHasNotification;
 
 class TeamUserController extends Controller
 {
@@ -56,7 +58,7 @@ class TeamUserController extends Controller
     private array $afterRoleNames = [];
     private array $deleteRoleNames = [];
     private array $addRoleNames = [];
-
+    private array $usersTeamNotifications = [];
 
     public function __construct()
     {
@@ -404,6 +406,8 @@ class TeamUserController extends Controller
                 ];
             }
 
+            $this->sendEmailUpdateToTeam($teamId);
+
             $this->updateBulkAuditLog($jwtUser['id'], $teamId, $input, class_basename($this) . '@' . __FUNCTION__);
 
             return response()->json([
@@ -724,6 +728,13 @@ class TeamUserController extends Controller
     public function emailRoles(int $teamId, int $userId, array $input)
     {
         $this->beforeRoleNames = [];
+        $userTeamNotificationTemp = [];
+
+        $user = User::where('id', $userId)->first();
+        if (is_null($user)) {
+            throw new NotFoundException('User not found');
+        }
+        $userTeamNotificationTemp['user_name'] = $user->name;
 
         $teamHasUsers = TeamHasUser::where([
             'team_id' => $teamId,
@@ -755,6 +766,13 @@ class TeamUserController extends Controller
                 $this->addRoleNames[] = $roleName;
             }
         }
+
+        $userTeamNotificationTemp['user_roles_after'] = $this->afterRoleNames;
+        $userTeamNotificationTemp['user_roles_before'] = $this->beforeRoleNames;
+        $userTeamNotificationTemp['user_roles_deleted'] = $this->deleteRoleNames;
+        $userTeamNotificationTemp['user_roles_added'] = $this->addRoleNames;
+        $this->usersTeamNotifications[] = $userTeamNotificationTemp;
+        unset($userTeamNotificationTemp);
     }
 
     private function sendEmailNewUser(int $teamId, int $userId, array $roles)
@@ -814,6 +832,84 @@ class TeamUserController extends Controller
         ];
 
         SendEmailJob::dispatch($to, $template, $replacements);
+    }
+
+    public function sendEmailUpdateToTeam(int $teamId)
+    {
+        $template = EmailTemplate::where(['identifier' => 'update.roles.team.notifications'])->first();
+        $team = Team::where('id', '=', $teamId)->first();
+
+        $teamHasNotifications = TeamHasNotification::where('team_id', $teamId)->get();
+        if ($teamHasNotifications->isEmpty()) {
+            return;
+        }
+        $teamNotifications = Notification::whereIn('id', $teamHasNotifications->pluck('notification_id'))->get();
+        foreach ($teamNotifications as $notification) {
+            if (!$notification->opt_in) {
+                continue;
+            }
+
+            if ($notification->email) {
+                $to = [
+                    'to' => [
+                        'email' => $notification['email'],
+                        'name' => $team->name,
+                    ],
+                ];
+            } else {
+                $user = User::where('id', $notification['user_id'])->first();
+                $to = [
+                    'to' => [
+                        'email' => ($user['preferred_email'] === 'primary') ? $user['email'] : $user['secondary_email'],
+                        'name' => $user['name'],
+                    ],
+                ];
+            }
+
+            $replacements = [
+                '[[TEAM_NAME]]' => $team['name'],
+                '[[TEAM_ID]]' => $teamId,
+                '[[CURRENT_YEAR]]' => date("Y"),
+                '[[USER_CHANGES]]' => $this->stringUserRoleTeamNotifications(),
+            ];
+
+            SendEmailJob::dispatch($to, $template, $replacements);
+        }
+    }
+
+    protected function stringUserRoleTeamNotifications()
+    {
+        $return = '';
+        if (!count($this->usersTeamNotifications)) {
+            return $return;
+        }
+
+        foreach ($this->usersTeamNotifications as $usersTeamNotification) {
+
+            $return .= '<p>' . $usersTeamNotification['user_name'] . '</p>';
+            $return .= '<ol>';
+            $return .= '   <li>Current roles:</li>';
+            $return .= '   <ul>';
+            foreach ($usersTeamNotification['user_roles_after'] as $roleNameAfter) {
+                $return .= '<li>' . $roleNameAfter . '</li>';
+            }
+            $return .= '   </ul>';
+            $return .= '   <li>Added roles:</li>';
+            $return .= '   <ul>';
+            foreach ($usersTeamNotification['user_roles_added'] as $roleNameAdded) {
+                $return .= '<li>' . $roleNameAdded . '</li>';
+            }
+            $return .= '   </ul>';
+            $return .= '   <li>Removed roles:</li>';
+            $return .= '   <ul>';
+            foreach ($usersTeamNotification['user_roles_deleted'] as $roleNameDeleted) {
+                $return .= '<li>' . $roleNameDeleted . '</li>';
+            }
+            $return .= '</ol>';
+
+        }
+
+        return $return;
     }
 
     public function stringRoleFullName(array $roleNames)
