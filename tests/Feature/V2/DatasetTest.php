@@ -370,7 +370,7 @@ class DatasetTest extends TestCase
         */
         $response = $this->json(
             'GET',
-            $this->team_datasets_url($teamId1) .
+            $this->team_datasets_url($teamId1) . '/status/active' .
             '?sort=created:asc',
             [],
             $this->headerNonAdmin
