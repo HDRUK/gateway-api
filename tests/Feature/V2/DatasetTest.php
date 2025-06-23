@@ -106,7 +106,7 @@ class DatasetTest extends TestCase
      *
      * @return void
      */
-    public function test_get_all_team_datasets_with_success(): void
+    public function test_get_all_team_datasets_with_success_v2(): void
     {
         // First create a notification to be used by the new team
         $notificationID = $this->createNotification();
@@ -242,7 +242,7 @@ class DatasetTest extends TestCase
         */
         $response = $this->json(
             'GET',
-            $this->team_datasets_url($teamId1) .
+            $this->team_datasets_url($teamId1) . '/status/active' .
             '?sort=created:desc',
             [],
             $this->headerNonAdmin
@@ -288,10 +288,10 @@ class DatasetTest extends TestCase
         $this->assertEquals(1, $countDraft);
         $this->assertEquals(1, $countArchived);
 
-        // get active datsets in this team
+        // get active datasets in this team
         $responseActiveDatasets = $this->json(
             'GET',
-            $this->team_datasets_url($teamId1),
+            $this->team_datasets_url($teamId1) . '/status/active',
             [],
             $this->headerNonAdmin
         );
@@ -328,7 +328,7 @@ class DatasetTest extends TestCase
         $this->assertNotEmpty($responseArchivedDatasets['data'][0]['latest_metadata']);
 
         /*
-        * nonAdmin2 is not in this team, so count and active shoudl pass, but draft and archived should fail
+        * nonAdmin2 is not in this team, these should all fail
         */
         $responseCount = $this->json(
             'GET',
@@ -336,16 +336,16 @@ class DatasetTest extends TestCase
             [],
             $this->headerNonAdmin2
         );
-        $responseCount->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $responseCount->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
 
-        // get active datsets in this team
+        // (fail to) get active datsets in this team
         $responseActiveDatasets = $this->json(
             'GET',
-            $this->team_datasets_url($teamId1),
+            $this->team_datasets_url($teamId1) . '/status/active',
             [],
             $this->headerNonAdmin2
         );
-        $responseActiveDatasets->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $responseActiveDatasets->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
 
         // (fail to) get draft datsets in this team
         $responseDraftDatasets = $this->json(
@@ -370,7 +370,7 @@ class DatasetTest extends TestCase
         */
         $response = $this->json(
             'GET',
-            $this->team_datasets_url($teamId1) .
+            $this->team_datasets_url($teamId1) . '/status/active' .
             '?sort=created:asc',
             [],
             $this->headerNonAdmin
@@ -406,7 +406,6 @@ class DatasetTest extends TestCase
                 $responseDeleteDataset->assertJsonStructure([
                     'message'
                 ]);
-                // var_dump($responseDeleteDataset->decodeResponseJson());
                 $responseDeleteDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
             } else {
                 // attempt to

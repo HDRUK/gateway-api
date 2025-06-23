@@ -185,66 +185,10 @@ class DatasetController extends Controller
 
     /**
      * @OA\Get(
-     *    path="/api/v2/datasets/count/{field}",
-     *    operationId="count_unique_fields_datasets_v2",
-     *    tags={"Datasets"},
-     *    summary="DatasetController@count",
-     *    description="Get Counts for distinct entries of a field in the model",
-     *    security={{"bearerAuth":{}}},
-     *    @OA\Parameter(
-     *       name="field",
-     *       in="path",
-     *       description="name of the field to perform a count on",
-     *       required=true,
-     *       example="status",
-     *       @OA\Schema(
-     *          type="string",
-     *          description="status field",
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *       response="200",
-     *       description="Success response",
-     *       @OA\JsonContent(
-     *          @OA\Property(
-     *             property="data",
-     *             type="object",
-     *          )
-     *       )
-     *    )
-     * )
-     */
-    public function count(Request $request, string $field): JsonResponse
-    {
-        try {
-            $counts = Dataset::applyCount();
-
-            Auditor::log([
-                'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'Dataset count',
-            ]);
-
-            return response()->json([
-                "data" => $counts
-            ]);
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Get(
      *    path="/api/v2/datasets/{id}",
      *    operationId="fetch_datasets_v2",
      *    tags={"Datasets"},
-     *    summary="DatasetController@show",
+     *    summary="DatasetController@showActive",
      *    description="Get publicly visible dataset by id",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
@@ -309,7 +253,7 @@ class DatasetController extends Controller
      * )
      *
      */
-    public function show(GetDataset $request, int $id): JsonResponse|BinaryFileResponse
+    public function showActive(GetDataset $request, int $id): JsonResponse|BinaryFileResponse
     {
         try {
             $exportStructuralMetadata = $request->query('export', null);
