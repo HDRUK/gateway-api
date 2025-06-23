@@ -2,22 +2,9 @@
 
 namespace App\Http\Traits;
 
-use Auditor;
-use Exception;
 use App\Models\Dur;
-use App\Models\Tag;
 use App\Models\Collection;
-use App\Models\DurHasTool;
-use App\Models\ToolHasTag;
-use App\Http\Enums\TagType;
-use App\Models\DatasetVersion;
-use App\Models\CollectionHasTool;
-use App\Models\PublicationHasTool;
-use App\Models\ToolHasTypeCategory;
-use App\Models\DatasetVersionHasTool;
 use App\Exceptions\NotFoundException;
-use App\Models\ToolHasProgrammingPackage;
-use App\Models\ToolHasProgrammingLanguage;
 
 trait DurV2Helpers
 {

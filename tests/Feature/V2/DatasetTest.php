@@ -3,16 +3,21 @@
 namespace Tests\Feature\V2;
 
 use Config;
+use Hash;
 use Tests\TestCase;
+use App\Models\Application;
+use App\Models\ApplicationHasPermission;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\NamedEntities;
+use App\Models\Permission;
 use Illuminate\Support\Carbon;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
+use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use App\Jobs\LinkageExtraction;
@@ -49,6 +54,7 @@ class DatasetTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             SpatialCoverageSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
 
         $this->metadata = $this->getMetadata();
@@ -471,6 +477,168 @@ class DatasetTest extends TestCase
     }
 
     /**
+     * App get All Datasets for a given team with success
+     *
+     * @return void
+     */
+    public function test_app_can_get_all_team_datasets_with_success(): void
+    {
+        // First create a notification to be used by the new team
+        $notificationID = $this->createNotification();
+
+        // Create the new team
+        $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+
+        $teamId1 = $this->createTeam([$this->nonAdminUser['id']], [$notificationID]);
+        $appHeader1 = $this->createApp($teamId1, $this->nonAdminUser['id']);
+
+        //create a 2nd team
+        $teamId2 = $this->createTeam([$this->nonAdmin2User['id']], [$notificationID]);
+        $appHeader2 = $this->createApp($teamId2, $this->nonAdmin2User['id']);
+
+        // create dataset
+        $labelDataset1 = 'XYZ DATASET';
+        $responseCreateDataset = $this->json(
+            'POST',
+            $this->team_datasets_url($teamId1),
+            [
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $appHeader1,
+        );
+
+        $responseCreateDataset->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        $datasetId1 = $responseCreateDataset['data'];
+
+        //create a dataset owned by the 2nd team
+        $labelDataset2 = 'Other Team DATASET';
+        $responseCreateDataset2 = $this->json(
+            'POST',
+            $this->team_datasets_url($teamId2),
+            [
+                'metadata' => $this->metadataAlt,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            $appHeader2,
+        );
+        $responseCreateDataset2->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $datasetId2 = $responseCreateDataset2['data'];
+
+        $response = $this->json(
+            'GET',
+            self::TEST_URL_DATASET_V2,
+            [],
+            $appHeader1,
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $this->assertCount(2, $response['data']);
+        $response->assertJsonStructure([
+            'current_page',
+            'data',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',
+        ]);
+
+        //create an archived dataset from team1
+        $labelDataset3 = 'Archived ABC DATASET';
+        $responseCreateDatasetArchived = $this->json(
+            'POST',
+            $this->team_datasets_url($teamId1),
+            [
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ARCHIVED,
+            ],
+            $appHeader1,
+        );
+        $responseCreateDatasetArchived->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        // get archived datsets in this team
+        $responseArchivedDatasets = $this->json(
+            'GET',
+            $this->team_datasets_url($teamId1) . '/status/archived',
+            [],
+            $appHeader1,
+        );
+        $responseArchivedDatasets->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $this->assertCount(1, $responseArchivedDatasets['data']);
+        $this->assertArrayHasKey('latest_metadata', $responseArchivedDatasets['data'][0]);
+        $this->assertNotEmpty($responseArchivedDatasets['data'][0]['latest_metadata']);
+
+        /*
+        * app2 is not in this team, so gets should fail
+        */
+        $responseCount = $this->json(
+            'GET',
+            $this->team_datasets_url($teamId1) . '/count/status',
+            [],
+            $appHeader2
+        );
+        $responseCount->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+
+        // get active datsets in this team
+        $responseActiveDatasets = $this->json(
+            'GET',
+            $this->team_datasets_url($teamId1),
+            [],
+            $appHeader2
+        );
+        $responseActiveDatasets->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+
+        // (fail to) get archived datsets in this team
+        $responseArchivedDatasets = $this->json(
+            'GET',
+            $this->team_datasets_url($teamId1) . '/status/archived',
+            [],
+            $appHeader2
+        );
+        $responseArchivedDatasets->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+
+        // test deletion with various permissions combinations
+
+        // faile to delete dataset
+        $responseDeleteDataset = $this->json(
+            'DELETE',
+            $this->team_datasets_url($teamId1) .
+            '/' . $datasetId1,
+            [],
+            $appHeader2
+        );
+        $responseDeleteDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteDataset->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+
+        $responseDeleteDataset = $this->json(
+            'DELETE',
+            $this->team_datasets_url($teamId1) .
+            '/' . $datasetId1,
+            [],
+            $appHeader1
+        );
+        $responseDeleteDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+    }
+
+    /**
      * Get Dataset by Id with success
      *
      * @return void
@@ -648,6 +816,88 @@ class DatasetTest extends TestCase
 
         // delete user
         $this->deleteUser($userId);
+    }
+
+    /**
+     * App get Dataset by Id with success
+     *
+     * @return void
+     */
+    public function test_app_can_get_one_dataset_by_id(): void
+    {
+        // create team
+        // First create a notification to be used by the new team
+        $notificationID = $this->createNotification();
+
+        // Create the new team
+        $teamId = $this->createTeam([$this->nonAdminUser['id']], [$notificationID]);
+        $appHeader1 = $this->createApp($teamId, $this->nonAdminUser['id']);
+
+        // create active dataset
+        $responseCreateActiveDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET_V2,
+            [
+                'team_id' => $teamId,
+                'user_id' => $this->nonAdminUser['id'],
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $appHeader1,
+        );
+
+        $responseCreateActiveDataset->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $contentCreateActiveDataset = $responseCreateActiveDataset->decodeResponseJson();
+        $activeDatasetId = $contentCreateActiveDataset['data'];
+
+        // get one active dataset via V2 endpoint
+        $responseGetOneActive = $this->json(
+            'GET',
+            self::TEST_URL_DATASET_V2 . '/' . $activeDatasetId,
+            [],
+            $appHeader1
+        );
+
+        $responseGetOneActive->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // get one active dataset via V2 teams endpoint
+        $responseGetAll = $this->json(
+            'GET',
+            $this->team_datasets_url($teamId),
+            [],
+            $appHeader1
+        );
+
+        $responseGetOneActive = $this->json(
+            'GET',
+            $this->team_datasets_url($teamId) . '/' . $activeDatasetId,
+            [],
+            $appHeader1
+        );
+
+        $responseGetOneActive->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // try and fail to deleted one active dataset via V2 teams endpoint with wrong header
+        $responseDELETEOneActive = $this->json(
+            'DELETE',
+            $this->team_datasets_url($teamId) . '/' . $activeDatasetId,
+            [],
+            $this->headerNonAdmin2
+        );
+        $responseDELETEOneActive->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+
+        // delete active dataset
+        $responseDeleteActiveDataset = $this->json(
+            'DELETE',
+            self::TEST_URL_DATASET_V2 . '/' . $activeDatasetId,
+            [],
+            $appHeader1
+        );
+        $responseDeleteActiveDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteActiveDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
     }
 
     /**
@@ -903,6 +1153,120 @@ class DatasetTest extends TestCase
         $this->deleteUser($userId);
     }
 
+
+    /**
+     * App create/archive/unarchive Team Dataset with success
+     *
+     * @return void
+     */
+    public function test_app_can_create_archive_update_delete_team_dataset_with_success(): void
+    {
+        // create team
+        // First create a notification to be used by the new team
+        $notificationID = $this->createNotification();
+
+        // Create the new team
+        $teamId = $this->createTeam([], [$notificationID]);
+        $appHeader = $this->createApp($teamId);
+
+        // create user
+        $userId = $this->createUser();
+
+        // create dataset
+        $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        $responseCreateDataset = $this->json(
+            'POST',
+            $this->team_datasets_url($teamId),
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            $appHeader,
+        );
+        Queue::assertNotPushed(LinkageExtraction::class);
+        $responseCreateDataset->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
+        $datasetId = $contentCreateDataset['data'];
+
+        // archive dataset
+        $responseArchiveDataset = $this->json(
+            'PATCH',
+            $this->team_datasets_url($teamId) . '/' . $datasetId,
+            [
+                'status' => Dataset::STATUS_ARCHIVED,
+            ],
+            $appHeader,
+        );
+        $responseArchiveDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseArchiveDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // unarchive dataset
+        $responseUnarchiveDataset = $this->json(
+            'PATCH',
+            $this->team_datasets_url($teamId) . '/' . $datasetId,
+            [
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $appHeader,
+        );
+        $responseUnarchiveDataset->assertJsonStructure([
+            'message'
+        ]);
+        Queue::assertPushed(LinkageExtraction::class);
+        $responseUnarchiveDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // update dataset
+        $responseUpdateDataset = $this->json(
+            'PUT',
+            $this->team_datasets_url($teamId) . '/' . $datasetId,
+            [
+               'team_id' => $teamId,
+               'user_id' => $userId,
+               'metadata' => $this->metadata,
+               'create_origin' => Dataset::ORIGIN_MANUAL,
+               'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $appHeader,
+        );
+
+        $contentUpdateDataset = $responseUpdateDataset->decodeResponseJson();
+        $responseUpdateDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $responseGetDataset = $this->json(
+            'GET',
+            $this->team_datasets_url($teamId) . '/' . $datasetId,
+            [],
+            $appHeader,
+        );
+        $contentGetDataset = $responseGetDataset->decodeResponseJson();
+        $responseGetDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertEquals(Dataset::STATUS_ACTIVE, $contentGetDataset['data']['status']);
+
+        // delete dataset
+        $responseDeleteDataset = $this->json(
+            'DELETE',
+            $this->team_datasets_url($teamId) . '/' . $datasetId,
+            [],
+            $appHeader,
+        );
+        $responseDeleteDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // delete team
+        $this->deleteTeam($teamId);
+
+        // delete user
+        $this->deleteUser($userId);
+    }
+
+
     public function test_update_dataset_doesnt_create_new_version(): void
     {
         // create team
@@ -1079,7 +1443,23 @@ class DatasetTest extends TestCase
         ]);
 
         $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
-        return $contentCreateTeam['data'];
+        $teamId = $contentCreateTeam['data'];
+
+        // Give the users metadata manager role
+        foreach ($userIds as $userId) {
+            $responsePut = $this->json(
+                'PUT',
+                'api/v1/teams/' . $teamId . '/users/' . $userId,
+                [
+                    "roles" => [
+                        "custodian.metadata.manager" => true,
+                    ],
+                ],
+                $this->header
+            );
+            $responsePut->assertStatus(200);
+        };
+        return $teamId;
     }
 
     private function deleteTeam(int $teamId)
@@ -1136,5 +1516,43 @@ class DatasetTest extends TestCase
             'message'
         ]);
         $responseDeleteUser->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+    }
+
+    private function createApp(int $teamId, ?int $userId = 1)
+    {
+        $appId = fake()->regexify('[A-Za-z0-9]{40}');
+        $clientId = fake()->regexify('[A-Za-z0-9]{40}');
+        $clientSecret = Hash::make($appId . ':' . $clientId . ':' . env('APP_AUTH_PRIVATE_SALT') . ':' . env('APP_AUTH_PRIVATE_SALT_2'));
+
+        $app = Application::create([
+            'name' => fake()->text(10),
+            'app_id' => $appId,
+            'client_id' => $clientId,
+            'client_secret' => $clientSecret,
+            'description' => fake()->text(),
+            'team_id' => $teamId,
+            'user_id' => $userId,
+            'enabled' => 1,
+        ]);
+
+        $perms = Permission::whereIn('name', [
+            'datasets.create',
+            'datasets.read',
+            'datasets.update',
+            'datasets.delete',
+        ])->get();
+
+        foreach ($perms as $perm) {
+            ApplicationHasPermission::firstOrCreate([
+                'application_id' => $app->id,
+                'permission_id' => $perm->id,
+            ]);
+        }
+
+        return [
+            'Accept' => 'application/json',
+            'x-application-id' => $app->app_id,
+            'x-client-id' => $app->client_id,
+        ];
     }
 }

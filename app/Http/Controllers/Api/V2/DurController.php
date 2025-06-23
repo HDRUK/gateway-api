@@ -29,7 +29,7 @@ class DurController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v2/dur",
-     *    operationId="fetch_all_dur",
+     *    operationId="fetch_all_dur_v2",
      *    tags={"Data Use Registers"},
      *    summary="DurController@indexActive",
      *    description="Returns a list of active dur",
@@ -252,7 +252,7 @@ class DurController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v2/dur/{id}",
-     *    operationId="fetch_dur_by_id",
+     *    operationId="fetch_dur_by_id_v2",
      *    tags={"Data Use Registers"},
      *    summary="DurController@showActive",
      *    description="Get dur by id",
@@ -381,7 +381,7 @@ class DurController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v2/dur/export",
-     *    operationId="export_dur",
+     *    operationId="export_dur_v2",
      *    tags={"Data Use Registers"},
      *    summary="DurController@export",
      *    description="Export CSV of one or more DURs",
