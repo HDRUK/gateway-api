@@ -19,7 +19,7 @@ class UpdateEmailTemplateTeamNotifications extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Team email address not receiving notifications';
 
     /**
      * Execute the console command.
