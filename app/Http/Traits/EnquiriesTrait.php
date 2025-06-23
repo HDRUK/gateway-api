@@ -9,13 +9,14 @@ use App\Models\Team;
 use App\Models\User;
 use App\Jobs\SendEmailJob;
 use App\Models\TeamHasUser;
+use App\Models\Notification;
 use App\Models\EmailTemplate;
 use App\Models\EnquiryThread;
 use App\Models\DatasetVersion;
 use App\Models\EnquiryMessage;
 use App\Models\TeamUserHasRole;
-use App\Models\EnquiryThreadHasDatasetVersion;
 use App\Models\TeamHasNotification;
+use App\Models\EnquiryThreadHasDatasetVersion;
 
 trait EnquiriesTrait
 {
@@ -53,10 +54,11 @@ trait EnquiriesTrait
             }
 
             // team notification
-            $teamNotifications = TeamHasNotification::where('team_id', $teamId)->get();
-            if ($teamNotifications->isEmpty()) {
+            $teamHasNotifications = TeamHasNotification::where('team_id', $teamId)->get();
+            if ($teamHasNotifications->isEmpty()) {
                 continue;
             }
+            $teamNotifications = Notification::whereIn('id', $teamHasNotifications->pluck('notification_id'))->get();
             foreach ($teamNotifications as $teamNotification) {
                 if (!$teamNotification->opt_id) {
                     continue;
@@ -74,7 +76,7 @@ trait EnquiriesTrait
                         'user' => $user->toArray(),
                         'team' => $team->toArray(),
                     ];
-                } else {
+                } elseif ($teamNotification->email) {
                     $users[] = [
                         'user' => [
                             'id' => 0,
