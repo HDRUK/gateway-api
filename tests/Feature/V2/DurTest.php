@@ -483,7 +483,7 @@ class DurTest extends TestCase
 
 
         /*
-        * nonAdmin2 is not in this team, so count and active should pass, but draft and archived should fail
+        * nonAdmin2 is not in this team, so all team urls should fail
         */
         $responseCount = $this->json(
             'GET',
@@ -491,7 +491,7 @@ class DurTest extends TestCase
             [],
             $this->headerNonAdmin2
         );
-        $responseCount->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $responseCount->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
 
         // get active durs for all teams through public url
         $responseActiveDur = $this->json(
