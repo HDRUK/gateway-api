@@ -363,11 +363,13 @@ class ToolController extends Controller
      */
     public function store(CreateTool $request): JsonResponse
     {
+        list($userId, $teamId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $teamId = array_key_exists('team_id', $input) ? $input['team_id'] : null;
+        $currentUser = isset($jwtUser['id']) ? (int)$jwtUser['id'] : $userId;
+
         if (!is_null($teamId)) {
-            $this->checkAccess($input, $teamId, null, 'team');
+            $this->checkAccess($input, $teamId, null, 'team', $request->header());
         }
 
         try {
@@ -409,14 +411,14 @@ class ToolController extends Controller
             }
 
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
-            $this->checkPublications($toolId, $publications, (int)$jwtUser['id']);
+            $this->checkPublications($toolId, $publications, $currentUser);
 
             if (array_key_exists('durs', $input)) {
                 $this->insertDurHasTool($input['durs'], (int)$toolId);
             }
 
             $collections = array_key_exists('collections', $input) ? $input['collections'] : [];
-            $this->checkCollections($toolId, $collections, (int)$jwtUser['id']);
+            $this->checkCollections($toolId, $collections, $currentUser);
 
             $currentTool = Tool::where('id', $toolId)->first();
             if ($currentTool->status === Tool::STATUS_ACTIVE) {
@@ -424,7 +426,8 @@ class ToolController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Tool ' . $tool->id . ' created',
@@ -436,7 +439,8 @@ class ToolController extends Controller
             ], 201);
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -529,10 +533,17 @@ class ToolController extends Controller
      */
     public function update(UpdateTool $request, int $id): JsonResponse
     {
+        list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $currentUser = isset($jwtUser['id']) ? (int)$jwtUser['id'] : $userId;
         $initTool = Tool::where('id', $id)->first();
-        $this->checkAccess($input, null, $initTool->user_id, 'user');
+
+        if ($createOrigin === 'API') {
+            $this->checkAccess($input, $initTool->team_id, null, 'team', $request->header());
+        } else {
+            $this->checkAccess($input, null, $initTool->user_id, 'user');
+        }
 
         try {
 
@@ -563,6 +574,9 @@ class ToolController extends Controller
                 $array['name'] = formatCleanInput($input['name']);
             }
 
+            $array['user_id'] = $userId ?? $jwtUser['id'];
+            $array['team_id'] = $teamId;
+
             Tool::where('id', $id)->first()->update($array);
 
             ToolHasTag::where('tool_id', $id)->forceDelete();
@@ -589,7 +603,7 @@ class ToolController extends Controller
             }
 
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
-            $this->checkPublications($id, $publications, (int)$jwtUser['id']);
+            $this->checkPublications($id, $publications, $currentUser);
 
             DurHasTool::where('tool_id', $id)->forceDelete();
             if (array_key_exists('durs', $input)) {
@@ -597,7 +611,7 @@ class ToolController extends Controller
             }
 
             $collections = array_key_exists('collections', $input) ? $input['collections'] : [];
-            $this->checkCollections($id, $collections, (int)$jwtUser['id']);
+            $this->checkCollections($id, $collections, $currentUser);
 
             $currentTool = Tool::where('id', $id)->first();
             if ($currentTool->status === Tool::STATUS_ACTIVE) {
@@ -612,7 +626,8 @@ class ToolController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Tool ' . $id . ' updated',
@@ -628,7 +643,8 @@ class ToolController extends Controller
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -730,10 +746,17 @@ class ToolController extends Controller
      */
     public function edit(EditTool $request, int $id): JsonResponse
     {
+        list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $currentUser = isset($jwtUser['id']) ? (int)$jwtUser['id'] : $userId;
         $toolModel = Tool::where('id', $id)->first();
-        $this->checkAccess($input, null, $toolModel->user_id, 'user');
+
+        if ($createOrigin === 'API') {
+            $this->checkAccess($input, $toolModel->team_id, null, 'team', $request->header());
+        } else {
+            $this->checkAccess($input, null, $toolModel->user_id, 'user');
+        }
 
         try {
             $arrayKeys = [
@@ -758,6 +781,10 @@ class ToolController extends Controller
             if (array_key_exists('name', $input)) {
                 $array['name'] = formatCleanInput($input['name']);
             }
+
+            $array['user_id'] = $userId ?? $jwtUser['id'];
+            $array['team_id'] = $teamId;
+
             $initTool = Tool::where('id', $id)->first();
 
             if ($initTool['status'] === Tool::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
@@ -791,7 +818,7 @@ class ToolController extends Controller
 
             if (array_key_exists('publications', $input)) {
                 $publications = $input['publications'];
-                $this->checkPublications($id, $publications, (int)$jwtUser['id']);
+                $this->checkPublications($id, $publications, $currentUser);
             }
 
             if (array_key_exists('durs', $input)) {
@@ -800,7 +827,7 @@ class ToolController extends Controller
 
             if (array_key_exists('collections', $input)) {
                 $collections = $input['collections'];
-                $this->checkCollections($id, $collections, (int)$jwtUser['id']);
+                $this->checkCollections($id, $collections, $currentUser);
             }
 
             $currentTool = Tool::where('id', $id)->first();
@@ -809,7 +836,8 @@ class ToolController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Tool ' . $id . ' updated',
@@ -825,7 +853,8 @@ class ToolController extends Controller
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -886,10 +915,16 @@ class ToolController extends Controller
      */
     public function destroy(DeleteTool $request, int $id): JsonResponse
     {
+        list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $tool = Tool::where(['id' => $id])->first();
-        $this->checkAccess($input, null, $tool->user_id, 'user');
+
+        if ($createOrigin === 'API') {
+            $this->checkAccess($input, $tool->team_id, null, 'team', $request->header());
+        } else {
+            $this->checkAccess($input, null, $tool->user_id, 'user');
+        }
 
         try {
             if ($tool) {
@@ -906,7 +941,8 @@ class ToolController extends Controller
                 CollectionHasTool::where('tool_id', $id)->delete();
 
                 Auditor::log([
-                    'user_id' => (int)$jwtUser['id'],
+                    'user_id' => isset($jwtUser['id']) ? (int)$jwtUser['id'] : $userId,
+                    'team_id' => $teamId,
                     'action_type' => 'DELETE',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Tool ' . $id . ' deleted',
@@ -920,7 +956,8 @@ class ToolController extends Controller
             throw new NotFoundException();
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => isset($jwtUser['id']) ? (int)$jwtUser['id'] : $userId,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
