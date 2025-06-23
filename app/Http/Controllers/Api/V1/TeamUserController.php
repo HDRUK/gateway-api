@@ -890,23 +890,27 @@ class TeamUserController extends Controller
 
             $return .= '<p>' . $usersTeamNotification['user_name'] . '</p>';
             $return .= '<ol>';
-            $return .= '   <li>Current roles:</li>';
+
+            $return .= '   <li>Current roles:';
             $return .= '   <ul>';
             foreach ($usersTeamNotification['user_roles_after'] as $roleNameAfter) {
                 $return .= '<li>' . $roleNameAfter . '</li>';
             }
-            $return .= '   </ul>';
-            $return .= '   <li>Added roles:</li>';
+            $return .= '   </ul></li>';
+
+            $return .= '   <li>Added roles:';
             $return .= '   <ul>';
             foreach ($usersTeamNotification['user_roles_added'] as $roleNameAdded) {
                 $return .= '<li>' . $roleNameAdded . '</li>';
             }
-            $return .= '   </ul>';
-            $return .= '   <li>Removed roles:</li>';
+            $return .= '   </ul></li>';
+
+            $return .= '   <li>Removed roles:';
             $return .= '   <ul>';
             foreach ($usersTeamNotification['user_roles_deleted'] as $roleNameDeleted) {
                 $return .= '<li>' . $roleNameDeleted . '</li>';
             }
+            $return .= '   </ul></li>';
             $return .= '</ol>';
 
         }
