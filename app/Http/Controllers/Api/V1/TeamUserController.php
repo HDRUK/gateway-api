@@ -838,6 +838,9 @@ class TeamUserController extends Controller
     {
         $template = EmailTemplate::where(['identifier' => 'update.roles.team.notifications'])->first();
         $team = Team::where('id', '=', $teamId)->first();
+        if (!$team->notification_status) {
+            return;
+        }
 
         $teamHasNotifications = TeamHasNotification::where('team_id', $teamId)->get();
         if ($teamHasNotifications->isEmpty()) {
@@ -845,10 +848,6 @@ class TeamUserController extends Controller
         }
         $teamNotifications = Notification::whereIn('id', $teamHasNotifications->pluck('notification_id'))->get();
         foreach ($teamNotifications as $notification) {
-            if (!$notification->opt_in) {
-                continue;
-            }
-
             if ($notification->email) {
                 $to = [
                     'to' => [

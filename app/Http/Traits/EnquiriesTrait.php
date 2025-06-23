@@ -54,15 +54,15 @@ trait EnquiriesTrait
             }
 
             // team notification
+            if (!$team->notification_status) {
+                continue;
+            }
             $teamHasNotifications = TeamHasNotification::where('team_id', $teamId)->get();
             if ($teamHasNotifications->isEmpty()) {
                 continue;
             }
             $teamNotifications = Notification::whereIn('id', $teamHasNotifications->pluck('notification_id'))->get();
             foreach ($teamNotifications as $teamNotification) {
-                if (!$teamNotification->opt_id) {
-                    continue;
-                }
                 if ($teamNotification->user_id) {
                     $user = User::where('id', $teamNotification->user_id)
                                 ->select(['id', 'name', 'firstname', 'lastname', 'email', 'secondary_email', 'preferred_email'])
