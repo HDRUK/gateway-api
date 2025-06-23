@@ -15,6 +15,7 @@ use App\Models\DatasetVersion;
 use App\Models\EnquiryMessage;
 use App\Models\TeamUserHasRole;
 use App\Models\EnquiryThreadHasDatasetVersion;
+use App\Models\TeamHasNotification;
 
 trait EnquiriesTrait
 {
@@ -46,6 +47,44 @@ trait EnquiriesTrait
 
                     $users[] = [
                         'user' => $user->toArray(),
+                        'team' => $team->toArray(),
+                    ];
+                }
+            }
+
+            // team notification
+            $teamNotifications = TeamHasNotification::where('team_id', $teamId)->get();
+            if ($teamNotifications->isEmpty()) {
+                continue;
+            }
+            foreach ($teamNotifications as $teamNotification) {
+                if (!$teamNotification->opt_id) {
+                    continue;
+                }
+                if ($teamNotification->user_id) {
+                    $user = User::where('id', $teamNotification->user_id)
+                                ->select(['id', 'name', 'firstname', 'lastname', 'email', 'secondary_email', 'preferred_email'])
+                                ->first();
+
+                    if (is_null($user)) {
+                        continue;
+                    }
+
+                    $users[] = [
+                        'user' => $user->toArray(),
+                        'team' => $team->toArray(),
+                    ];
+                } else {
+                    $users[] = [
+                        'user' => [
+                            'id' => 0,
+                            'name' => $team->name,
+                            'firstname' => $team->name,
+                            'lastname' => '',
+                            'email' => $teamNotification->email,
+                            'secondary_email' => '',
+                            'preferred_email' => 'primary',
+                        ],
                         'team' => $team->toArray(),
                     ];
                 }

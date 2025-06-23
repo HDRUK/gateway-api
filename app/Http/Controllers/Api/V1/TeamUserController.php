@@ -858,16 +858,19 @@ class TeamUserController extends Controller
                 ];
             } else {
                 $user = User::where('id', $notification['user_id'])->first();
+                if (is_null($user)) {
+                    continue;
+                }
                 $to = [
                     'to' => [
-                        'email' => ($user['preferred_email'] === 'primary') ? $user['email'] : $user['secondary_email'],
-                        'name' => $user['name'],
+                        'email' => ($user->preferred_email === 'primary') ? $user->email : $user->secondary_email,
+                        'name' => $user->name,
                     ],
                 ];
             }
 
             $replacements = [
-                '[[TEAM_NAME]]' => $team['name'],
+                '[[TEAM_NAME]]' => $team->name,
                 '[[TEAM_ID]]' => $teamId,
                 '[[CURRENT_YEAR]]' => date("Y"),
                 '[[USER_CHANGES]]' => $this->stringUserRoleTeamNotifications(),
