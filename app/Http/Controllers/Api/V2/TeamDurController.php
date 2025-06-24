@@ -181,9 +181,7 @@ class TeamDurController extends Controller
     {
         $input = $request->all();
 
-        if (!is_null($teamId)) {
-            $this->checkAccess($input, $teamId, null, 'team', $request->header());
-        }
+        $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         try {
             $projectTitle = $request->query('project_title', null);
@@ -447,6 +445,9 @@ class TeamDurController extends Controller
      */
     public function show(GetDurByTeamAndId $request, int $teamId, int $id): JsonResponse
     {
+        $input = $request->all();
+        $this->checkAccess($input, $teamId, null, 'team');
+
         try {
             $dur = $this->getDurById($id, teamId: $teamId);
 
@@ -597,9 +598,7 @@ class TeamDurController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
 
-        if (!is_null($teamId)) {
-            $this->checkAccess($input, $teamId, null, 'team', $request->header());
-        }
+        $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         $arrayKeys = [
             'non_gateway_datasets',
@@ -869,7 +868,11 @@ class TeamDurController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
         $initDur = Dur::where(['id' => $id, 'team_id' => $teamId])->first();
+
         $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
+        if ($initDur->team_id !== $teamId) {
+            throw new UnauthorizedException();
+        }
 
         try {
             $arrayKeys = [
@@ -1146,7 +1149,11 @@ class TeamDurController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
         $initDur = Dur::where(['id' => $id, 'team_id' => $teamId])->first();
+
         $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
+        if ($initDur->team_id !== $teamId) {
+            throw new UnauthorizedException();
+        }
 
         try {
             $arrayKeys = [
