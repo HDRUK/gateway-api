@@ -74,7 +74,7 @@ class DataCustodianNetworkTest extends TestCase
         ]);
     }
 
-    public function test_get_all_data_provider_colls_with_success(): void
+    public function test_get_all_data_custodian_networks_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
@@ -109,7 +109,7 @@ class DataCustodianNetworkTest extends TestCase
         ]);
     }
 
-    public function test_get_data_provider_coll_by_id_with_success(): void
+    public function test_get_data_custodian_network_by_id_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
 
@@ -136,30 +136,7 @@ class DataCustodianNetworkTest extends TestCase
         $this->assertTrue(($countTeams === 1));
     }
 
-
-    public function test_get_data_provider_coll_by_id_summary_with_success(): void
-    {
-        $response = $this->json('GET', self::TEST_URL . '/1/summary', [], $this->header);
-
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'message',
-            'data' => [
-                'id',
-                'name',
-                'img_url',
-                'summary',
-                'service',
-                'datasets',
-                'durs',
-                'tools',
-                'publications',
-                'collections',
-            ]
-        ]);
-    }
-
-    public function test_data_provider_collection_summary()
+    public function test_get_data_custodian_network_summary_with_success()
     {
         $id = DataProviderColl::where(['enabled' => 1])->first()->id;
         $response = $this->json('GET', self::TEST_URL . '/' . $id . '/summary', [], $this->header);
@@ -198,7 +175,7 @@ class DataCustodianNetworkTest extends TestCase
             ]);
     }
 
-    public function test_create_data_provider_coll_with_success(): void
+    public function test_create_data_custodian_network_with_success(): void
     {
 
         ECC::shouldReceive("indexDocument")
@@ -289,7 +266,7 @@ class DataCustodianNetworkTest extends TestCase
     }
 
 
-    public function test_delete_data_provider_coll_with_success(): void
+    public function test_delete_data_custodian_network_with_success(): void
     {
         ECC::shouldReceive("indexDocument")
             ->times(1);

@@ -1194,7 +1194,7 @@ return [
         ],
     ],
 
-     // DataProviders
+     // Data Custodian Networks
     [
         'name' => 'data_custodian_networks.get',
         'method' => 'get',
