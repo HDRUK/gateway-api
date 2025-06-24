@@ -23,6 +23,7 @@ use App\Http\Requests\V2\Publication\DeletePublicationByTeamIdById;
 use App\Http\Requests\V2\Publication\GetPublicationByTeamAndStatus;
 use App\Http\Requests\V2\Publication\UpdatePublicationByTeamIdById;
 use App\Http\Requests\V2\Publication\GePublicationByTeamByIdByStatus;
+use App\Http\Requests\V2\Publication\GetPublicationCountByTeamAndStatus;
 
 class TeamPublicationController extends Controller
 {
@@ -98,6 +99,8 @@ class TeamPublicationController extends Controller
      */
     public function indexStatus(GetPublicationByTeamAndStatus $request, int $teamId, ?string $status = 'active'): JsonResponse
     {
+        $this->checkAccess($request->all(), $teamId, null, 'team');
+
         try {
             $paperTitle = $request->query('paper_title', null);
             $perPage = request('per_page', Config::get('constants.per_page'));
@@ -131,6 +134,75 @@ class TeamPublicationController extends Controller
             Auditor::log([
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v2/teams/{teamId}/publications/count/{field}",
+     *    operationId="count_team_unique_fields_publication_v2",
+     *    tags={"Publication"},
+     *    summary="TeamPublicationController@count",
+     *    description="Get team counts for distinct entries of a field in the model",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="field",
+     *       in="path",
+     *       description="name of the field to perform a count on",
+     *       required=true,
+     *       example="status",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="status field",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="object",
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function count(GetPublicationCountByTeamAndStatus $request, int $teamId, string $field): JsonResponse
+    {
+        $this->checkAccess($request->all(), $teamId, null, 'team');
+
+        try {
+            $counts = Publication::where('team_id', $teamId)->applyCount();
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Team Publication count',
+            ]);
+
+            return response()->json([
+                'data' => $counts
+            ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 

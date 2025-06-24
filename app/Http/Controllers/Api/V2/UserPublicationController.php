@@ -63,6 +63,13 @@ class UserPublicationController extends Controller
      *             default="active"
      *         )
      *     ),
+     *    @OA\Parameter(
+     *       name="paper_title",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter Publication by title"
+     *    ),
      *     @OA\Response(
      *        response="200",
      *        description="Success response",
@@ -91,6 +98,9 @@ class UserPublicationController extends Controller
      */
     public function indexStatus(GetPublicationByUserAndStatus $request, int $userId, ?string $status = 'active'): JsonResponse
     {
+        $input = $request->all();
+        $this->checkAccess($input, null, $userId, 'user');
+
         try {
             $paperTitle = $request->query('paper_title', null);
             $perPage = request('per_page', Config::get('constants.per_page'));
@@ -124,6 +134,75 @@ class UserPublicationController extends Controller
             Auditor::log([
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v2/users/{userId}/publications/count/{field}",
+     *    operationId="count_user_unique_fields_publication_v2",
+     *    tags={"Publication"},
+     *    summary="UserPublicationController@count",
+     *    description="Get user counts for distinct entries of a field in the model",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="userId",
+     *       in="path",
+     *       description="user id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="user id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="field",
+     *       in="path",
+     *       description="name of the field to perform a count on",
+     *       required=true,
+     *       example="status",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="status field",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="object",
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function count(GetPublicationCountByUserAndStatus $request, int $userId, string $field): JsonResponse
+    {
+        $this->checkAccess($request->all(), null, $userId, 'user');
+
+        try {
+            $counts = Publication::where('user_id', $userId)->applyCount();
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'User Publication count',
+            ]);
+
+            return response()->json([
+                'data' => $counts
+            ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
