@@ -1193,4 +1193,94 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+
+     // Data Custodian Networks
+    [
+        'name' => 'data_custodian_networks.get',
+        'method' => 'get',
+        'path' => '/data_custodian_networks',
+        'methodController' => 'DataCustodianNetworksController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'data_custodian_networks.get.one',
+        'method' => 'get',
+        'path' => '/data_custodian_networks/{id}',
+        'methodController' => 'DataCustodianNetworksController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data_custodian_networks.get.one.summary',
+        'method' => 'get',
+        'path' => '/data_custodian_networks/{id}/summary',
+        'methodController' => 'DataCustodianNetworksController@showSummary',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data_custodian_networks.create',
+        'method' => 'post',
+        'path' => '/data_custodian_networks',
+        'methodController' => 'DataCustodianNetworksController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'data_custodian_networks.update',
+        'method' => 'put',
+        'path' => '/data_custodian_networks/{id}',
+        'methodController' => 'DataCustodianNetworksController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data_custodian_networks.edit',
+        'method' => 'patch',
+        'path' => '/data_custodian_networks/{id}',
+        'methodController' => 'DataCustodianNetworksController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data_custodian_networks.destroy',
+        'method' => 'delete',
+        'path' => '/data_custodian_networks/{id}',
+        'methodController' => 'DataCustodianNetworksController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 ];
