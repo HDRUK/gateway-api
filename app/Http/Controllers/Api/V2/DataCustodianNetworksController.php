@@ -35,7 +35,6 @@ class DataCustodianNetworksController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v2/data_custodian_networks",
-     *      summary="List of DataCustodianNetworks",
      *      description="Returns a list of DataCustodianNetworks enabled on the system",
      *      tags={"DataCustodianNetworks"},
      *      summary="DataCustodianNetworks@index",
@@ -89,6 +88,17 @@ class DataCustodianNetworksController extends Controller
                     return $item;
                 });
 
+            foreach ($dpc as $data) {
+                // Manually rename the field 'data_provider_coll_id' to 'data_custodian_network_id' to provide consistent naming
+                // for users of the API. This can be removed if and when internal naming changes too.
+                foreach ($data['teams'] as &$team) {
+                    $team['pivot']['data_custodian_network_id'] = $team['pivot']['data_provider_coll_id'];
+                    unset($team['pivot']['data_provider_coll_id']);
+                }
+                unset($team);
+            }
+            unset($data);
+
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
@@ -113,20 +123,19 @@ class DataCustodianNetworksController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v2/data_custodian_networks/{id}",
-     *      summary="Return a single DataCustodianNetworks",
-     *      description="Return a single DataCustodianNetworks",
+     *      description="Return a single DataCustodianNetwork",
      *      tags={"DataCustodianNetworks"},
      *      summary="DataCustodianNetworks@show",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="DataCustodianNetworks ID",
+     *         description="DataCustodianNetwork ID",
      *         required=true,
      *         example="1",
      *         @OA\Schema(
      *            type="integer",
-     *            description="DataCustodianNetworks ID",
+     *            description="DataCustodianNetwork ID",
      *         ),
      *      ),
      *      @OA\Response(
@@ -176,6 +185,14 @@ class DataCustodianNetworksController extends Controller
             $result = array_merge($dpc->toArray(), [
                 'service' => empty($service) ? null : $service,
             ]);
+
+            // Manually rename the field 'data_provider_coll_id' to 'data_custodian_network_id' to provide consistent naming
+            // for users of the API. This can be removed if and when internal naming changes too.
+            foreach ($result['teams'] as &$team) {
+                $team['pivot']['data_custodian_network_id'] = $team['pivot']['data_provider_coll_id'];
+                unset($team['pivot']['data_provider_coll_id']);
+            }
+            unset($team);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -346,7 +363,6 @@ class DataCustodianNetworksController extends Controller
     /**
      * @OA\Post(
      *      path="/api/v2/data_custodian_networks",
-     *      summary="Create a new DataCustodianNetwork",
      *      description="Creates a new DataCustodianNetwork",
      *      tags={"DataCustodianNetworks"},
      *      summary="DataCustodianNetworks@store",
@@ -446,7 +462,6 @@ class DataCustodianNetworksController extends Controller
     /**
      * @OA\Put(
      *      path="/api/v2/data_custodian_networks/{id}",
-     *      summary="Update a DataCustodianNetwork",
      *      description="Update a DataCustodianNetwork",
      *      tags={"DataCustodianNetworks"},
      *      summary="DataCustodianNetwork@update",
