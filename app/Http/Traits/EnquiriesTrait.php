@@ -9,11 +9,13 @@ use App\Models\Team;
 use App\Models\User;
 use App\Jobs\SendEmailJob;
 use App\Models\TeamHasUser;
+use App\Models\Notification;
 use App\Models\EmailTemplate;
 use App\Models\EnquiryThread;
 use App\Models\DatasetVersion;
 use App\Models\EnquiryMessage;
 use App\Models\TeamUserHasRole;
+use App\Models\TeamHasNotification;
 use App\Models\EnquiryThreadHasDatasetVersion;
 
 trait EnquiriesTrait
@@ -46,6 +48,45 @@ trait EnquiriesTrait
 
                     $users[] = [
                         'user' => $user->toArray(),
+                        'team' => $team->toArray(),
+                    ];
+                }
+            }
+
+            // team notification
+            if (!$team->notification_status) {
+                continue;
+            }
+            $teamHasNotifications = TeamHasNotification::where('team_id', $teamId)->get();
+            if ($teamHasNotifications->isEmpty()) {
+                continue;
+            }
+            $teamNotifications = Notification::whereIn('id', $teamHasNotifications->pluck('notification_id'))->get();
+            foreach ($teamNotifications as $teamNotification) {
+                if ($teamNotification->user_id) {
+                    $user = User::where('id', $teamNotification->user_id)
+                                ->select(['id', 'name', 'firstname', 'lastname', 'email', 'secondary_email', 'preferred_email'])
+                                ->first();
+
+                    if (is_null($user)) {
+                        continue;
+                    }
+
+                    $users[] = [
+                        'user' => $user->toArray(),
+                        'team' => $team->toArray(),
+                    ];
+                } elseif ($teamNotification->email) {
+                    $users[] = [
+                        'user' => [
+                            'id' => 0,
+                            'name' => $team->name,
+                            'firstname' => $team->name,
+                            'lastname' => '',
+                            'email' => $teamNotification->email,
+                            'secondary_email' => '',
+                            'preferred_email' => 'primary',
+                        ],
                         'team' => $team->toArray(),
                     ];
                 }
