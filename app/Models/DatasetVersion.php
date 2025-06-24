@@ -208,7 +208,7 @@ class DatasetVersion extends Model
             'dataset_version_source_id',
             'dataset_version_target_id',
             'linkage_type',
-        )->selectRaw("dataset_versions.id,
+        )->selectRaw("dataset_versions.id, dataset_versions.dataset_id,
         JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.title')) as title,
         short_title as shortTitle");
     }
