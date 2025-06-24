@@ -14,7 +14,7 @@ class HstsMiddleware
         if ($request->secure()) {
             $response->headers->set(
                 'Strict-Transport-Security',
-                'max-age=31536000; includeSubDomains; preload'
+                'max-age=63072000; includeSubDomains; preload'
             );
         }
 
