@@ -424,7 +424,9 @@ class DurController extends Controller
             $durId = $request->query('id', null);
             $durs = Dur::when($durId, function ($query) use ($durId) {
                 return $query->where('id', '=', $durId);
-            })->get();
+            })
+            ->where('status', Dur::STATUS_ACTIVE)
+            ->get();
 
             // callback function that writes to php://output
             $response = new StreamedResponse(
@@ -468,7 +470,7 @@ class DurController extends Controller
             );
 
             $response->headers->set('Content-Type', 'text/csv');
-            $response->headers->set('Content-Disposition', 'attachment;filename="Datasets.csv"');
+            $response->headers->set('Content-Disposition', 'attachment;filename="DataUses.csv"');
             $response->headers->set('Cache-Control', 'max-age=0');
 
             return $response;
