@@ -1263,8 +1263,8 @@ class DurController extends Controller
             DurHasKeyword::where(['dur_id' => $id])->delete();
             DurHasPublication::where(['dur_id' => $id])->delete();
             DurHasTool::where(['dur_id' => $id])->delete();
-            Dur::where(['dur_id' => $id])->update(['status' => Dur::STATUS_ARCHIVED]);
-            Dur::where(['dur_id' => $id])->delete();
+            Dur::where(['id' => $id])->update(['status' => Dur::STATUS_ARCHIVED]);
+            Dur::where(['id' => $id])->delete();
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
