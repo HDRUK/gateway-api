@@ -92,19 +92,19 @@ class UserPublicationController extends Controller
     public function indexStatus(GetPublicationByUserAndStatus $request, int $userId, ?string $status = 'active'): JsonResponse
     {
         try {
+            $paperTitle = $request->query('paper_title', null);
             $perPage = request('per_page', Config::get('constants.per_page'));
 
             $publications = Publication::where([
                     'owner_id' => $userId,
                     'status' => strtoupper($status),
                 ])
-                ->with(['tools']);
-
-            if ($request->has('sort')) {
-                $publications = $publications->applySorting();
-            }
-
-            $publications = $publications->paginate($perPage, ['*'], 'page');
+                ->when($paperTitle, function ($query) use ($paperTitle) {
+                    return $query->where('paper_title', 'like', '%'. $paperTitle .'%');
+                })
+                ->with(['tools'])
+                ->applySorting()
+                ->paginate($perPage, ['*'], 'page');
 
             $publications->getCollection()->transform(function ($publication) {
                 $publication->setAttribute('datasets', $publication->allDatasets);
@@ -114,7 +114,7 @@ class UserPublicationController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Publication get all',
+                'description' => 'User Publication get by status',
             ]);
 
             return response()->json(

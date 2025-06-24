@@ -63,6 +63,13 @@ class TeamPublicationController extends Controller
      *             default="active"
      *         )
      *     ),
+     *    @OA\Parameter(
+     *       name="paper_title",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter Publication by title"
+     *    ),
      *     @OA\Response(
      *        response="200",
      *        description="Success response",
@@ -92,19 +99,19 @@ class TeamPublicationController extends Controller
     public function indexStatus(GetPublicationByTeamAndStatus $request, int $teamId, ?string $status = 'active'): JsonResponse
     {
         try {
+            $paperTitle = $request->query('paper_title', null);
             $perPage = request('per_page', Config::get('constants.per_page'));
 
             $publications = Publication::where([
                     'team_id' => $teamId,
                     'status' => strtoupper($status),
                 ])
-                ->with(['tools']);
-
-            if ($request->has('sort')) {
-                $publications = $publications->applySorting();
-            }
-
-            $publications = $publications->paginate($perPage, ['*'], 'page');
+                ->when($paperTitle, function ($query) use ($paperTitle) {
+                    return $query->where('paper_title', 'like', '%'. $paperTitle .'%');
+                })
+                ->with(['tools'])
+                ->applySorting()
+                ->paginate($perPage, ['*'], 'page');
 
             $publications->getCollection()->transform(function ($publication) {
                 $publication->setAttribute('datasets', $publication->allDatasets);
@@ -114,7 +121,7 @@ class TeamPublicationController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Publication get all',
+                'description' => 'Team Publication get by status',
             ]);
 
             return response()->json(
