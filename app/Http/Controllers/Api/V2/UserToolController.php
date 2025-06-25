@@ -84,6 +84,10 @@ class UserToolController extends Controller
      */
     public function indexStatus(GetToolByUserAndStatus $request, int $userId, ?string $status = 'active'): JsonResponse
     {
+        $input = $request->all();
+
+        $this->checkAccess($input, null, $userId, 'user');
+
         try {
             $perPage = request('per_page', Config::get('constants.per_page'));
             $filterTitle = request('title', null);
@@ -120,7 +124,7 @@ class UserToolController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Tool get all',
+                'description' => 'User Tool get all by status',
             ]);
 
             return response()->json(
@@ -181,6 +185,8 @@ class UserToolController extends Controller
      */
     public function count(GetToolCountByUserAndStatus $request, int $userId, string $field): JsonResponse
     {
+        $this->checkAccess($request->all(), $teamId, null, 'team');
+
         try {
             $counts = Tool::where('user_id', $userId)->applyCount();
 
@@ -259,13 +265,15 @@ class UserToolController extends Controller
      */
     public function show(GetToolByUserAndId $request, int $userId, int $id): JsonResponse
     {
+        $this->checkAccess($request->all(), $teamId, null, 'team');
+
         try {
             $tool = $this->getToolById($id, userId: $userId, onlyActiveRelated: true);
 
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Tool get ' . $id,
+                'description' => 'User Tool get ' . $id,
             ]);
 
             return response()->json([
@@ -403,6 +411,7 @@ class UserToolController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
             $array['name'] = formatCleanInput($input['name']);
             $array['user_id'] = $userId;
+
             $tool = Tool::create($array);
             $toolId = $tool->id;
 
@@ -439,7 +448,7 @@ class UserToolController extends Controller
                 'user_id' => $userId,
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Tool ' . $tool->id . ' created',
+                'description' => 'User Tool ' . $tool->id . ' created',
             ]);
 
             return response()->json([
@@ -556,16 +565,16 @@ class UserToolController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $initTool = Tool::where([
-            'id' => $id,
-        ])->first();
+        $initTool = Tool::where('id', $id)->first();
+        if (!$initTool) {
+            throw new NotFoundException();
+        }
         $this->checkAccess($input, null, $userId, 'user');
+        if ($initTool->user_id !== $userId) {
+            throw new UnauthorizedException();
+        }
 
         try {
-            if ($initTool['status'] === Tool::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
-                throw new Exception('Cannot update current tool! Status already "ARCHIVED"');
-            }
-
             $arrayKeys = [
                 'name',
                 'url',
@@ -582,10 +591,20 @@ class UserToolController extends Controller
                 'status',
             ];
 
-            $array = $this->checkEditArray($input, $arrayKeys);
+            $array = $this->checkUpdateArray($input, $arrayKeys);
+
             if (array_key_exists('name', $input)) {
                 $array['name'] = formatCleanInput($input['name']);
             }
+
+            // if not supplied, set fields which have a NOT NULL constraint to their defaults
+            if (is_null($array['any_dataset'])) {
+                $array['any_dataset'] = 0;
+            }
+            if (is_null($array['status'])) {
+                $array['status'] = Tool::STATUS_DRAFT;
+            }
+
             Tool::where([
                 'id' => $id,
             ])->first()->update($array);
@@ -640,7 +659,7 @@ class UserToolController extends Controller
                 'user_id' => $userId,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Tool ' . $id . ' updated',
+                'description' => 'User Tool ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -757,10 +776,14 @@ class UserToolController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $toolModel = Tool::where([
-            'id' => $id,
-        ])->first();
+        $initTool = Tool::where('id', $id)->first();
+        if (!$initTool) {
+            throw new NotFoundException();
+        }
         $this->checkAccess($input, null, $userId, 'user');
+        if ($initTool->user_id !== $userId) {
+            throw new UnauthorizedException();
+        }
 
         try {
             $arrayKeys = [
@@ -785,10 +808,6 @@ class UserToolController extends Controller
             }
             $array['user_id'] = $userId;
             $initTool = Tool::where('id', $id)->first();
-
-            if ($initTool['status'] === Tool::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
-                throw new Exception('Cannot update current tool! Status already "ARCHIVED"');
-            }
 
             Tool::where([
                 'id' => $id,
@@ -833,14 +852,21 @@ class UserToolController extends Controller
 
             $currentTool = Tool::where('id', $id)->first();
             if ($currentTool->status === Tool::STATUS_ACTIVE) {
-                $this->indexElasticTools($id);
+                if ($request['enabled']) { //note Calum - this is crazy inconsistent
+                    $this->indexElasticTools((int) $id);
+                } else {
+                    //note Calum - adding this to be safe
+                    $this->deleteToolFromElastic((int) $id);
+                }
+            } else {
+                $this->deleteToolFromElastic((int) $id);
             }
 
             Auditor::log([
                 'user_id' => $userId,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Tool ' . $id . ' updated',
+                'description' => 'User Tool ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -922,16 +948,17 @@ class UserToolController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $tool = Tool::where([
-            'id' => $id,
-        ])->first();
+        $tool = Tool::where('id', $id)->first();
+        if (!$initTool) {
+            throw new NotFoundException();
+        }
         $this->checkAccess($input, null, $userId, 'user');
+        if ($initTool->user_id !== $userId) {
+            throw new UnauthorizedException();
+        }
 
         try {
             if ($tool) {
-                $tool->deleted_at = Carbon::now();
-                $tool->status = Tool::STATUS_ARCHIVED;
-                $tool->save();
                 ToolHasTag::where('tool_id', $id)->delete();
                 DatasetVersionHasTool::where('tool_id', $id)->delete();
                 ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
@@ -940,12 +967,13 @@ class UserToolController extends Controller
                 PublicationHasTool::where('tool_id', $id)->delete();
                 DurHasTool::where('tool_id', $id)->delete();
                 CollectionHasTool::where('tool_id', $id)->delete();
+                Tool::where('id', $id)->delete();
 
                 Auditor::log([
                     'user_id' => $userId,
                     'action_type' => 'DELETE',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'Tool ' . $id . ' deleted',
+                    'description' => 'Team Tool ' . $id . ' deleted',
                 ]);
 
                 return response()->json([
