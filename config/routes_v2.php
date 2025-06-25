@@ -750,6 +750,19 @@ return [
         ],
     ],
     [
+        'name' => 'team.publications.count',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/publications/count/{field}',
+        'methodController' => 'TeamPublicationController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'field' => 'status'
+        ],
+    ],
+
+    [
         'name' => 'publications.get.one',
         'method' => 'get',
         'path' => '/teams/{teamId}/publications/{id}',
@@ -844,6 +857,18 @@ return [
         'constraint' => [
             'userId' => '[0-9]+',
             'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'user.publications.count',
+        'method' => 'get',
+        'path' => '/users/{userId}/publications/count/{field}',
+        'methodController' => 'UserPublicationController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'field' => 'status'
         ],
     ],
     [

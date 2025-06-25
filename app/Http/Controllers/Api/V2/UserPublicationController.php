@@ -278,6 +278,9 @@ class UserPublicationController extends Controller
      */
     public function show(GetPublicationByUserAndId $request, int $userId, int $id): JsonResponse
     {
+        $input = $request->all();
+        $this->checkAccess($input, null, $userId, 'user');
+
         try {
             $publication = Publication::where([
                                 'owner_id' => $userId,
