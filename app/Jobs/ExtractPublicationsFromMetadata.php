@@ -47,6 +47,9 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
 
     public function publication($datasetVersionId)
     {
+        Log::info("publication Start Memory usage: " . number_format(memory_get_usage(true) / 1024 / 1024, 2) . " MB");
+        Log::info("publication Start Peak memory usage: " . number_format(memory_get_peak_usage(true) / 1024 / 1024, 2) . " MB");
+
         $linkagePublicationAboutDataset = 'metadata.linkage.publicationAboutDataset';
         $linkagePublicationUsingDataset = 'metadata.linkage.publicationUsingDataset';
 
@@ -179,7 +182,7 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
             }
             unset($newPublication);
             unset($searchDoi);
-            gc_collect_cycles();
+            //gc_collect_cycles();
         }
         Log::info("End Memory usage: " . number_format(memory_get_usage(true) / 1024 / 1024, 2) . " MB");
         Log::info("End Peak memory usage: " . number_format(memory_get_peak_usage(true) / 1024 / 1024, 2) . " MB");
