@@ -182,7 +182,7 @@ class TeamDurController extends Controller
         $input = $request->all();
 
         if (!is_null($teamId)) {
-            $this->checkAccess($input, $teamId, null, 'team');
+            $this->checkAccess($input, $teamId, null, 'team', $request->header());
         }
 
         try {
@@ -325,7 +325,7 @@ class TeamDurController extends Controller
      */
     public function count(GetDurCountByTeamAndStatus $request, int $teamId, string $field): JsonResponse
     {
-        $this->checkAccess($request->all(), $teamId, null, 'team');
+        $this->checkAccess($request->all(), $teamId, null, 'team', $request->header());
 
         try {
             $counts = Dur::where('team_id', $teamId)->applyCount();
@@ -592,11 +592,13 @@ class TeamDurController extends Controller
      */
     public function store(CreateDurByTeam $request, int $teamId): JsonResponse
     {
+        list($userId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
 
         if (!is_null($teamId)) {
-            $this->checkAccess($input, $teamId, null, 'team');
+            $this->checkAccess($input, $teamId, null, 'team', $request->header());
         }
 
         $arrayKeys = [
@@ -644,7 +646,7 @@ class TeamDurController extends Controller
         ];
         $array = $this->checkEditArray($input, $arrayKeys);
         $array['team_id'] = $teamId;
-        $array['user_id'] = $jwtUser['id'];
+        $array['user_id'] = $currentUser;
 
         if (isset($array['organisation_sector'])) {
             $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
@@ -657,11 +659,11 @@ class TeamDurController extends Controller
 
             // link dur with datasets
             $datasets = $input['datasets'] ?? [];
-            $this->checkDatasets($durId, $datasets, (int)$jwtUser['id']);
+            $this->checkDatasets($durId, $datasets, $currentUser);
 
             // link dur with publications
             $publications = $input['publications'] ?? [];
-            $this->checkPublications($durId, $publications, (int)$jwtUser['id']);
+            $this->checkPublications($durId, $publications, $currentUser);
 
             // link dur with keywords
             $keywords = $input['keywords'] ?? [];
@@ -672,7 +674,7 @@ class TeamDurController extends Controller
             $this->checkTools($durId, $tools);
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Team Dur ' . $durId . ' created',
@@ -684,7 +686,7 @@ class TeamDurController extends Controller
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
@@ -862,10 +864,12 @@ class TeamDurController extends Controller
      */
     public function update(UpdateDurByTeamAndId $request, int $teamId, int $id): JsonResponse
     {
+        list($userId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
         $initDur = Dur::where(['id' => $id, 'team_id' => $teamId])->first();
-        $this->checkAccess($input, $initDur->team_id, null, 'team');
+        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
 
         try {
             $arrayKeys = [
@@ -935,11 +939,11 @@ class TeamDurController extends Controller
 
             // link/unlink dur with datasets
             $datasets = $input['datasets'] ?? [];
-            $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
+            $this->checkDatasets($id, $datasets, $currentUser);
 
             // link/unlink dur with publications
             $publications = $input['publications'] ?? [];
-            $this->checkPublications($id, $publications, (int)$jwtUser['id']);
+            $this->checkPublications($id, $publications, $currentUser);
 
             // link/unlink dur with keywords
             $keywords = $input['keywords'] ?? [];
@@ -950,7 +954,7 @@ class TeamDurController extends Controller
             $this->checkTools($id, $tools);
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Team Dur ' . $id . ' updated',
@@ -962,7 +966,7 @@ class TeamDurController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -1137,10 +1141,12 @@ class TeamDurController extends Controller
      */
     public function edit(EditDurByTeamAndId $request, int $teamId, int $id): JsonResponse
     {
+        list($userId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
         $initDur = Dur::where(['id' => $id, 'team_id' => $teamId])->first();
-        $this->checkAccess($input, $initDur->team_id, null, 'team');
+        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
 
         try {
             $arrayKeys = [
@@ -1196,11 +1202,11 @@ class TeamDurController extends Controller
 
             // link/unlink dur with datasets
             if (array_key_exists('datasets', $input)) {
-                $this->checkDatasets($id, $input['datasets'], (int)$jwtUser['id']);
+                $this->checkDatasets($id, $input['datasets'], $currentUser);
             }
             // link/unlink dur with publications
             if (array_key_exists('publications', $input)) {
-                $this->checkPublications($id, $input['publications'], (int)$jwtUser['id']);
+                $this->checkPublications($id, $input['publications'], $currentUser);
             }
             // link/unlink dur with keywords
             if (array_key_exists('keywords', $input)) {
@@ -1212,7 +1218,7 @@ class TeamDurController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Team Dur ' . $id . ' edited',
@@ -1225,7 +1231,7 @@ class TeamDurController extends Controller
 
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -1286,14 +1292,16 @@ class TeamDurController extends Controller
      */
     public function destroy(DeleteDurByTeamAndId $request, int $teamId, int $id): JsonResponse
     {
+        list($userId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
 
         $initDur = Dur::where(['id' => $id])->first();
         if (!$initDur) {
             throw new NotFoundException();
         }
-        $this->checkAccess($input, $initDur->team_id, null, 'team');
+        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
         if ($initDur->team_id !== $teamId) {
             throw new UnauthorizedException();
         }
@@ -1307,7 +1315,7 @@ class TeamDurController extends Controller
             Dur::where(['id' => $id])->delete();
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
                 'action_type' => 'DELETE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Dur ' . $id . ' deleted',
@@ -1318,7 +1326,7 @@ class TeamDurController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),

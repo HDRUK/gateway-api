@@ -12,12 +12,13 @@ use App\Models\Publication;
 use Illuminate\Support\Carbon;
 use Database\Seeders\DurSeeder;
 use Tests\Traits\Authorization;
-use App\Http\Enums\TeamMemberOf;
+use Tests\Traits\Helpers;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\ToolSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\DatasetSeeder;
+use Database\Seeders\EmailTemplateSeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
@@ -31,6 +32,7 @@ class DurTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use Helpers;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -129,6 +131,7 @@ class DurTest extends TestCase
             TypeCategorySeeder::class,
             ToolSeeder::class,
             CollectionSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
 
         // Generate non-admin user for general usage
@@ -617,6 +620,179 @@ class DurTest extends TestCase
     }
 
     /**
+     * App Get All DURs for a given team with success
+     *
+     * @return void
+     */
+    public function test_app_can_get_all_team_durs_with_success(): void
+    {
+        $initialActiveDurCount = Dur::where('status', 'ACTIVE')->count();
+
+        // First create a notification to be used by the new team
+        $notificationID = $this->createNotification();
+
+        // Create the new team
+        $teamId1 = $this->createTeam([$this->nonAdminUser['id']], [$notificationID]);
+        $appHeader1 = $this->createApp($teamId1, $this->nonAdminUser['id']);
+
+        //create a 2nd team
+        $teamId2 = $this->createTeam([$this->nonAdmin2User['id']], [$notificationID]);
+        $appHeader2 = $this->createApp($teamId2, $this->nonAdmin2User['id']);
+
+        // create dur
+        $responseCreateDur = $this->json(
+            'POST',
+            $this->team_durs_url($teamId1),
+            [
+                'project_title' => 'ABC',
+                'datasets' => $this->generateDatasets(),
+                'publications' => $this->generatePublications(),
+                'keywords' => $this->generateKeywords(),
+                'tools' => $this->generateTools(),
+                'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+                'latest_approval_date' => '2017-09-12T01:00:00',
+                'organisation_sector' => 'academia',
+                'status' => 'ACTIVE',
+            ],
+            $appHeader1,
+        );
+        $responseCreateDur->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $durId1 = $responseCreateDur['data'];
+
+        $responseCreateDur2 = $this->json(
+            'POST',
+            $this->team_durs_url($teamId2),
+            [
+                'project_title' => 'ABC',
+                'datasets' => $this->generateDatasets(),
+                'publications' => $this->generatePublications(),
+                'keywords' => $this->generateKeywords(),
+                'tools' => $this->generateTools(),
+                'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+                'latest_approval_date' => '2017-09-12T01:00:00',
+                'organisation_sector' => 'academia',
+                'status' => 'DRAFT',
+            ],
+            $appHeader2,
+        );
+        $responseCreateDur2->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $durId2 = $responseCreateDur2['data'];
+
+        $response = $this->json(
+            'GET',
+            self::TEST_URL_DUR_V2,
+            [],
+            $appHeader1
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $this->assertCount($initialActiveDurCount + 1, $response['data']);
+        $response->assertJsonStructure([
+            'current_page',
+            'data',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',
+        ]);
+
+        //create an archived dur from team1
+        $specificTime = Carbon::parse('2023-02-01 00:00:00');
+        Carbon::setTestNow($specificTime);
+
+        $responseCreateDurArchived = $this->json(
+            'POST',
+            $this->team_durs_url($teamId1),
+            [
+                'datasets' => $this->generateDatasets(),
+                'publications' => $this->generatePublications(),
+                'keywords' => $this->generateKeywords(),
+                'tools' => $this->generateTools(),
+                'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+                'latest_approval_date' => '2017-09-12T01:00:00',
+                'organisation_sector' => 'academia',
+                'status' => 'ARCHIVED',
+            ],
+            $appHeader1,
+        );
+        $responseCreateDurArchived->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        // get archived durs in this team
+        $responseArchivedDur = $this->json(
+            'GET',
+            $this->team_durs_url($teamId1) . '/status/archived',
+            [],
+            $appHeader1
+        );
+        $responseArchivedDur->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $this->assertCount(1, $responseArchivedDur['data']);
+
+
+        /*
+        * nonAdmin2 is not in this team, so all team urls should fail
+        */
+        $responseCount = $this->json(
+            'GET',
+            $this->team_durs_url($teamId1) . '/count/status',
+            [],
+            $appHeader2
+        );
+        $responseCount->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+
+        // (fail to) get active durs in this team
+        $responseActiveDur = $this->json(
+            'GET',
+            $this->team_durs_url($teamId1),
+            [],
+            $appHeader2
+        );
+        $responseActiveDur->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+
+        // (fail to) get archived datsets in this team
+        $responseArchivedDur = $this->json(
+            'GET',
+            $this->team_durs_url($teamId1) . '/status/archived',
+            [],
+            $this->headerNonAdmin2
+        );
+        $responseArchivedDur->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+
+        // test deletion with various permissions combinations
+        $responseDeleteDur = $this->json(
+            'DELETE',
+            $this->team_durs_url($teamId1) .
+            '/' . $durId1,
+            [],
+            $appHeader2
+        );
+        $responseDeleteDur->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteDur->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+
+        $responseDeleteDur = $this->json(
+            'DELETE',
+            $this->team_durs_url($teamId1) .
+            '/' . $durId1,
+            [],
+            $appHeader1
+        );
+        $responseDeleteDur->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteDur->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+    }
+
+    /**
      * Get Dataset by Id with success
      *
      * @return void
@@ -765,6 +941,101 @@ class DurTest extends TestCase
     }
 
     /**
+     * App Get Dataset by Id with success
+     *
+     * @return void
+     */
+    public function test_app_can_get_one_dur_by_id(): void
+    {
+        // create team
+        // First create a notification to be used by the new team
+        $notificationID = $this->createNotification();
+
+        // Create the new team
+        $teamId = $this->createTeam([], [$notificationID]);
+        $appHeader1 = $this->createApp($teamId, $this->nonAdminUser['id']);
+
+        // create active dur
+        $responseCreateActiveDur = $this->json(
+            'POST',
+            $this->team_durs_url($teamId),
+            [
+                'project_title' => 'ABC',
+                'datasets' => $this->generateDatasets(),
+                'publications' => $this->generatePublications(),
+                'keywords' => $this->generateKeywords(),
+                'tools' => $this->generateTools(),
+                'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+                'latest_approval_date' => '2017-09-12T01:00:00',
+                'organisation_sector' => 'academia',
+                'status' => 'ACTIVE',
+            ],
+            $appHeader1,
+        );
+
+        $responseCreateActiveDur->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $contentCreateActiveDur = $responseCreateActiveDur->decodeResponseJson();
+        $activeDurId = $contentCreateActiveDur['data'];
+
+        // get one active dataset via V2 endpoint
+        $responseGetOneActive = $this->json(
+            'GET',
+            self::TEST_URL_DUR_V2 . '/' . $activeDurId,
+            [],
+            $this->header
+        );
+
+        $responseGetOneActive->assertJsonStructure([
+            'message',
+            'data' => self::EXPECTED_DUR_RESPONSE_DATA,
+        ]);
+        $responseGetOneActive->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $responseGetAll = $this->json(
+            'GET',
+            $this->team_durs_url($teamId),
+            [],
+            $appHeader1
+        );
+
+        // get one active DUR via V2 teams endpoint
+        $responseGetOneActive = $this->json(
+            'GET',
+            $this->team_durs_url($teamId) . '/' . $activeDurId,
+            [],
+            $appHeader1
+        );
+
+        $responseGetOneActive->assertJsonStructure([
+            'message',
+            'data' => self::EXPECTED_DUR_RESPONSE_DATA,
+        ]);
+        $responseGetOneActive->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // try and fail to deleted one active dur via V2 teams endpoint with wrong header
+        $responseDELETEOneActive = $this->json(
+            'DELETE',
+            $this->team_durs_url($teamId) . '/' . $activeDurId,
+            [],
+            $this->headerNonAdmin2
+        );
+        $responseDELETEOneActive->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+
+        // delete active DUR
+        $responseDeleteActive = $this->json(
+            'DELETE',
+            $this->team_durs_url($teamId) . '/' . $activeDurId,
+            [],
+            $appHeader1
+        );
+        $responseDeleteActive->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteActive->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+    }
+
+
+    /**
      * Create/archive/unarchive DUR with success
      *
      * @return void
@@ -878,6 +1149,123 @@ class DurTest extends TestCase
             $this->team_durs_url($teamId) . '/' . $durId,
             [],
             $this->header
+        );
+        $responseDelete->assertJsonStructure([
+            'message'
+        ]);
+        $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // delete team
+        $this->deleteTeam($teamId);
+
+        // delete user
+        $this->deleteUser($userId);
+    }
+
+    /**
+     * App Create/archive/unarchive DUR with success
+     *
+     * @return void
+     */
+    public function test_app_can_create_archive_update_delete_dur_with_success(): void
+    {
+        // create team
+        // First create a notification to be used by the new team
+        $notificationID = $this->createNotification();
+
+        // Create the new team
+        $teamId = $this->createTeam([], [$notificationID]);
+        $appHeader = $this->createApp($teamId);
+
+        // create user
+        $userId = $this->createUser();
+
+        // create DUR
+        $responseCreate = $this->json(
+            'POST',
+            $this->team_durs_url($teamId),
+            [
+                'project_title' => 'ABC',
+                'datasets' => $this->generateDatasets(),
+                'publications' => $this->generatePublications(),
+                'keywords' => $this->generateKeywords(),
+                'tools' => $this->generateTools(),
+                'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+                'latest_approval_date' => '2017-09-12T01:00:00',
+                'organisation_sector' => 'academia',
+                'status' => 'DRAFT',
+            ],
+            $appHeader,
+        );
+
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $contentCreate = $responseCreate->decodeResponseJson();
+        $durId = $contentCreate['data'];
+
+        // archive DUR
+        $responseArchive = $this->json(
+            'PATCH',
+            $this->team_durs_url($teamId) . '/' . $durId,
+            [
+                'status' => Dur::STATUS_ARCHIVED,
+            ],
+            $appHeader
+        );
+        $responseArchive->assertJsonStructure([
+            'message'
+        ]);
+        $responseArchive->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // unarchive DUR
+        $responseUnarchive = $this->json(
+            'PATCH',
+            $this->team_durs_url($teamId) . '/' . $durId,
+            [
+                'status' => Dur::STATUS_ACTIVE,
+            ],
+            $appHeader
+        );
+        $responseUnarchive->assertJsonStructure([
+            'message'
+        ]);
+        $responseUnarchive->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // update DUR
+        $responseUpdate = $this->json(
+            'PUT',
+            $this->team_durs_url($teamId) . '/' . $durId,
+            [
+                'project_title' => 'ABC',
+                'datasets' => $this->generateDatasets(),
+                'publications' => $this->generatePublications(),
+                'keywords' => $this->generateKeywords(),
+                'tools' => $this->generateTools(),
+                'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+                'latest_approval_date' => '2017-09-12T01:00:00',
+                'organisation_sector' => 'academia',
+                'status' => 'DRAFT',
+            ],
+            $appHeader
+        );
+        $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // check status has updated correctly
+        $responseGet = $this->json(
+            'GET',
+            $this->team_durs_url($teamId) . '/' . $durId,
+            [],
+            $appHeader,
+        );
+        $contentGet = $responseGet->decodeResponseJson();
+        $responseGet->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertEquals(Dur::STATUS_DRAFT, $contentGet['data']['status']);
+
+        // delete DUR
+        $responseDelete = $this->json(
+            'DELETE',
+            $this->team_durs_url($teamId) . '/' . $durId,
+            [],
+            $appHeader
         );
         $responseDelete->assertJsonStructure([
             'message'
@@ -1043,120 +1431,6 @@ class DurTest extends TestCase
     private function team_durs_url(int $teamId)
     {
         return 'api/v2/teams/' . $teamId . '/dur';
-    }
-
-    private function createNotification()
-    {
-        $responseNotification = $this->json(
-            'POST',
-            self::TEST_URL_NOTIFICATION,
-            [
-                'notification_type' => 'applicationSubmitted',
-                'message' => 'Some message here',
-                'email' => null,
-                'user_id' => 3,
-                'opt_in' => 1,
-                'enabled' => 1,
-            ],
-            $this->header,
-        );
-
-        $contentNotification = $responseNotification->decodeResponseJson();
-        return $contentNotification['data'];
-    }
-
-    private function createTeam(array $userIds, array $notificationIds)
-    {
-        $responseCreateTeam = $this->json(
-            'POST',
-            self::TEST_URL_TEAM,
-            [
-                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
-                'enabled' => 1,
-                'allows_messaging' => 1,
-                'workflow_enabled' => 1,
-                'access_requests_management' => 1,
-                'uses_5_safes' => 1,
-                'is_admin' => 1,
-                'member_of' => fake()->randomElement([
-                    TeamMemberOf::ALLIANCE,
-                    TeamMemberOf::HUB,
-                    TeamMemberOf::OTHER,
-                    TeamMemberOf::NCS,
-                ]),
-                'contact_point' => 'dinos345@mail.com',
-                'application_form_updated_by' => 'Someone Somewhere',
-                'application_form_updated_on' => '2023-04-06 15:44:41',
-                'notifications' => $notificationIds,
-                'users' => $userIds,
-            ],
-            $this->header,
-        );
-
-        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
-
-        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
-        return $contentCreateTeam['data'];
-    }
-
-    private function deleteTeam(int $teamId)
-    {
-        $responseDeleteTeam = $this->json(
-            'DELETE',
-            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
-            [],
-            $this->header
-        );
-        $responseDeleteTeam->assertJsonStructure([
-            'message'
-        ]);
-        $responseDeleteTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-    }
-
-    private function createUser()
-    {
-        $responseCreateUser = $this->json(
-            'POST',
-            self::TEST_URL_USER,
-            [
-                'firstname' => 'Firstname',
-                'lastname' => 'Lastname',
-                'email' => 'firstname.lastname.123456789@test.com',
-                'password' => 'Passw@rd1!',
-                'sector_id' => 1,
-                'organisation' => 'Test Organisation',
-                'bio' => 'Test Biography',
-                'domain' => 'https://testdomain.com',
-                'link' => 'https://testlink.com/link',
-                'orcid' => " https://orcid.org/75697342",
-                'contact_feedback' => 1,
-                'contact_news' => 1,
-                'mongo_id' => 1234566,
-                'mongo_object_id' => "12345abcde",
-            ],
-            $this->header,
-        );
-        $responseCreateUser->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
-        $contentCreateUser = $responseCreateUser->decodeResponseJson();
-        return $contentCreateUser['data'];
-    }
-
-    private function deleteUser(int $userId)
-    {
-        $responseDeleteUser = $this->json(
-            'DELETE',
-            self::TEST_URL_USER . '/' . $userId,
-            [],
-            $this->header
-        );
-        $responseDeleteUser->assertJsonStructure([
-            'message'
-        ]);
-        $responseDeleteUser->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
     }
 
     private function generateKeywords()

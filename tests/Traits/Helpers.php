@@ -76,6 +76,7 @@ trait Helpers
                 [
                     "roles" => [
                         "custodian.metadata.manager" => true,
+                        "custodian.dar.manager" => true,
                     ],
                 ],
                 $this->header
