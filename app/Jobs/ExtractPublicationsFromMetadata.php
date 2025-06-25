@@ -174,6 +174,9 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
                 $this->createLinkPublicationDatasetVersion($publicationId, $datasetVersionId, $type);
                 continue;
             }
+            unset($newPublication);
+            unset($searchDoi);
+            gc_collect_cycles();
         }
     }
 
