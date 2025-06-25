@@ -38,7 +38,7 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v2/teams/{teamId}/publications/{status}",
+     *     path="/api/v2/teams/{teamId}/publications/status/{status}",
      *     operationId="fetch_all_publications_by_team_and_status_v2",
      *     tags={"Publication"},
      *     summary="TeamPublicationController@indexStatus",

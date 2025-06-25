@@ -36,19 +36,23 @@ class PublicationController extends Controller
      *       description="Filter tools by paper title"
      *    ),
      *    @OA\Parameter(
-     *       name="owner_id",
+     *       name="with_related",
      *       in="query",
      *       required=false,
-     *       @OA\Schema(type="int"),
-     *       description="Filter tools by owner id"
+     *       @OA\Schema(type="boolean"),
+     *       description="Return related datasets"
      *    ),
-     *    @OA\Parameter(
-     *       name="team_id",
-     *       in="query",
-     *       required=false,
-     *       @OA\Schema(type="int"),
-     *       description="Filter tools by team id"
-     *    ),
+     *      @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="per page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="per page",
+     *          ),
+     *      ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -70,11 +74,7 @@ class PublicationController extends Controller
     {
         try {
             $input = $request->all();
-            $mongoId = $request->query('mongo_id', null);
             $paperTitle = $request->query('paper_title', null);
-            $ownerId = $request->query('owner_id', null);
-            $teamId = $request->query('team_id', null);
-            $filterStatus = $request->query('status', null);
             $perPage = request('per_page', Config::get('constants.per_page'));
             $withRelated = $request->boolean('with_related', true);
 
