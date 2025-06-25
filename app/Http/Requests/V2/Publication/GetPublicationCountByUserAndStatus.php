@@ -15,7 +15,6 @@ class GetPublicationCountByUserAndStatus extends BaseFormRequest
     {
         return [
             'userId' => 'required|int|exists:users,id',
-            'status' => 'required|string|in:active,draft,archived',
         ];
     }
 
@@ -28,7 +27,6 @@ class GetPublicationCountByUserAndStatus extends BaseFormRequest
     {
         $this->merge([
             'userId' => $this->route('userId'),
-            'status' => $this->route('status') ?? 'active',
         ]);
     }
 }
