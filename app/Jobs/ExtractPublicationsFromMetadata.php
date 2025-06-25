@@ -172,11 +172,12 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
                 CloudLogger::write('ExtractPublicationsFromMetadata :: a new publication has been created with id = ' . $publicationId);
 
                 $this->createLinkPublicationDatasetVersion($publicationId, $datasetVersionId, $type);
+                unset($newPublication);
+                unset($searchDoi);
+                gc_collect_cycles();
                 continue;
             }
-            unset($newPublication);
-            unset($searchDoi);
-            gc_collect_cycles();
+
         }
     }
 
