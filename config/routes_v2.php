@@ -953,6 +953,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,tools.create',
             'sanitize.input',
         ],
         'constraint' => [],
@@ -965,6 +966,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,tools.update',
             'sanitize.input',
         ],
         'constraint' => [
@@ -979,6 +981,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,tools.update',
             'sanitize.input',
         ],
         'constraint' => [
@@ -993,6 +996,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,tools.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1054,7 +1058,10 @@ return [
         'path' => '/teams/{teamId}/tools',
         'methodController' => 'TeamToolController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,tools.create',
+        ],
         'constraint' => [
             'teamId' => '[0-9]+',
         ],
@@ -1065,7 +1072,10 @@ return [
         'path' => '/teams/{teamId}/tools/{id}',
         'methodController' => 'TeamToolController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,tools.update',
+        ],
         'constraint' => [
             'teamId' => '[0-9]+',
             'id' => '[0-9]+',
@@ -1077,7 +1087,10 @@ return [
         'path' => '/teams/{teamId}/tools/{id}',
         'methodController' => 'TeamToolController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,tools.update',
+        ],
         'constraint' => [
             'teamId' => '[0-9]+',
             'id' => '[0-9]+',
@@ -1089,7 +1102,10 @@ return [
         'path' => '/teams/{teamId}/tools/{id}',
         'methodController' => 'TeamToolController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,tools.delete',
+        ],
         'constraint' => [
             'teamId' => '[0-9]+',
             'id' => '[0-9]+',
