@@ -106,6 +106,8 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
 
     public function publicationDataset(array $publications, string $type, int $datasetVersionId, int $userId, int $teamId)
     {
+        Log::info("Start Memory usage: " . number_format(memory_get_usage(true) / 1024 / 1024, 2) . " MB");
+        Log::info("Start Peak memory usage: " . number_format(memory_get_peak_usage(true) / 1024 / 1024, 2) . " MB");
         if (count($publications ?: []) === 0) {
             return;
         }
@@ -172,13 +174,15 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
                 CloudLogger::write('ExtractPublicationsFromMetadata :: a new publication has been created with id = ' . $publicationId);
 
                 $this->createLinkPublicationDatasetVersion($publicationId, $datasetVersionId, $type);
-                unset($newPublication);
-                unset($searchDoi);
-                gc_collect_cycles();
+
                 continue;
             }
-
+            unset($newPublication);
+            unset($searchDoi);
+            gc_collect_cycles();
         }
+        Log::info("End Memory usage: " . number_format(memory_get_usage(true) / 1024 / 1024, 2) . " MB");
+        Log::info("End Peak memory usage: " . number_format(memory_get_peak_usage(true) / 1024 / 1024, 2) . " MB");
     }
 
     public function searchDoi(string $doi)
