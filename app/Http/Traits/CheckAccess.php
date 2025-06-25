@@ -164,6 +164,7 @@ trait CheckAccess
                     $application->team_id,
                     'API',
                     'ACTIVE',
+                    $application->id,
                 ];
             }
         }
@@ -173,6 +174,7 @@ trait CheckAccess
             $input['team_id'] ?? null,
             $input['create_origin'] ?? 'MANUAL',
             $input['status'] ?? 'ACTIVE',
+            null,
         ];
     }
 }
