@@ -522,6 +522,15 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'durs.get.one.active',
+        'method' => 'get',
+        'path' => '/dur/{id}',
+        'methodController' => 'DurController@showActive',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
         'name' => 'durs.export',
         'method' => 'get',
         'path' => '/dur/export',
@@ -535,15 +544,6 @@ return [
         'method' => 'get',
         'path' => '/dur/template',
         'methodController' => 'DurController@exportTemplate',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'durs.get.one',
-        'method' => 'get',
-        'path' => '/dur/{id}',
-        'methodController' => 'DurController@showActive',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [],
         'constraint' => [],
@@ -920,7 +920,7 @@ return [
 
     // tools
     [
-        'name' => 'tools',
+        'name' => 'tools.get.active',
         'method' => 'get',
         'path' => '/tools',
         'methodController' => 'ToolController@indexActive',
@@ -929,7 +929,7 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'tools',
+        'name' => 'tools.get.one.active',
         'method' => 'get',
         'path' => '/tools/{id}',
         'methodController' => 'ToolController@showActive',
@@ -939,78 +939,10 @@ return [
             'id' => '[0-9]+',
         ],
     ],
-    [
-        'name' => 'tools',
-        'method' => 'post',
-        'path' => '/tools',
-        'methodController' => 'ToolController@store',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,tools.create',
-            'sanitize.input',
-        ],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'tools',
-        'method' => 'put',
-        'path' => '/tools/{id}',
-        'methodController' => 'ToolController@update',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,tools.update',
-            'sanitize.input',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'tools',
-        'method' => 'patch',
-        'path' => '/tools/{id}',
-        'methodController' => 'ToolController@edit',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,tools.update',
-            'sanitize.input',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'tools',
-        'method' => 'delete',
-        'path' => '/tools/{id}',
-        'methodController' => 'ToolController@destroy',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,tools.delete',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
 
     // teams & tools
     [
-        'name' => 'team.tools.get.active',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/tools',
-        'methodController' => 'TeamToolController@indexStatus',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => ['jwt.verify'],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'team.tools.get.active',
+        'name' => 'team.tools.indexStatus',
         'method' => 'get',
         'path' => '/teams/{teamId}/tools/status/{status}',
         'methodController' => 'TeamToolController@indexStatus',
@@ -1120,7 +1052,7 @@ return [
         ],
     ],
     [
-        'name' => 'user.tools.get.active',
+        'name' => 'user.tools.indexStatus',
         'method' => 'get',
         'path' => '/users/{userId}/tools/status/{status}',
         'methodController' => 'UserToolController@indexStatus',
