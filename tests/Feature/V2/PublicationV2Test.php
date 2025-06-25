@@ -990,68 +990,6 @@ class PublicationV2Test extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_v2_get_publication_by_team_and_by_id_by_status(): void
-    {
-        $publication = Publication::inRandomOrder()->first();
-        $response = $this->json('GET', '/api/v2/teams/' . $publication->team_id . '/publications/' . $publication->id . '/status/' . strtolower($publication->status), [], $this->header);
-        $response->assertJsonStructure([
-            'message',
-            'data' => [
-                    'id',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'paper_title',
-                    'authors',
-                    'year_of_publication',
-                    'paper_doi',
-                    'publication_type',
-                    'journal_name',
-                    'abstract',
-                    'url',
-                    'mongo_id',
-                    'publication_type_mk1',
-                    'owner_id',
-                    'status',
-                    'team_id',
-                    'datasets',
-                    'tools',
-            ],
-        ]);
-        $response->assertStatus(200);
-    }
-
-    public function test_v2_get_publication_by_user_and_by_id_by_status(): void
-    {
-        $publication = Publication::inRandomOrder()->first();
-        $response = $this->json('GET', '/api/v2/users/' . $publication->owner_id . '/publications/' . $publication->id . '/status/' . strtolower($publication->status), [], $this->header);
-        $response->assertJsonStructure([
-            'message',
-            'data' => [
-                    'id',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'paper_title',
-                    'authors',
-                    'year_of_publication',
-                    'paper_doi',
-                    'publication_type',
-                    'journal_name',
-                    'abstract',
-                    'url',
-                    'mongo_id',
-                    'publication_type_mk1',
-                    'owner_id',
-                    'status',
-                    'team_id',
-                    'datasets',
-                    'tools',
-            ],
-        ]);
-        $response->assertStatus(200);
-    }
-
     public function test_v2_create_publication_with_success_by_team_id(): void
     {
         $teamId = Team::all()->random()->id;

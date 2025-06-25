@@ -775,19 +775,6 @@ return [
         ],
     ],
     [
-        'name' => 'publications.get.one',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/publications/{id}/status/{status}',
-        'methodController' => 'TeamPublicationController@showStatus',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => ['jwt.verify'],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'id' => '[0-9]+',
-            'status' => 'active|draft|archived'
-        ],
-    ],
-    [
         'name' => 'publications.create',
         'method' => 'post',
         'path' => '/teams/{teamId}/publications',
@@ -881,19 +868,6 @@ return [
         'constraint' => [
             'userId' => '[0-9]+',
             'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'publications.get.one',
-        'method' => 'get',
-        'path' => '/users/{userId}/publications/{id}/status/{status}',
-        'methodController' => 'UserPublicationController@showStatus',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => ['jwt.verify'],
-        'constraint' => [
-            'userId' => '[0-9]+',
-            'id' => '[0-9]+',
-            'status' => 'active|draft|archived'
         ],
     ],
     [
