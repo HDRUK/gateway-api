@@ -7,21 +7,12 @@ use Auditor;
 use Exception;
 use App\Models\Publication;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use App\Http\Traits\CheckAccess;
-use App\Models\DurHasPublication;
 use Illuminate\Http\JsonResponse;
-use App\Models\PublicationHasTool;
 use App\Http\Controllers\Controller;
-use App\Models\CollectionHasPublication;
 use App\Http\Traits\PublicationsV2Helper;
 use App\Http\Traits\RequestTransformation;
-use App\Models\PublicationHasDatasetVersion;
 use App\Http\Requests\Publication\GetPublication;
-use App\Http\Requests\Publication\EditPublication;
-use App\Http\Requests\Publication\CreatePublication;
-use App\Http\Requests\Publication\DeletePublication;
-use App\Http\Requests\Publication\UpdatePublication;
 
 class PublicationController extends Controller
 {
