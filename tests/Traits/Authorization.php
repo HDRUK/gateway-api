@@ -4,6 +4,9 @@ namespace Tests\Traits;
 
 use Hash;
 use Config;
+use App\Models\Application;
+use App\Models\ApplicationHasPermission;
+use App\Models\Permission;
 use App\Models\User;
 use App\Http\Controllers\JwtController;
 
@@ -104,6 +107,48 @@ trait Authorization
         $userJwt = $payloadJwt['user'];
 
         return $userJwt;
+    }
+
+    public function createApp(int $teamId, ?int $userId = 1)
+    {
+        $appId = fake()->regexify('[A-Za-z0-9]{40}');
+        $clientId = fake()->regexify('[A-Za-z0-9]{40}');
+        $clientSecret = Hash::make($appId . ':' . $clientId . ':' . env('APP_AUTH_PRIVATE_SALT') . ':' . env('APP_AUTH_PRIVATE_SALT_2'));
+
+        $app = Application::create([
+            'name' => fake()->text(10),
+            'app_id' => $appId,
+            'client_id' => $clientId,
+            'client_secret' => $clientSecret,
+            'description' => fake()->text(),
+            'team_id' => $teamId,
+            'user_id' => $userId,
+            'enabled' => 1,
+        ]);
+
+        $perms = Permission::whereIn('name', [
+            'datasets.create',
+            'datasets.read',
+            'datasets.update',
+            'datasets.delete',
+            'tools.create',
+            'tools.read',
+            'tools.update',
+            'tools.delete',
+        ])->get();
+
+        foreach ($perms as $perm) {
+            ApplicationHasPermission::firstOrCreate([
+                'application_id' => $app->id,
+                'permission_id' => $perm->id,
+            ]);
+        }
+
+        return [
+            'Accept' => 'application/json',
+            'x-application-id' => $app->app_id,
+            'x-client-id' => $app->client_id,
+        ];
     }
 
     protected function checkUserIfExist(bool $admin, int $nonAdminId = 1): mixed

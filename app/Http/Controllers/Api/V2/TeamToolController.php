@@ -90,6 +90,8 @@ class TeamToolController extends Controller
     public function indexStatus(GetToolByTeamAndStatus $request, int $teamId, ?string $status = 'active'): JsonResponse
     {
         try {
+            $this->checkAccess($request->all(), $teamId, null, 'team', $request->header());
+
             $perPage = request('per_page', Config::get('constants.per_page'));
             $filterTitle = request('title', null);
 
@@ -394,11 +396,11 @@ class TeamToolController extends Controller
      */
     public function store(CreateToolByTeamId $request, int $teamId): JsonResponse
     {
+        list($userId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        if (!is_null($teamId)) {
-            $this->checkAccess($input, $teamId, null, 'team');
-        }
+        $currentUser = isset($jwtUser['id']) ? (int)$jwtUser['id'] : $userId;
+        $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         try {
             $arrayKeys = [
@@ -439,14 +441,14 @@ class TeamToolController extends Controller
             }
 
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
-            $this->checkPublications($toolId, $publications, (int)$jwtUser['id']);
+            $this->checkPublications($toolId, $publications, $currentUser);
 
             if (array_key_exists('durs', $input)) {
                 $this->insertDurHasTool($input['durs'], (int)$toolId);
             }
 
             $collections = array_key_exists('collections', $input) ? $input['collections'] : [];
-            $this->checkCollections($toolId, $collections, (int)$jwtUser['id']);
+            $this->checkCollections($toolId, $collections, $currentUser);
 
             $currentTool = Tool::where('id', $toolId)->first();
             if ($currentTool->status === Tool::STATUS_ACTIVE) {
@@ -454,7 +456,8 @@ class TeamToolController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Tool ' . $tool->id . ' created',
@@ -466,7 +469,8 @@ class TeamToolController extends Controller
             ], 201);
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -575,13 +579,16 @@ class TeamToolController extends Controller
      */
     public function update(UpdateToolByTeamIdById $request, int $teamId, int $id): JsonResponse
     {
+        list($userId, $appTeamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $currentUser = isset($jwtUser['id']) ? (int)$jwtUser['id'] : $userId;
         $initTool = Tool::where([
             'id' => $id,
             'team_id' => $teamId,
         ])->first();
-        $this->checkAccess($input, $teamId, null, 'user');
+
+        $this->checkAccess($input, $initTool->team_id, null, 'team', $request->header());
 
         try {
 
@@ -616,7 +623,7 @@ class TeamToolController extends Controller
                 $array['status'] = Tool::STATUS_DRAFT;
             }
             $array['team_id'] = $teamId;
-            $array['user_id'] = $jwtUser['id'];
+            $array['user_id'] = $currentUser;
 
             Tool::where([
                 'id' => $id,
@@ -639,13 +646,13 @@ class TeamToolController extends Controller
             $this->insertToolHasTypeCategory($input['type_category'] ?? [], (int)$id);
 
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
-            $this->checkPublications($id, $publications, (int)$jwtUser['id']);
+            $this->checkPublications($id, $publications, $currentUser);
 
             DurHasTool::where('tool_id', $id)->forceDelete();
             $this->insertDurHasTool($input['durs'] ?? [], (int)$id);
 
             $collections = array_key_exists('collections', $input) ? $input['collections'] : [];
-            $this->checkCollections($id, $collections, (int)$jwtUser['id']);
+            $this->checkCollections($id, $collections, $currentUser);
 
             $currentTool = Tool::where('id', $id)->first();
             if ($currentTool->status === Tool::STATUS_ACTIVE) {
@@ -660,7 +667,8 @@ class TeamToolController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Tool ' . $id . ' updated',
@@ -672,7 +680,8 @@ class TeamToolController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -778,13 +787,15 @@ class TeamToolController extends Controller
      */
     public function edit(EditToolByTeamIdById $request, int $teamId, int $id): JsonResponse
     {
+        list($userId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $currentUser = isset($jwtUser['id']) ? (int)$jwtUser['id'] : $userId;
         $toolModel = Tool::where([
             'id' => $id,
             'team_id' => $teamId,
         ])->first();
-        $this->checkAccess($input, $teamId, null, 'user');
+        $this->checkAccess($input, $toolModel->team_id, null, 'team', $request->header());
 
         try {
             $arrayKeys = [
@@ -839,7 +850,7 @@ class TeamToolController extends Controller
 
             if (array_key_exists('publications', $input)) {
                 $publications = $input['publications'];
-                $this->checkPublications($id, $publications, (int)$jwtUser['id']);
+                $this->checkPublications($id, $publications, $currentUser);
             }
 
             if (array_key_exists('durs', $input)) {
@@ -848,7 +859,7 @@ class TeamToolController extends Controller
 
             if (array_key_exists('collections', $input)) {
                 $collections = $input['collections'];
-                $this->checkCollections($id, $collections, (int)$jwtUser['id']);
+                $this->checkCollections($id, $collections, $currentUser);
             }
 
             $currentTool = Tool::where('id', $id)->first();
@@ -857,7 +868,8 @@ class TeamToolController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Tool ' . $id . ' updated',
@@ -869,7 +881,8 @@ class TeamToolController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -940,13 +953,14 @@ class TeamToolController extends Controller
      */
     public function destroy(DeleteToolByTeamIdById $request, int $teamId, int $id): JsonResponse
     {
+        list($userId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $tool = Tool::where([
             'id' => $id,
             'team_id' => $teamId,
         ])->first();
-        $this->checkAccess($input, $teamId, null, 'user');
+        $this->checkAccess($input, $tool->team_id, null, 'team', $request->header());
 
         try {
             if ($tool) {
@@ -961,7 +975,8 @@ class TeamToolController extends Controller
                 Tool::where('id', $id)->delete();
 
                 Auditor::log([
-                    'user_id' => (int)$jwtUser['id'],
+                    'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                    'team_id' => $teamId,
                     'action_type' => 'DELETE',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Tool ' . $id . ' deleted',
@@ -975,7 +990,8 @@ class TeamToolController extends Controller
             throw new NotFoundException();
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
