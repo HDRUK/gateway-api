@@ -60,6 +60,10 @@ class Publication extends Model
         'year_of_publication',
     ];
 
+    protected static array $countableColumns = [
+        'status',
+    ];
+
     // Accessor for all datasets associated with this object
     public function getAllDatasetsAttribute()
     {
