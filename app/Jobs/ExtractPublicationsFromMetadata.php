@@ -15,7 +15,6 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use App\Models\PublicationHasDatasetVersion;
-use Illuminate\Support\Facades\Log;
 
 class ExtractPublicationsFromMetadata implements ShouldQueue
 {
@@ -48,8 +47,6 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
 
     public function publication($datasetVersionId)
     {
-        Log::info("publication Start Memory usage: " . number_format(memory_get_usage(true) / 1024 / 1024, 2) . " MB");
-        Log::info("publication Start Peak memory usage: " . number_format(memory_get_peak_usage(true) / 1024 / 1024, 2) . " MB");
 
         $linkagePublicationAboutDataset = 'metadata.linkage.publicationAboutDataset';
         $linkagePublicationUsingDataset = 'metadata.linkage.publicationUsingDataset';
@@ -110,8 +107,6 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
 
     public function publicationDataset(array $publications, string $type, int $datasetVersionId, int $userId, int $teamId)
     {
-        Log::info("Start Memory usage: " . number_format(memory_get_usage(true) / 1024 / 1024, 2) . " MB");
-        Log::info("Start Peak memory usage: " . number_format(memory_get_peak_usage(true) / 1024 / 1024, 2) . " MB");
         if (count($publications ?: []) === 0) {
             return;
         }
@@ -185,8 +180,6 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
             unset($searchDoi);
             //gc_collect_cycles();
         }
-        Log::info("End Memory usage: " . number_format(memory_get_usage(true) / 1024 / 1024, 2) . " MB");
-        Log::info("End Peak memory usage: " . number_format(memory_get_peak_usage(true) / 1024 / 1024, 2) . " MB");
     }
 
     public function searchDoi(string $doi)

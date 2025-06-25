@@ -736,6 +736,9 @@ class IntegrationDatasetController extends Controller
         $input = $request->all();
 
         try {
+            Log::info("Start Memory usage: " . number_format(memory_get_usage(true) / 1024 / 1024, 2) . " MB");
+            Log::info("Start Peak memory usage: " . number_format(memory_get_peak_usage(true) / 1024 / 1024, 2) . " MB");
+
             $currDataset = Dataset::findOrFail($id);
             $this->checkAppCanHandleDataset($currDataset->team_id, $request);
 
@@ -796,6 +799,8 @@ class IntegrationDatasetController extends Controller
                         $applicationOverrideDefaultValues['status'] : $input['status']),
                     'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
+                Log::info("Middle Memory usage: " . number_format(memory_get_usage(true) / 1024 / 1024, 2) . " MB");
+                Log::info("Middle Peak memory usage: " . number_format(memory_get_peak_usage(true) / 1024 / 1024, 2) . " MB");
 
                 // Determine the last version of metadata
                 $lastVersionNumber = $currDataset->lastMetadataVersionNumber()->version;
@@ -840,6 +845,8 @@ class IntegrationDatasetController extends Controller
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Dataset ' . $id . ' with version ' . ($lastVersionNumber + 1) . ' updated',
                 ]);
+                Log::info("End Memory usage: " . number_format(memory_get_usage(true) / 1024 / 1024, 2) . " MB");
+                Log::info("End Peak memory usage: " . number_format(memory_get_peak_usage(true) / 1024 / 1024, 2) . " MB");
 
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
