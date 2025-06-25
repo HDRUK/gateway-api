@@ -15,6 +15,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Support\Facades\Log;
 
 class ExtractToolsFromMetadata implements ShouldQueue
 {
@@ -48,6 +49,9 @@ class ExtractToolsFromMetadata implements ShouldQueue
 
     public function tool(int $datasetVersionId)
     {
+        Log::info("tool Start Memory usage: " . number_format(memory_get_usage(true) / 1024 / 1024, 2) . " MB");
+        Log::info("tool Start Peak memory usage: " . number_format(memory_get_peak_usage(true) / 1024 / 1024, 2) . " MB");
+
         $linkageToolsDataset = 'metadata.linkage.tools';
         $type = 'Used on';
 
