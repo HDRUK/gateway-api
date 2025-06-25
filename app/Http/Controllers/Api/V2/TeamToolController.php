@@ -623,7 +623,7 @@ class TeamToolController extends Controller
                 $array['status'] = Tool::STATUS_DRAFT;
             }
             $array['team_id'] = $teamId;
-            $array['user_id'] = $jwtUser['id'];
+            $array['user_id'] = $currentUser;
 
             Tool::where([
                 'id' => $id,
