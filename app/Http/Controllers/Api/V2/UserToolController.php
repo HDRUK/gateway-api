@@ -18,6 +18,7 @@ use App\Models\ToolHasTypeCategory;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Models\DatasetVersionHasTool;
+use App\Exceptions\UnauthorizedException;
 use App\Models\ToolHasProgrammingPackage;
 use App\Http\Traits\RequestTransformation;
 use App\Models\ToolHasProgrammingLanguage;
@@ -184,7 +185,7 @@ class UserToolController extends Controller
      */
     public function count(GetToolCountByUserAndStatus $request, int $userId, string $field): JsonResponse
     {
-        $this->checkAccess($request->all(), $teamId, null, 'team');
+        $this->checkAccess($request->all(), null, $userId, 'user');
 
         try {
             $counts = Tool::where('user_id', $userId)->applyCount();
@@ -264,7 +265,7 @@ class UserToolController extends Controller
      */
     public function show(GetToolByUserAndId $request, int $userId, int $id): JsonResponse
     {
-        $this->checkAccess($request->all(), $teamId, null, 'team');
+        $this->checkAccess($request->all(), null, $userId, 'user');
 
         try {
             $tool = $this->getToolById($id, userId: $userId, onlyActiveRelated: true);
@@ -948,39 +949,35 @@ class UserToolController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $tool = Tool::where('id', $id)->first();
-        if (!$initTool) {
+        if (!$tool) {
             throw new NotFoundException();
         }
         $this->checkAccess($input, null, $userId, 'user');
-        if ($initTool->user_id !== $userId) {
+        if ($tool->user_id !== $userId) {
             throw new UnauthorizedException();
         }
 
         try {
-            if ($tool) {
-                ToolHasTag::where('tool_id', $id)->delete();
-                DatasetVersionHasTool::where('tool_id', $id)->delete();
-                ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
-                ToolHasProgrammingPackage::where('tool_id', $id)->delete();
-                ToolHasTypeCategory::where('tool_id', $id)->delete();
-                PublicationHasTool::where('tool_id', $id)->delete();
-                DurHasTool::where('tool_id', $id)->delete();
-                CollectionHasTool::where('tool_id', $id)->delete();
-                Tool::where('id', $id)->delete();
+            ToolHasTag::where('tool_id', $id)->delete();
+            DatasetVersionHasTool::where('tool_id', $id)->delete();
+            ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
+            ToolHasProgrammingPackage::where('tool_id', $id)->delete();
+            ToolHasTypeCategory::where('tool_id', $id)->delete();
+            PublicationHasTool::where('tool_id', $id)->delete();
+            DurHasTool::where('tool_id', $id)->delete();
+            CollectionHasTool::where('tool_id', $id)->delete();
+            Tool::where('id', $id)->delete();
 
-                Auditor::log([
-                    'user_id' => $userId,
-                    'action_type' => 'DELETE',
-                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'Team Tool ' . $id . ' deleted',
-                ]);
+            Auditor::log([
+                'user_id' => $userId,
+                'action_type' => 'DELETE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team Tool ' . $id . ' deleted',
+            ]);
 
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                ], Config::get('statuscodes.STATUS_OK.code'));
-            }
-
-            throw new NotFoundException();
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => $userId,

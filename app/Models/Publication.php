@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Http\Traits\DatasetFetch;
 use App\Models\Traits\SortManager;
+use App\Models\Traits\EntityCounter;
 use App\Observers\PublicationObserver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
@@ -20,6 +21,7 @@ class Publication extends Model
     use Prunable;
     use DatasetFetch;
     use SortManager;
+    use EntityCounter;
 
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';

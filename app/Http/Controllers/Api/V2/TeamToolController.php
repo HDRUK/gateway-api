@@ -18,6 +18,7 @@ use App\Models\ToolHasTypeCategory;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Models\DatasetVersionHasTool;
+use App\Exceptions\UnauthorizedException;
 use App\Models\ToolHasProgrammingPackage;
 use App\Http\Traits\RequestTransformation;
 use App\Models\ToolHasProgrammingLanguage;

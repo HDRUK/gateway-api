@@ -22,6 +22,7 @@ use App\Http\Requests\V2\Publication\EditPublicationByUserIdById;
 use App\Http\Requests\V2\Publication\DeletePublicationByUserIdById;
 use App\Http\Requests\V2\Publication\GetPublicationByUserAndStatus;
 use App\Http\Requests\V2\Publication\UpdatePublicationByUserIdById;
+use App\Http\Requests\V2\Publication\GetPublicationCountByUserAndStatus;
 
 class UserPublicationController extends Controller
 {

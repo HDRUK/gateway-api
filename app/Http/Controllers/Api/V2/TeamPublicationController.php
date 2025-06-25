@@ -13,6 +13,7 @@ use App\Models\PublicationHasTool;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Models\CollectionHasPublication;
+use App\Exceptions\UnauthorizedException;
 use App\Http\Traits\PublicationsV2Helper;
 use App\Http\Traits\RequestTransformation;
 use App\Models\PublicationHasDatasetVersion;
