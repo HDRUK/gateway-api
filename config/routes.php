@@ -2478,10 +2478,12 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,cohort.read',
         ],
         'constraint' => [],
     ],
     [
+        // User needs access - used in button (many places) and form - so this is handled inside the endpoint
         'name' => 'cohort_requests_user',
         'method' => 'get',
         'path' => '/cohort_requests/user/{id}',
@@ -2513,6 +2515,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,cohort.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2541,6 +2544,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,cohort.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2554,6 +2558,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,cohort.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
