@@ -880,7 +880,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{api_url}}/api/v1/search/data_providers",
+							"raw": "{{api_url}}/api/v1/search/data_custodians",
 							"host": [
 								"{{api_url}}"
 							],
@@ -888,7 +888,7 @@
 								"api",
 								"v1",
 								"search",
-								"data_providers"
+								"data_custodians"
 							]
 						}
 					},
@@ -912,7 +912,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{api_url}}/api/v1/search/data_provider_colls",
+							"raw": "{{api_url}}/api/v1/search/data_custodian_networks",
 							"host": [
 								"{{api_url}}"
 							],
@@ -920,7 +920,7 @@
 								"api",
 								"v1",
 								"search",
-								"data_provider_colls"
+								"data_custodian_networks"
 							]
 						}
 					},
