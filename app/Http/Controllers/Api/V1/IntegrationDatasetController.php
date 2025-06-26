@@ -830,12 +830,23 @@ class IntegrationDatasetController extends Controller
 
                 $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
 
-                // Create new metadata version for this dataset
-                $version = DatasetVersion::create([
+
+                $latestVersion = DatasetVersion::where('version', $lastVersionNumber)
+                    ->first();
+
+                if (!$latestVersion) {
+                    $version = DatasetVersion::create([
                     'dataset_id' => $currDataset->id,
                     'metadata' => $input['metadata'],
                     'version' => ($lastVersionNumber + 1),
                 ]);
+                } else {
+                    $latestVersion->metadata = $input['metadata'];
+                    $latestVersion->version = $latestVersion->version + 1;
+                    $latestVersion->save();
+                }
+
+
 
                 Auditor::log([
                     'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
@@ -846,6 +857,8 @@ class IntegrationDatasetController extends Controller
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Dataset ' . $id . ' with version ' . ($lastVersionNumber + 1) . ' updated',
                 ]);
+
+                Log::info("4 Middle Peak memory usage: " . number_format(memory_get_peak_usage(true) / 1024 / 1024, 2) . " MB");
                 Log::info("End Memory usage: " . number_format(memory_get_usage(true) / 1024 / 1024, 2) . " MB");
                 Log::info("End Peak memory usage: " . number_format(memory_get_peak_usage(true) / 1024 / 1024, 2) . " MB");
 

@@ -178,7 +178,7 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
             }
             unset($newPublication);
             unset($searchDoi);
-            //gc_collect_cycles();
+            gc_collect_cycles();
         }
     }
 
