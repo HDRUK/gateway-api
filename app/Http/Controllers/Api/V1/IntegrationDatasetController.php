@@ -796,7 +796,6 @@ class IntegrationDatasetController extends Controller
                         $applicationOverrideDefaultValues['status'] : $input['status']),
                     'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
-
                 // Determine the last version of metadata
                 $lastVersionNumber = $currDataset->lastMetadataVersionNumber()->version;
 
@@ -824,12 +823,23 @@ class IntegrationDatasetController extends Controller
 
                 $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
 
-                // Create new metadata version for this dataset
-                $version = DatasetVersion::create([
+
+                $latestVersion = DatasetVersion::where('version', $lastVersionNumber)
+                    ->first();
+
+                if (!$latestVersion) {
+                    $version = DatasetVersion::create([
                     'dataset_id' => $currDataset->id,
                     'metadata' => $input['metadata'],
                     'version' => ($lastVersionNumber + 1),
                 ]);
+                } else {
+                    $latestVersion->metadata = $input['metadata'];
+                    $latestVersion->version = $latestVersion->version + 1;
+                    $latestVersion->save();
+                }
+
+
 
                 Auditor::log([
                     'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
