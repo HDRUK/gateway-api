@@ -1303,8 +1303,8 @@ class CohortRequestController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        // Check that either the user has the cohort.read permission, or is asking only for their own record.
-        if (!(($jwtUser['id'] === $id) || in_array("cohort.read", $input['jwt_user']['role_perms']['extra']['perms']))) {
+        // Check that the user is asking only for their own record.
+        if (!($jwtUser['id'] === $id)) {
             throw new UnauthorizedException();
         }
 
