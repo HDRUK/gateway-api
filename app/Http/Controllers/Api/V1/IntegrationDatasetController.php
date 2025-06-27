@@ -824,8 +824,9 @@ class IntegrationDatasetController extends Controller
                 $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
 
 
-                $latestVersion = DatasetVersion::where('version', $lastVersionNumber)
-                    ->first();
+                $latestVersion = DatasetVersion::where('dataset_id', $currDataset->id)
+                ->where('version', $lastVersionNumber)
+                ->first();
 
                 if (!$latestVersion) {
                     $version = DatasetVersion::create([
