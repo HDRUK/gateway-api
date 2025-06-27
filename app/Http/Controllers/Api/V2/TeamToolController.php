@@ -92,7 +92,7 @@ class TeamToolController extends Controller
     {
         $input = $request->all();
 
-        $this->checkAccess($input, $teamId, null, 'team');
+        $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         try {
             $this->checkAccess($request->all(), $teamId, null, 'team', $request->header());
@@ -193,7 +193,7 @@ class TeamToolController extends Controller
      */
     public function count(GetToolCountByTeamAndStatus $request, int $teamId, string $field): JsonResponse
     {
-        $this->checkAccess($request->all(), $teamId, null, 'team');
+        $this->checkAccess($request->all(), $teamId, null, 'team', $request->header());
 
         try {
             $counts = Tool::where('team_id', $teamId)->applyCount();
@@ -287,7 +287,7 @@ class TeamToolController extends Controller
      */
     public function show(GetToolByTeamAndId $request, int $teamId, int $id): JsonResponse
     {
-        $this->checkAccess($request->all(), $teamId, null, 'team');
+        $this->checkAccess($request->all(), $teamId, null, 'team', $request->header());
 
         try {
             $tool = $this->getToolById($id, teamId: $teamId, onlyActiveRelated: true);

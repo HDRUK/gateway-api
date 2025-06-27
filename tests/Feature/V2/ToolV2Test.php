@@ -769,6 +769,7 @@ class ToolV2Test extends TestCase
             [],
             $appHeader1,
         );
+
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $response = $this->json(
@@ -785,7 +786,7 @@ class ToolV2Test extends TestCase
             [],
             $appHeader2,
         );
-        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        $response->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
     }
 
 
@@ -965,7 +966,7 @@ class ToolV2Test extends TestCase
             [],
             $appHeader2,
         );
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
 
         $response = $this->json(
             'GET',
