@@ -10,15 +10,13 @@ class DefineFeatureFlags
     public function handle($request, Closure $next)
     {
         $url = env('FEATURE_FLAGGING_CONFIG_URL');
-        if (!$url) {
+        if (app()->environment('testing') || !$url) {
             return $next($request);
         }
 
         $flagManager = app(FeatureFlagManager::class);
 
-        if (app()->environment('testing') || !$url) {
-            return;
-        }
+
 
         $featureFlags = $flagManager->getAllFlags();
 
