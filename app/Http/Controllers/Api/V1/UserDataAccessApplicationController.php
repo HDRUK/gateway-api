@@ -587,6 +587,87 @@ class UserDataAccessApplicationController extends Controller
         }
     }
 
+    public function downloadZipFile(GetUserDataAccessApplication $request, int $userId, int $id): StreamedResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $application = DataAccessApplication::findOrFail($id);
+            if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
+                throw new UnauthorizedException('User does not have permission to use this endpoint to view these files.');
+            }
+            $uploads = Upload::where('entity_id', $id)->get();
+
+            if ($uploads) {
+
+                // Create a temporary file path
+                $tempZipPath = storage_path("app/temp/dar_{$id}_files.zip");
+
+                \Log::info('tempZipPath: ' . $tempZipPath);
+
+                // Ensure the temp directory exists
+                if (!file_exists(dirname($tempZipPath))) {
+                    mkdir(dirname($tempZipPath), 0755, true);
+                }
+
+                $zip = new \ZipArchive();
+
+                if ($zip->open($tempZipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+                    throw new \Exception("Cannot create ZIP file at {$tempZipPath}");
+                }
+
+                $filesAdded = 0;
+                foreach ($uploads as $upload) {
+                    \Log::info('upload id: ' . $upload->id);
+                    if (Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
+                        ->exists($upload->file_location)) {
+                        // Get file content and name
+                        $fileContents = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
+                            ->get($upload->file_location);
+                        $fileName = basename($upload->file_location);
+
+                        if ($zip->addFromString($fileName, $fileContents)) {
+                            $filesAdded++;
+                        } else {
+                            \Log::warning("Failed to add file to ZIP: {$filePath}");
+                        }
+                    }
+                }
+
+                \Log::info('files added ' . $filesAdded);
+
+                $zip->close();
+
+                if (!file_exists($tempZipPath)) {
+                    \Log::info("ZIP file was not created at: {$tempZipPath}");
+                }
+
+                // Now store the zip in desired location, e.g., in `archives` folder
+                $storedPath = "archives/dar_{$id}_files.zip";
+                Storage::put($storedPath, file_get_contents($tempZipPath));
+
+                // Optional: delete the temporary file
+                unlink($tempZipPath);
+
+                return Storage::download($storedPath);
+            }
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
     /**
      * @OA\Get(
      *      path="/api/v1/users/{userId}/dar/applications/{id}/files/{fileId}/download",
