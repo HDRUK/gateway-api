@@ -67,6 +67,7 @@ class FeatureFlagController extends Controller
             return response()->json(['message' => 'Unauthorized: Invalid token.'], 401);
         }
 
+        Cache::forget('getAllFlags');
 
         $url = env('FEATURE_FLAGGING_CONFIG_URL');
 
