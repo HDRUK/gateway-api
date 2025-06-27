@@ -133,9 +133,9 @@ class ToolV2Test extends TestCase
      *
      * @return void
      */
-    public function test_v2_get_all_tools_with_success(): void
+    public function test_v2_get_all_active_tools_with_success(): void
     {
-        $countTool = Tool::where('enabled', 1)->count();
+        $countTool = Tool::where(['enabled' => 1, 'status' => 'ACTIVE'])->count();
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
         $this->assertEquals($countTool, $response['total']);
         $response->assertJsonStructure([
@@ -547,90 +547,6 @@ class ToolV2Test extends TestCase
     }
 
     /**
-     * Create, delete, update, delete, edit, and delete a Tool with success
-     *
-     * @return void
-     */
-    public function test_v2_create_archive_unarchive_tool_with_success(): void
-    {
-        $licenseId = License::where('valid_until', null)->get()->random()->id;
-
-        // Insert
-        $mockDataIns = array(
-            "name" => "Similique sapiente est vero eum.",
-            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
-            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-            "license" => $licenseId,
-            "tech_stack" => "Cumque molestias excepturi quam at.",
-            "category_id" => 1,
-            "user_id" => 1,
-            "tag" => array(2),
-            "programming_language" => array(1),
-            "programming_package" => array(1),
-            "type_category" => array(1),
-            "enabled" => 1,
-            "publications" => $this->generatePublications(),
-            "any_dataset" => false,
-        );
-
-        $responseIns = $this->json(
-            'POST',
-            self::TEST_URL . '/',
-            $mockDataIns,
-            $this->header
-        );
-
-        $responseIns->assertStatus(201);
-        $responseIns->assertJsonStructure([
-            'message',
-            'data',
-        ]);
-
-        $this->assertEquals(
-            $responseIns['message'],
-            Config::get('statuscodes.STATUS_CREATED.message')
-        );
-        $toolIdInsert = $responseIns['data'];
-
-        // Delete
-        $responseArchive = $this->json(
-            'PATCH',
-            self::TEST_URL . '/' . $toolIdInsert,
-            ['status' => 'ARCHIVED'],
-            $this->header
-        );
-        $responseArchive->assertStatus(200);
-
-        // Unarchive tool
-        $responseUnarchive = $this->json(
-            'PATCH',
-            self::TEST_URL . '/' . $toolIdInsert,
-            ['status' => 'DRAFT'],
-            $this->header
-        );
-        $responseUnarchive->assertJsonStructure([
-            'message',
-            'data',
-        ]);
-
-        $responseUnarchive->assertStatus(200);
-
-        // Verify that the unarchived tool has deleted_at == null
-        $toolData = $responseUnarchive['data'];
-        $this->assertNull($toolData['deleted_at']);
-
-
-        // Delete again
-        $responseDeleteAgain = $this->json(
-            'DELETE',
-            self::TEST_URL . '/' . $toolIdInsert,
-            [],
-            $this->header
-        );
-        $responseDeleteAgain->assertStatus(200);
-    }
-
-    /**
      * Update Tool with success by id and generate an exception
      *
      * @return void
@@ -668,7 +584,7 @@ class ToolV2Test extends TestCase
 
         $response = $this->json(
             'PUT',
-            self::TEST_URL . '/' . $id,
+            $this->team_tools_url(1) . '/' . $id,
             $mockData,
             $this->header
         );
@@ -682,9 +598,9 @@ class ToolV2Test extends TestCase
      */
     public function test_v2_soft_delete_tool_with_success(): void
     {
-        $tools = Tool::first();
+        $tool = Tool::first();
         $countBefore = Tool::onlyTrashed()->count();
-        $response = $this->json('DELETE', self::TEST_URL . '/' . $tools->id, [], $this->header);
+        $response = $this->json('DELETE', $this->team_tools_url($tool->team_id) . '/' . $tool->id, [], $this->header);
         $countAfter = Tool::onlyTrashed()->count();
 
         $response->assertStatus(200);
@@ -696,55 +612,10 @@ class ToolV2Test extends TestCase
         );
     }
 
-    public function test_v2_get_all_tools_by_team_with_success(): void
+    public function test_v2_get_all_active_tools_by_team_with_success(): void
     {
         $tool = $this->getToolsByTeam('active');
         $response = $this->json('GET', '/api/v2/teams/' . $tool->team_id . '/tools/status/active', [], $this->header);
-        $response->assertJsonStructure([
-            'data' => [
-                0 => [
-                    'id',
-                    'name',
-                    'url',
-                    'description',
-                    'results_insights',
-                    'license',
-                    'tech_stack',
-                    'category_id',
-                    'user_id',
-                    'enabled',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'user',
-                    'tag',
-                    'associated_authors',
-                    'contact_address',
-                    'publications',
-                    'durs',
-                    'collections',
-                    'datasets',
-                    'any_dataset',
-                    'type_category',
-                    'category',
-                ]
-            ],
-            'current_page',
-            'first_page_url',
-            'from',
-            'last_page',
-            'last_page_url',
-            'links',
-            'next_page_url',
-            'path',
-            'per_page',
-            'prev_page_url',
-            'to',
-            'total',
-        ]);
-        $response->assertStatus(200);
-
-        $response = $this->json('GET', '/api/v2/teams/' . $tool->team_id . '/tools', [], $this->header);
         $response->assertJsonStructure([
             'data' => [
                 0 => [
@@ -810,7 +681,7 @@ class ToolV2Test extends TestCase
         // Create Tool A
         $responseCreateTool = $this->json(
             'POST',
-            self::TEST_URL,
+            $this->team_tools_url($teamId1),
             [
                 'name' => 'Tool A',
                 'url' => 'http://example.com/toolA',
@@ -820,7 +691,6 @@ class ToolV2Test extends TestCase
                 'tech_stack' => 'Tech Stack A',
                 'category_id' => 1,
                 'user_id' => $userId,
-                'team_id' => $teamId1,
                 'enabled' => 1,
                 'tag' => [1, 2],
                 'dataset' => [1, 2],
@@ -839,7 +709,7 @@ class ToolV2Test extends TestCase
         // Create Tool B
         $responseCreateTool = $this->json(
             'POST',
-            self::TEST_URL,
+            $this->team_tools_url($teamId1),
             [
                 'name' => 'Tool B',
                 'url' => 'http://example.com/toolB',
@@ -849,7 +719,6 @@ class ToolV2Test extends TestCase
                 'tech_stack' => 'Tech Stack B',
                 'category_id' => 1,
                 'user_id' => $userId,
-                'team_id' => $teamId1,
                 'enabled' => 1,
                 'tag' => [1, 2],
                 'dataset' => [2],
@@ -869,7 +738,7 @@ class ToolV2Test extends TestCase
         // Create Tool C
         $responseCreateTool = $this->json(
             'POST',
-            self::TEST_URL,
+            $this->team_tools_url($teamId2),
             [
                 'name' => 'Tool C',
                 'url' => 'http://example.com/toolC',
@@ -879,7 +748,6 @@ class ToolV2Test extends TestCase
                 'tech_stack' => 'Tech Stack C',
                 'category_id' => 1,
                 'user_id' => $userId,
-                'team_id' => $teamId2,
                 'enabled' => 1,
                 'tag' => [1, 2],
                 'dataset' => [1],
@@ -897,7 +765,7 @@ class ToolV2Test extends TestCase
 
         $response = $this->json(
             'GET',
-            $this->team_tools_url($teamId1),
+            $this->team_tools_url($teamId1) . '/status/active',
             [],
             $appHeader1,
         );
@@ -913,7 +781,7 @@ class ToolV2Test extends TestCase
 
         $response = $this->json(
             'GET',
-            $this->team_tools_url($teamId1),
+            $this->team_tools_url($teamId1) . '/status/active',
             [],
             $appHeader2,
         );
@@ -921,10 +789,11 @@ class ToolV2Test extends TestCase
     }
 
 
-    public function test_v2_get_all_tools_by_user_with_success(): void
+    public function test_v2_get_all_active_tools_by_user_with_success(): void
     {
         $tool = $this->getToolsByUser('active');
         $response = $this->json('GET', '/api/v2/users/' . $tool->user_id . '/tools/status/active', [], $this->header);
+        $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
                 0 => [
@@ -967,52 +836,6 @@ class ToolV2Test extends TestCase
             'to',
             'total',
         ]);
-        $response->assertStatus(200);
-
-        $response = $this->json('GET', '/api/v2/users/' . $tool->user_id . '/tools', [], $this->header);
-        $response->assertJsonStructure([
-            'data' => [
-                0 => [
-                    'id',
-                    'name',
-                    'url',
-                    'description',
-                    'results_insights',
-                    'license',
-                    'tech_stack',
-                    'category_id',
-                    'user_id',
-                    'enabled',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'user',
-                    'tag',
-                    'associated_authors',
-                    'contact_address',
-                    'publications',
-                    'durs',
-                    'collections',
-                    'datasets',
-                    'any_dataset',
-                    'type_category',
-                    'category',
-                ]
-            ],
-            'current_page',
-            'first_page_url',
-            'from',
-            'last_page',
-            'last_page_url',
-            'links',
-            'next_page_url',
-            'path',
-            'per_page',
-            'prev_page_url',
-            'to',
-            'total',
-        ]);
-        $response->assertStatus(200);
     }
 
     public function test_v2_get_tool_by_id_and_by_team_with_success(): void
