@@ -1555,7 +1555,7 @@ class DatasetController extends Controller
             $metadata = $metadata['metadata'];
         }
 
-        if (is_string($metadata) && $this->isJsonString($metadata)) {
+        if (is_string($metadata) && isJsonString($metadata)) {
             $metadata = json_decode($metadata, true);
         }
         // Pre-process check for incoming data from a resource that passes strings
@@ -1563,7 +1563,7 @@ class DatasetController extends Controller
         // is a safe-guard to ensure execution is unaffected by other data types.
 
 
-        if (isset($metadata['metadata']) && is_string($metadata['metadata']) && $this->isJsonString($metadata['metadata'])) {
+        if (isset($metadata['metadata']) && is_string($metadata['metadata']) && isJsonString($metadata['metadata'])) {
             $tmpMetadata['metadata'] = json_decode($metadata['metadata'], true);
             unset($metadata['metadata']);
             $metadata = $tmpMetadata;
@@ -1572,15 +1572,6 @@ class DatasetController extends Controller
 
 
         return $metadata;
-    }
-
-    private function isJsonString($value): bool
-    {
-        if (!is_string($value)) {
-            return false;
-        }
-        json_decode($value);
-        return json_last_error() === JSON_ERROR_NONE;
     }
 
     public function getValueFromPath(array $item, string $path)

@@ -92,7 +92,7 @@ trait DatasetsV2Helpers
             $metadata = $metadata['metadata'];
         }
 
-        if (is_string($metadata) && $this->isJsonString($metadata)) {
+        if (is_string($metadata) && isJsonString($metadata)) {
             $metadata = json_decode($metadata, true);
         }
         // Pre-process check for incoming data from a resource that passes strings
@@ -100,7 +100,7 @@ trait DatasetsV2Helpers
         // is a safe-guard to ensure execution is unaffected by other data types.
 
 
-        if (isset($metadata['metadata']) && is_string($metadata['metadata']) && $this->isJsonString($metadata['metadata'])) {
+        if (isset($metadata['metadata']) && is_string($metadata['metadata']) && isJsonString($metadata['metadata'])) {
             $tmpMetadata['metadata'] = json_decode($metadata['metadata'], true);
             unset($metadata['metadata']);
             $metadata = $tmpMetadata;
@@ -111,9 +111,4 @@ trait DatasetsV2Helpers
         return $metadata;
     }
 
-    private function isJsonString($value): bool
-    {
-        json_decode($value);
-        return json_last_error() === JSON_ERROR_NONE;
-    }
 }
