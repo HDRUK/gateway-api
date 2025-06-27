@@ -168,6 +168,9 @@ class DataAccessApplicationTest extends TestCase
      */
     public function test_the_application_can_count_dar_applications()
     {
+        $response = $this->get('api/v1/users/1/dar/applications/count', $this->header);
+        $initialContent = $response->decodeResponseJson()['data'];
+
         $entityIds1 = $this->createDatasetForDar();
         $datasetId1 = $entityIds1['datasetId'];
         $teamId1 = $entityIds1['teamId'];
@@ -284,11 +287,11 @@ class DataAccessApplicationTest extends TestCase
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $content = $response->decodeResponseJson()['data'];
-        $this->assertEquals(1, $content['DRAFT']);
-        $this->assertEquals(1, $content['SUBMITTED']);
-        $this->assertEquals(2, $content['APPROVED']);
-        $this->assertEquals(1, $content['info_required']);
-        $this->assertEquals(5, $content['ALL'], 5);
+        $this->assertEquals($initialContent['DRAFT'] + 1, $content['DRAFT']);
+        $this->assertEquals($initialContent['SUBMITTED'] + 1, $content['SUBMITTED']);
+        $this->assertEquals($initialContent['APPROVED'] + 2, $content['APPROVED']);
+        $this->assertEquals($initialContent['info_required'] + 1, $content['info_required']);
+        $this->assertEquals($initialContent['ALL'] + 5, $content['ALL'], 5);
 
 
         $response = $this->get('api/v1/teams/' . $teamId1 . '/dar/applications/count', $this->header);
