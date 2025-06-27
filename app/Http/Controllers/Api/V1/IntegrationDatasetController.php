@@ -1200,28 +1200,28 @@ class IntegrationDatasetController extends Controller
 
     private function extractMetadata(Mixed $metadata)
     {
-
         if (isset($metadata['metadata']['metadata'])) {
             $metadata = $metadata['metadata'];
         }
 
+        if (is_string($metadata) && isJsonString($metadata)) {
+            $metadata = json_decode($metadata, true);
+        }
         // Pre-process check for incoming data from a resource that passes strings
-        // when we expect an associative array. GMI passes strings, this
+        // when we expect an associative array. FMA passes strings, this
         // is a safe-guard to ensure execution is unaffected by other data types.
-        if (isset($metadata['metadata'])) {
-            if (is_string($metadata['metadata'])) {
-                $tmpMetadata['metadata'] = json_decode($metadata['metadata'], true);
-                unset($metadata['metadata']);
-                $metadata = $tmpMetadata;
-            }
-        } elseif (is_string($metadata)) {
-            $tmpMetadata['metadata'] = json_decode($metadata, true);
-            unset($metadata);
+
+
+        if (isset($metadata['metadata']) && is_string($metadata['metadata']) && isJsonString($metadata['metadata'])) {
+            $tmpMetadata['metadata'] = json_decode($metadata['metadata'], true);
+            unset($metadata['metadata']);
             $metadata = $tmpMetadata;
         }
+
+
+
         return $metadata;
     }
-
 
     private function mapCoverage(array $metadata, DatasetVersion $version): void
     {
