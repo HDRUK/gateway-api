@@ -446,7 +446,7 @@ class TeamDurController extends Controller
     public function show(GetDurByTeamAndId $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $this->checkAccess($input, $teamId, null, 'team');
+        $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         try {
             $dur = $this->getDurById($id, teamId: $teamId);
