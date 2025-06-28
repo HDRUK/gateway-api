@@ -1073,6 +1073,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access.userId',
         ],
         'constraint' => [
             'id' => '[0-9]+',
