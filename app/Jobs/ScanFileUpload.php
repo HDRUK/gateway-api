@@ -422,6 +422,8 @@ class ScanFileUpload implements ShouldQueue
                 $import = Excel::toArray(new ImportStructuralMetadata(), $path, $this->fileSystem . '.scanned');
             }
 
+            Log::info('<<<< 3 Middle');
+            Log::info($loc);
             $structuralMetadata = array();
             foreach ($import[0] as $row) {
                 if (!$this->allNull($row)) {
@@ -437,7 +439,7 @@ class ScanFileUpload implements ShouldQueue
                     ];
                 }
             }
- Log::info('<<<< 3 Middle');
+            Log::info('<<<< 4 Middle');
             // Check structural metadata against schema using traser
             $metadataInput = [
                 'metadata' => [
@@ -472,7 +474,7 @@ class ScanFileUpload implements ShouldQueue
                 'entity_type' => 'structural_metadata',
                 'structural_metadata' => json_encode($metadataInput['metadata']['structuralMetadata']),
             ]);
-             Log::info('<<<< 4 End');
+            Log::info('<<<< 4 End');
             CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
             // } else {
             //     $upload->update([
@@ -482,7 +484,7 @@ class ScanFileUpload implements ShouldQueue
             //     ]);
             // }
         } catch (Exception $e) {
-             Log::info('<<<< Fail');
+            Log::info('<<<< Fail');
             // Record exception in uploads table
             $upload->update([
                 'status' => 'FAILED',
