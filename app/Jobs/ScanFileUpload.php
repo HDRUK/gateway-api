@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Log;
 
 class ScanFileUpload implements ShouldQueue
 {
@@ -406,14 +407,18 @@ class ScanFileUpload implements ShouldQueue
 
     private function attachStructuralMetadata(string $loc, Upload $upload)
     {
+        Log::info('<<<< 1 Start');
+
         try {
             $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
 
             $import = [];
 
             if ($this->isLocalOrTestEnv) {
+                Log::info('<<<< 2a');
                 $import = Excel::toArray(new ImportStructuralMetadata(), $path);
             } else {
+                Log::info('<<<< 2b');
                 $import = Excel::toArray(new ImportStructuralMetadata(), $path, $this->fileSystem . '.scanned');
             }
 
@@ -432,7 +437,7 @@ class ScanFileUpload implements ShouldQueue
                     ];
                 }
             }
-
+ Log::info('<<<< 3 Middle');
             // Check structural metadata against schema using traser
             $metadataInput = [
                 'metadata' => [
@@ -467,6 +472,7 @@ class ScanFileUpload implements ShouldQueue
                 'entity_type' => 'structural_metadata',
                 'structural_metadata' => json_encode($metadataInput['metadata']['structuralMetadata']),
             ]);
+             Log::info('<<<< 4 End');
             CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
             // } else {
             //     $upload->update([
@@ -476,6 +482,7 @@ class ScanFileUpload implements ShouldQueue
             //     ]);
             // }
         } catch (Exception $e) {
+             Log::info('<<<< Fail');
             // Record exception in uploads table
             $upload->update([
                 'status' => 'FAILED',
