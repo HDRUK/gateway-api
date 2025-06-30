@@ -4,7 +4,7 @@ namespace App\Http\Requests\V2\Publication;
 
 use App\Http\Requests\BaseFormRequest;
 
-class GePublicationByTeamByIdByStatus extends BaseFormRequest
+class GetPublicationCountByTeamAndStatus extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -15,8 +15,6 @@ class GePublicationByTeamByIdByStatus extends BaseFormRequest
     {
         return [
             'teamId' => 'required|int|exists:teams,id',
-            'id' => 'required|int|exists:publications,id',
-            'status' => 'required|string|in:active,draft,archived',
         ];
     }
 
@@ -29,8 +27,6 @@ class GePublicationByTeamByIdByStatus extends BaseFormRequest
     {
         $this->merge([
             'teamId' => $this->route('teamId'),
-            'id' => $this->route('id'),
-            'status' => $this->route('status'),
         ]);
     }
 }

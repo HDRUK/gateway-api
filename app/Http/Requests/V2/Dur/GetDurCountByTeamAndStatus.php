@@ -15,7 +15,6 @@ class GetDurCountByTeamAndStatus extends BaseFormRequest
     {
         return [
             'teamId' => 'required|int|exists:teams,id',
-            'status' => 'required|string|in:active,draft,archived',
         ];
     }
 
@@ -28,7 +27,6 @@ class GetDurCountByTeamAndStatus extends BaseFormRequest
     {
         $this->merge([
             'teamId' => $this->route('teamId'),
-            'status' => $this->route('status') ?? 'active',
         ]);
     }
 }

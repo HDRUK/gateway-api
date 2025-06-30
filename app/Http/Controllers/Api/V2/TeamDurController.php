@@ -181,9 +181,7 @@ class TeamDurController extends Controller
     {
         $input = $request->all();
 
-        if (!is_null($teamId)) {
-            $this->checkAccess($input, $teamId, null, 'team', $request->header());
-        }
+        $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         try {
             $projectTitle = $request->query('project_title', null);
@@ -447,6 +445,9 @@ class TeamDurController extends Controller
      */
     public function show(GetDurByTeamAndId $request, int $teamId, int $id): JsonResponse
     {
+        $input = $request->all();
+        $this->checkAccess($input, $teamId, null, 'team', $request->header());
+
         try {
             $dur = $this->getDurById($id, teamId: $teamId);
 
@@ -597,9 +598,7 @@ class TeamDurController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
 
-        if (!is_null($teamId)) {
-            $this->checkAccess($input, $teamId, null, 'team', $request->header());
-        }
+        $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         $arrayKeys = [
             'non_gateway_datasets',
@@ -699,6 +698,7 @@ class TeamDurController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v2/teams/{teamId}/dur/{id}",
+     *    operationId="update_dur_v2_by_team_id",
      *    tags={"Data Use Registers"},
      *    summary="TeamDurController@update",
      *    description="Update a dur by team and id v2",
@@ -868,8 +868,14 @@ class TeamDurController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
-        $initDur = Dur::where(['id' => $id, 'team_id' => $teamId])->first();
+        $initDur = Dur::where('id', $id)->first();
+        if (!$initDur) {
+            throw new NotFoundException();
+        }
         $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
+        if ($initDur->team_id !== $teamId) {
+            throw new UnauthorizedException();
+        }
 
         try {
             $arrayKeys = [
@@ -979,6 +985,7 @@ class TeamDurController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v2/teams/{teamId}/dur/{id}",
+     *    operationId="edit_durs_v2_by_team_id",
      *    tags={"Data Use Registers"},
      *    summary="TeamDurController@edit",
      *    description="Edit a dur by team v2",
@@ -1145,8 +1152,14 @@ class TeamDurController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
-        $initDur = Dur::where(['id' => $id, 'team_id' => $teamId])->first();
+        $initDur = Dur::where('id', $id)->first();
+        if (!$initDur) {
+            throw new NotFoundException();
+        }
         $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
+        if ($initDur->team_id !== $teamId) {
+            throw new UnauthorizedException();
+        }
 
         try {
             $arrayKeys = [
@@ -1244,6 +1257,7 @@ class TeamDurController extends Controller
     /**
      * @OA\Delete(
      *    path="/api/v2/teams/{teamId}/dur/{id}",
+     *    operationId="delete_durs_v2_by_team_id",
      *    tags={"Data Use Registers"},
      *    summary="TeamDurController@destroy",
      *    description="Delete a dur by team and id v2",
@@ -1312,13 +1326,13 @@ class TeamDurController extends Controller
             DurHasPublication::where(['dur_id' => $id])->delete();
             DurHasTool::where(['dur_id' => $id])->delete();
             CollectionHasDur::where(['dur_id' => $id])->delete();
-            Dur::where(['id' => $id])->delete();
+            Dur::where(['id' => $id])->first()->delete();
 
             Auditor::log([
                 'user_id' => $currentUser,
                 'action_type' => 'DELETE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Dur ' . $id . ' deleted',
+                'description' => 'Team Dur ' . $id . ' deleted',
             ]);
 
             return response()->json([

@@ -117,6 +117,7 @@ class Dur extends Model
         'created_at',
         'project_title',
         'updated_at',
+        'project_start_date',
     ];
 
     protected static array $countableColumns = [
