@@ -1,3 +1,9 @@
+## [2.15.0](https://github.com/HDRUK/gateway-api/compare/v2.14.0...v2.15.0) (2025-07-01)
+
+### ✨ Features
+
+* **GAT-7097:** Correct field name (#1303) ([45013c7](https://github.com/HDRUK/gateway-api/commit/45013c7d4c09590f154561566fa36bd8be263c24)), closes [GAT-7097](GAT-7097)
+
 ## [2.14.0](https://github.com/HDRUK/gateway-api/compare/v2.13.0...v2.14.0) (2025-07-01)
 
 ### ✨ Features
