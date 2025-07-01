@@ -42,7 +42,7 @@ class UpdatePreferredEmailEnquiryTreadGat7097 extends Command
             EnquiryThread::where([
                 'user_id' => $userId,
             ])->update([
-                'preferred_email' => $userPreferredEmail->preferred_email
+                'user_preferred_email' => $userPreferredEmail->preferred_email
             ]);
         }
     }
