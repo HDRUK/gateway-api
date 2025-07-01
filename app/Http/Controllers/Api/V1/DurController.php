@@ -117,7 +117,6 @@ class DurController extends Controller
      *                @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *                @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *                @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
-     *                @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *                @OA\Property(property="counter", type="integer", example="34319"),
@@ -153,6 +152,7 @@ class DurController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
+        list($userId, $teamId) = $this->getAccessorUserAndTeam($request);
 
         try {
             $sort = [];
@@ -259,6 +259,8 @@ class DurController extends Controller
             });
 
             Auditor::log([
+                'user_id' => $userId,
+                'team_id' => $teamId,
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dur get all",
@@ -269,6 +271,8 @@ class DurController extends Controller
             );
         } catch (Exception $e) {
             Auditor::log([
+                'user_id' => $userId,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
@@ -369,7 +373,6 @@ class DurController extends Controller
      *                   @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *                   @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *                   @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
-     *                   @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *                   @OA\Property(property="enabled", type="boolean", example="1"),
      *                   @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="counter", type="integer", example="34319"),
@@ -394,6 +397,9 @@ class DurController extends Controller
     public function show(GetDur $request, int $id): JsonResponse
     {
         try {
+
+            list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
+
             $dur = $this->getDurById($id);
 
             if (!empty($dur['user'])) {
@@ -412,6 +418,8 @@ class DurController extends Controller
             }
 
             Auditor::log([
+                'user_id' => $userId,
+                'team_id' => $teamId,
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Dur get ' . $id,
@@ -423,6 +431,8 @@ class DurController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
+                'user_id' => $userId,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
@@ -481,7 +491,6 @@ class DurController extends Controller
      *             @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *             @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *             @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
-     *             @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *             @OA\Property(property="enabled", type="boolean", example="1"),
      *             @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="counter", type="integer", example="34319"),
@@ -524,8 +533,11 @@ class DurController extends Controller
      */
     public function store(CreateDur $request): JsonResponse
     {
+        list($userId, $teamId, $createOrigin, $status, $appId) = $this->getAccessorUserAndTeam($request);
+
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
 
         $arrayKeys = [
             'non_gateway_datasets',
@@ -559,7 +571,6 @@ class DurController extends Controller
             'request_frequency',
             'access_type',
             'mongo_object_dar_id',
-            'technicalSummary',
             'team_id',
             'enabled',
             'last_activity',
@@ -573,13 +584,17 @@ class DurController extends Controller
             'latest_approval_date',
         ];
         $array = $this->checkEditArray($input, $arrayKeys);
-        $array['team_id'] = array_key_exists('team_id', $input) ? $input['team_id'] : null;
+        $array['team_id'] = array_key_exists('team_id', $input) ? $input['team_id'] : $teamId;
+        $array['user_id'] = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
+        if ($appId) {
+            $array['application_id'] = $appId;
+        }
 
         if (!array_key_exists('team_id', $array)) {
             throw new NotFoundException("Team Id not found in request.");
         }
 
-        $this->checkAccess($input, $array['team_id'], null, 'team');
+        $this->checkAccess($input, $array['team_id'], null, 'team', $request->header());
 
         if (isset($array['organisation_sector'])) {
             $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
@@ -592,11 +607,11 @@ class DurController extends Controller
 
             // link/unlink dur with datasets
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
-            $this->checkDatasets($durId, $datasets, (int)$jwtUser['id']);
+            $this->checkDatasets($durId, $datasets, $currentUser);
 
             // link/unlink dur with publications
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
-            $this->checkPublications($durId, $publications, (int)$jwtUser['id']);
+            $this->checkPublications($durId, $publications, $currentUser);
 
             // link/unlink dur with keywords
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
@@ -617,7 +632,8 @@ class DurController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Dur ' . $durId . ' created',
@@ -629,7 +645,8 @@ class DurController extends Controller
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
@@ -698,7 +715,6 @@ class DurController extends Controller
      *             @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *             @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *             @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
-     *             @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *             @OA\Property(property="enabled", type="boolean", example="1"),
      *             @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="counter", type="integer", example="34319"),
@@ -768,7 +784,6 @@ class DurController extends Controller
      *                   @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *                   @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *                   @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
-     *                   @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *                   @OA\Property(property="enabled", type="boolean", example="1"),
      *                   @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="counter", type="integer", example="34319"),
@@ -799,9 +814,12 @@ class DurController extends Controller
     public function update(UpdateDur $request, int $id): JsonResponse
     {
         $input = $request->all();
+        list($userId, $teamId, $createOrigin, $status, $appId) = $this->getAccessorUserAndTeam($request);
+
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
         $initDur = Dur::withTrashed()->where('id', $id)->first();
-        $this->checkAccess($input, $initDur->team_id, null, 'team');
+        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
 
         try {
             $arrayKeys = [
@@ -836,7 +854,6 @@ class DurController extends Controller
                 'request_frequency',
                 'access_type',
                 'mongo_object_dar_id',
-                'technicalSummary',
                 'enabled',
                 'last_activity',
                 'counter',
@@ -857,16 +874,17 @@ class DurController extends Controller
             if (array_key_exists('organisation_sector', $array)) {
                 $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
             }
+            $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
             Dur::where('id', $id)->first()->update($array);
 
             // link/unlink dur with datasets
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
-            $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
+            $this->checkDatasets($id, $datasets, $userIdFinal);
 
             // link/unlink dur with publications
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
-            $this->checkPublications($id, $publications, (int)$jwtUser['id']);
+            $this->checkPublications($id, $publications, $userIdFinal);
 
             // link/unlink dur with keywords
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
@@ -887,7 +905,8 @@ class DurController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Dur ' . $id . ' updated',
@@ -899,7 +918,8 @@ class DurController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -977,7 +997,6 @@ class DurController extends Controller
      *             @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *             @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *             @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
-     *             @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *             @OA\Property(property="enabled", type="boolean", example="1"),
      *             @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="counter", type="integer", example="34319"),
@@ -1047,7 +1066,6 @@ class DurController extends Controller
      *                   @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *                   @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *                   @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
-     *                   @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *                   @OA\Property(property="enabled", type="boolean", example="1"),
      *                   @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="counter", type="integer", example="34319"),
@@ -1077,10 +1095,12 @@ class DurController extends Controller
      */
     public function edit(EditDur $request, int $id): JsonResponse
     {
+        list($userId, $teamId, $createOrigin, $status, $appId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $currentUser = isset($jwtUser['id']) ? $jwtUser['id'] : $userId;
         $initDur = Dur::withTrashed()->where('id', $id)->first();
-        $this->checkAccess($input, $initDur->team_id, null, 'team');
+        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
 
         try {
             if ($request->has('unarchive')) {
@@ -1099,7 +1119,8 @@ class DurController extends Controller
                         // we want to restore an existing soft-deleted DurHasX.
 
                         Auditor::log([
-                            'user_id' => (int) $jwtUser['id'],
+                            'user_id' => $currentUser,
+                            'team_id' => $teamId,
                             'action_type' => 'UPDATE',
                             'action_name' => class_basename($this) . '@' . __FUNCTION__,
                             'description' => 'Dur ' . $id . ' unarchived and marked as ' . strtoupper($request['status']),
@@ -1146,7 +1167,6 @@ class DurController extends Controller
                     'request_frequency',
                     'access_type',
                     'mongo_object_dar_id',
-                    'technicalSummary',
                     'enabled',
                     'last_activity',
                     'counter',
@@ -1168,15 +1188,17 @@ class DurController extends Controller
                     $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
                 }
 
+                $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
+
                 Dur::where('id', $id)->update($array);
 
                 // link/unlink dur with datasets
                 $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
-                $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
+                $this->checkDatasets($id, $datasets, $userIdFinal);
 
                 // link/unlink dur with publications
                 $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
-                $this->checkPublications($id, $publications, (int)$jwtUser['id']);
+                $this->checkPublications($id, $publications, $userIdFinal);
 
                 // link/unlink dur with keywords
                 $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
@@ -1197,7 +1219,8 @@ class DurController extends Controller
                 }
 
                 Auditor::log([
-                    'user_id' => (int)$jwtUser['id'],
+                    'user_id' => $currentUser,
+                    'team_id' => $teamId,
                     'action_type' => 'UPDATE',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Dur ' . $id . ' updated',
@@ -1210,7 +1233,8 @@ class DurController extends Controller
             }
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -1263,21 +1287,24 @@ class DurController extends Controller
      */
     public function destroy(DeleteDur $request, int $id): JsonResponse
     {
+        list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
         $initDur = Dur::withTrashed()->where('id', $id)->first();
-        $this->checkAccess($input, $initDur->team_id, null, 'team');
+        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
 
         try {
             DurHasDatasetVersion::where(['dur_id' => $id])->delete();
             DurHasKeyword::where(['dur_id' => $id])->delete();
             DurHasPublication::where(['dur_id' => $id])->delete();
             DurHasTool::where(['dur_id' => $id])->delete();
-            Dur::where(['dur_id' => $id])->update(['status' => Dur::STATUS_ARCHIVED]);
-            Dur::where(['dur_id' => $id])->delete();
+            Dur::where(['id' => $id])->update(['status' => Dur::STATUS_ARCHIVED]);
+            Dur::where(['id' => $id])->delete();
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'DELETE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Dur ' . $id . ' deleted',
@@ -1288,7 +1315,8 @@ class DurController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),

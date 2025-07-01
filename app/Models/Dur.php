@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Observers\DurObserver;
 use App\Http\Traits\DatasetFetch;
+use App\Models\Traits\SortManager;
+use App\Models\Traits\EntityCounter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -21,6 +23,8 @@ class Dur extends Model
     use SoftDeletes;
     use Prunable;
     use DatasetFetch;
+    use SortManager;
+    use EntityCounter;
 
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
@@ -79,7 +83,6 @@ class Dur extends Model
         'request_frequency',
         'access_type',
         'mongo_object_dar_id',
-        'technicalSummary',
         'enabled',
         'last_activity',
         'counter',
@@ -108,6 +111,16 @@ class Dur extends Model
         'gateway_outputs_tools' => 'array',
         'gateway_outputs_papers' => 'array',
         'non_gateway_outputs' => 'array',
+    ];
+
+    protected static array $sortableColumns = [
+        'created_at',
+        'project_title',
+        'updated_at',
+    ];
+
+    protected static array $countableColumns = [
+        'status',
     ];
 
     // Accessor for all datasets associated with this object

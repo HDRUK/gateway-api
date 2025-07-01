@@ -493,11 +493,12 @@ class DataAccessTemplateTest extends TestCase
         // test the template is listed by team
         $response = $this->get('api/v1/teams/' . 1 . '/dar/templates/', $this->header);
 
+        $lastIndex = count($response->decodeResponseJson()['data']) - 1;
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'current_page',
                 'data' => [
-                    0 => [
+                    $lastIndex => [
                         'id',
                         'created_at',
                         'updated_at',

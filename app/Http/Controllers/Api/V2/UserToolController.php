@@ -28,7 +28,7 @@ use App\Http\Requests\V2\Tool\EditToolByUserIdById;
 use App\Http\Requests\V2\Tool\DeleteToolByUserIdById;
 use App\Http\Requests\V2\Tool\GetToolByUserAndStatus;
 use App\Http\Requests\V2\Tool\UpdateToolByUserIdById;
-use App\Http\Requests\V2\Tool\GetToolByUserByIdByStatus;
+use App\Http\Requests\V2\Tool\GetToolCountByUserAndStatus;
 
 class UserToolController extends Controller
 {
@@ -86,12 +86,16 @@ class UserToolController extends Controller
     {
         try {
             $perPage = request('per_page', Config::get('constants.per_page'));
+            $filterTitle = request('title', null);
 
             // Perform query for the matching tools with filters, sorting, and pagination
             $tools = Tool::where([
                 'user_id' => $userId,
                 'status' => strtoupper($status),
             ])
+            ->when($filterTitle, function ($query) use ($filterTitle) {
+                return $query->where('name', 'like', '%' . $filterTitle . '%');
+            })
             ->with([
                 'user',
                 'tag',
@@ -126,6 +130,73 @@ class UserToolController extends Controller
             Auditor::log([
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v2/users/{userId}/tools/count/{field}",
+     *    operationId="count_user_unique_fields_tools_v2",
+     *    tags={"Tools"},
+     *    summary="UserToolController@count",
+     *    description="Get user counts for distinct entries of a field in the model",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="userId",
+     *       in="path",
+     *       description="user id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="user id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="field",
+     *       in="path",
+     *       description="name of the field to perform a count on",
+     *       required=true,
+     *       example="status",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="status field",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="object",
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function count(GetToolCountByUserAndStatus $request, int $userId, string $field): JsonResponse
+    {
+        try {
+            $counts = Tool::where('user_id', $userId)->applyCount();
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'User Tool count',
+            ]);
+
+            return response()->json([
+                "data" => $counts
+            ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
@@ -189,7 +260,7 @@ class UserToolController extends Controller
     public function show(GetToolByUserAndId $request, int $userId, int $id): JsonResponse
     {
         try {
-            $tool = $this->getToolByUserIdAndById($userId, $id, true);
+            $tool = $this->getToolById($id, userId: $userId, onlyActiveRelated: true);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -201,94 +272,10 @@ class UserToolController extends Controller
                 'message' => 'success',
                 'data' => $tool,
             ], 200);
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Get(
-     *    path="/api/v2/users/{userId}/tools/{id}/status/{status}",
-     *    operationId="fetch_tools_by_user_and_by_id_by_status_v2",
-     *    tags={"Tool"},
-     *    summary="UserToolController@showStatus",
-     *    description="Get tool by user id and by id by status",
-     *    security={{"bearerAuth":{}}},
-     *    @OA\Parameter(
-     *       name="userId",
-     *       in="path",
-     *       description="user id",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema( type="integer",  description="user id" ),
-     *    ),
-     *    @OA\Parameter(
-     *       name="id",
-     *       in="path",
-     *       description="tool id",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema( type="integer", description="tool id" ),
-     *    ),
-     *    @OA\Parameter(
-     *       name="status",
-     *       in="path",
-     *       description="tool status",
-     *       required=true,
-     *       example="active",
-     *       @OA\Schema( type="string", description="tool status" ),
-     *    ),
-     *    @OA\Response(
-     *       response="200",
-     *       description="Success response",
-     *       @OA\JsonContent(
-     *          @OA\Property( property="message", type="string", example="success" ),
-     *          @OA\Property( property="data", type="array", example="[]", @OA\Items( type="array", @OA\Items() ) ),
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *       response=401,
-     *       description="Unauthorized",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="unauthorized")
-     *       )
-     *    ),
-     *    @OA\Response(
-     *       response=404,
-     *       description="Not found response",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="not found"),
-     *       ),
-     *    ),
-     * )
-     *
-     * @param  GetToolByUserByIdByStatus  $request
-     * @param  int  $userId
-     * @param  int  $id
-     * @param  string  $status
-     * @return JsonResponse
-     */
-    public function showStatus(GetToolByUserByIdByStatus $request, int $userId, int $id, string $status): JsonResponse
-    {
-        try {
-            $tool = $this->getToolByUserIdAndByIdByStatus($userId, $id, $status);
-
-            Auditor::log([
-                'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Tool get ' . $id,
-            ]);
-
+        } catch (NotFoundException $e) {
             return response()->json([
-                'message' => 'success',
-                'data' => $tool,
-            ], 200);
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',

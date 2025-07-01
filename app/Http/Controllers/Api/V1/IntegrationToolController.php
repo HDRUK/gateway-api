@@ -36,6 +36,7 @@ class IntegrationToolController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/integrations/tools",
+     *    deprecated=true,
      *    operationId="fetch_all_tools_integrations",
      *    tags={"Tools"},
      *    summary="IntegrationToolController@index",
@@ -91,6 +92,7 @@ class IntegrationToolController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/integrations/tools/{id}",
+     *    deprecated=true,
      *    operationId="fetch_tools_integrations",
      *    tags={"Tools"},
      *    summary="IntegrationToolController@show",
@@ -169,6 +171,7 @@ class IntegrationToolController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/integrations/tools",
+     *    deprecated=true,
      *    operationId="create_tools_integrations",
      *    tags={"Tools"},
      *    summary="IntegrationToolController@store",
@@ -316,6 +319,7 @@ class IntegrationToolController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/integrations/tools/{id}",
+     *    deprecated=true,
      *    operationId="update_tools_integrations",
      *    tags={"Tools"},
      *    summary="IntegrationToolController@update",
@@ -479,6 +483,7 @@ class IntegrationToolController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/integrations/tools/{id}",
+     *    deprecated=true,
      *    operationId="edit_tools_integrations",
      *    tags={"Tools"},
      *    summary="IntegrationToolController@edit",
@@ -645,6 +650,7 @@ class IntegrationToolController extends Controller
     /**
      * @OA\Delete(
      *    path="/api/v1/integrations/tools/{id}",
+     *    deprecated=true,
      *    operationId="delete_tools_integrations",
      *    tags={"Tools"},
      *    summary="IntegrationToolController@destroy",

@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Dur;
 use Tests\TestCase;
-use App\Models\Team;
 use App\Models\User;
 use App\Models\Sector;
 use App\Models\Dataset;
@@ -43,7 +42,7 @@ class DurIntegrationTest extends TestCase
         setUp as commonSetUp;
     }
 
-    public const TEST_URL = '/api/v1/integrations/dur';
+    public const TEST_URL = '/api/v1/dur';
 
     protected $header = [];
     protected $integration;
@@ -99,9 +98,12 @@ class DurIntegrationTest extends TestCase
             ]);
         }
 
-        // Add Integration auth keys to the header generated in commonSetUp
-        $this->header['x-application-id'] = $this->integration['app_id'];
-        $this->header['x-client-id'] = $this->integration['client_id'];
+        // Define header for integration
+        $this->header = [
+            'Accept' => 'application/json',
+            'x-application-id' => $this->integration->app_id,
+            'x-client-id' => $this->integration->client_id,
+        ];
     }
 
     /**
@@ -275,7 +277,7 @@ class DurIntegrationTest extends TestCase
     public function test_add_new_integration_dur_with_success(): void
     {
         $userId = (int) User::all()->random()->id;
-        $teamId = (int) Team::all()->random()->id;
+        $teamId = (int) $this->integration->team_id;
         $countBefore = Dur::count();
         $mockData = [
             'datasets' => [$this->generateDatasets()],
@@ -318,7 +320,7 @@ class DurIntegrationTest extends TestCase
     {
         // create dur
         $userId = (int) User::all()->random()->id;
-        $teamId = (int) Team::all()->random()->id;
+        $teamId = (int) $this->integration->team_id;
         $countBefore = Dur::count();
         $mockData = [
             'datasets' => [$this->generateDatasets()],
@@ -386,7 +388,7 @@ class DurIntegrationTest extends TestCase
     {
         // create dur
         $userId = (int) User::all()->random()->id;
-        $teamId = (int) Team::all()->random()->id;
+        $teamId = (int) $this->integration->team_id;
         $countBefore = Dur::count();
         $mockData = [
             'datasets' => [$this->generateDatasets()],

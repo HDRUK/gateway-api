@@ -28,17 +28,12 @@ class DatasetPublicationLinkagePostMigration extends Command
      */
     protected $description = 'CLI command to post-process migrated datasets and publications from mk1 mongo db. Updates PublicationHasDatasetVersion::link_type with values from file by matching titles';
 
-    public function __construct()
-    {
-        parent::__construct();
-        $this->csvData = $this->readMigrationFile(storage_path() . '/migration_files/datasets_publications_linkages.csv');
-    }
-
     /**
      * Execute the console command.
      */
     public function handle()
     {
+        $this->csvData = $this->readMigrationFile(storage_path() . '/migration_files/datasets_publications_linkages.csv');
         $reindex = $this->argument('reindex');
         $reindexEnabled = $reindex !== null;
 

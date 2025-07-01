@@ -34,6 +34,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/integrations/datasets",
+     *    deprecated=true,
      *    operationId="fetch_all_datasets_integrations",
      *    tags={"Datasets"},
      *    summary="IntegrationDatasetController@index",
@@ -254,6 +255,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/integrations/datasets/{id}",
+     *    deprecated=true,
      *    operationId="fetch_datasets_integrations",
      *    tags={"Datasets"},
      *    summary="IntegrationDatasetController@show",
@@ -405,6 +407,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/integrations/datasets",
+     *    deprecated=true,
      *    operationId="create_datasets_integrations",
      *    tags={"Datasets"},
      *    summary="IntegrationDatasetController@store",
@@ -660,6 +663,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/integrations/datasets/{id}",
+     *    deprecated=true,
      *    operationId="update_datasets_integrations",
      *    tags={"Datasets"},
      *    summary="IntegrationDatasetController@update",
@@ -792,7 +796,6 @@ class IntegrationDatasetController extends Controller
                         $applicationOverrideDefaultValues['status'] : $input['status']),
                     'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
-
                 // Determine the last version of metadata
                 $lastVersionNumber = $currDataset->lastMetadataVersionNumber()->version;
 
@@ -820,12 +823,24 @@ class IntegrationDatasetController extends Controller
 
                 $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
 
-                // Create new metadata version for this dataset
-                $version = DatasetVersion::create([
+
+                $latestVersion = DatasetVersion::where('dataset_id', $currDataset->id)
+                ->where('version', $lastVersionNumber)
+                ->first();
+
+                if (!$latestVersion) {
+                    $version = DatasetVersion::create([
                     'dataset_id' => $currDataset->id,
                     'metadata' => $input['metadata'],
                     'version' => ($lastVersionNumber + 1),
                 ]);
+                } else {
+                    $latestVersion->metadata = $input['metadata'];
+                    $latestVersion->version = $latestVersion->version + 1;
+                    $latestVersion->save();
+                }
+
+
 
                 Auditor::log([
                     'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
@@ -865,6 +880,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/integrations/datasets/{id}",
+     *    deprecated=true,
      *    operationId="patch_datasets_integrations",
      *    tags={"Datasets"},
      *    summary="IntegrationDatasetController@edit",
@@ -1003,6 +1019,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Delete(
      *      path="/api/v1/integrations/datasets/{id}",
+     *      deprecated=true,
      *      operationId="delete_datasets_integrations",
      *      summary="Delete a dataset",
      *      description="Delete a dataset",
@@ -1085,6 +1102,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/integrations/datasets/test",
+     *    deprecated=true,
      *    operationId="integrations_datasets_test",
      *    tags={"Integrations datasets test"},
      *    summary="IntegrationDatasetController@datasetTest",

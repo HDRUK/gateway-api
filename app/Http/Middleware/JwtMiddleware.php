@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Hash;
+use App\Models\Application;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Exceptions\NotFoundException;
@@ -70,44 +72,76 @@ class JwtMiddleware
             return $next($request);
         }
 
-        // Otherwise fall back to bearer authorization header
-        $authorization = $request->header('Authorization');
-        $splitAuthorization = explode(' ', $authorization);
+        if ($request->hasHeader('x-application-id') && $request->hasHeader('x-client-id')) {
+            # Check that the app id is in the app table
+            $appId = $request->header('x-application-id');
+            $app = Application::where('app_id', $appId)->first();
 
-        if (strtolower(trim($splitAuthorization[0])) === 'bearer') {
-            $jwtBearer = $splitAuthorization[1];
-
-            $jwtController = new JwtController();
-            $jwtController->setJwt($jwtBearer);
-            $isValidJwt = $jwtController->isValid();
-
-            if (!$isValidJwt) {
-                throw new UnauthorizedException();
+            if (!$app) {
+                throw new UnauthorizedException('No known integration matches the credentials provided');
             }
 
-            $request->merge(['jwt' => $jwtBearer]);
-
-            $payloadJwt = $jwtController->decode();
-            $userJwt = $payloadJwt['user'];
-
-            $user = $this->validateUserId((int) $userJwt['id']);
-
-            if (!$user) {
-                throw new NotFoundException('User not found.');
+            # Check that the app id and client id both match, and check the client secret. Throw an exception if not matching.
+            $clientId = $app->client_id;
+            $clientSecret = $app->client_secret;
+            if (!($clientId == $request->header('x-client-id') && Hash::check(
+                $appId . ':' . $clientId . ':' . env('APP_AUTH_PRIVATE_SALT') . ':' . env('APP_AUTH_PRIVATE_SALT_2'),
+                $clientSecret
+            ))) {
+                throw new UnauthorizedException('The credentials provided are invalid');
             }
 
             $request->merge(
                 [
-                    'jwt_user' => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'is_admin' => $user->is_admin,
-                        'role_perms' => $this->getUserRolePerms($user->id),
-                    ],
-                ],
+                    'app' => [
+                        'id' => (int) $appId,
+                    ]
+                ]
             );
+
             return $next($request);
+        }
+
+        // Otherwise fall back to bearer authorization header
+        if ($request->header('Authorization')) {
+            $authorization = $request->header('Authorization');
+            $splitAuthorization = explode(' ', $authorization);
+
+            if (strtolower(trim($splitAuthorization[0])) === 'bearer') {
+                $jwtBearer = $splitAuthorization[1];
+
+                $jwtController = new JwtController();
+                $jwtController->setJwt($jwtBearer);
+                $isValidJwt = $jwtController->isValid();
+
+                if (!$isValidJwt) {
+                    throw new UnauthorizedException();
+                }
+
+                $request->merge(['jwt' => $jwtBearer]);
+
+                $payloadJwt = $jwtController->decode();
+                $userJwt = $payloadJwt['user'];
+
+                $user = $this->validateUserId((int) $userJwt['id']);
+
+                if (!$user) {
+                    throw new NotFoundException('User not found.');
+                }
+
+                $request->merge(
+                    [
+                        'jwt_user' => [
+                            'id' => $user->id,
+                            'name' => $user->name,
+                            'email' => $user->email,
+                            'is_admin' => $user->is_admin,
+                            'role_perms' => $this->getUserRolePerms($user->id),
+                        ],
+                    ],
+                );
+                return $next($request);
+            }
         }
 
         throw new UnauthorizedException();

@@ -18,6 +18,7 @@ use App\Models\Publication;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
+use Tests\Traits\Helpers;
 use App\Http\Enums\TeamMemberOf;
 use Database\Seeders\ToolSeeder;
 use App\Models\CollectionHasTool;
@@ -48,6 +49,7 @@ use Database\Seeders\PublicationHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\DatasetVersionHasToolSeeder;
+use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
@@ -55,6 +57,7 @@ class ToolV2Test extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use Helpers;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -65,6 +68,12 @@ class ToolV2Test extends TestCase
     public const TEST_URL_USER = '/api/v1/users';
 
     protected $header = [];
+    protected $nonAdminJwt;
+    protected $nonAdminUser;
+    protected $headerNonAdmin;
+    protected $nonAdmin2User;
+    protected $nonAdmin2Jwt;
+    protected $headerNonAdmin2;
 
     /**
      * Set up the database
@@ -99,7 +108,24 @@ class ToolV2Test extends TestCase
             CollectionHasToolSeeder::class,
             DatasetVersionHasToolSeeder::class,
             CollectionHasUserSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
+
+        $this->authorisationUser(false);
+        $this->nonAdminJwt = $this->getAuthorisationJwt(false);
+        $this->nonAdminUser = $this->getUserFromJwt($this->nonAdminJwt);
+        $this->headerNonAdmin = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $this->nonAdminJwt,
+        ];
+
+        $this->authorisationUser(false, 2);
+        $this->nonAdmin2Jwt = $this->getAuthorisationJwt(false, 2);
+        $this->nonAdmin2User = $this->getUserFromJwt($this->nonAdmin2Jwt);
+        $this->headerNonAdmin2 = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $this->nonAdmin2Jwt,
+        ];
     }
 
     /**
@@ -164,7 +190,7 @@ class ToolV2Test extends TestCase
      */
     public function test_v2_get_tool_by_id_with_success(): void
     {
-        $toolId = Tool::where('enabled', 1)->get()->random()->id;
+        $toolId = Tool::where(['enabled' => 1, 'status' => 'ACTIVE'])->get()->random()->id;
         $response = $this->json('GET', self::TEST_URL . '/' . $toolId, [], $this->header);
         $response->assertJsonStructure([
             'data' => [
@@ -1127,6 +1153,137 @@ class ToolV2Test extends TestCase
         $response->assertStatus(200);
     }
 
+    /**
+     * App get all tools for a given team with success
+     *
+     * @return void
+     */
+    public function test_v2_app_get_team_tools_with_success(): void
+    {
+        $notificationID = $this->createNotification();
+
+        $teamId1 = $this->createTeam([$this->nonAdminUser['id']], [$notificationID]);
+        $appHeader1 = $this->createApp($teamId1, $this->nonAdminUser['id']);
+
+        $teamId2 = $this->createTeam([$this->nonAdmin2User['id']], [$notificationID]);
+        $appHeader2 = $this->createApp($teamId2, $this->nonAdmin2User['id']);
+
+        $userId = $this->createUser();
+
+        // Create Tool A
+        $responseCreateTool = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'name' => 'Tool A',
+                'url' => 'http://example.com/toolA',
+                'description' => 'Test Tool A Description',
+                'results_insights' => 'mazing insights',
+                'license' => 1,
+                'tech_stack' => 'Tech Stack A',
+                'category_id' => 1,
+                'user_id' => $userId,
+                'team_id' => $teamId1,
+                'enabled' => 1,
+                'tag' => [1, 2],
+                'dataset' => [1, 2],
+                'programming_language' => [1, 2],
+                'programming_package' => [1, 2],
+                'type_category' => [1, 2],
+                'publications' => [],
+                'durs' => [],
+                'collections' => [],
+                'any_dataset' => false,
+            ],
+            $appHeader1
+        );
+        $responseCreateTool->assertStatus(201);
+
+        // Create Tool B
+        $responseCreateTool = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'name' => 'Tool B',
+                'url' => 'http://example.com/toolB',
+                'description' => 'Test Tool B Description',
+                'results_insights' => 'other insights',
+                'license' => 1,
+                'tech_stack' => 'Tech Stack B',
+                'category_id' => 1,
+                'user_id' => $userId,
+                'team_id' => $teamId1,
+                'enabled' => 1,
+                'tag' => [1, 2],
+                'dataset' => [2],
+                'programming_language' => [1, 2],
+                'programming_package' => [1, 2],
+                'type_category' => [1, 2],
+                'publications' => [],
+                'durs' => [],
+                'collections' => $this->generateCollections(),
+                'any_dataset' => false,
+                'status' => 'DRAFT',
+            ],
+            $appHeader1
+        );
+        $responseCreateTool->assertStatus(201);
+
+        // Create Tool C
+        $responseCreateTool = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'name' => 'Tool C',
+                'url' => 'http://example.com/toolC',
+                'description' => 'Test Tool C Description',
+                'results_insights' => 'insights',
+                'license' => 1,
+                'tech_stack' => 'Tech Stack C',
+                'category_id' => 1,
+                'user_id' => $userId,
+                'team_id' => $teamId2,
+                'enabled' => 1,
+                'tag' => [1, 2],
+                'dataset' => [1],
+                'programming_language' => [1, 2],
+                'programming_package' => [1, 2],
+                'type_category' => [1, 2],
+                'publications' => [],
+                'durs' => [1, 2],
+                'collections' => [],
+                'any_dataset' => false,
+            ],
+            $appHeader2
+        );
+        $responseCreateTool->assertStatus(201);
+
+        $response = $this->json(
+            'GET',
+            $this->team_tools_url($teamId1),
+            [],
+            $appHeader1,
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $response = $this->json(
+            'GET',
+            $this->team_tools_url($teamId1) . '/status/draft',
+            [],
+            $appHeader1,
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $response = $this->json(
+            'GET',
+            $this->team_tools_url($teamId1),
+            [],
+            $appHeader2,
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+    }
+
+
     public function test_v2_get_all_tools_by_user_with_success(): void
     {
         $tool = $this->getToolsByUser('active');
@@ -1258,6 +1415,109 @@ class ToolV2Test extends TestCase
         $response->assertStatus(200);
     }
 
+    /**
+     * App get a tool for a given team with success
+     *
+     * @return void
+     */
+    public function test_v2_app_get_one_team_tool_with_success(): void
+    {
+        $notificationID = $this->createNotification();
+
+        $teamId1 = $this->createTeam([$this->nonAdminUser['id']], [$notificationID]);
+        $appHeader1 = $this->createApp($teamId1, $this->nonAdminUser['id']);
+
+        $teamId2 = $this->createTeam([$this->nonAdmin2User['id']], [$notificationID]);
+        $appHeader2 = $this->createApp($teamId2, $this->nonAdmin2User['id']);
+
+        $userId = $this->createUser();
+
+        // Create Tool A
+        $responseCreateTool = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'name' => 'Tool A',
+                'url' => 'http://example.com/toolA',
+                'description' => 'Test Tool A Description',
+                'results_insights' => 'mazing insights',
+                'license' => 1,
+                'tech_stack' => 'Tech Stack A',
+                'category_id' => 1,
+                'user_id' => $userId,
+                'team_id' => $teamId1,
+                'enabled' => 1,
+                'tag' => [1, 2],
+                'dataset' => [1, 2],
+                'programming_language' => [1, 2],
+                'programming_package' => [1, 2],
+                'type_category' => [1, 2],
+                'publications' => [],
+                'durs' => [],
+                'collections' => [],
+                'any_dataset' => false,
+            ],
+            $appHeader1
+        );
+        $responseCreateTool->assertStatus(201);
+        $toolId1 = $responseCreateTool->decodeResponseJson()['data'];
+
+        // Create Tool B
+        $responseCreateTool = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'name' => 'Tool B',
+                'url' => 'http://example.com/toolB',
+                'description' => 'Test Tool B Description',
+                'results_insights' => 'other insights',
+                'license' => 1,
+                'tech_stack' => 'Tech Stack B',
+                'category_id' => 1,
+                'user_id' => $userId,
+                'team_id' => $teamId1,
+                'enabled' => 1,
+                'tag' => [1, 2],
+                'dataset' => [2],
+                'programming_language' => [1, 2],
+                'programming_package' => [1, 2],
+                'type_category' => [1, 2],
+                'publications' => [],
+                'durs' => [],
+                'collections' => $this->generateCollections(),
+                'any_dataset' => false,
+                'status' => 'DRAFT',
+            ],
+            $appHeader1
+        );
+        $responseCreateTool->assertStatus(201);
+        $toolId2 = $responseCreateTool->decodeResponseJson()['data'];
+
+        $response = $this->json(
+            'GET',
+            $this->team_tools_url($teamId1) . '/' . $toolId1,
+            [],
+            $appHeader1,
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $response = $this->json(
+            'GET',
+            $this->team_tools_url($teamId1) . '/' . $toolId1,
+            [],
+            $appHeader2,
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $response = $this->json(
+            'GET',
+            $this->team_tools_url($teamId1) . '/' . $toolId2,
+            [],
+            $appHeader1,
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+    }
+
     public function test_v2_get_tool_by_id_and_by_user_with_success(): void
     {
         $tool = $this->getToolsByUser('active');
@@ -1351,6 +1611,46 @@ class ToolV2Test extends TestCase
         $count2 = Dataset::where('id', 2)->first()->versions()->count();
         $finalDatasetVersions = DatasetVersionHasTool::where('tool_id', $toolId)->count();
         $this->assertEquals($finalDatasetVersions, $count1 + $count2);
+    }
+
+    public function test_v2_app_add_new_tool_by_team_with_success(): void
+    {
+        $licenseId = License::where('valid_until', null)->get()->random()->id ?? null;
+        $notificationID = $this->createNotification();
+        $teamId1 = $this->createTeam([$this->nonAdminUser['id']], [$notificationID]);
+        $appHeader1 = $this->createApp($teamId1, $this->nonAdminUser['id']);
+
+        $mockData = [
+            "name" => "Similique sapiente est vero eum.",
+            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+            'results_insights' => "asfhiasfh aoshfa ",
+            "license" => $licenseId,
+            "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
+            "user_id" => 1,
+            "tag" => [1, 2],
+            "dataset" => [1, 2],
+            "programming_language" => [1, 2],
+            "programming_package" => [1, 2],
+            "type_category" => [1, 2],
+            "enabled" => 1,
+            "publications" => $this->generatePublications(),
+            "durs" => [],
+            "collections" => $this->generateCollections(),
+            "any_dataset" => false,
+            "status" => "ACTIVE"
+        ];
+
+        $response = $this->json(
+            'POST',
+            $this->team_tools_url($teamId1),
+            $mockData,
+            $appHeader1,
+        );
+
+        $response->assertStatus(201);
+        $toolId = $response['data'];
     }
 
     public function test_v2_add_new_tool_by_user_with_success(): void
@@ -1558,6 +1858,181 @@ class ToolV2Test extends TestCase
         $this->assertEquals($finalDatasetVersions, $count1 + $count2);
     }
 
+    public function test_v2_app_update_tool_by_team_with_success(): void
+    {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $notificationID = $this->createNotification();
+        $teamId1 = $this->createTeam([$this->nonAdminUser['id']], [$notificationID]);
+        $appHeader1 = $this->createApp($teamId1, $this->nonAdminUser['id']);
+
+        // insert
+        $mockDataIns = array(
+            "name" => "Similique sapiente est vero eum.",
+            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+            'results_insights' => 'insights',
+            "license" => $licenseId,
+            "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
+            "user_id" => 1,
+            "tag" => array(1),
+            "programming_language" => array(1, 2),
+            "programming_package" => array(1, 2),
+            "type_category" => array(1, 2),
+            "enabled" => 1,
+            "publications" => $this->generatePublications(),
+            "durs" => [],
+            "collections" => $this->generateCollections(),
+            "any_dataset" => false,
+            "status" => "ACTIVE"
+        );
+        $responseIns = $this->json(
+            'POST',
+            $this->team_tools_url($teamId1),
+            $mockDataIns,
+            $appHeader1
+        );
+        $responseIns->assertStatus(201);
+        $responseIns->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $toolId1 = $responseIns['data'];
+
+        // update
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
+        $mockDataUpdate = array(
+            "name" => "Ea fuga ab aperiam nihil quis.",
+            "url" => "http://dach.com/odio-facilis-ex-culpa",
+            "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
+            'results_insights' => 'insights',
+            "license" => $licenseId,
+            "tech_stack" => "Dolor accusamus rerum numquam et.",
+            "category_id" => 1,
+            "user_id" => 1,
+            "tag" => array(2),
+            "dataset" => [
+                [
+                    'id' => 4,
+                    'link_type' => 'Used on',
+                ],
+                [
+                    'id' => 5,
+                    'link_type' => 'Other',
+                ],
+            ],
+            "programming_language" => array(1),
+            "programming_package" => array(1),
+            "type_category" => array(1),
+            "enabled" => 1,
+            "publications" => $generatedPublications,
+            "durs" => [1, 2],
+            "collections" => $generatedCollections,
+            "any_dataset" => false,
+            "status" => "DRAFT"
+        );
+
+        $responseUpdate = $this->json(
+            'PUT',
+            $this->team_tools_url($teamId1) . '/' . $toolId1,
+            $mockDataUpdate,
+            $appHeader1
+        );
+
+        $responseUpdate->assertStatus(200);
+        $responseUpdate->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
+
+        $responseUpdate = $this->json(
+            'PATCH',
+            $this->team_tools_url($teamId1) . '/' . $toolId1,
+            [
+                'status' => 'ARCHIVED',
+            ],
+            $appHeader1
+        );
+
+        $responseUpdate->assertStatus(200);
+        $responseUpdate->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $this->assertEquals($responseUpdate['data']['status'], 'ARCHIVED');
+    }
+
+    public function test_v2_app_update_tool_by_team_with_failure(): void
+    {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $notificationID = $this->createNotification();
+        $teamId1 = $this->createTeam([$this->nonAdminUser['id']], [$notificationID]);
+        $appHeader1 = $this->createApp($teamId1, $this->nonAdminUser['id']);
+
+        $teamId2 = $this->createTeam([$this->nonAdminUser['id']], [$notificationID]);
+        $appHeader2 = $this->createApp($teamId2, $this->nonAdminUser['id']);
+
+        // insert
+        $mockDataIns = array(
+            "name" => "Similique sapiente est vero eum.",
+            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+            'results_insights' => 'insights',
+            "license" => $licenseId,
+            "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
+            "user_id" => 1,
+            "tag" => array(1),
+            "programming_language" => array(1, 2),
+            "programming_package" => array(1, 2),
+            "type_category" => array(1, 2),
+            "enabled" => 1,
+            "publications" => $this->generatePublications(),
+            "durs" => [],
+            "collections" => $this->generateCollections(),
+            "any_dataset" => false,
+            "status" => "ACTIVE"
+        );
+        $responseIns = $this->json(
+            'POST',
+            $this->team_tools_url($teamId1),
+            $mockDataIns,
+            $appHeader1
+        );
+        $responseIns->assertStatus(201);
+        $responseIns->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $toolId1 = $responseIns['data'];
+
+        $responseUpdate = $this->json(
+            'PUT',
+            $this->team_tools_url($teamId1) . '/' . $toolId1,
+            $mockDataIns,
+            $appHeader2
+        );
+
+        $responseUpdate->assertStatus(401);
+
+        $responseUpdate = $this->json(
+            'PATCH',
+            $this->team_tools_url($teamId1) . '/' . $toolId1,
+            [
+                'status' => 'ARCHIVED',
+            ],
+            $appHeader2
+        );
+
+        $responseUpdate->assertStatus(401);
+    }
+
     public function test_v2_update_tool_by_user_with_success(): void
     {
 
@@ -1725,6 +2200,100 @@ class ToolV2Test extends TestCase
         );
     }
 
+    public function test_v2_app_soft_delete_tool_by_team_with_success(): void
+    {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $notificationID = $this->createNotification();
+        $teamId1 = $this->createTeam([$this->nonAdminUser['id']], [$notificationID]);
+        $appHeader1 = $this->createApp($teamId1, $this->nonAdminUser['id']);
+
+        // insert
+        $mockDataIns = array(
+            "name" => "Similique sapiente est vero eum.",
+            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+            'results_insights' => 'insights',
+            "license" => $licenseId,
+            "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
+            "user_id" => 1,
+            "tag" => array(1),
+            "programming_language" => array(1, 2),
+            "programming_package" => array(1, 2),
+            "type_category" => array(1, 2),
+            "enabled" => 1,
+            "publications" => $this->generatePublications(),
+            "durs" => [],
+            "collections" => $this->generateCollections(),
+            "any_dataset" => false,
+            "status" => "ACTIVE"
+        );
+        $responseIns = $this->json(
+            'POST',
+            $this->team_tools_url($teamId1),
+            $mockDataIns,
+            $appHeader1
+        );
+        $responseIns->assertStatus(201);
+        $toolId1 = $responseIns['data'];
+
+        $response = $this->json(
+            'DELETE',
+            $this->team_tools_url($teamId1) . '/' . $toolId1,
+            [],
+            $appHeader1
+        );
+        $response->assertStatus(200);
+    }
+
+    public function test_v2_app_soft_delete_tool_by_team_with_failure(): void
+    {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+        $notificationID = $this->createNotification();
+        $teamId1 = $this->createTeam([$this->nonAdminUser['id']], [$notificationID]);
+        $appHeader1 = $this->createApp($teamId1, $this->nonAdminUser['id']);
+        $teamId2 = $this->createTeam([$this->nonAdminUser['id']], [$notificationID]);
+        $appHeader2 = $this->createApp($teamId2, $this->nonAdminUser['id']);
+
+        // insert
+        $mockDataIns = array(
+            "name" => "Similique sapiente est vero eum.",
+            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+            'results_insights' => 'insights',
+            "license" => $licenseId,
+            "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
+            "user_id" => 1,
+            "tag" => array(1),
+            "programming_language" => array(1, 2),
+            "programming_package" => array(1, 2),
+            "type_category" => array(1, 2),
+            "enabled" => 1,
+            "publications" => $this->generatePublications(),
+            "durs" => [],
+            "collections" => $this->generateCollections(),
+            "any_dataset" => false,
+            "status" => "ACTIVE"
+        );
+        $responseIns = $this->json(
+            'POST',
+            $this->team_tools_url($teamId1),
+            $mockDataIns,
+            $appHeader1
+        );
+        $responseIns->assertStatus(201);
+        $toolId1 = $responseIns['data'];
+
+        $response = $this->json(
+            'DELETE',
+            $this->team_tools_url($teamId1) . '/' . $toolId1,
+            [],
+            $appHeader2
+        );
+        $response->assertStatus(401);
+    }
+
     public function test_v2_soft_delete_tool_by_user_with_success(): void
     {
         $tools = Tool::first();
@@ -1794,5 +2363,10 @@ class ToolV2Test extends TestCase
 
         // remove duplicate entries - doesn't use array_unique directly as that fails for multi-d arrays.
         return array_map("unserialize", array_unique(array_map("serialize", $return)));
+    }
+
+    private function team_tools_url(int $teamId)
+    {
+        return 'api/v2/teams/' . $teamId . '/tools';
     }
 }

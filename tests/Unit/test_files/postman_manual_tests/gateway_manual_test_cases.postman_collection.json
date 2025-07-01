@@ -1,0 +1,2003 @@
+{
+	"info": {
+		"_postman_id": "855d1e67-cdb0-4fae-9aed-4bc8034998a6",
+		"name": "gateway_manual_test_cases",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29406422"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "admin_auth",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": {{admin_email}},\n    \"password\": {{admin_password}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/auth",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication for admin users. The response contains an \\`access_token\\` field which can be saved to the current environment as the \\`current_access_token\\` variable to be used in subsequent requests."
+		},
+		{
+			"name": "team_user_and_permissions",
+			"item": [
+				{
+					"name": "create_team",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\" :  \"Test Team\",\n    \"enabled\" :  1,\n    \"allows_messaging\" :  1,\n    \"workflow_enabled\" :  1,\n    \"access_requests_management\" :  1,\n    \"uses_5_safes\" :  1,\n    \"is_admin\" :  1,\n    \"member_of\" :  \"HUB\",\n    \"contact_point\" :  \"test@example.com\",\n    \"application_form_updated_by\" :  \"Someone Somewhere\",\n    \"notifications\": [],\n    \"users\": []\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/teams",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"teams"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create_user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstname\" :  \"Firstname\",\n    \"lastname\" :  \"Lastname\",\n    \"email\" :  \"{{$randomEmail}}\",\n    \"secondary_email\" :  \"{{$randomEmail}}\",\n    \"preferred_email\" :  \"primary\",\n    \"password\" :  \"Passw@rd1!\",\n    \"sector_id\" :  1,\n    \"organisation\" :  \"Test Organisation\",\n    \"bio\" :  \"Test Biography\",\n    \"domain\" :  \"https://testdomain.com\",\n    \"link\" :  \"https://testlink.com/link\",\n    \"orcid\" :  \"https://orcid.org/75697342\",\n    \"contact_feedback\" :  1,\n    \"contact_news\" :  1,\n    \"mongo_id\" :  1234566,\n    \"mongo_object_id\" :  \"12345abcde\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/users",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add_user_to_team_with_permissions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": {{user_id}},\n    \"roles\": [\"developer\", \"custodian.dar.manager\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/teams/{{team_id}}/users",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"teams",
+								"{{team_id}}",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_team_with_users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/api/v1/teams/{{team_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"teams",
+								"{{team_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/api/v1/users/{{user_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_team",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/api/v1/teams/{{team_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"teams",
+								"{{team_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Create team returns the new team's id which can be saved as \\`team_id\\` for subsequent requests.\n\nCreate user returns the new user's id which can be saved as \\`user_id\\` for subsequent requests."
+		},
+		{
+			"name": "datasets",
+			"item": [
+				{
+					"name": "create_dataset",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"team_id\": {{team_id}},\n    \"user_id\": {{user_id}},\n    \"create_origin\": \"MANUAL\",\n    \"status\": \"ACTIVE\",\n    \"metadata\": {\n        \"metadata\": {\n            \"identifier\": \"bed78af3-ad9d-44a6-8ac3-11f599239a96\",\n            \"issued\": \"2025-06-17T11:20:05.000Z\",\n            \"modified\": \"2025-06-17T11:20:05.000Z\",\n            \"revisions\": [\n                {\n                    \"url\": \"http://www.example.com/\",\n                    \"version\": \"1.0.0\"\n                }\n            ],\n            \"version\": \"1.0.0\",\n            \"summary\": {\n                \"abstract\": \"A test\",\n                \"contactPoint\": \"developers@hdruk.ac.uk\",\n                \"keywords\": [\n                    \"Test\",\n                    \"asthma\",\n                    \"diabetes\",\n                    \"icd10\"\n                ],\n                \"doiName\": null,\n                \"title\": \"Postman's test dataset\",\n                \"dataCustodian\": {\n                    \"name\": \"Test Team\",\n                    \"identifier\": \"151\",\n                    \"contactPoint\": \"developers@hdruk.ac.uk\",\n                    \"logo\": null,\n                    \"description\": null,\n                    \"memberOf\": null\n                },\n                \"populationSize\": 10000,\n                \"alternateIdentifiers\": null\n            },\n            \"documentation\": {\n                \"description\": \"A test dataset\",\n                \"associatedMedia\": \"https://something.com\",\n                \"inPipeline\": \"Available\"\n            },\n            \"coverage\": {\n                \"pathway\": \"Test test\",\n                \"spatial\": \"UK\",\n                \"followUp\": \"Unknown\",\n                \"datasetCompleteness\": \"https://anexample.com\",\n                \"typicalAgeRangeMin\": 18,\n                \"typicalAgeRangeMax\": 90,\n                \"materialType\": [\n                    \"None/not available\"\n                ]\n            },\n            \"provenance\": {\n                \"origin\": {\n                    \"purpose\": [\n                        \"Study\"\n                    ],\n                    \"source\": [\n                        \"Electronic survey\"\n                    ],\n                    \"collectionSource\": [\n                        \"Primary care - Referrals\"\n                    ],\n                    \"datasetType\": [\n                        \"Health and disease\"\n                    ],\n                    \"datasetSubType\": [\n                        \"Mental health\"\n                    ],\n                    \"imageContrast\": \"Not stated\"\n                },\n                \"temporal\": {\n                    \"endDate\": \"2025-06-15T23:00:00.000Z\",\n                    \"startDate\": \"2025-02-11T00:00:00.000Z\",\n                    \"timeLag\": \"1-2 months\",\n                    \"publishingFrequency\": \"Continuous\",\n                    \"distributionReleaseDate\": \"2025-03-06T00:00:00.000Z\"\n                }\n            },\n            \"accessibility\": {\n                \"usage\": {\n                    \"resourceCreator\": \"Test\",\n                    \"dataUseLimitation\": [\n                        \"General research use\"\n                    ],\n                    \"dataUseRequirements\": [\n                        \"Collaboration required\"\n                    ]\n                },\n                \"access\": {\n                    \"accessRights\": \"https://raw.githubusercontent.com/HDRUK/papers/master/LICENSE\",\n                    \"jurisdiction\": [\n                        \"UK\"\n                    ],\n                    \"accessService\": \"https://github.com/HDRUK/papers\",\n                    \"dataProcessor\": \"Test Team\",\n                    \"dataController\": \"Test Team\",\n                    \"deliveryLeadTime\": \"Not applicable\",\n                    \"accessRequestCost\": \"Free\",\n                    \"accessServiceCategory\": \"TRE/SDE\"\n                },\n                \"formatAndStandards\": {\n                    \"conformsTo\": [\n                        \"OMOP\"\n                    ],\n                    \"vocabularyEncodingScheme\": [\n                        \"LOCAL\"\n                    ],\n                    \"language\": [\n                        \"en\"\n                    ],\n                    \"format\": [\n                        \"CSV\",\n                        \"JSON\"\n                    ]\n                }\n            },\n            \"enrichmentAndLinkage\": {\n                \"tools\": [\n                    \"https://github.com\"\n                ],\n                \"investigations\": [],\n                \"publicationAboutDataset\": [\n                    \"10.1093/ije/dyab028\"\n                ],\n                \"publicationUsingDataset\": [],\n                \"derivedFrom\": null,\n                \"isPartOf\": null,\n                \"linkableDatasets\": null,\n                \"similarToDatasets\": null\n            },\n            \"observations\": [\n                {\n                    \"observedNode\": \"Persons\",\n                    \"measuredValue\": 10000,\n                    \"observationDate\": \"2025-04-17T23:00:00.000Z\",\n                    \"measuredProperty\": \"Count\",\n                    \"disambiguatingDescription\": \"Test test test\"\n                }\n            ],\n            \"structuralMetadata\": {\n                \"tables\": null,\n                \"syntheticDataWebLink\": [\n                    \"https://google.com\"\n                ]\n            },\n            \"demographicFrequency\": null,\n            \"omics\": null\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/datasets?input_schema=HDRUK&input_version=3.0.0",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"datasets"
+							],
+							"query": [
+								{
+									"key": "input_schema",
+									"value": "HDRUK"
+								},
+								{
+									"key": "input_version",
+									"value": "3.0.0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_dataset_in_hdr_format",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/api/v1/datasets/{{dataset_id}}?schema_model=HDRUK&schema_version=3.0.0",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"datasets",
+								"{{dataset_id}}"
+							],
+							"query": [
+								{
+									"key": "schema_model",
+									"value": "HDRUK"
+								},
+								{
+									"key": "schema_version",
+									"value": "3.0.0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_dataset",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"team_id\": {{team_id}},\n    \"user_id\": {{user_id}},\n    \"create_origin\": \"MANUAL\",\n    \"status\": \"ACTIVE\",\n    \"metadata\": {\n        \"metadata\": {\n            \"identifier\": \"bed78af3-ad9d-44a6-8ac3-11f599239a96\",\n            \"issued\": \"2025-06-17T11:20:05.000Z\",\n            \"modified\": \"2025-06-17T11:20:05.000Z\",\n            \"revisions\": [\n                {\n                    \"url\": \"http://www.example.com/\",\n                    \"version\": \"1.0.0\"\n                }\n            ],\n            \"version\": \"1.0.0\",\n            \"summary\": {\n                \"abstract\": \"A test\",\n                \"contactPoint\": \"developers@hdruk.ac.uk\",\n                \"keywords\": [\n                    \"Test\",\n                    \"asthma\",\n                    \"diabetes\",\n                    \"icd10\"\n                ],\n                \"doiName\": null,\n                \"title\": \"Postman's test dataset updated\",\n                \"dataCustodian\": {\n                    \"name\": \"Test Team\",\n                    \"identifier\": \"151\",\n                    \"contactPoint\": \"developers@hdruk.ac.uk\",\n                    \"logo\": null,\n                    \"description\": null,\n                    \"memberOf\": null\n                },\n                \"populationSize\": 10000,\n                \"alternateIdentifiers\": null\n            },\n            \"documentation\": {\n                \"description\": \"A test dataset\",\n                \"associatedMedia\": \"https://something.com\",\n                \"inPipeline\": \"Available\"\n            },\n            \"coverage\": {\n                \"pathway\": \"Test test\",\n                \"spatial\": \"UK\",\n                \"followUp\": \"Unknown\",\n                \"datasetCompleteness\": \"https://anexample.com\",\n                \"typicalAgeRangeMin\": 18,\n                \"typicalAgeRangeMax\": 90,\n                \"materialType\": [\n                    \"None/not available\"\n                ]\n            },\n            \"provenance\": {\n                \"origin\": {\n                    \"purpose\": [\n                        \"Study\"\n                    ],\n                    \"source\": [\n                        \"Electronic survey\"\n                    ],\n                    \"collectionSource\": [\n                        \"Primary care - Referrals\"\n                    ],\n                    \"datasetType\": [\n                        \"Health and disease\"\n                    ],\n                    \"datasetSubType\": [\n                        \"Mental health\"\n                    ],\n                    \"imageContrast\": \"Not stated\"\n                },\n                \"temporal\": {\n                    \"endDate\": \"2025-06-15T23:00:00.000Z\",\n                    \"startDate\": \"2025-02-11T00:00:00.000Z\",\n                    \"timeLag\": \"1-2 months\",\n                    \"publishingFrequency\": \"Continuous\",\n                    \"distributionReleaseDate\": \"2025-03-06T00:00:00.000Z\"\n                }\n            },\n            \"accessibility\": {\n                \"usage\": {\n                    \"resourceCreator\": \"Test\",\n                    \"dataUseLimitation\": [\n                        \"General research use\"\n                    ],\n                    \"dataUseRequirements\": [\n                        \"Collaboration required\"\n                    ]\n                },\n                \"access\": {\n                    \"accessRights\": \"https://raw.githubusercontent.com/HDRUK/papers/master/LICENSE\",\n                    \"jurisdiction\": [\n                        \"UK\"\n                    ],\n                    \"accessService\": \"https://github.com/HDRUK/papers\",\n                    \"dataProcessor\": \"Test Team\",\n                    \"dataController\": \"Test Team\",\n                    \"deliveryLeadTime\": \"Not applicable\",\n                    \"accessRequestCost\": \"Free\",\n                    \"accessServiceCategory\": \"TRE/SDE\"\n                },\n                \"formatAndStandards\": {\n                    \"conformsTo\": [\n                        \"OMOP\"\n                    ],\n                    \"vocabularyEncodingScheme\": [\n                        \"LOCAL\"\n                    ],\n                    \"language\": [\n                        \"en\"\n                    ],\n                    \"format\": [\n                        \"CSV\",\n                        \"JSON\"\n                    ]\n                }\n            },\n            \"enrichmentAndLinkage\": {\n                \"tools\": [\n                    \"https://github.com\"\n                ],\n                \"investigations\": [],\n                \"publicationAboutDataset\": [\n                    \"10.1093/ije/dyab028\"\n                ],\n                \"publicationUsingDataset\": [],\n                \"derivedFrom\": null,\n                \"isPartOf\": null,\n                \"linkableDatasets\": null,\n                \"similarToDatasets\": null\n            },\n            \"observations\": [\n                {\n                    \"observedNode\": \"Persons\",\n                    \"measuredValue\": 10000,\n                    \"observationDate\": \"2025-04-17T23:00:00.000Z\",\n                    \"measuredProperty\": \"Count\",\n                    \"disambiguatingDescription\": \"Test test test\"\n                }\n            ],\n            \"structuralMetadata\": {\n                \"tables\": null,\n                \"syntheticDataWebLink\": [\n                    \"https://google.com\"\n                ]\n            },\n            \"demographicFrequency\": null,\n            \"omics\": null\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/datasets/{{dataset_id}}?input_schema=HDRUK&input_version=3.0.0",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"datasets",
+								"{{dataset_id}}"
+							],
+							"query": [
+								{
+									"key": "input_schema",
+									"value": "HDRUK"
+								},
+								{
+									"key": "input_version",
+									"value": "3.0.0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_dataset",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/api/v1/datasets/{{dataset_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"datasets",
+								"{{dataset_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "CRUD operations for datasets. The GET method translates the metadata from the GWDM into HDR schema format which is crucial for loading the metadata onboarding form and populating dataset landing pages."
+		},
+		{
+			"name": "collections",
+			"item": [
+				{
+					"name": "create_collection",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test Collection\",\n    \"description\": \"A Test Collection\",\n    \"image_link\": null,\n    \"enabled\": true,\n    \"public\": true,\n    \"counter\": 123,\n    \"datasets\": [\n        {\n            \"id\": {{dataset_id}},\n            \"reason\": \"test\"\n        }\n    ],\n    \"status\": \"ACTIVE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/teams/{{team_id}}/collections",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"teams",
+								"{{team_id}}",
+								"collections"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_collection",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/api/v1/collections/{{collection_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"collections",
+								"{{collection_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "question_bank",
+			"item": [
+				{
+					"name": "index_questions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/api/v1/questions",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"questions"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "data_access_applications",
+			"item": [
+				{
+					"name": "create_template",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"team_id\": {{team_id}},\n    \"published\": true,\n    \"locked\": false,\n    \"questions\": [\n        {\n            \"id\": {{file_question_id}},\n            \"required\": true,\n            \"guidance\": \"Something helpful\",\n            \"order\": 1\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/dar/templates",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dar",
+								"templates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_team_template",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/api/v1/teams/{{team_id}}/dar/templates",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"teams",
+								"{{team_id}}",
+								"dar",
+								"templates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create_application",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"applicant_id\": {{user_id}},\n    \"project_title\": \"A test DAR\",\n    \"dataset_ids\": [{{dataset_id}}]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/dar/applications",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dar",
+								"applications"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create_application_review",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"comment\": \"A comment on the DAR\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/teams/{{team_id}}/dar/applications/{{application_id}}/reviews",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"teams",
+								"{{team_id}}",
+								"dar",
+								"applications",
+								"{{application_id}}",
+								"reviews"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "The ids output by `create_application` and `create_application_review` can be set as variables `application_id` and `review_id` respectively, and used in the upload tests."
+		},
+		{
+			"name": "search",
+			"item": [
+				{
+					"name": "search_datasets_asthma",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"asthma\",\n    \"filters\": {\n        \"dataset\": {\n            \"publisherName\": [\n                \"BREATHE\"\n            ]\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/search/datasets",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"search",
+								"datasets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search_dur_hes",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"HES\",\n    \"filters\": {\n        \"dataUseRegister\": {\n            \"publisherName\": [\n                \"CPRD\"\n            ]\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/search/dur",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"search",
+								"dur"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search_tools_python",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"python\",\n    \"filters\": {\n        \"tool\": {\n            \"typeCategory\": [\n                \"AI/ML pipeline\"\n            ]\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/search/tools",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"search",
+								"tools"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search_publications_longitudinal",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"longitudinal\",\n    \"filters\": {\n        \"paper\": {\n            \"datasetTitles\": [\n                \"National Neonatal Research Database (NNRD)\"\n            ]\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/search/publications",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"search",
+								"publications"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search_publications_federated",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"CPRD Aurum\",\n    \"filters\": {\n        \"paper\": {\n            \"publicationDate\": [\n                \"2021\", \"2022\"\n            ]\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/search/publications?source=FED",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"search",
+								"publications"
+							],
+							"query": [
+								{
+									"key": "source",
+									"value": "FED"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search_dataprovider_hub",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"hub\",\n    \"filters\": {\n        \"dataProvider\": {\n            \"geographicLocation\": [\n                \"Scotland\"\n            ]\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/search/data_custodians",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"search",
+								"data_custodians"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search_datacustodiannetwork",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"SDE\",\n    \"filters\": {\n        \"datacustodiannetwork\": {\n            \"publisherNames\": [\n                \"London Secure Data Environment (SDE)\"\n            ]\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/search/data_custodian_networks",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"search",
+								"data_custodian_networks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search_collection_cancer",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"cancer\",\n    \"filters\": {\n        \"collection\": {\n            \"datasetTitles\": [\n                \"Cancer Registration Data\"\n            ]\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/search/collections",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"search",
+								"collections"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Examples of searches for each entity including a query and filter in each case."
+		},
+		{
+			"name": "uploads",
+			"item": [
+				{
+					"name": "get_file_status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/api/v1/files/{{file_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"files",
+								"{{file_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload_dur",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/path/to/gateway-api-2/tests/Unit/test_files/postman_manual_tests/DataUseUploadTemplate_v2.xlsx"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/files?entity_flag=dur-from-upload&team_id={{team_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"files"
+							],
+							"query": [
+								{
+									"key": "entity_flag",
+									"value": "dur-from-upload"
+								},
+								{
+									"key": "team_id",
+									"value": "{{team_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload_dataset",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/path/to/gateway-api-2/tests/Unit/test_files/postman_manual_tests/HDRUK_3.0.0.example.json"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/files?entity_flag=dataset-from-upload&team_id={{team_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"files"
+							],
+							"query": [
+								{
+									"key": "entity_flag",
+									"value": "dataset-from-upload"
+								},
+								{
+									"key": "team_id",
+									"value": "{{team_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload_structural_metadata",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/path/to/gateway-api-2/tests/Unit/test_files/postman_manual_tests/StructuralMetadataTemplate.xlsx"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/files?entity_flag=structural-metadata-upload",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"files"
+							],
+							"query": [
+								{
+									"key": "entity_flag",
+									"value": "structural-metadata-upload"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload_team_image",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/path/to/gateway-api-2/tests/Unit/test_files/postman_manual_tests/starburst_test_image.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/files?entity_flag=teams-media&team_id={{team_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"files"
+							],
+							"query": [
+								{
+									"key": "entity_flag",
+									"value": "teams-media"
+								},
+								{
+									"key": "team_id",
+									"value": "{{team_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload_collection_image",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/path/to/gateway-api-2/tests/Unit/test_files/postman_manual_tests/starburst_test_image.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/files?entity_flag=collections-media&collection_id={{collection_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"files"
+							],
+							"query": [
+								{
+									"key": "entity_flag",
+									"value": "collections-media"
+								},
+								{
+									"key": "collection_id",
+									"value": "{{collection_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload_dar_application_answer",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/path/to/gateway-api-2/tests/Unit/test_files/postman_manual_tests/test_file.txt"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/files?entity_flag=dar-application-upload&question_id={{file_question_id}}&application_id={{application_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"files"
+							],
+							"query": [
+								{
+									"key": "entity_flag",
+									"value": "dar-application-upload"
+								},
+								{
+									"key": "question_id",
+									"value": "{{file_question_id}}"
+								},
+								{
+									"key": "application_id",
+									"value": "{{application_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload_dar_template",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/path/to/gateway-api-2/tests/Unit/test_files/postman_manual_tests/test_file.txt"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/files?entity_flag=dar-template-upload&team_id={{team_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"files"
+							],
+							"query": [
+								{
+									"key": "entity_flag",
+									"value": "dar-template-upload"
+								},
+								{
+									"key": "team_id",
+									"value": "{{team_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload_dar_review",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/path/to/gateway-api-2/tests/Unit/test_files/postman_manual_tests/test_file.txt"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/files?entity_flag=dar-review-upload&review_id={{review_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"files"
+							],
+							"query": [
+								{
+									"key": "entity_flag",
+									"value": "dar-review-upload"
+								},
+								{
+									"key": "review_id",
+									"value": "{{review_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "upload_dataset - you will need to update the dataCustodian.indentifier field in the example file to the pid of your test team."
+		},
+		{
+			"name": "custom_integrations",
+			"item": [
+				{
+					"name": "create_application",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test Application\",\n    \"description\": \"A test\",\n    \"team_id\": {{team_id}},\n    \"user_id\": {{user_id}},\n    \"enabled\": true,\n    \"permissions\": [7,8,9,10,32,33,34,35,54,55,56,57],\n    \"notifications\": []\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v1/applications",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"applications"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create_dataset_integration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-client-id",
+								"value": "{{x_client_id}}",
+								"type": "text"
+							},
+							{
+								"key": "x-application-id",
+								"value": "{{x_application_id}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"ACTIVE\",\n    \"user_id\": {{user_id}},\n    \"team_id\": {{team_id}},\n    \"create_origin\": \"API\",\n    \"metadata\": {\n        \"metadata\": {\n            \"identifier\": \"bed78af3-ad9d-44a6-8ac3-11f599239a96\",\n            \"issued\": \"2025-06-17T11:20:05.000Z\",\n            \"modified\": \"2025-06-17T11:20:05.000Z\",\n            \"revisions\": [\n                {\n                    \"url\": \"http://www.example.com/\",\n                    \"version\": \"1.0.0\"\n                }\n            ],\n            \"version\": \"1.0.0\",\n            \"summary\": {\n                \"abstract\": \"A test\",\n                \"contactPoint\": \"developers@hdruk.ac.uk\",\n                \"keywords\": [\n                    \"Test\",\n                    \"asthma\",\n                    \"diabetes\",\n                    \"icd10\"\n                ],\n                \"doiName\": null,\n                \"title\": \"Postman's test dataset\",\n                \"dataCustodian\": {\n                    \"name\": \"Test Team\",\n                    \"identifier\": \"151\",\n                    \"contactPoint\": \"developers@hdruk.ac.uk\",\n                    \"logo\": null,\n                    \"description\": null,\n                    \"memberOf\": null\n                },\n                \"populationSize\": 10000,\n                \"alternateIdentifiers\": null\n            },\n            \"documentation\": {\n                \"description\": \"A test dataset\",\n                \"associatedMedia\": \"https://something.com\",\n                \"inPipeline\": \"Available\"\n            },\n            \"coverage\": {\n                \"pathway\": \"Test test\",\n                \"spatial\": \"UK\",\n                \"followUp\": \"Unknown\",\n                \"datasetCompleteness\": \"https://anexample.com\",\n                \"typicalAgeRangeMin\": 18,\n                \"typicalAgeRangeMax\": 90,\n                \"materialType\": [\n                    \"None/not available\"\n                ]\n            },\n            \"provenance\": {\n                \"origin\": {\n                    \"purpose\": [\n                        \"Study\"\n                    ],\n                    \"source\": [\n                        \"Electronic survey\"\n                    ],\n                    \"collectionSource\": [\n                        \"Primary care - Referrals\"\n                    ],\n                    \"datasetType\": [\n                        \"Health and disease\"\n                    ],\n                    \"datasetSubType\": [\n                        \"Mental health\"\n                    ],\n                    \"imageContrast\": \"Not stated\"\n                },\n                \"temporal\": {\n                    \"endDate\": \"2025-06-15T23:00:00.000Z\",\n                    \"startDate\": \"2025-02-11T00:00:00.000Z\",\n                    \"timeLag\": \"1-2 months\",\n                    \"publishingFrequency\": \"Continuous\",\n                    \"distributionReleaseDate\": \"2025-03-06T00:00:00.000Z\"\n                }\n            },\n            \"accessibility\": {\n                \"usage\": {\n                    \"resourceCreator\": \"Test\",\n                    \"dataUseLimitation\": [\n                        \"General research use\"\n                    ],\n                    \"dataUseRequirements\": [\n                        \"Collaboration required\"\n                    ]\n                },\n                \"access\": {\n                    \"accessRights\": \"https://raw.githubusercontent.com/HDRUK/papers/master/LICENSE\",\n                    \"jurisdiction\": [\n                        \"UK\"\n                    ],\n                    \"accessService\": \"https://github.com/HDRUK/papers\",\n                    \"dataProcessor\": \"Test Team\",\n                    \"dataController\": \"Test Team\",\n                    \"deliveryLeadTime\": \"Not applicable\",\n                    \"accessRequestCost\": \"Free\",\n                    \"accessServiceCategory\": \"TRE/SDE\"\n                },\n                \"formatAndStandards\": {\n                    \"conformsTo\": [\n                        \"OMOP\"\n                    ],\n                    \"vocabularyEncodingScheme\": [\n                        \"LOCAL\"\n                    ],\n                    \"language\": [\n                        \"en\"\n                    ],\n                    \"format\": [\n                        \"CSV\",\n                        \"JSON\"\n                    ]\n                }\n            },\n            \"enrichmentAndLinkage\": {\n                \"tools\": [\n                    \"https://github.com\"\n                ],\n                \"investigations\": [],\n                \"publicationAboutDataset\": [\n                    \"10.1093/ije/dyab028\"\n                ],\n                \"publicationUsingDataset\": [],\n                \"derivedFrom\": null,\n                \"isPartOf\": null,\n                \"linkableDatasets\": null,\n                \"similarToDatasets\": null\n            },\n            \"observations\": [\n                {\n                    \"observedNode\": \"Persons\",\n                    \"measuredValue\": 10000,\n                    \"observationDate\": \"2025-04-17T23:00:00.000Z\",\n                    \"measuredProperty\": \"Count\",\n                    \"disambiguatingDescription\": \"Test test test\"\n                }\n            ],\n            \"structuralMetadata\": {\n                \"tables\": null,\n                \"syntheticDataWebLink\": [\n                    \"https://google.com\"\n                ]\n            },\n            \"demographicFrequency\": null,\n            \"omics\": null\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v2/teams/{{team_id}}/datasets",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"teams",
+								"{{team_id}}",
+								"datasets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_dataset_integration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-client-id",
+								"value": "{{x_client_id}}",
+								"type": "text"
+							},
+							{
+								"key": "x-application-id",
+								"value": "{{x_application_id}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/api/v2/teams/{{team_id}}/datasets/{{dataset_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"teams",
+								"{{team_id}}",
+								"datasets",
+								"{{dataset_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_dataset_integration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "x-client-id",
+								"value": "{{x_client_id}}",
+								"type": "text"
+							},
+							{
+								"key": "x-application-id",
+								"value": "{{x_application_id}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"ACTIVE\",\n    \"user_id\": {{user_id}},\n    \"team_id\": {{team_id}},\n    \"metadata\": {\n        \"metadata\": {\n            \"identifier\": \"bed78af3-ad9d-44a6-8ac3-11f599239a96\",\n            \"issued\": \"2025-06-17T11:20:05.000Z\",\n            \"modified\": \"2025-06-17T11:20:05.000Z\",\n            \"revisions\": [\n                {\n                    \"url\": \"http://www.example.com/\",\n                    \"version\": \"1.0.0\"\n                }\n            ],\n            \"version\": \"1.0.0\",\n            \"summary\": {\n                \"abstract\": \"A test\",\n                \"contactPoint\": \"developers@hdruk.ac.uk\",\n                \"keywords\": [\n                    \"Test\",\n                    \"asthma\",\n                    \"diabetes\",\n                    \"icd10\"\n                ],\n                \"doiName\": null,\n                \"title\": \"Updated Postman's test dataset\",\n                \"dataCustodian\": {\n                    \"name\": \"Test Team\",\n                    \"identifier\": \"151\",\n                    \"contactPoint\": \"developers@hdruk.ac.uk\",\n                    \"logo\": null,\n                    \"description\": null,\n                    \"memberOf\": null\n                },\n                \"populationSize\": 10000,\n                \"alternateIdentifiers\": null\n            },\n            \"documentation\": {\n                \"description\": \"A test dataset\",\n                \"associatedMedia\": \"https://something.com\",\n                \"inPipeline\": \"Available\"\n            },\n            \"coverage\": {\n                \"pathway\": \"Test test\",\n                \"spatial\": \"UK\",\n                \"followUp\": \"Unknown\",\n                \"datasetCompleteness\": \"https://anexample.com\",\n                \"typicalAgeRangeMin\": 18,\n                \"typicalAgeRangeMax\": 90,\n                \"materialType\": [\n                    \"None/not available\"\n                ]\n            },\n            \"provenance\": {\n                \"origin\": {\n                    \"purpose\": [\n                        \"Study\"\n                    ],\n                    \"source\": [\n                        \"Electronic survey\"\n                    ],\n                    \"collectionSource\": [\n                        \"Primary care - Referrals\"\n                    ],\n                    \"datasetType\": [\n                        \"Health and disease\"\n                    ],\n                    \"datasetSubType\": [\n                        \"Mental health\"\n                    ],\n                    \"imageContrast\": \"Not stated\"\n                },\n                \"temporal\": {\n                    \"endDate\": \"2025-06-15T23:00:00.000Z\",\n                    \"startDate\": \"2025-02-11T00:00:00.000Z\",\n                    \"timeLag\": \"1-2 months\",\n                    \"publishingFrequency\": \"Continuous\",\n                    \"distributionReleaseDate\": \"2025-03-06T00:00:00.000Z\"\n                }\n            },\n            \"accessibility\": {\n                \"usage\": {\n                    \"resourceCreator\": \"Test\",\n                    \"dataUseLimitation\": [\n                        \"General research use\"\n                    ],\n                    \"dataUseRequirements\": [\n                        \"Collaboration required\"\n                    ]\n                },\n                \"access\": {\n                    \"accessRights\": \"https://raw.githubusercontent.com/HDRUK/papers/master/LICENSE\",\n                    \"jurisdiction\": [\n                        \"UK\"\n                    ],\n                    \"accessService\": \"https://github.com/HDRUK/papers\",\n                    \"dataProcessor\": \"Test Team\",\n                    \"dataController\": \"Test Team\",\n                    \"deliveryLeadTime\": \"Not applicable\",\n                    \"accessRequestCost\": \"Free\",\n                    \"accessServiceCategory\": \"TRE/SDE\"\n                },\n                \"formatAndStandards\": {\n                    \"conformsTo\": [\n                        \"OMOP\"\n                    ],\n                    \"vocabularyEncodingScheme\": [\n                        \"LOCAL\"\n                    ],\n                    \"language\": [\n                        \"en\"\n                    ],\n                    \"format\": [\n                        \"CSV\",\n                        \"JSON\"\n                    ]\n                }\n            },\n            \"enrichmentAndLinkage\": {\n                \"tools\": [\n                    \"https://github.com\"\n                ],\n                \"investigations\": [],\n                \"publicationAboutDataset\": [\n                    \"10.1093/ije/dyab028\"\n                ],\n                \"publicationUsingDataset\": [],\n                \"derivedFrom\": null,\n                \"isPartOf\": null,\n                \"linkableDatasets\": null,\n                \"similarToDatasets\": null\n            },\n            \"observations\": [\n                {\n                    \"observedNode\": \"Persons\",\n                    \"measuredValue\": 10000,\n                    \"observationDate\": \"2025-04-17T23:00:00.000Z\",\n                    \"measuredProperty\": \"Count\",\n                    \"disambiguatingDescription\": \"Test test test\"\n                }\n            ],\n            \"structuralMetadata\": {\n                \"tables\": null,\n                \"syntheticDataWebLink\": [\n                    \"https://google.com\"\n                ]\n            },\n            \"demographicFrequency\": null,\n            \"omics\": null\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v2/teams/{{team_id}}/datasets/{{dataset_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"teams",
+								"{{team_id}}",
+								"datasets",
+								"{{dataset_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_dataset_integration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-client-id",
+								"value": "{{x_client_id}}",
+								"type": "text"
+							},
+							{
+								"key": "x-application-id",
+								"value": "{{x_application_id}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/api/v2/teams/{{team_id}}/datasets/{{dataset_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"teams",
+								"{{team_id}}",
+								"datasets",
+								"{{dataset_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create_dur_integration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-client-id",
+								"value": "{{x_client_id}}",
+								"type": "text"
+							},
+							{
+								"key": "x-application-id",
+								"value": "{{x_application_id}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"project_title\": \"ABC\",\n    \"datasets\": [\n        {\n            \"id\": 1,\n            \"reason\": \"something\"\n        }\n    ],\n    \"publications\": [],\n    \"keywords\": [],\n    \"tools\": [],\n    \"non_gateway_datasets\": [\n        \"External Dataset 01\",\n        \"External Dataset 02\"\n    ],\n    \"latest_approval_date\": \"2017-09-12T01:00:00\",\n    \"organisation_sector\": \"academia\",\n    \"status\": \"ACTIVE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v2/teams/{{team_id}}/dur",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"teams",
+								"{{team_id}}",
+								"dur"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_dur_integration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-client-id",
+								"value": "{{x_client_id}}",
+								"type": "text"
+							},
+							{
+								"key": "x-application-id",
+								"value": "{{x_application_id}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/api/v2/teams/{{team_id}}/dur/{{dur_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"teams",
+								"{{team_id}}",
+								"dur",
+								"{{dur_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_dur_integration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "x-client-id",
+								"value": "{{x_client_id}}",
+								"type": "text"
+							},
+							{
+								"key": "x-application-id",
+								"value": "{{x_application_id}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"project_title\": \"ABC - updated\",\n    \"datasets\": [\n        {\n            \"id\": 1,\n            \"reason\": \"something\"\n        }\n    ],\n    \"publications\": [],\n    \"keywords\": [],\n    \"tools\": [],\n    \"non_gateway_datasets\": [\n        \"External Dataset 01\",\n        \"External Dataset 02\"\n    ],\n    \"latest_approval_date\": \"2017-09-12T01:00:00\",\n    \"organisation_sector\": \"academia\",\n    \"status\": \"ACTIVE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v2/teams/{{team_id}}/dur/{{dur_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"teams",
+								"{{team_id}}",
+								"dur",
+								"{{dur_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_dur_integration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-client-id",
+								"value": "{{x_client_id}}",
+								"type": "text"
+							},
+							{
+								"key": "x-application-id",
+								"value": "{{x_application_id}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/api/v2/teams/{{team_id}}/datasets/{{dataset_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"teams",
+								"{{team_id}}",
+								"datasets",
+								"{{dataset_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create_tool_integration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-client-id",
+								"value": "{{x_client_id}}",
+								"type": "text"
+							},
+							{
+								"key": "x-application-id",
+								"value": "{{x_application_id}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Similique sapiente est vero eum.\",\n    \"url\": \"http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim\",\n    \"description\": \"Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.\",\n    \"results_insights\": \"asfhiasfh aoshfa \",\n    \"license\": 1,\n    \"tech_stack\": \"Cumque molestias excepturi quam at.\",\n    \"category_id\": 1,\n    \"user_id\": 1,\n    \"tag\": [\n        1,\n        2\n    ],\n    \"dataset\": [\n        1,\n        2\n    ],\n    \"programming_language\": [\n        1,\n        2\n    ],\n    \"programming_package\": [\n        1,\n        2\n    ],\n    \"type_category\": [\n        1,\n        2\n    ],\n    \"enabled\": 1,\n    \"publications\": [],\n    \"durs\": [],\n    \"collections\": [],\n    \"any_dataset\": false,\n    \"status\": \"ACTIVE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v2/teams/{{team_id}}/tools",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"teams",
+								"{{team_id}}",
+								"tools"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_tool_integration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-client-id",
+								"value": "{{x_client_id}}",
+								"type": "text"
+							},
+							{
+								"key": "x-application-id",
+								"value": "{{x_application_id}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/api/v2/teams/{{team_id}}/tools/{{tool_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"teams",
+								"{{team_id}}",
+								"tools",
+								"{{tool_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_tool_integration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "x-client-id",
+								"value": "{{x_client_id}}",
+								"type": "text"
+							},
+							{
+								"key": "x-application-id",
+								"value": "{{x_application_id}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated name\",\n    \"url\": \"http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim\",\n    \"description\": \"Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.\",\n    \"results_insights\": \"asfhiasfh aoshfa \",\n    \"license\": 1,\n    \"tech_stack\": \"Cumque molestias excepturi quam at.\",\n    \"category_id\": 1,\n    \"user_id\": 1,\n    \"tag\": [\n        1,\n        2\n    ],\n    \"dataset\": [\n        1,\n        2\n    ],\n    \"programming_language\": [\n        1,\n        2\n    ],\n    \"programming_package\": [\n        1,\n        2\n    ],\n    \"type_category\": [\n        1,\n        2\n    ],\n    \"enabled\": 1,\n    \"publications\": [],\n    \"durs\": [],\n    \"collections\": [],\n    \"any_dataset\": false,\n    \"status\": \"ACTIVE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/api/v2/teams/{{team_id}}/tools/{{tool_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"teams",
+								"{{team_id}}",
+								"tools",
+								"{{tool_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_dur_integration Copy",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{current_access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-client-id",
+								"value": "{{x_client_id}}",
+								"type": "text"
+							},
+							{
+								"key": "x-application-id",
+								"value": "{{x_application_id}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{api_url}}/api/v2/teams/{{team_id}}/tools/{{tool_id}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"teams",
+								"{{team_id}}",
+								"tools",
+								"{{tool_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

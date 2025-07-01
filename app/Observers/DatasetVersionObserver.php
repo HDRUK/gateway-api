@@ -63,9 +63,7 @@ class DatasetVersionObserver
         if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE && $datasetVersion->active_date === null) {
             $datasetVersion->active_date = now();
             $datasetVersion->save();
-        }
-
-        if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
+        } elseif (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
             ExtractPublicationsFromMetadata::dispatch($datasetVersion->id);
             ExtractToolsFromMetadata::dispatch($datasetVersion->id);
 
