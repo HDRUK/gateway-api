@@ -14,6 +14,7 @@ use App\Models\DurHasTool;
 use App\Models\PublicationHasDatasetVersion;
 use App\Models\PublicationHasTool;
 use App\Models\Collection;
+use App\Models\DatasetVersion;
 use App\Models\Dataset;
 use App\Models\Dur;
 use App\Models\Publication;
@@ -67,10 +68,19 @@ class MigrateGAT7330 extends Command
 
         // For entities, if archived and soft-deleted, then move to only archived
         // If archived and not soft-deleted, keep as-is.
-        // If soft-deleted but not archived, then more to archived and deleted.
+        // If soft-deleted but not archived, then move to archived and stay deleted.
         Collection::onlyTrashed()->where('status', 'ARCHIVED')->restore();
         Collection::onlyTrashed()->where('status', '!=', 'ARCHIVED')->update(['status' => 'ARCHIVED']);
 
+        // DatasetVersions: restore only the latest version of a given dataset if that version has been deleted. 
+        // We thus keep old versions deleted, but DatasetVersions are moved to the new archiving behaviour.
+        $datasets = Dataset::withTrashed()->get();
+        foreach ($datasets as $dataset) {
+            $latestDatasetVersion = DatasetVersion::withTrashed()->where('dataset_id', $dataset->id)->orderBy('version', 'desc')->first();
+            if ($latestDatasetVersion) {
+                $latestDatasetVersion->restore();
+            }
+        }
         Dataset::onlyTrashed()->where('status', 'ARCHIVED')->restore();
         Dataset::onlyTrashed()->where('status', '!=', 'ARCHIVED')->update(['status' => 'ARCHIVED']);
 
