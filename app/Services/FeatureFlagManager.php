@@ -4,8 +4,8 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Laravel\Pennant\Feature;
+// use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Client\ConnectionException;
 
 class FeatureFlagManager
 {
@@ -41,39 +41,23 @@ class FeatureFlagManager
     public function getAllFlags(): array
     {
         $url = env('FEATURE_FLAGGING_CONFIG_URL');
-        $featureFlags = [];
+        // $featureFlags = Cache::remember('getAllFlags', now()->addMinutes(60), function () use ($url) {
+        //     $res = Http::get($url);
+        //     if ($res->successful()) {
+        //         return $res->json();
+        //     }
 
-        try {
-            $res = Http::timeout(60)
-                ->retry(3, 2000, function ($exception, $requestNumber) use ($url) {
-                    logger()->warning('Retrying feature flag fetch', [
-                        'url' => $url,
-                        'attempt' => $requestNumber,
-                        'error' => $exception->getMessage(),
-                    ]);
-                })
-                ->get($url);
+        //     logger()->error('Failed to fetch feature flags from URL', ['url' => $url]);
+        //     return [];
+        // });
 
-            if (!$res->successful()) {
-                logger()->error('Failed to fetch feature flags', [
-                    'url' => $url,
-                    'status' => $res->status(),
-                    'body' => $res->body(),
-                ]);
-            }
+        $featureFlags = [
+                    'SDEConciergeServiceEnquiry' => ['enabled' => env('SDEConciergeServiceEnquiry', true)],
+                    'Aliases' => ['enabled' => true],
+        ];
 
-            $featureFlags = $res->json();
-        } catch (ConnectionException $e) {
-            logger()->error('ConnectionException when fetching feature flags', [
-                'url' => $url,
-                'error' => $e->getMessage(),
-            ]);
-        } catch (\Exception $e) {
-            logger()->error('Error occurred while fetching feature flags', [
-                'url' => $url,
-                'error' => $e->getMessage(),
-            ]);
-        }
+
+
 
         return $featureFlags;
     }

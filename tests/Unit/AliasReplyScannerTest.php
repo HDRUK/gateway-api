@@ -114,7 +114,6 @@ class AliasReplyScannerTest extends TestCase
             'updated_at',
             'enquiry_unique_key',
             'team_id',
-            'user_preferred_email',
         ]);
 
         $this->assertEquals($response->id, $thread->id);

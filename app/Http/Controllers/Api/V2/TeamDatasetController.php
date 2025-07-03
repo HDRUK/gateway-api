@@ -43,11 +43,201 @@ class TeamDatasetController extends Controller
 
     /**
      * @OA\Get(
-     *    path="/api/v2/teams/{teamId}/datasets/status/{status}",
-     *    operationId="fetch_team_datasets_status",
+     *    path="/api/v2/teams/{teamId}/datasets",
+     *    operationId="fetch_team_active_datasets_v2",
      *    tags={"Datasets"},
-     *    summary="TeamDatasetController@indexStatus",
-     *    description="Returns a list of a team's datasets with the given status",
+     *    summary="TeamDatasetController@indexActive",
+     *    description="Returns a list of a team's active datasets",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="ID of the team to filter by",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id field",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="sort",
+     *       in="query",
+     *       description="Field and direction (colon separated) to sort by (default: 'created:desc') ... <br/> <br/>
+        - ?sort=\<field\>:\<direction\> <br/>
+        - \<direction\> can only be 'asc' or 'desc'  <br/>
+        - \<field\> can only be a valid field for the dataset table that can be ordered on  <br/>
+        - \<field\> can start with the prefix 'metadata.' so that nested values within the field 'metadata'  <br/>
+            (represented by the GWDM JSON structure) can be used to order on.  <br/>  <br/>",
+     *       example="created:desc",
+     *       @OA\Schema(
+     *          type="string",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="with_metadata",
+     *       in="query",
+     *       description="Boolean whether to return dataset metadata",
+     *       example="true",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="Boolean whether to return dataset metadata",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="array",
+     *             example="[]",
+     *             @OA\Items(
+     *                type="array",
+     *                @OA\Items()
+     *             )
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function indexActive(Request $request, int $teamId): JsonResponse
+    {
+        try {
+            $withMetadata = $request->boolean('with_metadata', true);
+
+            $perPage = request('per_page', Config::get('constants.per_page'));
+
+            $datasets = $this->indexTeamDataset(
+                $teamId,
+                Dataset::STATUS_ACTIVE,
+                $perPage,
+                $withMetadata,
+            );
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Dataset team active index v2',
+            ]);
+
+            return response()->json(
+                $datasets
+            );
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v2/teams/{teamId}/datasets/status/draft",
+     *    operationId="fetch_team_draft_datasets_v2",
+     *    tags={"Datasets"},
+     *    summary="TeamDatasetController@indexDraft",
+     *    description="Returns a list of a team's draft datasets",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="ID of the team to filter by",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id field",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="sort",
+     *       in="query",
+     *       description="Field and direction (colon separated) to sort by (default: 'created:desc') ... <br/> <br/>
+        - ?sort=\<field\>:\<direction\> <br/>
+        - \<direction\> can only be 'asc' or 'desc'  <br/>
+        - \<field\> can only be a valid field for the dataset table that can be ordered on  <br/>
+        - \<field\> can start with the prefix 'metadata.' so that nested values within the field 'metadata'  <br/>
+            (represented by the GWDM JSON structure) can be used to order on.  <br/>  <br/>",
+     *       example="created:desc",
+     *       @OA\Schema(
+     *          type="string",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="with_metadata",
+     *       in="query",
+     *       description="Boolean whether to return dataset metadata",
+     *       example="true",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="Boolean whether to return dataset metadata",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="array",
+     *             example="[]",
+     *             @OA\Items(
+     *                type="array",
+     *                @OA\Items()
+     *             )
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function indexDraft(Request $request, int $teamId): JsonResponse
+    {
+        $this->checkAccess($request->all(), $teamId, null, 'team');
+
+        try {
+            $withMetadata = $request->boolean('with_metadata', true);
+
+            $perPage = request('per_page', Config::get('constants.per_page'));
+
+            $datasets = $this->indexTeamDataset(
+                $teamId,
+                Dataset::STATUS_DRAFT,
+                $perPage,
+                $withMetadata,
+            );
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Dataset team draft index v2',
+            ]);
+
+            return response()->json(
+                $datasets
+            );
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v2/teams/{teamId}/datasets/status/archived",
+     *    operationId="fetch_team_archived_datasets_v2",
+     *    tags={"Datasets"},
+     *    summary="TeamDatasetController@indexArchived",
+     *    description="Returns a list of a team's archived datasets",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
      *       name="teamId",
@@ -101,9 +291,9 @@ class TeamDatasetController extends Controller
      *    )
      * )
      */
-    public function indexStatus(Request $request, int $teamId, ?string $status = 'active'): JsonResponse
+    public function indexArchived(Request $request, int $teamId): JsonResponse
     {
-        $this->checkAccess($request->all(), $teamId, null, 'team', $request->header());
+        $this->checkAccess($request->all(), $teamId, null, 'team');
 
         try {
             $withMetadata = $request->boolean('with_metadata', true);
@@ -112,7 +302,7 @@ class TeamDatasetController extends Controller
 
             $datasets = $this->indexTeamDataset(
                 $teamId,
-                $status,
+                Dataset::STATUS_ARCHIVED,
                 $perPage,
                 $withMetadata,
             );
@@ -120,7 +310,7 @@ class TeamDatasetController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'Team Dataset get all by status',
+                'description' => 'Dataset team archived index v2',
             ]);
 
             return response()->json(
@@ -181,8 +371,6 @@ class TeamDatasetController extends Controller
      */
     public function count(Request $request, int $teamId, string $field): JsonResponse
     {
-        $this->checkAccess($request->all(), $teamId, null, 'team', $request->header());
-
         try {
             $counts = Dataset::where('team_id', $teamId)->applyCount();
 
@@ -293,7 +481,7 @@ class TeamDatasetController extends Controller
             $exportStructuralMetadata = $request->query('export', null);
 
             // Retrieve the dataset with collections, publications, and counts
-            $dataset = Dataset::with("team")->whereRelation("team", "id", $teamId)->find($id);
+            $dataset = Dataset::with("team")->whereRelation("team", "id", $teamId)->where("status", Dataset::STATUS_ACTIVE)->find($id);
 
             if (!$dataset) {
                 return response()->json(['message' => 'Dataset not found'], 404);
@@ -408,9 +596,8 @@ class TeamDatasetController extends Controller
     public function store(CreateTeamDataset $request, int $teamId): JsonResponse
     {
         $input = $request->all();
-        list($userId) = $this->getAccessorUserAndTeam($request);
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $this->checkAccess($input, $teamId, null, 'team', $request->header());
+        $this->checkAccess($input, $teamId, null, 'team');
 
         try {
             $elasticIndexing = $request->boolean('elastic_indexing', false);
@@ -430,7 +617,7 @@ class TeamDatasetController extends Controller
             }
 
             $input['team_id'] = $teamId;
-            $input['user_id'] = $jwtUser['id'] ?? $userId;
+            $input['user_id'] = $jwtUser['id'];
 
             $metadataResult = $this->metadataOnboard(
                 $input,
@@ -442,7 +629,7 @@ class TeamDatasetController extends Controller
 
             if ($metadataResult['translated']) {
                 Auditor::log([
-                    'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                    'user_id' => (int)$jwtUser['id'],
                     'team_id' => $team['id'],
                     'action_type' => 'CREATE',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
@@ -463,7 +650,7 @@ class TeamDatasetController extends Controller
             }
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -540,10 +727,9 @@ class TeamDatasetController extends Controller
     public function update(UpdateTeamDataset $request, int $teamId, int $id)
     {
         $input = $request->all();
-        list($userId, $appTeamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $initDataset = Dataset::where('id', $id)->first();
-        $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
+        $this->checkAccess($input, $initDataset->team_id, null, 'team');
 
         try {
             $elasticIndexing = $request->boolean('elastic_indexing', false);
@@ -592,11 +778,11 @@ class TeamDatasetController extends Controller
             // Update the existing dataset parent record with incoming data
             $updateTime = now();
             $currDataset->update([
-                'user_id' => $jwtUser['id'] ?? $userId,
-                'team_id' => $teamId,
+                'user_id' => $input['user_id'],
+                'team_id' => $input['team_id'],
                 'updated' => $updateTime,
                 'pid' => $currentPid,
-                'create_origin' => $createOrigin,
+                'create_origin' => $input['create_origin'],
                 'status' => $request['status'],
                 'is_cohort_discovery' => $isCohortDiscovery,
             ]);
@@ -631,7 +817,7 @@ class TeamDatasetController extends Controller
             }
 
             Auditor::log([
-                'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                'user_id' => (int)$jwtUser['id'],
                 'team_id' => $teamId,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
@@ -712,10 +898,9 @@ class TeamDatasetController extends Controller
     public function edit(EditTeamDataset $request, int $teamId, int $id)
     {
         $input = $request->all();
-        list($userId) = $this->getAccessorUserAndTeam($request);
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $initDataset = Dataset::where('id', $id)->first();
-        $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
+        $this->checkAccess($input, $initDataset->team_id, null, 'team');
 
         try {
             //TODO: how to edit correctly, particularly the metadata? Assume if it's provided then it overwrites, otherwise leave as it is?
@@ -738,8 +923,8 @@ class TeamDatasetController extends Controller
             // body validate, translate if needed, update Mauro data model, etc.
 
             Auditor::log([
-                'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
-                'team_id' => $teamId,
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $datasetModel['team_id'],
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Dataset ' . $id . ' marked as ' .
@@ -751,7 +936,7 @@ class TeamDatasetController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -818,10 +1003,9 @@ class TeamDatasetController extends Controller
     public function destroy(DeleteDataset $request, int $teamId, int $id) // softdelete
     {
         $input = $request->all();
-        list($userId) = $this->getAccessorUserAndTeam($request);
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $initDataset = Dataset::where('id', $id)->first();
-        $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
+        $this->checkAccess($input, $initDataset->team_id, null, 'team');
 
         try {
             $dataset = Dataset::where(['id' => $id, 'team_id' => $teamId])->first();
@@ -836,7 +1020,7 @@ class TeamDatasetController extends Controller
             MMC::deleteDataset($id);
 
             Auditor::log([
-                'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Team Dataset ' . $id . ' deleted',
@@ -847,7 +1031,7 @@ class TeamDatasetController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -858,7 +1042,7 @@ class TeamDatasetController extends Controller
 
     private function indexTeamDataset(int $teamId, string $status, int $perPage, int $withMetadata)
     {
-        $datasets = Dataset::where(['team_id' => $teamId, 'status' => strtoupper($status)])
+        $datasets = Dataset::where(['team_id' => $teamId, 'status' => $status])
             ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
             ->applySorting()
             ->paginate((int) $perPage, ['*'], 'page');

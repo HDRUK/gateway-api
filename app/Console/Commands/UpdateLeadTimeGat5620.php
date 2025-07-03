@@ -27,12 +27,17 @@ class UpdateLeadTimeGat5620 extends Command
 
     private $csvData = [];
 
+    public function __construct()
+    {
+        parent::__construct();
+        $this->readMigrationFile(storage_path() . '/migration_files/delivery_lead_time_mk1_mappings.csv');
+    }
+
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $this->readMigrationFile(storage_path() . '/migration_files/delivery_lead_time_mk1_mappings.csv');
         $action = $this->argument('argument');
         switch ($action) {
             case 'create_backup':

@@ -75,7 +75,7 @@ trait IndexElastic
 
             $toIndex = [
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
-                'keywords' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.keywords'], '')),
+                'keywords' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.keywords'], ''),
                 'description' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.description'], ''),
                 'shortTitle' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.shortTitle'], ''),
                 'title' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.title'], ''),

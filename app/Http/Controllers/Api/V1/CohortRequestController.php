@@ -18,7 +18,6 @@ use Illuminate\Http\JsonResponse;
 use App\Models\CohortRequestHasLog;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\HubspotContacts;
-use App\Exceptions\UnauthorizedException;
 use App\Models\CohortRequestHasPermission;
 use App\Http\Requests\CohortRequest\GetCohortRequest;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -1263,7 +1262,7 @@ class CohortRequestController extends Controller
 
     /* @OA\Get(
         *    path="/api/v1/cohort_requests/user/{id}",
-        *    operationId="fetch_cohort_requests_by_user",
+        *    operationId="fetch_cohort_requests_by_usr",
         *    tags={"Cohort Requests"},
         *    summary="CohortRequestController@byUser",
         *    description="Returns cohort request for given user ID",
@@ -1302,12 +1301,6 @@ class CohortRequestController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
-        // Check that the user is asking only for their own record.
-        if (!($jwtUser['id'] === $id)) {
-            throw new UnauthorizedException();
-        }
-
         try {
             $cohortRequest = CohortRequest::where('user_id', (int)$id)->first();
 

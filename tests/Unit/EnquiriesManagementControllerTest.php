@@ -2,19 +2,18 @@
 
 namespace Tests\Unit;
 
+use EnquiriesManagementController as EMC;
 use Tests\TestCase;
-use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
+use App\Models\Role;
 use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
-use App\Http\Traits\EnquiriesTrait;
 use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EnquiriesManagementControllerTest extends TestCase
 {
-    use EnquiriesTrait;
     use RefreshDatabase;
 
     public function setUp(): void
@@ -90,7 +89,7 @@ class EnquiriesManagementControllerTest extends TestCase
             ]);
         }
 
-        $users = $this->getUsersByTeamIds([$team1->id], 1);
+        $users = EMC::getUsersByTeamIds([$team1->id], 1);
         $this->assertEquals(count($users), 1);
 
         $this->assertEquals($users[0]['user']['email'], 'peter.venkman@ghostbusters.com');

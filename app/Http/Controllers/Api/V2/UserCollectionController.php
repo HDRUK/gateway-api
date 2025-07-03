@@ -994,7 +994,6 @@ class UserCollectionController extends Controller
         $collHasUsers = CollectionHasUser::where('user_id', $userId)->select(['collection_id'])->get()->toArray();
         $collections = Collection::whereIn('id', $collHasUsers)
             ->where('status', $status)
-            ->where('team_id', null)
             ->with([
                 'keywords',
                 'tools',

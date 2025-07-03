@@ -3,10 +3,8 @@
 namespace App\Http\Traits;
 
 use Exception;
-use App\Models\Application;
 use App\Models\TeamHasUser;
 use App\Exceptions\UnauthorizedException;
-use Illuminate\Http\Request;
 
 trait CheckAccess
 {
@@ -23,24 +21,8 @@ trait CheckAccess
         array $input = [],
         ?int $dbTeamId = null,
         ?int $dbUserId = null,
-        ?string $checkType = null,
-        ?array $headers = null,
+        ?string $checkType = null
     ) {
-        // Check first for app access
-        if (($headers) && isset($headers['x-application-id']) && isset($headers['x-client-id'])) {
-            $application = Application::where('app_id', $headers['x-application-id'])
-                ->where('client_id', $headers['x-client-id'])->first();
-
-            if ($application) {
-                if (($dbTeamId) && ($dbTeamId !== $application->team_id)) {
-                    throw new UnauthorizedException(
-                        'This Application is not allowed to interact with datasets from another team!'
-                    );
-                }
-                return true;
-            }
-        }
-
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         if (!count($jwtUser)) {
             throw new Exception('Insufficient information');
@@ -148,33 +130,5 @@ trait CheckAccess
     private function checkAccessCollaborator($jwtUserId, $dbUserIds)
     {
         return in_array($jwtUserId, $dbUserIds);
-    }
-
-    public function getAccessorUserAndTeam(Request $request): array
-    {
-        $headers = $request->header();
-        $input = $request->all();
-        if (isset($headers['x-application-id']) && isset($headers['x-client-id'])) {
-            $application = Application::where('app_id', $headers['x-application-id'])
-                ->where('client_id', $headers['x-client-id'])->first();
-
-            if ($application) {
-                return [
-                    $application->user_id,
-                    $application->team_id,
-                    'API',
-                    'ACTIVE',
-                    $application->id,
-                ];
-            }
-        }
-
-        return [
-            $input['user_id'] ?? null,
-            $input['team_id'] ?? null,
-            $input['create_origin'] ?? 'MANUAL',
-            $input['status'] ?? 'ACTIVE',
-            null,
-        ];
     }
 }

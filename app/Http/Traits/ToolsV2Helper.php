@@ -17,13 +17,12 @@ use App\Models\CollectionHasTool;
 use App\Models\PublicationHasTool;
 use App\Models\ToolHasTypeCategory;
 use App\Models\DatasetVersionHasTool;
-use App\Exceptions\NotFoundException;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
 
 trait ToolsV2Helper
 {
-    public function getToolById(int $toolId, ?int $teamId = null, ?int $userId = null, ?bool $onlyActive = false, ?bool $onlyActiveRelated = false)
+    public function getToolByUserIdAndByIdByStatus(int $userId, int $toolId, string $status)
     {
         $tool = Tool::with([
             'user',
@@ -33,37 +32,183 @@ trait ToolsV2Helper
             'programmingLanguages',
             'programmingPackages',
             'typeCategory',
-            'publications' => function ($query) use ($onlyActiveRelated) {
-                if ($onlyActiveRelated) {
+            'publications' => function ($query) use ($status) {
+                $query->where('status', strtoupper($status));
+            },
+            'durs' => function ($query) use ($status) {
+                $query->where('status', strtoupper($status));
+            },
+            'collections' => function ($query) use ($status) {
+                $query->where('status', strtoupper($status));
+            },
+            'category',
+        ])
+        ->where([
+            'user_id' => $userId,
+            'id' => $toolId,
+            'status' => strtoupper($status),
+        ])
+        ->first();
+
+        if (is_null($tool)) {
+            return null;
+        }
+
+        $tool->name = html_entity_decode($tool->name);
+        $tool->description = html_entity_decode($tool->description);
+        $tool->results_insights = html_entity_decode($tool->results_insights);
+        $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
+        return $tool;
+    }
+
+    public function getToolByTeamIdAndByIdByStatus(int $teamId, int $toolId, string $status)
+    {
+        $tool = Tool::with([
+            'user',
+            'tag',
+            'team',
+            'license',
+            'programmingLanguages',
+            'programmingPackages',
+            'typeCategory',
+            'publications' => function ($query) use ($status) {
+                $query->where('status', strtoupper($status));
+            },
+            'durs' => function ($query) use ($status) {
+                $query->where('status', strtoupper($status));
+            },
+            'collections' => function ($query) use ($status) {
+                $query->where('status', strtoupper($status));
+            },
+            'category',
+        ])
+        ->where([
+            'team_id' => $teamId,
+            'id' => $toolId,
+            'status' => strtoupper($status),
+        ])
+        ->first();
+
+        if (is_null($tool)) {
+            return null;
+        }
+
+        $tool->name = html_entity_decode($tool->name);
+        $tool->description = html_entity_decode($tool->description);
+        $tool->results_insights = html_entity_decode($tool->results_insights);
+        $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
+        return $tool;
+    }
+
+    public function getToolByUserIdAndById(int $userId, int $toolId, bool $onlyActive = false)
+    {
+        $tool = Tool::with([
+            'user',
+            'tag',
+            'team',
+            'license',
+            'programmingLanguages',
+            'programmingPackages',
+            'typeCategory',
+            'publications' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
                     $query->where('status', Publication::STATUS_ACTIVE);
                 }
             },
-            'durs' => function ($query) use ($onlyActiveRelated) {
-                if ($onlyActiveRelated) {
+            'durs' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
                     $query->where('status', Dur::STATUS_ACTIVE);
                 }
             },
-            'collections' => function ($query) use ($onlyActiveRelated) {
-                if ($onlyActiveRelated) {
+            'collections' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
+                    $query->where('status', Collection::STATUS_ACTIVE);
+                }
+            },
+            'category',
+        ])
+        ->where([
+            'user_id' => $userId,
+            'id' => $toolId,
+            ])
+        ->first();
+
+        $tool->name = html_entity_decode($tool->name);
+        $tool->description = html_entity_decode($tool->description);
+        $tool->results_insights = html_entity_decode($tool->results_insights);
+        $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
+        return $tool;
+    }
+
+    public function getToolByTeamIdAndById(int $teamId, int $toolId, bool $onlyActive = false)
+    {
+        $tool = Tool::with([
+            'user',
+            'tag',
+            'team',
+            'license',
+            'programmingLanguages',
+            'programmingPackages',
+            'typeCategory',
+            'publications' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
+                    $query->where('status', Publication::STATUS_ACTIVE);
+                }
+            },
+            'durs' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
+                    $query->where('status', Dur::STATUS_ACTIVE);
+                }
+            },
+            'collections' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
+                    $query->where('status', Collection::STATUS_ACTIVE);
+                }
+            },
+            'category',
+        ])
+        ->where([
+            'team_id' => $teamId,
+            'id' => $toolId,
+            ])
+        ->first();
+
+        $tool->name = html_entity_decode($tool->name);
+        $tool->description = html_entity_decode($tool->description);
+        $tool->results_insights = html_entity_decode($tool->results_insights);
+        $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
+        return $tool;
+    }
+
+    public function getToolById(int $toolId, bool $onlyActive = false)
+    {
+        $tool = Tool::with([
+            'user',
+            'tag',
+            'team',
+            'license',
+            'programmingLanguages',
+            'programmingPackages',
+            'typeCategory',
+            'publications' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
+                    $query->where('status', Publication::STATUS_ACTIVE);
+                }
+            },
+            'durs' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
+                    $query->where('status', Dur::STATUS_ACTIVE);
+                }
+            },
+            'collections' => function ($query) use ($onlyActive) {
+                if ($onlyActive) {
                     $query->where('status', Collection::STATUS_ACTIVE);
                 }
             },
             'category',
         ])
         ->where(['id' => $toolId])
-        ->when($teamId, function ($query) use ($teamId) {
-            return $query->where(['team_id' => $teamId]);
-        })
-        ->when($userId, function ($query) use ($userId) {
-            return $query->where(['user_id' => $userId]);
-        })
-        ->when($onlyActive, function ($query) {
-            return $query->where(['status' => Tool::STATUS_ACTIVE]);
-        })
         ->first();
-        if (!$tool) {
-            throw new NotFoundException();
-        }
 
         $tool->name = html_entity_decode($tool->name);
         $tool->description = html_entity_decode($tool->description);

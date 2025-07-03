@@ -36,7 +36,6 @@ class IntegrationDurController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/integrations/dur",
-     *    deprecated=true,
      *    operationId="fetch_all_dur_integrations",
      *    tags={"Integration Data Use Registers"},
      *    summary="IntegrationDurController@index",
@@ -107,6 +106,7 @@ class IntegrationDurController extends Controller
      *                @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *                @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *                @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
+     *                @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *                @OA\Property(property="counter", type="integer", example="34319"),
@@ -252,7 +252,6 @@ class IntegrationDurController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/integrations/dur/{id}",
-     *    deprecated=true,
      *    operationId="fetch_dur_by_id_integrations",
      *    tags={"Integration Data Use Registers"},
      *    summary="IntegrationDurController@show",
@@ -315,6 +314,7 @@ class IntegrationDurController extends Controller
      *                   @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *                   @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *                   @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
+     *                   @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *                   @OA\Property(property="enabled", type="boolean", example="1"),
      *                   @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="counter", type="integer", example="34319"),
@@ -424,6 +424,7 @@ class IntegrationDurController extends Controller
      *             @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *             @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *             @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
+     *             @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *             @OA\Property(property="enabled", type="boolean", example="1"),
      *             @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="counter", type="integer", example="34319"),
@@ -515,6 +516,7 @@ class IntegrationDurController extends Controller
                 'request_frequency',
                 'access_type',
                 'mongo_object_dar_id',
+                'technicalSummary',
                 'team_id',
                 'enabled',
                 'last_activity',
@@ -596,7 +598,6 @@ class IntegrationDurController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/integrations/dur/{id}",
-     *    deprecated=true,
      *    tags={"Integration Data Use Registers"},
      *    summary="Update a dur by id",
      *    description="Update a dur",
@@ -653,6 +654,7 @@ class IntegrationDurController extends Controller
      *             @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *             @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *             @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
+     *             @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *             @OA\Property(property="enabled", type="boolean", example="1"),
      *             @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="counter", type="integer", example="34319"),
@@ -721,6 +723,7 @@ class IntegrationDurController extends Controller
      *                   @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *                   @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *                   @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
+     *                   @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *                   @OA\Property(property="enabled", type="boolean", example="1"),
      *                   @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="counter", type="integer", example="34319"),
@@ -797,6 +800,7 @@ class IntegrationDurController extends Controller
                 'request_frequency',
                 'access_type',
                 'mongo_object_dar_id',
+                'technicalSummary',
                 'enabled',
                 'last_activity',
                 'counter',
@@ -890,7 +894,6 @@ class IntegrationDurController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/integrations/dur/{id}",
-     *    deprecated=true,
      *    tags={"Integration Data Use Registers"},
      *    summary="Edit a dur",
      *    description="Edit a dur",
@@ -947,6 +950,7 @@ class IntegrationDurController extends Controller
      *             @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *             @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *             @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
+     *             @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *             @OA\Property(property="enabled", type="boolean", example="1"),
      *             @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="counter", type="integer", example="34319"),
@@ -1015,6 +1019,7 @@ class IntegrationDurController extends Controller
      *                   @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *                   @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
      *                   @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
+     *                   @OA\Property(property="technicalSummary", type="string", example="Similique officia dolor nam. ..."),
      *                   @OA\Property(property="enabled", type="boolean", example="1"),
      *                   @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="counter", type="integer", example="34319"),
@@ -1090,6 +1095,7 @@ class IntegrationDurController extends Controller
                 'request_frequency',
                 'access_type',
                 'mongo_object_dar_id',
+                'technicalSummary',
                 'enabled',
                 'last_activity',
                 'counter',
@@ -1163,7 +1169,6 @@ class IntegrationDurController extends Controller
     /**
      * @OA\Delete(
      *    path="/api/v1/integrations/dur/{id}",
-     *    deprecated=true,
      *    tags={"Integration Data Use Registers"},
      *    summary="Delete a dur",
      *    description="Delete a dur",

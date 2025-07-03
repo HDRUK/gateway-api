@@ -179,15 +179,13 @@ class MetadataManagementController
             if (!$dataset) {
                 throw new Exception('Dataset with id=' . $id . ' cannot be found');
             }
+            $dataset->deleted_at = Carbon::now();
 
             // maintain compatibility with v1 (set status to archived) while supporting v2 (don't set status)
             if ($setToArchived) {
-                $dataset->deleted_at = Carbon::now();
                 $dataset->status = Dataset::STATUS_ARCHIVED;
-                $dataset->save();
-            } else {
-                $dataset->delete();
             }
+            $dataset->save();
 
             foreach ($dataset->versions as $metadata) {
                 $metadata->deleted_at = Carbon::now();

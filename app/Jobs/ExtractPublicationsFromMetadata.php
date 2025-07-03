@@ -47,7 +47,6 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
 
     public function publication($datasetVersionId)
     {
-
         $linkagePublicationAboutDataset = 'metadata.linkage.publicationAboutDataset';
         $linkagePublicationUsingDataset = 'metadata.linkage.publicationUsingDataset';
 
@@ -173,12 +172,8 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
                 CloudLogger::write('ExtractPublicationsFromMetadata :: a new publication has been created with id = ' . $publicationId);
 
                 $this->createLinkPublicationDatasetVersion($publicationId, $datasetVersionId, $type);
-
                 continue;
             }
-            unset($newPublication);
-            unset($searchDoi);
-            gc_collect_cycles();
         }
     }
 

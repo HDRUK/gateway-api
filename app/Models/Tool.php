@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Http\Traits\DatasetFetch;
 use App\Models\Traits\SortManager;
-use App\Models\Traits\EntityCounter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -21,7 +20,6 @@ class Tool extends Model
     use Prunable;
     use DatasetFetch;
     use SortManager;
-    use EntityCounter;
 
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
@@ -69,13 +67,8 @@ class Tool extends Model
     ];
 
     protected static array $sortableColumns = [
-        'created_at',
         'updated_at',
         'name',
-    ];
-
-    protected static array $countableColumns = [
-        'status',
     ];
 
     // Accessor for all datasets associated with this object

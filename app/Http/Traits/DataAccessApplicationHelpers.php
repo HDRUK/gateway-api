@@ -5,25 +5,23 @@ namespace App\Http\Traits;
 use Config;
 use Exception;
 use Carbon\Carbon;
-use App\Models\Role;
-use App\Models\Team;
-use App\Models\User;
-use App\Models\Dataset;
-use App\Models\TeamHasUser;
-use App\Models\Notification;
-use App\Models\QuestionBank;
-use App\Models\TeamUserHasRole;
-use App\Models\DataAccessSection;
-use App\Models\TeamHasNotification;
-use App\Models\DataAccessApplication;
 use App\Exceptions\UnauthorizedException;
-use Illuminate\Database\Eloquent\Builder;
+use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationAnswer;
 use App\Models\DataAccessApplicationReview;
 use App\Models\DataAccessApplicationStatus;
+use App\Models\DataAccessSection;
+use App\Models\Dataset;
+use App\Models\Role;
+use App\Models\QuestionBank;
+use App\Models\Team;
+use App\Models\TeamHasUser;
+use App\Models\TeamUserHasRole;
 use App\Models\TeamHasDataAccessApplication;
-use Illuminate\Database\Eloquent\Collection;
+use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Builder;
 
 trait DataAccessApplicationHelpers
 {
@@ -406,52 +404,6 @@ trait DataAccessApplicationHelpers
         }
 
         return $users;
-    }
-
-    public function getTeamNotifications(int $teamId): ?array
-    {
-        $return = [];
-        $team = Team::where('id', $teamId)->first();
-        if (!$team->notification_status) {
-            return $return;
-        }
-
-        $teamHasNotifications = TeamHasNotification::where('team_id', $teamId)->select('notification_id')->pluck('notification_id');
-
-        if (!$teamHasNotifications->count()) {
-            return $return;
-        }
-
-        $teamNotifications = Notification::whereIn('id', $teamHasNotifications)->get();
-
-        if ($teamNotifications->isEmpty()) {
-            return $return;
-        }
-
-        foreach ($teamNotifications as $notification) {
-            if ($notification->email) {
-                $return[] = [
-                    'to' => [
-                        'email' => $notification->email,
-                        'name' => explode('@', $notification->email)[0],
-                    ],
-                ];
-            } elseif ($notification->user_id) {
-                $user = User::where('id', $notification->user_id)->first();
-                if (is_null($user)) {
-                    continue;
-                }
-
-                $return[] = [
-                    'to' => [
-                        'email' => ($user->preferred_email === 'primary') ? $user->email : $user->secondary_email,
-                        'name' => $user->name,
-                    ],
-                ];
-            }
-        }
-
-        return $return;
     }
 
     public function groupApplicationsByProject(LengthAwarePaginator $applications): LengthAwarePaginator

@@ -24,12 +24,17 @@ class FixCollectionImages extends Command
 
     private $csvData = [];
 
+    public function __construct()
+    {
+        parent::__construct();
+        $this->readMigrationFile(storage_path() . '/migration_files/collection_images_update_and_fix.csv');
+    }
+
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $this->readMigrationFile(storage_path() . '/migration_files/collection_images_update_and_fix.csv');
         $dryRun = $this->option('dryRun');
         $csvData = $this->csvData;
 

@@ -45,7 +45,7 @@ class ToolIntegrationTest extends TestCase
         setUp as commonSetUp;
     }
 
-    public const TEST_URL = '/api/v1/tools';
+    public const TEST_URL = '/api/v1/integrations/tools';
 
     protected $header = [];
 
@@ -100,12 +100,9 @@ class ToolIntegrationTest extends TestCase
             ]);
         }
 
-        // Define header for integration
-        $this->header = [
-            'Accept' => 'application/json',
-            'x-application-id' => $this->integration->app_id,
-            'x-client-id' => $this->integration->client_id,
-        ];
+        // Add Integration auth keys to the header generated in commonSetUp
+        $this->header['x-application-id'] = $this->integration['app_id'];
+        $this->header['x-client-id'] = $this->integration['client_id'];
     }
 
     /**

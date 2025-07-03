@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+// use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Controller;
 use Laravel\Pennant\Feature;
 use App\Services\FeatureFlagManager;
@@ -66,6 +67,8 @@ class FeatureFlagController extends Controller
             Log::warning('Invalid API token', ['provided' => $providedToken]);
             return response()->json(['message' => 'Unauthorized: Invalid token.'], 401);
         }
+        // Cache::forget('getAllFlags');
+        // Cache::forget('feature_flags');
 
 
         $url = env('FEATURE_FLAGGING_CONFIG_URL');
@@ -74,15 +77,20 @@ class FeatureFlagController extends Controller
             return response()->json(['message' => 'Feature flagging disabled in this environment.'], 200);
         }
 
-        $res = Http::get($url);
+        // $res = Http::get($url);
 
-        if (!$res->successful()) {
-            Log::error('Failed to fetch feature flags from GitHub', ['url' => $url]);
-            return response()->json(['message' => 'Failed to fetch feature flags.'], 500);
-        }
+        // if (!$res->successful()) {
+        //     Log::error('Failed to fetch feature flags from GitHub', ['url' => $url]);
+        //     return response()->json(['message' => 'Failed to fetch feature flags.'], 500);
+        // }
+
+        $featureFlags = [
+                    'SDEConciergeServiceEnquiry' => ['enabled' => env('SDEConciergeServiceEnquiry', true)],
+                    'Aliases' => ['enabled' => true],
+        ];
 
 
-        $featureFlags = $res->json();
+
 
         if (!is_array($featureFlags)) {
             return response()->json(['message' => 'Invalid feature flag format.'], 422);

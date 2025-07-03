@@ -23,7 +23,6 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         \App\Http\Middleware\ProfileRequest::class,
         \Illuminate\Session\Middleware\StartSession::class,
-        \App\Http\Middleware\HstsMiddleware::class,
     ];
 
     /**
@@ -70,5 +69,7 @@ class Kernel extends HttpKernel
         'sanitize.input' => \App\Http\Middleware\SanitizeMiddleware::class,
         'check.access' => \App\Http\Middleware\CheckAccessMiddleware::class,
         'check.access.userId' => \App\Http\Middleware\CheckUserIdMatches::class,
+        'integration.auth' => \App\Http\Middleware\AuthenticateIntegrationMiddleware::class,
+        'check.integration.access' => \App\Http\Middleware\CheckIntegrationAccessMiddleware::class,
     ];
 }

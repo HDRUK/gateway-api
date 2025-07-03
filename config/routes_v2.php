@@ -340,8 +340,17 @@ return [
     [
         'name' => 'datasets',
         'method' => 'get',
+        'path' => '/datasets/count/{field}',
+        'methodController' => 'DatasetController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
         'path' => '/datasets/{id}',
-        'methodController' => 'DatasetController@showActive',
+        'methodController' => 'DatasetController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [],
         'constraint' => [
@@ -357,7 +366,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,datasets.create',
         ],
         'constraint' => [],
     ],
@@ -370,7 +378,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,datasets.update',
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -385,7 +392,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,datasets.update',
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -399,7 +405,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
-            'check.access:permissions,datasets.delete',
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -410,15 +415,40 @@ return [
     [
         'name' => 'datasets',
         'method' => 'get',
-        'path' => '/teams/{teamId}/datasets/status/{status}',
-        'methodController' => 'TeamDatasetController@indexStatus',
+        'path' => '/teams/{teamId}/datasets',
+        'methodController' => 'TeamDatasetController@indexActive',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
-            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/datasets/status/draft',
+        'methodController' => 'TeamDatasetController@indexDraft',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/datasets/status/archived',
+        'methodController' => 'TeamDatasetController@indexArchived',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
         ],
     ],
     [
@@ -457,7 +487,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,datasets.create',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
@@ -472,7 +501,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,datasets.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -488,7 +516,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,datasets.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -503,152 +530,10 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
-            'check.access:permissions,datasets.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
             'teamId' => '[0-9]+',
-        ],
-    ],
-
-    // v2 data uses
-    [
-        'name' => 'durs.get.active',
-        'method' => 'get',
-        'path' => '/dur',
-        'methodController' => 'DurController@indexActive',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'durs.export',
-        'method' => 'get',
-        'path' => '/dur/export',
-        'methodController' => 'DurController@export',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'durs.exportTemplate',
-        'method' => 'get',
-        'path' => '/dur/template',
-        'methodController' => 'DurController@exportTemplate',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'durs.get.one',
-        'method' => 'get',
-        'path' => '/dur/{id}',
-        'methodController' => 'DurController@showActive',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [],
-        'constraint' => [],
-    ],
-
-    // v2 team & data uses
-    [
-        'name' => 'team.durs.indexStatus',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/dur/status/{status}',
-        'methodController' => 'TeamDurController@indexStatus',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'status' => 'active|draft|archived'
-        ],
-    ],
-    [
-        'name' => 'team.durs.count',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/dur/count/{field}',
-        'methodController' => 'TeamDurController@count',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'field' => 'status'
-        ],
-    ],
-    [
-        'name' => 'team.durs.get.one',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/dur/{id}',
-        'methodController' => 'TeamDurController@show',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'team.durs.create',
-        'method' => 'post',
-        'path' => '/teams/{teamId}/dur',
-        'methodController' => 'TeamDurController@store',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,dur.create',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'team.durs.update',
-        'method' => 'put',
-        'path' => '/teams/{teamId}/dur/{id}',
-        'methodController' => 'TeamDurController@update',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,dur.update',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'team.durs.edit',
-        'method' => 'patch',
-        'path' => '/teams/{teamId}/dur/{id}',
-        'methodController' => 'TeamDurController@edit',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,dur.update',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'team.durs.delete',
-        'method' => 'delete',
-        'path' => '/teams/{teamId}/dur/{id}',
-        'methodController' => 'TeamDurController@destroy',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,dur.delete',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'id' => '[0-9]+',
         ],
     ],
 
@@ -942,7 +827,7 @@ return [
         'name' => 'tools',
         'method' => 'get',
         'path' => '/tools/{id}',
-        'methodController' => 'ToolController@showActive',
+        'methodController' => 'ToolController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [],
         'constraint' => [
@@ -957,7 +842,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
-            'check.access:permissions,tools.create',
             'sanitize.input',
         ],
         'constraint' => [],
@@ -970,7 +854,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
-            'check.access:permissions,tools.update',
             'sanitize.input',
         ],
         'constraint' => [
@@ -985,7 +868,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
-            'check.access:permissions,tools.update',
             'sanitize.input',
         ],
         'constraint' => [
@@ -1000,7 +882,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
-            'check.access:permissions,tools.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1009,7 +890,7 @@ return [
 
     // teams & tools
     [
-        'name' => 'team.tools.get.active',
+        'name' => 'tools.get.active',
         'method' => 'get',
         'path' => '/teams/{teamId}/tools',
         'methodController' => 'TeamToolController@indexStatus',
@@ -1020,7 +901,7 @@ return [
         ],
     ],
     [
-        'name' => 'team.tools.get.active',
+        'name' => 'tools.get.active',
         'method' => 'get',
         'path' => '/teams/{teamId}/tools/status/{status}',
         'methodController' => 'TeamToolController@indexStatus',
@@ -1032,20 +913,7 @@ return [
         ],
     ],
     [
-        'name' => 'team.tools.count',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/tools/count/{field}',
-        'methodController' => 'TeamToolController@count',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'team.tools.get.one',
+        'name' => 'tools.get.one',
         'method' => 'get',
         'path' => '/teams/{teamId}/tools/{id}',
         'methodController' => 'TeamToolController@show',
@@ -1057,59 +925,60 @@ return [
         ],
     ],
     [
-        'name' => 'team.tools.create',
+        'name' => 'tools.get.one',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/tools/{id}/status/{status}',
+        'methodController' => 'TeamToolController@showStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'tools.create',
         'method' => 'post',
         'path' => '/teams/{teamId}/tools',
         'methodController' => 'TeamToolController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,tools.create',
-        ],
+        'middleware' => ['jwt.verify'],
         'constraint' => [
             'teamId' => '[0-9]+',
         ],
     ],
     [
-        'name' => 'team.tools.update',
+        'name' => 'tools.update',
         'method' => 'put',
         'path' => '/teams/{teamId}/tools/{id}',
         'methodController' => 'TeamToolController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,tools.update',
-        ],
+        'middleware' => ['jwt.verify'],
         'constraint' => [
             'teamId' => '[0-9]+',
             'id' => '[0-9]+',
         ],
     ],
     [
-        'name' => 'team.tools.edit',
+        'name' => 'publications.edit',
         'method' => 'patch',
         'path' => '/teams/{teamId}/tools/{id}',
         'methodController' => 'TeamToolController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,tools.update',
-        ],
+        'middleware' => ['jwt.verify'],
         'constraint' => [
             'teamId' => '[0-9]+',
             'id' => '[0-9]+',
         ],
     ],
     [
-        'name' => 'team.tools.destroy',
+        'name' => 'publications.destroy',
         'method' => 'delete',
         'path' => '/teams/{teamId}/tools/{id}',
         'methodController' => 'TeamToolController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,tools.delete',
-        ],
+        'middleware' => ['jwt.verify'],
         'constraint' => [
             'teamId' => '[0-9]+',
             'id' => '[0-9]+',
@@ -1119,7 +988,7 @@ return [
 
     // users & tools
     [
-        'name' => 'user.tools.get.active',
+        'name' => 'tools.get.active',
         'method' => 'get',
         'path' => '/users/{userId}/tools',
         'methodController' => 'UserToolController@indexStatus',
@@ -1130,7 +999,7 @@ return [
         ],
     ],
     [
-        'name' => 'user.tools.get.active',
+        'name' => 'tools.get.active',
         'method' => 'get',
         'path' => '/users/{userId}/tools/status/{status}',
         'methodController' => 'UserToolController@indexStatus',
@@ -1141,21 +1010,8 @@ return [
             'status' => 'active|draft|archived'
         ],
     ],
-        [
-        'name' => 'user.tools.get.count',
-        'method' => 'get',
-        'path' => '/users/{userId}/tools/count/{field}',
-        'methodController' => 'UserToolController@count',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-        ],
-        'constraint' => [
-            'userId' => '[0-9]+',
-        ],
-    ],
     [
-        'name' => 'user.tools.get.one',
+        'name' => 'tools.get.one',
         'method' => 'get',
         'path' => '/users/{userId}/tools/{id}',
         'methodController' => 'UserToolController@show',
@@ -1167,7 +1023,20 @@ return [
         ],
     ],
     [
-        'name' => 'user.tools.create',
+        'name' => 'tools.get.one',
+        'method' => 'get',
+        'path' => '/users/{userId}/tools/{id}/status/{status}',
+        'methodController' => 'UserToolController@showStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'id' => '[0-9]+',
+            'status' => 'active|draft|archived'
+        ],
+    ],
+    [
+        'name' => 'tools.create',
         'method' => 'post',
         'path' => '/users/{userId}/tools',
         'methodController' => 'UserToolController@store',
@@ -1178,7 +1047,7 @@ return [
         ],
     ],
     [
-        'name' => 'user.tools.update',
+        'name' => 'tools.update',
         'method' => 'put',
         'path' => '/users/{userId}/tools/{id}',
         'methodController' => 'UserToolController@update',
@@ -1190,7 +1059,7 @@ return [
         ],
     ],
     [
-        'name' => 'user.tools.edit',
+        'name' => 'publications.edit',
         'method' => 'patch',
         'path' => '/users/{userId}/tools/{id}',
         'methodController' => 'UserToolController@edit',
@@ -1202,7 +1071,7 @@ return [
         ],
     ],
     [
-        'name' => 'user.tools.destroy',
+        'name' => 'publications.destroy',
         'method' => 'delete',
         'path' => '/users/{userId}/tools/{id}',
         'methodController' => 'UserToolController@destroy',
@@ -1210,96 +1079,6 @@ return [
         'middleware' => ['jwt.verify'],
         'constraint' => [
             'userId' => '[0-9]+',
-            'id' => '[0-9]+',
-        ],
-    ],
-
-     // Data Custodian Networks
-    [
-        'name' => 'data_custodian_networks.get',
-        'method' => 'get',
-        'path' => '/data_custodian_networks',
-        'methodController' => 'DataCustodianNetworksController@index',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'data_custodian_networks.get.one',
-        'method' => 'get',
-        'path' => '/data_custodian_networks/{id}',
-        'methodController' => 'DataCustodianNetworksController@show',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'data_custodian_networks.get.one.summary',
-        'method' => 'get',
-        'path' => '/data_custodian_networks/{id}/summary',
-        'methodController' => 'DataCustodianNetworksController@showSummary',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'data_custodian_networks.create',
-        'method' => 'post',
-        'path' => '/data_custodian_networks',
-        'methodController' => 'DataCustodianNetworksController@store',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.access:roles,hdruk.superadmin',
-        ],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'data_custodian_networks.update',
-        'method' => 'put',
-        'path' => '/data_custodian_networks/{id}',
-        'methodController' => 'DataCustodianNetworksController@update',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.access:roles,hdruk.superadmin',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'data_custodian_networks.edit',
-        'method' => 'patch',
-        'path' => '/data_custodian_networks/{id}',
-        'methodController' => 'DataCustodianNetworksController@edit',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.access:roles,hdruk.superadmin',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'data_custodian_networks.destroy',
-        'method' => 'delete',
-        'path' => '/data_custodian_networks/{id}',
-        'methodController' => 'DataCustodianNetworksController@destroy',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:roles,hdruk.superadmin',
-        ],
-        'constraint' => [
             'id' => '[0-9]+',
         ],
     ],

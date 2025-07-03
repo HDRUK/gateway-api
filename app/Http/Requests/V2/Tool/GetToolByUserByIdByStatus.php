@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\V2\Dur;
+namespace App\Http\Requests\V2\Tool;
 
 use App\Http\Requests\BaseFormRequest;
 
-class GetDurCountByTeamAndStatus extends BaseFormRequest
+class GetToolByUserByIdByStatus extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -14,7 +14,8 @@ class GetDurCountByTeamAndStatus extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'teamId' => 'required|int|exists:teams,id',
+            'userId' => 'required|int|exists:users,id',
+            'id' => 'required|int|exists:tools,id',
             'status' => 'required|string|in:active,draft,archived',
         ];
     }
@@ -27,8 +28,9 @@ class GetDurCountByTeamAndStatus extends BaseFormRequest
     protected function prepareForValidation()
     {
         $this->merge([
-            'teamId' => $this->route('teamId'),
-            'status' => $this->route('status') ?? 'active',
+            'userId' => $this->route('userId'),
+            'id' => $this->route('id'),
+            'status' => $this->route('status'),
         ]);
     }
 }

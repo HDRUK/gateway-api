@@ -1437,11 +1437,11 @@ class SearchController extends Controller
 
     /**
      * @OA\Post(
-     *      path="/api/v1/search/data_custodian_networks",
-     *      summary="Keyword search across gateway data custodian networks",
-     *      description="Returns gateway data custodian networks related to the provided query term(s)",
-     *      tags={"Search-DataCustodianNetworks"},
-     *      summary="Search@data_custodian_networks",
+     *      path="/api/v1/search/data_provider_colls",
+     *      summary="Keyword search across gateway data providers",
+     *      description="Returns gateway data provider colls related to the provided query term(s)",
+     *      tags={"Search-DataProviderColls"},
+     *      summary="Search@data_provider_colls",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -1449,7 +1449,7 @@ class SearchController extends Controller
      *          @OA\MediaType(
      *              mediaType="application/json",
      *              @OA\Schema(
-     *                  @OA\Property(property="query", type="string", example="national data custodian networks"),
+     *                  @OA\Property(property="query", type="string", example="national data provider colls"),
      *                  @OA\Property(property="filters", type="string", example={"filtersExample": @OA\Schema(ref="#/components/examples/filtersExample")})
      *              )
      *          )
@@ -1513,7 +1513,7 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function dataCustodianNetworks(Request $request): JsonResponse|BinaryFileResponse
+    public function dataProviderColls(Request $request): JsonResponse|BinaryFileResponse
     {
         try {
             $input = $request->all();
@@ -1531,31 +1531,31 @@ class SearchController extends Controller
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_custodian_networks';
             $response = Http::post($urlString, $input);
 
-            $dataCustodianNetworksArray = $response['hits']['hits'];
+            $dataProviderCollArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
             $matchedIds = [];
-            foreach (array_values($dataCustodianNetworksArray) as $i => $d) {
+            foreach (array_values($dataProviderCollArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
             }
 
             $dataProviderCollModels = DataProviderColl::whereIn('id', $matchedIds)->with('teams')->get();
 
-            foreach ($dataCustodianNetworksArray as $i => $dp) {
+            foreach ($dataProviderCollArray as $i => $dp) {
                 $foundFlag = false;
                 foreach ($dataProviderCollModels as $model) {
                     if ((int)$dp['_id'] === $model['id']) {
-                        $dataCustodianNetworksArray[$i]['id'] = $model['id'];
-                        $dataCustodianNetworksArray[$i]['_source']['updated_at'] = $model['updated_at'];
-                        $dataCustodianNetworksArray[$i]['name'] = $model['name'];
-                        $dataCustodianNetworksArray[$i]['img_url'] =  (is_null($model['img_url']) || strlen(trim($model['img_url'])) === 0 || (preg_match('/^https?:\/\//', $model['img_url'])) ? null : Config::get('services.media.base_url') . $model['img_url']);
-                        $dataCustodianNetworksArray[$i]['datasetTitles'] = $this->dataProviderDatasetTitles($model);
-                        $dataCustodianNetworksArray[$i]['geographicLocations'] = $this->dataProviderLocations($model);
+                        $dataProviderCollArray[$i]['id'] = $model['id'];
+                        $dataProviderCollArray[$i]['_source']['updated_at'] = $model['updated_at'];
+                        $dataProviderCollArray[$i]['name'] = $model['name'];
+                        $dataProviderCollArray[$i]['img_url'] =  (is_null($model['img_url']) || strlen(trim($model['img_url'])) === 0 || (preg_match('/^https?:\/\//', $model['img_url'])) ? null : Config::get('services.media.base_url') . $model['img_url']);
+                        $dataProviderCollArray[$i]['datasetTitles'] = $this->dataProviderDatasetTitles($model);
+                        $dataProviderCollArray[$i]['geographicLocations'] = $this->dataProviderLocations($model);
                         $foundFlag = true;
                         break;
                     }
                 }
                 if (!$foundFlag) {
-                    unset($dataCustodianNetworksArray[$i]);
+                    unset($dataProviderCollArray[$i]);
                     continue;
                 }
             }
@@ -1564,16 +1564,16 @@ class SearchController extends Controller
                 Auditor::log([
                     'action_type' => 'GET',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'Search data custodian network export data',
+                    'description' => 'Search data provider export data',
                 ]);
-                return Excel::download(new DataProviderCollExport($dataCustodianNetworksArray), 'dataCustodianNetworks.csv');
+                return Excel::download(new DataProviderCollExport($dataProviderCollArray), 'dataProviderColl.csv');
             }
 
-            $dataCustodianNetworksArray = $this->sortSearchResult($dataCustodianNetworksArray, $sortField, $sortDirection);
+            $dataProviderCollArray = $this->sortSearchResult($dataProviderCollArray, $sortField, $sortDirection);
 
             $perPage = request('per_page', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $dataCustodianNetworksArray, $perPage);
-            unset($dataCustodianNetworksArray);
+            $paginatedData = $this->paginateArray($request, $dataProviderCollArray, $perPage);
+            unset($dataProviderCollArray);
 
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
@@ -1585,7 +1585,7 @@ class SearchController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Search data custodian networks',
+                'description' => 'Search data provider',
             ]);
 
             return response()->json($final, 200);
@@ -1602,11 +1602,11 @@ class SearchController extends Controller
 
     /**
      * @OA\Post(
-     *      path="/api/v1/search/data_custodians",
-     *      summary="Keyword search across gateway data custodians",
-     *      description="Returns gateway data custodians related to the provided query term(s)",
-     *      tags={"Search-DataCustodians"},
-     *      summary="Search@data_custodians",
+     *      path="/api/v1/search/data_providers",
+     *      summary="Keyword search across gateway data providers",
+     *      description="Returns gateway data providers related to the provided query term(s)",
+     *      tags={"Search-DataProviders"},
+     *      summary="Search@data_providers",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -1614,7 +1614,7 @@ class SearchController extends Controller
      *          @OA\MediaType(
      *              mediaType="application/json",
      *              @OA\Schema(
-     *                  @OA\Property(property="query", type="string", example="national data custodians"),
+     *                  @OA\Property(property="query", type="string", example="national data providers"),
      *              )
      *          )
      *      ),
@@ -1684,7 +1684,7 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function dataCustodians(Request $request): JsonResponse|BinaryFileResponse
+    public function dataProviders(Request $request): JsonResponse|BinaryFileResponse
     {
         try {
             $input = $request->all();
@@ -1702,28 +1702,28 @@ class SearchController extends Controller
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_providers';
             $response = Http::post($urlString, $input);
 
-            $dataCustodianArray = $response['hits']['hits'];
+            $dataProviderArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
             $matchedIds = [];
-            foreach (array_values($dataCustodianArray) as $i => $d) {
+            foreach (array_values($dataProviderArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
             }
 
             $dataProviderModels = Team::whereIn('id', $matchedIds)->get();
 
-            foreach ($dataCustodianArray as $i => $dp) {
+            foreach ($dataProviderArray as $i => $dp) {
                 $foundFlag = false;
                 foreach ($dataProviderModels as $model) {
                     if ((int)$dp['_id'] === $model['id']) {
-                        $dataCustodianArray[$i]['_source']['updated_at'] = $model['updated_at'];
-                        $dataCustodianArray[$i]['name'] = $model['name'];
-                        $dataCustodianArray[$i]['team_logo'] = (is_null($model['team_logo']) || strlen(trim($model['team_logo'])) === 0) ? '' : (preg_match('/^https?:\/\//', $model['team_logo']) ? $model['team_logo'] : Config::get('services.media.base_url') . $model['team_logo']);
+                        $dataProviderArray[$i]['_source']['updated_at'] = $model['updated_at'];
+                        $dataProviderArray[$i]['name'] = $model['name'];
+                        $dataProviderArray[$i]['team_logo'] = (is_null($model['team_logo']) || strlen(trim($model['team_logo'])) === 0) ? '' : (preg_match('/^https?:\/\//', $model['team_logo']) ? $model['team_logo'] : Config::get('services.media.base_url') . $model['team_logo']);
                         $foundFlag = true;
                         break;
                     }
                 }
                 if (!$foundFlag) {
-                    unset($dataCustodianArray[$i]);
+                    unset($dataProviderArray[$i]);
                     continue;
                 }
             }
@@ -1734,14 +1734,14 @@ class SearchController extends Controller
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Search data provider export data',
                 ]);
-                return Excel::download(new DataProviderExport($dataCustodianArray), 'dataCustodian.csv');
+                return Excel::download(new DataProviderExport($dataProviderArray), 'dataProvider.csv');
             }
 
-            $dataCustodianArray = $this->sortSearchResult($dataCustodianArray, $sortField, $sortDirection);
+            $dataProviderArray = $this->sortSearchResult($dataProviderArray, $sortField, $sortDirection);
 
             $perPage = request('per_page', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $dataCustodianArray, $perPage);
-            unset($dataCustodianArray);
+            $paginatedData = $this->paginateArray($request, $dataProviderArray, $perPage);
+            unset($dataProviderArray);
 
             $aggs = collect([
                 'aggregations' => $response['aggregations'],

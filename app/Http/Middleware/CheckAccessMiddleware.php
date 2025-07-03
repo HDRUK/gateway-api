@@ -3,9 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use App\Models\Application;
 use Illuminate\Http\Request;
-use App\Exceptions\IntegrationPermissionException;
 use App\Exceptions\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -18,45 +16,9 @@ class CheckAccessMiddleware
      */
     public function handle(Request $request, Closure $next, string $type = 'permissions|roles', string $data = ''): Response
     {
-        $access = explode("|", $data);
-
-        if ($request->hasHeader('x-application-id') && $request->hasHeader('x-client-id')) {
-            // Owing to a previous middleware authenticating the application, we can assume
-            // that this has already happened, so, we just check application permissions
-            // from here on
-            $application = Application::with('permissions')
-                ->where('app_id', $request->header('x-application-id'))
-                ->where('client_id', $request->header('x-client-id'))
-                ->first()
-                ->toArray();
-
-            if (!$application) {
-                throw new IntegrationPermissionException('No known integration matches supplied credentials');
-            }
-
-            if (!$application['enabled']) {
-                throw new IntegrationPermissionException('Application has not been enabled!');
-            }
-
-            $checkingPerms = array_diff($access, array_column($application['permissions'], 'name'));
-            if (empty($checkingPerms)) {
-                $request->merge(
-                    [
-                        'middleware' => [
-                            'roles' => [],
-                            'perms' => $access,
-                        ],
-                    ],
-                );
-
-                return $next($request);
-            }
-
-            throw new IntegrationPermissionException('Application permissions do not allow this request');
-        }
-
         $input = $request->all();
         $jwtUserIsAdminId = $input['jwt_user']['is_admin'];
+        $access = explode("|", $data);
         $teamId = $request->route('teamId');
 
         if ($jwtUserIsAdminId) {

@@ -338,6 +338,7 @@ class EnquiryThreadTest extends TestCase
         ]);
 
         $numThreadsAfter = EnquiryThread::count();
+
         $this->assertEquals($numThreadsAfter, $numThreadsBefore + 2);
     }
 

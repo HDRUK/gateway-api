@@ -537,17 +537,7 @@ class UserTest extends TestCase
 
     }
 
-    public function test_non_admin_user_cannot_read_others(): void
-    {
-        $nonAdminUser = $this->getUserFromJwt($this->nonAdminJwt);
-        $response = $this->json(
-            'GET',
-            self::TEST_URL . '/' . ($nonAdminUser['id'] - 1),
-            [],
-            $this->headerNonAdmin
-        );
-        $response->assertStatus(403);
-    }
+
 
     /**
      * SoftDelete User by Id with success

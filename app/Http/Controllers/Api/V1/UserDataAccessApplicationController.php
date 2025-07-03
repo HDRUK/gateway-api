@@ -1317,9 +1317,6 @@ class UserDataAccessApplicationController extends Controller
         $custodianTemplate = EmailTemplate::where(['identifier' => 'dar.submission.custodian'])->first();
         foreach ($teams as $team) {
             $darManagers = $this->getDarManagers($team->id);
-            $teamNotifications = $this->getTeamNotifications($team->id);
-            $darManagers = array_merge($darManagers, $teamNotifications);
-
             foreach ($darManagers as $dm) {
                 $replacements = [
                     '[[USER_FIRST_NAME]]' => $user['firstname'],

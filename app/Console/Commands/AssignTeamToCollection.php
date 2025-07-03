@@ -24,12 +24,17 @@ class AssignTeamToCollection extends Command
 
     private $csvData = [];
 
+    public function __construct()
+    {
+        parent::__construct();
+        $this->readMigrationFile(storage_path() . '/migration_files/mapped_collections_team_id.csv');
+    }
+
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $this->readMigrationFile(storage_path() . '/migration_files/mapped_collections_team_id.csv');
 
         $csvData = $this->csvData;
         $fallbackTeam = Team::where("name", "like", "%Health Data Research UK%")->select("id")->first();

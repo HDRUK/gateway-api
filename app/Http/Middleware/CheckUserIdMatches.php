@@ -28,6 +28,6 @@ class CheckUserIdMatches
             return $next($request);
         }
 
-        return response()->json(['message' => 'Forbidden to access this user'], 403);
+        return response()->json(['message' => 'Forbidden to edit this user'], 403);
     }
 }

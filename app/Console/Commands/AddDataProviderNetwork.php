@@ -25,12 +25,17 @@ class AddDataProviderNetwork extends Command
 
     private $csvData = [];
 
+    public function __construct()
+    {
+        parent::__construct();
+        $this->readMigrationFile(storage_path() . '/migration_files/data_provider_networkv3.csv');
+    }
+
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $this->readMigrationFile(storage_path() . '/migration_files/data_provider_networkv3.csv');
         $askDataProviderNetwork = $this->ask('Data Provider Network for import, based on file "../storage/migration_files/data_provider_networkv3.csv"? [default value all]', 'all');
         $askInitDataProviderNetwork = $this->ask('Do you want to initialize the database for "Data Provider Network"? yes/no [default value no]', 'no');
 

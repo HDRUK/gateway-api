@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
-use App\AliasReplyScanner\AliasReplyScanner;
+use App\EnquiriesManagementController\EnquiriesManagementController;
 use Illuminate\Support\ServiceProvider;
 
-class AliasReplyScannerProvider extends ServiceProvider
+class EnquiriesManagementControllerServiceProvider extends ServiceProvider
 {
     /**
      * Register services
@@ -18,14 +18,14 @@ class AliasReplyScannerProvider extends ServiceProvider
     }
 
     /**
-     * Bootstrap services.
+     * Bootstrap services
      *
      * @return void
      */
     public function boot(): void
     {
-        $this->app->bind('aliasreplyscanner', function () {
-            return new AliasReplyScanner();
+        $this->app->bind('enquiriesmanagementcontroller', function () {
+            return new EnquiriesManagementController();
         });
     }
 }

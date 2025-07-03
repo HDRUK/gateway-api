@@ -4,7 +4,7 @@ namespace App\Http\Requests\V2\Tool;
 
 use App\Http\Requests\BaseFormRequest;
 
-class GetToolCountByUserAndStatus extends BaseFormRequest
+class GetToolByTeamByIdByStatus extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -14,7 +14,8 @@ class GetToolCountByUserAndStatus extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'userId' => 'required|int|exists:users,id',
+            'teamId' => 'required|int|exists:teams,id',
+            'id' => 'required|int|exists:tools,id',
             'status' => 'required|string|in:active,draft,archived',
         ];
     }
@@ -27,8 +28,9 @@ class GetToolCountByUserAndStatus extends BaseFormRequest
     protected function prepareForValidation()
     {
         $this->merge([
-            'userId' => $this->route('userId'),
-            'status' => $this->route('status') ?? 'active',
+            'teamId' => $this->route('teamId'),
+            'id' => $this->route('id'),
+            'status' => $this->route('status'),
         ]);
     }
 }
