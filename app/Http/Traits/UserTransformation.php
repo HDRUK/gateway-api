@@ -26,6 +26,7 @@ trait UserTransformation
                 'lastname' => $user['lastname'],
                 'email' => $user['email'],
                 'secondary_email' => $user['secondary_email'],
+                'secondary_email_verified_at' => $user['secondary_email_verified_at'],
                 'preferred_email' => $user['preferred_email'],
                 'provider' => $user['provider'],
                 'created_at' => $user['created_at'],
