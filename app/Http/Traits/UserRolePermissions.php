@@ -46,7 +46,7 @@ trait UserRolePermissions
         }
     }
 
-    private function getUserRolePerms(int $userId, int $teamId = null): array
+    private function getUserRolePerms(int $userId, ?int $teamId = null): array
     {
         $return = [];
         // extra - user roles/perms outside team

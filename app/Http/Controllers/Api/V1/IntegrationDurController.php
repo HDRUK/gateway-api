@@ -1238,7 +1238,7 @@ class IntegrationDurController extends Controller
     }
 
     // datasets
-    private function checkDatasets(int $durId, array $inDatasets, int $userId = null, int $appId = null)
+    private function checkDatasets(int $durId, array $inDatasets, ?int $userId = null, ?int $appId = null)
     {
         $durDatasets = DurHasDatasetVersion::where(['dur_id' => $durId])->get();
         foreach ($durDatasets as $durDataset) {
@@ -1258,7 +1258,7 @@ class IntegrationDurController extends Controller
         }
     }
 
-    private function addDurHasDatasetVersion(int $durId, array $dataset, int $datasetVersionId, int $userId = null, int $appId = null)
+    private function addDurHasDatasetVersion(int $durId, array $dataset, int $datasetVersionId, ?int $userId = null, ?int $appId = null)
     {
         try {
 
@@ -1328,7 +1328,7 @@ class IntegrationDurController extends Controller
     }
 
     // publications
-    private function checkPublications(int $durId, array $inPublications, int $userId = null, int $appId = null)
+    private function checkPublications(int $durId, array $inPublications, ?int $userId = null, ?int $appId = null)
     {
         $pubs = DurHasPublication::where(['publication_id' => $durId])->get();
         foreach ($pubs as $p) {
@@ -1346,7 +1346,7 @@ class IntegrationDurController extends Controller
         }
     }
 
-    private function addDurHasPublication(int $durId, array $publication, int $userId = null, int $appId = null)
+    private function addDurHasPublication(int $durId, array $publication, ?int $userId = null, ?int $appId = null)
     {
         try {
             $arrCreate = [

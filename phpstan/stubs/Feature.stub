@@ -1,0 +1,11 @@
+<?php
+
+namespace Laravel\Pennant;
+
+class Feature
+{
+    public static function active(string $feature): bool {}
+    // public static function define(string $feature, callable $resolver): void {}
+    // public static function for(mixed $scope): self {}
+    // Add more if needed
+}

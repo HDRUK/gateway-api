@@ -31,7 +31,7 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
         // Because we're not using laravel views, we won't be able to auto
         // inject authenticated users into the closure, therefore, for now
         // we remove the forced requirement to auth.
-        Gate::define('viewHorizon', function (User $user = null) {
+        Gate::define('viewHorizon', function (?User $user = null) {
             return true;
         });
     }
