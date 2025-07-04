@@ -11,21 +11,21 @@ use App\Models\Publication;
 
 use Illuminate\Console\Command;
 
-class PrecheckGAT7330 extends Command
+class CompareGAT7330 extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:precheck-gat-7330';
+    protected $signature = 'app:compare-gat-7330';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Run this command to output a summary of the existing entities and their relationships under the "old" archiving/deletion behaviour';
+    protected $description = 'Run this command to compare the json values from files';
 
     private function classnameFromClass($class)
     {
@@ -92,6 +92,61 @@ class PrecheckGAT7330 extends Command
 
         // - output a list of each entity and its self-reported links to other entities
 
+        $string = file_get_contents("/Users/samcox/Desktop/precheck.json");
+        $json_pre = json_decode($string);
+        // var_dump($json_pre);
+
+        $string = file_get_contents("/Users/samcox/Desktop/postcheck.json");
+        $json_post = json_decode($string);
+        // var_dump($json_post);
+        unset($string);
+
+        echo "type | id | team_id | user_id | \n";
+        foreach (array_slice($json_pre, 0, count($json_pre)) as $entity) {
+            // var_dump($entity);
+            $teamId = "";
+            if ($entity->type === "DatasetVersion") {
+                $dv = DatasetVersion::where('id', $entity->id)->select('dataset_id')->first();
+                if ($dv) {
+                    $dataset = Dataset::where('id', $dv->dataset_id)->first();
+                    $teamId = $dataset->team_id;
+                }
+            }
+            else {
+                $teamId = $entity->team_id ?? "";
+            }
+            
+            $entityResultString = $entity->type . " | " . $entity->id . " | " . $teamId . " | " . ($entity->user_id ?? "") . " | ";
+            $difference = false;
+            $match = array_filter($json_post, function ($val) use ($entity) {
+                return (($val->type === $entity->type) && ($val->id === $entity->id));
+            });
+            // var_dump($match);
+            if ($match) {
+                $match = $match[array_key_first($match)];
+                foreach (['DatasetVersion', 'Dur', 'Collection', 'Publication', 'Tool'] as $entityType) {
+                    if ($match->$entityType !== $entity->$entityType) {
+                        $matchArray = json_decode($match->$entityType);
+                        $entityArray = json_decode($entity->$entityType);
+                        $missing = array_diff($entityArray ?? [], $matchArray ?? []);
+                        $added = array_diff($matchArray ?? [], $entityArray ?? []);
+                        if ($missing) {
+                            $entityResultString .= $entityType . " missing: " . json_encode($missing) . " | ";
+                            $difference = true;
+                        }
+                        if ($added) {
+                            $entityResultString .= $entityType . " added: " . json_encode($added) . " | ";
+                            $difference = true;
+                        }
+                    }
+                }
+            }
+            if ($difference) {
+                echo $entityResultString . "\n";
+            }
+        }
+
+        return;
 
         // Overview table of entities by status:
         $headers = ['Entity', 'total', 'of which deleted', 'active', 'of which deleted', 'draft', 'of which deleted', 'archived', 'of which deleted'];
@@ -185,25 +240,11 @@ class PrecheckGAT7330 extends Command
 
         $data = [];
         foreach ($entityTypes as $entityType) {
-            if (in_array($entityType, [Collection::class, Publication::class])) {
-                $entitiesOfThisType = $entityType::withTrashed()->orderBy('id')->select('id', 'team_id')->get();
-            }
-            elseif (in_array($entityType, [DatasetVersion::class])) {
-                $entitiesOfThisType = $entityType::withTrashed()->orderBy('id')->select('id')->get();
-            }
-            else {
-                $entitiesOfThisType = $entityType::withTrashed()->orderBy('id')->select('id', 'team_id', 'user_id')->get();
-            }
+            $entitiesOfThisType = $entityType::withTrashed()->orderBy('id')->select('id')->get();
             foreach ($entitiesOfThisType as $entity) {
-                $csvDataRow = ['type' => null, 'id' => null, 'team_id' => null, 'user_id' => null, 'Collection' => null, 'Dur' => null, 'DatasetVersion' => null, 'Publication' => null, 'Tool' => null];
+                $csvDataRow = ['type' => null, 'id' => null, 'Collection' => null, 'Dur' => null, 'DatasetVersion' => null, 'Publication' => null, 'Tool' => null];
                 $csvDataRow['type'] = $this->classnameFromClass($entityType);
                 $csvDataRow['id'] = $entity->id;
-                $csvDataRow['team_id'] = $entity->team_id ?? null;
-                if (in_array($entityType, [DatasetVersion::class])) {
-                    $thisDataset = Dataset::where('id', $entity->dataset_id)->first();
-                    $csvDataRow['team_id'] = $thisDataset->team_id ?? null;
-                }
-                $csvDataRow['user_id'] = $entity->user_id ?? null;
                 foreach ($hasRelations[$this->classnameFromClass($entityType)] as $relation => $idName) {
                     $relationEntries = 
                         (new ('App\\Models\\' . $relation)())
