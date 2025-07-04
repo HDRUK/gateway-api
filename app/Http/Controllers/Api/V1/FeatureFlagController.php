@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Controller;
 use Laravel\Pennant\Feature;
 use App\Services\FeatureFlagManager;
@@ -67,6 +68,7 @@ class FeatureFlagController extends Controller
             return response()->json(['message' => 'Unauthorized: Invalid token.'], 401);
         }
 
+        Cache::forget('getAllFlags');
 
         $url = env('FEATURE_FLAGGING_CONFIG_URL');
 
