@@ -992,7 +992,7 @@ class PublicationController extends Controller
 
 
     // tools
-    private function checkTools(int $publicationId, array $inTools, int $userId = null)
+    private function checkTools(int $publicationId, array $inTools, ?int $userId = null)
     {
         $pubs = PublicationHasTool::where(['publication_id' => $publicationId])->get();
         foreach ($pubs as $pub) {
@@ -1010,7 +1010,7 @@ class PublicationController extends Controller
         }
     }
 
-    private function addPublicationHasTool(int $publicationId, array $tool, int $userId = null)
+    private function addPublicationHasTool(int $publicationId, array $tool, ?int $userId = null)
     {
         try {
             $arrCreate = [
@@ -1078,7 +1078,7 @@ class PublicationController extends Controller
     }
 
     // DURs
-    private function checkDurs(int $publicationId, array $inDurs, int $userId = null)
+    private function checkDurs(int $publicationId, array $inDurs, ?int $userId = null)
     {
         $durs = DurHasPublication::where(['publication_id' => $publicationId])->get();
         foreach ($durs as $d) {
@@ -1096,7 +1096,7 @@ class PublicationController extends Controller
         }
     }
 
-    private function addDurHasPublication(array $dur, int $publicationId, int $userId = null)
+    private function addDurHasPublication(array $dur, int $publicationId, ?int $userId = null)
     {
         try {
             $arrCreate = [

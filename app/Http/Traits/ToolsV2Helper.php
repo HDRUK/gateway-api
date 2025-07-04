@@ -360,7 +360,7 @@ trait ToolsV2Helper
     }
 
     // publications
-    public function checkPublications(int $toolId, array $inPublications, int $userId = null)
+    public function checkPublications(int $toolId, array $inPublications, ?int $userId = null)
     {
         $pubs = PublicationHasTool::where(['tool_id' => $toolId])->get();
         foreach ($pubs as $pub) {
@@ -378,7 +378,7 @@ trait ToolsV2Helper
         }
     }
 
-    public function addPublicationHasTool(int $toolId, array $publication, int $userId = null)
+    public function addPublicationHasTool(int $toolId, array $publication, ?int $userId = null)
     {
         try {
             $arrCreate = [
@@ -456,7 +456,7 @@ trait ToolsV2Helper
     }
 
     // collections
-    public function checkCollections(int $toolId, array $inCollections, int $userId = null)
+    public function checkCollections(int $toolId, array $inCollections, ?int $userId = null)
     {
         $collectionHasTools = CollectionHasTool::where(['tool_id' => $toolId])->get();
         foreach ($collectionHasTools as $collectionHasTool) {
@@ -474,7 +474,7 @@ trait ToolsV2Helper
         }
     }
 
-    public function addCollectionHasTool(int $toolId, array $collection, int $userId = null)
+    public function addCollectionHasTool(int $toolId, array $collection, ?int $userId = null)
     {
         try {
             $arrCreate = [

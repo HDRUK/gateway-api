@@ -886,7 +886,7 @@ class IntegrationCollectionController extends Controller
     }
 
     // datasets
-    private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null, int $appId = null)
+    private function checkDatasets(int $collectionId, array $inDatasets, ?int $userId = null, ?int $appId = null)
     {
         $cols = CollectionHasDatasetVersion::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
@@ -907,7 +907,7 @@ class IntegrationCollectionController extends Controller
         }
     }
 
-    private function addCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, int $userId = null, int $appId = null)
+    private function addCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, ?int $userId = null, ?int $appId = null)
     {
         try {
 
@@ -990,7 +990,7 @@ class IntegrationCollectionController extends Controller
     }
 
     // tools
-    private function checkTools(int $collectionId, array $inTools, int $userId = null, int $appId = null)
+    private function checkTools(int $collectionId, array $inTools, ?int $userId = null, ?int $appId = null)
     {
         $cols = CollectionHasTool::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
@@ -1008,7 +1008,7 @@ class IntegrationCollectionController extends Controller
         }
     }
 
-    private function addCollectionHasTool(int $collectionId, array $tool, int $userId = null, int $appId = null)
+    private function addCollectionHasTool(int $collectionId, array $tool, ?int $userId = null, ?int $appId = null)
     {
         try {
             $arrCreate = [
@@ -1090,7 +1090,7 @@ class IntegrationCollectionController extends Controller
     }
 
     // durs
-    private function checkDurs(int $collectionId, array $inDurs, int $userId = null, int $appId = null)
+    private function checkDurs(int $collectionId, array $inDurs, ?int $userId = null, ?int $appId = null)
     {
         $cols = CollectionHasDur::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
@@ -1114,7 +1114,7 @@ class IntegrationCollectionController extends Controller
         }
     }
 
-    private function addCollectionHasDur(int $collectionId, array $dur, int $userId = null, int $appId = null)
+    private function addCollectionHasDur(int $collectionId, array $dur, ?int $userId = null, ?int $appId = null)
     {
         try {
             $arrCreate = [
@@ -1160,7 +1160,7 @@ class IntegrationCollectionController extends Controller
     }
 
     // publications
-    private function checkPublications(int $collectionId, array $inPublications, int $userId = null, int $appId = null)
+    private function checkPublications(int $collectionId, array $inPublications, ?int $userId = null, ?int $appId = null)
     {
         $cols = CollectionHasPublication::where([
             'collection_id' => $collectionId
@@ -1180,7 +1180,7 @@ class IntegrationCollectionController extends Controller
         }
     }
 
-    private function addCollectionHasPublication(int $collectionId, array $publication, int $userId = null, int $appId = null)
+    private function addCollectionHasPublication(int $collectionId, array $publication, ?int $userId = null, ?int $appId = null)
     {
         try {
             $arrCreate = [

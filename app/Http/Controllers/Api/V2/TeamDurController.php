@@ -1351,7 +1351,7 @@ class TeamDurController extends Controller
     }
 
     // datasets
-    private function checkDatasets(int $durId, array $inDatasets, int $userId = null)
+    private function checkDatasets(int $durId, array $inDatasets, ?int $userId = null)
     {
         $durDatasets = DurHasDatasetVersion::where(['dur_id' => $durId])->get();
         foreach ($durDatasets as $durDataset) {
@@ -1371,7 +1371,7 @@ class TeamDurController extends Controller
         }
     }
 
-    private function addDurHasDatasetVersion(int $durId, array $dataset, int $datasetVersionId, int $userId = null)
+    private function addDurHasDatasetVersion(int $durId, array $dataset, int $datasetVersionId, ?int $userId = null)
     {
         try {
             $searchArray = [
@@ -1452,7 +1452,7 @@ class TeamDurController extends Controller
     }
 
     // publications
-    private function checkPublications(int $durId, array $inPublications, int $userId = null)
+    private function checkPublications(int $durId, array $inPublications, ?int $userId = null)
     {
         $pubs = DurHasPublication::where(['dur_id' => $durId])->get();
         foreach ($pubs as $p) {
@@ -1470,7 +1470,7 @@ class TeamDurController extends Controller
         }
     }
 
-    private function addDurHasPublication(int $durId, array $publication, int $userId = null)
+    private function addDurHasPublication(int $durId, array $publication, ?int $userId = null)
     {
         try {
             $arrCreate = [
