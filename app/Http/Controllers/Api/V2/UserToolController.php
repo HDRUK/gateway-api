@@ -234,6 +234,18 @@ class UserToolController extends Controller
      *       example="1",
      *       @OA\Schema( type="integer", description="tool id" ),
      *    ),
+     *    @OA\Parameter(
+     *       name="view_type",
+     *       in="query",
+     *       description="Query flag to show full tool data or a trimmed version (defaults to full).",
+     *       required=false,
+     *       @OA\Schema(
+     *          type="string",
+     *          default="full",
+     *          description="Flag to show all data ('full') or trimmed data ('mini')"
+     *       ),
+     *       example="full"
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -267,8 +279,11 @@ class UserToolController extends Controller
     {
         $this->checkAccess($request->all(), null, $userId, 'user');
 
+        $viewType = $request->query('view_type', 'full');
+        $trimmed = $viewType === 'mini';
+
         try {
-            $tool = $this->getToolById($id, userId: $userId, onlyActiveRelated: true);
+            $tool = $this->getToolById($id, userId: $userId, onlyActiveRelated: true, trimmed: $trimmed);
 
             Auditor::log([
                 'action_type' => 'GET',
