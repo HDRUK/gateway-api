@@ -181,11 +181,28 @@ class PostcheckGAT7330 extends Command
         echo("\n\n---------------------------------------------------\n  Complete record of all relationships by entity (should match before).\n---------------------------------------------------\n");
 
         $headerRow = ['entity type', 'entity id', 'relation type', 'relation count', 'relationId'];
+        $csvHeaderRow = ['entity type', 'id', 'Collection', 'Dur', 'DatasetVersion', 'Publication', 'Tool'];
 
         $data = [];
+        $csvData = [];
         foreach ($entityTypes as $entityType) {
-            $entitiesOfThisType = $entityType::select('id')->get();
+            if (in_array($entityType, [Collection::class, Publication::class])) {
+                $entitiesOfThisType = $entityType::orderBy('id')->select('id', 'team_id')->get();
+            }
+            elseif (in_array($entityType, [DatasetVersion::class])) {
+                $entitiesOfThisType = $entityType::orderBy('id')->select('id')->get();
+            }
+            else {
+                $entitiesOfThisType = $entityType::orderBy('id')->select('id', 'team_id', 'user_id')->get();
+            }
             foreach ($entitiesOfThisType as $entity) {
+                // var_dump($entity);
+                $csvDataRow = ['type' => null, 'id' => null, 'Collection' => null, 'Dur' => null, 'DatasetVersion' => null, 'Publication' => null, 'Tool' => null];
+                $csvDataRow['type'] = $this->classnameFromClass($entityType);
+                $csvDataRow['id'] = $entity->id;
+                $csvDataRow['team_id'] = $entity->team_id ?? null;
+                $csvDataRow['user_id'] = $entity->user_id ?? null;
+
                 foreach ($hasRelations[$this->classnameFromClass($entityType)] as $relation => $idName) {
                     $relationEntries = array_column(
                         (new ('App\\Models\\' . $relation)())
@@ -213,10 +230,16 @@ class PostcheckGAT7330 extends Command
                     sort($relatedActiveEntityIds);
 
                     $data[] = [$this->classnameFromClass($entityType), $entity->id, $relation, count($relatedActiveEntities), json_encode($relatedActiveEntityIds)];
+                    $csvDataRow[$relatedEntityType] = (is_null($relatedActiveEntityIds) || empty($relatedActiveEntityIds)) ? null : json_encode($relatedActiveEntityIds);
                 }
+                // var_dump($csvDataRow);
+                $csvData[] = $csvDataRow;
             }
         }
 
-        $this->table($headerRow, $data);
+        // $this->table($headerRow, $data);
+        // $this->table($csvHeaderRow, $csvData);
+        var_dump(json_encode($csvData));
+
     }
 }
