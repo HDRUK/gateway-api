@@ -151,7 +151,7 @@ class Tool extends Model
     /**
      * Retrieve versions associated with this tool
      */
-    public function versions()
+    public function versions(): BelongsToMany
     {
         return $this->belongsToMany(DatasetVersion::class, 'dataset_version_has_tool', 'tool_id', 'dataset_version_id');
     }
