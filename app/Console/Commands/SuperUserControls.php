@@ -42,6 +42,9 @@ class SuperUserControls extends Command
                     ->where('role_id', 1)->first();
 
                 if (!$role) {
+                    $user->is_admin = 1;
+                    $user->save();
+
                     UserHasRole::create([
                         'user_id' => $user->id,
                         'role_id' => 1, // Assuming 1 is the ID for super-user role
@@ -61,6 +64,9 @@ class SuperUserControls extends Command
                     $this->info('User ' . $email . ' is not a super user.');
                     return 0; // Exit with success code
                 }
+
+                $user->is_admin = 0;
+                $user->save();
 
                 UserHasRole::where('user_id', $user->id)
                     ->where('role_id', 1)
