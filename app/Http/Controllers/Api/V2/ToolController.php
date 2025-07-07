@@ -13,7 +13,6 @@ use App\Http\Traits\IndexElastic;
 use Illuminate\Http\JsonResponse;
 use App\Http\Traits\ToolsV2Helper;
 use App\Http\Controllers\Controller;
-use App\Exceptions\NotFoundException;
 use App\Http\Requests\V2\Tool\GetTool;
 use App\Http\Traits\RequestTransformation;
 

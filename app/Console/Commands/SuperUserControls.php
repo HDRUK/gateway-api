@@ -40,7 +40,7 @@ class SuperUserControls extends Command
             case 'add':
                 $role = UserHasRole::where('user_id', $user->id)
                     ->where('role_id', 1)->first();
-                
+
                 if (!$role) {
                     UserHasRole::create([
                         'user_id' => $user->id,
@@ -65,7 +65,7 @@ class SuperUserControls extends Command
                 UserHasRole::where('user_id', $user->id)
                     ->where('role_id', 1)
                     ->delete();
-                
+
                 $this->info('User ' . $email . ' has been removed from super user status.');
                 break;
 
