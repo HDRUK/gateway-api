@@ -80,7 +80,7 @@ return new class () extends Migration {
         $user = User::where('email', 'developers@hdruk.ac.uk')->first();
         if ($user) {
             // Soft-delete the user to maintain data integrity for any related records
-            $user->is_admin = 0; // Remove admin status
+            $user->is_admin = false; // Remove admin status
             $user->save();
             $user->delete();
 
@@ -99,7 +99,7 @@ return new class () extends Migration {
             }
 
             // Create roles as neccessary
-            $user->is_admin = 1;
+            $user->is_admin = true;
             $user->save();
 
             UserHasRole::firstOrCreate([
@@ -118,7 +118,7 @@ return new class () extends Migration {
         if ($user) {
             $user->restore();
 
-            $user->is_admin = 1;
+            $user->is_admin = true;
             $user->save();
 
             UserHasRole::firstOrCreate([

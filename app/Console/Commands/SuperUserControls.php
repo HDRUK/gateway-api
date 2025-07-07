@@ -42,7 +42,7 @@ class SuperUserControls extends Command
                     ->where('role_id', 1)->first();
 
                 if (!$role) {
-                    $user->is_admin = 1;
+                    $user->is_admin = true;
                     $user->save();
 
                     UserHasRole::create([
@@ -65,7 +65,7 @@ class SuperUserControls extends Command
                     return 0; // Exit with success code
                 }
 
-                $user->is_admin = 0;
+                $user->is_admin = false;
                 $user->save();
 
                 UserHasRole::where('user_id', $user->id)
