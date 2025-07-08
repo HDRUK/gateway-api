@@ -179,6 +179,7 @@ class PrecheckGAT7330 extends Command
         $csvHeaderRow = ['entity type', 'id', 'Collection', 'Dur', 'DatasetVersion', 'Publication', 'Tool'];
 
         $data = [];
+        $csvData = [];
         foreach ($entityTypes as $entityType) {
             if (in_array($entityType, [Collection::class, Publication::class])) {
                 $entitiesOfThisType = $entityType::withTrashed()->orderBy('id')->select(['id', 'team_id'])->get();
