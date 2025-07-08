@@ -182,13 +182,13 @@ class PostcheckGAT7330 extends Command
         $csvData = [];
         foreach ($entityTypes as $entityType) {
             if (in_array($entityType, [Collection::class, Publication::class])) {
-                $entitiesOfThisType = $entityType::orderBy('id')->select('id', 'team_id')->get();
+                $entitiesOfThisType = $entityType::orderBy('id')->select(['id', 'team_id'])->get();
             }
             elseif (in_array($entityType, [DatasetVersion::class])) {
                 $entitiesOfThisType = $entityType::orderBy('id')->select('id')->get();
             }
             else {
-                $entitiesOfThisType = $entityType::orderBy('id')->select('id', 'team_id', 'user_id')->get();
+                $entitiesOfThisType = $entityType::orderBy('id')->select(['id', 'team_id', 'user_id'])->get();
             }
             foreach ($entitiesOfThisType as $entity) {
                 $csvDataRow = ['type' => null, 'id' => null, 'Collection' => null, 'Dur' => null, 'DatasetVersion' => null, 'Publication' => null, 'Tool' => null];

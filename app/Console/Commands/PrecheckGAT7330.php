@@ -181,13 +181,13 @@ class PrecheckGAT7330 extends Command
         $data = [];
         foreach ($entityTypes as $entityType) {
             if (in_array($entityType, [Collection::class, Publication::class])) {
-                $entitiesOfThisType = $entityType::withTrashed()->orderBy('id')->select('id', 'team_id')->get();
+                $entitiesOfThisType = $entityType::withTrashed()->orderBy('id')->select(['id', 'team_id'])->get();
             }
             elseif (in_array($entityType, [DatasetVersion::class])) {
                 $entitiesOfThisType = $entityType::withTrashed()->orderBy('id')->select('id')->get();
             }
             else {
-                $entitiesOfThisType = $entityType::withTrashed()->orderBy('id')->select('id', 'team_id', 'user_id')->get();
+                $entitiesOfThisType = $entityType::withTrashed()->orderBy('id')->select(['id', 'team_id', 'user_id'])->get();
             }
             foreach ($entitiesOfThisType as $entity) {
                 $csvDataRow = ['type' => null, 'id' => null, 'team_id' => null, 'user_id' => null, 'Collection' => null, 'Dur' => null, 'DatasetVersion' => null, 'Publication' => null, 'Tool' => null];
