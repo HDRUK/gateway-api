@@ -44,8 +44,6 @@ class MigrateGAT7330 extends Command
     {
         // For relationships, if deleted then remove. If not deleted, then keep.
         // Most have a deleted_at.
-        // dataset_has_tools does not, for some reason - but is empty on dev, so is it unused alongside dataset_version_has_tool?
-
 
         /** CollectionHasX */
         CollectionHasDatasetVersion::onlyTrashed()->forceDelete();

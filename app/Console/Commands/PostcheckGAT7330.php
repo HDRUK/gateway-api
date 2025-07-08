@@ -115,9 +115,6 @@ class PostcheckGAT7330 extends Command
         }, $overviewEntities);
         $this->table($headers, $data);
 
-
-        // var_dump($this->classnameFromClass(Collection::class));
-
         echo("\n\n---------------------------------------------------\n  Summary of relationships (should match before).\n---------------------------------------------------\n");
 
         // Overview table of Has relations
@@ -173,8 +170,6 @@ class PostcheckGAT7330 extends Command
         $hasHeaders = ['', ...$entityTypes];
         $this->table($hasHeaders, $hasArray);
 
-
-
         // For each entity type, print out all its entries, including status and its links to other entities. We want to ultimately
         // be able to say "this is what a user sees on the Gateway" in each scenario and have it match.
 
@@ -196,7 +191,6 @@ class PostcheckGAT7330 extends Command
                 $entitiesOfThisType = $entityType::orderBy('id')->select('id', 'team_id', 'user_id')->get();
             }
             foreach ($entitiesOfThisType as $entity) {
-                // var_dump($entity);
                 $csvDataRow = ['type' => null, 'id' => null, 'Collection' => null, 'Dur' => null, 'DatasetVersion' => null, 'Publication' => null, 'Tool' => null];
                 $csvDataRow['type'] = $this->classnameFromClass($entityType);
                 $csvDataRow['id'] = $entity->id;
@@ -232,7 +226,6 @@ class PostcheckGAT7330 extends Command
                     $data[] = [$this->classnameFromClass($entityType), $entity->id, $relation, count($relatedActiveEntities), json_encode($relatedActiveEntityIds)];
                     $csvDataRow[$relatedEntityType] = (is_null($relatedActiveEntityIds) || empty($relatedActiveEntityIds)) ? null : json_encode($relatedActiveEntityIds);
                 }
-                // var_dump($csvDataRow);
                 $csvData[] = $csvDataRow;
             }
         }
