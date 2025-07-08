@@ -115,9 +115,6 @@ class PrecheckGAT7330 extends Command
         }, $overviewEntities);
         $this->table($headers, $data);
 
-
-        // var_dump($this->classnameFromClass(Collection::class));
-
         echo("\n\n---------------------------------------------------\n  Summary of relationships.\n---------------------------------------------------\n");
 
         // Overview table of Has relations
@@ -172,8 +169,6 @@ class PrecheckGAT7330 extends Command
         }
         $hasHeaders = ['', ...$entityTypes];
         $this->table($hasHeaders, $hasArray);
-
-
 
         // For each entity type, print out all its entries, including status and its links to other entities. We want to ultimately
         // be able to say "this is what a user sees on the Gateway" in each scenario and have it match.
