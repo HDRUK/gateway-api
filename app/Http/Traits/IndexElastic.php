@@ -71,7 +71,7 @@ trait IndexElastic
 
             // inject relationships via Local functions
             $materialTypes = $this->getMaterialTypes($metadata);
-            $containsBioSamples = $this->getBioSamples($materialTypes);
+            $containsBioSamples = $this->getContainsBioSamples($materialTypes);
 
             $toIndex = [
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
@@ -872,7 +872,7 @@ trait IndexElastic
         return $materialTypes;
     }
 
-    public function getBioSamples(?array $materialTypes)
+    public function getContainsBioSamples(?array $materialTypes)
     {
         if ($materialTypes === null) {
             return false;
