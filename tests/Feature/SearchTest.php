@@ -240,7 +240,7 @@ class SearchTest extends TestCase
 
         $metadata = $response['data'][0]['metadata'];
 
-        $this->assertTrue(isset($metadata['additional']['containsTissue']));
+        $this->assertTrue(isset($metadata['additional']['containsBioSamples']));
         if (version_compare(Config::get('metadata.GWDM.version'), "2.0", ">=")) {
             $this->assertTrue(isset($metadata['accessibility']['access']['accessServiceCategory']));
         }

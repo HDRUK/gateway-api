@@ -995,7 +995,7 @@ trait MockExternalApis
                         ],
                         1 => [
                             'dataset' => [
-                                'containsTissue' => [
+                                'containsBioSamples' => [
                                     'buckets' => [
                                         0 => [
                                             'doc_count' => 10,
