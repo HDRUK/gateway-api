@@ -71,7 +71,7 @@ trait IndexElastic
 
             // inject relationships via Local functions
             $materialTypes = $this->getMaterialTypes($metadata);
-            $containsTissue = $this->getContainsTissues($materialTypes);
+            $containsBioSamples = $this->getBioSamples($materialTypes);
 
             $toIndex = [
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
@@ -85,7 +85,7 @@ trait IndexElastic
                 'endDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.endDate'], Carbon::now()->addYears(5)),
                 'dataType' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], '')),
                 'dataSubType' => array_filter(explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetSubType'], ''))),
-                'containsTissue' => $containsTissue,
+                'containsBioSamples' => $containsBioSamples,
                 'sampleAvailability' => $materialTypes,
                 'conformsTo' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
                 'hasTechnicalMetadata' => (bool) count($this->getValueByPossibleKeys($metadata, ['metadata.structuralMetadata'], [])),
@@ -872,7 +872,7 @@ trait IndexElastic
         return $materialTypes;
     }
 
-    public function getContainsTissues(?array $materialTypes)
+    public function getBioSamples(?array $materialTypes)
     {
         if ($materialTypes === null) {
             return false;
