@@ -52,7 +52,7 @@ cmd_button(
 # Load in any locally set config
 cfg = read_json("tiltconf.json")
 
-include(cfg.get("gatewayWeb2Root") + "/Tiltfile")
+# include(cfg.get("gatewayWeb2Root") + "/Tiltfile")
 
 # Load our service layer for deployment - if enabled
 if cfg.get("dtaWebEnabled"):
