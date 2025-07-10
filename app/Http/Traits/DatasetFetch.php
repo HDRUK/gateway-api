@@ -20,8 +20,8 @@ trait DatasetFetch
         // Step 2: Use the version IDs to find all related dataset IDs through the linkage table
         $datasetIds = array_unique(convertArrayToArrayWithKeyName(DatasetVersion::whereIn('id', $versionIds)->select('dataset_id')->get()->toArray(), 'dataset_id'));
 
-        // Step 3: Retrieve all datasets using the collected dataset IDs
-        $datasets = Dataset::whereIn('id', $datasetIds)->get();
+        // Step 3: Retrieve all active datasets using the collected dataset IDs
+        $datasets = Dataset::whereIn('id', $datasetIds)->where('status', 'ACTIVE')->get();
 
         // Iterate through each dataset and add associated dataset versions
         foreach ($datasets as $dataset) {
