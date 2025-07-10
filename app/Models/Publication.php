@@ -78,7 +78,17 @@ class Publication extends Model
      */
     public function versions()
     {
-        return $this->belongsToMany(DatasetVersion::class, 'publication_has_dataset_version', 'publication_id', 'dataset_version_id');
+        return $this->belongsToMany(
+            DatasetVersion::class,
+            'publication_has_dataset_version',
+            'publication_id',
+            'dataset_version_id'
+        )
+        ->whereNull('publication_has_dataset_version.deleted_at')
+        ->whereIn(
+            'dataset_versions.dataset_id',
+            Dataset::where('status', 'ACTIVE')->select('id')
+        );
     }
 
     /**
@@ -86,7 +96,12 @@ class Publication extends Model
      */
     public function tools(): BelongsToMany
     {
-        return $this->belongsToMany(Tool::class, 'publication_has_tools');
+        return $this->belongsToMany(
+            Tool::class,
+            'publication_has_tools'
+        )
+        ->whereNull('publication_has_tools.deleted_at')
+        ->where('tools.status', 'ACTIVE');
     }
 
     /**
@@ -94,8 +109,13 @@ class Publication extends Model
      */
     public function durs(): BelongsToMany
     {
-        return $this->belongsToMany(Dur::class, 'dur_has_publications')
-            ->withPivot('dur_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at')->whereNull('dur_has_publications.deleted_at');
+        return $this->belongsToMany(
+            Dur::class,
+            'dur_has_publications'
+        )
+        ->withPivot('dur_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at')
+        ->whereNull('dur_has_publications.deleted_at')
+        ->where('dur.status', 'ACTIVE');
     }
 
     public function collections(): BelongsToMany
@@ -106,6 +126,7 @@ class Publication extends Model
             'publication_id',
             'collection_id'
         )
-        ->whereNull('collection_has_publications.deleted_at');
+        ->whereNull('collection_has_publications.deleted_at')
+        ->where('collections.status', 'ACTIVE');
     }
 }
