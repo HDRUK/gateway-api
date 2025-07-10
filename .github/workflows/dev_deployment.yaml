@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - 'dev'
+      - 'cohort_conn_test'
 
 env:
   PROJECT_ID: '${{ secrets.PROJECT_ID }}'
@@ -26,7 +27,7 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: cohort_conn_test
 
       - name: Read VERSION file
         id: getversion
@@ -76,7 +77,7 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: cohort_conn_test
 
       - name: Google Auth
         id: auth

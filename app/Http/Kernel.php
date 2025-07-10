@@ -24,6 +24,7 @@ class Kernel extends HttpKernel
         \App\Http\Middleware\ProfileRequest::class,
         \Illuminate\Session\Middleware\StartSession::class,
         \App\Http\Middleware\HstsMiddleware::class,
+        \App\Http\Middleware\TerminateRequest::class,
     ];
 
     /**
