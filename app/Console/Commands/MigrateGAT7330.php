@@ -20,7 +20,6 @@ use App\Models\Dur;
 use App\Models\Publication;
 use App\Models\Tool;
 
-
 class MigrateGAT7330 extends Command
 {
     /**
@@ -70,7 +69,7 @@ class MigrateGAT7330 extends Command
         Collection::onlyTrashed()->where('status', 'ARCHIVED')->restore();
         Collection::onlyTrashed()->where('status', '!=', 'ARCHIVED')->update(['status' => 'ARCHIVED']);
 
-        // DatasetVersions: restore only the latest version of a given dataset if that version has been deleted. 
+        // DatasetVersions: restore only the latest version of a given dataset if that version has been deleted.
         // We thus keep old versions deleted, but DatasetVersions are moved to the new archiving behaviour.
         $datasets = Dataset::withTrashed()->get();
         foreach ($datasets as $dataset) {
