@@ -138,6 +138,10 @@ class Dur extends Model
         return $this->belongsToMany(Keyword::class, 'dur_has_keywords');
     }
 
+    // SC: these (userDatasets, applicationDatasets, userPublications, applicationPublications)
+    // are not used in the V2 controllers since there would also need to filter by Dataset.status=ACTIVE,
+    // and I simply can't make that work. FE doesn't use these fields anyway so chalk it up to minimising
+    // BE compute and response size :)
     public function userDatasets(): HasManyThrough //SC: TODO: make this clearer that this is "users via Datasets" rather than "Datasets of the same user"
     {
         return $this->hasManyThrough(
@@ -148,11 +152,7 @@ class Dur extends Model
             'id',            // Local key on the User table
             'user_id'        // Foreign key on the DurHasDatasetVersion table
         )
-        ->whereNull('dur_has_dataset_version.deleted_at')
-        ->whereIn(
-            'dataset_versions.dataset_id',
-            Dataset::where('status', 'ACTIVE')->select('id')
-        );
+        ->whereNull('dur_has_dataset_version.deleted_at');
     }
 
     public function applicationDatasets(): HasManyThrough
@@ -165,11 +165,7 @@ class Dur extends Model
             'id',            // Local key on the Application table
             'application_id' // Foreign key on the DurHasDatasetVersion table
         )
-        ->whereNull('dur_has_dataset_version.deleted_at')
-        ->whereIn(
-            'dataset_versions.dataset_id',
-            Dataset::where('status', 'ACTIVE')->select('id')
-        );
+        ->whereNull('dur_has_dataset_version.deleted_at');
     }
 
     public function publications(): BelongsToMany
@@ -180,14 +176,13 @@ class Dur extends Model
             ->where('publications.status', 'ACTIVE');
     }
 
-    public function userPublications(): BelongsToMany
+    public function userPublications()
     {
         return $this->belongsToMany(
             User::class,
             'dur_has_publications'
         )
-        ->whereNull('dur_has_publications.deleted_at')
-        ->where('publications.status', 'ACTIVE');
+        ->whereNull('dur_has_publications.deleted_at');
     }
 
     public function applicationPublications(): BelongsToMany
@@ -196,8 +191,7 @@ class Dur extends Model
             Application::class,
             'dur_has_publications'
         )
-        ->whereNull('dur_has_publications.deleted_at')
-        ->where('publications.status', 'ACTIVE');
+        ->whereNull('dur_has_publications.deleted_at');
     }
 
     public function user(): BelongsTo

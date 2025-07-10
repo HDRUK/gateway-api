@@ -195,21 +195,20 @@ class Collection extends Model
             'id',            // Local key on the User table
             'user_id'        // Foreign key on the CollectionHasDatasetVersion table
         )
-        ->whereNull('collection_has_dataset_version.deleted_at')
-        ->whereIn(
-            'dataset_versions.dataset_id',
-            Dataset::where('status', 'ACTIVE')->select('id')
-        );
+        ->whereNull('collection_has_dataset_version.deleted_at');
     }
 
     public function userTools(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'collection_has_tools');
+        return $this->belongsToMany(User::class, 'collection_has_tools')
+        ->whereNull('collection_has_tools.deleted_at');
+
     }
 
     public function userPublications(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'collection_has_publications');
+        return $this->belongsToMany(User::class, 'collection_has_publications')
+        ->whereNull('collection_has_publications.deleted_at');
     }
 
     public function applicationDatasets(): HasManyThrough
@@ -222,21 +221,20 @@ class Collection extends Model
             'id',            // Local key on the Application table
             'application_id' // Foreign key on the CollectionHasDatasetVersion table
         )
-        ->whereNull('collection_has_dataset_version.deleted_at')
-        ->whereIn(
-            'dataset_versions.dataset_id',
-            Dataset::where('status', 'ACTIVE')->select('id')
-        );
+        ->whereNull('collection_has_dataset_version.deleted_at');
     }
 
     public function applicationTools(): BelongsToMany
     {
-        return $this->belongsToMany(Application::class, 'collection_has_tools');
+        return $this->belongsToMany(Application::class, 'collection_has_tools')
+        ->whereNull('collection_has_tools.deleted_at');
     }
 
     public function applicationPublications(): BelongsToMany
     {
-        return $this->belongsToMany(Application::class, 'collection_has_publications');
+        return $this->belongsToMany(Application::class, 'collection_has_publications')
+        ->whereNull('collection_has_publications.deleted_at');
+
     }
 
     public function team(): BelongsTo
