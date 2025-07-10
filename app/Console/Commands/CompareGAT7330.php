@@ -2,12 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Dur;
-use App\Models\Tool;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
-use App\Models\Collection;
-use App\Models\Publication;
 
 use Illuminate\Console\Command;
 
@@ -52,11 +48,10 @@ class CompareGAT7330 extends Command
                     $dataset = Dataset::where('id', $dv->dataset_id)->first();
                     $teamId = $dataset->team_id;
                 }
-            }
-            else {
+            } else {
                 $teamId = $entity->team_id ?? "";
             }
-            
+
             $entityResultString = $entity->type . " | " . $entity->id . " | " . $teamId . " | " . ($entity->user_id ?? "") . " | ";
             $difference = false;
             $match = array_filter($json_post, function ($val) use ($entity) {

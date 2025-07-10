@@ -52,24 +52,24 @@ class PostcheckGAT7330 extends Command
     {
         // Split the string into an array based on uppercase letters
         $words = preg_split('/(?=[A-Z])/', $className, -1, PREG_SPLIT_NO_EMPTY);
-        
+
         // Join the array elements with an underscore
         $snakeCase = implode('_', $words);
-        
+
         // Convert the resulting string to lowercase
         $snakeCase = strtolower($snakeCase);
-        
+
         return $snakeCase . '_id';
     }
 
     private function idStringToClass(string $idString)
     {
         // Remove '_id' suffix
-        $string = substr($idString,0,-3);
-        
+        $string = substr($idString, 0, -3);
+
         // Split by underscores
         $words = explode('_', $string);
-        
+
         // Convert the resulting strings to Capitalised case
         $capitalisedWords = array_map('ucfirst', $words);
 
@@ -183,11 +183,9 @@ class PostcheckGAT7330 extends Command
         foreach ($entityTypes as $entityType) {
             if (in_array($entityType, [Collection::class, Publication::class])) {
                 $entitiesOfThisType = $entityType::orderBy('id')->select(['id', 'team_id'])->get();
-            }
-            elseif (in_array($entityType, [DatasetVersion::class])) {
+            } elseif (in_array($entityType, [DatasetVersion::class])) {
                 $entitiesOfThisType = $entityType::orderBy('id')->select('id')->get();
-            }
-            else {
+            } else {
                 $entitiesOfThisType = $entityType::orderBy('id')->select(['id', 'team_id', 'user_id'])->get();
             }
             foreach ($entitiesOfThisType as $entity) {
@@ -199,17 +197,17 @@ class PostcheckGAT7330 extends Command
 
                 foreach ($hasRelations[$this->classnameFromClass($entityType)] as $relation => $idName) {
                     $relationEntries = array_column(
-                        (new ('App\\Models\\' . $relation)())
-                        ::where($this->classToIdString($this->classnameFromClass($entityType)), $entity->id)
+                        (new ('App\\Models\\' . $relation)())::where($this->classToIdString($this->classnameFromClass($entityType)), $entity->id)
                         ->select($idName)
-                        ->get()->toArray(), $idName);
-                    
+                        ->get()->toArray(),
+                        $idName
+                    );
+
                     $relatedEntityType = $this->idStringToClass($idName);
 
                     if ($relatedEntityType != 'DatasetVersion') {
                         $relatedActiveEntities = (new ('App\\Models\\' . $relatedEntityType))::whereIn('id', $relationEntries)->where('status', 'ACTIVE')->select('id')->get()->toArray();
-                    } else
-                    {
+                    } else {
                         $datasetVersions = (new ('App\\Models\\' . $relatedEntityType))::whereIn('id', $relationEntries)->select('id', 'dataset_id')->get()->toArray();
                         $active = [];
                         foreach ($datasetVersions as $datasetVersion) {
