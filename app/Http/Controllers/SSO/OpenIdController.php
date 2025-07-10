@@ -16,7 +16,6 @@ class OpenIdController extends Controller
     protected $response_types_supported = [
         'code',
         'none',
-        'client_secret_basic',
         'id_token',
         'access_token',
         'id_token access_token',
