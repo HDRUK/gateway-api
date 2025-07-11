@@ -33,6 +33,7 @@ class CohortRequest extends Model
         'created_at',
         'accept_declaration',
         'is_nhse_sde_approval',
+        'access_to_env',
     ];
 
     protected $casts = [
