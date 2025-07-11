@@ -568,6 +568,7 @@ class DatasetController extends Controller
                 'title' => $dv->short_title,
                 'url' => env('GATEWAY_URL') . '/en/dataset/' . $d->id,
                 'dataset_id' => $d->id,
+                'linkage_type' => $linkage->linkage_type,
             ];
         })
         ->filter()
@@ -577,19 +578,25 @@ class DatasetController extends Controller
         $datasetVersion = DatasetVersion::where('id', $datasetVersionId)->first();
         $metadataLinkage = $datasetVersion['metadata']['metadata']['linkage']['datasetLinkage'];
         $allTitles = [];
-        foreach ($metadataLinkage as $link) {
+        foreach ($metadataLinkage as $linkageType => $link) {
             if (($link) && is_array($link)) {
-                $allTitles = array_merge($allTitles, array_column($link, 'title'));
+                foreach ($link as $l) {
+                    $allTitles[] = [
+                        'title' => $l['title'],
+                        'linkage_type' => $linkageType,
+                    ];
+                }
             }
         }
-        $titlesToAdd = array_diff($allTitles, array_column($datasetLinkages, 'title'));
+        $gatewayTitles = array_column($datasetLinkages, 'title');
 
-        foreach ($titlesToAdd as $title) {
-            if ($title) {
+        foreach ($allTitles as $title) {
+            if (($title['title']) && (!in_array($title['title'], $gatewayTitles))) {
                 $datasetLinkages[] = [
-                    'title' => $title,
+                    'title' => $title['title'],
                     'url' => null,
                     'dataset_id' => null,
+                    'linkage_type' => $title['linkage_type']
                 ];
             }
         }
