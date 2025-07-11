@@ -291,7 +291,7 @@ class UserCollectionController extends Controller
         }
     }
 
-        /**
+    /**
      * @OA\Get(
      *    path="/api/v2/users/{userId}/collections/count/{field}",
      *    operationId="count_user_unique_fields_collection_v2",

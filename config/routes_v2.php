@@ -228,7 +228,7 @@ return [
     [
         'name' => 'collections',
         'method' => 'get',
-        'path' => '/teams/{teamId}/collections',
+        'path' => '/teams/{teamId}/collections/status/active',
         'methodController' => 'TeamCollectionController@indexActive',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
@@ -265,6 +265,18 @@ return [
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.collections.count',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/collections/count/{field}',
+        'methodController' => 'TeamCollectionController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'field' => 'status'
         ],
     ],
     [
