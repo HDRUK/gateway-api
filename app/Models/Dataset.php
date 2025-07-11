@@ -271,7 +271,7 @@ class Dataset extends Model
             throw new \InvalidArgumentException('field ' . $field . ' is not sortable.');
         }
 
-        $direction = strtolower($tmp[1]);
+        $direction = (count($tmp) > 1) ? strtolower($tmp[1]) : 'desc';
         if (!in_array($direction, ['asc', 'desc'])) {
             throw new \InvalidArgumentException('invalid sort direction ' . $direction);
         }
