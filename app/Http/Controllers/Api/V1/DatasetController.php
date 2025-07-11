@@ -567,10 +567,32 @@ class DatasetController extends Controller
             return [
                 'title' => $dv->short_title,
                 'url' => env('GATEWAY_URL') . '/en/dataset/' . $d->id,
+                'dataset_id' => $d->id,
             ];
         })
         ->filter()
-        ->values();
+        ->values()
+        ->toArray();
+
+        $datasetVersion = DatasetVersion::where('id', $datasetVersionId)->first();
+        $metadataLinkage = $datasetVersion['metadata']['metadata']['linkage']['datasetLinkage'];
+        $allTitles = [];
+        foreach ($metadataLinkage as $link) {
+            if (($link) && is_array($link)) {
+                $allTitles = array_merge($allTitles, array_column($link, 'title'));
+            }
+        }
+        $titlesToAdd = array_diff($allTitles, array_column($datasetLinkages, 'title'));
+
+        foreach ($titlesToAdd as $title) {
+            if ($title) {
+                $datasetLinkages[] = [
+                    'title' => $title,
+                    'url' => null,
+                    'dataset_id' => null,
+                ];
+            }
+        }
 
         return $datasetLinkages;
     }
