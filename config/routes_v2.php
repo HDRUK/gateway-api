@@ -97,7 +97,7 @@ return [
     [
         'name' => 'collections',
         'method' => 'get',
-        'path' => '/users/{userId}/collections',
+        'path' => '/users/{userId}/collections/status/active',
         'methodController' => 'UserCollectionController@indexActive',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
@@ -134,6 +134,20 @@ return [
         ],
         'constraint' => [
             'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'user.collections.count',
+        'method' => 'get',
+        'path' => '/users/{userId}/collections/count/{field}',
+        'methodController' => 'UserCollectionController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'field' => 'status'
         ],
     ],
     [
