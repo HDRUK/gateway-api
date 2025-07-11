@@ -1,3 +1,10 @@
+## [2.15.1](https://github.com/HDRUK/gateway-api/compare/v2.15.0...v2.15.1) (2025-07-11)
+
+### 🐛 Bug Fixes
+
+* **GAT-7596:** Fixes legacy bug preventing newly linked BHF datasets … (#1313) ([2021e49](https://github.com/HDRUK/gateway-api/commit/2021e497a00b0bd89dfa6eb65d64319045a3cf87))
+* **GAT-7599:** Add non gateway datasets to linkages (#1315) ([790fee4](https://github.com/HDRUK/gateway-api/commit/790fee48696731e106cad4f0e3c3b9bdc8b7ee08)), closes [GAT-7599](GAT-7599)
+
 ## [2.15.0](https://github.com/HDRUK/gateway-api/compare/v2.14.0...v2.15.0) (2025-07-01)
 
 ### ✨ Features
