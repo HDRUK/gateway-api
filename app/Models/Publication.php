@@ -121,7 +121,7 @@ class Publication extends Model
     public function collections(): BelongsToMany
     {
         return $this->belongsToMany(
-            Publication::class,
+            Collection::class,
             'collection_has_publications',
             'publication_id',
             'collection_id'
