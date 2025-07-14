@@ -1460,10 +1460,11 @@ class DatasetController extends Controller
 
                 if ($download_type === 'structural') {
                     $headerRow = [
-                        'Section',
-                        'Column name',
-                        'Data type',
-                        'Column description',
+                        'Table Name',
+                        'Table Description',
+                        'Column Name',
+                        'Column Description',
+                        'Data Type',
                         'Sensitive',
                     ];
 
@@ -1473,9 +1474,10 @@ class DatasetController extends Controller
                     foreach ($result['structuralMetadata'] as $rowDetails) {
                         $row = [
                             $rowDetails['name'] !== null ? $rowDetails['name'] : '',
+                            $rowDetails['description'] !== null ? $rowDetails['description'] : '',
                             $rowDetails['columns'][0]['name'] !== null ? $rowDetails['columns'][0]['name'] : '',
-                            $rowDetails['columns'][0]['dataType'] !== null ? $rowDetails['columns'][0]['dataType'] : '',
                             $rowDetails['columns'][0]['description'] !== null ? str_replace('\n', '', $rowDetails['columns'][0]['description']) : '',
+                            $rowDetails['columns'][0]['dataType'] !== null ? $rowDetails['columns'][0]['dataType'] : '',
                             $rowDetails['columns'][0]['sensitive'] !== null ? ($rowDetails['columns'][0]['sensitive'] === true ? 'true' : 'false') : '',
                         ];
                         fputcsv($handle, $row);
