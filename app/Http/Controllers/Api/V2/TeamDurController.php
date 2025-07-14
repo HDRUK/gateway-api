@@ -222,14 +222,19 @@ class TeamDurController extends Controller
                 ])
             )
             ->applySorting()
-            ->paginate((int) $perPage, ['*'], 'page')
-            ->through(function ($dur) {
-                if ($dur->datasets) {
-                    $dur->datasets = $dur->datasets->map(function ($dataset) {
-                        $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
-                        return $dataset;
-                    });
+            ->paginate((int) $perPage, ['*'], 'page');
+
+            $durs->getCollection()->transform(function ($dur) {
+                $datasets = $dur->allDatasets  ?? [];
+
+                foreach ($datasets as &$dataset) {
+                    $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);
                 }
+                // Update the relationship with the modified datasets
+                $dur->setAttribute('datasets', $datasets);
+
+                unset($datasets);
+
                 return $dur;
             });
 
