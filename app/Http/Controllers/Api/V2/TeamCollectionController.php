@@ -1072,14 +1072,14 @@ class TeamCollectionController extends Controller
     private function indexTeamCollection(int $teamId, string $status, int $perPage)
     {
         $collections = Collection::where(['team_id' => $teamId, 'status' => $status])
-            // ->with([
-            //     'keywords',
-            //     'tools',
-            //     'dur',
-            //     'publications',
-            //     'team',
-            //     'users',
-            // ])
+            ->with([
+                'keywords',
+                'tools',
+                'dur',
+                'publications',
+                'team',
+                'users',
+            ])
             ->applySorting()
             ->paginate((int) $perPage, ['*'], 'page');
 
