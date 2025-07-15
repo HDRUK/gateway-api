@@ -1,0 +1,102 @@
+FROM php:8.3.3-fpm
+
+ENV COMPOSER_PROCESS_TIMEOUT=600
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+WORKDIR /var/www
+
+COPY composer.* /var/www/
+
+RUN apt-get update && apt-get install -y \
+    cron \
+    nodejs \
+    npm \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libwebp-dev \
+    libmcrypt-dev \
+    libxml2-dev \
+    libzip-dev \
+    libc-dev \
+    wget \
+    zlib1g-dev \
+    zip \
+    default-mysql-client \ 
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql soap zip iconv bcmath \
+    && docker-php-ext-enable gd \
+    && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
+    && docker-php-ext-configure pcntl --enable-pcntl \
+    && docker-php-ext-install pcntl \
+    && docker-php-ext-install sockets
+
+# # Install xdebug
+# RUN pecl install xdebug \
+#     && docker-php-ext-enable xdebug
+
+# # Configure Xdebug
+# RUN echo "zend_extension=xdebug.so" >> /usr/local/etc/php/conf.d/xdebug.ini \
+#     && echo "xdebug.mode=debug" >> /usr/local/etc/php/conf.d/xdebug.ini \
+#     && echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/conf.d/xdebug.ini \
+#     && echo "xdebug.client_host=host.docker.internal" >> /usr/local/etc/php/conf.d/xdebug.ini \
+#     && echo "xdebug.client_port=9003" >> /usr/local/etc/php/conf.d/xdebug.ini \
+#     && echo "xdebug.log=/var/log/xdebug.log" >> /usr/local/etc/php/conf.d/xdebug.ini
+
+# RUN echo "error_reporting=E_ALL" >> /usr/local/etc/php/conf.d/error_reporting.ini
+
+# Install Redis
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
+RUN apt-get update && apt-get install -y libmagickwand-dev --no-install-recommends && rm -rf /var/lib/apt/lists/*
+    
+RUN mkdir -p /usr/src/php/ext/imagick; \
+    curl -fsSL https://github.com/Imagick/imagick/archive/refs/tags/3.7.0.tar.gz | tar xvz -C "/usr/src/php/ext/imagick" --strip 1; \
+    docker-php-ext-install imagick;
+
+RUN pecl install swoole \
+    && docker-php-ext-enable swoole
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- \
+    --install-dir=/usr/local/bin --filename=composer
+
+# Send update for php.ini
+COPY ./init/php.development.ini /usr/local/etc/php/php.ini
+
+
+# Copy the application
+COPY . /var/www
+
+# Composer & laravel
+# Composer & laravel
+RUN composer install \
+    && npm install --save-dev chokidar \
+    && chmod -R 777 storage bootstrap/cache \
+    && php artisan optimize:clear \
+    && php artisan optimize \
+    && php artisan config:clear \
+    && php artisan ide-helper:generate \
+    && php artisan octane:install --server=swoole \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j$(nproc) gd \
+    && composer dumpautoload
+
+# Generate Swagger
+RUN php artisan l5-swagger:generate
+
+# ENV GOOGLE_APPLICATION_CREDENTIALS="/usr/local/etc/gcloud/application_default_credentials.json"
+ENV GOOGLE_APPLICATION_CREDENTIALS="/var/www/hdrinnovationgatewaydev-service-account.json"
+# RUN chmod 644 /usr/local/etc/gcloud/hdruk-gateway-dev-ed1ed1dc2f70.json
+
+# Add symbolic link for public file storage
+RUN php artisan storage:link
+
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# CMD ["php", "artisan", "octane:start", "--server=swoole", "--host=0.0.0.0", "--port=8000"]
+
+# Expose port
+EXPOSE 8000
+
+# for study:
+# composer install -q -n --no-ansi --no-dev --no-scripts --no-progress --prefer-dist

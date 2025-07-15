@@ -46,9 +46,7 @@ class CompareGAT7330 extends Command
                 $dv = DatasetVersion::where('id', $entity->id)->select('dataset_id')->first();
                 if ($dv) {
                     $dataset = Dataset::where('id', $dv->dataset_id)->first();
-                    if ($dataset) {
-                        $teamId = $dataset->team_id;
-                    }
+                    $teamId = $dataset->team_id;
                 }
             } else {
                 $teamId = $entity->team_id ?? "";
@@ -59,6 +57,7 @@ class CompareGAT7330 extends Command
             $match = array_filter($json_post, function ($val) use ($entity) {
                 return (($val->type === $entity->type) && ($val->id === $entity->id));
             });
+
             if ($match) {
                 $match = $match[array_key_first($match)];
                 foreach (['DatasetVersion', 'Dur', 'Collection', 'Publication', 'Tool'] as $entityType) {
