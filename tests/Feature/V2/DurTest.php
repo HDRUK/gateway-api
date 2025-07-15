@@ -96,7 +96,6 @@ class DurTest extends TestCase
                 'publications',
                 'tools',
                 'keywords',
-                'applications',
                 'team',
                 'user',
                 'application_id',
