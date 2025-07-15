@@ -1,3 +1,9 @@
+## [2.15.2](https://github.com/HDRUK/gateway-api/compare/v2.15.1...v2.15.2) (2025-07-15)
+
+### 🐛 Bug Fixes
+
+* **GAT-7599:** Cannot view datasets after creation (#1320) ([6d4b553](https://github.com/HDRUK/gateway-api/commit/6d4b553d0682c8c4d4556c776adb53b9b2f3afd6)), closes [GAT-7599](GAT-7599)
+
 ## [2.15.1](https://github.com/HDRUK/gateway-api/compare/v2.15.0...v2.15.1) (2025-07-11)
 
 ### 🐛 Bug Fixes
