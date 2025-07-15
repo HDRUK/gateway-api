@@ -1,3 +1,24 @@
+## [2.16.0](https://github.com/HDRUK/gateway-api/compare/v2.15.2...v2.16.0) (2025-07-15)
+
+### ✨ Features
+
+* **GAT-7097:** Correct field name (#1303) ([43dca48](https://github.com/HDRUK/gateway-api/commit/43dca48ace673a38818f2ee768adca13f066e548)), closes [GAT-7097](GAT-7097)
+* **GAT-7194:** verify secondary email (#1305) ([509f460](https://github.com/HDRUK/gateway-api/commit/509f4601c7b59bd76357e67069943f6db9b228c0)), closes [GAT-7194](GAT-7194)
+* **GAT-7331:** Fixes to many V2 controllers to standardise them and tighten them up (#1291) ([c649d8a](https://github.com/HDRUK/gateway-api/commit/c649d8a3546b605c54628ee07fa6e89c2f89a11d))
+* **GAT-7582:** Implement backward facing solution with the removal o… (#1311) ([afb7447](https://github.com/HDRUK/gateway-api/commit/afb7447f2ed31a3ce3754bb1747f4cdbda935fea)), closes [GAT-7582](GAT-7582)
+
+### 🐛 Bug Fixes
+
+* **GAT-5745:** double encoded json (#1280) ([4dbe5d6](https://github.com/HDRUK/gateway-api/commit/4dbe5d601914e3ca1013395130bb57dab9f27e27)), closes [GAT-5745](GAT-5745)
+* **GAT-5745:** Rename tests that were being skipped. (#1298) ([bb52e02](https://github.com/HDRUK/gateway-api/commit/bb52e021cf53939b82f107c92a46433da0b04968)), closes [GAT-5745](GAT-5745)
+* **GAT-7233:** Fix deleteDataset for elastic observer (#1300) ([60cc8ce](https://github.com/HDRUK/gateway-api/commit/60cc8ce3daf513d35a3fb3befc76291ebb21467a))
+* **GAT-7264:** Dataset relationship not showing on Analysis Script & Software on the landing page (#1307) ([b5568dc](https://github.com/HDRUK/gateway-api/commit/b5568dc068e1c5c6cebf811ec57fc5eb7f3ae446)), closes [GAT-7264](GAT-7264)
+* **GAT-7444:**  timeout 408 correct dataset (#1297) ([77c2d5c](https://github.com/HDRUK/gateway-api/commit/77c2d5cdd28df0365e27bdaf8ebe7fba12731006)), closes [GAT-7444](GAT-7444)
+* **GAT-7457:** Prework to fix pipeline and phpstan errors (#1306) ([366384e](https://github.com/HDRUK/gateway-api/commit/366384eda51dd25a5d99cab3bb1375d8a6620e49))
+* **GAT-7544:** check user ID matches when calling user endpoint (#1299) ([e0d201a](https://github.com/HDRUK/gateway-api/commit/e0d201a2353983243de19a33b55aa5ed07586929)), closes [GAT-7544](GAT-7544)
+* **GAT-7596:** Fixes legacy bug preventing newly linked BHF datasets … (#1313) ([e9aec50](https://github.com/HDRUK/gateway-api/commit/e9aec50a2e8329081f68f7ccf2150a2f353afa98))
+* **GAT-7599:** Add non gateway datasets to linkages (#1315) ([1d2b2c8](https://github.com/HDRUK/gateway-api/commit/1d2b2c820f2a57bad4317448d4f1f69f78654625)), closes [GAT-7599](GAT-7599)
+
 ## [2.15.2](https://github.com/HDRUK/gateway-api/compare/v2.15.1...v2.15.2) (2025-07-15)
 
 ### 🐛 Bug Fixes
