@@ -405,6 +405,7 @@ class DatasetController extends Controller
     public function show(GetDataset $request, int $id): JsonResponse|BinaryFileResponse
     {
         try {
+
             $exportStructuralMetadata = $request->query('export', null);
 
             // Retrieve the dataset with collections, publications, and counts
@@ -576,7 +577,7 @@ class DatasetController extends Controller
         ->toArray();
 
         $datasetVersion = DatasetVersion::where('id', $datasetVersionId)->first();
-        $metadataLinkage = $datasetVersion['metadata']['metadata']['linkage']['datasetLinkage'];
+        $metadataLinkage = $datasetVersion['metadata']['metadata']['linkage']['datasetLinkage'] ?? [];
         $allTitles = [];
         foreach ($metadataLinkage as $linkageType => $link) {
             if (($link) && is_array($link)) {
