@@ -212,7 +212,7 @@ class PostcheckGAT7330 extends Command
                         $active = [];
                         foreach ($datasetVersions as $datasetVersion) {
                             $dataset = Dataset::where('id', $datasetVersion['dataset_id'])->first();
-                            if ($dataset->status = ['ACTIVE']) {
+                            if ($dataset && $dataset->status = ['ACTIVE']) {
                                 $active[] = $datasetVersion;
                             }
                         }

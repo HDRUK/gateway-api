@@ -46,7 +46,9 @@ class CompareGAT7330 extends Command
                 $dv = DatasetVersion::where('id', $entity->id)->select('dataset_id')->first();
                 if ($dv) {
                     $dataset = Dataset::where('id', $dv->dataset_id)->first();
-                    $teamId = $dataset->team_id;
+                    if ($dataset) {
+                        $teamId = $dataset->team_id;
+                    }
                 }
             } else {
                 $teamId = $entity->team_id ?? "";
