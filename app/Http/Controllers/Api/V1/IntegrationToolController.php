@@ -926,7 +926,7 @@ class IntegrationToolController extends Controller
     }
 
     // publications
-    private function checkPublications(int $toolId, array $inPublications, int $userId = null, int $appId = null)
+    private function checkPublications(int $toolId, array $inPublications, ?int $userId = null, ?int $appId = null)
     {
         $pubs = PublicationHasTool::where(['tool_id' => $toolId])->get();
         foreach ($pubs as $pub) {
@@ -944,7 +944,7 @@ class IntegrationToolController extends Controller
         }
     }
 
-    private function addPublicationHasTool(int $toolId, array $publication, int $userId = null, int $appId = null)
+    private function addPublicationHasTool(int $toolId, array $publication, ?int $userId = null, ?int $appId = null)
     {
         try {
             $arrCreate = [

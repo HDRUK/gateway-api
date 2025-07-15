@@ -149,8 +149,6 @@ class DurController extends Controller
      */
     public function indexActive(Request $request): JsonResponse
     {
-        $input = $request->all();
-
         try {
             $projectTitle = $request->query('project_title', null);
             $perPage = request('per_page', Config::get('constants.per_page'));
@@ -185,20 +183,18 @@ class DurController extends Controller
                     'team',
                     'application',
                 ])
-            );
-
-            $durs = $durs
-                ->applySorting()
-                ->paginate((int) $perPage, ['*'], 'page')
-                ->through(function ($dur) {
-                    if ($dur->datasets) {
-                        $dur->datasets = $dur->datasets->map(function ($dataset) {
-                            $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
-                            return $dataset;
-                        });
-                    }
-                    return $dur;
-                });
+            )
+            ->applySorting()
+            ->paginate((int) $perPage, ['*'], 'page')
+            ->through(function ($dur) {
+                if ($dur->datasets) {
+                    $dur->datasets = $dur->datasets->map(function ($dataset) {
+                        $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
+                        return $dataset;
+                    });
+                }
+                return $dur;
+            });
 
             $durs->getCollection()->transform(function ($dur) {
                 $userDatasets = $dur->userDatasets;

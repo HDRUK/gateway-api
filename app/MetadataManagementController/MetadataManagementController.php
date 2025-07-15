@@ -30,11 +30,11 @@ class MetadataManagementController
         string $dataset,
         string $outputSchema,
         string $outputVersion,
-        string $inputSchema = null,
-        string $inputVersion = null,
+        ?string $inputSchema = null,
+        ?string $inputVersion = null,
         bool $validateInput = true,
         bool $validateOutput = true,
-        string $subsection = null,
+        ?string $subsection = null,
     ): array {
         try {
 

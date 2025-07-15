@@ -23,7 +23,7 @@ use App\Models\ToolHasProgrammingLanguage;
 
 trait ToolsV2Helper
 {
-    public function getToolById(int $toolId, ?int $teamId = null, ?int $userId = null, ?bool $onlyActive = false, ?bool $onlyActiveRelated = false)
+    public function getToolById(int $toolId, ?int $teamId = null, ?int $userId = null, ?bool $onlyActive = false, ?bool $onlyActiveRelated = false, ?bool $trimmed = false)
     {
         $tool = Tool::with([
             'user',
@@ -49,6 +49,18 @@ trait ToolsV2Helper
                 }
             },
             'category',
+            'versions' => function ($query) use ($trimmed) {
+                $query->whereHas('dataset', fn ($q) => $q->where('status', 'ACTIVE'));
+                $query->when($trimmed, function ($q) {
+                    $q->selectRaw('
+                        dataset_versions.id,dataset_versions.dataset_id,
+                        short_title as shortTitle,
+                        CONVERT(JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.populationSize")), SIGNED) as populationSize,
+                        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.datasetType")) as datasetType,
+                        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.publisher.name")) as dataCustodian
+                    ');
+                });
+            },
         ])
         ->where(['id' => $toolId])
         ->when($teamId, function ($query) use ($teamId) {
@@ -348,7 +360,7 @@ trait ToolsV2Helper
     }
 
     // publications
-    public function checkPublications(int $toolId, array $inPublications, int $userId = null)
+    public function checkPublications(int $toolId, array $inPublications, ?int $userId = null)
     {
         $pubs = PublicationHasTool::where(['tool_id' => $toolId])->get();
         foreach ($pubs as $pub) {
@@ -366,7 +378,7 @@ trait ToolsV2Helper
         }
     }
 
-    public function addPublicationHasTool(int $toolId, array $publication, int $userId = null)
+    public function addPublicationHasTool(int $toolId, array $publication, ?int $userId = null)
     {
         try {
             $arrCreate = [
@@ -444,7 +456,7 @@ trait ToolsV2Helper
     }
 
     // collections
-    public function checkCollections(int $toolId, array $inCollections, int $userId = null)
+    public function checkCollections(int $toolId, array $inCollections, ?int $userId = null)
     {
         $collectionHasTools = CollectionHasTool::where(['tool_id' => $toolId])->get();
         foreach ($collectionHasTools as $collectionHasTool) {
@@ -462,7 +474,7 @@ trait ToolsV2Helper
         }
     }
 
-    public function addCollectionHasTool(int $toolId, array $collection, int $userId = null)
+    public function addCollectionHasTool(int $toolId, array $collection, ?int $userId = null)
     {
         try {
             $arrCreate = [

@@ -13,6 +13,16 @@ if (!function_exists('convertArrayToStringWithKeyName')) {
         return implode($separator, $temp);
     }
 }
+if (!function_exists('isJsonString')) {
+    function isJsonString($value): bool
+    {
+        if (!is_string($value)) {
+            return false;
+        }
+        json_decode($value);
+        return json_last_error() === JSON_ERROR_NONE;
+    }
+}
 
 if (!function_exists('formatCleanInput')) {
     function formatCleanInput($input)

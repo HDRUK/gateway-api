@@ -7,6 +7,7 @@ use Config;
 use Auditor;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use App\Models\User;
 use App\Models\UserHasRole;
 use Illuminate\Http\Request;
@@ -22,6 +23,10 @@ use App\Http\Requests\User\DeleteUser;
 use App\Http\Requests\User\UpdateUser;
 use App\Http\Traits\UserTransformation;
 use App\Http\Traits\RequestTransformation;
+use App\Models\EmailVerification;
+use Carbon\Carbon;
+use App\Models\EmailTemplate;
+use App\Jobs\SendEmailJob;
 
 class UserController extends Controller
 {
@@ -468,6 +473,44 @@ class UserController extends Controller
                 ];
 
                 if (array_key_exists('secondary_email', $input)) {
+                    if ($input['secondary_email'] !== $user->secondary_email) {
+                        // below if a user already has a secondary verified email and is changing
+                        $array['secondary_email_verified_at'] = null;
+
+                        EmailVerification::where('user_id', $user->id)->update(['expires_at' => now()]);
+
+                        $newToken = Str::uuid();
+
+                        $verification = EmailVerification::create([
+                            'uid' => $newToken,
+                            'user_id' => $user->id,
+                            'is_secondary' => true,
+                            'expires_at' => Carbon::now()->addHours(24),
+                        ]);
+
+                        $template = EmailTemplate::where('identifier', '=', 'user.email_verification')->first();
+
+                        $replacements = [
+                            '[[UUID]]' => $newToken,
+                            '[[USER_FIRST_NAME]]' => $input['firstname'] ?? $user->firstname,
+                        ];
+
+                        if ($template && !empty($input['secondary_email'])) {
+                            $to = [
+                            'to' => [
+                              'email' => $input['secondary_email'],
+                              'name' => $user['name'],
+                            ],
+                                  ];
+                            SendEmailJob::dispatch($to, $template, $replacements);
+                        }
+                    }
+
+
+
+
+
+
                     if ($user->provider === 'open-athens') {
                         // If the user has a secondary email, use it; otherwise, use the input value.
                         $array['secondary_email'] = is_null($user->secondary_email) ? $input['secondary_email'] : $user->secondary_email;
@@ -690,6 +733,164 @@ class UserController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v1/users/verify-secondary-email/{uuid}",
+     *    operationId="verify_secondary_email",
+     *    tags={"Users"},
+     *    summary="Verify user's secondary email using a UUID",
+     *    description="This endpoint verifies the secondary email for a user if the UUID is valid and not expired.",
+     *    @OA\Parameter(
+     *       name="uuid",
+     *       in="path",
+     *       description="Verification UUID",
+     *       required=true,
+     *       @OA\Schema(
+     *          type="string",
+     *          example="03af1f5e-5cd2-4c41-ae23-56dd2c9efc67"
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=200,
+     *       description="Email verified successfully",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Secondary email verified successfully."),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=400,
+     *       description="Invalid or expired token",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Verification link is invalid or has expired."),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="UUID not found",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Verification token not found."),
+     *       ),
+     *    )
+     * )
+     */
+    public function verifySecondaryEmail(string $uuid)
+    {
+        $token = EmailVerification::where('uid', $uuid)
+            ->where('is_secondary', true)
+            ->first();
+
+        if (!$token) {
+            return response()->json([
+                    'message' => 'Verification token not valid.',
+                ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+        }
+
+        if (Carbon::now()->greaterThan($token->expires_at)) {
+            return response()->json([
+                'message' => 'Verification link has expired.'
+            ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+        }
+
+        $user = User::find($token->user_id);
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found.'
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        }
+
+        $user->update([
+            'secondary_email_verified_at' => now(),
+        ]);
+
+        // bin off token after use
+        $token->delete();
+
+        return response()->json([
+            'message' => 'Secondary email verified successfully.',
+        ]);
+    }
+    /**
+ * @OA\Post(
+ *     path="/api/v1/users/{id}/resend-secondary-verification",
+ *     operationId="resendSecondaryVerificationEmail",
+ *     tags={"Users"},
+ *     summary="Resend secondary email verification",
+ *     description="Resends the verification email for the secondary email address. Old tokens are expired.",
+ *     security={{"bearerAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="User ID",
+ *         @OA\Schema(type="integer", example=123)
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Verification email resent",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Verification email resent.")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="User or secondary email not found",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Secondary email not found")
+ *         )
+ *     )
+ * )
+ */
+    public function resendSecondaryVerificationEmail(int $id)
+    {
+        $user = User::find($id);
+
+        if (!$user || !$user->secondary_email) {
+            return response()->json(['message' => 'Secondary email not found'], 404);
+        }
+
+        // Expire all existing tokens for this user
+        DB::table('email_verifications')
+            ->where('user_id', $user->id)
+            ->where('is_secondary', true)
+            ->delete();
+
+        $newToken = Str::uuid();
+
+        // Create new verification token
+        EmailVerification::create([
+            'uid' => $newToken,
+            'user_id' => $user->id,
+            'expires_at' => Carbon::now()->addHours(24),
+            'is_secondary' => true,
+        ]);
+
+        // Get email template
+        $template = EmailTemplate::where('identifier', '=', 'user.email_verification')->first();
+
+        $replacements = [
+            '[[UUID]]' => $newToken,
+            '[[USER_FIRST_NAME]]' => $user->firstname,
+        ];
+
+        if ($template) {
+            $to = [
+                'to' => [
+                    'email' => $user->secondary_email,
+                    'name' => $user->name,
+                ],
+            ];
+
+            SendEmailJob::dispatch($to, $template, $replacements);
+        }
+
+        return response()->json([
+            'message' => 'Verification email resent.',
+        ]);
+    }
+
+
 
     /**
      * @OA\Delete(
