@@ -88,7 +88,7 @@ class DurTest extends TestCase
                 'created_at',
                 'updated_at',
                 'datasets' => [
-                    0 => [
+                    '*' => [
                         'id',
                         'shortTitle',
                     ]
@@ -100,7 +100,6 @@ class DurTest extends TestCase
                 'team',
                 'user',
                 'application_id',
-                'applications',
                 'status',
             ];
 
