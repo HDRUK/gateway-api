@@ -176,7 +176,7 @@ class Dur extends Model
             ->where('publications.status', 'ACTIVE');
     }
 
-    public function userPublications()
+    public function userPublications(): BelongsToMany
     {
         return $this->belongsToMany(
             User::class,
