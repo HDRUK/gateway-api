@@ -1849,7 +1849,7 @@ class SearchController extends Controller
         $miniMetadata = $input['metadata'];
 
         $materialTypes = $this->getMaterialTypes($input);
-        $containsTissue = $this->getContainsTissues($materialTypes);
+        $containsBioSamples = $this->getContainsBioSamples($materialTypes);
         $hasTechnicalMetadata = (bool) count($this->getValueByPossibleKeys($input, ['metadata.structuralMetadata'], []));
 
         $accessServiceCategory = null;
@@ -1869,7 +1869,7 @@ class SearchController extends Controller
             }
         }
 
-        $miniMetadata['additional']['containsTissue'] = $containsTissue;
+        $miniMetadata['additional']['containsBioSamples'] = $containsBioSamples;
         $miniMetadata['accessibility']['access']['accessServiceCategory'] = $accessServiceCategory;
         $miniMetadata['additional']['hasTechnicalMetadata'] = $hasTechnicalMetadata;
 
