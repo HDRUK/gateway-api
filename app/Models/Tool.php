@@ -130,7 +130,13 @@ class Tool extends Model
 
     public function publications(): BelongsToMany
     {
-        return $this->belongsToMany(Publication::class, 'publication_has_tools')->withPivot('deleted_at')->whereNull('publication_has_tools.deleted_at');
+        return $this->belongsToMany(
+            Publication::class,
+            'publication_has_tools'
+        )
+        ->withPivot('deleted_at')
+        ->whereNull('publication_has_tools.deleted_at')
+        ->where('publications.status', 'ACTIVE');
     }
 
     public function license(): BelongsTo
@@ -140,12 +146,23 @@ class Tool extends Model
 
     public function durs(): BelongsToMany
     {
-        return $this->belongsToMany(Dur::class, 'dur_has_tools')->withPivot('deleted_at')->whereNull('dur_has_tools.deleted_at');
+        return $this->belongsToMany(
+            Dur::class,
+            'dur_has_tools'
+        )
+        ->withPivot('deleted_at')
+        ->whereNull('dur_has_tools.deleted_at')
+        ->where('dur.status', 'ACTIVE');
     }
 
     public function collections(): BelongsToMany
     {
-        return $this->belongsToMany(Collection::class, 'collection_has_tools');
+        return $this->belongsToMany(
+            Collection::class,
+            'collection_has_tools'
+        )
+        ->whereNull('collection_has_tools.deleted_at')
+        ->where('collections.status', 'ACTIVE');
     }
 
     /**
@@ -153,11 +170,29 @@ class Tool extends Model
      */
     public function versions(): BelongsToMany
     {
-        return $this->belongsToMany(DatasetVersion::class, 'dataset_version_has_tool', 'tool_id', 'dataset_version_id');
+        return $this->belongsToMany(
+            DatasetVersion::class,
+            'dataset_version_has_tool',
+            'tool_id',
+            'dataset_version_id'
+        )
+        ->whereNull('dataset_version_has_tool.deleted_at')
+        ->whereIn(
+            'dataset_versions.dataset_id',
+            Dataset::where('status', 'ACTIVE')->select('id')
+        );
     }
 
     public function datasetVersions()
     {
-        return $this->hasMany(DatasetVersionHasTool::class, 'tool_id');
+        return $this->hasMany(
+            DatasetVersionHasTool::class,
+            'tool_id'
+        )
+        ->whereNull('dataset_version_has_tool.deleted_at')
+        ->whereIn(
+            'dataset_versions.dataset_id',
+            Dataset::where('status', 'ACTIVE')->select('id')
+        );
     }
 }

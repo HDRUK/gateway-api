@@ -986,10 +986,10 @@ trait IndexElastic
         $dataset = Dataset::where(['id' => $datasetId])->first();
 
         // Accessed through the accessor
-        $durIds = array_column($dataset->allDurs, 'id') ?? [];
-        $collectionIds = array_column($dataset->allCollections, 'id') ?? [];
-        $publicationIds = array_column($dataset->allPublications, 'id') ?? [];
-        $toolIds = array_column($dataset->allTools, 'id') ?? [];
+        $durIds = array_column($dataset->allActiveDurs, 'id') ?? [];
+        $collectionIds = array_column($dataset->allActiveCollections, 'id') ?? [];
+        $publicationIds = array_column($dataset->allActivePublications, 'id') ?? [];
+        $toolIds = array_column($dataset->allActiveTools, 'id') ?? [];
 
         $version = $dataset->latestVersion();
         $withLinks = DatasetVersion::where('id', $version['id'])

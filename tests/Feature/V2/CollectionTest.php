@@ -1028,7 +1028,7 @@ class CollectionTest extends TestCase
         // Test get active collections
         $response = $this->json(
             'GET',
-            'api/v2/users/' . $ownerId . '/collections',
+            'api/v2/users/' . $ownerId . '/collections/status/active',
             [],
             $ownerHeader
         );
@@ -1510,7 +1510,7 @@ class CollectionTest extends TestCase
         // Test get active collections
         $response = $this->json(
             'GET',
-            'api/v2/teams/' . $teamId . '/collections',
+            'api/v2/teams/' . $teamId . '/collections/status/active',
             [],
             $memberHeader
         );

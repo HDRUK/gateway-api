@@ -15,18 +15,20 @@ trait DurV2Helpers
             'keywords',
             'publications',
             'tools',
-            'userDatasets' => function ($query) {
-                $query->distinct('id');
-            },
-            'userPublications' => function ($query) {
-                $query->distinct('id');
-            },
-            'applicationDatasets' => function ($query) {
-                $query->distinct('id');
-            },
-            'applicationPublications' => function ($query) {
-                $query->distinct('id');
-            },
+            // SC: I can't get these fields to work properly when applying a status=ACTIVE condition to the underlying entity.
+            // I don't think the FE ever uses this information, so I'm disabling it until it ever is required again.
+            // 'userDatasets' => function ($query) {
+            //     $query->distinct('id');
+            // },
+            // 'userPublications' => function ($query) {
+            //     $query->distinct('id');
+            // },
+            // 'applicationDatasets' => function ($query) {
+            //     $query->distinct('id');
+            // },
+            // 'applicationPublications' => function ($query) {
+            //     $query->distinct('id');
+            // },
             'user',
             'team',
             'collections' => function ($query) {
@@ -45,30 +47,31 @@ trait DurV2Helpers
             throw new NotFoundException();
         }
 
-        $userDatasets = $dur->userDatasets;
-        $userPublications = $dur->userPublications;
-        $users = $userDatasets->merge($userPublications)
-            ->unique('id');
-        $dur->setRelation('users', $users);
+        // SC: disabling for now (see comment above)
+        // $userDatasets = $dur->userDatasets;
+        // $userPublications = $dur->userPublications;
+        // $users = $userDatasets->merge($userPublications)
+        //     ->unique('id');
+        // $dur->setRelation('users', $users);
 
-        $applicationDatasets = $dur->applicationDatasets;
-        $applicationPublications = $dur->applicationPublications;
-        $applications = $applicationDatasets->merge($applicationPublications)
-            ->unique('id');
-        $dur->setRelation('applications', $applications);
+        // $applicationDatasets = $dur->applicationDatasets;
+        // $applicationPublications = $dur->applicationPublications;
+        // $applications = $applicationDatasets->merge($applicationPublications)
+        //     ->unique('id');
+        // $dur->setRelation('applications', $applications);
 
-        unset(
-            $users,
-            $userDatasets,
-            $userPublications,
-            $applications,
-            $applicationDatasets,
-            $applicationPublications,
-            $dur->userDatasets,
-            $dur->userPublications,
-            $dur->applicationDatasets,
-            $dur->applicationPublications
-        );
+        // unset(
+        //     $users,
+        //     $userDatasets,
+        //     $userPublications,
+        //     $applications,
+        //     $applicationDatasets,
+        //     $applicationPublications,
+        //     $dur->userDatasets,
+        //     $dur->userPublications,
+        //     $dur->applicationDatasets,
+        //     $dur->applicationPublications
+        // );
 
         // Fetch datasets using the accessor
         $datasets = $dur->allDatasets  ?? [];

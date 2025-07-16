@@ -118,7 +118,7 @@ class DatasetController extends Controller
             $filterStatus = $request->query('status', null);
             $withMetadata = $request->boolean('with_metadata', true);
 
-            // apply any initial filters to get initial datasets
+            // apply any initial filters to get initial datasets // TODO: remove this status field?
             $initialDatasets = Dataset::when($filterStatus, function ($query) use ($filterStatus) {
                 return $query->where('status', '=', $filterStatus);
             })->select(['id'])->get();

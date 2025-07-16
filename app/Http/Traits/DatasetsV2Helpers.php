@@ -22,25 +22,25 @@ trait DatasetsV2Helpers
         // notes Calum 12th August 2024...
         // - This is a mess.. why is `publications_count` returning something different than dataset->allPublications??
         // - Tools linkage not returned
-        // - For the FE I just need a tools linkage count so i'm gonna return `count(dataset->allTools)` for now
+        // - For the FE I just need a tools linkage count so i'm gonna return `count(dataset->allActiveTools)` for now
         // - Same for collections
         // - Leaving this as it is as im not 100% sure what any FE knock-on effect would be
         //
         // LS - Have replaced publications and dur counts with a raw count of linked relations via
         // the *_has_* lookups.
-        $dataset->setAttribute('durs_count', $this->countDursForDatasetVersion($latestVersionID));
-        $dataset->setAttribute('publications_count', $this->countPublicationsForDatasetVersion($latestVersionID));
+        $dataset->setAttribute('durs_count', $this->countActiveDursForDatasetVersion($latestVersionID));
+        $dataset->setAttribute('publications_count', $this->countActivePublicationsForDatasetVersion($latestVersionID));
         // This needs looking into, as helpful as attributes are, they're actually
         // really poor in terms of performance. It'd be quicker to directly mutate
         // a model in memory. That is, however, lazy, and better still would be
         // to translate these to raw sql, as I have done above.
-        $dataset->setAttribute('tools_count', count($dataset->allTools));
-        $dataset->setAttribute('collections_count', count($dataset->allCollections));
+        $dataset->setAttribute('tools_count', count($dataset->allActiveTools));
+        $dataset->setAttribute('collections_count', count($dataset->allActiveCollections));
         $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
-        $dataset->setAttribute('durs', $dataset->allDurs  ?? []);
-        $dataset->setAttribute('publications', $dataset->allPublications  ?? []);
+        $dataset->setAttribute('durs', $dataset->allActiveDurs  ?? []);
+        $dataset->setAttribute('publications', $dataset->allActivePublications  ?? []);
         $dataset->setAttribute('named_entities', $dataset->allNamedEntities  ?? []);
-        $dataset->setAttribute('collections', $dataset->allCollections  ?? []);
+        $dataset->setAttribute('collections', $dataset->allActiveCollections  ?? []);
 
         $outputSchemaModel = $request->query('schema_model');
         $outputSchemaModelVersion = $request->query('schema_version');
