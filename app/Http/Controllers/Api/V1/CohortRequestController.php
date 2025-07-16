@@ -150,6 +150,7 @@ class CohortRequestController extends Controller
         $organisation = $request->query('organisation', null);
         $name = $request->query('name', null);
         $status = $request->query('request_status', null);
+        $nhseSdeStatus = $request->query('nhse_sde_request_status', null);
         $filterText = $request->query('text', null);
 
         try {
@@ -160,7 +161,10 @@ class CohortRequestController extends Controller
                 $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
             }
 
-            $query = CohortRequest::with(['user.teams', 'logs', 'logs.user', 'permissions', 'user.sector'])
+            $query = CohortRequest::with(['logs', 'logs.user', 'permissions', 'user.sector'])
+                ->with(['user.teams' => function ($query) {
+                    $query->select('teams.id', 'name');
+                }])
                 ->join('users', 'cohort_requests.user_id', '=', 'users.id')
                 ->leftJoin('sectors', 'users.sector_id', '=', 'sectors.id')
                 ->select('cohort_requests.*', 'users.name', 'users.organisation', 'sectors.name as sector_name')
@@ -184,6 +188,9 @@ class CohortRequestController extends Controller
                 ->when($status, function ($query) use ($status) {
                     return $query->where('request_status', '=', $status);
                 })
+                ->when($nhseSdeStatus, function ($query) use ($nhseSdeStatus) {
+                    return $query->where('nhse_sde_request_status', '=', $nhseSdeStatus);
+                })
                 ->when($filterText, function ($query) use ($filterText) {
                     $query->where(function ($query) use ($filterText) {
                         $query->whereHas('user', function ($q) use ($filterText) {
@@ -196,7 +203,18 @@ class CohortRequestController extends Controller
                 });
 
             foreach ($sort as $key => $value) {
-                if (in_array($key, ['created_at', 'updated_at', 'request_status'])) {
+                if (in_array(
+                    $key,
+                    [
+                        'created_at',
+                        'updated_at',
+                        'request_status',
+                        'nhse_sde_request_status',
+                        'nhse_sde_requested_at',
+                        'nhse_sde_self_declared_approved_at',
+                        'nhse_sde_updated_at',
+                    ]
+                )) {
                     $query->orderBy('cohort_requests.' . $key, strtoupper($value));
                 }
 
