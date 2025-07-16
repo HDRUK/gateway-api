@@ -616,7 +616,7 @@ class SearchTest extends TestCase
                 'user_id' => $userId,
                 'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
-                'status' => Dataset::STATUS_DRAFT,
+                'status' => Dataset::STATUS_ACTIVE,
             ],
             $this->header,
         );

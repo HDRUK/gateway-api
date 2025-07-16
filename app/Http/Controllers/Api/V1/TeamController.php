@@ -1304,10 +1304,10 @@ class TeamController extends Controller
             'datasetType' => $datasetType,
         ];
 
-        $this->durs = array_unique(array_merge($this->durs, Arr::pluck($dataset->allDurs, 'id')));
-        $this->publications = array_unique(array_merge($this->publications, Arr::pluck($dataset->allPublications, 'id')));
-        $this->tools = array_unique(array_merge($this->tools, Arr::pluck($dataset->allTools, 'id')));
-        $this->collections = array_unique(array_merge($this->collections, Arr::pluck($dataset->allCollections, 'id')));
+        $this->durs = array_unique(array_merge($this->durs, Arr::pluck($dataset->allActiveDurs, 'id')));
+        $this->publications = array_unique(array_merge($this->publications, Arr::pluck($dataset->allActivePublications, 'id')));
+        $this->tools = array_unique(array_merge($this->tools, Arr::pluck($dataset->allActiveTools, 'id')));
+        $this->collections = array_unique(array_merge($this->collections, Arr::pluck($dataset->allActiveCollections, 'id')));
     }
 
     private function updateTeamAlias(int $teamId, array $arrayTeamAlias): void

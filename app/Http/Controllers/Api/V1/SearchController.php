@@ -1786,17 +1786,19 @@ class SearchController extends Controller
 
         $datasetVersionIds = collect($durMatch['datasetVersions'])->select('dataset_version_id')->toArray();
 
-        $datasets = DatasetVersion::whereIn('id', $datasetVersionIds)
+        $datasetVersions = DatasetVersion::whereIn('id', $datasetVersionIds)
+        ->with('dataset')
         ->get();
 
         $datasetTitles = [];
 
-        foreach ($datasets as $dataset) {
-            $datasetTitles[] = [
-                'title' => $dataset['metadata']['metadata']['summary']['shortTitle'],
-                'id' => $dataset['dataset_id'],
-            ];
-
+        foreach ($datasetVersions as $datasetVersion) {
+            if ($datasetVersion->dataset) {
+                $datasetTitles[] = [
+                    'title' => $datasetVersion['metadata']['metadata']['summary']['shortTitle'],
+                    'id' => $datasetVersion['dataset_id'],
+                ];
+            }
         }
 
         usort($datasetTitles, function ($a, $b) {

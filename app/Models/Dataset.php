@@ -271,7 +271,7 @@ class Dataset extends Model
             throw new \InvalidArgumentException('field ' . $field . ' is not sortable.');
         }
 
-        $direction = strtolower($tmp[1]);
+        $direction = (count($tmp) > 1) ? strtolower($tmp[1]) : 'desc';
         if (!in_array($direction, ['asc', 'desc'])) {
             throw new \InvalidArgumentException('invalid sort direction ' . $direction);
         }
@@ -323,6 +323,18 @@ class Dataset extends Model
         );
     }
 
+    // Accessor for all ACTIVE tools
+    public function getAllActiveToolsAttribute()
+    {
+        return $this->getRelationsViaDatasetVersion(
+            DatasetVersionHasTool::class,
+            Tool::class,
+            'tool_id',
+            false,
+            true
+        );
+    }
+
     // Accessor for all collections
     public function getAllCollectionsAttribute()
     {
@@ -333,6 +345,18 @@ class Dataset extends Model
         );
     }
 
+    // Accessor for all ACTIVE collections
+    public function getAllActiveCollectionsAttribute()
+    {
+        return $this->getRelationsViaDatasetVersion(
+            CollectionHasDatasetVersion::class,
+            Collection::class,
+            'collection_id',
+            false,
+            true
+        );
+    }
+
     // Accessor for all durs
     public function getAllDursAttribute()
     {
@@ -340,6 +364,18 @@ class Dataset extends Model
             DurHasDatasetVersion::class,
             Dur::class,
             'dur_id'
+        );
+    }
+
+    // Accessor for all ACTIVE durs
+    public function getAllActiveDursAttribute()
+    {
+        return $this->getRelationsViaDatasetVersion(
+            DurHasDatasetVersion::class,
+            Dur::class,
+            'dur_id',
+            false,
+            true
         );
     }
 
