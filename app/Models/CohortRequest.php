@@ -28,18 +28,19 @@ class CohortRequest extends Model
     protected $fillable = [
         'user_id',
         'request_status',
-        'cohort_status',
         'request_expire_at',
         'created_at',
         'accept_declaration',
-        'is_nhse_sde_approval',
         'access_to_env',
+        'nhse_sde_request_status',
+        'nhse_sde_requested_at',
+        'nhse_sde_self_declared_approved_at',
+        'nhse_sde_request_expire_at',
+        'nhse_sde_updated_at',
     ];
 
     protected $casts = [
-        'cohort_status' => 'boolean',
         'accept_declaration' => 'boolean',
-        'is_nhse_sde_approval' => 'boolean',
     ];
 
     public function user(): BelongsTo
@@ -137,6 +138,16 @@ class CohortRequest extends Model
         }
         return $query->whereHas('user', function ($query) use ($values) {
             $query->whereIn('request_status', $values);
+        });
+    }
+
+     public function scopeFilterByMultiNhseSdeRequestStatus(Builder $query, array $values): Builder
+    {
+        if (empty($values)) {
+            return $query;
+        }
+        return $query->whereHas('user', function ($query) use ($values) {
+            $query->whereIn('nhse_sde_request_status', $values);
         });
     }
 
