@@ -62,25 +62,25 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
                 ->first();
 
         if (is_null($metadata)) {
-            \Log::warn('ExtractPublicationsFromMetadata :: Metadata not found.', $this->loggingContext);
+            \Log::warning('ExtractPublicationsFromMetadata :: Metadata not found.', $this->loggingContext);
             return;
         }
 
         $dataset = Dataset::where('id', $metadata->dataset_id)->select(['id', 'user_id', 'team_id'])->first();
         if (is_null($dataset)) {
-            \Log::warn('ExtractPublicationsFromMetadata :: Dataset not found.', $this->loggingContext);
+            \Log::warning('ExtractPublicationsFromMetadata :: Dataset not found.', $this->loggingContext);
             return;
         }
 
         $user = User::where('id', $dataset->user_id)->first();
         if (is_null($user)) {
-            \Log::warn('ExtractPublicationsFromMetadata :: User not found.', $this->loggingContext);
+            \Log::warning('ExtractPublicationsFromMetadata :: User not found.', $this->loggingContext);
             return;
         }
 
         $team = Team::where('id', $dataset->team_id)->first();
         if (is_null($team)) {
-            \Log::warn('ExtractPublicationsFromMetadata :: Team not found.', $this->loggingContext);
+            \Log::warning('ExtractPublicationsFromMetadata :: Team not found.', $this->loggingContext);
             return;
         }
 
@@ -133,7 +133,7 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
             $checkPublication = Publication::where('paper_doi', 'like', '%' . $publication . '%')->first();
 
             if (!is_null($checkPublication)) {
-                \Log::warn('ExtractPublicationsFromMetadata :: Publication already exists.', $this->loggingContext);
+                \Log::warning('ExtractPublicationsFromMetadata :: Publication already exists.', $this->loggingContext);
                 $this->createLinkPublicationDatasetVersion($checkPublication->id, $datasetVersionId, $type);
                 continue;
             }
@@ -145,7 +145,7 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
                 }
 
                 if ($searchDoi['data']['is_preprint']) {
-                    \Log::warn('ExtractPublicationsFromMetadata :: No publication - is_preprint is true', $this->loggingContext);
+                    \Log::warning('ExtractPublicationsFromMetadata :: No publication - is_preprint is true', $this->loggingContext);
                     continue;
                 }
 
@@ -193,7 +193,7 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
     public function searchDoi(string $doi)
     {
         if (strlen($doi) === 0 || !$doi) {
-            \Log::warn('ExtractPublicationsFromMetadata :: doi string invalid.', $this->loggingContext);
+            \Log::warning('ExtractPublicationsFromMetadata :: doi string invalid.', $this->loggingContext);
             return null;
         }
 
@@ -206,7 +206,7 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
         if ($response->successful()) {
             return $response->json();
         } else {
-            \Log::warn('ExtractPublicationsFromMetadata :: Search Doi request failed', $this->loggingContext);
+            \Log::warning('ExtractPublicationsFromMetadata :: Search Doi request failed', $this->loggingContext);
             return null;
         }
     }

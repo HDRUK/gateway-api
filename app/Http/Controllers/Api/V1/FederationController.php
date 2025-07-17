@@ -807,6 +807,9 @@ class FederationController extends Controller
      */
     public function destroy(DeleteFederation $request, int $teamId, int $federationId)
     {
+        $loggingContext = $this->getLoggingContext($request);
+        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
