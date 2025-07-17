@@ -20,6 +20,11 @@ return new class () extends Migration {
             $table->timestamp('nhse_sde_request_expire_at')->nullable()->default(null);
             $table->timestamp('nhse_sde_updated_at')->nullable()->default(null);
         });
+
+        Schema::table('cohort_request_logs', function (Blueprint $table) {
+            $table->dropColumn('is_nhse_sde_approval');
+            $table->string('nhse_sde_request_status', 50)->nullable()->default(null);
+        });
     }
 
     /**
@@ -41,5 +46,10 @@ return new class () extends Migration {
         foreach ($cohorts as $cohort) {
             CohortRequest::withoutTimestamps(fn () => $cohort->update(['cohort_status' => 1]));
         }
+
+        Schema::table('cohort_request_logs', function (Blueprint $table) {
+            $table->dropColumn('nhse_sde_request_status');
+            $table->boolean('is_nhse_sde_approval')->default(false)->after('request_status');
+        });
     }
 };
