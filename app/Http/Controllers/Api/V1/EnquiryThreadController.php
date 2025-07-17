@@ -301,7 +301,7 @@ class EnquiryThreadController extends Controller
     }
 
     private function buildPayload(array $input, User $user): array
-    {        
+    {
         return [
             'thread' => [
                 'user_id' => $user->id,
@@ -339,12 +339,11 @@ class EnquiryThreadController extends Controller
         ];
     }
 
-    private function getPreferredEmail(string $from, User $user): string 
+    private function getPreferredEmail(string $from, User $user): string
     {
         if ($from === $user['secondary_email']) {
             return "secondary";
-        } 
-        else {
+        } else {
             return "primary";
         }
     }

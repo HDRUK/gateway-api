@@ -12,8 +12,7 @@ return new class () extends Migration {
     public function up(): void
     {
         Schema::table('cohort_requests', function (Blueprint $table) {
-            $table->dropColumn('is_nhse_sde_approval');
-            $table->dropColumn('cohort_status');
+            $table->dropColumn(['is_nhse_sde_approval', 'cohort_status']);
             $table->string('nhse_sde_request_status', 50)->nullable()->default(null);
             $table->timestamp('nhse_sde_requested_at')->nullable()->default(null);
             $table->timestamp('nhse_sde_self_declared_approved_at')->nullable()->default(null);
@@ -33,11 +32,15 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::table('cohort_requests', function (Blueprint $table) {
-            $table->dropColumn('nhse_sde_updated_at');
-            $table->dropColumn('nhse_sde_request_expire_at');
-            $table->dropColumn('nhse_sde_self_declared_approved_at');
-            $table->dropColumn('nhse_sde_requested_at');
-            $table->dropColumn('nhse_sde_request_status');
+            $table->dropColumn(
+                [
+                    'nhse_sde_updated_at',
+                    'nhse_sde_request_expire_at',
+                    'nhse_sde_self_declared_approved_at',
+                    'nhse_sde_requested_at',
+                    'nhse_sde_request_status'
+                ]
+            );
             $table->boolean('cohort_status')->default(false)->after('request_status');
             $table->boolean('is_nhse_sde_approval')->default(false)->after('cohort_status');
         });

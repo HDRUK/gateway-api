@@ -141,7 +141,7 @@ class CohortRequest extends Model
         });
     }
 
-     public function scopeFilterByMultiNhseSdeRequestStatus(Builder $query, array $values): Builder
+    public function scopeFilterByMultiNhseSdeRequestStatus(Builder $query, array $values): Builder
     {
         if (empty($values)) {
             return $query;
