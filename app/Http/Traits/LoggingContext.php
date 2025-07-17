@@ -11,7 +11,7 @@ trait LoggingContext
         $methodName = $this->getMethodName($request);
 
         $context = [
-            'request_id' => $request->headers->all()['x-request-session-id'] ?? null,
+            'x-request-session-id' => $request->headers->all()['x-request-session-id'] ?? null,
             'url' => $request->fullUrl(),
             'http_method' => $request->getMethod(),
             'method_name' => $methodName,
