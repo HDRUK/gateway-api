@@ -321,9 +321,11 @@ class CohortRequestController extends Controller
                     'logs' => function ($q) {
                         $q->orderBy('id', 'desc');
                     },
-                    'logs.user',
                     'permissions',
                     ])
+                ->with(['logs.user' => function ($query) {
+                    $query->select('id', 'name');
+                }])
                 ->first()->toArray();
 
             if (isset($cohortRequests['logs'])) {
