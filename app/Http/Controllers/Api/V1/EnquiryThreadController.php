@@ -213,7 +213,6 @@ class EnquiryThreadController extends Controller
 
         $input = $request->all();
         $jwtUser = $input['jwt_user'] ?? [];
-
         $user = User::where('id', $jwtUser['id'])->first();
         if (is_null($user)) {
             Auditor::log([
@@ -302,11 +301,11 @@ class EnquiryThreadController extends Controller
     }
 
     private function buildPayload(array $input, User $user): array
-    {
+    {        
         return [
             'thread' => [
                 'user_id' => $user->id,
-                'user_preferred_email' => $input['user_preferred_email'] ?? $user->preferred_email,
+                'user_preferred_email' => $this->getPreferredEmail($input['from'], $user),
                 'team_ids' => [],
                 'enquiry_unique_key' => Str::random(8),
                 'project_title' => $input['project_title'] ?? "",
@@ -338,6 +337,16 @@ class EnquiryThreadController extends Controller
                 ],
             ],
         ];
+    }
+
+    private function getPreferredEmail(string $from, User $user): string 
+    {
+        if ($from === $user['secondary_email']) {
+            return "secondary";
+        } 
+        else {
+            return "primary";
+        }
     }
 
     private function getTeamConfiguration(array $input, array $datasets): array
