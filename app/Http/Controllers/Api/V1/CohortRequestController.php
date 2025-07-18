@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
 use App\Models\CohortRequestLog;
 use Illuminate\Http\JsonResponse;
 use App\Models\CohortRequestHasLog;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\HubspotContacts;
 use App\Exceptions\UnauthorizedException;
@@ -1162,7 +1163,9 @@ class CohortRequestController extends Controller
 
             // oidc
             OauthUser::where('user_id', $userId)->delete();
+
             session(['cr_uid' => $userId]);
+            Log::info('Session data customAuthorize :: ' . json_encode(session()->all()));
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

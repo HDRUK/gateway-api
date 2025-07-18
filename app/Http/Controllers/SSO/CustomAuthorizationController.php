@@ -56,7 +56,7 @@ class CustomAuthorizationController extends Controller
         Log::info('CustomLogoutController psrRequest :: ' . json_encode($psrRequest->getParsedBody()));
         // user_id from CohortRequestController@checkAccess
         $userId = session('cr_uid');
-        Log::info('Session data :: ' . json_encode(session()->all()));
+        Log::info('Session data customAuthorize :: ' . json_encode(session()->all()));
 
         if (!$userId) {
             Log::error('User Id not found in session');
