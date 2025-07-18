@@ -1174,7 +1174,7 @@ class CohortRequestController extends Controller
                 'description' => 'Access rquest for user',
             ]);
 
-            $rquestInitUrl = Config::get('services.rquest.init_url') . '?user_id=' . $userId;
+            $rquestInitUrl = Config::get('services.rquest.init_url');
 
             // add new record to the OauthUser table
             OauthUser::create([
