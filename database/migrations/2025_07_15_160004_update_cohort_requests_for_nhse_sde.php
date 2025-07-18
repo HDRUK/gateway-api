@@ -13,6 +13,9 @@ return new class () extends Migration {
     {
         Schema::table('cohort_requests', function (Blueprint $table) {
             $table->dropColumn(['is_nhse_sde_approval', 'cohort_status']);
+        });
+
+        Schema::table('cohort_requests', function (Blueprint $table) {
             $table->string('nhse_sde_request_status', 50)->nullable()->default(null);
             $table->timestamp('nhse_sde_requested_at')->nullable()->default(null);
             $table->timestamp('nhse_sde_self_declared_approved_at')->nullable()->default(null);
@@ -22,6 +25,9 @@ return new class () extends Migration {
 
         Schema::table('cohort_request_logs', function (Blueprint $table) {
             $table->dropColumn('is_nhse_sde_approval');
+        });
+
+        Schema::table('cohort_request_logs', function (Blueprint $table) {
             $table->string('nhse_sde_request_status', 50)->nullable()->default(null);
         });
     }
@@ -41,6 +47,9 @@ return new class () extends Migration {
                     'nhse_sde_request_status'
                 ]
             );
+        });
+
+        Schema::table('cohort_requests', function (Blueprint $table) {
             $table->boolean('cohort_status')->default(false)->after('request_status');
             $table->boolean('is_nhse_sde_approval')->default(false);
         });
@@ -52,6 +61,9 @@ return new class () extends Migration {
 
         Schema::table('cohort_request_logs', function (Blueprint $table) {
             $table->dropColumn('nhse_sde_request_status');
+        });
+
+        Schema::table('cohort_request_logs', function (Blueprint $table) {
             $table->boolean('is_nhse_sde_approval')->default(false)->after('request_status');
         });
     }
