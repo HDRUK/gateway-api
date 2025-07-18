@@ -71,7 +71,7 @@ class CustomAuthorizationController extends Controller
         if (!$userId) {
             Log::error('User Id not found in session');
 
-            $findUser = OauthUser::where('created_at', '>=', Carbon::now()->subSeconds(3))
+            $findUser = OauthUser::where('created_at', '>=', Carbon::now()->subSeconds(63))
                 ->where('nonce', 'new_nonce')
                 ->latest('created_at')
                 ->first();
