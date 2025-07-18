@@ -168,13 +168,7 @@ class CohortRequestController extends Controller
                 $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
             }
 
-            $query = CohortRequest::with(['logs', 'permissions', 'user.sector'])
-                ->with(['logs.user' => function ($query) {
-                    $query->select('id', 'name');
-                }])
-                ->with(['user.teams' => function ($query) {
-                    $query->select('teams.id', 'name');
-                }])
+            $query = CohortRequest::with(['logs', 'permissions', 'user.sector', 'logs.user:id,name', 'user.teams:id,name'])
                 ->join('users', 'cohort_requests.user_id', '=', 'users.id')
                 ->leftJoin('sectors', 'users.sector_id', '=', 'sectors.id')
                 ->select('cohort_requests.*', 'users.name', 'users.organisation', 'sectors.name as sector_name')
@@ -325,10 +319,8 @@ class CohortRequestController extends Controller
                         $q->orderBy('id', 'desc');
                     },
                     'permissions',
+                    'logs.user:id,name',
                     ])
-                ->with(['logs.user' => function ($query) {
-                    $query->select('id', 'name');
-                }])
                 ->first()->toArray();
 
             if (isset($cohortRequests['logs'])) {
@@ -586,8 +578,10 @@ class CohortRequestController extends Controller
             // APPROVED / BANNED / SUSPENDED
             // PENDING - initial state
             // EXPIRED - must be an update using the chron
-            $requestExpireAt = ($currRequestStatus !== $requestStatus) && ($requestStatus === 'APPROVED') ? Carbon::now()->addDays(Config::get('cohort.cohort_access_expiry_time_in_days')) : null;
-            $nhseSdeRequestExpireAt = ($currNhseSdeRequestStatus !== $nhseSdeRequestStatus) && ($nhseSdeRequestStatus === 'APPROVED') ? Carbon::now()->addDays(Config::get('cohort.cohort_nhse_sde_access_expiry_time_in_days')) : null;
+            $requestBeingApproved = ($currRequestStatus !== $requestStatus) && ($requestStatus === 'APPROVED');
+            $requestExpireAt = $requestBeingApproved ? Carbon::now()->addDays(Config::get('cohort.cohort_access_expiry_time_in_days')) : null;
+            $nhseSdeRequestBeingApproved = ($currNhseSdeRequestStatus !== $nhseSdeRequestStatus) && ($nhseSdeRequestStatus === 'APPROVED');
+            $nhseSdeRequestExpireAt = $nhseSdeRequestBeingApproved ? Carbon::now()->addDays(Config::get('cohort.cohort_nhse_sde_access_expiry_time_in_days')) : null;
 
             if ($currRequestStatus !== $requestStatus || $currNhseSdeRequestStatus !== $nhseSdeRequestStatus) {
                 CohortRequest::where('id', $id)->update([
