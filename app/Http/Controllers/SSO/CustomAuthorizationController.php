@@ -4,6 +4,7 @@ namespace App\Http\Controllers\SSO;
 
 use App\Models\OauthUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Laravel\Passport\Passport;
 use Laravel\Passport\Bridge\User;
 use Illuminate\Support\Facades\Log;
@@ -54,17 +55,33 @@ class CustomAuthorizationController extends Controller
 
         Log::info('CustomLogoutController request :: ' . json_encode($request->all()));
         Log::info('CustomLogoutController psrRequest :: ' . json_encode($psrRequest->getParsedBody()));
+
+        $userId = null;
+        if ($request->session()->exists('cr_uid')) {
+            $userId = $request->session('cr_uid');
+            $request->session()->forget('cr_uid');
+        }
+
         // user_id from CohortRequestController@checkAccess
-        $userId = session('cr_uid');
+        // $userId = $request->session('cr_uid');
+        
+        
         Log::info('Session data customAuthorize :: ' . json_encode(session()->all()));
+        Log::info('Session data customAuthorize :: ' . json_encode($request->session()->all()));
 
         if (!$userId) {
+            $user = OauthUser::where('created_at', '>=', Carbon::now()->subSecond())
+                ->latest('created_at')
+                ->first();
             Log::error('User Id not found in session');
             Log::info('Session data :: ' . json_encode(session()->all()));
             return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
         }
 
         // save nonce and user_id for id_token
+        // $check = OauthUser::where([
+
+        // ]'user_id', $userId)->first();
         OauthUser::create([
             'user_id' => $userId,
             'nonce' => $request->query('nonce'),
