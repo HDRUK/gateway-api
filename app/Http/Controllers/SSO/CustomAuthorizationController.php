@@ -74,7 +74,6 @@ class CustomAuthorizationController extends Controller
             // $findUser = OauthUser::where('created_at', '>=', Carbon::now()->subSeconds(63))
             $findUser = OauthUser::where('created_at', '>=', Carbon::now()->subHours(4))
                 ->where('nonce', 'new_nonce')
-                ->latest('created_at')
                 ->first();
             Log::info('findUser :: ' . json_encode($findUser));
 
