@@ -53,26 +53,17 @@ class CustomAuthorizationController extends Controller
         ClientRepository $clients,
     ) {
 
-        Log::info('CustomLogoutController request :: ' . json_encode($request->all()));
-        Log::info('CustomLogoutController psrRequest :: ' . json_encode($psrRequest->getParsedBody()));
-
-        $userId = null;
-        if (session()->has('cr_uid')) {
-            $userId = session('cr_uid');
-            session()->forget('cr_uid');
-        }
+        Log::info('CustomAuthorizationController request :: ' . json_encode($request->all()));
 
         // user_id from CohortRequestController@checkAccess
-        // $userId = $request->session('cr_uid');
-        
+        $userId = session('cr_uid');
         
         Log::info('Session data customAuthorize :: ' . json_encode(session()->all()));
 
         if (!$userId) {
             Log::error('User Id not found in session');
 
-            // $findUser = OauthUser::where('created_at', '>=', Carbon::now()->subSeconds(63))
-            $findUser = OauthUser::where('nonce', 'new_nonce')->first();
+            $findUser = OauthUser::where(['nonce' => 'new_nonce'])->first();
             Log::info('findUser :: ' . json_encode($findUser));
 
             if (is_null($findUser)) {
@@ -83,6 +74,8 @@ class CustomAuthorizationController extends Controller
                 $userId = $findUser->user_id;
             }
         }
+
+        Log::info('User Id found in the final :: ' . $userId);
 
         // save nonce and user_id for id_token
         $findUserNewNonce = OauthUser::where([
