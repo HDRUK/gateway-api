@@ -25,13 +25,14 @@ class CohortRequestSeeder extends Seeder
             ])->first();
 
             $status = fake()->randomElement(['PENDING', 'APPROVED']);
+            $nhseSdeStatus = fake()->randomElement([null, 'IN_PROCESS', 'APPROVAL_REQUESTED', 'APPROVED']);
 
             if (!$checkRequestByUserId) {
                 $cohortRequest = CohortRequest::create([
                     'created_at' => fake()->dateTimeBetween('-7 month', 'now'),
                     'user_id' => $userId,
                     'request_status' => $status,
-                    'cohort_status' => ($status === 'PENDING' ? false : true),
+                    'nhse_sde_request_status' => $nhseSdeStatus,
                     'request_expire_at' => null,
                     'accept_declaration' => ($status === 'APPROVED' ? true : false),
                 ]);
@@ -51,6 +52,7 @@ class CohortRequestSeeder extends Seeder
                     'user_id' => $userId,
                     'details' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'request_status' => $status,
+                    'nhse_sde_request_status' => $nhseSdeStatus,
                 ]);
 
                 CohortRequestHasLog::create([

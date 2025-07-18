@@ -79,6 +79,7 @@ class CohortUserExpiry extends Command
                                 'user_id' => $u->id,
                                 'details' => 'Access expired',
                                 'request_status' => 'EXPIRED',
+                                'nhse_sde_request_status' => $r->nhse_sde_request_status,
                             ]);
 
                             CohortRequestHasLog::create([
