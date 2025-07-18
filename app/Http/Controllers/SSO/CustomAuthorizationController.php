@@ -67,7 +67,6 @@ class CustomAuthorizationController extends Controller
         
         
         Log::info('Session data customAuthorize :: ' . json_encode(session()->all()));
-        Log::info('Session data customAuthorize :: ' . json_encode($request->session()->all()));
 
         if (!$userId) {
             Log::error('User Id not found in session');
