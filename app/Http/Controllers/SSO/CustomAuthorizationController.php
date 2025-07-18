@@ -57,9 +57,9 @@ class CustomAuthorizationController extends Controller
         Log::info('CustomLogoutController psrRequest :: ' . json_encode($psrRequest->getParsedBody()));
 
         $userId = null;
-        if ($request->session()->exists('cr_uid')) {
-            $userId = $request->session('cr_uid');
-            $request->session()->forget('cr_uid');
+        if (session()->has('cr_uid')) {
+            $userId = session('cr_uid');
+            session()->forget('cr_uid');
         }
 
         // user_id from CohortRequestController@checkAccess
