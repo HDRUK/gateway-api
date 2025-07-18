@@ -71,8 +71,8 @@ class CustomAuthorizationController extends Controller
                 Log::info('Session data :: ' . json_encode(session()->all()));
                 return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
             } else {
-                session(['cr_uid' => $userId]);
                 $userId = $findUser->user_id;
+                session(['cr_uid' => $userId]);
             }
         }
 
