@@ -6,6 +6,7 @@ use App\Models\OauthUser;
 use Illuminate\Http\Request;
 use Laravel\Passport\Passport;
 use Laravel\Passport\Bridge\User;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Laravel\Passport\ClientRepository;
 use App\Http\Traits\HandlesOAuthErrors;
@@ -50,10 +51,16 @@ class CustomAuthorizationController extends Controller
         Request $request,
         ClientRepository $clients,
     ) {
+
+        Log::info('CustomLogoutController request :: ' . json_encode($request->all()));
+        Log::info('CustomLogoutController psrRequest :: ' . json_encode($psrRequest->getParsedBody()));
         // user_id from CohortRequestController@checkAccess
         $userId = session('cr_uid');
+        Log::info('Session data :: ' . json_encode(session()->all()));
 
         if (!$userId) {
+            Log::error('User Id not found in session');
+            Log::info('Session data :: ' . json_encode(session()->all()));
             return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
         }
 
