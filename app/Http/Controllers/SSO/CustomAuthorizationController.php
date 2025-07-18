@@ -76,6 +76,7 @@ class CustomAuthorizationController extends Controller
                 ->where('nonce', 'new_nonce')
                 ->latest('created_at')
                 ->first();
+            Log::info('findUser :: ' . json_encode($findUser));
 
             if (is_null($findUser)) {
                 Log::error('User Id not found in session or OauthUser table');
@@ -91,6 +92,7 @@ class CustomAuthorizationController extends Controller
             'user_id' => $userId,
             'nonce' => 'new_nonce'
         ])->first();
+        Log::info('findUserNewNonce :: ' . json_encode($findUserNewNonce));
 
         if (is_null($findUserNewNonce)) {
             OauthUser::create([
