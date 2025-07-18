@@ -1177,10 +1177,11 @@ class CohortRequestController extends Controller
             $rquestInitUrl = Config::get('services.rquest.init_url');
 
             // add new record to the OauthUser table
-            OauthUser::create([
+            $oauthUser = OauthUser::create([
                 'user_id' => $userId,
                 'nonce' => 'new_nonce',
             ]);
+            Log::info('OauthUser created :: ' . json_encode($oauthUser));
 
             return response()->json([
                 'data' => [
