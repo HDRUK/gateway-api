@@ -70,22 +70,38 @@ class CustomAuthorizationController extends Controller
         Log::info('Session data customAuthorize :: ' . json_encode($request->session()->all()));
 
         if (!$userId) {
-            $user = OauthUser::where('created_at', '>=', Carbon::now()->subSecond())
+            Log::error('User Id not found in session');
+
+            $findUser = OauthUser::where('created_at', '>=', Carbon::now()->subSeconds(3))
+                ->where('nonce', 'new_nonce')
                 ->latest('created_at')
                 ->first();
-            Log::error('User Id not found in session');
-            Log::info('Session data :: ' . json_encode(session()->all()));
-            return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
+
+            if (is_null($findUser)) {
+                Log::error('User Id not found in session or OauthUser table');
+                Log::info('Session data :: ' . json_encode(session()->all()));
+                return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
+            } else {
+                $userId = $findUser->user_id;
+            }
         }
 
         // save nonce and user_id for id_token
-        // $check = OauthUser::where([
-
-        // ]'user_id', $userId)->first();
-        OauthUser::create([
+        $findUserNewNonce = OauthUser::where([
             'user_id' => $userId,
-            'nonce' => $request->query('nonce'),
-        ]);
+            'nonce' => 'new_nonce'
+        ])->first();
+
+        if (is_null($findUserNewNonce)) {
+            OauthUser::create([
+                'user_id' => $userId,
+                'nonce' => $request->query('nonce'),
+            ]);
+        } else {
+            OauthUser::where([
+                'id' => $findUserNewNonce->id,
+            ])->update(['nonce' => $request->query('nonce')]);
+        }
 
         return $this->withErrorHandling(function () use ($psrRequest, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
