@@ -62,6 +62,7 @@ class CustomAuthorizationController extends Controller
 
         if (!$userId) {
             Log::error('User Id not found in session');
+            session(['cr_uid' => $userId]);
 
             $findUser = OauthUser::where(['nonce' => 'new_nonce'])->first();
             Log::info('findUser :: ' . json_encode($findUser));
