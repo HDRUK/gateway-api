@@ -72,6 +72,11 @@ class CustomAuthorizationController extends Controller
                 return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
             } else {
                 $userId = $findUser->user_id;
+                Log::info('User Id found in OauthUser table :: ' . $userId);
+                if (session()->has('cr_uid')) {
+                    Log::info('Session already has cr_uid :: ' . session('cr_uid'));
+                    session()->forget('cr_uid');
+                }
                 session(['cr_uid' => $userId]);
             }
         }
