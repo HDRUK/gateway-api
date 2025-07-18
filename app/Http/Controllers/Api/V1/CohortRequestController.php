@@ -1165,7 +1165,7 @@ class CohortRequestController extends Controller
             OauthUser::where('user_id', $userId)->delete();
 
             session(['cr_uid' => $userId]);
-            Log::info('Session data customAuthorize :: ' . json_encode(session()->all()));
+            Log::info('Session data checkAccess :: ' . json_encode(session()->all()));
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
