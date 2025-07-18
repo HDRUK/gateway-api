@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
 use App\Models\CohortRequestLog;
 use Illuminate\Http\JsonResponse;
 use App\Models\CohortRequestHasLog;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\HubspotContacts;
 use App\Exceptions\UnauthorizedException;
@@ -1194,7 +1195,9 @@ class CohortRequestController extends Controller
 
             // oidc
             OauthUser::where('user_id', $userId)->delete();
+
             session(['cr_uid' => $userId]);
+            Log::info('Session data checkAccess :: ' . json_encode(session()->all()));
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1202,6 +1205,13 @@ class CohortRequestController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Access rquest for user',
             ]);
+
+            // add new record to the OauthUser table
+            $oauthUser = OauthUser::create([
+                'user_id' => $userId,
+                'nonce' => 'new_nonce',
+            ]);
+            Log::info('OauthUser created :: ' . json_encode($oauthUser));
 
             $rquestInitUrl = Config::get('services.rquest.init_url');
 

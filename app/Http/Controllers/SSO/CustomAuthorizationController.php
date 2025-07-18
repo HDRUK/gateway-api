@@ -4,8 +4,10 @@ namespace App\Http\Controllers\SSO;
 
 use App\Models\OauthUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Laravel\Passport\Passport;
 use Laravel\Passport\Bridge\User;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Laravel\Passport\ClientRepository;
 use App\Http\Traits\HandlesOAuthErrors;
@@ -50,18 +52,54 @@ class CustomAuthorizationController extends Controller
         Request $request,
         ClientRepository $clients,
     ) {
+
+        Log::info('CustomAuthorizationController request :: ' . json_encode($request->all()));
+
         // user_id from CohortRequestController@checkAccess
         $userId = session('cr_uid');
+        
+        Log::info('Session data customAuthorize :: ' . json_encode(session()->all()));
 
         if (!$userId) {
-            return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
+            Log::error('User Id not found in session');
+
+            $findUser = OauthUser::where(['nonce' => 'new_nonce'])->first();
+            Log::info('findUser :: ' . json_encode($findUser));
+
+            if (is_null($findUser)) {
+                Log::error('User Id not found in session or OauthUser table');
+                Log::info('Session data :: ' . json_encode(session()->all()));
+                return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
+            } else {
+                $userId = $findUser->user_id;
+                Log::info('User Id found in OauthUser table :: ' . $userId);
+                if (session()->has('cr_uid')) {
+                    Log::info('Session already has cr_uid :: ' . session('cr_uid'));
+                    session()->forget('cr_uid');
+                }
+                session(['cr_uid' => $userId]);
+            }
         }
 
+        Log::info('User Id found in the final :: ' . $userId);
+
         // save nonce and user_id for id_token
-        OauthUser::create([
+        $findUserNewNonce = OauthUser::where([
             'user_id' => $userId,
-            'nonce' => $request->query('nonce'),
-        ]);
+            'nonce' => 'new_nonce'
+        ])->first();
+        Log::info('findUserNewNonce :: ' . json_encode($findUserNewNonce));
+
+        if (is_null($findUserNewNonce)) {
+            OauthUser::create([
+                'user_id' => $userId,
+                'nonce' => $request->query('nonce'),
+            ]);
+        } else {
+            OauthUser::where([
+                'id' => $findUserNewNonce->id,
+            ])->update(['nonce' => $request->query('nonce')]);
+        }
 
         return $this->withErrorHandling(function () use ($psrRequest, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
