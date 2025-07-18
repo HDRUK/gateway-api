@@ -5,11 +5,16 @@ namespace App\Services;
 use Config;
 use Exception;
 use Illuminate\Support\Facades\Http;
+use App\Http\Traits\LoggingContext;
 
 class Hubspot
 {
+    use LoggingContext;
+
     protected $baseUrl;
     protected $header;
+
+    private ?array $loggingContext = null;
 
     public function __construct()
     {
@@ -18,6 +23,8 @@ class Hubspot
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . Config::get('services.hubspot.key'),
         ];
+        $this->loggingContext = $this->getLoggingContext(\request());
+        $this->loggingContext['method_name'] = class_basename($this);
     }
 
     public function createContact(array $properties)
@@ -33,6 +40,8 @@ class Hubspot
 
             return $response->json();
         } catch (Exception $e) {
+            $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            \Log::info('Failed to create contact ' . $e->getMessage(), $this->loggingContext);
             throw new Exception($e->getMessage());
         }
     }
@@ -51,6 +60,8 @@ class Hubspot
             // Returns a 204 No Content response on success
             return $response->json();
         } catch (Exception $e) {
+            $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            \Log::info('Failed to update contact ' . $e->getMessage(), $this->loggingContext);
             throw new Exception($e->getMessage());
         }
     }
@@ -66,6 +77,8 @@ class Hubspot
 
             return (!is_array($responseBody)) ? null : (array_key_exists('vid', $responseBody) ? $responseBody['vid'] : null);
         } catch (Exception $e) {
+            $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            \Log::info('Failed to fetch contact ' . $e->getMessage(), $this->loggingContext);
             throw new Exception($e->getMessage());
         }
     }
@@ -79,6 +92,8 @@ class Hubspot
 
             return $response->json();
         } catch (Exception $e) {
+            $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            \Log::info('Failed to fetch contact ' . $e->getMessage(), $this->loggingContext);
             throw new Exception($e->getMessage());
         }
     }
@@ -92,6 +107,8 @@ class Hubspot
 
             return $response->json();
         } catch (Exception $e) {
+            $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            \Log::info('Failed to delete contact ' . $e->getMessage(), $this->loggingContext);
             throw new Exception($e->getMessage());
         }
     }

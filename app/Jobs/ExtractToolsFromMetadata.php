@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use CloudLogger;
 use App\Models\Team;
 use App\Models\Tool;
 use App\Models\User;
@@ -10,6 +9,7 @@ use App\Models\Dataset;
 use Illuminate\Support\Arr;
 use Illuminate\Bus\Queueable;
 use App\Http\Traits\IndexElastic;
+use App\Http\Traits\LoggingContext;
 use App\Models\DatasetVersionHasTool;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -23,8 +23,10 @@ class ExtractToolsFromMetadata implements ShouldQueue
     use Queueable;
     use SerializesModels;
     use IndexElastic;
+    use LoggingContext;
 
     private int $datasetVersionId = 0;
+    private ?array $loggingContext = null;
 
     /**
      * Create a new job instance.
@@ -32,6 +34,8 @@ class ExtractToolsFromMetadata implements ShouldQueue
     public function __construct(int $datasetVersionId)
     {
         $this->datasetVersionId = $datasetVersionId;
+        $this->loggingContext = $this->getLoggingContext(\request());
+        $this->loggingContext['method_name'] = class_basename($this);
     }
 
     /**
@@ -57,25 +61,25 @@ class ExtractToolsFromMetadata implements ShouldQueue
             ->first();
 
         if (is_null($metadata)) {
-            CloudLogger::write('ExtractToolsFromMetadata :: Metadata not found.');
+            \Log::info('ExtractToolsFromMetadata :: Metadata not found.', $this->loggingContext);
             return;
         }
 
         $dataset = Dataset::where('id', $metadata->dataset_id)->select(['id', 'user_id', 'team_id'])->first();
         if (is_null($dataset)) {
-            CloudLogger::write('ExtractToolsFromMetadata :: Dataset not found.');
+            \Log::info('ExtractToolsFromMetadata :: Dataset not found.', $this->loggingContext);
             return;
         }
 
         $user = User::where('id', $dataset->user_id)->first();
         if (is_null($user)) {
-            CloudLogger::write('ExtractToolsFromMetadata :: User not found.');
+            \Log::info('ExtractToolsFromMetadata :: User not found.', $this->loggingContext);
             return;
         }
 
         $team = Team::where('id', $dataset->team_id)->first();
         if (is_null($team)) {
-            CloudLogger::write('ExtractToolsFromMetadata :: Team not found.');
+            \Log::info('ExtractToolsFromMetadata :: Team not found.', $this->loggingContext);
             return;
         }
 
@@ -110,7 +114,7 @@ class ExtractToolsFromMetadata implements ShouldQueue
         $arrTools = explode(';,;', $tools);
 
         foreach ($arrTools as $item) {
-            CloudLogger::write('ExtractToolsFromMetadata :: tool - ' . $item);
+            \Log::info('ExtractToolsFromMetadata :: tool - ' . $item, $this->loggingContext);
 
             if (str_contains($item, env('GATEWAY_URL'))) {
                 $exploded = explode('/', $item);

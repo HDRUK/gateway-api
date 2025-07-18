@@ -11,11 +11,13 @@ use Illuminate\Support\Carbon;
 use App\Exceptions\MMCException;
 use Illuminate\Support\Facades\Http;
 use App\Http\Traits\GetValueByPossibleKeys;
+use App\Http\Traits\LoggingContext;
 use Illuminate\Http\Client\ConnectionException;
 
 class MetadataManagementController
 {
     use GetValueByPossibleKeys;
+    use LoggingContext;
 
     /**
      * Translates an incoming dataset payload via TRASER
@@ -37,6 +39,9 @@ class MetadataManagementController
         ?string $subsection = null,
     ): array {
         try {
+
+            $loggingContext = $this->getLoggingContext(\request());
+            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
             $queryParams = [
                 'output_schema' => $outputSchema,
@@ -66,13 +71,17 @@ class MetadataManagementController
                 $response = Http::withBody(
                     $dataset,
                     'application/json'
-                )->post($urlString);
+                )->withHeaders($loggingContext)->post($urlString);
             } catch (ConnectionException $e) {
                 Auditor::log([
                     'action_type' => 'EXCEPTION',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => $e->getMessage(),
                 ]);
+                \Log::info(
+                    'Translation Service error. Contact Technical Support if this issue persists.',
+                    $loggingContext
+                );
                 throw new Exception('Translation Service error. Contact Technical Support if this issue persists.');
             } catch (Exception $e) {
                 Auditor::log([
@@ -80,6 +89,8 @@ class MetadataManagementController
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => $e->getMessage(),
                 ]);
+                \Log::info($e->getMessage(), $loggingContext);
+
                 throw new Exception($e->getMessage());
             }
 
@@ -118,6 +129,10 @@ class MetadataManagementController
     public function validateDataModelType(string &$dataset, string $input_schema, string $input_version): bool
     {
         try {
+
+            $loggingContext = $this->getLoggingContext(\request());
+            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
             $urlString = sprintf(
                 '%s/validate?input_schema=%s&input_version=%s',
                 env('TRASER_SERVICE_URL', 'http://localhost:8002'),
@@ -143,6 +158,7 @@ class MetadataManagementController
 
             return ($response->status() === 200);
         } catch (Exception $e) {
+            \Log::info($e->getMessage(), $loggingContext);
             throw new MMCException($e->getMessage());
         }
     }
@@ -175,6 +191,9 @@ class MetadataManagementController
     public function deleteDataset(string $id, bool $setToArchived = false): void
     {
         try {
+            $loggingContext = $this->getLoggingContext(\request());
+            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
             $dataset = Dataset::with('versions')->where('id', (int)$id)->first();
             if (!$dataset) {
                 throw new Exception('Dataset with id=' . $id . ' cannot be found');
@@ -200,6 +219,7 @@ class MetadataManagementController
                 $dataset
             );
         } catch (Exception $e) {
+            \Log::info($e->getMessage(), $loggingContext);
             throw new Exception($e->getMessage());
         }
     }

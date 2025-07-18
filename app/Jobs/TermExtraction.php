@@ -8,6 +8,7 @@ use App\Models\Dataset;
 use App\Models\NamedEntities;
 use App\Models\DatasetVersionHasNamedEntities;
 use App\Http\Traits\IndexElastic;
+use App\Http\Traits\LoggingContext;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -22,6 +23,7 @@ class TermExtraction implements ShouldQueue
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
+    use LoggingContext;
 
     public $tries;
     public $timeout;
@@ -34,6 +36,8 @@ class TermExtraction implements ShouldQueue
     protected bool $usePartialExtraction = true;
 
     protected bool $reIndexElastic = true;
+
+    private ?array $loggingContext = null;
 
     /**
      * Create a new job instance.
@@ -49,6 +53,8 @@ class TermExtraction implements ShouldQueue
         $this->data = $data;
         $this->tedUrl = config('ted.url');
         $this->reIndexElastic = is_null($elasticIndex) ? true : $elasticIndex;
+        $this->loggingContext = $this->getLoggingContext(\request());
+        $this->loggingContext['method_name'] = class_basename($this);
     }
 
     /**
@@ -66,6 +72,8 @@ class TermExtraction implements ShouldQueue
             'jobs.default_timeout' => config('jobs.default_timeout'),
             'jobs.ntries' => config('jobs.ntries'),
         ]);
+
+        \Log::info('Starting term extraction job...', $this->loggingContext);
 
         $data = json_decode(gzdecode(gzuncompress(base64_decode($this->data))), true);
         if ($this->usePartialExtraction) {
@@ -91,7 +99,7 @@ class TermExtraction implements ShouldQueue
     {
         try {
 
-            $response = Http::timeout($this->timeout * 2)->withBody(
+            $response = Http::withHeaders($this->loggingContext)->timeout($this->timeout * 2)->withBody(
                 $summary,
                 'application/json'
             )->post($this->tedUrl . '/summary');
@@ -106,6 +114,8 @@ class TermExtraction implements ShouldQueue
                         'named_entities_id' => $namedEntity->id
                     ]);
                 }
+            } else {
+                \Log::info('Term extraction failed with ' . json_encode($response->json()), $this->loggingContext);
             }
 
         } catch (Exception $e) {
@@ -114,6 +124,8 @@ class TermExtraction implements ShouldQueue
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
+
+            \Log::info('Term extraction failed with ' . $e->getMessage(), $this->loggingContext);
 
             throw new Exception($e->getMessage());
         }
@@ -129,7 +141,7 @@ class TermExtraction implements ShouldQueue
     private function postToTermExtractionDirector(string $dataset): void
     {
         try {
-            $response = Http::timeout($this->timeout * 2)->withBody(
+            $response = Http::withHeaders($this->loggingContext)->timeout($this->timeout * 2)->withBody(
                 $dataset,
                 'application/json'
             )->post($this->tedUrl  . '/datasets');
@@ -152,6 +164,8 @@ class TermExtraction implements ShouldQueue
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
+
+            \Log::info('Term extraction failed with ' . $e->getMessage(), $this->loggingContext);
 
             throw new Exception($e->getMessage());
         }
