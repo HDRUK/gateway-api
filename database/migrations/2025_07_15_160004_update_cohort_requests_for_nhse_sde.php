@@ -42,7 +42,7 @@ return new class () extends Migration {
                 ]
             );
             $table->boolean('cohort_status')->default(false)->after('request_status');
-            $table->boolean('is_nhse_sde_approval')->default(false)->after('cohort_status');
+            $table->boolean('is_nhse_sde_approval')->default(false);
         });
 
         $cohorts = CohortRequest::whereIn('request_status', ['APPROVED', 'REJECTED', 'SUSPENDED'])->get();

@@ -168,7 +168,10 @@ class CohortRequestController extends Controller
                 $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
             }
 
-            $query = CohortRequest::with(['logs', 'logs.user', 'permissions', 'user.sector'])
+            $query = CohortRequest::with(['logs', 'permissions', 'user.sector'])
+                ->with(['logs.user' => function ($query) {
+                    $query->select('id', 'name');
+                }])
                 ->with(['user.teams' => function ($query) {
                     $query->select('teams.id', 'name');
                 }])
@@ -434,7 +437,6 @@ class CohortRequestController extends Controller
                     'id' => CohortRequest::where('id', $id)->update([
                         'user_id' => (int) $jwtUser['id'],
                         'request_status' => 'PENDING',
-                        'cohort_status' => false,
                         'request_expire_at' => null,
                         'created_at' => Carbon::today()->toDateTimeString(),
                     ])
@@ -444,7 +446,6 @@ class CohortRequestController extends Controller
                 $cohortRequest = CohortRequest::create([
                     'user_id' => (int) $jwtUser['id'],
                     'request_status' => 'PENDING',
-                    'cohort_status' => false,
                     'created_at' => Carbon::now(),
                 ]);
             }
@@ -1169,7 +1170,6 @@ class CohortRequestController extends Controller
             $checkingCohortRequest = CohortRequest::where([
                 'user_id' => $userId,
                 'request_status' => 'APPROVED',
-                'cohort_status' => 1,
             ])->first();
 
             if (!$checkingCohortRequest) {
