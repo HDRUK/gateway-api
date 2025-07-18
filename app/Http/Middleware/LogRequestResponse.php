@@ -21,7 +21,7 @@ class LogRequestResponse
         $methodName = $this->getMethodName($request);
 
         // Log the incoming request
-        Log::info('Request', [
+        Log::debug('Request', [
             'x-request-session-id' => $request->headers->all()['x-request-session-id'] ?? null,
             'url' => $request->fullUrl(),
             'http_method' => $request->getMethod(),
@@ -36,7 +36,7 @@ class LogRequestResponse
         $responseBody = json_decode($responseBody, true);
         $responseBody = $this->maskSensitive($responseBody);
         $responseBody = $this->truncateBody($responseBody);
-        Log::info('Response', [
+        Log::debug('Response', [
             'x-request-session-id' => $request->headers->all()['x-request-session-id'] ?? null,
             'url' => $request->fullUrl(),
             'http_method' => $request->getMethod(),
