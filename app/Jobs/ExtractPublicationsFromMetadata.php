@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use CloudLogger;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
@@ -15,6 +14,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use App\Models\PublicationHasDatasetVersion;
+use App\Http\Traits\LoggingContext;
 
 class ExtractPublicationsFromMetadata implements ShouldQueue
 {
@@ -22,8 +22,10 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
+    use LoggingContext;
 
     private int $datasetVersionId = 0;
+    private ?array $loggingContext = null;
 
     /**
      * Create a new job instance.
@@ -31,6 +33,9 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
     public function __construct(int $datasetVersionId)
     {
         $this->datasetVersionId = $datasetVersionId;
+
+        $this->loggingContext = $this->getLoggingContext(\request());
+        $this->loggingContext['method_name'] = class_basename($this);
     }
 
     /**
@@ -57,25 +62,25 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
                 ->first();
 
         if (is_null($metadata)) {
-            CloudLogger::write('ExtractPublicationsFromMetadata :: Metadata not found.', 'WARNING');
+            \Log::warning('ExtractPublicationsFromMetadata :: Metadata not found.', $this->loggingContext);
             return;
         }
 
         $dataset = Dataset::where('id', $metadata->dataset_id)->select(['id', 'user_id', 'team_id'])->first();
         if (is_null($dataset)) {
-            CloudLogger::write('ExtractPublicationsFromMetadata :: Dataset not found.', 'WARNING');
+            \Log::warning('ExtractPublicationsFromMetadata :: Dataset not found.', $this->loggingContext);
             return;
         }
 
         $user = User::where('id', $dataset->user_id)->first();
         if (is_null($user)) {
-            CloudLogger::write('ExtractPublicationsFromMetadata :: User not found.', 'WARNING');
+            \Log::warning('ExtractPublicationsFromMetadata :: User not found.', $this->loggingContext);
             return;
         }
 
         $team = Team::where('id', $dataset->team_id)->first();
         if (is_null($team)) {
-            CloudLogger::write('ExtractPublicationsFromMetadata :: Team not found.', 'WARNING');
+            \Log::warning('ExtractPublicationsFromMetadata :: Team not found.', $this->loggingContext);
             return;
         }
 
@@ -112,7 +117,7 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
         }
 
         foreach ($publications as $publication) {
-            CloudLogger::write('ExtractPublicationsFromMetadata :: ' . $publication);
+            \Log::info('ExtractPublicationsFromMetadata :: ' . $publication, $this->loggingContext);
 
             // check if gateway url
             if (str_contains($publication, env('GATEWAY_URL'))) {
@@ -128,7 +133,7 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
             $checkPublication = Publication::where('paper_doi', 'like', '%' . $publication . '%')->first();
 
             if (!is_null($checkPublication)) {
-                CloudLogger::write('ExtractPublicationsFromMetadata :: Publication already exists.', 'WARNING');
+                \Log::warning('ExtractPublicationsFromMetadata :: Publication already exists.', $this->loggingContext);
                 $this->createLinkPublicationDatasetVersion($checkPublication->id, $datasetVersionId, $type);
                 continue;
             }
@@ -140,11 +145,11 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
                 }
 
                 if ($searchDoi['data']['is_preprint']) {
-                    CloudLogger::write('ExtractPublicationsFromMetadata :: No publication - is_preprint is true', 'WARNING');
+                    \Log::warning('ExtractPublicationsFromMetadata :: No publication - is_preprint is true', $this->loggingContext);
                     continue;
                 }
 
-                CloudLogger::write('ExtractPublicationsFromMetadata :: search doi ' . json_encode($searchDoi));
+                \Log::info('ExtractPublicationsFromMetadata :: search doi ' . json_encode($searchDoi), $this->loggingContext);
 
                 $newPublication = new Publication();
                 $newPublication->abstract = $searchDoi['data']['abstract'];
@@ -170,7 +175,10 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
 
                 $newPublication->save();
                 $publicationId = $newPublication->id;
-                CloudLogger::write('ExtractPublicationsFromMetadata :: a new publication has been created with id = ' . $publicationId);
+                \Log::info(
+                    'ExtractPublicationsFromMetadata :: a new publication has been created with id = ' . $publicationId,
+                    $this->loggingContext
+                );
 
                 $this->createLinkPublicationDatasetVersion($publicationId, $datasetVersionId, $type);
 
@@ -185,7 +193,7 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
     public function searchDoi(string $doi)
     {
         if (strlen($doi) === 0 || !$doi) {
-            CloudLogger::write('ExtractPublicationsFromMetadata :: doi string invalid.', 'WARNING');
+            \Log::warning('ExtractPublicationsFromMetadata :: doi string invalid.', $this->loggingContext);
             return null;
         }
 
@@ -198,7 +206,7 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
         if ($response->successful()) {
             return $response->json();
         } else {
-            CloudLogger::write('ExtractPublicationsFromMetadata :: Search Doi request failed', 'WARNING');
+            \Log::warning('ExtractPublicationsFromMetadata :: Search Doi request failed', $this->loggingContext);
             return null;
         }
     }

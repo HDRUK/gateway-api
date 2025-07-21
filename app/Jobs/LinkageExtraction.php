@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Http\Traits\LoggingContext;
 use App\Models\DatasetVersionHasDatasetVersion;
 use App\Models\PublicationHasDatasetVersion;
 use App\Models\Dataset;
@@ -21,6 +22,7 @@ class LinkageExtraction implements ShouldQueue
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
+    use LoggingContext;
 
     protected string $sourceDatasetId = '';
     protected string $sourceDatasetVersionId = '';
@@ -29,6 +31,8 @@ class LinkageExtraction implements ShouldQueue
     protected array|null $publicationAboutDatasetLinkages;
     protected array|null $publicationUsingDatasetLinkages;
     protected string $description = '';
+
+    private ?array $loggingContext = null;
 
     /**
      * Create a new job instance.
@@ -53,12 +57,18 @@ class LinkageExtraction implements ShouldQueue
             $this->publicationUsingDatasetLinkages = $publicationUsingDatasetLinkages !== '' ? $publicationUsingDatasetLinkages : null;
 
             $this->description = 'Extracted from GWDM';
+
+            $this->loggingContext = $this->getLoggingContext(\request());
+            $this->loggingContext['method_name'] = class_basename($this);
+
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
                 'action_name' => __METHOD__,
                 'description' => $e->getMessage(),
             ]);
+
+            \Log::info('Error initializing LinkageExtraction job: ' . $e->getMessage(), $this->loggingContext);
 
             throw new Exception('Error initializing LinkageExtraction job: ' . $e->getMessage());
         }
@@ -85,6 +95,8 @@ class LinkageExtraction implements ShouldQueue
                 'action_name' => __METHOD__,
                 'description' => $e->getMessage(),
             ]);
+
+            \Log::info('Error handling LinkageExtraction job: ' . $e->getMessage(), $this->loggingContext);
 
             throw new Exception('Error handling LinkageExtraction job: ' . $e->getMessage());
         }
@@ -130,6 +142,8 @@ class LinkageExtraction implements ShouldQueue
                 'action_name' => __METHOD__,
                 'description' => $e->getMessage(),
             ]);
+
+            \Log::info('Error processing dataset linkages: ' . $e->getMessage(), $this->loggingContext);
 
             throw new Exception('Error processing dataset linkages: ' . $e->getMessage());
         }
@@ -183,6 +197,8 @@ class LinkageExtraction implements ShouldQueue
                 'action_name' => __METHOD__,
                 'description' => $e->getMessage(),
             ]);
+
+            \Log::info("Error processing publication linkages ({$linkType}): " . $e->getMessage(), $this->loggingContext);
 
             throw new Exception("Error processing publication linkages ({$linkType}): " . $e->getMessage());
         }
