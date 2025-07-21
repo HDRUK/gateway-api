@@ -28,11 +28,11 @@ class AppendTokenResponse
         if (strpos($currentUrl, 'oauth/token') !== false) {
             $content = json_decode($response->getContent(), true);
             $content['id_token'] = $this->generateIdToken($content['access_token']);
-            Log::info('MiddlewareAppended id_token to response', json_encode([
+            Log::info('MiddlewareAppended id_token to response', [
                 'user_id' => $request->user()->id ?? null,
                 'id_token' => $content['id_token'] ?? null,
                 'content' => $content,
-            ]));
+            ]);
             return response()->json($content, $response->getStatusCode(), $response->headers->all());
         }
 
