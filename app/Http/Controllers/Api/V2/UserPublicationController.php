@@ -188,7 +188,7 @@ class UserPublicationController extends Controller
         $this->checkAccess($request->all(), null, $userId, 'user');
 
         try {
-            $counts = Publication::where('user_id', $userId)->applyCount();
+            $counts = Publication::where('owner_id', $userId)->applyCount();
 
             Auditor::log([
                 'action_type' => 'GET',

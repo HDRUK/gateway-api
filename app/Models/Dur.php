@@ -138,16 +138,21 @@ class Dur extends Model
         return $this->belongsToMany(Keyword::class, 'dur_has_keywords');
     }
 
-    public function userDatasets(): HasManyThrough
+    // SC: these (userDatasets, applicationDatasets, userPublications, applicationPublications)
+    // are not used in the V2 controllers since there would also need to filter by Dataset.status=ACTIVE,
+    // and I simply can't make that work. FE doesn't use these fields anyway so chalk it up to minimising
+    // BE compute and response size :)
+    public function userDatasets(): HasManyThrough //SC: TODO: make this clearer that this is "users via Datasets" rather than "Datasets of the same user"
     {
         return $this->hasManyThrough(
             User::class,
             DurHasDatasetVersion::class,
-            'dur_id', // Foreign key on the CollectionHasDatasetVersion table
-            'id',            // Local key on the Collection table
+            'dur_id', // Foreign key on the DurHasDatasetVersion table
+            'id',            // Local key on the Dur table
             'id',            // Local key on the User table
-            'user_id'        // Foreign key on the CollectionHasDatasetVersion table
-        );
+            'user_id'        // Foreign key on the DurHasDatasetVersion table
+        )
+        ->whereNull('dur_has_dataset_version.deleted_at');
     }
 
     public function applicationDatasets(): HasManyThrough
@@ -155,27 +160,38 @@ class Dur extends Model
         return $this->hasManyThrough(
             Application::class,
             DurHasDatasetVersion::class,
-            'dur_id', // Foreign key on the CollectionHasDatasetVersion table
-            'id',            // Local key on the Collection table
+            'dur_id', // Foreign key on the DurHasDatasetVersion table
+            'id',            // Local key on the Dur table
             'id',            // Local key on the Application table
-            'application_id' // Foreign key on the CollectionHasDatasetVersion table
-        );
+            'application_id' // Foreign key on the DurHasDatasetVersion table
+        )
+        ->whereNull('dur_has_dataset_version.deleted_at');
     }
 
     public function publications(): BelongsToMany
     {
         return $this->belongsToMany(Publication::class, 'dur_has_publications')
-            ->withPivot('dur_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at')->whereNull('dur_has_publications.deleted_at');
+            ->withPivot('dur_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at')
+            ->whereNull('dur_has_publications.deleted_at')
+            ->where('publications.status', 'ACTIVE');
     }
 
     public function userPublications(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'dur_has_publications');
+        return $this->belongsToMany(
+            User::class,
+            'dur_has_publications'
+        )
+        ->whereNull('dur_has_publications.deleted_at');
     }
 
     public function applicationPublications(): BelongsToMany
     {
-        return $this->belongsToMany(Application::class, 'dur_has_publications');
+        return $this->belongsToMany(
+            Application::class,
+            'dur_has_publications'
+        )
+        ->whereNull('dur_has_publications.deleted_at');
     }
 
     public function user(): BelongsTo
@@ -200,7 +216,12 @@ class Dur extends Model
 
     public function tools(): BelongsToMany
     {
-        return $this->belongsToMany(Tool::class, 'dur_has_tools');
+        return $this->belongsToMany(
+            Tool::class,
+            'dur_has_tools'
+        )
+        ->whereNull('dur_has_tools.deleted_at')
+        ->where('tools.status', 'ACTIVE');
     }
 
     public static function exportHeadings(): array
@@ -262,12 +283,19 @@ class Dur extends Model
      */
     public function versions()
     {
-        return $this->belongsToMany(DatasetVersion::class, 'dur_has_dataset_version', 'dur_id', 'dataset_version_id');
+        return $this->belongsToMany(
+            DatasetVersion::class,
+            'dur_has_dataset_version',
+            'dur_id',
+            'dataset_version_id'
+        )
+        ->whereNull('dur_has_dataset_version.deleted_at');
     }
 
     public function datasetVersions(): HasMany
     {
-        return $this->hasMany(DurHasDatasetVersion::class, 'dur_id');
+        return $this->hasMany(DurHasDatasetVersion::class, 'dur_id')->whereNull('dur_has_dataset_version.deleted_at');
+        ;
     }
 
 
@@ -278,7 +306,9 @@ class Dur extends Model
             'collection_has_durs',
             'dur_id',
             'collection_id',
-        );
+        )
+        ->whereNull('collection_has_durs.deleted_at')
+        ->where('collections.status', 'ACTIVE');
     }
 
 }

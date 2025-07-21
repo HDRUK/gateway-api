@@ -12,6 +12,7 @@ use App\Jobs\TermExtraction;
 use App\Jobs\LinkageExtraction;
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
+use App\Http\Traits\TrimPayload;
 use App\Http\Traits\CheckAccess;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -40,6 +41,7 @@ class TeamDatasetController extends Controller
     use ModelHelpers;
     use RequestTransformation;
     use DatasetsV2Helpers;
+    use TrimPayload;
 
     /**
      * @OA\Get(
@@ -116,6 +118,22 @@ class TeamDatasetController extends Controller
                 $perPage,
                 $withMetadata,
             );
+
+            foreach ($datasets as &$d) {
+                $miniMetadata = $this->trimDatasets($d->latestMetadata['metadata'], [
+                    'summary',
+                    'required',
+                ]);
+
+                // latestMetadata is a relation and cannot be assigned at this
+                // level, safely. So, unset all forms of metadata on the object
+                // and overwrite with out minimal version
+                unset($d['latest_metadata']);
+                unset($d['latestMetadata']);
+
+                $d['latest_metadata'] = $miniMetadata;
+            }
+
 
             Auditor::log([
                 'action_type' => 'GET',
