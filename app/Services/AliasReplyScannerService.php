@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use Exception;
-use CloudLogger;
 use App\Models\Team;
 use App\Models\User;
 use App\Jobs\SendEmailJob;
@@ -12,10 +11,20 @@ use App\Models\EnquiryThread;
 use App\Models\EnquiryMessage;
 use Webklex\PHPIMAP\ClientManager;
 use App\Http\Traits\EnquiriesTrait;
+use App\Http\Traits\LoggingContext;
 
 class AliasReplyScannerService
 {
     use EnquiriesTrait;
+    use LoggingContext;
+
+    private ?array $loggingContext = null;
+
+    public function __construct()
+    {
+        $this->loggingContext = $this->getLoggingContext(\request());
+        $this->loggingContext['method_name'] = class_basename($this);
+    }
 
     public function getImapClient()
     {
@@ -130,13 +139,11 @@ class AliasReplyScannerService
         $usersToNotify = $this->getUsersByTeamIds([$enquiryThread->team_id], $enquiryThread->user_id, $enquiryThread->user_preferred_email);
 
         if (empty($usersToNotify)) {
-            CloudLogger::write([
-                'action_type' => 'NOTIFY',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' .
-                    $threadId,
-            ]);
-
+            $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            \Log::info(
+                'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' . $threadId,
+                $this->loggingContext,
+            );
             return;
         }
 
@@ -231,7 +238,11 @@ class AliasReplyScannerService
                 $something,
             );
         } catch (Exception $e) {
-            CloudLogger::write('ERROR reply email enquiry thread :: ' . json_encode($e->getMessage()));
+            $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            \Log::info(
+                'ERROR reply email enquiry thread :: ' . json_encode($e->getMessage()),
+                $this->loggingContext,
+            );
         }
     }
 }
