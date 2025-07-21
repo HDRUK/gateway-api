@@ -1,3 +1,11 @@
+## [2.17.0](https://github.com/HDRUK/gateway-api/compare/v2.16.0...v2.17.0) (2025-07-21)
+
+### ✨ Features
+
+* **GAT-7329:** Add dataset linkage information to payload for display on landing page. (#1324) ([78eebf3](https://github.com/HDRUK/gateway-api/commit/78eebf330608fb83775d4d2d1e7bf83c5a184f6a)), closes [GAT-7329](GAT-7329)
+* **GAT-7329:** Update all v2 controllers to use new archiving behaviour (#1323) ([f8da65c](https://github.com/HDRUK/gateway-api/commit/f8da65cf543b61fc42874b85f3f26f86868cb6a0)), closes [GAT-7329](GAT-7329)
+* **GAT-7330:** Data migration for changed archiving behaviour (#1309) ([2163670](https://github.com/HDRUK/gateway-api/commit/21636709a22713b63beafc4d94f757aa214d43ec)), closes [GAT-7330](GAT-7330)
+
 ## [2.16.0](https://github.com/HDRUK/gateway-api/compare/v2.15.2...v2.16.0) (2025-07-15)
 
 ### ✨ Features
