@@ -78,6 +78,7 @@ class CustomAuthorizationController extends Controller
                 $userId = $getFromDB->user_id;
                 CloudLogger::write('Found user_id from OauthUser :: ' . $userId);
             } else {
+                CloudLogger::write('No user_id found in OauthUser :: ' . $userId);
                 return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
             }
         }
