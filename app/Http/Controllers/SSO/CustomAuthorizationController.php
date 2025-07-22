@@ -61,13 +61,6 @@ class CustomAuthorizationController extends Controller
         // user_id from CohortRequestController@checkAccess
         $userId = session('cr_uid');
 
-        // if (!$userId) {
-        //     CloudLogger::write('No user_id/cr_uid found in session :: ' . json_encode([
-        //         'session' => session()->all(),
-        //     ]));
-        //     return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
-        // }
-
         if (!$userId) {
             CloudLogger::write('No user_id/cr_uid found in session :: ' . json_encode([
                 'session' => session()->all(),
