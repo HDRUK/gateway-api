@@ -42,7 +42,6 @@ Route::get('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middle
 Route::match(['get', 'post'], '/oauth/logmeout', [CustomLogoutController::class, 'rquestLogout']);
 Route::match(['get', 'post'], '/oauth2/logout', [CustomLogoutController::class, 'rquestLogout']);
 
-
 // stop all all other routes
 Route::any('{path}', function () {
     $response = [
