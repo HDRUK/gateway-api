@@ -39,6 +39,7 @@
         "spatie/laravel-google-cloud-storage": "^2.3",
         "staudenmeir/belongs-to-through": "^2.5",
         "staudenmeir/eloquent-has-many-deep": "^1.7",
+        "swaggest/json-diff": "^3.12",
         "webklex/laravel-imap": "^5.3"
     },
     "require-dev": {

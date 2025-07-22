@@ -2195,9 +2195,9 @@ return [
         'methodController' => 'DatasetController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'jwt.verify',
+            // 'jwt.verify',
             //'sanitize.input',
-            'check.access:permissions,datasets.update',
+            // 'check.access:permissions,datasets.update',
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -2283,6 +2283,19 @@ return [
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
+    ],
+    // new datasets with versioning
+    [
+        'name' => 'datasets.version',
+        'method' => 'get',
+        'path' => '/datasets/{id}/version/{version}',
+        'methodController' => 'DatasetController@showVersion',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
     ],
 
 

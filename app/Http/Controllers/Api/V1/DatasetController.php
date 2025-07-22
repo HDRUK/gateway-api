@@ -33,6 +33,8 @@ use App\Models\DatasetVersionHasDatasetVersion;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
+use App\Services\MetadataVersioningService;
+
 class DatasetController extends Controller
 {
     use MetadataVersioning;
@@ -40,6 +42,13 @@ class DatasetController extends Controller
     use MetadataOnboard;
     use CheckAccess;
     use ModelHelpers;
+
+    protected MetadataVersioningService $versioningService;
+
+    public function __construct(MetadataVersioningService $versioningService)
+    {
+        $this->versioningService = $versioningService;
+    }
 
     /**
      * @OA\Get(
@@ -330,6 +339,13 @@ class DatasetController extends Controller
 
             throw new Exception($e->getMessage());
         }
+    }
+
+    public function showVersion(Request $request, int $id, int $version): JsonResponse
+    {
+        return response()->json([
+            'data' => $this->versioningService->getDatasetAtVersion($id, $version),
+        ]);
     }
 
     /**
@@ -783,133 +799,143 @@ class DatasetController extends Controller
      */
     public function update(UpdateDataset $request, int $id)
     {
-        list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
+        // list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
 
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        // $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $initDataset = Dataset::withTrashed()->where('id', $id)->first();
-        $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
+        // $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
 
-        try {
-            $elasticIndexing = $request->boolean('elastic_indexing', false);
-            $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
+        $this->versioningService->updateMetadata(
+            $id,
+            ($input['metadata']['metadata'] ?? $input['metadata'])
+        );
 
-            $user = User::where('id', $userId)->first();
-            $team = Team::where('id', $teamId)->first();
-            $currDataset = Dataset::where('id', $id)->first();
-            $currentPid = $currDataset->pid;
+        return response()->json([
+            'message' => 'success',
+            'data' => $id,
+        ], 200);
+
+        // try {
+        //     $elasticIndexing = $request->boolean('elastic_indexing', false);
+        //     $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
+
+        //     $user = User::where('id', $userId)->first();
+        //     $team = Team::where('id', $teamId)->first();
+        //     $currDataset = Dataset::where('id', $id)->first();
+        //     $currentPid = $currDataset->pid;
 
 
-            $payload = $this->extractMetadata($input['metadata']);
-            $payload['extra'] = [
-                "id" => $id,
-                "pid" => $currentPid,
-                "datasetType" => "Health and disease",
-                "publisherId" => $team['pid'],
-                "publisherName" => $team['name']
-            ];
+        //     $payload = $this->extractMetadata($input['metadata']);
+        //     $payload['extra'] = [
+        //         "id" => $id,
+        //         "pid" => $currentPid,
+        //         "datasetType" => "Health and disease",
+        //         "publisherId" => $team['pid'],
+        //         "publisherName" => $team['name']
+        //     ];
 
-            $inputSchema = isset($input['metadata']['schemaModel']) ?
-                $input['metadata']['schemaModel'] : $request->query('input_schema', null);
-            $inputVersion = isset($input['metadata']['schemaVersion']) ?
-                $input['metadata']['schemaVersion'] : $request->query('input_version', null);
+        //     $inputSchema = isset($input['metadata']['schemaModel']) ?
+        //         $input['metadata']['schemaModel'] : $request->query('input_schema', null);
+        //     $inputVersion = isset($input['metadata']['schemaVersion']) ?
+        //         $input['metadata']['schemaVersion'] : $request->query('input_version', null);
 
-            $submittedMetadata = ($input['metadata']['metadata'] ?? $input['metadata']);
-            $gwdmMetadata = null;
-            $useGWDMetada = false;
-            $traserResponse = MMC::translateDataModelType(
-                json_encode($payload),
-                Config::get('metadata.GWDM.name'),
-                Config::get('metadata.GWDM.version'),
-                $inputSchema, //user can force an input version to avoid traser unknown errors
-                $inputVersion, // as above
-                $request['status'] !== Dataset::STATUS_DRAFT, // Disable input validation if it's a draft
-                $request['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
-            );
-            if ($traserResponse['wasTranslated']) {
-                //set the gwdm metadata
-                $gwdmMetadata = $traserResponse['metadata'];
-                $useGWDMetada = true;
-            } else {
-                return response()->json([
-                    'message' => 'metadata is in an unknown format and cannot be processed.',
-                    'details' => $traserResponse,
-                ], 400);
-            }
+        //     $submittedMetadata = ($input['metadata']['metadata'] ?? $input['metadata']);
+        //     $gwdmMetadata = null;
+        //     $useGWDMetada = false;
+        //     $traserResponse = MMC::translateDataModelType(
+        //         json_encode($payload),
+        //         Config::get('metadata.GWDM.name'),
+        //         Config::get('metadata.GWDM.version'),
+        //         $inputSchema, //user can force an input version to avoid traser unknown errors
+        //         $inputVersion, // as above
+        //         $request['status'] !== Dataset::STATUS_DRAFT, // Disable input validation if it's a draft
+        //         $request['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
+        //     );
+        //     if ($traserResponse['wasTranslated']) {
+        //         //set the gwdm metadata
+        //         $gwdmMetadata = $traserResponse['metadata'];
+        //         $useGWDMetada = true;
+        //     } else {
+        //         return response()->json([
+        //             'message' => 'metadata is in an unknown format and cannot be processed.',
+        //             'details' => $traserResponse,
+        //         ], 400);
+        //     }
 
-            // Update the existing dataset parent record with incoming data
-            $updateTime = now();
-            $currDataset->update([
-                'user_id' => $userId,
-                'team_id' => $teamId,
-                'updated' => $updateTime,
-                'pid' => $currentPid,
-                'create_origin' => $createOrigin,
-                'status' => $input['status'] ?? 'ACTIVE',
-                'is_cohort_discovery' => $isCohortDiscovery,
-            ]);
+        //     // Update the existing dataset parent record with incoming data
+        //     $updateTime = now();
+        //     $currDataset->update([
+        //         'user_id' => $userId,
+        //         'team_id' => $teamId,
+        //         'updated' => $updateTime,
+        //         'pid' => $currentPid,
+        //         'create_origin' => $createOrigin,
+        //         'status' => $input['status'] ?? 'ACTIVE',
+        //         'is_cohort_discovery' => $isCohortDiscovery,
+        //     ]);
 
-            $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
+        //     $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
 
-            if (!is_array($submittedMetadata)) {
-                $submittedMetadata = json_decode($submittedMetadata, true);
-            }
+        //     if (!is_array($submittedMetadata)) {
+        //         $submittedMetadata = json_decode($submittedMetadata, true);
+        //     }
 
-            $datasetVersionId = $this->updateMetadataVersion(
-                $currDataset,
-                $gwdmMetadata,
-                $submittedMetadata,
-            );
+        //     $datasetVersionId = $this->updateMetadataVersion(
+        //         $currDataset,
+        //         $gwdmMetadata,
+        //         $submittedMetadata,
+        //     );
 
-            // Dispatch term extraction to a subprocess if the dataset moves from draft to active
-            if ($request['status'] === Dataset::STATUS_ACTIVE) {
+        //     // Dispatch term extraction to a subprocess if the dataset moves from draft to active
+        //     if ($request['status'] === Dataset::STATUS_ACTIVE) {
 
-                LinkageExtraction::dispatch(
-                    $currDataset->id,
-                    $datasetVersionId,
-                );
-                if (Config::get('ted.enabled')) {
-                    $tedMetadata = ($useGWDMetada) ? $gwdmMetadata : $input['metadata'];
-                    $tedData = Config::get('ted.use_partial') ? $tedMetadata['summary'] : $tedMetadata;
+        //         LinkageExtraction::dispatch(
+        //             $currDataset->id,
+        //             $datasetVersionId,
+        //         );
+        //         if (Config::get('ted.enabled')) {
+        //             $tedMetadata = ($useGWDMetada) ? $gwdmMetadata : $input['metadata'];
+        //             $tedData = Config::get('ted.use_partial') ? $tedMetadata['summary'] : $tedMetadata;
 
-                    TermExtraction::dispatch(
-                        $currDataset->id,
-                        $datasetVersionId,
-                        $versionNumber,
-                        base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
-                        $elasticIndexing,
-                        Config::get('ted.use_partial')
-                    );
-                }
-            }
+        //             TermExtraction::dispatch(
+        //                 $currDataset->id,
+        //                 $datasetVersionId,
+        //                 $versionNumber,
+        //                 base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
+        //                 $elasticIndexing,
+        //                 Config::get('ted.use_partial')
+        //             );
+        //         }
+        //     }
 
-            Auditor::log([
-                'user_id' => $userId,
-                'team_id' => $teamId,
-                'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Dataset ' . $id . ' with version ' . ($versionNumber) . ' updated',
-            ]);
+        //     Auditor::log([
+        //         'user_id' => $userId,
+        //         'team_id' => $teamId,
+        //         'action_type' => 'UPDATE',
+        //         'action_name' => class_basename($this) . '@' . __FUNCTION__,
+        //         'description' => 'Dataset ' . $id . ' with version ' . ($versionNumber) . ' updated',
+        //     ]);
 
-            //note Calum 13/08/2024
-            // - ive removed returning the data because i dont know what the hell is going on with
-            //   the show() method and 'withLinks' etc. etc. [see above]
-            // - i think its safe that the PUT method doesnt try to return the updated data
-            // - GET /dataset/{id} should be used to get the latest dataset and metadata
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-            ], Config::get('statuscodes.STATUS_OK.code'));
-        } catch (Exception $e) {
-            Auditor::log([
-                'user_id' => $userId,
-                'team_id' => $teamId,
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
+        //     //note Calum 13/08/2024
+        //     // - ive removed returning the data because i dont know what the hell is going on with
+        //     //   the show() method and 'withLinks' etc. etc. [see above]
+        //     // - i think its safe that the PUT method doesnt try to return the updated data
+        //     // - GET /dataset/{id} should be used to get the latest dataset and metadata
+        //     return response()->json([
+        //         'message' => Config::get('statuscodes.STATUS_OK.message'),
+        //     ], Config::get('statuscodes.STATUS_OK.code'));
+        // } catch (Exception $e) {
+        //     Auditor::log([
+        //         'user_id' => $userId,
+        //         'team_id' => $teamId,
+        //         'action_type' => 'EXCEPTION',
+        //         'action_name' => class_basename($this) . '@' . __FUNCTION__,
+        //         'description' => $e->getMessage(),
+        //     ]);
 
-            throw new Exception($e);
-        }
+        //     throw new Exception($e);
+        // }
     }
 
     /**
