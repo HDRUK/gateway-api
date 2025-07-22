@@ -1,3 +1,9 @@
+## [2.18.0](https://github.com/HDRUK/gateway-api/compare/v2.17.0...v2.18.0) (2025-07-22)
+
+### ✨ Features
+
+* **GAT-7331:** Fixes to endpoints (#1331) ([8169cb7](https://github.com/HDRUK/gateway-api/commit/8169cb79a293e22fe812d27c7e08c86892bdb46b))
+
 ## [2.17.0](https://github.com/HDRUK/gateway-api/compare/v2.16.0...v2.17.0) (2025-07-21)
 
 ### ✨ Features
