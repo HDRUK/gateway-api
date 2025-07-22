@@ -1198,7 +1198,7 @@ class CohortRequestController extends Controller
 
             OauthUser::create([
                 'user_id' => $userId,
-                'noncce' => 'new_value',
+                'nonce' => 'new_value',
             ]);
 
             Auditor::log([
