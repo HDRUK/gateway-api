@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers\SSO;
 
+use CloudLogger;
 use App\Models\OauthUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Laravel\Passport\Passport;
 use Laravel\Passport\Bridge\User;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Laravel\Passport\ClientRepository;
 use App\Http\Traits\HandlesOAuthErrors;
+use Auth;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
 use League\OAuth2\Server\AuthorizationServer;
@@ -50,18 +54,46 @@ class CustomAuthorizationController extends Controller
         Request $request,
         ClientRepository $clients,
     ) {
+        CloudLogger::write('Session data for customAuthorize :: ' . json_encode([
+            'session' => session()->all(),
+            'request' => $request->all(),
+        ]));
+
         // user_id from CohortRequestController@checkAccess
         $userId = session('cr_uid');
 
         if (!$userId) {
-            return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
+            CloudLogger::write('No user_id/cr_uid found in session :: ' . json_encode([
+                'session' => session()->all(),
+            ]));
+
+            $getFromDB = OauthUser::where('updated_at', '>=', Carbon::now()->subSeconds(2))->first();
+            if ($getFromDB) {
+                $userId = $getFromDB->user_id;
+                CloudLogger::write('Found user_id from OauthUser :: ' . $userId);
+                session(['cr_uid' => $userId]);
+            } else {
+                CloudLogger::write('No user_id found in OauthUser :: ' . $userId);
+                return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
+            }
         }
 
+        CloudLogger::write('User ID for authorization request :: ' . $userId);
+
         // save nonce and user_id for id_token
-        OauthUser::create([
-            'user_id' => $userId,
-            'nonce' => $request->query('nonce'),
-        ]);
+        $checkifExists = OauthUser::where('user_id', $userId)->first();
+        if ($checkifExists) {
+            CloudLogger::write('OauthUser already exists for user_id :: ' . $userId . ', n_nce :: ' . $checkifExists->nonce);
+            OauthUser::where('user_id', $userId)->update([
+                'nonce' => $request->query('nonce'),
+            ]);
+        } else {
+            CloudLogger::write('Creating new OauthUser for user_id :: ' . $userId . ', n_nce :: ' . $request->query('nonce'));
+            OauthUser::create([
+                'user_id' => $userId,
+                'nonce' => $request->query('nonce'),
+            ]);
+        }
 
         return $this->withErrorHandling(function () use ($psrRequest, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);

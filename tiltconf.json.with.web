@@ -1,0 +1,21 @@
+{
+    "name": "gateway-api",
+
+    // "gatewayWeb2Root": "/Users/dannita/Projects/work/gateway-web-2",
+    "traserServiceRoot": "/Users/dannita/Projects/work/traser",
+    "tedServiceRoot": "/Users/dannita/Projects/work/term-extraction-director",
+    "gmiServiceRoot": "/Users/dannita/Projects/work/metadata-federation-service",
+    "searchServiceRoot": "/Users/dannita/Projects/work/search-service",
+    "qbServiceRoot": "/Users/dannita/Projects/work/qb-service",
+    "darasServiceRoot": "/Users/dannita/Projects/work/dar-service",
+    "clamavServiceRoot": "/Users/dannita/Projects/work/clamav-scanner",
+    "elasticServiceRoot": "/Users/dannita/Projects/work/elastic_deployment",
+    "traserEnabled": true,
+    "tedEnabled": true,
+    "gmiEnabled": true,
+    "searchEnabled": true,
+    "qbEnabled": false,
+    "darasEnabled": false,
+    "clamavEnabled": true,
+    "elasticEnabled": true
+}
