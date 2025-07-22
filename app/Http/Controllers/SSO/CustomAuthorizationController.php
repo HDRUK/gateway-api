@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Laravel\Passport\ClientRepository;
 use App\Http\Traits\HandlesOAuthErrors;
+use Auth;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
 use League\OAuth2\Server\AuthorizationServer;
@@ -58,6 +59,15 @@ class CustomAuthorizationController extends Controller
             'request' => $request->all(),
         ]));
 
+        // test if I can get the user_id from Auth
+        if (Auth::check()) {
+            $userId = Auth::id();
+            CloudLogger::write('Found user_id from Auth :: ' . $userId);
+        } else {
+            CloudLogger::write('No user_id found in Auth, checking OauthUser');
+
+        }
+
         // user_id from CohortRequestController@checkAccess
         $userId = session('cr_uid');
 
@@ -75,6 +85,8 @@ class CustomAuthorizationController extends Controller
                 return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
             }
         }
+
+        CloudLogger::write('User ID for authorization request :: ' . $userId);
 
         // save nonce and user_id for id_token
         $checkifExists = OauthUser::where('user_id', $userId)->first();
