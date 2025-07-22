@@ -69,10 +69,19 @@ class CustomAuthorizationController extends Controller
         }
 
         // save nonce and user_id for id_token
-        OauthUser::create([
-            'user_id' => $userId,
-            'nonce' => $request->query('nonce'),
-        ]);
+        $checkifExists = OauthUser::where('user_id', $userId)->first();
+        if ($checkifExists) {
+            CloudLogger::write('OauthUser already exists for user_id :: ' . $userId . ', n_nce :: ' . $checkifExists->nonce);
+            OauthUser::where('user_id', $userId)->update([
+                'nonce' => $request->query('nonce'),
+            ]);
+        } else {
+            CloudLogger::write('Creating new OauthUser for user_id :: ' . $userId . ', n_nce :: ' . $request->query('nonce'));
+            OauthUser::create([
+                'user_id' => $userId,
+                'nonce' => $request->query('nonce'),
+            ]);
+        }
 
         return $this->withErrorHandling(function () use ($psrRequest, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
