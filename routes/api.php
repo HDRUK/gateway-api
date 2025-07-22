@@ -1,6 +1,8 @@
 <?php
 
+use routes;
 use Illuminate\Http\Request;
+use Laravel\Passport\Passport;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SSO\CustomUserController;
 use App\Http\Controllers\SSO\CustomLogoutController;
@@ -41,6 +43,13 @@ Route::get('/email', function (Request $reqest) {
 Route::get('/oauth/userinfo', [CustomUserController::class, 'userInfo'])->middleware('auth:api');
 Route::match(['get', 'post'], '/oauth/logmeout', [CustomLogoutController::class, 'rquestLogout']);
 Route::match(['get', 'post'], '/oauth2/logout', [CustomLogoutController::class, 'rquestLogout']);
+
+Route::middleware('cors')
+    ->prefix('oauth')
+    ->namespace('\Laravel\Passport\Http\Controllers')
+    ->group(function () {
+        Passport::routes();  // this will pick up your cors middleware
+    });
 
 // stop all all other routes
 Route::any('{path}', function () {
