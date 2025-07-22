@@ -5,6 +5,7 @@ namespace App\Http\Controllers\SSO;
 use CloudLogger;
 use App\Models\OauthUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Laravel\Passport\Passport;
 use Laravel\Passport\Bridge\User;
 use Illuminate\Support\Facades\Log;
@@ -59,13 +60,26 @@ class CustomAuthorizationController extends Controller
 
         // user_id from CohortRequestController@checkAccess
         $userId = session('cr_uid');
-        // $userId = 274; // hardcoded for testing purposes
+
+        // if (!$userId) {
+        //     CloudLogger::write('No user_id/cr_uid found in session :: ' . json_encode([
+        //         'session' => session()->all(),
+        //     ]));
+        //     return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
+        // }
 
         if (!$userId) {
             CloudLogger::write('No user_id/cr_uid found in session :: ' . json_encode([
                 'session' => session()->all(),
             ]));
-            return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
+
+            $getFromDB = OauthUser::where('updated_at', '>=', Carbon::now()->subSeconds(3))->first();
+            if ($getFromDB) {
+                $userId = $getFromDB->user_id;
+                CloudLogger::write('Found user_id from OauthUser :: ' . $userId);
+            } else {
+                return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
+            }
         }
 
         // save nonce and user_id for id_token
