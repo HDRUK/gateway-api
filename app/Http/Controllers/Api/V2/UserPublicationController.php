@@ -739,8 +739,10 @@ class UserPublicationController extends Controller
                 $this->checkTools($id, $tools, $userId);
             }
 
-            $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
-            $this->checkDurs($id, $durs, $userId);
+            if (array_key_exists('durs', $input)) {
+                $durs = $input['durs'];
+                $this->checkDurs($id, $durs, $userId);
+            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
