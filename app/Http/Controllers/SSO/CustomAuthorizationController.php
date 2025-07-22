@@ -67,7 +67,7 @@ class CustomAuthorizationController extends Controller
                 'session' => session()->all(),
             ]));
 
-            $getFromDB = OauthUser::where('updated_at', '>=', Carbon::now()->subSeconds(3))->first();
+            $getFromDB = OauthUser::where('updated_at', '>=', Carbon::now()->subSeconds(2))->first();
             if ($getFromDB) {
                 $userId = $getFromDB->user_id;
                 CloudLogger::write('Found user_id from OauthUser :: ' . $userId);
