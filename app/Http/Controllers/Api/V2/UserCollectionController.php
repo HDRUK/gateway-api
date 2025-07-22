@@ -339,7 +339,7 @@ class UserCollectionController extends Controller
 
         try {
             $collectionsHasUser = CollectionHasUser::where('user_id', $userId)->pluck('collection_id');
-            $counts = Collection::whereIn('id', $collectionsHasUser)->applyCount();
+            $counts = Collection::whereIn('id', $collectionsHasUser)->where('team_id', null)->applyCount();
 
             Auditor::log([
                 'action_type' => 'GET',

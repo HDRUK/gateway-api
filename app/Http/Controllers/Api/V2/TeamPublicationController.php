@@ -753,8 +753,10 @@ class TeamPublicationController extends Controller
                 $this->checkTools($id, $tools, $jwtUser['id'] ?? null);
             }
 
-            $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
-            $this->checkDurs($id, $durs, (int)$jwtUser['id']);
+            if (array_key_exists('durs', $input)) {
+                $durs = $input['durs'];
+                $this->checkDurs($id, $durs, (int)$jwtUser['id']);
+            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
