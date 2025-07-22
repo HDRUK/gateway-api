@@ -101,9 +101,9 @@ class MetadataVersioningService
         foreach ($versions as $version) {
             $patch = JsonPatch::import($version->patch);
             $newState = json_decode(json_encode($state));
-            $state = $patch->apply($newState);
+            $patch->apply($newState);
 
-            dd($state, $newState);
+            $state = json_decode(json_encode($newState), true);
         }
 
         return $state;
