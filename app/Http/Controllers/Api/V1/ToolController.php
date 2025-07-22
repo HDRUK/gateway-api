@@ -324,6 +324,18 @@ class ToolController extends Controller
      *       example="1",
      *       @OA\Schema( type="integer", description="tool id" ),
      *    ),
+     *    @OA\Parameter(
+     *       name="view_type",
+     *       in="query",
+     *       description="Query flag to show full tool data or a trimmed version (defaults to full).",
+     *       required=false,
+     *       @OA\Schema(
+     *          type="string",
+     *          default="full",
+     *          description="Flag to show all data ('full') or trimmed data ('mini')"
+     *       ),
+     *       example="full"
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -352,8 +364,11 @@ class ToolController extends Controller
     {
         list($userId, $teamId) = $this->getAccessorUserAndTeam($request);
 
+        $viewType = $request->query('view_type', 'full');
+        $trimmed = $viewType === 'mini';
+
         try {
-            $tool = $this->getToolById($id, true);
+            $tool = $this->getToolById($id, true, $trimmed);
 
             Auditor::log([
                 'user_id' => $userId,
@@ -650,6 +665,7 @@ class ToolController extends Controller
                 'name',
                 'url',
                 'description',
+                'results_insights',
                 'license',
                 'tech_stack',
                 'category_id',
@@ -883,6 +899,7 @@ class ToolController extends Controller
                 'name',
                 'url',
                 'description',
+                'results_insights',
                 'license',
                 'tech_stack',
                 'category_id',
@@ -1082,7 +1099,7 @@ class ToolController extends Controller
         }
     }
 
-    private function getToolById(int $toolId, bool $onlyActive = false)
+    private function getToolById(int $toolId, bool $onlyActive = false, bool $trimmed = false)
     {
         $tool = Tool::with([
             'user',
@@ -1108,6 +1125,18 @@ class ToolController extends Controller
                 }
             },
             'category',
+            'versions' => function ($query) use ($trimmed) {
+                $query->whereHas('dataset', fn ($q) => $q->where('status', 'ACTIVE'));
+                $query->when($trimmed, function ($q) {
+                    $q->selectRaw('
+                        dataset_versions.id,dataset_versions.dataset_id,
+                        short_title as shortTitle,
+                        CONVERT(JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.populationSize")), SIGNED) as populationSize,
+                        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.datasetType")) as datasetType,
+                        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.publisher.name")) as dataCustodian
+                    ');
+                });
+            },
         ])
         ->withTrashed()
         ->where(['id' => $toolId])

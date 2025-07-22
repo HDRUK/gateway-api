@@ -10,7 +10,7 @@ class UnauthorizedException extends Exception
     public function __construct(
         string $message = '',
         int $code = Response::HTTP_UNAUTHORIZED,
-        Exception $previous = null,
+        ?Exception $previous = null,
     ) {
         $message = $message ? $message : Response::$statusTexts[Response::HTTP_UNAUTHORIZED];
 

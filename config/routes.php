@@ -1073,11 +1073,42 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access.userId',
         ],
         'constraint' => [
             'id' => '[0-9]+',
         ],
     ],
+
+    [
+        'name' => 'users',
+        'method' => 'get',
+        'path' => '/users/verify-secondary-email/{uuid}',
+        'methodController' => 'UserController@verifySecondaryEmail',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+        ],
+        'constraint' => [
+                'uuid' => '[0-9a-fA-F\-]{36}',
+
+        ],
+    ],
+
+        [
+        'name' => 'users',
+        'method' => 'post',
+        'path' => '/users/{id}/resend-secondary-verification',
+        'methodController' => 'UserController@resendSecondaryVerificationEmail',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access.userId',
+        ],
+        'constraint' => [
+
+        ],
+    ],
+
     [
         'name' => 'users',
         'method' => 'post',

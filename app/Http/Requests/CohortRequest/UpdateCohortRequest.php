@@ -29,6 +29,11 @@ class UpdateCohortRequest extends BaseFormRequest
                 'required',
                 Rule::in(['APPROVED','REJECTED','BANNED','SUSPENDED']),
             ],
+            'nhse_sde_request_status' => [
+                'string',
+                'nullable',
+                Rule::in([null, 'IN_PROCESS', 'APPROVAL_REQUESTED', 'APPROVED','REJECTED','BANNED','SUSPENDED']),
+            ],
         ];
     }
 

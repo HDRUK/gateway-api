@@ -5,15 +5,18 @@ namespace App\Services;
 use Elastic\Elasticsearch\Client;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\RequestException;
+use App\Http\Traits\LoggingContext;
 
 class ElasticClientControllerService
 {
+    use LoggingContext;
+
     protected $baseUrl;
     protected $username;
     protected $password;
     protected $timeout = 10;
     protected $verifySSL = false;
-
+    private ?array $loggingContext = null;
 
     public function __construct()
     {
@@ -22,6 +25,8 @@ class ElasticClientControllerService
         $this->password = config('services.elasticclient.password');
         $this->timeout = config('services.elasticclient.timeout', 10);
         $this->verifySSL = config('services.elasticclient.verify_ssl', false);
+        $this->loggingContext = $this->getLoggingContext(\request());
+        $this->loggingContext['method_name'] = class_basename($this);
     }
 
     /**
@@ -64,6 +69,9 @@ class ElasticClientControllerService
     {
         $url = $this->baseUrl . '/' . $params['index'] . '/_doc/' . $params['id'];
         try {
+            $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            \Log::info('Reindexing elastic doc ' . $params['index'] . ' ' . $params['id'], $this->loggingContext);
+
             $response = $this->makeRequest()
                 ->post($url, $params['body']);
 
@@ -75,12 +83,13 @@ class ElasticClientControllerService
             $headers = $response ? $response->headers() : [];
 
             // Optionally, log the headers for debugging
-            \Log::error('Failed to index document', [
+            $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            \Log::error('Failed to index document', array_merge([
                 'url' => $url,
                 'params' => $params,
                 'headers' => $headers,
                 'error' => $e->getMessage(),
-            ]);
+            ], $this->loggingContext));
 
             throw new \Exception(
                 'Failed to index document: ' . $e->getMessage(),
@@ -89,10 +98,11 @@ class ElasticClientControllerService
             );
         } catch (\Exception $e) {
             // General exception handling for any other unexpected errors
-            \Log::error('An unexpected error occurred', [
+            $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            \Log::error('An unexpected error occurred', array_merge([
                 'url' => $url,
                 'error' => $e->getMessage(),
-            ]);
+            ], $this->loggingContext));
 
             throw new \Exception(
                 'Failed to index document: ' . $e->getMessage(),
@@ -113,6 +123,9 @@ class ElasticClientControllerService
     {
         $url = $this->baseUrl . '/_bulk';
         $bulkData = '';
+
+        $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+        \Log::info('Bulk reindexing elastic', $this->loggingContext);
 
         // Construct the bulk request payload
         foreach ($paramsArray as $params) {
@@ -137,11 +150,12 @@ class ElasticClientControllerService
             return $response;
         } catch (RequestException $e) {
 
-            \Log::error('Failed to index document', [
+            $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            \Log::error('Failed to index document', array_merge([
                 'url' => $url,
                 'bulkData' => $bulkData,
                 'error' => $e->getMessage(),
-            ]);
+            ], $this->loggingContext));
 
             throw new \Exception(
                 'Failed to index document: ' . $e->getMessage(),
@@ -150,10 +164,11 @@ class ElasticClientControllerService
             );
         } catch (\Exception $e) {
             // General exception handling for any other unexpected errors
-            \Log::error('An unexpected error occurred', [
+            $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            \Log::error('An unexpected error occurred', array_merge([
                 'url' => $url,
                 'error' => $e->getMessage(),
-            ]);
+            ], $this->loggingContext));
 
             throw new \Exception(
                 'Failed to index document: ' . $e->getMessage(),
@@ -182,6 +197,10 @@ class ElasticClientControllerService
             $response->throw();
             return $response;
         } catch (RequestException $e) {
+
+            $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            \Log::error('Failed to delete document: ' . $e->getMessage(), $this->loggingContext);
+
             throw new \Exception('Failed to delete document: ' . $e->getMessage(), $e->getCode(), $e);
         }
     }

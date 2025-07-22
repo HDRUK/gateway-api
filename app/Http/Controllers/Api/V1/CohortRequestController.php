@@ -114,16 +114,23 @@ class CohortRequestController extends Controller
      *                @OA\Items(type="object",
      *                   @OA\Property(property="id", type="integer", example="123"),
      *                   @OA\Property(property="user_id", type="integer", example="1"),
-     *                   @OA\Property(property="user", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="request_status", type="string", example="PENDING"),
-     *                   @OA\Property(property="cohort_status", type="boolean", example="0"),
      *                   @OA\Property(property="request_expire_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                   @OA\Property(property="logs", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="accept_declaration", type="boolean", example="0"),
-     *                   @OA\Property(property="is_nhse_sde_approval", type="boolean", example="0"),
+     *                   @OA\Property(property="nhse_sde_request_status", type="string", example="APPROVED"),
+     *                   @OA\Property(property="nhse_sde_requested_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                   @OA\Property(property="nhse_sde_self_declared_approved_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                   @OA\Property(property="nhse_sde_request_expire_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                   @OA\Property(property="nhse_sde_updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                   @OA\Property(property="name", type="string", example="Harry Potter"),
+     *                   @OA\Property(property="organisation", type="string", example="HMRC"),
+     *                   @OA\Property(property="sector_name", type="string", example=""),
+     *                   @OA\Property(property="logs", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="permissions", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="user", type="array", example="[]", @OA\Items()),
      *                ),
      *             ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
@@ -150,6 +157,7 @@ class CohortRequestController extends Controller
         $organisation = $request->query('organisation', null);
         $name = $request->query('name', null);
         $status = $request->query('request_status', null);
+        $nhseSdeStatus = $request->query('nhse_sde_request_status', null);
         $filterText = $request->query('text', null);
 
         try {
@@ -160,7 +168,7 @@ class CohortRequestController extends Controller
                 $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
             }
 
-            $query = CohortRequest::with(['user.teams', 'logs', 'logs.user', 'permissions', 'user.sector'])
+            $query = CohortRequest::with(['logs', 'permissions', 'user.sector', 'logs.user:id,name', 'user.teams:id,name'])
                 ->join('users', 'cohort_requests.user_id', '=', 'users.id')
                 ->leftJoin('sectors', 'users.sector_id', '=', 'sectors.id')
                 ->select('cohort_requests.*', 'users.name', 'users.organisation', 'sectors.name as sector_name')
@@ -184,6 +192,9 @@ class CohortRequestController extends Controller
                 ->when($status, function ($query) use ($status) {
                     return $query->where('request_status', '=', $status);
                 })
+                ->when($nhseSdeStatus, function ($query) use ($nhseSdeStatus) {
+                    return $query->where('nhse_sde_request_status', '=', $nhseSdeStatus);
+                })
                 ->when($filterText, function ($query) use ($filterText) {
                     $query->where(function ($query) use ($filterText) {
                         $query->whereHas('user', function ($q) use ($filterText) {
@@ -196,7 +207,18 @@ class CohortRequestController extends Controller
                 });
 
             foreach ($sort as $key => $value) {
-                if (in_array($key, ['created_at', 'updated_at', 'request_status'])) {
+                if (in_array(
+                    $key,
+                    [
+                        'created_at',
+                        'updated_at',
+                        'request_status',
+                        'nhse_sde_request_status',
+                        'nhse_sde_requested_at',
+                        'nhse_sde_self_declared_approved_at',
+                        'nhse_sde_updated_at',
+                    ]
+                )) {
                     $query->orderBy('cohort_requests.' . $key, strtoupper($value));
                 }
 
@@ -296,8 +318,8 @@ class CohortRequestController extends Controller
                     'logs' => function ($q) {
                         $q->orderBy('id', 'desc');
                     },
-                    'logs.user',
                     'permissions',
+                    'logs.user:id,name',
                     ])
                 ->first()->toArray();
 
@@ -374,6 +396,9 @@ class CohortRequestController extends Controller
      */
     public function store(CreateCohortRequest $request): JsonResponse
     {
+        // TODO in a later PR: the logic of this needs updating:
+        // - handle nhs status and datestamps
+        // - handle logic of when this should create or block creation
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
@@ -398,17 +423,14 @@ class CohortRequestController extends Controller
                 $id = $checkRequestByUserId ? $checkRequestByUserId->id : 0;
             }
 
-            $nhseSdeApproval = array_key_exists('is_nhse_sde_approval', $input) ? $input['is_nhse_sde_approval'] : false;
 
             if ($id) {
                 $cohortRequest = (object) [
                     'id' => CohortRequest::where('id', $id)->update([
                         'user_id' => (int) $jwtUser['id'],
                         'request_status' => 'PENDING',
-                        'cohort_status' => false,
                         'request_expire_at' => null,
                         'created_at' => Carbon::today()->toDateTimeString(),
-                        'is_nhse_sde_approval' => $nhseSdeApproval,
                     ])
                 ];
                 CohortRequestHasPermission::where('cohort_request_id', $id)->delete();
@@ -416,9 +438,7 @@ class CohortRequestController extends Controller
                 $cohortRequest = CohortRequest::create([
                     'user_id' => (int) $jwtUser['id'],
                     'request_status' => 'PENDING',
-                    'cohort_status' => false,
                     'created_at' => Carbon::now(),
-                    'is_nhse_sde_approval' => $nhseSdeApproval,
                 ]);
             }
 
@@ -426,7 +446,6 @@ class CohortRequestController extends Controller
                 'user_id' => (int) $jwtUser['id'],
                 'details' => $input['details'],
                 'request_status' => 'PENDING',
-                'is_nhse_sde_approval' => $nhseSdeApproval,
             ]);
 
             CohortRequestHasLog::create([
@@ -537,15 +556,17 @@ class CohortRequestController extends Controller
 
         try {
             $requestStatus = strtoupper(trim($input['request_status']));
-            $nhseSdeApproval = array_key_exists('is_nhse_sde_approval', $input) ? $input['is_nhse_sde_approval'] : false;
+            $nhseSdeRequestStatus = strtoupper(trim($input['nhse_sde_request_status']));
 
             $currCohortRequest = CohortRequest::where('id', $id)->first();
             $currRequestStatus = strtoupper(trim($currCohortRequest['request_status']));
+            $currNhseSdeRequestStatus = strtoupper(trim($currCohortRequest['nhse_sde_request_status']));
 
             $cohortRequestLog = new CohortRequestLog([
                 'user_id' => (int) $jwtUser['id'],
                 'details' => $input['details'],
                 'request_status' => $requestStatus,
+                'nhse_sde_request_status' => $nhseSdeRequestStatus,
             ]);
             $cohortRequestLog->save();
 
@@ -557,13 +578,17 @@ class CohortRequestController extends Controller
             // APPROVED / BANNED / SUSPENDED
             // PENDING - initial state
             // EXPIRED - must be an update using the chron
-            if ($currRequestStatus !== $requestStatus) {
+            $requestBeingApproved = ($currRequestStatus !== $requestStatus) && ($requestStatus === 'APPROVED');
+            $requestExpireAt = $requestBeingApproved ? Carbon::now()->addDays(Config::get('cohort.cohort_access_expiry_time_in_days')) : null;
+            $nhseSdeRequestBeingApproved = ($currNhseSdeRequestStatus !== $nhseSdeRequestStatus) && ($nhseSdeRequestStatus === 'APPROVED');
+            $nhseSdeRequestExpireAt = $nhseSdeRequestBeingApproved ? Carbon::now()->addDays(Config::get('cohort.cohort_nhse_sde_access_expiry_time_in_days')) : null;
+
+            if ($currRequestStatus !== $requestStatus || $currNhseSdeRequestStatus !== $nhseSdeRequestStatus) {
                 CohortRequest::where('id', $id)->update([
                     'request_status' => $requestStatus,
-                    'cohort_status' => true,
-                    'request_expire_at' => ($requestStatus !== 'APPROVED') ? null : Carbon::now()->addDays(Config::get('cohort.cohort_access_expiry_time_in_days')),
-                    'accept_declaration' => $requestStatus === 'APPROVED',
-                    'is_nhse_sde_approval' => $nhseSdeApproval,
+                    'nhse_sde_request_status' => $nhseSdeRequestStatus,
+                    ...(($currRequestStatus !== $requestStatus) ? ['request_expire_at' => $requestExpireAt] : []),
+                    ...(($currNhseSdeRequestStatus !== $nhseSdeRequestStatus) ? ['nhse_sde_request_expire_at' => $nhseSdeRequestExpireAt] : []),
                 ]);
             }
 
@@ -600,6 +625,7 @@ class CohortRequestController extends Controller
                     break;
             }
 
+            // TODO: only send an email if there's a change.
             $this->sendEmail($id);
             $this->updateOrCreateContact((int) $jwtUser['id']);
 
@@ -801,6 +827,13 @@ class CohortRequestController extends Controller
                 $requestStatusArray = explode(',', $request->query('request_status', ''));
                 $requestStatusArrayUpper = array_map('strtoupper', $requestStatusArray);
                 $query->filterByMultiRequestStatus($requestStatusArrayUpper);
+            }
+
+            // filter by nhse_sde_request_status. Convert to uppercase for comparison.
+            if ($request->has('nhse_sde_request_status')) {
+                $nhseSdeRequestStatusArray = explode(',', $request->query('nhse_sde_request_status', ''));
+                $nhseSdeRequestStatusArrayUpper = array_map('strtoupper', $nhseSdeRequestStatusArray);
+                $query->filterByMultiNhseSdeRequestStatus($nhseSdeRequestStatusArrayUpper);
             }
 
             // filter by provided date range
@@ -1131,7 +1164,6 @@ class CohortRequestController extends Controller
             $checkingCohortRequest = CohortRequest::where([
                 'user_id' => $userId,
                 'request_status' => 'APPROVED',
-                'cohort_status' => 1,
             ])->first();
 
             if (!$checkingCohortRequest) {

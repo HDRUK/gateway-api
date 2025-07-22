@@ -22,7 +22,7 @@ use App\Http\Requests\V2\Publication\EditPublicationByUserIdById;
 use App\Http\Requests\V2\Publication\DeletePublicationByUserIdById;
 use App\Http\Requests\V2\Publication\GetPublicationByUserAndStatus;
 use App\Http\Requests\V2\Publication\UpdatePublicationByUserIdById;
-use App\Http\Requests\V2\Publication\GePublicationByUserByIdByStatus;
+use App\Http\Requests\V2\Publication\GetPublicationCountByUserAndStatus;
 
 class UserPublicationController extends Controller
 {
@@ -63,6 +63,13 @@ class UserPublicationController extends Controller
      *             default="active"
      *         )
      *     ),
+     *    @OA\Parameter(
+     *       name="paper_title",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter Publication by title"
+     *    ),
      *     @OA\Response(
      *        response="200",
      *        description="Success response",
@@ -91,20 +98,23 @@ class UserPublicationController extends Controller
      */
     public function indexStatus(GetPublicationByUserAndStatus $request, int $userId, ?string $status = 'active'): JsonResponse
     {
+        $input = $request->all();
+        $this->checkAccess($input, null, $userId, 'user');
+
         try {
+            $paperTitle = $request->query('paper_title', null);
             $perPage = request('per_page', Config::get('constants.per_page'));
 
             $publications = Publication::where([
                     'owner_id' => $userId,
                     'status' => strtoupper($status),
                 ])
-                ->with(['tools']);
-
-            if ($request->has('sort')) {
-                $publications = $publications->applySorting();
-            }
-
-            $publications = $publications->paginate($perPage, ['*'], 'page');
+                ->when($paperTitle, function ($query) use ($paperTitle) {
+                    return $query->where('paper_title', 'like', '%'. $paperTitle .'%');
+                })
+                ->with(['tools'])
+                ->applySorting()
+                ->paginate($perPage, ['*'], 'page');
 
             $publications->getCollection()->transform(function ($publication) {
                 $publication->setAttribute('datasets', $publication->allDatasets);
@@ -114,7 +124,7 @@ class UserPublicationController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Publication get all',
+                'description' => 'User Publication get by status',
             ]);
 
             return response()->json(
@@ -124,6 +134,75 @@ class UserPublicationController extends Controller
             Auditor::log([
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v2/users/{userId}/publications/count/{field}",
+     *    operationId="count_user_unique_fields_publication_v2",
+     *    tags={"Publication"},
+     *    summary="UserPublicationController@count",
+     *    description="Get user counts for distinct entries of a field in the model",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="userId",
+     *       in="path",
+     *       description="user id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="user id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="field",
+     *       in="path",
+     *       description="name of the field to perform a count on",
+     *       required=true,
+     *       example="status",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="status field",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="object",
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function count(GetPublicationCountByUserAndStatus $request, int $userId, string $field): JsonResponse
+    {
+        $this->checkAccess($request->all(), null, $userId, 'user');
+
+        try {
+            $counts = Publication::where('owner_id', $userId)->applyCount();
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'User Publication count',
+            ]);
+
+            return response()->json([
+                'data' => $counts
+            ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
@@ -199,6 +278,9 @@ class UserPublicationController extends Controller
      */
     public function show(GetPublicationByUserAndId $request, int $userId, int $id): JsonResponse
     {
+        $input = $request->all();
+        $this->checkAccess($input, null, $userId, 'user');
+
         try {
             $publication = Publication::where([
                                 'owner_id' => $userId,
@@ -206,117 +288,6 @@ class UserPublicationController extends Controller
                             ])
                             ->with(['tools', 'durs', 'collections'])
                             ->first();
-            $publication->setAttribute('datasets', $publication->allDatasets);
-
-            Auditor::log([
-                'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Publication get ' . $id,
-            ]);
-
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $publication,
-            ], Config::get('statuscodes.STATUS_OK.code'));
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Get(
-     *    path="/api/v2/users/{userId}/publications/{id}/status/{status}",
-     *    operationId="fetch_publications_by_user_and_by_id_by_status_v2",
-     *    tags={"Publication"},
-     *    summary="UserPublicationController@showStatus",
-     *    description="Get publication by user id and by id by status",
-     *    security={{"bearerAuth":{}}},
-     *    @OA\Parameter(
-     *       name="userId",
-     *       in="path",
-     *       description="ID of the user",
-     *       required=true,
-     *       @OA\Schema(
-     *          type="integer",
-     *          format="int64"
-     *       )
-     *    ),
-     *    @OA\Parameter(
-     *       name="id",
-     *       in="path",
-     *       description="publication id",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema(
-     *          type="integer",
-     *          description="publication id",
-     *       ),
-     *    ),
-     *    @OA\Parameter(
-     *       name="status",
-     *       in="path",
-     *       description="publication status",
-     *       required=true,
-     *       example="active",
-     *       @OA\Schema(
-     *          type="string",
-     *          description="publication status",
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *       response="200",
-     *       description="Success response",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="success"),
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
-     *          ),
-     *       ),
-     *    ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthorized",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="unauthorized")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=404,
-     *          description="Not found response",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="not found"),
-     *          )
-     *      )
-     * )
-     *
-     * @param  GePublicationByUserByIdByStatus  $request
-     * @param  int  $userId
-     * @param  int  $id
-     * @return JsonResponse
-     */
-    public function showStatus(GePublicationByUserByIdByStatus $request, int $userId, int $id, string $status): JsonResponse
-    {
-        try {
-            $publication = Publication::where([
-                                'owner_id' => $userId,
-                                'id' => $id,
-                                'status' => strtoupper($status),
-                            ])
-                            ->with(['tools', 'durs', 'collections'])
-                            ->first();
-
             $publication->setAttribute('datasets', $publication->allDatasets);
 
             Auditor::log([

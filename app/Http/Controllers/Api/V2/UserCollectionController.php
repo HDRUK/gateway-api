@@ -27,6 +27,7 @@ use App\Http\Requests\V2\Collection\DeleteCollection;
 use App\Http\Requests\V2\Collection\EditCollection;
 use App\Http\Requests\V2\Collection\GetCollection;
 use App\Http\Requests\V2\Collection\UpdateCollection;
+use App\Http\Requests\V2\Collection\GetCollectionCountByUserAndStatus;
 use App\Models\CollectionHasUser;
 
 class UserCollectionController extends Controller
@@ -43,7 +44,7 @@ class UserCollectionController extends Controller
 
     /**
      * @OA\Get(
-     *    path="/api/v2/users/{userId}/collections",
+     *    path="/api/v2/users/{userId}/collections/status/active",
      *    operationId="fetch_user_collections_v2",
      *    tags={"Collections"},
      *    summary="UserCollectionController@indexActive",
@@ -279,6 +280,76 @@ class UserCollectionController extends Controller
             return response()->json(
                 $collections
             );
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v2/users/{userId}/collections/count/{field}",
+     *    operationId="count_user_unique_fields_collection_v2",
+     *    tags={"Collections"},
+     *    summary="UserCollectionController@count",
+     *    description="Get user counts for distinct entries of a field in the model",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="userId",
+     *       in="path",
+     *       description="user id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="user id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="field",
+     *       in="path",
+     *       description="name of the field to perform a count on",
+     *       required=true,
+     *       example="status",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="status field",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="object",
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function count(GetCollectionCountByUserAndStatus $request, int $userId, string $field): JsonResponse
+    {
+        $this->checkAccess($request->all(), null, $userId, 'user');
+
+        try {
+            $collectionsHasUser = CollectionHasUser::where('user_id', $userId)->pluck('collection_id');
+            $counts = Collection::whereIn('id', $collectionsHasUser)->applyCount();
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'User Collection count',
+            ]);
+
+            return response()->json([
+                'data' => $counts
+            ]);
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',

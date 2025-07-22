@@ -252,7 +252,7 @@ class DurIntegrationTest extends TestCase
                     'publications',
                     'tools',
                     'datasets' => [
-                        0 => [
+                        '*' => [
                             'id',
                             'shortTitle',
                         ]

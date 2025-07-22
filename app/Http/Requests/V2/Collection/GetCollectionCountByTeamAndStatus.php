@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\V2\Publication;
+namespace App\Http\Requests\V2\Collection;
 
 use App\Http\Requests\BaseFormRequest;
 
-class GePublicationByUserByIdByStatus extends BaseFormRequest
+class GetCollectionCountByTeamAndStatus extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -14,9 +14,7 @@ class GePublicationByUserByIdByStatus extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'userId' => 'required|int|exists:users,id',
-            'id' => 'required|int|exists:publications,id',
-            'status' => 'required|string|in:active,draft,archived',
+            'teamId' => 'required|int|exists:teams,id',
         ];
     }
 
@@ -28,9 +26,7 @@ class GePublicationByUserByIdByStatus extends BaseFormRequest
     protected function prepareForValidation()
     {
         $this->merge([
-            'userId' => $this->route('userId'),
-            'id' => $this->route('id'),
-            'status' => $this->route('status'),
+            'teamId' => $this->route('teamId'),
         ]);
     }
 }

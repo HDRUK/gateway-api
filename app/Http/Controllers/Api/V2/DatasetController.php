@@ -18,6 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Traits\MetadataOnboard;
 use App\Http\Traits\MetadataVersioning;
 use App\Models\Traits\ModelHelpers;
+use App\Models\DatasetVersionHasDatasetVersion;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use MetadataManagementController as MMC;
@@ -118,7 +119,7 @@ class DatasetController extends Controller
             $filterStatus = $request->query('status', null);
             $withMetadata = $request->boolean('with_metadata', true);
 
-            // apply any initial filters to get initial datasets
+            // apply any initial filters to get initial datasets // TODO: remove this status field?
             $initialDatasets = Dataset::when($filterStatus, function ($query) use ($filterStatus) {
                 return $query->where('status', '=', $filterStatus);
             })->select(['id'])->get();
@@ -265,10 +266,10 @@ class DatasetController extends Controller
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
             $dataset = $this->getDatasetDetails($dataset, $request);
+            $latestVersionId = $dataset->latestVersionID($id);
 
             if ($exportStructuralMetadata === 'structuralMetadata') {
                 $arrayDataset = $dataset->toArray();
-                $latestVersionId = $dataset->latestVersionID($id);
                 $versions = $this->getValueByPossibleKeys($arrayDataset, ['versions'], []);
 
                 $count = 0;
@@ -290,6 +291,8 @@ class DatasetController extends Controller
 
                 return Excel::download(new DatasetStructuralMetadataExport($export), 'dataset-structural-metadata.csv');
             }
+
+            $dataset->setAttribute('linkages', $this->getLinkages($latestVersionId));
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -855,5 +858,72 @@ class DatasetController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    public function getLinkages($datasetVersionId)
+    {
+        $datasetLinkages = DatasetVersionHasDatasetVersion::where([
+            'dataset_version_source_id' => $datasetVersionId,
+        ])
+        ->get()
+        ->map(function ($linkage) {
+            $dv = DatasetVersion::where([
+                'id' => $linkage->dataset_version_target_id,
+            ])->select(['id', 'dataset_id', 'short_title'])->first();
+
+            if (is_null($dv)) {
+                return null;
+            }
+
+            $d = Dataset::where([
+                'id' => $dv->dataset_id,
+            ])->select(['id', 'status'])->first();
+
+            if (is_null($d)) {
+                return null;
+            }
+
+            if ($d->status !== Dataset::STATUS_ACTIVE) {
+                return null;
+            }
+
+            return [
+                'title' => $dv->short_title,
+                'url' => env('GATEWAY_URL') . '/en/dataset/' . $d->id,
+                'dataset_id' => $d->id,
+                'linkage_type' => $linkage->linkage_type,
+            ];
+        })
+        ->filter()
+        ->values()
+        ->toArray();
+
+        $datasetVersion = DatasetVersion::where('id', $datasetVersionId)->first();
+        $metadataLinkage = $datasetVersion['metadata']['metadata']['linkage']['datasetLinkage'] ?? [];
+        $allTitles = [];
+        foreach ($metadataLinkage as $linkageType => $link) {
+            if (($link) && is_array($link)) {
+                foreach ($link as $l) {
+                    $allTitles[] = [
+                        'title' => $l['title'],
+                        'linkage_type' => $linkageType,
+                    ];
+                }
+            }
+        }
+        $gatewayTitles = array_column($datasetLinkages, 'title');
+
+        foreach ($allTitles as $title) {
+            if (($title['title']) && (!in_array($title['title'], $gatewayTitles))) {
+                $datasetLinkages[] = [
+                    'title' => $title['title'],
+                    'url' => null,
+                    'dataset_id' => null,
+                    'linkage_type' => $title['linkage_type']
+                ];
+            }
+        }
+
+        return $datasetLinkages;
     }
 }

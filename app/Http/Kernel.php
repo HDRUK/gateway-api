@@ -25,6 +25,7 @@ class Kernel extends HttpKernel
         \Illuminate\Session\Middleware\StartSession::class,
         \App\Http\Middleware\HstsMiddleware::class,
         \App\Http\Middleware\DefineFeatureFlags::class,
+        \App\Http\Middleware\LogRequestResponse::class,
     ];
 
     /**

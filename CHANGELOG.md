@@ -1,3 +1,89 @@
+## [2.17.0](https://github.com/HDRUK/gateway-api/compare/v2.16.0...v2.17.0) (2025-07-21)
+
+### ✨ Features
+
+* **GAT-7329:** Add dataset linkage information to payload for display on landing page. (#1324) ([78eebf3](https://github.com/HDRUK/gateway-api/commit/78eebf330608fb83775d4d2d1e7bf83c5a184f6a)), closes [GAT-7329](GAT-7329)
+* **GAT-7329:** Update all v2 controllers to use new archiving behaviour (#1323) ([f8da65c](https://github.com/HDRUK/gateway-api/commit/f8da65cf543b61fc42874b85f3f26f86868cb6a0)), closes [GAT-7329](GAT-7329)
+* **GAT-7330:** Data migration for changed archiving behaviour (#1309) ([2163670](https://github.com/HDRUK/gateway-api/commit/21636709a22713b63beafc4d94f757aa214d43ec)), closes [GAT-7330](GAT-7330)
+
+## [2.16.0](https://github.com/HDRUK/gateway-api/compare/v2.15.2...v2.16.0) (2025-07-15)
+
+### ✨ Features
+
+* **GAT-7097:** Correct field name (#1303) ([43dca48](https://github.com/HDRUK/gateway-api/commit/43dca48ace673a38818f2ee768adca13f066e548)), closes [GAT-7097](GAT-7097)
+* **GAT-7194:** verify secondary email (#1305) ([509f460](https://github.com/HDRUK/gateway-api/commit/509f4601c7b59bd76357e67069943f6db9b228c0)), closes [GAT-7194](GAT-7194)
+* **GAT-7331:** Fixes to many V2 controllers to standardise them and tighten them up (#1291) ([c649d8a](https://github.com/HDRUK/gateway-api/commit/c649d8a3546b605c54628ee07fa6e89c2f89a11d))
+* **GAT-7582:** Implement backward facing solution with the removal o… (#1311) ([afb7447](https://github.com/HDRUK/gateway-api/commit/afb7447f2ed31a3ce3754bb1747f4cdbda935fea)), closes [GAT-7582](GAT-7582)
+
+### 🐛 Bug Fixes
+
+* **GAT-5745:** double encoded json (#1280) ([4dbe5d6](https://github.com/HDRUK/gateway-api/commit/4dbe5d601914e3ca1013395130bb57dab9f27e27)), closes [GAT-5745](GAT-5745)
+* **GAT-5745:** Rename tests that were being skipped. (#1298) ([bb52e02](https://github.com/HDRUK/gateway-api/commit/bb52e021cf53939b82f107c92a46433da0b04968)), closes [GAT-5745](GAT-5745)
+* **GAT-7233:** Fix deleteDataset for elastic observer (#1300) ([60cc8ce](https://github.com/HDRUK/gateway-api/commit/60cc8ce3daf513d35a3fb3befc76291ebb21467a))
+* **GAT-7264:** Dataset relationship not showing on Analysis Script & Software on the landing page (#1307) ([b5568dc](https://github.com/HDRUK/gateway-api/commit/b5568dc068e1c5c6cebf811ec57fc5eb7f3ae446)), closes [GAT-7264](GAT-7264)
+* **GAT-7444:**  timeout 408 correct dataset (#1297) ([77c2d5c](https://github.com/HDRUK/gateway-api/commit/77c2d5cdd28df0365e27bdaf8ebe7fba12731006)), closes [GAT-7444](GAT-7444)
+* **GAT-7457:** Prework to fix pipeline and phpstan errors (#1306) ([366384e](https://github.com/HDRUK/gateway-api/commit/366384eda51dd25a5d99cab3bb1375d8a6620e49))
+* **GAT-7544:** check user ID matches when calling user endpoint (#1299) ([e0d201a](https://github.com/HDRUK/gateway-api/commit/e0d201a2353983243de19a33b55aa5ed07586929)), closes [GAT-7544](GAT-7544)
+* **GAT-7596:** Fixes legacy bug preventing newly linked BHF datasets … (#1313) ([e9aec50](https://github.com/HDRUK/gateway-api/commit/e9aec50a2e8329081f68f7ccf2150a2f353afa98))
+* **GAT-7599:** Add non gateway datasets to linkages (#1315) ([1d2b2c8](https://github.com/HDRUK/gateway-api/commit/1d2b2c820f2a57bad4317448d4f1f69f78654625)), closes [GAT-7599](GAT-7599)
+
+## [2.15.2](https://github.com/HDRUK/gateway-api/compare/v2.15.1...v2.15.2) (2025-07-15)
+
+### 🐛 Bug Fixes
+
+* **GAT-7599:** Cannot view datasets after creation (#1320) ([6d4b553](https://github.com/HDRUK/gateway-api/commit/6d4b553d0682c8c4d4556c776adb53b9b2f3afd6)), closes [GAT-7599](GAT-7599)
+
+## [2.15.1](https://github.com/HDRUK/gateway-api/compare/v2.15.0...v2.15.1) (2025-07-11)
+
+### 🐛 Bug Fixes
+
+* **GAT-7596:** Fixes legacy bug preventing newly linked BHF datasets … (#1313) ([2021e49](https://github.com/HDRUK/gateway-api/commit/2021e497a00b0bd89dfa6eb65d64319045a3cf87))
+* **GAT-7599:** Add non gateway datasets to linkages (#1315) ([790fee4](https://github.com/HDRUK/gateway-api/commit/790fee48696731e106cad4f0e3c3b9bdc8b7ee08)), closes [GAT-7599](GAT-7599)
+
+## [2.15.0](https://github.com/HDRUK/gateway-api/compare/v2.14.0...v2.15.0) (2025-07-01)
+
+### ✨ Features
+
+* **GAT-7097:** Correct field name (#1303) ([45013c7](https://github.com/HDRUK/gateway-api/commit/45013c7d4c09590f154561566fa36bd8be263c24)), closes [GAT-7097](GAT-7097)
+
+## [2.14.0](https://github.com/HDRUK/gateway-api/compare/v2.13.0...v2.14.0) (2025-07-01)
+
+### ✨ Features
+
+* **GAT-5939:** enable hsts (#1287) ([6dca164](https://github.com/HDRUK/gateway-api/commit/6dca16451eb8131f5e2c25dff7095589d6bb13b0)), closes [GAT-5939](GAT-5939)
+* **GAT-6480:** Unit testing for CRUD permission error for Datasets & BioSamples (#1277) ([725090f](https://github.com/HDRUK/gateway-api/commit/725090f051044edd3e18ece8fc47a68016514236)), closes [GAT-6480](GAT-6480)
+* **GAT-6482:** Unit testing for CRUD permission error for Datasets & BioSamples via Integrations (#1279) ([c81bd9c](https://github.com/HDRUK/gateway-api/commit/c81bd9c4e0b0337f7c7c73ca0e461e254936f9f6)), closes [GAT-6482](GAT-6482)
+* **GAT-6927:** REMOVE all cache and hard coded values from FF (#1278) ([b749e16](https://github.com/HDRUK/gateway-api/commit/b749e169bf91cd630ef6ee76025c90526bb2729a)), closes [GAT-6927](GAT-6927)
+* **GAT-6927:** Remove cache (redis) from feature flagging (#1262) ([70a90e8](https://github.com/HDRUK/gateway-api/commit/70a90e8d0e08b156f5222cc78a0a253446a70b5a)), closes [GAT-6927](GAT-6927)
+* **GAT-7088:** Create v2 endpoints for use of 'Data Custodian' terminology (#1286) ([0ac689c](https://github.com/HDRUK/gateway-api/commit/0ac689cf1856d68b2b353f372f94ce6334640938)), closes [GAT-7088](GAT-7088)
+* **GAT-7097:** Update BE to include user's emails within enquiry emails (#1247) ([873d1f0](https://github.com/HDRUK/gateway-api/commit/873d1f0e7967e37dc988ac4f6c156d46501c8996)), closes [GAT-7097](GAT-7097)
+* **GAT-7232:** Merge integration middlewares into mainstream middlewares (#1275) ([cf5902b](https://github.com/HDRUK/gateway-api/commit/cf5902bb51b5814a24280d50ede61f3e2cbd7ec0)), closes [GAT-7232](GAT-7232)
+* **GAT-7233:** Merge logic from Integration Dataset Controller into Dataset Controller (#1282) ([1fd2a0b](https://github.com/HDRUK/gateway-api/commit/1fd2a0bc9fcb79936c7f3f0cd543857db55f560c)), closes [GAT-7233](GAT-7233)
+* **GAT-7235:** Merge logic from Integration Dur Controller into Dur Controller (#1292) ([e4a7120](https://github.com/HDRUK/gateway-api/commit/e4a71206f19cf7c0fc6523e8b144ccc8eb7c74eb)), closes [GAT-7235](GAT-7235)
+* **GAT-7236:** merge tool integrations into tool controller (v1 and v2) (#1290) ([70c5afd](https://github.com/HDRUK/gateway-api/commit/70c5afdcb1647a2b031becdaa63dd4205ae24eae)), closes [GAT-7236](GAT-7236)
+* **GAT-7291:** Team email address not receiving notifications (#1283) ([cb2ff3d](https://github.com/HDRUK/gateway-api/commit/cb2ff3de42edbbf2edc7d62c24c6899276f224f6)), closes [GAT-7291](GAT-7291)
+* **GAT-7302:** allow custon session header (#1267) ([5f20e94](https://github.com/HDRUK/gateway-api/commit/5f20e943071a111eef59b67f1994b2d45ff31024)), closes [GAT-7302](GAT-7302)
+* **GAT-7312:** federation error and history migrations (#1276) ([35a8dad](https://github.com/HDRUK/gateway-api/commit/35a8daddae7167c21fc232354a1b5a099d633f45)), closes [GAT-7312](GAT-7312)
+* **GAT-7326:** Change search endpoints to use Data Custodian terminology (#1294) ([7352ad2](https://github.com/HDRUK/gateway-api/commit/7352ad2081248445995053083771ea1162c53e02)), closes [GAT-7326](GAT-7326)
+* **GAT-7327:** Add missing endpoints for v2 tools controllers. (#1270) ([1e242d8](https://github.com/HDRUK/gateway-api/commit/1e242d8df26afc5521831a5c56c87f7750ae3da4)), closes [GAT-7327](GAT-7327)
+* **GAT-7327:** Add V2 endpoints for Data Use Register (#1281) ([e02b42b](https://github.com/HDRUK/gateway-api/commit/e02b42bee2be2c7d3df3f551cd3ee0e57bb11aaf)), closes [GAT-7327](GAT-7327)
+* **GAT-7327:** Further minor fixes to v2 Data Use endpoints (#1284) ([b86992a](https://github.com/HDRUK/gateway-api/commit/b86992ab938f93668b63e0c56255cfbbf3615cb4))
+
+### 🐛 Bug Fixes
+
+* **GAT-6985:** update LinkageExtraction job (#1265) ([a4ce55c](https://github.com/HDRUK/gateway-api/commit/a4ce55ccc36f8feeb89f2206011129db1b008f47)), closes [GAT-6985](GAT-6985)
+* **GAT-7193:** Collection 10 contains Datasets & BioSamples that are not active (#1269) ([fee586d](https://github.com/HDRUK/gateway-api/commit/fee586dbbf100aae0c82578ed0d03ad995b98676)), closes [GAT-7193](GAT-7193)
+* **GAT-7233:** Fix deleteDataset for elastic observer (#1300) ([5532ae8](https://github.com/HDRUK/gateway-api/commit/5532ae8a698b728a265206cb383f8a2e4710a7da))
+* **GAT-7325:** missing sections on dars (#1264) ([b513715](https://github.com/HDRUK/gateway-api/commit/b5137154c36c3f8bbb142bae81fc9fa42c9eece1)), closes [GAT-7325](GAT-7325)
+* **GAT-7331:** Move data reads in all artisan commands out of __construct() and into handle(). (#1273) ([4b7937d](https://github.com/HDRUK/gateway-api/commit/4b7937d12a50252cb3656d2fc26a8cf6ae0491ad)), closes [GAT-7331](GAT-7331)
+* **GAT-7391:** The search function does not work to filter SAIL datasets by 'keyword' (#1268) ([95eb14f](https://github.com/HDRUK/gateway-api/commit/95eb14f6ab39d15d714131465e22dd283208ce35)), closes [GAT-7391](GAT-7391)
+* **GAT-7412:** dataset_id missing off of payload (#1285) ([12b3344](https://github.com/HDRUK/gateway-api/commit/12b3344b7f73ed2128a0d338e7622d978fea0430)), closes [GAT-7412](GAT-7412)
+* **GAT-7433:** Fix v1 DUR archiving (#1288) ([245ba2a](https://github.com/HDRUK/gateway-api/commit/245ba2a1772a22dd1ac78626362bf5ae1fc7f707))
+* **GAT-7444:**  timeout 408 correct dataset (#1297) ([e20a270](https://github.com/HDRUK/gateway-api/commit/e20a270b97625b241bd9d5f4adef230f1997cbf2)), closes [GAT-7444](GAT-7444)
+* **GAT-7444:** 408 error (#1289) ([14ad09e](https://github.com/HDRUK/gateway-api/commit/14ad09e5c3e1a0977ec6baf50b2ed3a0fc9e1299)), closes [GAT-7444](GAT-7444)
+* **GAT-7522:** apply restrictions to cohort request endpoints (#1293) ([5e00454](https://github.com/HDRUK/gateway-api/commit/5e00454034476968d862ab3606e71ce38dc6ac4e)), closes [GAT-7522](GAT-7522)
+* **GAT-7544:** check user ID matches when calling user endpoint (#1299) ([aac7643](https://github.com/HDRUK/gateway-api/commit/aac7643b7f20e4e2154799cdd15163abbed54ede)), closes [GAT-7544](GAT-7544)
+
 ## [2.13.0](https://github.com/HDRUK/gateway-api/compare/v2.12.0...v2.13.0) (2025-06-18)
 
 ### ✨ Features

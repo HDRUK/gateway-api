@@ -202,6 +202,7 @@ return [
         App\Providers\CloudLoggerProvider::class,
         App\Providers\CloudPubSubProvider::class,
         App\Providers\ElasticClientControllerServiceProvider::class,
+        App\Providers\HelperServiceProvider::class,
     ],
 
     /*

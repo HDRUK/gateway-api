@@ -405,6 +405,7 @@ class DatasetController extends Controller
     public function show(GetDataset $request, int $id): JsonResponse|BinaryFileResponse
     {
         try {
+
             $exportStructuralMetadata = $request->query('export', null);
 
             // Retrieve the dataset with collections, publications, and counts
@@ -567,10 +568,39 @@ class DatasetController extends Controller
             return [
                 'title' => $dv->short_title,
                 'url' => env('GATEWAY_URL') . '/en/dataset/' . $d->id,
+                'dataset_id' => $d->id,
+                'linkage_type' => $linkage->linkage_type,
             ];
         })
         ->filter()
-        ->values();
+        ->values()
+        ->toArray();
+
+        $datasetVersion = DatasetVersion::where('id', $datasetVersionId)->first();
+        $metadataLinkage = $datasetVersion['metadata']['metadata']['linkage']['datasetLinkage'] ?? [];
+        $allTitles = [];
+        foreach ($metadataLinkage as $linkageType => $link) {
+            if (($link) && is_array($link)) {
+                foreach ($link as $l) {
+                    $allTitles[] = [
+                        'title' => $l['title'],
+                        'linkage_type' => $linkageType,
+                    ];
+                }
+            }
+        }
+        $gatewayTitles = array_column($datasetLinkages, 'title');
+
+        foreach ($allTitles as $title) {
+            if (($title['title']) && (!in_array($title['title'], $gatewayTitles))) {
+                $datasetLinkages[] = [
+                    'title' => $title['title'],
+                    'url' => null,
+                    'dataset_id' => null,
+                    'linkage_type' => $title['linkage_type']
+                ];
+            }
+        }
 
         return $datasetLinkages;
     }
@@ -1431,10 +1461,11 @@ class DatasetController extends Controller
 
                 if ($download_type === 'structural') {
                     $headerRow = [
-                        'Section',
-                        'Column name',
-                        'Data type',
-                        'Column description',
+                        'Table Name',
+                        'Table Description',
+                        'Column Name',
+                        'Column Description',
+                        'Data Type',
                         'Sensitive',
                     ];
 
@@ -1444,9 +1475,10 @@ class DatasetController extends Controller
                     foreach ($result['structuralMetadata'] as $rowDetails) {
                         $row = [
                             $rowDetails['name'] !== null ? $rowDetails['name'] : '',
+                            $rowDetails['description'] !== null ? $rowDetails['description'] : '',
                             $rowDetails['columns'][0]['name'] !== null ? $rowDetails['columns'][0]['name'] : '',
-                            $rowDetails['columns'][0]['dataType'] !== null ? $rowDetails['columns'][0]['dataType'] : '',
                             $rowDetails['columns'][0]['description'] !== null ? str_replace('\n', '', $rowDetails['columns'][0]['description']) : '',
+                            $rowDetails['columns'][0]['dataType'] !== null ? $rowDetails['columns'][0]['dataType'] : '',
                             $rowDetails['columns'][0]['sensitive'] !== null ? ($rowDetails['columns'][0]['sensitive'] === true ? 'true' : 'false') : '',
                         ];
                         fputcsv($handle, $row);
@@ -1659,24 +1691,28 @@ class DatasetController extends Controller
             throw new Exception($e->getMessage());
         }
     }
-
     private function extractMetadata(Mixed $metadata)
     {
+        if (isset($metadata['metadata']['metadata'])) {
+            $metadata = $metadata['metadata'];
+        }
 
+        if (is_string($metadata) && isJsonString($metadata)) {
+            $metadata = json_decode($metadata, true);
+        }
         // Pre-process check for incoming data from a resource that passes strings
         // when we expect an associative array. FMA passes strings, this
         // is a safe-guard to ensure execution is unaffected by other data types.
-        if (isset($metadata['metadata'])) {
-            if (is_string($metadata['metadata'])) {
-                $tmpMetadata['metadata'] = json_decode($metadata['metadata'], true);
-                unset($metadata['metadata']);
-                $metadata = $tmpMetadata;
-            }
-        } elseif (is_string($metadata)) {
-            $tmpMetadata['metadata'] = json_decode($metadata, true);
-            unset($metadata);
+
+
+        if (isset($metadata['metadata']) && is_string($metadata['metadata']) && isJsonString($metadata['metadata'])) {
+            $tmpMetadata['metadata'] = json_decode($metadata['metadata'], true);
+            unset($metadata['metadata']);
             $metadata = $tmpMetadata;
         }
+
+
+
         return $metadata;
     }
 

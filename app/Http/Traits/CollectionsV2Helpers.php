@@ -22,7 +22,7 @@ use App\Models\CollectionHasUser;
 
 trait CollectionsV2Helpers
 {
-    private function getCollectionActiveById(int $collectionId, bool $trimmed = false)
+    private function getCollectionActiveById(int $collectionId, ?bool $trimmed = false)
     {
         $collection = Collection::with([
             'keywords',
@@ -119,7 +119,7 @@ trait CollectionsV2Helpers
     }
 
     // datasets
-    private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null)
+    private function checkDatasets(int $collectionId, array $inDatasets, ?int $userId = null)
     {
         $collectionHasDatasetVersions = CollectionHasDatasetVersion::withTrashed()
                                             ->where('collection_id', $collectionId)
@@ -220,7 +220,7 @@ trait CollectionsV2Helpers
         }
     }
 
-    private function addCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, int $userId = null)
+    private function addCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, ?int $userId = null)
     {
         try {
 
@@ -305,7 +305,7 @@ trait CollectionsV2Helpers
     }
 
     // tools
-    private function checkTools(int $collectionId, array $inTools, int $userId = null)
+    private function checkTools(int $collectionId, array $inTools, ?int $userId = null)
     {
         $cols = CollectionHasTool::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
@@ -323,7 +323,7 @@ trait CollectionsV2Helpers
         }
     }
 
-    private function addCollectionHasTool(int $collectionId, array $tool, int $userId = null)
+    private function addCollectionHasTool(int $collectionId, array $tool, ?int $userId = null)
     {
         try {
             $arrCreate = [
@@ -402,7 +402,7 @@ trait CollectionsV2Helpers
     }
 
     // durs
-    private function checkDurs(int $collectionId, array $inDurs, int $userId = null)
+    private function checkDurs(int $collectionId, array $inDurs, ?int $userId = null)
     {
         $cols = CollectionHasDur::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
@@ -426,7 +426,7 @@ trait CollectionsV2Helpers
         }
     }
 
-    private function addCollectionHasDur(int $collectionId, array $dur, int $userId = null)
+    private function addCollectionHasDur(int $collectionId, array $dur, ?int $userId = null)
     {
         try {
             $arrCreate = [
@@ -469,7 +469,7 @@ trait CollectionsV2Helpers
     }
 
     // publications
-    private function checkPublications(int $collectionId, array $inPublications, int $userId = null)
+    private function checkPublications(int $collectionId, array $inPublications, ?int $userId = null)
     {
         $cols = CollectionHasPublication::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
@@ -487,7 +487,7 @@ trait CollectionsV2Helpers
         }
     }
 
-    private function addCollectionHasPublication(int $collectionId, array $publication, int $userId = null)
+    private function addCollectionHasPublication(int $collectionId, array $publication, ?int $userId = null)
     {
         try {
             $arrCreate = [

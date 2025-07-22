@@ -13,6 +13,7 @@ class EnquiryThread extends Model
 
     protected $fillable = [
         'user_id',
+        'user_preferred_email',
         'team_ids',
         'team_id',
         'project_title',

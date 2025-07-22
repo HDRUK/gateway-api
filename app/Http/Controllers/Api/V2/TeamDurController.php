@@ -181,9 +181,7 @@ class TeamDurController extends Controller
     {
         $input = $request->all();
 
-        if (!is_null($teamId)) {
-            $this->checkAccess($input, $teamId, null, 'team', $request->header());
-        }
+        $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         try {
             $projectTitle = $request->query('project_title', null);
@@ -204,62 +202,70 @@ class TeamDurController extends Controller
                     'publications',
                     'tools',
                     'keywords',
-                    'userDatasets' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'userPublications' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'applicationDatasets' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'applicationPublications' => function ($query) {
-                        $query->distinct('id');
-                    },
+                    // SC: I can't get these fields to work properly when applying a status=ACTIVE condition to the underlying entity.
+                    // I don't think the FE ever uses this information, so I'm disabling it until it ever is required again.
+                    // 'userDatasets' => function ($query) {
+                    //     $query->distinct('id');
+                    // },
+                    // 'userPublications' => function ($query) {
+                    //     $query->distinct('id');
+                    // },
+                    // 'applicationDatasets' => function ($query) {
+                    //     $query->distinct('id');
+                    // },
+                    // 'applicationPublications' => function ($query) {
+                    //     $query->distinct('id');
+                    // },
                     'user',
                     'team',
                     'application',
                 ])
             )
             ->applySorting()
-            ->paginate((int) $perPage, ['*'], 'page')
-            ->through(function ($dur) {
-                if ($dur->datasets) {
-                    $dur->datasets = $dur->datasets->map(function ($dataset) {
-                        $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
-                        return $dataset;
-                    });
-                }
-                return $dur;
-            });
+            ->paginate((int) $perPage, ['*'], 'page');
 
             $durs->getCollection()->transform(function ($dur) {
-                $userDatasets = $dur->userDatasets;
-                $userPublications = $dur->userPublications;
-                $dur->setAttribute('datasets', $dur->allDatasets  ?? []);
-                $applicationDatasets = $dur->applicationDatasets;
-                $applicationPublications = $dur->applicationPublications;
-                $users = $userDatasets->merge($userPublications)->unique('id');
-                $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
-                $dur->setRelation('users', $users);
-                $dur->setRelation('applications', $applications);
+                $datasets = $dur->allDatasets  ?? [];
 
+                foreach ($datasets as &$dataset) {
+                    $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);
+                }
+                // Update the relationship with the modified datasets
+                $dur->setAttribute('datasets', $datasets);
 
-                unset(
-                    $users,
-                    $userDatasets,
-                    $userPublications,
-                    $applications,
-                    $applicationDatasets,
-                    $applicationPublications,
-                    $dur->userDatasets,
-                    $dur->userPublications,
-                    $dur->applicationDatasets,
-                    $dur->applicationPublications
-                );
+                unset($datasets);
 
                 return $dur;
             });
+
+            // SC: disabling for now (see comment above)
+            // $durs->getCollection()->transform(function ($dur) {
+            //     $userDatasets = $dur->userDatasets;
+            //     $userPublications = $dur->userPublications;
+            //     $dur->setAttribute('datasets', $dur->allDatasets  ?? []);
+            //     $applicationDatasets = $dur->applicationDatasets;
+            //     $applicationPublications = $dur->applicationPublications;
+            //     $users = $userDatasets->merge($userPublications)->unique('id');
+            //     $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
+            //     $dur->setRelation('users', $users);
+            //     $dur->setRelation('applications', $applications);
+
+
+            //     unset(
+            //         $users,
+            //         $userDatasets,
+            //         $userPublications,
+            //         $applications,
+            //         $applicationDatasets,
+            //         $applicationPublications,
+            //         $dur->userDatasets,
+            //         $dur->userPublications,
+            //         $dur->applicationDatasets,
+            //         $dur->applicationPublications
+            //     );
+
+            //     return $dur;
+            // });
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -447,6 +453,9 @@ class TeamDurController extends Controller
      */
     public function show(GetDurByTeamAndId $request, int $teamId, int $id): JsonResponse
     {
+        $input = $request->all();
+        $this->checkAccess($input, $teamId, null, 'team', $request->header());
+
         try {
             $dur = $this->getDurById($id, teamId: $teamId);
 
@@ -597,9 +606,7 @@ class TeamDurController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
 
-        if (!is_null($teamId)) {
-            $this->checkAccess($input, $teamId, null, 'team', $request->header());
-        }
+        $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         $arrayKeys = [
             'non_gateway_datasets',
@@ -699,6 +706,7 @@ class TeamDurController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v2/teams/{teamId}/dur/{id}",
+     *    operationId="update_dur_v2_by_team_id",
      *    tags={"Data Use Registers"},
      *    summary="TeamDurController@update",
      *    description="Update a dur by team and id v2",
@@ -868,8 +876,14 @@ class TeamDurController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
-        $initDur = Dur::where(['id' => $id, 'team_id' => $teamId])->first();
+        $initDur = Dur::where('id', $id)->first();
+        if (!$initDur) {
+            throw new NotFoundException();
+        }
         $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
+        if ($initDur->team_id !== $teamId) {
+            throw new UnauthorizedException();
+        }
 
         try {
             $arrayKeys = [
@@ -979,6 +993,7 @@ class TeamDurController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v2/teams/{teamId}/dur/{id}",
+     *    operationId="edit_durs_v2_by_team_id",
      *    tags={"Data Use Registers"},
      *    summary="TeamDurController@edit",
      *    description="Edit a dur by team v2",
@@ -1145,8 +1160,14 @@ class TeamDurController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
-        $initDur = Dur::where(['id' => $id, 'team_id' => $teamId])->first();
+        $initDur = Dur::where('id', $id)->first();
+        if (!$initDur) {
+            throw new NotFoundException();
+        }
         $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
+        if ($initDur->team_id !== $teamId) {
+            throw new UnauthorizedException();
+        }
 
         try {
             $arrayKeys = [
@@ -1244,6 +1265,7 @@ class TeamDurController extends Controller
     /**
      * @OA\Delete(
      *    path="/api/v2/teams/{teamId}/dur/{id}",
+     *    operationId="delete_durs_v2_by_team_id",
      *    tags={"Data Use Registers"},
      *    summary="TeamDurController@destroy",
      *    description="Delete a dur by team and id v2",
@@ -1312,13 +1334,13 @@ class TeamDurController extends Controller
             DurHasPublication::where(['dur_id' => $id])->delete();
             DurHasTool::where(['dur_id' => $id])->delete();
             CollectionHasDur::where(['dur_id' => $id])->delete();
-            Dur::where(['id' => $id])->delete();
+            Dur::where(['id' => $id])->first()->delete();
 
             Auditor::log([
                 'user_id' => $currentUser,
                 'action_type' => 'DELETE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Dur ' . $id . ' deleted',
+                'description' => 'Team Dur ' . $id . ' deleted',
             ]);
 
             return response()->json([
@@ -1337,7 +1359,7 @@ class TeamDurController extends Controller
     }
 
     // datasets
-    private function checkDatasets(int $durId, array $inDatasets, int $userId = null)
+    private function checkDatasets(int $durId, array $inDatasets, ?int $userId = null)
     {
         $durDatasets = DurHasDatasetVersion::where(['dur_id' => $durId])->get();
         foreach ($durDatasets as $durDataset) {
@@ -1357,7 +1379,7 @@ class TeamDurController extends Controller
         }
     }
 
-    private function addDurHasDatasetVersion(int $durId, array $dataset, int $datasetVersionId, int $userId = null)
+    private function addDurHasDatasetVersion(int $durId, array $dataset, int $datasetVersionId, ?int $userId = null)
     {
         try {
             $searchArray = [
@@ -1438,7 +1460,7 @@ class TeamDurController extends Controller
     }
 
     // publications
-    private function checkPublications(int $durId, array $inPublications, int $userId = null)
+    private function checkPublications(int $durId, array $inPublications, ?int $userId = null)
     {
         $pubs = DurHasPublication::where(['dur_id' => $durId])->get();
         foreach ($pubs as $p) {
@@ -1456,7 +1478,7 @@ class TeamDurController extends Controller
         }
     }
 
-    private function addDurHasPublication(int $durId, array $publication, int $userId = null)
+    private function addDurHasPublication(int $durId, array $publication, ?int $userId = null)
     {
         try {
             $arrCreate = [

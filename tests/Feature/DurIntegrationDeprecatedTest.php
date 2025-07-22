@@ -250,7 +250,7 @@ class DurIntegrationDeprecatedTest extends TestCase
                     'publications',
                     'tools',
                     'datasets' => [
-                        0 => [
+                        '*' => [
                             'id',
                             'shortTitle',
                         ]

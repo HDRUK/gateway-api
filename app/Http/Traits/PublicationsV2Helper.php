@@ -97,7 +97,7 @@ trait PublicationsV2Helper
     }
 
     // tools
-    public function checkTools(int $publicationId, array $inTools, int $userId = null)
+    public function checkTools(int $publicationId, array $inTools, ?int $userId = null)
     {
         $pubs = PublicationHasTool::where(['publication_id' => $publicationId])->get();
         foreach ($pubs as $pub) {
@@ -115,7 +115,7 @@ trait PublicationsV2Helper
         }
     }
 
-    public function addPublicationHasTool(int $publicationId, array $tool, int $userId = null)
+    public function addPublicationHasTool(int $publicationId, array $tool, ?int $userId = null)
     {
         try {
             $arrCreate = [
@@ -183,7 +183,7 @@ trait PublicationsV2Helper
     }
 
     // DURs
-    public function checkDurs(int $publicationId, array $inDurs, int $userId = null)
+    public function checkDurs(int $publicationId, array $inDurs, ?int $userId = null)
     {
         $durs = DurHasPublication::where(['publication_id' => $publicationId])->get();
         foreach ($durs as $d) {
@@ -201,7 +201,7 @@ trait PublicationsV2Helper
         }
     }
 
-    public function addDurHasPublication(array $dur, int $publicationId, int $userId = null)
+    public function addDurHasPublication(array $dur, int $publicationId, ?int $userId = null)
     {
         try {
             $arrCreate = [

@@ -71,7 +71,7 @@ trait IndexElastic
 
             // inject relationships via Local functions
             $materialTypes = $this->getMaterialTypes($metadata);
-            $containsTissue = $this->getContainsTissues($materialTypes);
+            $containsBioSamples = $this->getContainsBioSamples($materialTypes);
 
             $toIndex = [
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
@@ -85,7 +85,7 @@ trait IndexElastic
                 'endDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.endDate'], Carbon::now()->addYears(5)),
                 'dataType' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], '')),
                 'dataSubType' => array_filter(explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetSubType'], ''))),
-                'containsTissue' => $containsTissue,
+                'containsBioSamples' => $containsBioSamples,
                 'sampleAvailability' => $materialTypes,
                 'conformsTo' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
                 'hasTechnicalMetadata' => (bool) count($this->getValueByPossibleKeys($metadata, ['metadata.structuralMetadata'], [])),
@@ -872,7 +872,7 @@ trait IndexElastic
         return $materialTypes;
     }
 
-    public function getContainsTissues(?array $materialTypes)
+    public function getContainsBioSamples(?array $materialTypes)
     {
         if ($materialTypes === null) {
             return false;
@@ -986,10 +986,10 @@ trait IndexElastic
         $dataset = Dataset::where(['id' => $datasetId])->first();
 
         // Accessed through the accessor
-        $durIds = array_column($dataset->allDurs, 'id') ?? [];
-        $collectionIds = array_column($dataset->allCollections, 'id') ?? [];
-        $publicationIds = array_column($dataset->allPublications, 'id') ?? [];
-        $toolIds = array_column($dataset->allTools, 'id') ?? [];
+        $durIds = array_column($dataset->allActiveDurs, 'id') ?? [];
+        $collectionIds = array_column($dataset->allActiveCollections, 'id') ?? [];
+        $publicationIds = array_column($dataset->allActivePublications, 'id') ?? [];
+        $toolIds = array_column($dataset->allActiveTools, 'id') ?? [];
 
         $version = $dataset->latestVersion();
         $withLinks = DatasetVersion::where('id', $version['id'])
