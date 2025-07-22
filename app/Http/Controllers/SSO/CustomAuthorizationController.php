@@ -58,7 +58,7 @@ class CustomAuthorizationController extends Controller
 
         // user_id from CohortRequestController@checkAccess
         // $userId = session('cr_uid');
-        $userId = 274;
+        $userId = 274; // hardcoded for testing purposes
 
         if (!$userId) {
             Log::info('No user_id/cr_uid found in session', [
