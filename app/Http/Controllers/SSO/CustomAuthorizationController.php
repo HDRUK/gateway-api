@@ -59,15 +59,6 @@ class CustomAuthorizationController extends Controller
             'request' => $request->all(),
         ]));
 
-        // test if I can get the user_id from Auth
-        if (Auth::check()) {
-            $userId = Auth::id();
-            CloudLogger::write('Found user_id from Auth :: ' . $userId);
-        } else {
-            CloudLogger::write('No user_id found in Auth, checking OauthUser');
-
-        }
-
         // user_id from CohortRequestController@checkAccess
         $userId = session('cr_uid');
 
@@ -80,6 +71,7 @@ class CustomAuthorizationController extends Controller
             if ($getFromDB) {
                 $userId = $getFromDB->user_id;
                 CloudLogger::write('Found user_id from OauthUser :: ' . $userId);
+                session(['cr_uid' => $userId]);
             } else {
                 CloudLogger::write('No user_id found in OauthUser :: ' . $userId);
                 return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
