@@ -55,6 +55,7 @@ class ToolController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/tools",
+     *    deprecated=true,
      *    operationId="fetch_all_tools",
      *    tags={"Tools"},
      *    summary="Fetch all tools",
@@ -240,6 +241,7 @@ class ToolController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/tools/count/{field}",
+     *    deprecated=true,
      *    operationId="count_unique_fields_tools",
      *    tags={"Tools"},
      *    summary="ToolController@count",
@@ -311,6 +313,7 @@ class ToolController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/tools/{id}",
+     *    deprecated=true,
      *    operationId="fetch_tools",
      *    tags={"Tools"},
      *    summary="ToolController@show",
@@ -397,6 +400,7 @@ class ToolController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/tools",
+     *    deprecated=true,
      *    operationId="create_tools",
      *    tags={"Tools"},
      *    summary="ToolController@store",
@@ -562,6 +566,7 @@ class ToolController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/tools/{id}",
+     *    deprecated=true,
      *    operationId="update_tools",
      *    tags={"Tools"},
      *    summary="ToolController@update",
@@ -760,6 +765,7 @@ class ToolController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/tools/{id}",
+     *    deprecated=true,
      *    operationId="edit_tools",
      *    tags={"Tools"},
      *    summary="ToolController@edit",
@@ -999,6 +1005,7 @@ class ToolController extends Controller
     /**
      * @OA\Delete(
      *    path="/api/v1/tools/{id}",
+     *    deprecated=true,
      *    operationId="delete_tools",
      *    tags={"Tools"},
      *    summary="ToolController@destroy",

@@ -555,7 +555,7 @@ return [
         'path' => '/tools',
         'methodController' => 'ToolController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [],
     ],
     [
@@ -564,7 +564,7 @@ return [
         'path' => '/tools/count/{field}',
         'methodController' => 'ToolController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [],
     ],
     [
@@ -573,7 +573,7 @@ return [
         'path' => '/tools/{id}',
         'methodController' => 'ToolController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [
             'id' => '[0-9]+',
         ],
@@ -587,6 +587,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'sunset'
         ],
         'constraint' => [],
     ],
@@ -599,6 +600,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -613,6 +615,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -626,6 +629,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -643,6 +647,7 @@ return [
             'jwt.verify',
             'check.access:permissions,tools.read',
             'sanitize.input',
+            'sunset'
         ],
         'constraint' => [],
     ],
@@ -656,6 +661,7 @@ return [
             'jwt.verify',
             'check.access:permissions,tools.read',
             'sanitize.input',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -671,6 +677,7 @@ return [
             'jwt.verify',
             'check.access:permissions,tools.create',
             'sanitize.input',
+            'sunset'
         ],
         'constraint' => [],
     ],
@@ -684,6 +691,7 @@ return [
             'jwt.verify',
             'check.access:permissions,tools.update',
             'sanitize.input',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -699,6 +707,7 @@ return [
             'jwt.verify',
             'check.access:permissions,tools.update',
             'sanitize.input',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -713,6 +722,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,tools.delete',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1457,7 +1467,7 @@ return [
         'path' => '/collections',
         'methodController' => 'CollectionController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [],
     ],
     [
@@ -1466,7 +1476,7 @@ return [
         'path' => '/collections/count/{field}',
         'methodController' => 'CollectionController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [],
     ],
     [
@@ -1475,7 +1485,7 @@ return [
         'path' => '/collections/{id}',
         'methodController' => 'CollectionController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [
             'id' => '[0-9]+',
         ],
@@ -1490,6 +1500,7 @@ return [
             'jwt.verify',
             'sanitize.input',
             'check.access:permissions,collections.create',
+            'sunset'
         ],
         'constraint' => [],
     ],
@@ -1503,6 +1514,7 @@ return [
             'jwt.verify',
             'sanitize.input',
             'check.access:permissions,collections.update',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1518,6 +1530,7 @@ return [
             'jwt.verify',
             'sanitize.input',
             'check.access:permissions,collections.update',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1532,6 +1545,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.delete',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1548,6 +1562,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.read',
+            'sunset'
         ],
         'constraint' => [],
     ],
@@ -1560,6 +1575,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.read',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1574,6 +1590,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.create',
+            'sunset'
         ],
         'constraint' => [],
     ],
@@ -1586,6 +1603,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.update',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1600,6 +1618,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.update',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1614,6 +1633,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.delete',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1715,6 +1735,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.read',
+            'sunset'
         ],
         'constraint' => [],
     ],
@@ -1727,6 +1748,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.read',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1742,6 +1764,7 @@ return [
             'jwt.verify',
             'check.access:permissions,dur.create',
             'sanitize.input',
+            'sunset'
         ],
         'constraint' => [],
     ],
@@ -1755,6 +1778,7 @@ return [
             'jwt.verify',
             'check.access:permissions,dur.update',
             'sanitize.input',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1770,6 +1794,7 @@ return [
             'jwt.verify',
             'check.access:permissions,dur.update',
             'sanitize.input',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1784,6 +1809,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.delete',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2152,7 +2178,7 @@ return [
         'path' => '/datasets',
         'methodController' => 'DatasetController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [],
     ],
     [
@@ -2161,7 +2187,7 @@ return [
         'path' => '/datasets/count/{field}',
         'methodController' => 'DatasetController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [],
     ],
     [
@@ -2170,7 +2196,7 @@ return [
         'path' => '/datasets/{id}',
         'methodController' => 'DatasetController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [
             'id' => '[0-9]+',
         ],
@@ -2185,6 +2211,7 @@ return [
             'jwt.verify',
             //'sanitize.input',
             'check.access:permissions,datasets.create',
+            'sunset'
         ],
         'constraint' => [],
     ],
@@ -2198,6 +2225,7 @@ return [
             'jwt.verify',
             //'sanitize.input',
             'check.access:permissions,datasets.update',
+            'sunset'
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -2212,6 +2240,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.update',
+            'sunset'
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -2226,6 +2255,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.delete',
+            'sunset'
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -2296,6 +2326,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.read',
+            'sunset'
         ],
         'constraint' => [],
     ],
@@ -2308,6 +2339,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.read',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2323,6 +2355,7 @@ return [
             'jwt.verify',
             'check.access:permissions,datasets.create',
             'sanitize.input',
+            'sunset'
         ],
         'constraint' => [],
     ],
@@ -2336,6 +2369,7 @@ return [
             'jwt.verify',
             'check.access:permissions,datasets.update',
             'sanitize.input',
+            'sunset'
         ],
         'constraint' => [],
     ],
@@ -2348,6 +2382,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.delete',
+            'sunset'
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -2362,6 +2397,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'sunset'
         ],
         'constraint' => [],
     ],
@@ -2971,7 +3007,7 @@ return [
         'path' => '/dur',
         'methodController' => 'DurController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [],
     ],
     [
@@ -2980,7 +3016,7 @@ return [
         'path' => '/dur/count/{field}',
         'methodController' => 'DurController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [],
     ],
     [
@@ -2989,7 +3025,7 @@ return [
         'path' => '/dur/{id}',
         'methodController' => 'DurController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [
             'id' => '[0-9]+',
         ],
@@ -3003,6 +3039,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.create',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3017,6 +3054,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.update',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3031,6 +3069,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.update',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3045,6 +3084,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.delete',
+            'sunset'
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3090,7 +3130,7 @@ return [
         'path' => 'publications',
         'methodController' => 'PublicationController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [],
     ],
     [
@@ -3099,7 +3139,7 @@ return [
         'path' => '/publications/count/{field}',
         'methodController' => 'PublicationController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [],
     ],
     [
@@ -3108,7 +3148,7 @@ return [
         'path' => 'publications/{id}',
         'methodController' => 'PublicationController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [],
     ],
     [
@@ -3120,6 +3160,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,papers.create',
+            'sunset'
         ],
         'constraint' => [
         ],
@@ -3133,6 +3174,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,papers.update',
+            'sunset'
         ],
         'constraint' => [],
     ],
@@ -3145,6 +3187,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,papers.update',
+            'sunset'
         ],
         'constraint' => [],
     ],
@@ -3157,6 +3200,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,papers.delete',
+            'sunset'
         ],
         'constraint' => [],
     ],
