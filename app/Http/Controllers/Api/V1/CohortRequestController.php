@@ -1167,7 +1167,9 @@ class CohortRequestController extends Controller
             ])->first();
 
             if (!$checkingCohortRequest) {
-                throw new Exception('Unauthorized for access :: The request is not approved');
+                return response()->json([
+                    'message' => 'Unauthorized for access :: The request is not approved',
+                ], Config::get('statuscodes.STATUS_OK.code'));
             }
 
             $checkingCohortPerms = CohortRequestHasPermission::where([
@@ -1175,7 +1177,9 @@ class CohortRequestController extends Controller
             ])->count();
 
             if (!$checkingCohortPerms) {
-                throw new Exception('Unauthorized for access :: There are not enough permissions allocated for the cohort request');
+                return response()->json([
+                    'message' => 'Unauthorized for access :: There are not enough permissions allocated for the cohort request',
+                ], Config::get('statuscodes.STATUS_OK.code'));
             }
 
             $user = User::where([
