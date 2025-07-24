@@ -9,27 +9,27 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
 use App\Jobs\TermExtraction;
-use App\Jobs\LinkageExtraction;
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
+use App\Jobs\LinkageExtraction;
 use App\Http\Traits\CheckAccess;
 use Illuminate\Http\JsonResponse;
+use App\Models\Traits\ModelHelpers;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\MetadataOnboard;
-use App\Http\Traits\MetadataVersioning;
-use App\Models\Traits\ModelHelpers;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Traits\MetadataVersioning;
 use Illuminate\Support\Facades\Storage;
 use MetadataManagementController as MMC;
 use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\EditDataset;
+use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Requests\Dataset\CreateDataset;
 use App\Http\Requests\Dataset\ExportDataset;
-use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
-use App\Exports\DatasetStructuralMetadataExport;
 use App\Models\DatasetVersionHasDatasetVersion;
+use App\Exports\DatasetStructuralMetadataExport;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -1694,12 +1694,21 @@ class DatasetController extends Controller
     private function extractMetadata(Mixed $metadata)
     {
         if (isset($metadata['metadata']['metadata'])) {
-            $metadata = $metadata['metadata'];
+            $metadata = (is_string($metadata['metadata']) && isJsonString($metadata['metadata']))
+                ? json_decode($metadata['metadata'], true)
+                : $metadata['metadata'];
+        } elseif (isset($metadata['metadata'])) {
+            $metadata = (is_string($metadata['metadata']) && isJsonString($metadata['metadata']))
+                ? json_decode($metadata['metadata'], true)
+                : $metadata['metadata'];
+        } elseif ($metadata) {
+            $metadata = [
+                'metadata' => (is_string($metadata) && isJsonString($metadata))
+                ? json_decode($metadata, true)
+                : $metadata,
+            ];
         }
 
-        if (is_string($metadata) && isJsonString($metadata)) {
-            $metadata = json_decode($metadata, true);
-        }
         // Pre-process check for incoming data from a resource that passes strings
         // when we expect an associative array. FMA passes strings, this
         // is a safe-guard to ensure execution is unaffected by other data types.
