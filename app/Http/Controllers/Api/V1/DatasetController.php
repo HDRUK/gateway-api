@@ -32,6 +32,7 @@ use App\Models\DatasetVersionHasDatasetVersion;
 use App\Exports\DatasetStructuralMetadataExport;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Support\Arr;
 
 class DatasetController extends Controller
 {
@@ -1702,11 +1703,9 @@ class DatasetController extends Controller
      */
     private function extractMetadata(Mixed $metadata)
     {
-        if (isset($metadata['metadata']['metadata'])) {
+        if (is_array($metadata) && Arr::has($metadata, 'metadata.metadata')) {
             $metadata = $metadata['metadata'];
-        }
-
-        if (!isset($metadata['metadata'])) {
+        } elseif (is_array($metadata) && !Arr::has($metadata, 'metadata')) {
             $metadata = [
                 'metadata' => $metadata,
             ];

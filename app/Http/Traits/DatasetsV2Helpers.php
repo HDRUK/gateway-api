@@ -4,9 +4,10 @@ namespace App\Http\Traits;
 
 use Config;
 use Exception;
-use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use App\Models\Dur;
+use App\Models\Dataset;
+use Illuminate\Support\Arr;
+use App\Models\DatasetVersion;
 use MetadataManagementController as MMC;
 use App\Http\Requests\V2\Dataset\GetDataset;
 
@@ -94,11 +95,9 @@ trait DatasetsV2Helpers
      */
     private function extractMetadata(Mixed $metadata)
     {
-        if (isset($metadata['metadata']['metadata'])) {
+        if (is_array($metadata) && Arr::has($metadata, 'metadata.metadata')) {
             $metadata = $metadata['metadata'];
-        }
-
-        if (!isset($metadata['metadata'])) {
+        } elseif (is_array($metadata) && !Arr::has($metadata, 'metadata')) {
             $metadata = [
                 'metadata' => $metadata,
             ];
