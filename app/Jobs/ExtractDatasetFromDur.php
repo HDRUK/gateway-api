@@ -12,7 +12,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Traits\LoggingContext;
+
+// use App\Http\Traits\LoggingContext;
 
 class ExtractDatasetFromDur implements ShouldQueue
 {
@@ -20,10 +21,10 @@ class ExtractDatasetFromDur implements ShouldQueue
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
-    use LoggingContext;
+    // use LoggingContext;
 
     private int $durId = 0;
-    private ?array $loggingContext = null;
+    // private ?array $loggingContext = null;
 
     /**
      * Create a new job instance.
@@ -32,8 +33,8 @@ class ExtractDatasetFromDur implements ShouldQueue
     {
         $this->durId = $durId;
 
-        $this->loggingContext = $this->getLoggingContext(\request());
-        $this->loggingContext['method_name'] = class_basename($this);
+        // $this->loggingContext = $this->getLoggingContext(\request());
+        // $this->loggingContext['method_name'] = class_basename($this);
     }
 
     /**
@@ -50,7 +51,7 @@ class ExtractDatasetFromDur implements ShouldQueue
 
     private function linkDatasets(int $durId): void
     {
-        \Log::info('Extract dataset from dur job starting...', $this->loggingContext);
+        // \Log::info('Extract dataset from dur job starting...', $this->loggingContext);
 
         $dur = Dur::findOrFail($durId);
         $nonGatewayDatasets = array_filter(array_map('trim', $dur['non_gateway_datasets'] ?? [])) ?? [];
@@ -99,6 +100,6 @@ class ExtractDatasetFromDur implements ShouldQueue
             'non_gateway_datasets' => $unmatched
         ]);
 
-        \Log::info('Extract dataset from dur job completed', $this->loggingContext);
+        // \Log::info('Extract dataset from dur job completed', $this->loggingContext);
     }
 }

@@ -24,7 +24,7 @@ use App\Models\DatasetVersion;
 use App\Exports\ToolListExport;
 use App\Models\DataProviderColl;
 use App\Http\Traits\IndexElastic;
-use App\Http\Traits\LoggingContext;
+// use App\Http\Traits\LoggingContext;
 use App\Models\DurHasPublication;
 use Illuminate\Http\JsonResponse;
 use App\Exports\DatasetListExport;
@@ -58,7 +58,7 @@ class SearchController extends Controller
     use IndexElastic;
     use GetValueByPossibleKeys;
     use PaginateFromArray;
-    use LoggingContext;
+    // use LoggingContext;
 
     /**
      * @OA\Examples(
@@ -146,8 +146,8 @@ class SearchController extends Controller
     public function datasets(Request $request): JsonResponse|BinaryFileResponse
     {
         try {
-            $loggingContext = $this->getLoggingContext($request);
-            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            // $loggingContext = $this->getLoggingContext($request);
+            // $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
             $input = $request->all();
 
@@ -165,7 +165,9 @@ class SearchController extends Controller
             $input['aggs'] = $aggs;
 
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/datasets';
-            $response = Http::withHeaders($loggingContext)->post($urlString, $input);
+
+            $response = Http::post($urlString, $input);
+            // $response = Http::withHeaders($loggingContext)->post($urlString, $input);
 
             if (!$response->successful()) {
                 return response()->json([
@@ -251,7 +253,7 @@ class SearchController extends Controller
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Search datasets export data - list',
                 ]);
-                \Log::info('Search datasets export data - list', $loggingContext);
+                // \Log::info('Search datasets export data - list', $loggingContext);
                 return Excel::download(new DatasetListExport($datasetsArray), 'datasets.csv');
             }
 
@@ -261,7 +263,7 @@ class SearchController extends Controller
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Search datasets export data - table',
                 ]);
-                \Log::info('Search datasets export data - table', $loggingContext);
+                // \Log::info('Search datasets export data - table', $loggingContext);
                 return Excel::download(new DatasetTableExport($datasetsArray), 'datasets.csv');
             }
 
@@ -292,7 +294,7 @@ class SearchController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
+            // \Log::info($e->getMessage(), $loggingContext);
 
             throw new Exception($e->getMessage());
         }
@@ -344,12 +346,13 @@ class SearchController extends Controller
     public function similarDatasets(Request $request): JsonResponse
     {
         try {
-            $loggingContext = $this->getLoggingContext($request);
-            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            //  $loggingContext = $this->getLoggingContext($request);
+            //  $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
             $id = (string)$request['id'];
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/similar/datasets';
-            $response = Http::withHeaders($loggingContext)->post($urlString, ['id' => $id]);
+            // $response = Http::withHeaders($loggingContext)->post($urlString, ['id' => $id]);
+            $response = Http::post($urlString, ['id' => $id]);
 
             $datasetsArray = $response['hits']['hits'];
             $matchedIds = [];
@@ -383,7 +386,7 @@ class SearchController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            \Log::info($e->getMessage(), $loggingContext);
+            // \Log::info($e->getMessage(), $loggingContext);
 
             throw new Exception($e->getMessage());
         }
@@ -478,8 +481,8 @@ class SearchController extends Controller
     public function tools(Request $request): JsonResponse|BinaryFileResponse
     {
         try {
-            $loggingContext = $this->getLoggingContext($request);
-            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            // $loggingContext = $this->getLoggingContext($request);
+            // $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
             $input = $request->all();
 
@@ -497,14 +500,16 @@ class SearchController extends Controller
 
             try {
                 $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/tools';
-                $response = Http::withHeaders($loggingContext)->post($urlString, $input);
+                $response = Http::post($urlString, $input);
+
+                // $response = Http::withHeaders($loggingContext)->post($urlString, $input);
             } catch (ConnectionException $e) {
                 Auditor::log([
                     'action_type' => 'EXCEPTION',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => $e->getMessage(),
                 ]);
-                \Log::info($e->getMessage(), $loggingContext);
+                // \Log::info($e->getMessage(), $loggingContext);
                 throw new Exception('Operation timeout: The search query is too long. Please try searching with fewer keywords');
             } catch (Exception $e) {
                 Auditor::log([
@@ -512,7 +517,7 @@ class SearchController extends Controller
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => $e->getMessage(),
                 ]);
-                \Log::info($e->getMessage(), $loggingContext);
+                // \Log::info($e->getMessage(), $loggingContext);
                 throw new Exception($e->getMessage());
             }
 
@@ -604,7 +609,7 @@ class SearchController extends Controller
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Search tools export data - list',
                 ]);
-                \Log::info('Search tools export data - list', $loggingContext);
+                // \Log::info('Search tools export data - list', $loggingContext);
                 return Excel::download(new ToolListExport($toolsArray), 'tools.csv');
             }
 
@@ -633,7 +638,7 @@ class SearchController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
+            // \Log::info($e->getMessage(), $loggingContext);
 
             throw new Exception($e->getMessage());
         }
@@ -721,8 +726,8 @@ class SearchController extends Controller
     public function collections(Request $request): JsonResponse
     {
         try {
-            $loggingContext = $this->getLoggingContext($request);
-            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            // $loggingContext = $this->getLoggingContext($request);
+            // $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
             $input = $request->all();
 
@@ -735,7 +740,9 @@ class SearchController extends Controller
             $input['aggs'] = $aggs;
 
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/collections';
-            $response = Http::withHeaders($loggingContext)->post($urlString, $input);
+            $response = Http::post($urlString, $input);
+
+            // $response = Http::withHeaders($loggingContext)->post($urlString, $input);
 
             $collectionArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
@@ -795,7 +802,7 @@ class SearchController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
+            // \Log::info($e->getMessage(), $loggingContext);
 
             throw new Exception($e->getMessage());
         }
@@ -892,8 +899,8 @@ class SearchController extends Controller
      */
     public function dataUses(Request $request): JsonResponse|BinaryFileResponse
     {
-        $loggingContext = $this->getLoggingContext($request);
-        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+        // $loggingContext = $this->getLoggingContext($request);
+        // $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         $input = $request->all();
         $download = array_key_exists('download', $input) ? $input['download'] : false;
@@ -909,14 +916,17 @@ class SearchController extends Controller
 
         try {
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur';
-            $response = Http::withHeaders($loggingContext)->post($urlString, $input);
+
+            $response = Http::post($urlString, $input);
+
+            //$response = Http::withHeaders($loggingContext)->post($urlString, $input);
         } catch (ConnectionException $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
+            // \Log::info($e->getMessage(), $loggingContext);
             throw new Exception('Operation timeout: The search query is too long. Please try searching with fewer keywords');
         } catch (Exception $e) {
             Auditor::log([
@@ -924,7 +934,7 @@ class SearchController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
+            // \Log::info($e->getMessage(), $loggingContext);
             throw new Exception($e->getMessage());
         }
 
@@ -971,7 +981,7 @@ class SearchController extends Controller
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Search dur export data',
                 ]);
-                \Log::info('Search dur export data', $loggingContext);
+                // \Log::info('Search dur export data', $loggingContext);
                 return Excel::download(new DataUseExport($durArray), 'dur.csv');
             }
 
@@ -1002,7 +1012,7 @@ class SearchController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
+            // \Log::info($e->getMessage(), $loggingContext);
 
             throw new Exception($e->getMessage());
         }
@@ -1119,8 +1129,8 @@ class SearchController extends Controller
     public function publications(PublicationSearch $request): JsonResponse|BinaryFileResponse
     {
         try {
-            $loggingContext = $this->getLoggingContext($request);
-            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            // $loggingContext = $this->getLoggingContext($request);
+            // $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
             $input = $request->all();
 
@@ -1141,14 +1151,15 @@ class SearchController extends Controller
 
                 try {
                     $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/publications';
-                    $response = Http::withHeaders($loggingContext)->post($urlString, $input);
+                    $response = Http::post($urlString, $input);
+                    // $response = Http::withHeaders($loggingContext)->post($urlString, $input);
                 } catch (ConnectionException $e) {
                     Auditor::log([
                         'action_type' => 'EXCEPTION',
                         'action_name' => class_basename($this) . '@' . __FUNCTION__,
                         'description' => $e->getMessage(),
                     ]);
-                    \Log::info($e->getMessage(), $loggingContext);
+                    // \Log::info($e->getMessage(), $loggingContext);
                     throw new Exception('Operation timeout: The search query is too long. Please try searching with fewer keywords');
                 } catch (Exception $e) {
                     Auditor::log([
@@ -1156,7 +1167,7 @@ class SearchController extends Controller
                         'action_name' => class_basename($this) . '@' . __FUNCTION__,
                         'description' => $e->getMessage(),
                     ]);
-                    \Log::info($e->getMessage(), $loggingContext);
+                    // \Log::info($e->getMessage(), $loggingContext);
                     throw new Exception($e->getMessage());
                 }
 
@@ -1219,14 +1230,16 @@ class SearchController extends Controller
                 $input['field'] = ['TITLE', 'ABSTRACT', 'METHODS'];
 
                 try {
-                    $response = Http::withHeaders($loggingContext)->post($urlString, $input);
+                    //$response = Http::withHeaders($loggingContext)->post($urlString, $input);
+                    $response = Http::post($urlString, $input);
+
                 } catch (ConnectionException $e) {
                     Auditor::log([
                         'action_type' => 'EXCEPTION',
                         'action_name' => class_basename($this) . '@' . __FUNCTION__,
                         'description' => $e->getMessage(),
                     ]);
-                    \Log::info($e->getMessage(), $loggingContext);
+                    // \Log::info($e->getMessage(), $loggingContext);
                     throw new Exception('Operation timeout: The search query is too long. Please try searching with fewer keywords');
                 } catch (Exception $e) {
                     Auditor::log([
@@ -1234,7 +1247,7 @@ class SearchController extends Controller
                         'action_name' => class_basename($this) . '@' . __FUNCTION__,
                         'description' => $e->getMessage(),
                     ]);
-                    \Log::info($e->getMessage(), $loggingContext);
+                    // \Log::info($e->getMessage(), $loggingContext);
                     throw new Exception($e->getMessage());
                 }
 
@@ -1263,7 +1276,7 @@ class SearchController extends Controller
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => "Search publications export data",
                 ]);
-                \Log::info('Search publications export data', $loggingContext);
+                // \Log::info('Search publications export data', $loggingContext);
                 return Excel::download(new PublicationExport($pubArray), 'publications.csv');
             }
 
@@ -1297,7 +1310,7 @@ class SearchController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
+            // \Log::info($e->getMessage(), $loggingContext);
 
             throw new Exception($e->getMessage());
         }
@@ -1423,13 +1436,14 @@ class SearchController extends Controller
     public function doiSearch(DOISearch $request): Response | JsonResponse
     {
         try {
-            $loggingContext = $this->getLoggingContext($request);
-            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            // $loggingContext = $this->getLoggingContext($request);
+            // $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
             $input = $request->all();
 
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi';
-            $response = Http::withHeaders($loggingContext)->post($urlString, $input);
+            $response = Http::post($urlString, $input);
+            // $response = Http::withHeaders($loggingContext)->post($urlString, $input);
 
             if (!isset($response['resultList']['result']) || !is_array($response['resultList']['result'])) {
                 CloudLogger::write([
@@ -1474,7 +1488,7 @@ class SearchController extends Controller
                 'data' => $pubResult
             ], 200);
         } catch (Exception $e) {
-            \Log::info($e->getMessage(), $loggingContext);
+            // \Log::info($e->getMessage(), $loggingContext);
             throw new Exception($e->getMessage());
         }
     }
@@ -1560,8 +1574,8 @@ class SearchController extends Controller
     public function dataCustodianNetworks(Request $request): JsonResponse|BinaryFileResponse
     {
         try {
-            $loggingContext = $this->getLoggingContext($request);
-            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            // $loggingContext = $this->getLoggingContext($request);
+            // $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
             $input = $request->all();
             $download = array_key_exists('download', $input) ? $input['download'] : false;
@@ -1576,7 +1590,8 @@ class SearchController extends Controller
             $input['aggs'] = $aggs;
 
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_custodian_networks';
-            $response = Http::withHeaders($loggingContext)->post($urlString, $input);
+            // $response = Http::withHeaders($loggingContext)->post($urlString, $input);
+            $response = Http::post($urlString, $input);
 
             $dataCustodianNetworksArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
@@ -1613,7 +1628,7 @@ class SearchController extends Controller
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Search data custodian network export data',
                 ]);
-                \Log::info('Search data custodian network export data', $loggingContext);
+                // \Log::info('Search data custodian network export data', $loggingContext);
                 return Excel::download(new DataProviderCollExport($dataCustodianNetworksArray), 'dataCustodianNetworks.csv');
             }
 
@@ -1643,7 +1658,7 @@ class SearchController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
+            // \Log::info($e->getMessage(), $loggingContext);
 
             throw new Exception($e->getMessage());
         }
@@ -1736,8 +1751,8 @@ class SearchController extends Controller
     public function dataCustodians(Request $request): JsonResponse|BinaryFileResponse
     {
         try {
-            $loggingContext = $this->getLoggingContext($request);
-            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            // $loggingContext = $this->getLoggingContext($request);
+            // $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
             $input = $request->all();
             $download = array_key_exists('download', $input) ? $input['download'] : false;
@@ -1752,7 +1767,9 @@ class SearchController extends Controller
             $input['aggs'] = $aggs;
 
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_providers';
-            $response = Http::withHeaders($loggingContext)->post($urlString, $input);
+            $response = Http::post($urlString, $input);
+
+            // $response = Http::withHeaders($loggingContext)->post($urlString, $input);
 
             $dataCustodianArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
@@ -1786,7 +1803,7 @@ class SearchController extends Controller
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Search data provider export data',
                 ]);
-                \Log::info('Search data provider export data', $loggingContext);
+                // \Log::info('Search data provider export data', $loggingContext);
                 return Excel::download(new DataProviderExport($dataCustodianArray), 'dataCustodian.csv');
             }
 
@@ -1817,7 +1834,7 @@ class SearchController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
+            // \Log::info($e->getMessage(), $loggingContext);
 
             throw new Exception($e->getMessage());
         }

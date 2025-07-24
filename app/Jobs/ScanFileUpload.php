@@ -19,7 +19,7 @@ use App\Models\Team;
 use App\Models\Upload;
 use App\Imports\ImportDur;
 use App\Imports\ImportStructuralMetadata;
-use App\Http\Traits\LoggingContext;
+// use App\Http\Traits\LoggingContext;
 use App\Http\Traits\MetadataOnboard;
 use MetadataManagementController as MMC;
 use Illuminate\Bus\Queueable;
@@ -40,7 +40,7 @@ class ScanFileUpload implements ShouldQueue
     use Queueable;
     use SerializesModels;
     use MetadataOnboard;
-    use LoggingContext;
+    // use LoggingContext;
 
     private int $uploadId = 0;
     private string $fileSystem = '';
@@ -59,7 +59,7 @@ class ScanFileUpload implements ShouldQueue
     private ?int $reviewId = null;
     private bool $isLocalOrTestEnv = false;
 
-    private ?array $loggingContext = null;
+    // private ?array $loggingContext = null;
 
     public $timeout = 180; // default timeout is 60
 
@@ -100,8 +100,8 @@ class ScanFileUpload implements ShouldQueue
         $this->reviewId = $reviewId;
         $this->isLocalOrTestEnv = (strtoupper(config('app.env')) === 'TESTING' || strtoupper(config('app.env')) === 'LOCAL');
 
-        $this->loggingContext = $this->getLoggingContext(\request());
-        $this->loggingContext['method_name'] = class_basename($this);
+        // $this->loggingContext = $this->getLoggingContext(\request());
+        // $this->loggingContext['method_name'] = class_basename($this);
     }
 
     /**
@@ -121,13 +121,14 @@ class ScanFileUpload implements ShouldQueue
                 'storage' => (string)$this->fileSystem
             ];
 
-            \Log::info('Malware scan initiated', $this->loggingContext);
+            // \Log::info('Malware scan initiated', $this->loggingContext);
 
-            $response = Http::withHeaders($this->loggingContext)
-            ->withBody(
+            //$response = Http::withHeaders($this->loggingContext)
+            //->withBody(
+            $response = Http::withBody(
                 json_encode([
-                    'file' => $filePath,
-                    'storage' => $this->fileSystem,
+                   'file' => $filePath,
+                   'storage' => $this->fileSystem,
                 ]),
                 'application/json',
             )->post(env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file');
@@ -142,7 +143,7 @@ class ScanFileUpload implements ShouldQueue
 
             $isInfected = $response['isInfected'];
 
-            \Log::info('Malware scan completed', $this->loggingContext);
+            // \Log::info('Malware scan completed', $this->loggingContext);
 
             // Check if the file is infected
             if ($isInfected) {
@@ -153,7 +154,7 @@ class ScanFileUpload implements ShouldQueue
                 Storage::disk($this->fileSystem . '.unscanned')
                     ->delete($upload->file_location);
 
-                \Log::info('Uploaded file failed malware scan', $this->loggingContext);
+                // \Log::info('Uploaded file failed malware scan', $this->loggingContext);
 
                 Auditor::log([
                     'action_type' => 'SCAN',
@@ -162,7 +163,7 @@ class ScanFileUpload implements ShouldQueue
                 ]);
             } else {
 
-                \Log::info('Uploaded file passed malware scan', $this->loggingContext);
+                // \Log::info('Uploaded file passed malware scan', $this->loggingContext);
 
                 $loc = $upload->file_location;
                 $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
@@ -170,7 +171,7 @@ class ScanFileUpload implements ShouldQueue
                 Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
                 Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
 
-                \Log::info('Uploaded file moved to safe scanned storage', $this->loggingContext);
+                // \Log::info('Uploaded file moved to safe scanned storage', $this->loggingContext);
 
                 switch ($this->entityFlag) {
                     case 'dur-from-upload':
@@ -199,7 +200,7 @@ class ScanFileUpload implements ShouldQueue
                         break;
                 }
 
-                \Log::info('Uploaded file passed malware scan and processed', $this->loggingContext);
+                // \Log::info('Uploaded file passed malware scan and processed', $this->loggingContext);
 
                 Auditor::log([
                     'action_type' => 'SCAN',
@@ -221,7 +222,7 @@ class ScanFileUpload implements ShouldQueue
                 'description' => $e->getMessage(),
             ]);
 
-            \Log::info('ScanFileUpload failed', $this->loggingContext);
+            // \Log::info('ScanFileUpload failed', $this->loggingContext);
 
             throw new Exception($e->getMessage());
         }
@@ -253,7 +254,7 @@ class ScanFileUpload implements ShouldQueue
                 'entity_id' => $durIds[0] ?? null,
             ]);
 
-            \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
+            // \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
 
         } catch (Exception $e) {
             // Record exception in uploads table
@@ -367,7 +368,7 @@ class ScanFileUpload implements ShouldQueue
                     'entity_id' => $metadataResult['dataset_id']
                 ]);
 
-                \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
+                // \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
 
                 Auditor::log([
                     'user_id' => $this->userId,
@@ -384,10 +385,10 @@ class ScanFileUpload implements ShouldQueue
                     'error' => $metadataResult['response']
                 ]);
 
-                \Log::info(
-                    'Post processing ' . $this->entityFlag . ' failed with ' . $metadataResult['response'],
-                    $this->loggingContext
-                );
+                // \Log::info(
+                //     'Post processing ' . $this->entityFlag . ' failed with ' . $metadataResult['response'],
+                //     $this->loggingContext
+                // );
             }
         } catch (Exception $e) {
             // Record exception in uploads table
@@ -470,7 +471,7 @@ class ScanFileUpload implements ShouldQueue
                 'entity_type' => 'structural_metadata',
                 'structural_metadata' => json_encode($metadataInput['metadata']['structuralMetadata']),
             ]);
-            \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
+            // \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
             // } else {
             //     $upload->update([
             //         'status' => 'FAILED',
@@ -580,7 +581,7 @@ class ScanFileUpload implements ShouldQueue
                 'question_id' => $this->questionId,
             ]);
 
-            \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
+            // \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
 
         } catch (Exception $e) {
             // Record exception in uploads table
@@ -624,7 +625,7 @@ class ScanFileUpload implements ShouldQueue
                 'entity_id' => $template->id,
             ]);
 
-            \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
+            // \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
 
         } catch (Exception $e) {
             // Record exception in uploads table
@@ -659,7 +660,7 @@ class ScanFileUpload implements ShouldQueue
                 'entity_id' => $this->reviewId,
             ]);
 
-            \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
+            // \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
 
         } catch (Exception $e) {
             // Record exception in uploads table
@@ -704,17 +705,17 @@ class ScanFileUpload implements ShouldQueue
                     'error' => $imageValid['message']
                 ]);
 
-                \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
+                // \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
             } else {
                 $upload->update([
                     'status' => 'FAILED',
                     'file_location' => $loc,
                     'error' => $imageValid['message']
                 ]);
-                \Log::info(
-                    'Post processing ' . $this->entityFlag . ' failed with ' . $imageValid['message'],
-                    $this->loggingContext
-                );
+                // \Log::info(
+                //     'Post processing ' . $this->entityFlag . ' failed with ' . $imageValid['message'],
+                //     $this->loggingContext
+                // );
             }
         } catch (Exception $e) {
             // Record exception in uploads table
@@ -723,10 +724,10 @@ class ScanFileUpload implements ShouldQueue
                 'file_location' => $loc,
                 'error' => $e->getMessage()
             ]);
-            \Log::info(
-                'Post processing ' . $this->entityFlag . ' failed with ' . $e->getMessage(),
-                $this->loggingContext
-            );
+            // \Log::info(
+            //     'Post processing ' . $this->entityFlag . ' failed with ' . $e->getMessage(),
+            //     $this->loggingContext
+            // );
             throw new Exception($e->getMessage());
         }
     }
