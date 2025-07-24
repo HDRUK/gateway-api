@@ -61,6 +61,7 @@ trait ModelHelpers
                 SELECT
                     COUNT(dur_has_dataset_version.id) AS count
                 FROM dur_has_dataset_version
+                INNER JOIN dur on dur.id = dur_has_dataset_version.dur_id
                 INNER JOIN dataset_versions on dataset_versions.id = dur_has_dataset_version.dataset_version_id
                 INNER JOIN datasets on datasets.id = dataset_versions.dataset_id
                 WHERE
@@ -68,7 +69,7 @@ trait ModelHelpers
                 AND
                     dur_has_dataset_version.deleted_at is NULL
                 AND
-                    datasets.status = \'ACTIVE\'
+                    dur.status = \'ACTIVE\'
             ',
             [
                 'dataset_version_id' => $datasetVersionId,
@@ -89,6 +90,7 @@ trait ModelHelpers
                 SELECT
                     COUNT(publication_has_dataset_version.id) AS count
                 FROM publication_has_dataset_version
+                INNER JOIN publications on publications.id = publication_has_dataset_version.publication_id
                 INNER JOIN dataset_versions on dataset_versions.id = publication_has_dataset_version.dataset_version_id
                 INNER JOIN datasets on datasets.id = dataset_versions.dataset_id
                 WHERE
@@ -96,7 +98,7 @@ trait ModelHelpers
                 AND
                     publication_has_dataset_version.deleted_at is NULL
                 AND
-                    datasets.status = \'ACTIVE\'
+                    publications.status = \'ACTIVE\'
             ',
             [
                 'dataset_version_id' => $datasetVersionId,
