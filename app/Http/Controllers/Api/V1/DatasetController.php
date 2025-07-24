@@ -662,67 +662,69 @@ class DatasetController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
-        try {
-            $elasticIndexing = $request->boolean('elastic_indexing', false);
+        // try {
+        $elasticIndexing = $request->boolean('elastic_indexing', false);
 
-            $team = Team::where('id', $teamId)->first()->toArray();
+        $team = Team::where('id', $teamId)->first()->toArray();
 
-            $input['metadata'] = $this->extractMetadata($input['metadata']);
-            $input['status'] = $status;
-            $input['user_id'] = $userId;
-            $input['team_id'] = $teamId;
-            $input['create_origin'] = $createOrigin;
+        // dd($input['metadata']);
+        $input['metadata'] = $this->extractMetadata($input['metadata']);
+        $input['status'] = $status;
+        $input['user_id'] = $userId;
+        $input['team_id'] = $teamId;
+        $input['create_origin'] = $createOrigin;
 
-            $inputSchema = $request->query('input_schema', null);
-            $inputVersion = $request->query('input_version', null);
+        $inputSchema = $request->query('input_schema', null);
+        $inputVersion = $request->query('input_version', null);
 
-            // Ensure title is present for creating a dataset
-            if (empty($input['metadata']['metadata']['summary']['title'])) {
-                return response()->json([
-                    'message' => 'Title is required to save a dataset',
-                ], 400);
-            }
+        // Ensure title is present for creating a dataset
+        // dd($input['metadata']['metadata']);
+        if (empty($input['metadata']['metadata']['summary']['title'])) {
+            return response()->json([
+                'message' => 'Title is required to save a dataset',
+            ], 400);
+        }
 
-            $metadataResult = $this->metadataOnboard(
-                $input,
-                $team,
-                $inputSchema,
-                $inputVersion,
-                $elasticIndexing
-            );
+        $metadataResult = $this->metadataOnboard(
+            $input,
+            $team,
+            $inputSchema,
+            $inputVersion,
+            $elasticIndexing
+        );
 
-            if ($metadataResult['translated']) {
-                Auditor::log([
-                    'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
-                    'team_id' => $teamId,
-                    'action_type' => 'CREATE',
-                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'Dataset ' . $metadataResult['dataset_id'] . ' with version ' .
-                        $metadataResult['version_id'] . ' created',
-                ]);
-
-                return response()->json([
-                    'message' => 'created',
-                    'data' => $metadataResult['dataset_id'],
-                    'version' => $metadataResult['version_id'],
-                ], 201);
-            } else {
-                return response()->json([
-                    'message' => 'metadata is in an unknown format and cannot be processed',
-                    'details' => $metadataResult['response'],
-                ], 400);
-            }
-        } catch (Exception $e) {
+        if ($metadataResult['translated']) {
             Auditor::log([
                 'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
                 'team_id' => $teamId,
-                'action_type' => 'EXCEPTION',
+                'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
+                'description' => 'Dataset ' . $metadataResult['dataset_id'] . ' with version ' .
+                    $metadataResult['version_id'] . ' created',
             ]);
 
-            throw new Exception($e->getMessage());
+            return response()->json([
+                'message' => 'created',
+                'data' => $metadataResult['dataset_id'],
+                'version' => $metadataResult['version_id'],
+            ], 201);
+        } else {
+            return response()->json([
+                'message' => 'metadata is in an unknown format and cannot be processed',
+                'details' => $metadataResult['response'],
+            ], 400);
         }
+        // } catch (Exception $e) {
+        //     Auditor::log([
+        //         'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+        //         'team_id' => $teamId,
+        //         'action_type' => 'EXCEPTION',
+        //         'action_name' => class_basename($this) . '@' . __FUNCTION__,
+        //         'description' => $e->getMessage(),
+        //     ]);
+
+        //     throw new Exception($e->getMessage());
+        // }
     }
 
     /**
@@ -1701,19 +1703,17 @@ class DatasetController extends Controller
     private function extractMetadata(Mixed $metadata)
     {
         if (isset($metadata['metadata']['metadata'])) {
-            $metadata = (is_string($metadata['metadata']) && isJsonString($metadata['metadata']))
-                ? json_decode($metadata['metadata'], true)
-                : $metadata['metadata'];
-        } elseif (isset($metadata['metadata'])) {
-            $metadata = (is_string($metadata['metadata']) && isJsonString($metadata['metadata']))
-                ? json_decode($metadata['metadata'], true)
-                : $metadata['metadata'];
-        } elseif ($metadata) {
+            $metadata = $metadata['metadata'];
+        }
+
+        if (!isset($metadata['metadata'])) {
             $metadata = [
-                'metadata' => (is_string($metadata) && isJsonString($metadata))
-                ? json_decode($metadata, true)
-                : $metadata,
+                'metadata' => $metadata,
             ];
+        }
+
+        if (is_string($metadata) && isJsonString($metadata)) {
+            $metadata = json_decode($metadata, true);
         }
 
         // Pre-process check for incoming data from a resource that passes strings

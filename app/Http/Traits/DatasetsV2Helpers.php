@@ -95,19 +95,17 @@ trait DatasetsV2Helpers
     private function extractMetadata(Mixed $metadata)
     {
         if (isset($metadata['metadata']['metadata'])) {
-            $metadata = (is_string($metadata['metadata']) && isJsonString($metadata['metadata']))
-                ? json_decode($metadata['metadata'], true)
-                : $metadata['metadata'];
-        } elseif (isset($metadata['metadata'])) {
-            $metadata = (is_string($metadata['metadata']) && isJsonString($metadata['metadata']))
-                ? json_decode($metadata['metadata'], true)
-                : $metadata['metadata'];
-        } elseif ($metadata) {
+            $metadata = $metadata['metadata'];
+        }
+
+        if (!isset($metadata['metadata'])) {
             $metadata = [
-                'metadata' => (is_string($metadata) && isJsonString($metadata))
-                ? json_decode($metadata, true)
-                : $metadata,
+                'metadata' => $metadata,
             ];
+        }
+
+        if (is_string($metadata) && isJsonString($metadata)) {
+            $metadata = json_decode($metadata, true);
         }
 
         // Pre-process check for incoming data from a resource that passes strings
