@@ -44,9 +44,9 @@ class UserToolController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v2/users/{userId}/tools/{status}",
+     *     path="/api/v2/users/{userId}/tools/status/{status}",
      *     operationId="fetch_all_tool_by_user_and_status_v2",
-     *     tags={"Tool"},
+     *     tags={"Tools"},
      *     summary="UserToolController@indexStatus",
      *     description="Returns a list of a user tools",
      *     security={{"bearerAuth":{}}},
@@ -214,7 +214,7 @@ class UserToolController extends Controller
      * @OA\Get(
      *    path="/api/v2/users/{userId}/tools/{id}",
      *    operationId="fetch_tools_by_user_and_by_id_v2",
-     *    tags={"Tool"},
+     *    tags={"Tools"},
      *    summary="UserToolController@show",
      *    description="Get tool by user id and by id",
      *    security={{"bearerAuth":{}}},

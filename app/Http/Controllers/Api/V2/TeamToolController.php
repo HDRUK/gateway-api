@@ -46,7 +46,7 @@ class TeamToolController extends Controller
      * @OA\Get(
      *     path="/api/v2/teams/{teamId}/tools/status/{status}",
      *     operationId="fetch_all_tool_by_team_and_status_v2",
-     *     tags={"Tool"},
+     *     tags={"Tools"},
      *     summary="TeamToolController@indexStatus",
      *     description="Returns a list of a teams tools with given status",
      *     security={{"bearerAuth":{}}},
@@ -222,7 +222,7 @@ class TeamToolController extends Controller
      * @OA\Get(
      *    path="/api/v2/teams/{teamId}/tools/{id}",
      *    operationId="fetch_tools_by_team_and_by_id_v2",
-     *    tags={"Tool"},
+     *    tags={"Tools"},
      *    summary="TeamToolController@show",
      *    description="Get tool by team id and by id",
      *    security={{"bearerAuth":{}}},

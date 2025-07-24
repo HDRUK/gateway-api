@@ -464,7 +464,7 @@ class DataCustodianNetworksController extends Controller
      *      path="/api/v2/data_custodian_networks/{id}",
      *      description="Update a DataCustodianNetwork",
      *      tags={"DataCustodianNetworks"},
-     *      summary="DataCustodianNetwork@update",
+     *      summary="DataCustodianNetworks@update",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -577,8 +577,8 @@ class DataCustodianNetworksController extends Controller
      *      path="/api/v2/data_custodian_networks/{id}",
      *      summary="Edit a DataCustodianNetwork",
      *      description="Edit a DataCustodianNetwork",
-     *      tags={"DataCustodianNetwork"},
-     *      summary="DataCustodianNetwork@edit",
+     *      tags={"DataCustodianNetworks"},
+     *      summary="DataCustodianNetworks@edit",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -691,8 +691,8 @@ class DataCustodianNetworksController extends Controller
      *      path="/api/v2/data_custodian_networks/{id}",
      *      summary="Delete a DataCustodianNetwork",
      *      description="Delete a DataCustodianNetwork",
-     *      tags={"DataCustodianNetwork"},
-     *      summary="DataCustodianNetwork@destroy",
+     *      tags={"DataCustodianNetworks"},
+     *      summary="DataCustodianNetworks@destroy",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
