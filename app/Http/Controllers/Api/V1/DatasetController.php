@@ -1691,6 +1691,13 @@ class DatasetController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    /**
+     * Extracts metadata from the given mixed input.
+     *
+     * @param Mixed $metadata
+     * @return array
+     */
     private function extractMetadata(Mixed $metadata)
     {
         if (isset($metadata['metadata']['metadata'])) {
@@ -1719,8 +1726,6 @@ class DatasetController extends Controller
             unset($metadata['metadata']);
             $metadata = $tmpMetadata;
         }
-
-
 
         return $metadata;
     }
