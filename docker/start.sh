@@ -5,7 +5,7 @@ if [ -e /var/www/.env ]; then
 fi
 
 # Initialize the base command
-base_command="php artisan serve --port=8000"
+base_command="php artisan serve --host=127.0.0.1 --port=8000"
 
 # Check the application environment and append the appropriate options
 if [ "$APP_ENV" = 'local' ] || [ "$APP_ENV" = 'dev' ]; then
@@ -21,6 +21,7 @@ if [ -n "$OCTANE_WORKERS" ]; then
 fi
 
 # Start the Octane server in the background
+echo "StarStartingtign the php webserver"
 $base_command &
 
 if [ "$APP_ENV" = 'local' ]; then
