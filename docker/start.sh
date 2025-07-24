@@ -5,7 +5,7 @@ if [ -e /var/www/.env ]; then
 fi
 
 # Initialize the base command
-base_command="php artisan octane:start --host=0.0.0.0 --port=8000"
+base_command="php artisan serve --host=0.0.0.0 --port=8000"
 
 # Check the application environment and append the appropriate options
 if [ "$APP_ENV" = 'local' ] || [ "$APP_ENV" = 'dev' ]; then
