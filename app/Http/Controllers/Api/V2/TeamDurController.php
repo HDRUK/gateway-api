@@ -291,7 +291,7 @@ class TeamDurController extends Controller
      * @OA\Get(
      *    path="/api/v2/teams/{teamId}/dur/count/{field}",
      *    operationId="count_team_unique_fields_dur_v2",
-     *    tags={"Data Use Register"},
+     *    tags={"Data Use Registers"},
      *    summary="TeamDurController@count",
      *    description="Get team counts for distinct entries of a field in the model",
      *    security={{"bearerAuth":{}}},

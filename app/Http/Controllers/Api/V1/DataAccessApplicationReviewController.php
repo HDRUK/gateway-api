@@ -1191,6 +1191,7 @@ class DataAccessApplicationReviewController extends Controller
      *      path="/api/v1/teams/{team_id}/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}",
      *      summary="Delete a review from a DAR application",
      *      description="Delete a review from a DAR application",
+     *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@destroy",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
@@ -1296,6 +1297,7 @@ class DataAccessApplicationReviewController extends Controller
      *      path="/api/v1/teams/{team_id}/dar/applications/{id}/reviews/{reviewId}",
      *      summary="Delete a review from a DAR application",
      *      description="Delete a review from a DAR application",
+     *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@destroyGlobal",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
