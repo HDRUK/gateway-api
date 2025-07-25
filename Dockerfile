@@ -40,7 +40,7 @@ RUN wget -O redis-6.2.0.tgz 'http://pecl.php.net/get/redis-6.2.0.tgz' \
     && docker-php-ext-enable swoole
 
 # Install Composer
-RUN curl -sS https://getcomposer.org/download/2.8.9/composer.phar | php -- \
+RUN curl -sS https://getcomposer.org/download/2.8.9 | php -- \
     --install-dir=/usr/local/bin --filename=composer
 
 # Send update for php.ini
