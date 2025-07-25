@@ -24,6 +24,7 @@ gateway-api                         1/1     Running   2              151d
 metadata-fed-766d88664b-mpxk2       1/1     Running   1              161d
 ```
 
+
 Once confirmed your cluster is up and running, you can now install the remaining tools.
 
 - Helm: https://helm.sh/docs/intro/install/
