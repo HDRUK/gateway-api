@@ -71,7 +71,6 @@ class Kernel extends HttpKernel
         'jwt.verify' => \App\Http\Middleware\JwtMiddleware::class,
         'sanitize.input' => \App\Http\Middleware\SanitizeMiddleware::class,
         'check.access' => \App\Http\Middleware\CheckAccessMiddleware::class,
-        'check.access.userId' => \App\Http\Middleware\CheckUserIdMatches::class,
-        'sunset' => \App\Http\Middleware\SunsetHeader::class,
+        'check.access.userId' => \App\Http\Middleware\CheckUserIdMatches::class
     ];
 }

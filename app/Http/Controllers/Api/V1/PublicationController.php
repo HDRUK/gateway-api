@@ -32,7 +32,6 @@ class PublicationController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/publications",
-     *    deprecated=true,
      *    operationId="fetch_all_publications",
      *    tags={"Publication"},
      *    summary="PublicationController@index",
@@ -165,7 +164,6 @@ class PublicationController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/publication/count/{field}",
-     *    deprecated=true,
      *    operationId="count_unique_fields_publications",
      *    tags={"Publication"},
      *    summary="PublicationController@count",
@@ -253,7 +251,6 @@ class PublicationController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/publications/{id}",
-     *    deprecated=true,
      *    operationId="fetch_publications",
      *    tags={"Publication"},
      *    summary="PublicationController@show",
@@ -332,7 +329,6 @@ class PublicationController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/publications",
-     *    deprecated=true,
      *    operationId="create_publications",
      *    tags={"Publication"},
      *    summary="PublicationController@store",
@@ -452,7 +448,6 @@ class PublicationController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/publications/{id}",
-     *    deprecated=true,
      *    operationId="update_publications",
      *    tags={"Publication"},
      *    summary="PublicationController@update",
@@ -605,7 +600,6 @@ class PublicationController extends Controller
     /**
       * @OA\Patch(
       *    path="/api/v1/publications/{id}",
-      *    deprecated=true,
       *    operationId="edit_publications",
       *    tags={"Publication"},
       *    summary="PublicationController@edit",
@@ -814,7 +808,6 @@ class PublicationController extends Controller
     /**
      * @OA\Delete(
      *    path="/api/v1/publications/{id}",
-     *    deprecated=true,
      *    operationId="delete_publications",
      *    tags={"Publication"},
      *    summary="PublicationController@destroy",

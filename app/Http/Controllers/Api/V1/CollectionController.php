@@ -43,7 +43,6 @@ class CollectionController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/collections",
-     *    deprecated=true,
      *    operationId="fetch_all_collections",
      *    tags={"Collections"},
      *    summary="CollectionController@index",
@@ -273,7 +272,6 @@ class CollectionController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/collections/count/{field}",
-     *    deprecated=true,
      *    operationId="count_unique_fields_collections",
      *    tags={"Collections"},
      *    summary="CollectionController@count",
@@ -361,7 +359,6 @@ class CollectionController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/collections/{id}",
-     *    deprecated=true,
      *    operationId="fetch_collections",
      *    tags={"Collections"},
      *    summary="CollectionController@show",
@@ -458,7 +455,6 @@ class CollectionController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/teams/{teamId}/collections",
-     *    deprecated=true,
      *    operationId="create_team_collections",
      *    tags={"Collections"},
      *    summary="CollectionController@store",
@@ -608,7 +604,6 @@ class CollectionController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/teams/{teamId}/collections/{id}",
-     *    deprecated=true,
      *    tags={"Collections"},
      *    summary="Update a collection",
      *    description="Update a collection owned by a team",
@@ -791,7 +786,6 @@ class CollectionController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/teams/{teamId}/collections/{id}",
-     *    deprecated=true,
      *    tags={"Collections"},
      *    summary="Edit a collection",
      *    description="Edit a collection owned by a team",
@@ -1034,7 +1028,6 @@ class CollectionController extends Controller
     /**
      * @OA\Delete(
      *    path="/api/v1/teams/{teamId}/collections/{id}",
-     *    deprecated=true,
      *    tags={"Collections"},
      *    summary="Delete a collection",
      *    description="Delete a collection owned by a team",
