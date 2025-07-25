@@ -178,7 +178,6 @@ class SocialLoginController extends Controller
                 ->redirect();
 
             }
-            Log::info($provider);
 
 
             return Socialite::driver($provider)->redirect();
