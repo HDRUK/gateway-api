@@ -138,9 +138,9 @@ class SocialLoginController extends Controller
     private function handleLogin(Request $request, string $provider, string $baseRedirectUrl, $openAthensRedirectUrl, $isDTA): mixed
     {
 
-
         $redirectUrl = $baseRedirectUrl;
         if ($request->has("redirect")) {
+
             $redirectUrl .= $request->query('redirect');
         }
 
@@ -172,11 +172,14 @@ class SocialLoginController extends Controller
                 if (env('APP_ENV') !== 'local') {
                     $providerURL = str_replace(env('APP_URL').'/api/v1/auth', env('DTA_API_URL').'/api/v1/auth/dta', $providerURL);
                 }
+
                 return Socialite::driver($provider)
                 ->with(['redirect_uri' => $providerURL])
                 ->redirect();
 
             }
+
+
             return Socialite::driver($provider)->redirect();
 
         }
@@ -304,7 +307,7 @@ class SocialLoginController extends Controller
                 return redirect()->away(env('DTA_URL') . '/account/profile')->withCookies($cookies);
             } else {
                 $redirectUrl = session('redirectUrl');
-                return redirect()->away(env('DTA_URL'))->withCookies($cookies);
+                return redirect()->away($redirectUrl ?? env('DTA_URL'))->withCookies($cookies);
             }
         } catch (Exception $e) {
             Auditor::log([
