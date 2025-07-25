@@ -56,6 +56,7 @@ RUN composer install --optimize-autoloader \
     && php artisan optimize:clear \
     && php artisan optimize \
     && php artisan config:clear \
+    && php artisan cache:clear \
     && php artisan ide-helper:generate \
     && php artisan octane:install --server=swoole \
     && composer dumpautoload
