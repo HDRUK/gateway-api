@@ -18,7 +18,7 @@ use App\Models\TeamHasFederation;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use App\Models\FederationHasNotification;
-use App\Http\Traits\LoggingContext;
+// use App\Http\Traits\LoggingContext;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\Federation\GetFederation;
 use App\Http\Requests\Federation\EditFederation;
@@ -30,7 +30,7 @@ use App\Http\Requests\Federation\UpdateFederation;
 class FederationController extends Controller
 {
     use RequestTransformation;
-    use LoggingContext;
+    // use LoggingContext;
 
     public function __construct()
     {
@@ -98,8 +98,8 @@ class FederationController extends Controller
      */
     public function index(GetAllFederation $request, int $teamId)
     {
-        $loggingContext = $this->getLoggingContext($request);
-        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+        // $loggingContext = $this->getLoggingContext($request);
+        // $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -129,7 +129,7 @@ class FederationController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
+            //\Log::info($e->getMessage(), $loggingContext);
 
             throw new Exception($e->getMessage());
         }
@@ -194,8 +194,8 @@ class FederationController extends Controller
      */
     public function show(GetFederation $request, int $teamId, int $federationId)
     {
-        $loggingContext = $this->getLoggingContext($request);
-        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+        // $loggingContext = $this->getLoggingContext($request);
+        // $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -225,7 +225,7 @@ class FederationController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
+            //\Log::info($e->getMessage(), $loggingContext);
 
             throw new Exception($e->getMessage());
         }
@@ -295,8 +295,8 @@ class FederationController extends Controller
      */
     public function store(CreateFederation $request, int $teamId)
     {
-        $loggingContext = $this->getLoggingContext($request);
-        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+        // $loggingContext = $this->getLoggingContext($request);
+        // $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -325,7 +325,8 @@ class FederationController extends Controller
                     "secret_id" => $auth_secret_key_location,
                     "payload" => json_encode($secrets_payload)
                 ];
-                $response = Http::withHeaders($loggingContext)->post(env('GMI_SERVICE_URL') . '/federation', $payload);
+                $response = Http::post(env('GMI_SERVICE_URL') . '/federation', $payload);
+                //$response = Http::withHeaders($loggingContext)->post(env('GMI_SERVICE_URL') . '/federation', $payload);
 
                 if (!$response->successful()) {
                     Federation::where('id', $federation->id)->delete();
@@ -384,7 +385,7 @@ class FederationController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
+            // \Log::info($e->getMessage(), $loggingContext);
 
             throw new Exception($e->getMessage());
         }
@@ -466,8 +467,8 @@ class FederationController extends Controller
      */
     public function update(UpdateFederation $request, int $teamId, int $federationId)
     {
-        $loggingContext = $this->getLoggingContext($request);
-        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+        // $loggingContext = $this->getLoggingContext($request);
+        // $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -496,7 +497,9 @@ class FederationController extends Controller
                     "payload" => json_encode($secrets_payload)
                 ];
 
-                $response = Http::withHeaders($loggingContext)->patch(env('GMI_SERVICE_URL') . '/federation', $payload);
+                $response = Http::patch(env('GMI_SERVICE_URL') . '/federation', $payload);
+
+                //$response = Http::withHeaders($loggingContext)->patch(env('GMI_SERVICE_URL') . '/federation', $payload);
 
                 if (!$response->successful()) {
                     return response()->json([
@@ -560,7 +563,7 @@ class FederationController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
+            // \Log::info($e->getMessage(), $loggingContext);
 
             throw new Exception($e->getMessage());
         }
@@ -641,8 +644,8 @@ class FederationController extends Controller
      */
     public function edit(EditFederation $request, int $teamId, int $federationId)
     {
-        $loggingContext = $this->getLoggingContext($request);
-        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+        // $loggingContext = $this->getLoggingContext($request);
+        // $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -673,7 +676,8 @@ class FederationController extends Controller
                     "payload" => json_encode($secrets_payload)
                 ];
 
-                $response = Http::withHeaders($loggingContext)->patch(env('GMI_SERVICE_URL') . '/federation', $payload);
+                $response = Http::patch(env('GMI_SERVICE_URL') . '/federation', $payload);
+                //$response = Http::withHeaders($loggingContext)->patch(env('GMI_SERVICE_URL') . '/federation', $payload);
 
                 if (!$response->successful()) {
                     return response()->json([
@@ -739,7 +743,7 @@ class FederationController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
+            // \Log::info($e->getMessage(), $loggingContext);
 
             throw new Exception($e->getMessage());
         }
@@ -807,8 +811,8 @@ class FederationController extends Controller
      */
     public function destroy(DeleteFederation $request, int $teamId, int $federationId)
     {
-        $loggingContext = $this->getLoggingContext($request);
-        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+        // $loggingContext = $this->getLoggingContext($request);
+        // $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -848,7 +852,7 @@ class FederationController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
+            // \Log::info($e->getMessage(), $loggingContext);
 
             throw new Exception($e->getMessage());
         }
@@ -887,13 +891,15 @@ class FederationController extends Controller
      */
     public function testFederation(Request $request)
     {
-        $loggingContext = $this->getLoggingContext($request);
-        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+        // $loggingContext = $this->getLoggingContext($request);
+        // $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         $input = $request->all();
 
         try {
-            $response = Http::withHeaders($loggingContext)->post(env('GMI_SERVICE_URL') . '/test', $input);
+            $response = Http::post(env('GMI_SERVICE_URL') . '/test', $input);
+
+            // $response = Http::withHeaders($loggingContext)->post(env('GMI_SERVICE_URL') . '/test', $input);
             return response()->json([
                 'data' => $response->json(),
             ], 200);
@@ -904,7 +910,7 @@ class FederationController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
+            // \Log::info($e->getMessage(), $loggingContext);
 
             throw new Exception($e->getMessage());
         }

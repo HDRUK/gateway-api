@@ -11,19 +11,20 @@ use App\Models\EnquiryThread;
 use App\Models\EnquiryMessage;
 use Webklex\PHPIMAP\ClientManager;
 use App\Http\Traits\EnquiriesTrait;
-use App\Http\Traits\LoggingContext;
+
+// use App\Http\Traits\LoggingContext;
 
 class AliasReplyScannerService
 {
     use EnquiriesTrait;
-    use LoggingContext;
+    // use LoggingContext;
 
-    private ?array $loggingContext = null;
+    // private ?array $loggingContext = null;
 
     public function __construct()
     {
-        $this->loggingContext = $this->getLoggingContext(\request());
-        $this->loggingContext['method_name'] = class_basename($this);
+        // $this->loggingContext = $this->getLoggingContext(\request());
+        // $this->loggingContext['method_name'] = class_basename($this);
     }
 
     public function getImapClient()
@@ -139,11 +140,11 @@ class AliasReplyScannerService
         $usersToNotify = $this->getUsersByTeamIds([$enquiryThread->team_id], $enquiryThread->user_id, $enquiryThread->user_preferred_email);
 
         if (empty($usersToNotify)) {
-            $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
-            \Log::info(
-                'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' . $threadId,
-                $this->loggingContext,
-            );
+            // $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            // \Log::info(
+            //     'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' . $threadId,
+            //     $this->loggingContext,
+            // );
             return;
         }
 
@@ -238,11 +239,11 @@ class AliasReplyScannerService
                 $something,
             );
         } catch (Exception $e) {
-            $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
-            \Log::info(
-                'ERROR reply email enquiry thread :: ' . json_encode($e->getMessage()),
-                $this->loggingContext,
-            );
+            // $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            // \Log::info(
+            //     'ERROR reply email enquiry thread :: ' . json_encode($e->getMessage()),
+            //     $this->loggingContext,
+            // );
         }
     }
 }
