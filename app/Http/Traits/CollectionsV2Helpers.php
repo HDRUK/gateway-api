@@ -94,6 +94,11 @@ trait CollectionsV2Helpers
                     $currentEmail = $user->email;
                     [$username, $domain] = explode('@', $currentEmail);
                     $user->email = Str::mask($username, '*', 1, strlen($username) - 2) . '@' . Str::mask($domain, '*', 1, strlen($domain) - 2);
+                    if (!is_null($user->secondary_email)) {
+                        $currentSecondaryEmail = $user->secondary_email;
+                        [$username, $domain] = explode('@', $currentSecondaryEmail);
+                        $user->secondary_email = Str::mask($username, '*', 1, strlen($username) - 2) . '@' . Str::mask($domain, '*', 1, strlen($domain) - 2);
+                    }
                     return $user;
                 });
             }
