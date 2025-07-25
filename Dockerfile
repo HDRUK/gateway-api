@@ -32,12 +32,10 @@ RUN apt-get update && apt-get install -y \
 # Install Redis and Imagick
 RUN wget -O redis-5.3.7.tgz 'http://pecl.php.net/get/redis-5.3.7.tgz' \
     && pecl install redis-5.3.7.tgz \
-    && pecl install swoole \
     && rm -rf redis-5.3.7.tgz \
     && rm -rf /tmp/pear \
     && docker-php-ext-enable redis \
-    && docker-php-ext-enable gd \
-    && docker-php-ext-enable swoole
+    && docker-php-ext-enable gd
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- \
@@ -49,6 +47,10 @@ COPY ./init/php.development.ini /usr/local/etc/php/php.ini
 # Copy the application
 COPY . /var/www
 
+RUN curl https://frankenphp.dev/install.sh | sh \
+    && mv frankenphp /usr/local/bin/frankenphp \
+    && chmod +x /usr/local/bin/frankenphp
+
 # Composer & laravel
 RUN composer install --optimize-autoloader \
     && npm install --save-dev chokidar \
@@ -57,7 +59,7 @@ RUN composer install --optimize-autoloader \
     && php artisan optimize \
     && php artisan config:clear \
     && php artisan ide-helper:generate \
-    && php artisan octane:install --server=swoole \
+    && php artisan octane:install \
     && composer dumpautoload
 
 # Generate Swagger
