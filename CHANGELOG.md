@@ -1,3 +1,9 @@
+## [2.18.1](https://github.com/HDRUK/gateway-api/compare/v2.18.0...v2.18.1) (2025-07-25)
+
+### 🐛 Bug Fixes
+
+* **GAT-7666:** Fix issue with unmasked secondary emails (#1343) ([7b64863](https://github.com/HDRUK/gateway-api/commit/7b648639d6416294460c5fbf7241b03acffed859))
+
 ## [2.18.0](https://github.com/HDRUK/gateway-api/compare/v2.17.0...v2.18.0) (2025-07-22)
 
 ### ✨ Features
