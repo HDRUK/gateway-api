@@ -175,7 +175,7 @@ class SocialLoginController extends Controller
                 if (env('APP_ENV') !== 'local') {
                     $providerURL = str_replace(env('APP_URL').'/api/v1/auth', env('DTA_API_URL').'/api/v1/auth/dta', $providerURL);
                 }
-                dd($redirectUrl);
+
                 session(['redirectUrl' => $redirectUrl]);
                 session()->save();
                 return Socialite::driver($provider)
