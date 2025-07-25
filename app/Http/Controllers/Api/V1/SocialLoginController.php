@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Cookie;
 use App\Http\Controllers\JwtController;
 use Laravel\Socialite\Facades\Socialite;
 use Jumbojett\OpenIDConnectClient;
-use Illuminate\Support\Facades\Log;
 
 class SocialLoginController extends Controller
 {
@@ -81,7 +80,6 @@ class SocialLoginController extends Controller
     */
     public function dtaLogin(Request $request, string $provider): mixed
     {
-        Log::info("1");
         return $this->handleLogin($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_DTA_URL'), true);
     }
 
@@ -139,7 +137,6 @@ class SocialLoginController extends Controller
 
     private function handleLogin(Request $request, string $provider, string $baseRedirectUrl, $openAthensRedirectUrl, $isDTA): mixed
     {
-        Log::info("1");
 
         $redirectUrl = $baseRedirectUrl;
         if ($request->has("redirect")) {
@@ -176,8 +173,6 @@ class SocialLoginController extends Controller
                     $providerURL = str_replace(env('APP_URL').'/api/v1/auth', env('DTA_API_URL').'/api/v1/auth/dta', $providerURL);
                 }
 
-                session(['redirectUrl' => $redirectUrl]);
-                session()->save();
                 return Socialite::driver($provider)
                 ->with(['redirect_uri' => $providerURL])
                 ->redirect();
@@ -313,7 +308,7 @@ class SocialLoginController extends Controller
                 return redirect()->away(env('DTA_URL') . '/account/profile')->withCookies($cookies);
             } else {
                 $redirectUrl = session('redirectUrl');
-                return redirect()->away(env('DTA_URL'))->withCookies($cookies);
+                return redirect()->away($redirectUrl ?? env('DTA_URL'))->withCookies($cookies);
             }
         } catch (Exception $e) {
             Auditor::log([
