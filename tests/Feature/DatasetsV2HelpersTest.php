@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use App\Http\Traits\DatasetsV2Helpers;
 
-class ExtractMetadataTest extends TestCase
+class DatasetsV2HelpersTest extends TestCase
 {
     use DatasetsV2Helpers;
 
@@ -15,7 +15,11 @@ class ExtractMetadataTest extends TestCase
         $result = $this->extractMetadata($input);
 
         $this->assertEquals(
-            ['metadata' => ['foo' => 'bar']],
+            [
+                'metadata' => [
+                    'foo' => 'bar'
+                ]
+            ],
             $result
         );
     }

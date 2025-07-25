@@ -9,29 +9,30 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
 use App\Jobs\TermExtraction;
-use App\Jobs\LinkageExtraction;
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
+use App\Jobs\LinkageExtraction;
 use App\Http\Traits\CheckAccess;
 use Illuminate\Http\JsonResponse;
+use App\Models\Traits\ModelHelpers;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\MetadataOnboard;
-use App\Http\Traits\MetadataVersioning;
-use App\Models\Traits\ModelHelpers;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Traits\MetadataVersioning;
 use Illuminate\Support\Facades\Storage;
 use MetadataManagementController as MMC;
 use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\EditDataset;
+use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Requests\Dataset\CreateDataset;
 use App\Http\Requests\Dataset\ExportDataset;
-use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
-use App\Exports\DatasetStructuralMetadataExport;
 use App\Models\DatasetVersionHasDatasetVersion;
+use App\Exports\DatasetStructuralMetadataExport;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Support\Arr;
 
 class DatasetController extends Controller
 {
@@ -666,67 +667,69 @@ class DatasetController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
-        try {
-            $elasticIndexing = $request->boolean('elastic_indexing', false);
+        // try {
+        $elasticIndexing = $request->boolean('elastic_indexing', false);
 
-            $team = Team::where('id', $teamId)->first()->toArray();
+        $team = Team::where('id', $teamId)->first()->toArray();
 
-            $input['metadata'] = $this->extractMetadata($input['metadata']);
-            $input['status'] = $status;
-            $input['user_id'] = $userId;
-            $input['team_id'] = $teamId;
-            $input['create_origin'] = $createOrigin;
+        // dd($input['metadata']);
+        $input['metadata'] = $this->extractMetadata($input['metadata']);
+        $input['status'] = $status;
+        $input['user_id'] = $userId;
+        $input['team_id'] = $teamId;
+        $input['create_origin'] = $createOrigin;
 
-            $inputSchema = $request->query('input_schema', null);
-            $inputVersion = $request->query('input_version', null);
+        $inputSchema = $request->query('input_schema', null);
+        $inputVersion = $request->query('input_version', null);
 
-            // Ensure title is present for creating a dataset
-            if (empty($input['metadata']['metadata']['summary']['title'])) {
-                return response()->json([
-                    'message' => 'Title is required to save a dataset',
-                ], 400);
-            }
+        // Ensure title is present for creating a dataset
+        // dd($input['metadata']['metadata']);
+        if (empty($input['metadata']['metadata']['summary']['title'])) {
+            return response()->json([
+                'message' => 'Title is required to save a dataset',
+            ], 400);
+        }
 
-            $metadataResult = $this->metadataOnboard(
-                $input,
-                $team,
-                $inputSchema,
-                $inputVersion,
-                $elasticIndexing
-            );
+        $metadataResult = $this->metadataOnboard(
+            $input,
+            $team,
+            $inputSchema,
+            $inputVersion,
+            $elasticIndexing
+        );
 
-            if ($metadataResult['translated']) {
-                Auditor::log([
-                    'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
-                    'team_id' => $teamId,
-                    'action_type' => 'CREATE',
-                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'Dataset ' . $metadataResult['dataset_id'] . ' with version ' .
-                        $metadataResult['version_id'] . ' created',
-                ]);
-
-                return response()->json([
-                    'message' => 'created',
-                    'data' => $metadataResult['dataset_id'],
-                    'version' => $metadataResult['version_id'],
-                ], 201);
-            } else {
-                return response()->json([
-                    'message' => 'metadata is in an unknown format and cannot be processed',
-                    'details' => $metadataResult['response'],
-                ], 400);
-            }
-        } catch (Exception $e) {
+        if ($metadataResult['translated']) {
             Auditor::log([
                 'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
                 'team_id' => $teamId,
-                'action_type' => 'EXCEPTION',
+                'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
+                'description' => 'Dataset ' . $metadataResult['dataset_id'] . ' with version ' .
+                    $metadataResult['version_id'] . ' created',
             ]);
 
-            throw new Exception($e->getMessage());
+            return response()->json([
+                'message' => 'created',
+                'data' => $metadataResult['dataset_id'],
+                'version' => $metadataResult['version_id'],
+            ], 201);
+        } else {
+            return response()->json([
+                'message' => 'metadata is in an unknown format and cannot be processed',
+                'details' => $metadataResult['response'],
+            ], 400);
         }
+        // } catch (Exception $e) {
+        //     Auditor::log([
+        //         'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+        //         'team_id' => $teamId,
+        //         'action_type' => 'EXCEPTION',
+        //         'action_name' => class_basename($this) . '@' . __FUNCTION__,
+        //         'description' => $e->getMessage(),
+        //     ]);
+
+        //     throw new Exception($e->getMessage());
+        // }
     }
 
     /**
@@ -1698,15 +1701,27 @@ class DatasetController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    /**
+     * Extracts metadata from the given mixed input.
+     *
+     * @param Mixed $metadata
+     * @return array
+     */
     private function extractMetadata(Mixed $metadata)
     {
-        if (isset($metadata['metadata']['metadata'])) {
+        if (is_array($metadata) && Arr::has($metadata, 'metadata.metadata')) {
             $metadata = $metadata['metadata'];
+        } elseif (is_array($metadata) && !Arr::has($metadata, 'metadata')) {
+            $metadata = [
+                'metadata' => $metadata,
+            ];
         }
 
         if (is_string($metadata) && isJsonString($metadata)) {
             $metadata = json_decode($metadata, true);
         }
+
         // Pre-process check for incoming data from a resource that passes strings
         // when we expect an associative array. FMA passes strings, this
         // is a safe-guard to ensure execution is unaffected by other data types.
@@ -1717,8 +1732,6 @@ class DatasetController extends Controller
             unset($metadata['metadata']);
             $metadata = $tmpMetadata;
         }
-
-
 
         return $metadata;
     }
