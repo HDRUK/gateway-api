@@ -45,6 +45,7 @@ class DatasetController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/datasets",
+     *    deprecated=true,
      *    operationId="fetch_all_datasets",
      *    tags={"Datasets"},
      *    summary="DatasetController@index",
@@ -262,6 +263,7 @@ class DatasetController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/datasets/count/{field}",
+     *    deprecated=true,
      *    operationId="count_unique_fields",
      *    tags={"Datasets"},
      *    summary="DatasetController@count",
@@ -336,6 +338,7 @@ class DatasetController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/datasets/{id}",
+     *    deprecated=true,
      *    operationId="fetch_datasets",
      *    tags={"Datasets"},
      *    summary="DatasetController@show",
@@ -609,6 +612,7 @@ class DatasetController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/datasets",
+     *    deprecated=true,
      *    operationId="create_datasets",
      *    tags={"Datasets"},
      *    summary="DatasetController@store",
@@ -731,6 +735,7 @@ class DatasetController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/datasets/{id}",
+     *    deprecated=true,
      *    operationId="update_datasets",
      *    tags={"Datasets"},
      *    summary="DatasetController@update",
@@ -918,6 +923,7 @@ class DatasetController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/datasets/{id}",
+     *    deprecated=true,
      *    operationId="patch_datasets",
      *    tags={"Datasets"},
      *    summary="DatasetController@edit",
