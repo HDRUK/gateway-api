@@ -2564,6 +2564,34 @@ return [
         ],
     ],
     [
+        // User needs access - used in button (many places) and form - so this is handled inside the endpoint
+        'name' => 'cohort_requests_request_nhse_access',
+        'method' => 'post',
+        'path' => '/cohort_requests/user/{id}/request_nhse_access',
+        'methodController' => 'CohortRequestController@requestNhseAccess',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        // User needs access - used in button (many places) and form - so this is handled inside the endpoint
+        'name' => 'cohort_requests_indicate_nhse_access',
+        'method' => 'post',
+        'path' => '/cohort_requests/user/{id}/indicate_nhse_access',
+        'methodController' => 'CohortRequestController@indicateNhseAccess',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
         'name' => 'cohort_requests_access',
         'method' => 'get',
         'path' => '/cohort_requests/access',
