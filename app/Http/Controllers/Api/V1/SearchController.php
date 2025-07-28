@@ -524,7 +524,7 @@ class SearchController extends Controller
             }
 
             //get all tools models that have been filtered and then matched by elastic
-            $toolModels = Tool::whereIn('id', $matchedIds)->get();
+            $toolModels = Tool::whereIn('id', $matchedIds)->with('tag')->get();
 
             foreach ($toolsArray as $i => $tool) {
                 $foundFlag = false;
@@ -533,6 +533,8 @@ class SearchController extends Controller
 
                         $toolsArray[$i]['name'] = $model['name'];
                         $toolsArray[$i]['description'] = $model['description'];
+                        $toolsArray[$i]['associatedAuthors'] = $model['associated_authors'];
+                        $toolsArray[$i]['tag'] = $model['tag'];
 
                         // uploader
                         $user = User::where('id', $model['user_id'])->first();
