@@ -1167,7 +1167,9 @@ class CohortRequestController extends Controller
             ])->first();
 
             if (!$checkingCohortRequest) {
-                throw new Exception('Unauthorized for access :: The request is not approved');
+                return response()->json([
+                    'message' => 'Unauthorized for access :: The request is not approved',
+                ], Config::get('statuscodes.STATUS_OK.code'));
             }
 
             $checkingCohortPerms = CohortRequestHasPermission::where([
@@ -1175,7 +1177,9 @@ class CohortRequestController extends Controller
             ])->count();
 
             if (!$checkingCohortPerms) {
-                throw new Exception('Unauthorized for access :: There are not enough permissions allocated for the cohort request');
+                return response()->json([
+                    'message' => 'Unauthorized for access :: There are not enough permissions allocated for the cohort request',
+                ], Config::get('statuscodes.STATUS_OK.code'));
             }
 
             $user = User::where([
@@ -1348,6 +1352,248 @@ class CohortRequestController extends Controller
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Cohort Request get by user ' . $id,
+            ]);
+            return response()->json([
+                'message' => 'success',
+                'data' => $cohortRequest,
+            ], 200);
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /* @OA\Post(
+        *    path="/api/v1/cohort_requests/user/{id}/request_nhse_access",
+        *    operationId="post_nhse_access_cohort_request_by_user",
+        *    tags={"Cohort Requests"},
+        *    summary="CohortRequestController@requestNhseAccess",
+        *    description="Indicates the user has begun the NHSE SDE access process by contacting NHS via the Gateway button",
+        *    security={{"bearerAuth":{}}},
+        *    @OA\Parameter(
+        *       name="id",
+        *       in="path",
+        *       description="user id",
+        *       required=true,
+        *       example="1",
+        *       @OA\Schema(
+        *          type="integer",
+        *          description="user id",
+        *       ),
+        *    ),
+        *    @OA\Response(
+        *       response="200",
+        *       description="Success response",
+        *       @OA\JsonContent(
+        *         @OA\Items(type="object",
+        *           @OA\Property(property="id", type="integer", example="123"),
+        *           @OA\Property(property="user_id", type="integer", example="1"),
+        *           @OA\Property(property="request_status", type="string", example="PENDING"),
+        *           @OA\Property(property="cohort_status", type="boolean", example="0"),
+        *           @OA\Property(property="request_expire_at", type="datetime", example="2023-04-03 12:00:00"),
+        *           @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+        *           @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+        *           @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+        *           @OA\Property(property="accept_declaration", type="boolean", example="0"),
+        *         ),
+        *       ),
+        *    ),
+        * )
+        */
+    public function requestNhseAccess(Request $request, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        // Check that the user is asking only for their own record.
+        if (!($jwtUser['id'] === $id)) {
+            throw new UnauthorizedException();
+        }
+
+        try {
+            $cohortRequest = CohortRequest::where('user_id', (int)$id)->first();
+            if (!$cohortRequest) {
+                $cohortRequest = CohortRequest::create([
+                    'user_id' => (int) $jwtUser['id'],
+                    'request_status' => null,
+                    'nhse_sde_request_status' => 'IN_PROCESS',
+                    'created_at' => Carbon::now(),
+                    'nhse_sde_requested_at' => Carbon::now(),
+                    'nhse_sde_updated_at' => Carbon::now(),
+                ]);
+
+                $cohortRequestLog = CohortRequestLog::create([
+                    'user_id' => (int) $jwtUser['id'],
+                    'details' => 'Clicked on "Request access to NHS SDE Network datasets" button',
+                    'request_status' => null,
+                    'nhse_sde_request_status' => 'IN_PROCESS',
+                ]);
+
+                CohortRequestHasLog::create([
+                    'cohort_request_id' => $cohortRequest->id,
+                    'cohort_request_log_id' => $cohortRequestLog->id,
+                ]);
+            } else {
+                $currNhseSdeRequestStatus = $cohortRequest->nhse_sde_request_status;
+
+                if (
+                    is_null($currNhseSdeRequestStatus)
+                    || $currNhseSdeRequestStatus === 'REJECTED'
+                    || $currNhseSdeRequestStatus === 'EXPIRED'
+                ) {
+                    $cohortRequest->update([
+                        'nhse_sde_request_status' => 'IN_PROCESS',
+                        'nhse_sde_requested_at' => Carbon::now(),
+                        'nhse_sde_updated_at' => Carbon::now(),
+                    ]);
+
+                    $cohortRequestLog = CohortRequestLog::create([
+                        'user_id' => (int) $jwtUser['id'],
+                        'details' => 'Clicked on "Request access to NHS SDE Network datasets" button',
+                        'request_status' => $cohortRequest->request_status,
+                        'nhse_sde_request_status' => 'IN_PROCESS',
+                    ]);
+
+                    CohortRequestHasLog::create([
+                        'cohort_request_id' => $cohortRequest->id,
+                        'cohort_request_log_id' => $cohortRequestLog->id,
+                    ]);
+                }
+            }
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Cohort Request request NHSE SDE access by user ' . $id,
+            ]);
+            return response()->json([
+                'message' => 'success',
+                'data' => $cohortRequest,
+            ], 200);
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /* @OA\Post(
+        *    path="/api/v1/cohort_requests/user/{id}/indicate_nhse_access",
+        *    operationId="post_indicate_nhse_access_cohort_request_by_user",
+        *    tags={"Cohort Requests"},
+        *    summary="CohortRequestController@indicateNhseAccess",
+        *    description="Indicates the user has indicated they have been granted NHSE SDE access",
+        *    security={{"bearerAuth":{}}},
+        *    @OA\Parameter(
+        *       name="id",
+        *       in="path",
+        *       description="user id",
+        *       required=true,
+        *       example="1",
+        *       @OA\Schema(
+        *          type="integer",
+        *          description="user id",
+        *       ),
+        *    ),
+        *    @OA\Response(
+        *       response="200",
+        *       description="Success response",
+        *       @OA\JsonContent(
+        *         @OA\Items(type="object",
+        *           @OA\Property(property="id", type="integer", example="123"),
+        *           @OA\Property(property="user_id", type="integer", example="1"),
+        *           @OA\Property(property="request_status", type="string", example="PENDING"),
+        *           @OA\Property(property="cohort_status", type="boolean", example="0"),
+        *           @OA\Property(property="request_expire_at", type="datetime", example="2023-04-03 12:00:00"),
+        *           @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+        *           @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+        *           @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+        *           @OA\Property(property="accept_declaration", type="boolean", example="0"),
+        *         ),
+        *       ),
+        *    ),
+        * )
+        */
+    public function indicateNhseAccess(Request $request, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        // Check that the user is asking only for their own record.
+        if (!($jwtUser['id'] === $id)) {
+            throw new UnauthorizedException();
+        }
+
+        try {
+            $cohortRequest = CohortRequest::where('user_id', (int)$id)->first();
+            if (!$cohortRequest) {
+                $cohortRequest = CohortRequest::create([
+                    'user_id' => (int) $jwtUser['id'],
+                    'request_status' => null,
+                    'nhse_sde_request_status' => 'APPROVAL_REQUESTED',
+                    'created_at' => Carbon::now(),
+                    'nhse_sde_self_declared_approved_at' => Carbon::now(),
+                    'nhse_sde_updated_at' => Carbon::now(),
+                ]);
+
+                $cohortRequestLog = CohortRequestLog::create([
+                    'user_id' => (int) $jwtUser['id'],
+                    'details' => 'Clicked on "I have been approved by the NHS SDE" button',
+                    'request_status' => null,
+                    'nhse_sde_request_status' => 'APPROVAL_REQUESTED',
+                ]);
+
+                CohortRequestHasLog::create([
+                    'cohort_request_id' => $cohortRequest->id,
+                    'cohort_request_log_id' => $cohortRequestLog->id,
+                ]);
+                // TODO: send a confirmation email to user
+            } else {
+                $currNhseSdeRequestStatus = $cohortRequest->nhse_sde_request_status;
+
+                if (
+                    is_null($currNhseSdeRequestStatus)
+                    || $currNhseSdeRequestStatus === 'IN_PROCESS'
+                    || $currNhseSdeRequestStatus === 'REJECTED'
+                    || $currNhseSdeRequestStatus === 'EXPIRED'
+                ) {
+                    $cohortRequest->update([
+                        'nhse_sde_request_status' => 'APPROVAL_REQUESTED',
+                        'nhse_sde_self_declared_approved_at' => Carbon::now(),
+                        'nhse_sde_updated_at' => Carbon::now(),
+                    ]);
+
+                    $cohortRequestLog = CohortRequestLog::create([
+                        'user_id' => (int) $jwtUser['id'],
+                        'details' => 'Clicked on "I have been approved by the NHS SDE" button',
+                        'request_status' => $cohortRequest->request_status,
+                        'nhse_sde_request_status' => 'APPROVAL_REQUESTED',
+                    ]);
+
+                    CohortRequestHasLog::create([
+                        'cohort_request_id' => $cohortRequest->id,
+                        'cohort_request_log_id' => $cohortRequestLog->id,
+                    ]);
+
+                    // TODO: send a confirmation email to user
+                }
+            }
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Cohort Request indicate NHSE SDE access by user ' . $id,
             ]);
             return response()->json([
                 'message' => 'success',
