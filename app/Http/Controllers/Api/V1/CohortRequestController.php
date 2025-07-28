@@ -446,6 +446,7 @@ class CohortRequestController extends Controller
                 'user_id' => (int) $jwtUser['id'],
                 'details' => $input['details'],
                 'request_status' => 'PENDING',
+                'nhse_sde_request_status' => $id ? CohortRequest::where('id', $id)->select(['nhse_sde_request_status'])->first()['nhse_sde_request_status'] : null,
             ]);
 
             CohortRequestHasLog::create([
