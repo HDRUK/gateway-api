@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use App\Models\User;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasPermission;
 use Tests\Traits\Authorization;
@@ -260,7 +261,7 @@ class CohortRequestTest extends TestCase
 
         // Define all possible statuses
         $statuses = ['APPROVED', 'REJECTED', 'BANNED', 'SUSPENDED'];
-        $nhseSdeStatuses = [null, 'IN_PROCESS', 'APPROVAL_REQUESTED', 'APPROVED', 'REJECTED', 'BANNED', 'SUSPENDED'];
+        $nhseSdeStatuses = [null, 'IN PROCESS', 'APPROVAL REQUESTED', 'APPROVED', 'REJECTED', 'BANNED', 'SUSPENDED'];
 
         foreach ($statuses as $status) {
             foreach ($nhseSdeStatuses as $nhseSdeStatus) {
