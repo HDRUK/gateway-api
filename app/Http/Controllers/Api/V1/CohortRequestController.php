@@ -1422,7 +1422,7 @@ class CohortRequestController extends Controller
                 $cohortRequest = CohortRequest::create([
                     'user_id' => (int) $jwtUser['id'],
                     'request_status' => null,
-                    'nhse_sde_request_status' => 'IN_PROCESS',
+                    'nhse_sde_request_status' => 'IN PROCESS',
                     'created_at' => Carbon::now(),
                     'nhse_sde_requested_at' => Carbon::now(),
                     'nhse_sde_updated_at' => Carbon::now(),
@@ -1432,7 +1432,7 @@ class CohortRequestController extends Controller
                     'user_id' => (int) $jwtUser['id'],
                     'details' => 'Clicked on "Request access to NHS SDE Network datasets" button',
                     'request_status' => null,
-                    'nhse_sde_request_status' => 'IN_PROCESS',
+                    'nhse_sde_request_status' => 'IN PROCESS',
                 ]);
 
                 CohortRequestHasLog::create([
@@ -1448,7 +1448,7 @@ class CohortRequestController extends Controller
                     || $currNhseSdeRequestStatus === 'EXPIRED'
                 ) {
                     $cohortRequest->update([
-                        'nhse_sde_request_status' => 'IN_PROCESS',
+                        'nhse_sde_request_status' => 'IN PROCESS',
                         'nhse_sde_requested_at' => Carbon::now(),
                         'nhse_sde_updated_at' => Carbon::now(),
                     ]);
@@ -1457,7 +1457,7 @@ class CohortRequestController extends Controller
                         'user_id' => (int) $jwtUser['id'],
                         'details' => 'Clicked on "Request access to NHS SDE Network datasets" button',
                         'request_status' => $cohortRequest->request_status,
-                        'nhse_sde_request_status' => 'IN_PROCESS',
+                        'nhse_sde_request_status' => 'IN PROCESS',
                     ]);
 
                     CohortRequestHasLog::create([
@@ -1541,7 +1541,7 @@ class CohortRequestController extends Controller
                 $cohortRequest = CohortRequest::create([
                     'user_id' => (int) $jwtUser['id'],
                     'request_status' => null,
-                    'nhse_sde_request_status' => 'APPROVAL_REQUESTED',
+                    'nhse_sde_request_status' => 'APPROVAL REQUESTED',
                     'created_at' => Carbon::now(),
                     'nhse_sde_self_declared_approved_at' => Carbon::now(),
                     'nhse_sde_updated_at' => Carbon::now(),
@@ -1551,7 +1551,7 @@ class CohortRequestController extends Controller
                     'user_id' => (int) $jwtUser['id'],
                     'details' => 'Clicked on "I have been approved by the NHS SDE" button',
                     'request_status' => null,
-                    'nhse_sde_request_status' => 'APPROVAL_REQUESTED',
+                    'nhse_sde_request_status' => 'APPROVAL REQUESTED',
                 ]);
 
                 CohortRequestHasLog::create([
@@ -1564,12 +1564,12 @@ class CohortRequestController extends Controller
 
                 if (
                     is_null($currNhseSdeRequestStatus)
-                    || $currNhseSdeRequestStatus === 'IN_PROCESS'
+                    || $currNhseSdeRequestStatus === 'IN PROCESS'
                     || $currNhseSdeRequestStatus === 'REJECTED'
                     || $currNhseSdeRequestStatus === 'EXPIRED'
                 ) {
                     $cohortRequest->update([
-                        'nhse_sde_request_status' => 'APPROVAL_REQUESTED',
+                        'nhse_sde_request_status' => 'APPROVAL REQUESTED',
                         'nhse_sde_self_declared_approved_at' => Carbon::now(),
                         'nhse_sde_updated_at' => Carbon::now(),
                     ]);
@@ -1578,7 +1578,7 @@ class CohortRequestController extends Controller
                         'user_id' => (int) $jwtUser['id'],
                         'details' => 'Clicked on "I have been approved by the NHS SDE" button',
                         'request_status' => $cohortRequest->request_status,
-                        'nhse_sde_request_status' => 'APPROVAL_REQUESTED',
+                        'nhse_sde_request_status' => 'APPROVAL REQUESTED',
                     ]);
 
                     CohortRequestHasLog::create([

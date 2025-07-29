@@ -260,7 +260,7 @@ class CohortRequestTest extends TestCase
 
         // Define all possible statuses
         $statuses = ['APPROVED', 'REJECTED', 'BANNED', 'SUSPENDED'];
-        $nhseSdeStatuses = [null, 'IN_PROCESS', 'APPROVAL_REQUESTED', 'APPROVED', 'REJECTED', 'BANNED', 'SUSPENDED'];
+        $nhseSdeStatuses = [null, 'IN PROCESS', 'APPROVAL REQUESTED', 'APPROVED', 'REJECTED', 'BANNED', 'SUSPENDED'];
 
         foreach ($statuses as $status) {
             foreach ($nhseSdeStatuses as $nhseSdeStatus) {
