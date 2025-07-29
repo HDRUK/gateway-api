@@ -25,7 +25,7 @@ class CohortRequestSeeder extends Seeder
             ])->first();
 
             $status = fake()->randomElement(['PENDING', 'APPROVED']);
-            $nhseSdeStatus = fake()->randomElement([null, 'IN_PROCESS', 'APPROVAL_REQUESTED', 'APPROVED']);
+            $nhseSdeStatus = fake()->randomElement([null, 'IN PROCESS', 'APPROVAL REQUESTED', 'APPROVED']);
 
             if (!$checkRequestByUserId) {
                 $cohortRequest = CohortRequest::create([
