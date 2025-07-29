@@ -4,9 +4,10 @@ namespace App\Http\Traits;
 
 use Config;
 use Exception;
-use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use App\Models\Dur;
+use App\Models\Dataset;
+use Illuminate\Support\Arr;
+use App\Models\DatasetVersion;
 use MetadataManagementController as MMC;
 use App\Http\Requests\V2\Dataset\GetDataset;
 
@@ -86,15 +87,26 @@ trait DatasetsV2Helpers
         return $dataset;
     }
 
-    public function extractMetadata(Mixed $metadata)
+    /**
+     * Extracts metadata from the given mixed input.
+     *
+     * @param Mixed $metadata
+     * @return array
+     */
+    private function extractMetadata(Mixed $metadata)
     {
-        if (isset($metadata['metadata']['metadata'])) {
+        if (is_array($metadata) && Arr::has($metadata, 'metadata.metadata')) {
             $metadata = $metadata['metadata'];
+        } elseif (is_array($metadata) && !Arr::has($metadata, 'metadata')) {
+            $metadata = [
+                'metadata' => $metadata,
+            ];
         }
 
         if (is_string($metadata) && isJsonString($metadata)) {
             $metadata = json_decode($metadata, true);
         }
+
         // Pre-process check for incoming data from a resource that passes strings
         // when we expect an associative array. FMA passes strings, this
         // is a safe-guard to ensure execution is unaffected by other data types.
@@ -105,8 +117,6 @@ trait DatasetsV2Helpers
             unset($metadata['metadata']);
             $metadata = $tmpMetadata;
         }
-
-
 
         return $metadata;
     }

@@ -1435,7 +1435,7 @@ class DurController extends Controller
 
             return $response;
         } catch (Exception $e) {
-            dd($e->getMessage());
+            throw new Exception($e->getMessage());
         }
     }
 
