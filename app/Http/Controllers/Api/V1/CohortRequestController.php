@@ -882,7 +882,7 @@ class CohortRequestController extends Controller
 
                     // add the given number of rows to the file.
                     foreach ($result as $rowDetails) {
-                        if (!is_null($rowDetails['user'])){
+                        if (!is_null($rowDetails['user'])) {
                             $row = [
                                 (string)$rowDetails['user']['id'],
                                 (string)$rowDetails['user']['name'],
