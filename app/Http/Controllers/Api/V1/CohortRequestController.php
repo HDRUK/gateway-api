@@ -870,6 +870,11 @@ class CohortRequestController extends Controller
                         'Date Requested',
                         'Date Actioned',
                         'Live',
+                        'NHSE SDE Request Status',
+                        'First Clicked Through To NHSE SDE Website',
+                        'Declared NHS SDE Approval At',
+                        'NHSE SDE Expires At',
+                        'NHSE SDE Updated At',
                     ];
 
                     // Add CSV headers
@@ -877,24 +882,31 @@ class CohortRequestController extends Controller
 
                     // add the given number of rows to the file.
                     foreach ($result as $rowDetails) {
-                        $row = [
-                            (string)$rowDetails['user']['id'],
-                            (string)$rowDetails['user']['name'],
-                            (string)$rowDetails['user']['email'],
-                            (string)$rowDetails['user']['secondary_email'],
-                            (string)($rowDetails['user']['sector']['name'] ?? 'N/A'),
-                            (string)$rowDetails['user']['organisation'],
-                            (string)$rowDetails['user']['bio'],
-                            (string)$rowDetails['user']['domain'],
-                            (string)$rowDetails['user']['link'],
-                            (string)$rowDetails['user']['orcid'],
-                            (string)$rowDetails['user']['updated_at'],
-                            (string)$rowDetails['request_status'],
-                            (string)$rowDetails['created_at'],
-                            (string)$rowDetails['updated_at'],
-                            (string)$rowDetails['accept_declaration'],
-                        ];
-                        fputcsv($handle, $row);
+                        if (!is_null($rowDetails['user'])){
+                            $row = [
+                                (string)$rowDetails['user']['id'],
+                                (string)$rowDetails['user']['name'],
+                                (string)$rowDetails['user']['email'],
+                                (string)$rowDetails['user']['secondary_email'],
+                                (string)($rowDetails['user']['sector']['name'] ?? 'N/A'),
+                                (string)$rowDetails['user']['organisation'],
+                                (string)$rowDetails['user']['bio'],
+                                (string)$rowDetails['user']['domain'],
+                                (string)$rowDetails['user']['link'],
+                                (string)$rowDetails['user']['orcid'],
+                                (string)$rowDetails['user']['updated_at'],
+                                (string)$rowDetails['request_status'],
+                                (string)$rowDetails['created_at'],
+                                (string)$rowDetails['updated_at'],
+                                (string)$rowDetails['accept_declaration'],
+                                (string)$rowDetails['nhse_sde_request_status'] ?? "",
+                                (string)$rowDetails['nhse_sde_requested_at'] ?? "",
+                                (string)$rowDetails['nhse_sde_self_declared_approved_at'] ?? "",
+                                (string)$rowDetails['nhse_sde_request_expire_at'] ?? "",
+                                (string)$rowDetails['nhse_sde_updated_at'] ?? "",
+                            ];
+                            fputcsv($handle, $row);
+                        }
                     }
 
                     // Close the output stream
