@@ -1,3 +1,9 @@
+## [2.19.0](https://github.com/HDRUK/gateway-api/compare/v2.18.1...v2.19.0) (2025-07-29)
+
+### ✨ Features
+
+* **GAT-1413:** East Midlands SDE integration not working (#1338) ([13cf5c9](https://github.com/HDRUK/gateway-api/commit/13cf5c9df1e2e21cf45f7976b60080d11109733c)), closes [GAT-1413](GAT-1413)
+
 ## [2.18.1](https://github.com/HDRUK/gateway-api/compare/v2.18.0...v2.18.1) (2025-07-25)
 
 ### 🐛 Bug Fixes
