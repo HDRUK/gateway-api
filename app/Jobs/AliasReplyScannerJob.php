@@ -2,12 +2,12 @@
 
 namespace App\Jobs;
 
-use CloudLogger;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Http\Traits\LoggingContext;
 use App\Http\Traits\TeamTransformation;
 use AliasReplyScanner as ARS;
 
@@ -18,15 +18,18 @@ class AliasReplyScannerJob implements ShouldQueue
     use Queueable;
     use SerializesModels;
     use TeamTransformation;
+    use LoggingContext;
 
     private int $noMessagesFound = 0;
+    private ?array $loggingContext = null;
 
     /**
      * Create a new job instance.
      */
     public function __construct()
     {
-        //
+        $this->loggingContext = $this->getLoggingContext(\request());
+        $this->loggingContext['method_name'] = class_basename($this);
     }
 
     /**
@@ -35,12 +38,12 @@ class AliasReplyScannerJob implements ShouldQueue
     public function handle(): void
     {
         $messages = ARS::getNewMessagesSafe();
-        CloudLogger::write('Found ' . count($messages) . ' new messages');
+        \Log::info('Found ' . count($messages) . ' new messages', $this->loggingContext);
 
         $this->noMessagesFound = count($messages);
 
         foreach ($messages as $i => $message) {
-            CloudLogger::write('Working on message #' . $i);
+            \Log::info('Working on message #' . $i, $this->loggingContext);
             $this->processMessage($message);
         }
     }
@@ -52,11 +55,11 @@ class AliasReplyScannerJob implements ShouldQueue
         if ($alias) {
             $this->processAlias($alias, $message);
         } else {
-            CloudLogger::write('... alias not found in the email sent');
+            \Log::info('... alias not found in the email sent', $this->loggingContext);
         }
 
         ARS::deleteMessage($message);
-        CloudLogger::write('... message deleted from the inbox');
+        \Log::info('... message deleted from the inbox', $this->loggingContext);
     }
 
     public function processAlias($alias, $message)
@@ -66,14 +69,14 @@ class AliasReplyScannerJob implements ShouldQueue
         if ($thread) {
             $this->processThread($message, $thread);
         } else {
-            CloudLogger::write('... valid thread not found for key=' . $alias);
+            \Log::info('... valid thread not found for key=' . $alias, $this->loggingContext);
         }
     }
 
     public function processThread($message, $thread)
     {
         $response = ARS::scrapeAndStoreContent($message, $thread->id);
-        CloudLogger::write('... ' . json_encode($response->message_body));
+        \Log::info('... ' . json_encode($response->message_body), $this->loggingContext);
     }
 
     public function tags(): array

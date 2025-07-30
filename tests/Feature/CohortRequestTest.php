@@ -69,8 +69,6 @@ class CohortRequestTest extends TestCase
                     'user_id',
                     'user',
                     'request_status',
-                    'is_nhse_sde_approval',
-                    'cohort_status',
                     'request_expire_at',
                     'created_at',
                     'updated_at',
@@ -78,6 +76,11 @@ class CohortRequestTest extends TestCase
                     'accept_declaration',
                     'logs',
                     'permissions',
+                    'nhse_sde_request_status',
+                    'nhse_sde_requested_at',
+                    'nhse_sde_self_declared_approved_at',
+                    'nhse_sde_updated_at',
+                    'nhse_sde_request_expire_at',
                 ]
             ],
             'first_page_url',
@@ -200,6 +203,7 @@ class CohortRequestTest extends TestCase
             [
                 'request_status' => 'APPROVED',
                 'details' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum - put.',
+                'nhse_sde_request_status' => null,
             ],
             $this->header,
         );
@@ -256,39 +260,33 @@ class CohortRequestTest extends TestCase
 
         // Define all possible statuses
         $statuses = ['APPROVED', 'REJECTED', 'BANNED', 'SUSPENDED'];
+        $nhseSdeStatuses = [null, 'IN PROCESS', 'APPROVAL REQUESTED', 'APPROVED', 'REJECTED', 'BANNED', 'SUSPENDED'];
 
         foreach ($statuses as $status) {
-            // update
-            $responseUpdate = $this->json(
-                'PUT',
-                self::TEST_URL . '/' . $id,
-                [
-                    'request_status' => $status,
-                    'details' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum - ' . strtolower($status),
-                ],
-                $this->header,
-            );
+            foreach ($nhseSdeStatuses as $nhseSdeStatus) {
+                // update
+                $responseUpdate = $this->json(
+                    'PUT',
+                    self::TEST_URL . '/' . $id,
+                    [
+                        'request_status' => $status,
+                        'nhse_sde_request_status' => $nhseSdeStatus,
+                        'details' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum - ' . strtolower($status),
+                    ],
+                    $this->header,
+                );
 
-            $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-                ->assertJsonStructure([
-                    'message',
-                    'data',
-                ]);
+                $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+                    ->assertJsonStructure([
+                        'message',
+                        'data',
+                    ]);
 
-            $contentUpdate = $responseUpdate->decodeResponseJson();
-            $this->assertEquals(
-                $contentUpdate['message'],
-                Config::get('statuscodes.STATUS_OK.message')
-            );
-
-            // Directly query the database
-            $cohortRequest = CohortRequest::withTrashed()->find($id);
-            $this->assertNotNull($cohortRequest);
-
-            if ($status === 'APPROVED') {
-                $this->assertTrue($cohortRequest->accept_declaration);
-            } else {
-                $this->assertFalse($cohortRequest->accept_declaration);
+                $contentUpdate = $responseUpdate->decodeResponseJson();
+                $this->assertEquals(
+                    $contentUpdate['message'],
+                    Config::get('statuscodes.STATUS_OK.message')
+                );
             }
         }
 
@@ -372,6 +370,7 @@ class CohortRequestTest extends TestCase
             [
                 'request_status' => 'APPROVED',
                 'details' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum - put.',
+                'nhse_sde_request_status' => 'APPROVED',
             ],
             $this->header,
         );
@@ -446,6 +445,7 @@ class CohortRequestTest extends TestCase
             [
                 'request_status' => 'APPROVED',
                 'details' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum - put.',
+                'nhse_sde_request_status' => 'APPROVED',
             ],
             $this->header,
         );

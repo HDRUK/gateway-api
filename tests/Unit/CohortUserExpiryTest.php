@@ -44,7 +44,7 @@ class CohortUserExpiryTest extends TestCase
         $req = CohortRequest::create([
             'user_id' => 1,
             'request_status' => 'APPROVED',
-            'cohort_status' => true,
+            'nhse_sde_request_status' => 'APPROVAL REQUESTED',
             'request_expire_at' => null,
             'created_at' => Carbon::now()->subDays(181),
         ]);
@@ -68,13 +68,13 @@ class CohortUserExpiryTest extends TestCase
         $this->assertDatabaseHas('cohort_requests', [
             'id' => $req->id,
             'request_status' => 'EXPIRED',
-            'cohort_status' => false,
         ]);
 
         $this->assertDatabaseHas('cohort_request_logs', [
             'user_id' => 1,
             'details' => 'Access expired',
             'request_status' => 'EXPIRED',
+            'nhse_sde_request_status' => 'APPROVAL REQUESTED',
         ]);
 
         $this->assertDatabaseMissing('cohort_request_has_permissions', [
@@ -90,7 +90,7 @@ class CohortUserExpiryTest extends TestCase
         $req = CohortRequest::create([
             'user_id' => 1,
             'request_status' => 'APPROVED',
-            'cohort_status' => true,
+            'nhse_sde_request_status' => 'APPROVAL REQUESTED',
             'request_expire_at' => null,
             'created_at' => Carbon::now()->subDays(100),
         ]);
@@ -113,8 +113,8 @@ class CohortUserExpiryTest extends TestCase
         $this->assertDatabaseHas('cohort_requests', [
             'id' => $req->id,
             'request_status' => 'APPROVED',
-            'cohort_status' => true,
             'request_expire_at' => null,
+            'nhse_sde_request_status' => 'APPROVAL REQUESTED',
         ]);
 
         $this->assertDatabaseHas('cohort_request_has_permissions', [

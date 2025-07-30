@@ -45,6 +45,7 @@ class DatasetController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/datasets",
+     *    deprecated=true,
      *    operationId="fetch_all_datasets",
      *    tags={"Datasets"},
      *    summary="DatasetController@index",
@@ -262,6 +263,7 @@ class DatasetController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/datasets/count/{field}",
+     *    deprecated=true,
      *    operationId="count_unique_fields",
      *    tags={"Datasets"},
      *    summary="DatasetController@count",
@@ -336,6 +338,7 @@ class DatasetController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/datasets/{id}",
+     *    deprecated=true,
      *    operationId="fetch_datasets",
      *    tags={"Datasets"},
      *    summary="DatasetController@show",
@@ -609,6 +612,7 @@ class DatasetController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/datasets",
+     *    deprecated=true,
      *    operationId="create_datasets",
      *    tags={"Datasets"},
      *    summary="DatasetController@store",
@@ -731,6 +735,7 @@ class DatasetController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/datasets/{id}",
+     *    deprecated=true,
      *    operationId="update_datasets",
      *    tags={"Datasets"},
      *    summary="DatasetController@update",
@@ -918,6 +923,7 @@ class DatasetController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/datasets/{id}",
+     *    deprecated=true,
      *    operationId="patch_datasets",
      *    tags={"Datasets"},
      *    summary="DatasetController@edit",
@@ -1069,6 +1075,7 @@ class DatasetController extends Controller
     /**
      * @OA\Delete(
      *      path="/api/v1/datasets/{id}",
+     *      deprecated=true,
      *      operationId="delete_datasets",
      *      summary="Delete a dataset",
      *      description="Delete a dataset",
@@ -1464,10 +1471,11 @@ class DatasetController extends Controller
 
                 if ($download_type === 'structural') {
                     $headerRow = [
-                        'Section',
-                        'Column name',
-                        'Data type',
-                        'Column description',
+                        'Table Name',
+                        'Table Description',
+                        'Column Name',
+                        'Column Description',
+                        'Data Type',
                         'Sensitive',
                     ];
 
@@ -1477,9 +1485,10 @@ class DatasetController extends Controller
                     foreach ($result['structuralMetadata'] as $rowDetails) {
                         $row = [
                             $rowDetails['name'] !== null ? $rowDetails['name'] : '',
+                            $rowDetails['description'] !== null ? $rowDetails['description'] : '',
                             $rowDetails['columns'][0]['name'] !== null ? $rowDetails['columns'][0]['name'] : '',
-                            $rowDetails['columns'][0]['dataType'] !== null ? $rowDetails['columns'][0]['dataType'] : '',
                             $rowDetails['columns'][0]['description'] !== null ? str_replace('\n', '', $rowDetails['columns'][0]['description']) : '',
+                            $rowDetails['columns'][0]['dataType'] !== null ? $rowDetails['columns'][0]['dataType'] : '',
                             $rowDetails['columns'][0]['sensitive'] !== null ? ($rowDetails['columns'][0]['sensitive'] === true ? 'true' : 'false') : '',
                         ];
                         fputcsv($handle, $row);

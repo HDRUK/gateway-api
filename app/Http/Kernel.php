@@ -24,6 +24,7 @@ class Kernel extends HttpKernel
         \App\Http\Middleware\ProfileRequest::class,
         \Illuminate\Session\Middleware\StartSession::class,
         \App\Http\Middleware\HstsMiddleware::class,
+        \App\Http\Middleware\LogRequestResponse::class,
     ];
 
     /**
@@ -70,5 +71,6 @@ class Kernel extends HttpKernel
         'sanitize.input' => \App\Http\Middleware\SanitizeMiddleware::class,
         'check.access' => \App\Http\Middleware\CheckAccessMiddleware::class,
         'check.access.userId' => \App\Http\Middleware\CheckUserIdMatches::class,
+        'sunset' => \App\Http\Middleware\SunsetHeader::class,
     ];
 }
