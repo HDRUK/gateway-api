@@ -17,6 +17,8 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'app_token_variant' => env('APP_TOKEN_VARIANT', 'gateway'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

@@ -54,7 +54,10 @@ class AppServiceProvider extends ServiceProvider
             'rquestroles' => 'rquestroles',
         ]);
 
-        // Passport::useAccessTokenEntity(CustomAccessToken::class);
+        if (config('app.app_token_variant') === 'gateway') {
+            Passport::useAccessTokenEntity(CustomAccessToken::class);
+        }
+
         Passport::tokensExpireIn(now()->addDays(15));
         Passport::refreshTokensExpireIn(now()->addDays(30));
 
