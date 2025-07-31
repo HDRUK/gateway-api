@@ -54,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
             'rquestroles' => 'rquestroles',
         ]);
 
-        Passport::useAccessTokenEntity(CustomAccessToken::class);
+        // Passport::useAccessTokenEntity(CustomAccessToken::class);
         Passport::tokensExpireIn(now()->addDays(15));
         Passport::refreshTokensExpireIn(now()->addDays(30));
 
