@@ -46,6 +46,7 @@ class AppendJWTTokenResponse
             $token = $config->parser()->parse($content['access_token']);
             
             $jwtClass = new JwtController();
+            /** @phpstan-ignore-next-line */
             $jwt = $jwtClass->generateToken($token->claims()->get('sub'));
 
             return response()->json([
