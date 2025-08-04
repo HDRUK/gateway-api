@@ -26,6 +26,11 @@ class Cors
             $headers['Access-Control-Allow-Origin'] = $origin;
         }
 
+        // let /oauth/authorize in
+        if ($request->is('oauth/authorize')) {
+            $headers['Access-Control-Allow-Origin'] = 'https://rquest.dev.hdruk.cloud';
+        }
+
         if ($request->getMethod() === 'OPTIONS') {
             return response('OK')->withHeaders($headers);
         }
