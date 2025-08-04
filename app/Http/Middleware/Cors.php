@@ -27,7 +27,7 @@ class Cors
         }
 
         // let /oauth/authorize in
-        if ($request->is('oauth/authorize')) {
+        if ($request->is('oauth/authorize') || $request->is('oauth2/redirect_uri')) {
             $headers['Access-Control-Allow-Origin'] = 'https://rquest.dev.hdruk.cloud';
         }
 
