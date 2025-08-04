@@ -1,3 +1,9 @@
+## [2.20.1](https://github.com/HDRUK/gateway-api/compare/v2.20.0...v2.20.1) (2025-08-04)
+
+### 🐛 Bug Fixes
+
+* **GAT-7689:** Add environment access column to cohort download file. (#1358) ([ce606ee](https://github.com/HDRUK/gateway-api/commit/ce606ee24f5508c5cabd8bad31d9fcfeca1ecb3d)), closes [GAT-7689](GAT-7689)
+
 ## [2.20.0](https://github.com/HDRUK/gateway-api/compare/v2.19.0...v2.20.0) (2025-07-30)
 
 ### ✨ Features
