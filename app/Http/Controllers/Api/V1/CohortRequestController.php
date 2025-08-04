@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use CloudLogger;
 use Config;
 use Auditor;
 use Exception;
@@ -1214,6 +1215,13 @@ class CohortRequestController extends Controller
             // oidc
             OauthUser::where('user_id', $userId)->delete();
             session(['cr_uid' => $userId]);
+
+            CloudLogger::write([
+                'where' => 'CohortRequestController@checkAccess',
+                'user_id' => $userId,
+                'session' => session()->all(),
+                'request' => $request->all(),
+            ]);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
