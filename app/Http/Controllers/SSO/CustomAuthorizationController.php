@@ -52,7 +52,7 @@ class CustomAuthorizationController extends Controller
         ClientRepository $clients,
     ) {
         // user_id from CohortRequestController@checkAccess
-        $userId = session('cr_uid') ?? 274;
+        $userId = session('cr_uid');
         CloudLogger::write([
             'where' => 'CustomAuthorizationController@customAuthorize',
             'user_id' => $userId,
