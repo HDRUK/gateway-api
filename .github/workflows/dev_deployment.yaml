@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - 'dev'
+      - 'fix/test-rquest-conn'
 
 env:
   PROJECT_ID: '${{ secrets.PROJECT_ID }}'
@@ -26,7 +27,7 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: fix/test-rquest-conn
 
       - name: Read VERSION file
         id: getversion
@@ -76,7 +77,7 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: fix/test-rquest-conn
 
       - name: Google Auth
         id: auth

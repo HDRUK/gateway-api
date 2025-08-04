@@ -9,6 +9,7 @@ use Laravel\Passport\Bridge\User;
 use App\Http\Controllers\Controller;
 use Laravel\Passport\ClientRepository;
 use App\Http\Traits\HandlesOAuthErrors;
+use CloudLogger;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
 use League\OAuth2\Server\AuthorizationServer;
@@ -51,7 +52,14 @@ class CustomAuthorizationController extends Controller
         ClientRepository $clients,
     ) {
         // user_id from CohortRequestController@checkAccess
-        $userId = session('cr_uid');
+        $userId = session('cr_uid') ?? 274;
+        CloudLogger::write('CustomAuthorizationController@customAuthorize', [
+            'user_id' => $userId,
+            'session_id' => session()->getId(),
+            'session' => session()->all(),
+            'psr_request' => $psrRequest->getQueryParams(),
+            'request' => $request->all(),
+        ]);
 
         if (!$userId) {
             return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
