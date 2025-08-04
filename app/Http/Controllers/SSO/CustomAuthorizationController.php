@@ -53,11 +53,10 @@ class CustomAuthorizationController extends Controller
     ) {
         // user_id from CohortRequestController@checkAccess
         $userId = session('cr_uid') ?? 274;
-        CloudLogger::write('CustomAuthorizationController@customAuthorize', [
+        CloudLogger::write([
+            'where' => 'CustomAuthorizationController@customAuthorize',
             'user_id' => $userId,
-            'session_id' => session()->getId(),
             'session' => session()->all(),
-            'psr_request' => $psrRequest->getQueryParams(),
             'request' => $request->all(),
         ]);
 
