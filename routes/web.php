@@ -21,7 +21,7 @@ use App\Http\Controllers\SSO\CustomAccessTokenController;
 |
 */
 
-Route::get('/oauth/authorize', [CustomAuthorizationController::class, 'customAuthorize']);
+Route::get('/oauth/authorize', [CustomAuthorizationController::class, 'customAuthorize'])->middleware('web');
 Route::post('/oauth/token', [AccessTokenController::class, 'issueToken'])->middleware(AppendTokenResponse::class);
 
 Route::get('/oauth2/authorize', [OAuth2Controller::class, 'customAuthorize'])->middleware('web');
