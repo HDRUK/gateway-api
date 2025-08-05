@@ -1244,11 +1244,12 @@ class CohortRequestController extends Controller
 
             $rquestInitUrl = Config::get('services.rquest.init_url');
 
-            return response()->json([
-                'data' => [
-                    'redirect_url' => $rquestInitUrl,
-                ],
-            ], Config::get('statuscodes.STATUS_OK.code'));
+            // return response()->json([
+            //     'data' => [
+            //         'redirect_url' => $rquestInitUrl,
+            //     ],
+            // ], Config::get('statuscodes.STATUS_OK.code'));
+            return redirect()->away($rquestInitUrl);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
