@@ -64,7 +64,7 @@ class JwtMiddleware
                         'name' => $user->name,
                         'email' => $user->email,
                         'is_admin' => $user->is_admin,
-                        'role_perms' => $this->getUserRolePerms($user->id),
+                        'role_perms' => $this->getUserRolePerms($user->id), 
                     ],
                 ],
             );

@@ -14,6 +14,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use App\Models\Workgroup;
+use App\Models\UserHasWorkgroup;
+
 class User extends Authenticatable
 {
     use HasFactory;
@@ -142,6 +145,13 @@ class User extends Authenticatable
     public function cohortRequests(): HasMany
     {
         return $this->hasMany(CohortRequest::class);
+    }
+
+    public function workgroups(): BelongsToMany
+    {
+        return $this->belongsToMany(Workgroup::class, 'user_has_workgroups')
+            ->withPivot('user_id', 'workgroup_id')
+            ->orderBy('user_has_workgroups.workgroup_id');
     }
 
 }
