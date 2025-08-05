@@ -1254,7 +1254,8 @@ class CohortRequestController extends Controller
             // $cookies = [Cookie::make('token', $jwt)];
             // return redirect()->away($rquestInitUrl)->withCookies($cookies);
             // return redirect()->away($rquestInitUrl);
-            return redirect($rquestInitUrl);
+            // return redirect($rquestInitUrl);
+            return response('', 302)->header('Location', $rquestInitUrl);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
