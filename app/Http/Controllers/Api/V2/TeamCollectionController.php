@@ -420,14 +420,14 @@ class TeamCollectionController extends Controller
             $jwtUser = $input['jwt_user'] ?? [];
 
             $initCollection = Collection::where('id', $id)->first();
-
+            \Log::info($initCollection);
             if ($initCollection->team_id != $teamId) {
                 throw new UnauthorizedException('Team does not have permission to use this endpoint to view this collection.');
             }
 
             // Check that we have permissions on the currently owning team - the middleware will have checked $teamId from the route
             $owningTeamId = $initCollection->team_id;
-            $this->checkAccess($input, $owningTeamId, null, 'team');
+            $this->checkAccess($input, $owningTeamId, null, 'team', $request->header());
 
             $collection = $this->getCollectionActiveById($id);
 
@@ -441,8 +441,6 @@ class TeamCollectionController extends Controller
                 'message' => 'success',
                 'data' => $collection,
             ], 200);
-
-            throw new NotFoundException();
         } catch (UnauthorizedException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
@@ -574,7 +572,7 @@ class TeamCollectionController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int)($jwtUser['id'] ?? 0),
                 'target_team_id' => $teamId,
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
@@ -898,7 +896,7 @@ class TeamCollectionController extends Controller
 
             // Check that we have permissions on the currently owning team - the middleware will have checked $teamId from the route
             $owningTeamId = $initCollection->team_id;
-            $this->checkAccess($input, $owningTeamId, null, 'team');
+            $this->checkAccess($input, $owningTeamId, null, 'team', $request->header());
 
             // update it
             Collection::where('id', $id)->update($array);
@@ -938,7 +936,7 @@ class TeamCollectionController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int)($jwtUser['id'] ?? 0),
                 'target_team_id' => $teamId,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
@@ -955,7 +953,7 @@ class TeamCollectionController extends Controller
             ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'] ?? 0,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
@@ -1027,7 +1025,7 @@ class TeamCollectionController extends Controller
             $collection = Collection::where(['id' => $id])->first();
             // Check that we have permissions on the currently owning team - the middleware will have checked $teamId from the route
             $owningTeamId = $collection->team_id;
-            $this->checkAccess($input, $owningTeamId, null, 'team');
+            $this->checkAccess($input, $owningTeamId, null, 'team', $request->header());
 
             if ($collection) {
                 CollectionHasDatasetVersion::where(['collection_id' => $id])->delete();
@@ -1041,7 +1039,7 @@ class TeamCollectionController extends Controller
                 $this->deleteCollectionFromElastic($id);
 
                 Auditor::log([
-                    'user_id' => (int)$jwtUser['id'],
+                    'user_id' => (int)($jwtUser['id'] ?? 0),
                     'action_type' => 'DELETE',
                     'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => 'Collection ' . $id . ' deleted',
@@ -1059,7 +1057,7 @@ class TeamCollectionController extends Controller
             ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int)($jwtUser['id'] ?? 0),
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
