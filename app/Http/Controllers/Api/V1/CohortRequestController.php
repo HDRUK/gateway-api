@@ -18,6 +18,7 @@ use Illuminate\Http\JsonResponse;
 use App\Models\CohortRequestHasLog;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\HubspotContacts;
+use Illuminate\Support\Facades\Redis;
 use App\Exceptions\UnauthorizedException;
 use App\Models\CohortRequestHasPermission;
 use App\Http\Requests\CohortRequest\GetCohortRequest;
@@ -27,6 +28,7 @@ use App\Http\Requests\CohortRequest\DeleteCohortRequest;
 use App\Http\Requests\CohortRequest\UpdateCohortRequest;
 use App\Http\Requests\CohortRequest\AssignAdminCohortRequest;
 use App\Http\Requests\CohortRequest\RemoveAdminCohortRequest;
+use CloudLogger;
 
 class CohortRequestController extends Controller
 {
@@ -1214,6 +1216,21 @@ class CohortRequestController extends Controller
             // oidc
             OauthUser::where('user_id', $userId)->delete();
             session(['cr_uid' => $userId]);
+
+            $sessionId = session()->getId();
+            $redisPrefix = Config::get('database.redis.options.prefix');
+            $redisKey = $redisPrefix . $sessionId;
+            $rawSession = Redis::get($redisKey);
+            CloudLogger::write([
+                'message' => 'CohortRequestController@checkAccess',
+                'user_id' => $userId,
+                'session' => session()->all(),
+                'session_id' => $sessionId,
+                'redis_prefix' => config('database.redis.options.prefix'),
+                'redis_key' => $redisKey,
+                'raw_data' => $rawSession,
+                'redis_decoded' => unserialize(base64_decode($rawSession)),
+            ]);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

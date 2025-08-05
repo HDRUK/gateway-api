@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\SSO;
 
+use CloudLogger;
 use App\Models\OauthUser;
 use Illuminate\Http\Request;
 use Laravel\Passport\Passport;
@@ -52,6 +53,13 @@ class CustomAuthorizationController extends Controller
     ) {
         // user_id from CohortRequestController@checkAccess
         $userId = session('cr_uid');
+
+        CloudLogger::write([
+            'message' => 'CustomAuthorizationController@customAuthorize',
+            'user_id' => $userId,
+            'session' => session()->all(),
+            'request' => $request->all(),
+        ]);
 
         if (!$userId) {
             return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
