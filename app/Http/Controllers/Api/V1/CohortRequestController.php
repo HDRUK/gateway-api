@@ -1219,7 +1219,7 @@ class CohortRequestController extends Controller
 
             $sessionId = session()->getId();
             $redisPrefix = Config::get('database.redis.options.prefix');
-            $redisKey = $redisPrefix . $sessionId;
+            $redisKey = $redisPrefix . ':' . $sessionId;
             $rawSession = Redis::get($redisKey);
             CloudLogger::write([
                 'message' => 'CohortRequestController@checkAccess',
