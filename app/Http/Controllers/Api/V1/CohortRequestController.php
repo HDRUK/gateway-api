@@ -1247,18 +1247,18 @@ class CohortRequestController extends Controller
 
             $rquestInitUrl = Config::get('services.rquest.init_url');
 
-            // return response()->json([
-            //     'data' => [
-            //         'redirect_url' => $rquestInitUrl,
-            //     ],
-            // ], Config::get('statuscodes.STATUS_OK.code'));
+            return response()->json([
+                'data' => [
+                    'redirect_url' => $rquestInitUrl,
+                ],
+            ], Config::get('statuscodes.STATUS_OK.code'));
             // $cookies = [Cookie::make('token', $jwt)];
             // return redirect()->away($rquestInitUrl)->withCookies($cookies);
             // return redirect()->away($rquestInitUrl);
             // return redirect($rquestInitUrl);
             // return response('', 302)->header('Location', $rquestInitUrl);
-            return (new RedirectResponse($rquestInitUrl))
-                ->withCookie(cookie('userId', $userId, 60, '/', '.dev.hdruk.cloud', true, true, false, 'None'));
+            // return (new RedirectResponse($rquestInitUrl))
+            //     ->withCookie(cookie('userId', $userId, 60, '/', '.dev.hdruk.cloud', true, true, false, 'None'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
