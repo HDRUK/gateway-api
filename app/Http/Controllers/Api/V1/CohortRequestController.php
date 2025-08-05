@@ -1217,15 +1217,18 @@ class CohortRequestController extends Controller
             OauthUser::where('user_id', $userId)->delete();
             session(['cr_uid' => $userId]);
             $sessionId = session()->getId();
-            $redisKey = 'laravel:' . $sessionId;
+            $redisPrefix = config('database.redis.options.prefix');
+            $redisKey = $redisPrefix . $sessionId;
+            $rawSession = Redis::get($redisKey);
             CloudLogger::write([
                 'message' => 'CohortRequestController@checkAccess',
                 'user_id' => $userId,
                 'session' => session()->all(),
                 'session_id' => $sessionId,
-                'test' => config('database.redis.options.prefix'),
-                // 'redis_key' => $redisKey,
-                // 'raw_data' => Redis::get($redisKey),
+                'redis_prefix' => config('database.redis.options.prefix'),
+                'redis_key' => $redisKey,
+                'raw_data' => $rawSession,
+                'redis_decoded' => unserialize(base64_decode(Redis::get('laravel:' . $sessionId))),
             ]);
 
             Auditor::log([
