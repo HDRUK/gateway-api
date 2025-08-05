@@ -1232,6 +1232,7 @@ class CohortRequestController extends Controller
                 'raw_data_2' => Redis::get($sessionId),
                 'redis_decoded' => unserialize(base64_decode($rawSession)),
                 'redis_decoded_2' => unserialize(base64_decode(Redis::get($sessionId))),
+                'cookies' => $request->cookies->all(),
             ]);
 
             Auditor::log([

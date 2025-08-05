@@ -59,6 +59,7 @@ class CustomAuthorizationController extends Controller
             'user_id' => $userId,
             'session' => session()->all(),
             'request' => $request->all(),
+            'cookies' => $request->cookies->all(),
         ]);
 
         if (!$userId) {
