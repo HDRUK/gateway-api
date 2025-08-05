@@ -554,6 +554,59 @@ class TeamDataAccessApplicationController extends Controller
         }
     }
 
+    public function downloadAllFiles(GetDataAccessApplication $request, int $teamId, int $id): StreamedResponse | JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $this->checkTeamAccess($teamId, $id, 'view');
+            $application = DataAccessApplication::where('id', $id)->first();
+
+            $isDraft = $application['submission_status'] === 'DRAFT';
+            if ($isDraft) {
+                throw new Exception('Files associated with a data access request cannot be viewed when the request is still a draft.');
+            }
+            $uploads = Upload::where('entity_id', $id)->get();
+
+            if ($uploads) {
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'DataAccessApplication list files ' . $id,
+                ]);
+
+                $files = $uploads->all();
+
+                $contents = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
+                    ->get($file->file_location);
+
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $uploads,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
     /**
      * @OA\Get(
      *      path="/api/v1/teams/{teamId}/dar/applications/{id}/answers",

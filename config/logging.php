@@ -55,7 +55,8 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['stderr'],
+            'path' => storage_path('logs/laravel.log'),
+            'channels' => ['stderr', 'syslog'],
             'ignore_exceptions' => false,
         ],
 

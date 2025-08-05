@@ -121,7 +121,7 @@ class ScanFileUpload implements ShouldQueue
                 'storage' => (string)$this->fileSystem
             ];
 
-            \Log::info('Malware scan initiated', $this->loggingContext);
+            \Log::info('Malware scan initiated', context: $this->loggingContext);
 
             $response = Http::withHeaders($this->loggingContext)
             ->withBody(
@@ -139,6 +139,8 @@ class ScanFileUpload implements ShouldQueue
             if ($isError === true) {
                 throw new Exception($response['error']);
             }
+
+            \Log::info($response, context: $this->loggingContext);
 
             $isInfected = $response['isInfected'];
 
@@ -215,7 +217,7 @@ class ScanFileUpload implements ShouldQueue
                 'error' => $e->getMessage()
             ]);
 
-            Auditor::log([
+            Auditor::log(log: [
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
