@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
+use CloudLogger;
 use App\Models\User;
 use App\Models\OauthUser;
 use App\Jobs\SendEmailJob;
@@ -19,6 +20,7 @@ use App\Models\CohortRequestHasLog;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\HubspotContacts;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Cookie;
 use App\Exceptions\UnauthorizedException;
 use App\Models\CohortRequestHasPermission;
 use App\Http\Requests\CohortRequest\GetCohortRequest;
@@ -28,7 +30,6 @@ use App\Http\Requests\CohortRequest\DeleteCohortRequest;
 use App\Http\Requests\CohortRequest\UpdateCohortRequest;
 use App\Http\Requests\CohortRequest\AssignAdminCohortRequest;
 use App\Http\Requests\CohortRequest\RemoveAdminCohortRequest;
-use CloudLogger;
 
 class CohortRequestController extends Controller
 {
@@ -1233,6 +1234,7 @@ class CohortRequestController extends Controller
                 'redis_decoded' => unserialize(base64_decode($rawSession)),
                 'redis_decoded_2' => unserialize(base64_decode(Redis::get($sessionId))),
                 'cookies' => $request->cookies->all(),
+                'input' => $request->all(),
             ]);
 
             Auditor::log([
@@ -1249,6 +1251,8 @@ class CohortRequestController extends Controller
             //         'redirect_url' => $rquestInitUrl,
             //     ],
             // ], Config::get('statuscodes.STATUS_OK.code'));
+            // $cookies = [Cookie::make('token', $jwt)];
+            // return redirect()->away($rquestInitUrl)->withCookies($cookies);
             return redirect()->away($rquestInitUrl);
         } catch (Exception $e) {
             Auditor::log([
