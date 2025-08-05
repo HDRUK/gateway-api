@@ -27,6 +27,7 @@ use App\Http\Requests\CohortRequest\DeleteCohortRequest;
 use App\Http\Requests\CohortRequest\UpdateCohortRequest;
 use App\Http\Requests\CohortRequest\AssignAdminCohortRequest;
 use App\Http\Requests\CohortRequest\RemoveAdminCohortRequest;
+use CloudLogger;
 
 class CohortRequestController extends Controller
 {
@@ -1214,6 +1215,11 @@ class CohortRequestController extends Controller
             // oidc
             OauthUser::where('user_id', $userId)->delete();
             session(['cr_uid' => $userId]);
+            CloudLogger::write([
+                'message' => 'CohortRequestController@checkAccess',
+                'user_id' => $userId,
+                'session' => session()->all(),
+            ]);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
