@@ -19,6 +19,7 @@ use Illuminate\Http\JsonResponse;
 use App\Models\CohortRequestHasLog;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\HubspotContacts;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Cookie;
 use App\Exceptions\UnauthorizedException;
@@ -1255,7 +1256,9 @@ class CohortRequestController extends Controller
             // return redirect()->away($rquestInitUrl)->withCookies($cookies);
             // return redirect()->away($rquestInitUrl);
             // return redirect($rquestInitUrl);
-            return response('', 302)->header('Location', $rquestInitUrl);
+            // return response('', 302)->header('Location', $rquestInitUrl);
+            return (new RedirectResponse($rquestInitUrl))
+                ->withCookie(cookie('userId', $userId, 60, '/', '.dev.hdruk.cloud', true, true, false, 'None'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
