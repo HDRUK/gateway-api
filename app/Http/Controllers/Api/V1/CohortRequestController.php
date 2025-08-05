@@ -28,6 +28,7 @@ use App\Http\Requests\CohortRequest\UpdateCohortRequest;
 use App\Http\Requests\CohortRequest\AssignAdminCohortRequest;
 use App\Http\Requests\CohortRequest\RemoveAdminCohortRequest;
 use CloudLogger;
+use Illuminate\Support\Facades\Redis;
 
 class CohortRequestController extends Controller
 {
@@ -1215,10 +1216,13 @@ class CohortRequestController extends Controller
             // oidc
             OauthUser::where('user_id', $userId)->delete();
             session(['cr_uid' => $userId]);
+            $sessionId = session()->getId();
             CloudLogger::write([
                 'message' => 'CohortRequestController@checkAccess',
                 'user_id' => $userId,
                 'session' => session()->all(),
+                'session_id' => $sessionId,
+                'raw_data' => Redis::get($sessionId),
             ]);
 
             Auditor::log([
