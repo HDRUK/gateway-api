@@ -1229,7 +1229,9 @@ class CohortRequestController extends Controller
                 'redis_prefix' => config('database.redis.options.prefix'),
                 'redis_key' => $redisKey,
                 'raw_data' => $rawSession,
+                'raw_data_2' => Redis::get($sessionId),
                 'redis_decoded' => unserialize(base64_decode($rawSession)),
+                'redis_decoded_2' => unserialize(base64_decode(Redis::get($sessionId))),
             ]);
 
             Auditor::log([
