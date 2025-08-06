@@ -694,12 +694,18 @@ class TeamCollectionController extends Controller
 
         $input['team_id'] = $teamId;
 
+        $userId = null;
+
+        if (array_key_exists("id", $jwtUser)) {
+            $userId = (int)$jwtUser['id'];
+        }
+
         try {
             $initCollection = Collection::where('id', $id)->first();
 
             // Check that we have permissions on the currently owning team - the middleware will have checked $teamId from the route
             $owningTeamId = $initCollection->team_id;
-            $this->checkAccess($input, $owningTeamId, null, 'team');
+            $this->checkAccess($input, $owningTeamId, null, 'team', $request->header());
 
             if ($initCollection['status'] === Collection::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
                 throw new Exception('Cannot update current collection! Status already "ARCHIVED"');
@@ -722,16 +728,16 @@ class TeamCollectionController extends Controller
             Collection::where('id', $id)->update($array);
 
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
-            $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
+            $this->checkDatasets($id, $datasets, $userId);
 
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
-            $this->checkTools($id, $tools, (int)$jwtUser['id']);
+            $this->checkTools($id, $tools, $userId);
 
             $dur = array_key_exists('dur', $input) ? $input['dur'] : [];
-            $this->checkDurs($id, $dur, (int)$jwtUser['id']);
+            $this->checkDurs($id, $dur, $userId);
 
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
-            $this->checkPublications($id, $publications, (int)$jwtUser['id']);
+            $this->checkPublications($id, $publications, $userId);
 
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($id, $keywords);
@@ -749,7 +755,7 @@ class TeamCollectionController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $userId,
                 'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : null,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
@@ -766,7 +772,7 @@ class TeamCollectionController extends Controller
             ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => $userId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
@@ -876,6 +882,12 @@ class TeamCollectionController extends Controller
 
         $input['team_id'] = $teamId;
 
+        $userId = null;
+
+        if (array_key_exists("id", $jwtUser)) {
+            $userId = (int)$jwtUser['id'];
+        }
+
         try {
             $arrayKeys = [
                 'name',
@@ -906,22 +918,22 @@ class TeamCollectionController extends Controller
 
             if (array_key_exists('datasets', $input)) {
                 $datasets = $input['datasets'];
-                $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
+                $this->checkDatasets($id, $datasets, $userId);
             }
 
             if (array_key_exists('tools', $input)) {
                 $tools = $input['tools'];
-                $this->checkTools($id, $tools, (int)$jwtUser['id']);
+                $this->checkTools($id, $tools, $userId);
             }
 
             if (array_key_exists('dur', $input)) {
                 $dur = $input['dur'];
-                $this->checkDurs($id, $dur, (int)$jwtUser['id']);
+                $this->checkDurs($id, $dur, $userId);
             }
 
             if (array_key_exists('publications', $input)) {
                 $publications = $input['publications'];
-                $this->checkPublications($id, $publications, (int)$jwtUser['id']);
+                $this->checkPublications($id, $publications, $userId);
             }
 
             if (array_key_exists('keywords', $input)) {
@@ -936,7 +948,7 @@ class TeamCollectionController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int)($jwtUser['id'] ?? 0),
+                'user_id' => $userId,
                 'target_team_id' => $teamId,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
@@ -953,7 +965,7 @@ class TeamCollectionController extends Controller
             ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'] ?? 0,
+                'user_id' => $userId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
