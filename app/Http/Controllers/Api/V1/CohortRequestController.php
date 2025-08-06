@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-use CloudLogger;
 use App\Models\User;
 use App\Models\OauthUser;
 use App\Jobs\SendEmailJob;
@@ -1219,25 +1218,6 @@ class CohortRequestController extends Controller
             OauthUser::where('user_id', $userId)->delete();
             session(['cr_uid' => $userId]);
 
-            $sessionId = session()->getId();
-            $redisPrefix = Config::get('database.redis.options.prefix');
-            $redisKey = $redisPrefix . ':' . $sessionId;
-            $rawSession = Redis::get($redisKey);
-            CloudLogger::write([
-                'message' => 'CohortRequestController@checkAccess',
-                'user_id' => $userId,
-                'session' => session()->all(),
-                'session_id' => $sessionId,
-                'redis_prefix' => config('database.redis.options.prefix'),
-                'redis_key' => $redisKey,
-                'raw_data' => $rawSession,
-                'raw_data_2' => Redis::get($sessionId),
-                'redis_decoded' => unserialize(base64_decode($rawSession)),
-                'redis_decoded_2' => unserialize(base64_decode(Redis::get($sessionId))),
-                'cookies' => $request->cookies->all(),
-                'input' => $request->all(),
-            ]);
-
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
@@ -1252,13 +1232,6 @@ class CohortRequestController extends Controller
                     'redirect_url' => $rquestInitUrl,
                 ],
             ], Config::get('statuscodes.STATUS_OK.code'));
-            // $cookies = [Cookie::make('token', $jwt)];
-            // return redirect()->away($rquestInitUrl)->withCookies($cookies);
-            // return redirect()->away($rquestInitUrl);
-            // return redirect($rquestInitUrl);
-            // return response('', 302)->header('Location', $rquestInitUrl);
-            // return (new RedirectResponse($rquestInitUrl))
-            //     ->withCookie(cookie('userId', $userId, 60, '/', '.dev.hdruk.cloud', true, true, false, 'None'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
