@@ -420,7 +420,7 @@ class TeamCollectionController extends Controller
             $jwtUser = $input['jwt_user'] ?? [];
 
             $initCollection = Collection::where('id', $id)->first();
-            \Log::info($initCollection);
+
             if ($initCollection->team_id != $teamId) {
                 throw new UnauthorizedException('Team does not have permission to use this endpoint to view this collection.');
             }
