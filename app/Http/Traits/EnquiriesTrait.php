@@ -265,6 +265,7 @@ trait EnquiriesTrait
         $str .= 'Name: ' . $in['message']['message_body']['[[USER_FIRST_NAME]]'] . ' ' . $in['message']['message_body']['[[USER_LAST_NAME]]'] . '<br/>';
         $str .= 'Applicant organisation: ' . $in['message']['message_body']['[[USER_ORGANISATION]]'] . '<br/>';
         $str .= 'Contact number: ' . $in['message']['message_body']['[[CONTACT_NUMBER]]'] . '<br/>';
+        $str .= 'Contact email: ' . $in['message']['from'] . '<br/>';
         if ($in['thread']['is_feasibility_enquiry']) {
             $str .= 'Project title: ' . $in['thread']['project_title'] . '<br/>';
             $str .= 'Research aim: ' . $in['message']['message_body']['[[RESEARCH_AIM]]'] . '<br/>';
