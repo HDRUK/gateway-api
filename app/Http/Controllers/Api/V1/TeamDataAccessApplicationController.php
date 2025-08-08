@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\InternalServerErrorException;
 use Auditor;
 use Config;
 use Exception;
@@ -19,9 +20,7 @@ use App\Models\DataAccessApplicationComment;
 use App\Models\DataAccessApplicationReview;
 use App\Models\DataAccessApplicationStatus;
 use App\Models\DataAccessApplicationAnswer;
-use App\Models\Dataset;
 use App\Models\EmailTemplate;
-use App\Models\Team;
 use App\Models\TeamHasDataAccessApplication;
 use App\Models\Upload;
 use App\Models\User;
@@ -29,6 +28,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use ZipArchive;
 
 class TeamDataAccessApplicationController extends Controller
 {
@@ -579,14 +579,22 @@ class TeamDataAccessApplicationController extends Controller
 
                 $files = $uploads->all();
 
-                $contents = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
-                    ->get($file->file_location);
+                $zip = new ZipArchive();
 
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                    'data' => $uploads,
-                ], Config::get('statuscodes.STATUS_OK.code'));
-            }
+                $zipFilename = env('SCANNING_FILESYSTEM_DISK', 'local_scan') + "/" + time() + "_$id.zip";
+
+                if (!$zip->open($zipFilename, ZipArchive::CREATE)) {
+                    throw new InternalServerErrorException("Zip file creation failed");
+                }
+
+                foreach ($files as $f) {
+                    $zip->addFile(Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')->path($f->file_location));
+                }
+
+                $zip->close();
+
+                return Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
+                    ->download($zipFilename);            }
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
