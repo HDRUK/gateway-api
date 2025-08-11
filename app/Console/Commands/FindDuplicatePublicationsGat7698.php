@@ -93,9 +93,9 @@ class FindDuplicatePublicationsGat7698 extends Command
         $title = DatasetVersion::where('dataset_id', $datasetId)->first()->metadata['metadata']['summary']['shortTitle'];
 
         $n =  ECC::countDocuments(ECC::ELASTIC_NAME_PUBLICATION);
-        dump($n);
+        dump('Total number of publications in elastic=' . $n);
 
         $n =  ECC::countDocuments(ECC::ELASTIC_NAME_PUBLICATION, 'datasetTitles', $title);
-        dump('number of elastic matches to this title=', $n);
+        dump('number of elastic matches to this title=' . $n);
     }
 }
