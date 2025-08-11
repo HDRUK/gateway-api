@@ -105,7 +105,7 @@ class FindDuplicatePublicationsGat7698 extends Command
         dump($n);
 
 
-        $titles = $this->getDistinctFieldValues('collections', 'datasetTitles');
+        $titles = ECC::getDistinctFieldValues('collections', 'datasetTitles');
         dump($titles);
     }
 }
