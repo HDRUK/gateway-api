@@ -29,7 +29,7 @@ class FindDuplicatePublicationsGat7698 extends Command
     public function handle()
     {
         $datasetId = 1378;
-        $datasetVersion = DatasetVersion::where('dataset_id', $datasetId);
+        $datasetVersion = DatasetVersion::where('dataset_id' . $datasetId);
         $datasetVersionId = $datasetVersion->first()->id;
 
         dump('datasetId=', $datasetId);
@@ -43,7 +43,7 @@ class FindDuplicatePublicationsGat7698 extends Command
                 ->first()->pubs,
             true
         );
-        dump('number of publications in metadata=', count($pubs));
+        dump('number of publications in metadata=' . count($pubs));
 
         $normalizedPubs = $pubs;
 
@@ -87,12 +87,12 @@ class FindDuplicatePublicationsGat7698 extends Command
         //dump($duplicates->toArray());
 
         $nLinks = PublicationHasDatasetVersion::where('dataset_version_id', $datasetVersionId)->count();
-        dump('number of existing links for this dataset=', $nLinks);
+        dump('number of existing links for this dataset=' . $nLinks);
 
         $nLinks = PublicationHasDatasetVersion::where('dataset_version_id', $datasetVersionId)
-            ->whereNotIn('publication_id', $publications->pluck('id'))
+            ->whereNotIn('publication_id' . $publications->pluck('id'))
             ->count();
 
-        dump('number of existing links for this dataset, not in the metadata=', $nLinks);
+        dump('number of existing links for this dataset, not in the metadata=' . $nLinks);
     }
 }
