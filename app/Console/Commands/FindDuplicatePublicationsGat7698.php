@@ -104,5 +104,9 @@ class FindDuplicatePublicationsGat7698 extends Command
 
         $n =  ECC::countDocuments(ECC::ELASTIC_NAME_PUBLICATION, 'datasetTitles', $title);
         dump($n);
+
+
+        $titles = $this->getDistinctFieldValues('collections', 'datasetTitles');
+        dump($titles);
     }
 }

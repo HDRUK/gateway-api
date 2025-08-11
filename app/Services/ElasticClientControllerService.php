@@ -234,7 +234,7 @@ class ElasticClientControllerService
      * @param string $index
      * @return int
      */
-    public function countDocuments(string $index, ?string $field = null, mixed $value = null, bool $exact = false)
+    public function countDocuments(string $index, ?string $field = null, ?string $value = null, bool $exact = false)
     {
         $url = $this->baseUrl . '/' . $index . '/_count';
 
@@ -256,5 +256,37 @@ class ElasticClientControllerService
         }
 
         return 0;
+    }
+
+
+    public function getDistinctFieldValues(string $index, string $field, int $size = 1000): array
+    {
+        $url = $this->baseUrl . '/' . $index . '/_search';
+
+        // Use keyword subfield for exact matches, if not already specified
+        if (!str_ends_with($field, '.keyword')) {
+            $field .= '.keyword';
+        }
+
+        $body = [
+            'size' => 0, // we don't want actual documents, just aggregation
+            'aggs' => [
+                'distinct_values' => [
+                    'terms' => [
+                        'field' => $field,
+                        'size' => $size
+                    ]
+                ]
+            ]
+        ];
+
+        $response = $this->makeRequest()->post($url, $body);
+
+        if ($response->successful()) {
+            $buckets = $response->json('aggregations.distinct_values.buckets');
+            return array_map(fn($bucket) => $bucket['key'], $buckets);
+        }
+
+        return [];
     }
 }
