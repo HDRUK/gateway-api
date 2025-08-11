@@ -57,7 +57,12 @@ class FindDuplicatePublicationsGat7698 extends Command
         )
             ->join('publication_has_dataset_version', 'publications.id', '=', 'publication_has_dataset_version.publication_id')
             ->where('publication_has_dataset_version.dataset_version_id', $datasetVersionId)
-            ->whereIn('publications.paper_doi', $dois)
+            //->whereIn('publications.paper_doi', $dois)
+            ->where(function ($query) use ($dois) {
+                foreach ($dois as $doi) {
+                    $query->orWhere('publications.paper_doi', 'like', "%{$doi}%");
+                }
+            })
             ->with('versions')
             ->orderBy('publications.updated_at')
             //->whereHas('team')
