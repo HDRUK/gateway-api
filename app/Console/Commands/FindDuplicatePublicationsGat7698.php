@@ -48,16 +48,16 @@ class FindDuplicatePublicationsGat7698 extends Command
 
 
         $publications = Publication::select(
-            'publication.id',
-            'publication.paper_doi',
-            'publication.created_at',
-            'publication.updated_at',
-            'publication.deleted_at'
+            'publications.id',
+            'publications.paper_doi',
+            'publications.created_at',
+            'publications.updated_at',
+            'publications.deleted_at'
         )
             ->join('publication_has_dataset_version', 'publication.id', '=', 'publication_has_dataset_version.publication_id')
             ->where('publication_has_dataset_version.dataset_version_id', $datasetVersionId)
             ->with('versions')
-            ->orderBy('publication.updated_at')
+            ->orderBy('publications.updated_at')
             ->get()
             ->map(function ($pub) {
                 $firstVersion = $pub->versions->first();
