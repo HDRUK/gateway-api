@@ -57,6 +57,7 @@ class FindDuplicatePublicationsGat7698 extends Command
 
         dump('number of publications (from metadata) in publication table=' . count($publications));
 
+
         $duplicates = $publications
             ->groupBy('paper_doi')
             ->filter(function ($group) {
@@ -77,6 +78,8 @@ class FindDuplicatePublicationsGat7698 extends Command
                 }
             })
             ->get();
+
+
 
         //dump(count($publications));
 
