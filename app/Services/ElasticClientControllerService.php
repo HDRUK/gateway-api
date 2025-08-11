@@ -246,8 +246,6 @@ class ElasticClientControllerService
             $query = ['match_all' => new \stdClass()];
         }
 
-        dump($query);
-
         $response = $this->makeRequest()
             ->post($url, ['query' => $query]);
 
