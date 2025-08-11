@@ -63,7 +63,7 @@ class FindDuplicatePublicationsGat7698 extends Command
                 return $group->count() > 1;
             });
 
-        dump($duplicates->get()->toArray());
+        dump($duplicates->toArray());
 
         $nduplicates = $duplicates->count();
 
