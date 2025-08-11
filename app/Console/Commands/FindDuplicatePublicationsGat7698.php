@@ -30,9 +30,7 @@ class FindDuplicatePublicationsGat7698 extends Command
     {
         $datasetId = 1378;
         $datasetVersion = DatasetVersion::where('dataset_id', $datasetId);
-        $datasetVersionId = $datasetVersion->clone()->get();
-        dump($datasetVersionId);
-        $datasetVersionId = $datasetVersionId->id;
+        $datasetVersionId = $datasetVersion->first()->id();
 
         dump('datasetId=', $datasetId);
         dump('datasetVersionId=', $datasetVersionId);
