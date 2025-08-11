@@ -43,7 +43,7 @@ class FindDuplicatePublicationsGat7698 extends Command
             foreach ($normalizedPubs as $doi) {
                 $q->orWhere('paper_doi', 'like', "%{$doi}%");
             }
-        });
+        })->get();
 
         dump(count($publications));
     }
