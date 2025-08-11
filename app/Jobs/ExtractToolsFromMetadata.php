@@ -135,7 +135,7 @@ class ExtractToolsFromMetadata implements ShouldQueue
             'link_type' => $type,
         ])->get();
 
-        foreach($datasetVersionHasTools as $datasetVersionHasTool) {
+        foreach ($datasetVersionHasTools as $datasetVersionHasTool) {
             $toolId = $datasetVersionHasTool->tool_id;
 
             DatasetVersionHasTool::where([
@@ -143,24 +143,33 @@ class ExtractToolsFromMetadata implements ShouldQueue
                 'link_type' => $type,
                 'tool_id' => $toolId,
             ])
-            ->delete();
+                ->delete();
 
+            // note: not sure about this... 
+            // - shouldnt this be calling deleteFromElastic? 
+            // - you've just soft deleted it?
             $this->indexElasticTools((int) $toolId);
         }
 
+        // why? the dataset index has nothing to do with tools
+        // - the tool elastic index has something to do with datasets,
+        //   not the other way around
         $this->reindexElastic((int) $datasetId);
     }
 
     public function createLinkToolDatasetVersion(int $toolId, int $datasetVersionId, string $type): ?DatasetVersionHasTool
     {
         $check = DatasetVersionHasTool::where([
-                'tool_id' => $toolId,
-                'dataset_version_id' => $datasetVersionId,
-                'link_type' => $type,
-            ])
+            'tool_id' => $toolId,
+            'dataset_version_id' => $datasetVersionId,
+            'link_type' => $type,
+        ])
             ->first();
 
         if (is_null($check)) {
+            // note: not sure about this..
+            // - it could exist in the table but have been soft deleted?
+            // - updateOrCreate instead to update the soft delete?
             DatasetVersionHasTool::create([
                 'tool_id' => $toolId,
                 'dataset_version_id' => $datasetVersionId,
