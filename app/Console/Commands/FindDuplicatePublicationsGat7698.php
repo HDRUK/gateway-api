@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\DatasetVersion;
+use App\Models\Publication;
 use Illuminate\Console\Command;
 
 class FindDuplicatePublicationsGat7698 extends Command
@@ -35,5 +36,15 @@ class FindDuplicatePublicationsGat7698 extends Command
             true
         );
         dump(count($pubs));
+
+        $normalizedPubs = $pubs;
+
+        $publications = Publication::where(function ($q) use ($normalizedPubs) {
+            foreach ($normalizedPubs as $doi) {
+                $q->orWhere('paper_doi', 'like', "%{$doi}%");
+            }
+        });
+
+        dump($count($publications));
     }
 }
