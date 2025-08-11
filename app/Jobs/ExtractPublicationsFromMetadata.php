@@ -129,6 +129,7 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
                 if (!is_null($pub)) {
                     $this->createLinkPublicationDatasetVersion($publicationId, $datasetVersionId, $type);
                     $this->indexElasticPublication((string) $publicationId);
+
                     continue;
                 }
             }
