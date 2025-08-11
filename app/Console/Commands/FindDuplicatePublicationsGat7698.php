@@ -44,13 +44,55 @@ class FindDuplicatePublicationsGat7698 extends Command
                 ->first()->pubs,
             true
         );
+
+
+
+        $publications = Publication::select(
+            'publications.id',
+            'publications.paper_doi',
+            'publications.created_at',
+            'publications.updated_at',
+            'publications.deleted_at'
+        )
+            ->join('publication_has_dataset_versions', 'publications.id', '=', 'publication_has_dataset_versions.publication_id')
+            ->where('publication_has_dataset_versions.dataset_version_id', $datasetVersionId)
+            ->with('versions')
+            ->orderBy('publications.updated_at')
+            ->get()
+            ->map(function ($pub) {
+                $firstVersion = $pub->versions->first();
+
+                return [
+                    'id' => $pub->id,
+                    'created_at' => $pub->created_at?->toISOString(),
+                    'updated_at' => $pub->updated_at?->toISOString(),
+                    'deleted_at' => $pub->deleted_at?->toISOString(),
+                    'paper_doi' => $pub->paper_doi,
+                    'dataset_id' => $firstVersion?->dataset_id,
+                    'dataset_title' => $firstVersion?->short_title,
+                ];
+            });
+
+        dump($publications);
+        dd(count($publications));
+
+
+
+
+
+
+
+
+
+        $nLinks = PublicationHasDatasetVersion::where('dataset_version_id', $datasetVersionId)->count();
+
         dump('number of publications in metadata=' . count($dois));
         $publications = Publication::select('id', 'paper_doi', 'created_at', 'updated_at', 'deleted_at')
             ->where(function ($q) use ($dois) {
-                foreach ($dois as $doi) {
-                    //         $q->orWhere('paper_doi', 'like', "%{$doi}%");
-                    $q->orWhere('paper_doi', '=', $doi);
-                }
+                //foreach ($dois as $doi) {
+                //$q->orWhere('paper_doi', 'like', "%{$doi}%");
+                //$q->orWhere('paper_doi', '=', $doi);
+                //}
             })
             ->with('versions')
             ->orderBy('updated_at')
