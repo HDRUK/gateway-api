@@ -50,7 +50,9 @@ class FindDuplicatePublicationsGat7698 extends Command
                 foreach ($dois as $doi) {
                     $q->orWhere('paper_doi', 'like', "%{$doi}%");
                 }
-            })->get();
+            })
+            ->with('versions')
+            ->orderBy('updated_at')->get();
 
         dump('number of publications (from metadata) in publication table=' . count($publications));
 
