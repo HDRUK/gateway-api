@@ -55,7 +55,7 @@ class FindDuplicatePublicationsGat7698 extends Command
             });
 
         dump($duplicates->count());
-        dump($duplicates->toArray());
+        //dump($duplicates->toArray());
 
 
 
@@ -77,6 +77,6 @@ class FindDuplicatePublicationsGat7698 extends Command
             ->filter(fn($group) => $group->count() > 1);
 
         dump($duplicates->count());
-        dump($duplicates->toArray());
+        //dump($duplicates->toArray());
     }
 }
