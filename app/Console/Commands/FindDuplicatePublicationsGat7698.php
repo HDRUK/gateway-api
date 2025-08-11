@@ -46,5 +46,14 @@ class FindDuplicatePublicationsGat7698 extends Command
         })->get();
 
         dump(count($publications));
+
+        $duplicates = $publications
+            ->groupBy('paper_doi')
+            ->filter(function ($group) {
+                return $group->count() > 1;
+            });
+
+        dump($duplicates->count());
+        dump($duplicates->toArray());
     }
 }
