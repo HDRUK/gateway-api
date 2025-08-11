@@ -63,7 +63,13 @@ class FindDuplicatePublicationsGat7698 extends Command
                 return $group->count() > 1;
             });
 
-        dump('number of publication (from metadata) that have be duplicated=' . $duplicates->count());
+        $nduplicates = $duplicates->count();
+
+        dump('number of publication (from metadata) that have be duplicated=' . $nduplicates);
+
+        $nunique = $publications->unique('paper_doi')->count();
+        dump('number of publication (from metadata) that are unique=' . $nunique);
+
 
         $publications = Publication::selectRaw("
             id,
@@ -82,13 +88,13 @@ class FindDuplicatePublicationsGat7698 extends Command
             ->filter(fn($group) => $group->count() > 1);
 
         $nLinks = PublicationHasDatasetVersion::where('dataset_version_id', $datasetVersionId)->count();
-        dump('number of existing links for this dataset=' . $nLinks);
+        dump('number of existing publication links for this dataset=' . $nLinks);
 
         $nLinks = PublicationHasDatasetVersion::where('dataset_version_id', $datasetVersionId)
             ->whereNotIn('publication_id', $publications->pluck('id'))
             ->count();
 
-        dump('number of existing links for this dataset, not in the metadata=' . $nLinks);
+        dump('number of existing publication links for this dataset, not in the metadata=' . $nLinks);
 
         $title = DatasetVersion::where('dataset_id', $datasetId)->first()->metadata['metadata']['summary']['shortTitle'];
 
