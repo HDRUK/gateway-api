@@ -36,7 +36,7 @@ class FindDuplicatePublicationsGat7698 extends Command
         dump('datasetId=' . $datasetId);
         dump('datasetVersionId=' . $datasetVersionId);
 
-        $pubs = json_decode(
+        $dois = json_decode(
             $datasetVersion
                 ->selectRaw(
                     "JSON_EXTRACT(JSON_UNQUOTE(metadata),'$.metadata.linkage.publicationUsingDataset') as pubs"
@@ -44,18 +44,19 @@ class FindDuplicatePublicationsGat7698 extends Command
                 ->first()->pubs,
             true
         );
-        dump('number of publications in metadata=' . count($pubs));
-
-        $normalizedPubs = $pubs;
-
+        dump('number of publications in metadata=' . count($dois));
         $publications = Publication::select('id', 'paper_doi', 'created_at', 'updated_at', 'deleted_at')
-            ->where(function ($q) use ($normalizedPubs) {
-                foreach ($normalizedPubs as $doi) {
+            ->where(function ($q) use ($dois) {
+                foreach ($dois as $doi) {
                     $q->orWhere('paper_doi', 'like', "%{$doi}%");
                 }
             })->get();
 
         dump('number of publications (from metadata) in publication table=' . count($publications));
+
+
+        dump($publications);
+
         dd("------------");
 
         $duplicates = $publications
