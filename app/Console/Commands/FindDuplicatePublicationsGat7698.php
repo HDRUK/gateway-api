@@ -64,8 +64,6 @@ class FindDuplicatePublicationsGat7698 extends Command
             });
 
         dump('number of publication (from metadata) that have be duplicated=' . $duplicates->count());
-        //dump($duplicates->toArray());
-
 
         $publications = Publication::selectRaw("
             id,
@@ -79,15 +77,9 @@ class FindDuplicatePublicationsGat7698 extends Command
             ->get();
 
 
-
-        //dump(count($publications));
-
         $duplicates = $publications
             ->groupBy('clean_doi')
             ->filter(fn($group) => $group->count() > 1);
-
-        //dump($duplicates->count());
-        //dump($duplicates->toArray());
 
         $nLinks = PublicationHasDatasetVersion::where('dataset_version_id', $datasetVersionId)->count();
         dump('number of existing links for this dataset=' . $nLinks);
