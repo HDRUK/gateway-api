@@ -66,7 +66,7 @@ class DatasetVersionObserver
         } elseif (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
             ExtractPublicationsFromMetadata::dispatch($datasetVersion->id);
             ExtractToolsFromMetadata::dispatch($datasetVersion->id);
-
+            
             $this->reindexElastic($dataset->id);
             if ($dataset->team_id) {
                 $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
