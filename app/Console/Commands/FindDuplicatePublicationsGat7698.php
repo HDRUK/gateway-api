@@ -45,6 +45,6 @@ class FindDuplicatePublicationsGat7698 extends Command
             }
         });
 
-        dump($count($publications));
+        dump(count($publications));
     }
 }
