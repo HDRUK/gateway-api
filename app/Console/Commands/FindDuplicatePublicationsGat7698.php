@@ -91,7 +91,7 @@ class FindDuplicatePublicationsGat7698 extends Command
 
         $nLinks = PublicationHasDatasetVersion::where('dataset_version_id', $datasetVersionId)
             ->whereNotIn('publication_id', $publications->pluck('id'))
-            ->get();
+            ->count();
 
         dump('number of existing links for this dataset, not in the metadata=', $nLinks);
     }
