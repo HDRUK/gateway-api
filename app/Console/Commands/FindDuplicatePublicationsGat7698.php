@@ -32,8 +32,8 @@ class FindDuplicatePublicationsGat7698 extends Command
         $datasetVersion = DatasetVersion::where('dataset_id', $datasetId);
         $datasetVersionId = $datasetVersion->first()->id;
 
-        dump('datasetId=', $datasetId);
-        dump('datasetVersionId=', $datasetVersionId);
+        dump('datasetId=' . $datasetId);
+        dump('datasetVersionId=' . $datasetVersionId);
 
         $pubs = json_decode(
             $datasetVersion
@@ -54,7 +54,7 @@ class FindDuplicatePublicationsGat7698 extends Command
                 }
             })->get();
 
-        dump('number of publications (from metadata) in publication table=', count($publications));
+        dump('number of publications (from metadata) in publication table=' . count($publications));
 
         $duplicates = $publications
             ->groupBy('paper_doi')
@@ -62,7 +62,7 @@ class FindDuplicatePublicationsGat7698 extends Command
                 return $group->count() > 1;
             });
 
-        dump('number of publication (from metadata) that have be duplicated:', $duplicates->count());
+        dump('number of publication (from metadata) that have be duplicated:' . $duplicates->count());
         //dump($duplicates->toArray());
 
 
