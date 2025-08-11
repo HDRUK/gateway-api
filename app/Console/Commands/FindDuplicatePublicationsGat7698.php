@@ -97,9 +97,12 @@ class FindDuplicatePublicationsGat7698 extends Command
         dump('number of existing links for this dataset, not in the metadata=' . $nLinks);
 
 
-        $title = DatasetVersion::where('dataset_id', $datasetId)->first()->metadata['metadata']['summary']['shortTitle'];
-        dump($title);
+        $title[] = DatasetVersion::where('dataset_id', $datasetId)->first()->metadata['metadata']['summary']['shortTitle'];
 
-        //$n =  ECC::countDocuments(ECC::ELASTIC_NAME_PUBLICATION,'datasetTitles');
+        $n =  ECC::countDocuments(ECC::ELASTIC_NAME_PUBLICATION);
+        dump($n);
+
+        $n =  ECC::countDocuments(ECC::ELASTIC_NAME_PUBLICATION, 'datasetTitles', $title);
+        dump($n);
     }
 }
