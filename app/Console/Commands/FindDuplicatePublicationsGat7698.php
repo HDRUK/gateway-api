@@ -6,6 +6,7 @@ use App\Models\DatasetVersion;
 use App\Models\Publication;
 use App\Models\PublicationHasDatasetVersion;
 use Illuminate\Console\Command;
+use ElasticClientController as ECC;
 
 class FindDuplicatePublicationsGat7698 extends Command
 {
@@ -62,7 +63,7 @@ class FindDuplicatePublicationsGat7698 extends Command
                 return $group->count() > 1;
             });
 
-        dump('number of publication (from metadata) that have be duplicated:' . $duplicates->count());
+        dump('number of publication (from metadata) that have be duplicated=' . $duplicates->count());
         //dump($duplicates->toArray());
 
 
@@ -94,5 +95,11 @@ class FindDuplicatePublicationsGat7698 extends Command
             ->count();
 
         dump('number of existing links for this dataset, not in the metadata=' . $nLinks);
+
+
+        $title = $datasetVersion->first()->metadata['metadata']['summary']['shortTitle'];
+        dump($title);
+
+        //$n =  ECC::countDocuments(ECC::ELASTIC_NAME_PUBLICATION,'datasetTitles');
     }
 }

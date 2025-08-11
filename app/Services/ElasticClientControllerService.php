@@ -37,20 +37,20 @@ class ElasticClientControllerService
     protected function makeRequest()
     {
         $request = Http::withHeaders([
-                    'Accept' => 'application/json',
-                    'Content-Type' => 'application/json'
-                    ])
-                   ->withOptions(
-                       [
-                        'verify' => $this->verifySSL,
-                        'timeout' => $this->timeout,
-                        'retry' => [
-                            'max_retries' => 10,
-                            'retry_on_timeout' => true,
-                        ]
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json'
+        ])
+            ->withOptions(
+                [
+                    'verify' => $this->verifySSL,
+                    'timeout' => $this->timeout,
+                    'retry' => [
+                        'max_retries' => 10,
+                        'retry_on_timeout' => true,
                     ]
-                   )
-                   ->connectTimeout($this->timeout);
+                ]
+            )
+            ->connectTimeout($this->timeout);
 
         if (!empty($this->username) && !empty($this->password)) {
             $request->withBasicAuth($this->username, $this->password);
@@ -109,7 +109,6 @@ class ElasticClientControllerService
                 $e->getCode(),
                 $e
             );
-
         }
     }
 
@@ -175,7 +174,6 @@ class ElasticClientControllerService
                 $e->getCode(),
                 $e
             );
-
         }
     }
 
@@ -236,19 +234,25 @@ class ElasticClientControllerService
      * @param string $index
      * @return int
      */
-    public function countDocuments(string $index)
+    public function countDocuments(string $index, ?string $field = null, ?string $value = null, bool $exact = false)
     {
         $url = $this->baseUrl . '/' . $index . '/_count';
 
+        if ($field && $value) {
+            $query = $exact
+                ? ['term' => [$field => $value]]
+                : ['match' => [$field => $value]];
+        } else {
+            $query = ['match_all' => new \stdClass()];
+        }
+
         $response = $this->makeRequest()
-            ->post($url, ['query' => ['match_all' => new \stdClass()]]);
+            ->post($url, ['query' => $query]);
 
         if ($response->successful()) {
             return $response->json('count');
         }
 
-        return 0;  // Return 0 if the request fails
+        return 0;
     }
-
-
 }
