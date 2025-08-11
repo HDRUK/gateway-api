@@ -82,10 +82,18 @@ class FindDuplicatePublicationsGat7698 extends Command
             })
             ->get();
 
-
         $duplicates = $publications
             ->groupBy('clean_doi')
             ->filter(fn($group) => $group->count() > 1);
+
+        $nduplicates = $duplicates->count();
+
+        dump('number of publication (from metadata) that have be duplicated=' . $nduplicates);
+
+        $nunique = $publications->unique('paper_doi')->count();
+        dump('number of publication (from metadata) that are unique=' . $nunique);
+
+
 
         $nLinks = PublicationHasDatasetVersion::where('dataset_version_id', $datasetVersionId)->count();
         dump('number of existing publication links for this dataset=' . $nLinks);
