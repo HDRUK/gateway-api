@@ -52,7 +52,22 @@ class FindDuplicatePublicationsGat7698 extends Command
                 }
             })
             ->with('versions')
-            ->orderBy('updated_at')->get();
+            ->orderBy('updated_at')
+            ->get()
+            ->map(function ($pub) {
+                $firstVersion = $pub->versions->first();
+
+                return [
+                    'id' => $pub->id,
+                    'created_at' => $pub->created_at,
+                    'updated_at' => $pub->updated_at,
+                    'deleted_at' => $pub->deleted_at,
+                    'paper_doi' => $pub->paper_doi,
+                    'dataset_id' => $firstVersion?->dataset_id,
+                    'dataset_title' => $firstVersion?->short_title,
+                ];
+            })
+            ->toArray();
 
         dump('number of publications (from metadata) in publication table=' . count($publications));
 
