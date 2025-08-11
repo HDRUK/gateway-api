@@ -80,6 +80,8 @@ class FindDuplicatePublicationsGat7698 extends Command
             });
 
         dump($publications);
+        dd(count($publications));
+
         dd('-----------');
 
 
