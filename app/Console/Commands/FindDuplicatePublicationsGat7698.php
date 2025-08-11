@@ -78,6 +78,26 @@ class FindDuplicatePublicationsGat7698 extends Command
             });
 
         dump($publications);
+
+
+
+        $csvFileName = storage_path('./publications.csv');
+        $handle = fopen($csvFileName, 'w');
+
+        // Write the header row
+        if (!empty($publications)) {
+            fputcsv($handle, array_keys($publications[0]));
+        }
+
+        // Write the data rows
+        foreach ($publications as $row) {
+            fputcsv($handle, $row);
+        }
+
+        fclose($handle);
+
+        dump("CSV saved to: " . $csvFileName);
+
         dd(count($publications));
 
 
