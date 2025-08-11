@@ -140,4 +140,13 @@ class Publication extends Model
             'id'
         );
     }
+
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(
+            Team::class,
+            'team_id',
+            'id'
+        );
+    }
 }
