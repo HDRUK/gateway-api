@@ -55,7 +55,7 @@ class FindDuplicatePublicationsGat7698 extends Command
         dump('number of publications (from metadata) in publication table=' . count($publications));
 
 
-        dump($publications);
+        dump($publications->toArray());
 
         dd("------------");
 
