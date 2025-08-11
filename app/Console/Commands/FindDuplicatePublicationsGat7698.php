@@ -72,6 +72,7 @@ class FindDuplicatePublicationsGat7698 extends Command
                     'paper_doi' => $pub->paper_doi,
                     'owner' => $pub->owner->email,
                     'team' => $pub->team?->name,
+                    'dataset_version_id' => $firstVersion?->id,
                     'dataset_id' => $firstVersion?->dataset_id,
                     'dataset_title' => $firstVersion?->short_title,
                 ];
