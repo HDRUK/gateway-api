@@ -46,6 +46,44 @@ class FindDuplicatePublicationsGat7698 extends Command
         );
 
 
+        $publications = Publication::select(
+            'publications.id',
+            'publications.paper_doi',
+            'publications.created_at',
+            'publications.updated_at',
+            'publications.deleted_at',
+            'publications.owner_id',
+            'publications.team_id'
+        )
+            ->join('publication_has_dataset_version', 'publications.id', '=', 'publication_has_dataset_version.publication_id')
+            ->where('publication_has_dataset_version.dataset_version_id', $datasetVersionId)
+            ->whereIn('publications.paper_doi', $dois)
+            ->with('versions')
+            ->orderBy('publications.updated_at')
+            //->whereHas('team')
+            ->get()
+            ->map(function ($pub) use ($datasetVersionId) {
+                $firstVersion = $pub->versions->where('id', $datasetVersionId)->first();
+
+                return [
+                    'id' => $pub->id,
+                    'created_at' => $pub->created_at?->toISOString(),
+                    'updated_at' => $pub->updated_at?->toISOString(),
+                    'deleted_at' => $pub->deleted_at?->toISOString(),
+                    'paper_doi' => $pub->paper_doi,
+                    'owner' => $pub->owner->email,
+                    'team' => $pub->team?->name,
+                    'dataset_version_id' => $firstVersion?->id,
+                    'dataset_id' => $firstVersion?->dataset_id,
+                    'dataset_title' => $firstVersion?->short_title,
+                ];
+            });
+
+        dump($publications);
+        //
+
+
+
 
         $publications = Publication::select(
             'publications.id',
@@ -60,7 +98,7 @@ class FindDuplicatePublicationsGat7698 extends Command
             ->where('publication_has_dataset_version.dataset_version_id', $datasetVersionId)
             ->with('versions')
             ->orderBy('publications.updated_at')
-            ->whereHas('team')
+            //->whereHas('team')
             ->get()
             ->map(function ($pub) use ($datasetVersionId) {
                 $firstVersion = $pub->versions->where('id', $datasetVersionId)->first();
