@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\DatasetVersion;
 use App\Models\Publication;
+use App\Models\PublicationHasDatasetVersion;
 use Illuminate\Console\Command;
 
 class FindDuplicatePublicationsGat7698 extends Command
@@ -27,15 +28,22 @@ class FindDuplicatePublicationsGat7698 extends Command
      */
     public function handle()
     {
+        $datasetId = 1378;
+        $datasetVersion = DatasetVersion::where('dataset_id', $datasetId);
+        $datasetVersionId = $datasetVersion->get()->id();
+
+        dump('datasetId=', $datasetId);
+        dump('datasetVersionId=', $datasetVersionId);
+
         $pubs = json_decode(
-            DatasetVersion::where('dataset_id', 1378)
+            $datasetVersion
                 ->selectRaw(
                     "JSON_EXTRACT(JSON_UNQUOTE(metadata),'$.metadata.linkage.publicationUsingDataset') as pubs"
                 )
                 ->first()->pubs,
             true
         );
-        dump(count($pubs));
+        dump('number of publications in metadata=', count($pubs));
 
         $normalizedPubs = $pubs;
 
@@ -46,7 +54,7 @@ class FindDuplicatePublicationsGat7698 extends Command
                 }
             })->get();
 
-        dump(count($publications));
+        dump('number of publications (from metadata) in publication table=', count($publications));
 
         $duplicates = $publications
             ->groupBy('paper_doi')
@@ -54,9 +62,8 @@ class FindDuplicatePublicationsGat7698 extends Command
                 return $group->count() > 1;
             });
 
-        dump($duplicates->count());
+        dump('number of publication (from metadata) that have be duplicated:', $duplicates->count());
         //dump($duplicates->toArray());
-
 
 
         $publications = Publication::selectRaw("
@@ -70,13 +77,22 @@ class FindDuplicatePublicationsGat7698 extends Command
             })
             ->get();
 
-        dump(count($publications));
+        //dump(count($publications));
 
         $duplicates = $publications
             ->groupBy('clean_doi')
             ->filter(fn($group) => $group->count() > 1);
 
-        dump($duplicates->count());
+        //dump($duplicates->count());
         //dump($duplicates->toArray());
+
+        $nLinks = PublicationHasDatasetVersion::where('dataset_version_id', $datasetVersionId)->count();
+        dump('number of existing links for this dataset=', $nLinks);
+
+        $nLinks = PublicationHasDatasetVersion::where('dataset_version_id', $datasetVersionId)
+            ->whereNotIn('publication_id', $publications->pluck('id'))
+            ->get();
+
+        dump('number of existing links for this dataset, not in the metadata=', $nLinks);
     }
 }
