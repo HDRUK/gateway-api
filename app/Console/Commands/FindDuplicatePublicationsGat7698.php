@@ -48,7 +48,8 @@ class FindDuplicatePublicationsGat7698 extends Command
         $publications = Publication::select('id', 'paper_doi', 'created_at', 'updated_at', 'deleted_at')
             ->where(function ($q) use ($dois) {
                 foreach ($dois as $doi) {
-                    $q->orWhere('paper_doi', 'like', "%{$doi}%");
+                    //         $q->orWhere('paper_doi', 'like', "%{$doi}%");
+                    $q->orWhere('paper_doi', '=', $doi);
                 }
             })
             ->with('versions')
