@@ -39,11 +39,12 @@ class FindDuplicatePublicationsGat7698 extends Command
 
         $normalizedPubs = $pubs;
 
-        $publications = Publication::where(function ($q) use ($normalizedPubs) {
-            foreach ($normalizedPubs as $doi) {
-                $q->orWhere('paper_doi', 'like', "%{$doi}%");
-            }
-        })->get();
+        $publications = Publication::select('id', 'paper_doi')
+            ->where(function ($q) use ($normalizedPubs) {
+                foreach ($normalizedPubs as $doi) {
+                    $q->orWhere('paper_doi', 'like', "%{$doi}%");
+                }
+            })->get();
 
         dump(count($publications));
 
