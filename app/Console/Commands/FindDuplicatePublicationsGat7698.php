@@ -66,8 +66,7 @@ class FindDuplicatePublicationsGat7698 extends Command
                     'dataset_id' => $firstVersion?->dataset_id,
                     'dataset_title' => $firstVersion?->short_title,
                 ];
-            })
-            ->toArray();
+            });
 
         dump('number of publications (from metadata) in publication table=' . count($publications));
 
