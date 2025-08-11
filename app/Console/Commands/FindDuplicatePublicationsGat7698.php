@@ -90,7 +90,7 @@ class FindDuplicatePublicationsGat7698 extends Command
 
         dump('number of publication (from metadata) that have be duplicated=' . $nduplicates);
 
-        $nunique = $publications->unique('paper_doi')->count();
+        $nunique = $publications->unique('clean_doi')->count();
         dump('number of publication (from metadata) that are unique=' . $nunique);
 
 
