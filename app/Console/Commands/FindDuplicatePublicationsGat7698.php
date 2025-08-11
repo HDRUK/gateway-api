@@ -48,7 +48,7 @@ class FindDuplicatePublicationsGat7698 extends Command
 
         $normalizedPubs = $pubs;
 
-        $publications = Publication::select('id', 'paper_doi', 'created_at', 'updated_at')
+        $publications = Publication::select('id', 'paper_doi', 'created_at', 'updated_at', 'deleted_at')
             ->where(function ($q) use ($normalizedPubs) {
                 foreach ($normalizedPubs as $doi) {
                     $q->orWhere('paper_doi', 'like', "%{$doi}%");
@@ -56,6 +56,7 @@ class FindDuplicatePublicationsGat7698 extends Command
             })->get();
 
         dump('number of publications (from metadata) in publication table=' . count($publications));
+        dd("------------");
 
         $duplicates = $publications
             ->groupBy('paper_doi')
@@ -94,7 +95,6 @@ class FindDuplicatePublicationsGat7698 extends Command
 
         $nunique = $publications->unique('clean_doi')->count();
         dump('number of publication (from metadata) that are unique=' . $nunique);
-
 
 
         $nLinks = PublicationHasDatasetVersion::where('dataset_version_id', $datasetVersionId)->count();
