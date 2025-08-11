@@ -61,6 +61,7 @@ class FindDuplicatePublicationsGat7698 extends Command
             ->with('versions')
             ->orderBy('publications.updated_at')
             ->get()
+            ->whereHas('team')
             ->map(function ($pub) use ($datasetVersionId) {
                 $firstVersion = $pub->versions->where('id', $datasetVersionId)->first();
 
