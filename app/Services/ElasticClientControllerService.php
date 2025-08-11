@@ -234,7 +234,7 @@ class ElasticClientControllerService
      * @param string $index
      * @return int
      */
-    public function countDocuments(string $index, ?string $field = null, ?string $value = null, bool $exact = false)
+    public function countDocuments(string $index, ?string $field = null, mixed $value = null, bool $exact = false)
     {
         $url = $this->baseUrl . '/' . $index . '/_count';
 
