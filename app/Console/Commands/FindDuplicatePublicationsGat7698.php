@@ -70,7 +70,7 @@ class FindDuplicatePublicationsGat7698 extends Command
                     'updated_at' => $pub->updated_at?->toISOString(),
                     'deleted_at' => $pub->deleted_at?->toISOString(),
                     'paper_doi' => $pub->paper_doi,
-                    'owner_id' => $pub->owner_id,
+                    'owner' => $pub->owner,
                     'team_id' => $pub->team_id,
                     'dataset_id' => $firstVersion?->dataset_id,
                     'dataset_title' => $firstVersion?->short_title,

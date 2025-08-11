@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 #[ObservedBy([PublicationObserver::class])]
@@ -84,11 +85,11 @@ class Publication extends Model
             'publication_id',
             'dataset_version_id'
         )
-        ->whereNull('publication_has_dataset_version.deleted_at')
-        ->whereIn(
-            'dataset_versions.dataset_id',
-            Dataset::where('status', 'ACTIVE')->select('id')
-        );
+            ->whereNull('publication_has_dataset_version.deleted_at')
+            ->whereIn(
+                'dataset_versions.dataset_id',
+                Dataset::where('status', 'ACTIVE')->select('id')
+            );
     }
 
     /**
@@ -100,8 +101,8 @@ class Publication extends Model
             Tool::class,
             'publication_has_tools'
         )
-        ->whereNull('publication_has_tools.deleted_at')
-        ->where('tools.status', 'ACTIVE');
+            ->whereNull('publication_has_tools.deleted_at')
+            ->where('tools.status', 'ACTIVE');
     }
 
     /**
@@ -113,9 +114,9 @@ class Publication extends Model
             Dur::class,
             'dur_has_publications'
         )
-        ->withPivot('dur_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at')
-        ->whereNull('dur_has_publications.deleted_at')
-        ->where('dur.status', 'ACTIVE');
+            ->withPivot('dur_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at')
+            ->whereNull('dur_has_publications.deleted_at')
+            ->where('dur.status', 'ACTIVE');
     }
 
     public function collections(): BelongsToMany
@@ -126,7 +127,17 @@ class Publication extends Model
             'publication_id',
             'collection_id'
         )
-        ->whereNull('collection_has_publications.deleted_at')
-        ->where('collections.status', 'ACTIVE');
+            ->whereNull('collection_has_publications.deleted_at')
+            ->where('collections.status', 'ACTIVE');
+    }
+
+
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(
+            User::class,
+            'owner_id',
+            'id'
+        );
     }
 }
