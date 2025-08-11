@@ -168,7 +168,8 @@ class ExtractToolsFromMetadata implements ShouldQueue
 
         if (is_null($check)) {
             // note: not sure about this..
-            // - the link could exist because it
+            // - it could exist in the table but have been soft deleted?
+            // - updateOrCreate instead to update the soft delete?
             DatasetVersionHasTool::create([
                 'tool_id' => $toolId,
                 'dataset_version_id' => $datasetVersionId,
