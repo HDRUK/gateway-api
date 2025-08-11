@@ -1,3 +1,9 @@
+## [2.20.2](https://github.com/HDRUK/gateway-api/compare/v2.20.1...v2.20.2) (2025-08-11)
+
+### 🐛 Bug Fixes
+
+* **GAT-7698:** Index upon extracting metadata (#1366) ([e43f63a](https://github.com/HDRUK/gateway-api/commit/e43f63aac84717f6a168ca2412079b64d22b4b54)), closes [GAT-7698](GAT-7698)
+
 ## [2.20.1](https://github.com/HDRUK/gateway-api/compare/v2.20.0...v2.20.1) (2025-08-04)
 
 ### 🐛 Bug Fixes
