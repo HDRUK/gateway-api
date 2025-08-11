@@ -54,7 +54,7 @@ class FindDuplicatePublicationsGat7698 extends Command
             'publications.updated_at',
             'publications.deleted_at'
         )
-            ->join('publication_has_dataset_version', 'publication.id', '=', 'publication_has_dataset_version.publication_id')
+            ->join('publication_has_dataset_version', 'publications.id', '=', 'publication_has_dataset_version.publication_id')
             ->where('publication_has_dataset_version.dataset_version_id', $datasetVersionId)
             ->with('versions')
             ->orderBy('publications.updated_at')
