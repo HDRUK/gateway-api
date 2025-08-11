@@ -56,5 +56,27 @@ class FindDuplicatePublicationsGat7698 extends Command
 
         dump($duplicates->count());
         dump($duplicates->toArray());
+
+
+
+        $publications = Publication::selectRaw("
+            id,
+            REPLACE(REPLACE(paper_doi, 'https://doi.org/', ''), 'http://doi.org/', '') as clean_doi
+        ")
+            ->where(function ($q) use ($normalizedPubs) {
+                foreach ($normalizedPubs as $doi) {
+                    $q->orWhere('paper_doi', 'like', "%{$doi}%");
+                }
+            })
+            ->get();
+
+        dump(count($publications));
+
+        $duplicates = $publications
+            ->groupBy('clean_doi')
+            ->filter(fn($group) => $group->count() > 1);
+
+        dump($duplicates->count());
+        dump($duplicates->toArray());
     }
 }
