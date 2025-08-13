@@ -121,7 +121,7 @@ class FindDuplicatePublicationsGat7698 extends Command
 
 
 
-        $csvFileName = storage_path('publications.csv');
+        $csvFileName = storage_path('publications' . $datasetId . '.csv');
         $handle = fopen($csvFileName, 'w');
 
         // Write the header row
