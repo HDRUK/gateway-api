@@ -15,7 +15,7 @@ class FindDuplicatePublicationsGat7698 extends Command
      *
      * @var string
      */
-    protected $signature = 'app:find-duplicate-publications-gat7698';
+    protected $signature = 'app:find-duplicate-publications-gat7698 {datasetId?}';
 
     /**
      * The console command description.
@@ -29,7 +29,7 @@ class FindDuplicatePublicationsGat7698 extends Command
      */
     public function handle()
     {
-        $datasetId = 1378;
+        $datasetId = (int) $this->argument('datasetId') ?? $this->ask('Please enter the datasetId');
         $datasetVersion = DatasetVersion::where('dataset_id', $datasetId);
         $datasetVersionId = $datasetVersion->first()->id;
 
