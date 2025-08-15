@@ -214,6 +214,7 @@ class EnquiryThreadController extends Controller
         $input = $request->all();
         $jwtUser = $input['jwt_user'] ?? [];
         $user = User::where('id', $jwtUser['id'])->first();
+
         if (is_null($user)) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
