@@ -1,3 +1,27 @@
+## [2.21.0](https://github.com/HDRUK/gateway-api/compare/v2.20.2...v2.21.0) (2025-08-18)
+
+### ✨ Features
+
+* **GAT-6927:** Feature Flagging Middleware, SQL, No Cache (#1296) ([2a9b242](https://github.com/HDRUK/gateway-api/commit/2a9b2420ced954c2b6db9937a36edd7823755841)), closes [GAT-6927](GAT-6927)
+* **GAT-7276:** Add dar application has files table (#1348) ([dc22380](https://github.com/HDRUK/gateway-api/commit/dc22380ded3a24ccb183e32373157661ba6cd147)), closes [GAT-7276](GAT-7276)
+* **GAT-7277:** Add dar application has answer files (#1349) ([8ebfda2](https://github.com/HDRUK/gateway-api/commit/8ebfda25a06234080adc913273207ed2c2448211)), closes [GAT-7277](GAT-7277)
+* **GAT-7576:** Add associated authors and tags to tools search resp (#1346) ([1af847f](https://github.com/HDRUK/gateway-api/commit/1af847f47f55116a1f498589206825e7eefa3c99)), closes [GAT-7576](GAT-7576)
+* **GAT-7611:** Add endpoints to support new Cohort Discovery NHSE buttons (#1341) ([42b7639](https://github.com/HDRUK/gateway-api/commit/42b76391cd0b8f5b483057b24dc7abd5ac99d4c9)), closes [GAT-7611](GAT-7611)
+* **GAT-7611:** Log the current nhse sde status when first request general cohort access. (#1347) ([2eed84f](https://github.com/HDRUK/gateway-api/commit/2eed84f142eb89e5e39847dcb6b2042be5ae5d46)), closes [GAT-7611](GAT-7611)
+* **GAT-7612:** Update enums used for NHSE SDE statuses (#1351) ([c4649c6](https://github.com/HDRUK/gateway-api/commit/c4649c61e75f037d65651d69ec43ee6c971402f2)), closes [GAT-7612](GAT-7612)
+* **GAT-7614:** Add new columns to Cohort Discovery download (#1350) ([c75b28f](https://github.com/HDRUK/gateway-api/commit/c75b28f3ff19ab08f11ad5d32f32621745da1356)), closes [GAT-7614](GAT-7614)
+* **GAT-7670:** Implements federated token exchange (#1357) ([7b59b6b](https://github.com/HDRUK/gateway-api/commit/7b59b6bd11dcfe46a8c86480310faaa49654ce81)), closes [GAT-7670](GAT-7670)
+* **GAT-7670:** Implements workgroups encoded within tokens for users (#1361) ([8d57f99](https://github.com/HDRUK/gateway-api/commit/8d57f998eac259d53abf75db4f09f02dcfeae691)), closes [GAT-7670](GAT-7670)
+
+### 🐛 Bug Fixes
+
+* **GAT-7294:** fixing logging (#1353) ([2b249c1](https://github.com/HDRUK/gateway-api/commit/2b249c126e713051b83bd57831700cbd1cf56500)), closes [GAT-7294](GAT-7294)
+* **GAT-7607:** DTA redirect (#1342) ([ba7ceec](https://github.com/HDRUK/gateway-api/commit/ba7ceeccc983d99509a71fefe055cc3c0920194b)), closes [GAT-7607](GAT-7607)
+* **GAT-7665:** Only count active entities under Data Custodian Networks. (#1354) ([a2c1d9a](https://github.com/HDRUK/gateway-api/commit/a2c1d9a32a9d08c312d66d020076284a5ece5efd)), closes [GAT-7665](GAT-7665)
+* **GAT-7666:** Fix issue with unmasked secondary emails (#1343) ([1b81848](https://github.com/HDRUK/gateway-api/commit/1b8184808d5bd9b22cf69b7122c41085ead9837c))
+* **GAT-7689:** Add environment access column to cohort download file. (#1358) ([40480d3](https://github.com/HDRUK/gateway-api/commit/40480d3b4684ff905dc35db333a3576831283e0e)), closes [GAT-7689](GAT-7689)
+* **GAT-7698:** Index upon extracting metadata (#1366) ([8413bc5](https://github.com/HDRUK/gateway-api/commit/8413bc5254862141f3954a8c2310bf0d482f9247)), closes [GAT-7698](GAT-7698)
+
 ## [2.20.2](https://github.com/HDRUK/gateway-api/compare/v2.20.1...v2.20.2) (2025-08-11)
 
 ### 🐛 Bug Fixes
