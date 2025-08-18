@@ -3,9 +3,12 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SSO\JwksController;
 use App\Http\Middleware\AppendTokenResponse;
+use App\Http\Middleware\AppendJWTTokenResponse;
+use App\Http\Controllers\SSO\OAuth2Controller;
 use App\Http\Controllers\SSO\OpenIdController;
 use App\Http\Controllers\SSO\CustomAuthorizationController;
 use Laravel\Passport\Http\Controllers\AccessTokenController;
+use App\Http\Controllers\SSO\CustomAccessTokenController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +23,9 @@ use Laravel\Passport\Http\Controllers\AccessTokenController;
 
 Route::get('/oauth/authorize', [CustomAuthorizationController::class, 'customAuthorize']);
 Route::post('/oauth/token', [AccessTokenController::class, 'issueToken'])->middleware(AppendTokenResponse::class);
+
+Route::get('/oauth2/authorize', [OAuth2Controller::class, 'customAuthorize'])->middleware('web');
+Route::post('/oauth2/token', [CustomAccessTokenController::class, 'issueOAuthToken'])->middleware(AppendJWTTokenResponse::class);
 
 Route::get('/oauth/.well-known/jwks', [JwksController::class, 'getJwks']);
 

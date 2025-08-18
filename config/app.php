@@ -17,6 +17,8 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'app_token_variant' => env('APP_TOKEN_VARIANT', 'gateway'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
@@ -190,7 +192,6 @@ return [
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
-        App\Providers\FeatureServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
