@@ -7,11 +7,20 @@ use Illuminate\Support\Facades\Schema;
 return new class () extends Migration {
     public function up(): void
     {
+        if (DB::getDriverName() !== 'sqlite') {
+            Schema::table('collection_has_dataset_version', function (Blueprint $table) {
+                $table->dropForeign(['collection_id']);
+                $table->dropForeign(['dataset_version_id']);
+                $table->dropForeign(['user_id']);
+                $table->dropForeign(['application_id']);
+            });
+        }
+
         Schema::table('collection_has_dataset_version', function (Blueprint $table) {
-            $table->dropForeign(['collection_id']);
-            $table->dropForeign(['dataset_version_id']);
-            $table->dropForeign(['user_id']);
-            $table->dropForeign(['application_id']);
+            $table->dropIndex('collection_has_dataset_version_collection_id_index');
+            $table->dropIndex('collection_has_dataset_version_dataset_version_id_index');
+            $table->dropIndex('collection_has_dataset_version_user_id_index');
+            $table->dropIndex('collection_has_dataset_version_application_id_index');
         });
 
         Schema::rename('collection_has_dataset_version', 'collection_has_dataset_version_backup');
@@ -54,11 +63,20 @@ return new class () extends Migration {
 
     public function down(): void
     {
-         Schema::table('collection_has_dataset_version', function (Blueprint $table) {
-            $table->dropForeign(['collection_id']);
-            $table->dropForeign(['dataset_version_id']);
-            $table->dropForeign(['user_id']);
-            $table->dropForeign(['application_id']);
+        if (DB::getDriverName() !== 'sqlite') {
+            Schema::table('collection_has_dataset_version', function (Blueprint $table) {
+                $table->dropForeign(['collection_id']);
+                $table->dropForeign(['dataset_version_id']);
+                $table->dropForeign(['user_id']);
+                $table->dropForeign(['application_id']);
+            });
+        }
+        
+        Schema::table('collection_has_dataset_version', function (Blueprint $table) {
+            $table->dropIndex('collection_has_dataset_version_collection_id_index');
+            $table->dropIndex('collection_has_dataset_version_dataset_version_id_index');
+            $table->dropIndex('collection_has_dataset_version_user_id_index');
+            $table->dropIndex('collection_has_dataset_version_application_id_index');
         });
         
         Schema::rename('collection_has_dataset_version', 'collection_has_dataset_version_backup');
