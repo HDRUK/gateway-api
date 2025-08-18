@@ -10,13 +10,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\RedirectResponse;
 
 use App\Http\Controllers\JwtController;
-use App\Models\User;
 use App\Http\Traits\CustomIdTokenTrait;
 
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Token\Parser;
-use Lcobucci\Clock\SystemClock;
 use Lcobucci\JWT\Signer\Key\InMemory;
 
 class AppendJWTTokenResponse
@@ -44,7 +42,7 @@ class AppendJWTTokenResponse
             // Configure the parser. No validation needed, just parsing.
             $config = Configuration::forSymmetricSigner($signer, $key);
             $token = $config->parser()->parse($content['access_token']);
-            
+
             $jwtClass = new JwtController();
             /** @phpstan-ignore-next-line */
             $jwt = $jwtClass->generateToken($token->claims()->get('sub'));

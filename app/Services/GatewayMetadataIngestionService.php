@@ -8,7 +8,6 @@ use App\Models\Team;
 use App\Models\Federation;
 use App\Http\Traits\MetadataOnboard;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Collection;
 
 class GatewayMetadataIngestionService

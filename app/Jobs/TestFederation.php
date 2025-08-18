@@ -2,9 +2,6 @@
 
 namespace App\Jobs;
 
-use Http;
-use Config;
-
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -12,12 +9,8 @@ use Illuminate\Queue\InteractsWithQueue;
 // Specifically removing this as self-instantiated classes cannot be
 // serialised. See LS.
 // use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 
-use App\Models\Team;
-use App\Models\Dataset;
 use App\Models\Federation;
-use App\Models\DatasetVersion;
 use App\Http\Traits\MetadataVersioning;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
@@ -61,7 +54,7 @@ class TestFederation implements ShouldQueue
     public function handle(): array
     {
         $this->gsms = new GoogleSecretManagerService();
-        
+
         $testCall = $this->pullCatalogueList($this->federation->toArray(), $this->gsms);
         if (is_array($testCall)) {
             // Failure

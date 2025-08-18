@@ -2,28 +2,18 @@
 
 namespace App\Jobs;
 
-use App;
-use Http;
-use Config;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-use App\Models\Team;
-use App\Models\Dataset;
 use App\Models\Federation;
-use App\Models\DatasetVersion;
 use App\Http\Traits\MetadataVersioning;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
 
 use App\Traits\GatewayMetadataIngestionTrait;
-
-use MetadataManagementController as MMC;
-
-use App\Http\Controllers\Api\V2\DatasetController;
 
 class ProcessFederation implements ShouldQueue
 {
@@ -62,7 +52,7 @@ class ProcessFederation implements ShouldQueue
         $this->gsms = new GoogleSecretManagerService();
         $remoteItems = $this->pullCatalogueList($this->federation, $this->gsms);
 
-        if (empty($remoteItems)) {
+        if ($remoteItems->isEmpty()) {
             $this->log('warning', 'REMOTE catalogue returned empty "items" array - aborting');
             return;
         }
@@ -76,10 +66,20 @@ class ProcessFederation implements ShouldQueue
         $this->log('info', 'retrieved local collection items ' . json_encode($localItems));
 
         $this->deleteLocalDatasetsNotInRemoteCatalogue($localItems, $remoteItems);
-        $this->createLocalDatasetsMissingFromRemoteCatalogue($localItems, $remoteItems,
-            $this->federation, $this->gsms, $this->gmi);
-        $this->updateLocalDatasetsChangedInRemoteCatalogue($localItems, $remoteItems,
-            $this->federation, $this->gsms, $this->gmi);
+        $this->createLocalDatasetsMissingFromRemoteCatalogue(
+            $localItems,
+            $remoteItems,
+            $this->federation,
+            $this->gsms,
+            $this->gmi
+        );
+        $this->updateLocalDatasetsChangedInRemoteCatalogue(
+            $localItems,
+            $remoteItems,
+            $this->federation,
+            $this->gsms,
+            $this->gmi
+        );
 
         $this->log('info', "federation processing completed: team_id={$this->gmi->getTeam()}, fed_id={$this->federation->id},
             datasets_created={$this->created}, datasets_deleted={$this->deleted}, datasets_updated={$this->updated}");

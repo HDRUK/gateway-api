@@ -17,8 +17,7 @@ use App\Http\Traits\MetadataVersioning;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
 
-
-trait GatewayMetadataIngestionTrait 
+trait GatewayMetadataIngestionTrait
 {
     use MetadataVersioning;
 
@@ -33,8 +32,10 @@ trait GatewayMetadataIngestionTrait
 
     private function getCatalogueFromFederationModel(Federation $federation, GoogleSecretManagerService $gsms): Collection|array
     {
-        $response = Http::get($federation->endpoint_baseurl . $federation->endpoint_datasets, 
-            $this->determineAuthType($federation, $gsms));
+        $response = Http::get(
+            $federation->endpoint_baseurl . $federation->endpoint_datasets,
+            $this->determineAuthType($federation, $gsms)
+        );
         if ($response->status() === 200) {
             return collect($response->json()['items'])->keyBy('persistentId');
         }
@@ -51,8 +52,10 @@ trait GatewayMetadataIngestionTrait
 
     private function getCatalogueFromFederationArray(array $federation, GoogleSecretManagerService $gsms): Collection|array
     {
-        $response = Http::get($federation['endpoint_baseurl'] . $federation['endpoint_datasets'], 
-            $this->determineAuthType($federation, $gsms));
+        $response = Http::get(
+            $federation['endpoint_baseurl'] . $federation['endpoint_datasets'],
+            $this->determineAuthType($federation, $gsms)
+        );
         if ($response->status() === 200) {
             return collect($response->json()['items'])->keyBy('persistentId');
         }
@@ -103,11 +106,10 @@ trait GatewayMetadataIngestionTrait
         Federation $federation,
         GoogleSecretManagerService $gms,
         GatewayMetadataIngestionService $gmi
-    ): void
-    {
+    ): void {
         $toCreate = $remoteItems->keys()->diff($localItems->keys());
         foreach ($toCreate as $pid) {
-            $data = $remoteitems[$pid];
+            $data = $remoteItems[$pid];
             $response = Http::get($this->makeDatasetUrl($federation, $data), $this->determineAuthType($federation, $gms));
             if ($response->status() === 200) {
                 try {
@@ -121,7 +123,7 @@ trait GatewayMetadataIngestionTrait
                         ],
                         'pid' => $pid,
                     ];
-                    
+
                     $result = $gmi->storeMetadata($input);
                     $this->log('info', "dataset {$pid} detected in REMOTE collection, but NOT LOCALLY - CREATED");
                 } catch (\Exception $e) {
@@ -137,8 +139,7 @@ trait GatewayMetadataIngestionTrait
         Federation $federation,
         GoogleSecretManagerService $gms,
         GatewayMetadataIngestionService $gmi
-    ): void
-    {
+    ): void {
         foreach ($remoteItems as $pid => $data) {
             if ($localItems->has($pid)) {
                 $local = $localItems[$pid];
@@ -201,18 +202,18 @@ trait GatewayMetadataIngestionTrait
                         'Authorization' => 'Bearer ' . json_decode($key, true)['bearer_token'],
                     ];
                 case 'API_KEY':
-                    $key = $gsms->getSecret($ederation->auth_secret_key_location);
+                    $key = $gsms->getSecret($federation->auth_secret_key_location);
                     return [
-                        'apikey' => $key, 
+                        'apikey' => $key,
                     ];
                 case 'NO_AUTH':
                     // Nothing to do
                     return [];
                 default:
                     Log::error('unknown auth_type ' . $federation->auth_type . ' - aborting');
-                    break;
+                    return [];
             }
-        } else { 
+        } else {
             switch ($federation['auth_type']) {
                 case 'BEARER':
                     return [
@@ -226,7 +227,7 @@ trait GatewayMetadataIngestionTrait
                     return [];
                 default:
                     Log::error('unknown auth_type ' . $federation['auth_type'] . ' - aboring');
-                    break;
+                    return [];
             }
         }
     }

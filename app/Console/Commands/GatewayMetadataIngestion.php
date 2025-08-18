@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use Queue;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 

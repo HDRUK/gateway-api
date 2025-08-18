@@ -894,7 +894,8 @@ class FederationController extends Controller
         $input = $request->all();
 
         try {
-            return new TestFederation($input)->handle();
+            $testVerdict = new TestFederation($input);
+            return $testVerdict->handle();
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -903,7 +904,7 @@ class FederationController extends Controller
             ]);
             \Log::info($e->getMessage(), $loggingContext);
 
-            throw new Exception($e->getMessage());  
+            throw new Exception($e->getMessage());
         }
     }
 
