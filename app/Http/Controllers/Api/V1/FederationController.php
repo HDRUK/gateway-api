@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Jobs\SendEmailJob;
 use App\Models\Federation;
 use App\Models\TeamHasUser;
+use App\Jobs\TestFederation;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Models\EmailTemplate;
@@ -893,11 +894,8 @@ class FederationController extends Controller
         $input = $request->all();
 
         try {
-            $response = Http::withHeaders($loggingContext)->post(env('GMI_SERVICE_URL') . '/test', $input);
-            return response()->json([
-                'data' => $response->json(),
-            ], 200);
-
+            $testVerdict = new TestFederation($input);
+            return $testVerdict->handle();
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',

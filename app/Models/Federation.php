@@ -58,6 +58,7 @@ class Federation extends Model
     protected $fillable = [
         'federation_type',
         'auth_type',
+        'auth_secret_key', // Needed for testing federations, not saved to db
         'auth_secret_key_location',
         'endpoint_baseurl',
         'endpoint_datasets',
