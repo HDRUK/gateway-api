@@ -201,6 +201,10 @@ class FormHydrationController extends Controller
                 $datasets,
                 true
             );
+            $datasetDefaultValues['Dataset Type'] = $this->mostCommonValue(
+                'metadata.metadata.summary.datasetType',
+                $datasets
+            );
         }
 
         $defaultValues = array_merge($defaultValues, $datasetDefaultValues, $this->generalDefaults());
