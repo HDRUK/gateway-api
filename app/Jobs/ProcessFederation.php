@@ -65,6 +65,7 @@ class ProcessFederation implements ShouldQueue
 
         $this->log('info', 'retrieved local collection items ' . json_encode($localItems));
 
+        $this->deleteLocalDatasetsNotInRemoteCatalogue($localItems, $remoteItems);
         $this->createLocalDatasetsMissingFromRemoteCatalogue(
             $localItems,
             $remoteItems,
@@ -72,7 +73,6 @@ class ProcessFederation implements ShouldQueue
             $this->gsms,
             $this->gmi
         );
-
         $this->updateLocalDatasetsChangedInRemoteCatalogue(
             $localItems,
             $remoteItems,
@@ -81,7 +81,8 @@ class ProcessFederation implements ShouldQueue
             $this->gmi
         );
 
-        $this->deleteLocalDatasetsNotInRemoteCatalogue($localItems, $remoteItems);
+        $this->log('info', "federation processing completed: team_id={$this->gmi->getTeam()}, fed_id={$this->federation->id},
+            datasets_created={$this->created}, datasets_deleted={$this->deleted}, datasets_updated={$this->updated}");
 
         return;
     }

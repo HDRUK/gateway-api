@@ -37,7 +37,7 @@ class TestFederation implements ShouldQueue
     {
         $fed = new Federation([
             'auth_type' => $input['auth_type'],
-            'auth_secret_key' => $input['auth_secret_key'] ?? null,
+            'auth_secret_key' => $input['auth_secret_key'],
             'endpoint_baseurl' => $input['endpoint_baseurl'],
             'endpoint_datasets' => $input['endpoint_datasets'],
             'endpoint_dataset' => $input['endpoint_dataset'],
