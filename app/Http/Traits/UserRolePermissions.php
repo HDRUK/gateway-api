@@ -151,7 +151,7 @@ trait UserRolePermissions
         return $cohortRequestRoles;
     }
 
-    public function getUserWorkgroups(int $userId): array 
+    public function getUserWorkgroups(int $userId): array
     {
         $userWorkgroups = UserHasWorkgroup::where('user_id', $userId)->get();
 

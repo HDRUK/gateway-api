@@ -145,8 +145,8 @@ class ExtractToolsFromMetadata implements ShouldQueue
             ])
                 ->delete();
 
-            // note: not sure about this... 
-            // - shouldnt this be calling deleteFromElastic? 
+            // note: not sure about this...
+            // - shouldnt this be calling deleteFromElastic?
             // - you've just soft deleted it?
             $this->indexElasticTools((int) $toolId);
         }
