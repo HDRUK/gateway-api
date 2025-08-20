@@ -1,3 +1,9 @@
+## [2.21.1](https://github.com/HDRUK/gateway-api/compare/v2.21.0...v2.21.1) (2025-08-20)
+
+### 🐛 Bug Fixes
+
+* **GAT-7351:** none breaking V3 changes which actually are... (#1376) ([eae4854](https://github.com/HDRUK/gateway-api/commit/eae48547b82a47c6aca5d9031b8076838d39b881)), closes [GAT-7351](GAT-7351)
+
 ## [2.21.0](https://github.com/HDRUK/gateway-api/compare/v2.20.2...v2.21.0) (2025-08-18)
 
 ### ✨ Features
