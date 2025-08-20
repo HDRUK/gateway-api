@@ -26,11 +26,11 @@ class DataCustodianNetworksController extends Controller
     use IndexElastic;
     use GetValueByPossibleKeys;
 
-    private $datasets = [];
-    private $durs = [];
-    private $tools = [];
-    private $publications = [];
-    private $collections = [];
+    private $networkDatasets = [];
+    private $networkDurIds = [];
+    private $networkToolIds = [];
+    private $networkPublicationIds = [];
+    private $networkCollectionIds = [];
 
     /**
      * @OA\Get(
