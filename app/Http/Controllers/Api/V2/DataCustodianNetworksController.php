@@ -26,11 +26,11 @@ class DataCustodianNetworksController extends Controller
     use IndexElastic;
     use GetValueByPossibleKeys;
 
-    private $datasets = [];
-    private $durs = [];
-    private $tools = [];
-    private $publications = [];
-    private $collections = [];
+    private $networkDatasets = [];
+    private $networkDurIds = [];
+    private $networkToolIds = [];
+    private $networkPublicationIds = [];
+    private $networkCollectionIds = [];
 
     /**
      * @OA\Get(
@@ -273,7 +273,7 @@ class DataCustodianNetworksController extends Controller
                 ], 404);
             }
 
-            $teamsResult = $this->getTeams($dpc);
+            $teamsResult = $this->getTeamsDetailsAndCounts($dpc);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -288,7 +288,7 @@ class DataCustodianNetworksController extends Controller
                 'status',
                 'created_at',
                 'updated_at'
-            )->whereIn('id', $this->durs)->where('status', 'ACTIVE')->get()->toArray();
+            )->whereIn('id', $this->networkDurIds)->where('status', 'ACTIVE')->get()->toArray();
             $tools = Tool::select(
                 'id',
                 'name',
@@ -296,7 +296,7 @@ class DataCustodianNetworksController extends Controller
                 'status',
                 'created_at',
                 'updated_at'
-            )->with(['user'])->whereIn('id', $this->tools)->where('status', 'ACTIVE')->get()->toArray();
+            )->with(['user'])->whereIn('id', $this->networkToolIds)->where('status', 'ACTIVE')->get()->toArray();
             $publications = Publication::select(
                 'id',
                 'paper_title',
@@ -306,7 +306,7 @@ class DataCustodianNetworksController extends Controller
                 'status',
                 'created_at',
                 'updated_at'
-            )->whereIn('id', $this->publications)->where('status', 'ACTIVE')->get()->toArray();
+            )->whereIn('id', $this->networkPublicationIds)->where('status', 'ACTIVE')->get()->toArray();
             $collections = Collection::select(
                 'id',
                 'name',
@@ -314,7 +314,7 @@ class DataCustodianNetworksController extends Controller
                 'status',
                 'created_at',
                 'updated_at'
-            )->whereIn('id', $this->collections)->where('status', 'ACTIVE')->get()->toArray();
+            )->whereIn('id', $this->networkCollectionIds)->where('status', 'ACTIVE')->get()->toArray();
             $collections = array_map(function ($collection) {
                 if ($collection['image_link'] && !preg_match('/^https?:\/\//', $collection['image_link'])) {
                     $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
@@ -333,8 +333,8 @@ class DataCustodianNetworksController extends Controller
                 'url' => $dpc->url,
                 'service' => empty($service) ? null : $service,
                 'teams_counts' => $teamsResult,
-                'datasets_total' => count($this->datasets),
-                'datasets' => $this->datasets,
+                'datasets_total' => count($this->networkDatasets),
+                'datasets' => $this->networkDatasets,
                 'durs_total' => count($durs),
                 'durs' => $durs,
                 'tools_total' => count($tools),
@@ -762,17 +762,14 @@ class DataCustodianNetworksController extends Controller
         }
     }
 
-    public function getTeams(DataProviderColl $dp)
+    public function getTeamsDetailsAndCounts(DataProviderColl $dp)
     {
-        $idTeams = DataProviderCollHasTeam::where(['data_provider_coll_id' => $dp->id])->pluck('team_id')->toArray();
+        $teamIds = DataProviderCollHasTeam::where(['data_provider_coll_id' => $dp->id])->pluck('team_id')->toArray();
         $teamsResult = [];
 
-        foreach ($idTeams as $idTeam) {
-            $team = Team::select('id', 'name')->where(['id' => $idTeam])->first();
+        foreach ($teamIds as $teamId) {
+            $team = Team::select('id', 'name')->where(['id' => $teamId])->first();
             $counts = $this->getDatasets((int) $team->id);
-            $teamCollections = Collection::where(['team_id' => $idTeam])->where('status', 'ACTIVE')->pluck('id')->toArray();
-
-            $this->collections = array_unique([...$this->collections, ...$teamCollections]);
 
             $teamsResult[] = array_merge([
                 'name' => $team->name,
@@ -794,31 +791,45 @@ class DataCustodianNetworksController extends Controller
             'collections' => []
         ];
         foreach ($datasetIds as $datasetId) {
-            $datasetResources = $this->checkingDataset($datasetId);
+            // Note that this call also updates the class variables
+            // $networkDatasets, $networkDurIds, $networkPublicationIds, $networkCollectionIds and networkToolIds
+            // ahead of them being used in the summary function
+            $datasetResources = $this->getDatasetResourceIds($datasetId);
             foreach ($datasetResources as $k => $v) {
                 $teamResourceIds[$k] = array_unique(array_merge($v, $teamResourceIds[$k]));
             }
         }
+
+        $ownedDurIds = Dur::where(['team_id' => $teamId])->where('status', 'ACTIVE')->pluck('id')->toArray();
+        $ownedPublicationIds = Publication::where(['team_id' => $teamId])->where('status', 'ACTIVE')->pluck('id')->toArray();
+        $ownedToolIds = Tool::where(['team_id' => $teamId])->where('status', 'ACTIVE')->pluck('id')->toArray();
+        $ownedCollectionIds = Collection::where(['team_id' => $teamId])->where('status', 'ACTIVE')->pluck('id')->toArray();
+
+        // Here we combine counts of those owned by the team and those connected to Datasets owned by the team.
+        // This is why the counts on the "Data Custodian" cards on the "Data Custodian Networks" page differ from
+        // the counts on the "Data Custodian" landing page, and is a conscious design choice.
+        // Users should _not_ expect these to be the same. I believe future FE designs may make this less
+        // surprising to users when the two sets of entity links are shown separately.
         $counts = [
             'datasets_count' => count($datasetIds),
-            'durs_count' => count($teamResourceIds['durs']),
-            'publications_count' => count($teamResourceIds['publications']),
-            'tools_count' => count($teamResourceIds['tools']),
-            'collections_count' => count($teamResourceIds['collections']),
+            'durs_count' => count(array_unique(array_merge($teamResourceIds['durs'], $ownedDurIds))),
+            'publications_count' => count(array_unique(array_merge($teamResourceIds['publications'], $ownedPublicationIds))),
+            'tools_count' => count(array_unique(array_merge($teamResourceIds['tools'], $ownedToolIds))),
+            'collections_count' => count(array_unique(array_merge($teamResourceIds['collections'], $ownedCollectionIds))),
         ];
 
         return $counts;
     }
 
-    public function checkingDataset(int $datasetId)
+    public function getDatasetResourceIds(int $datasetId)
     {
         $dataset = Dataset::where(['id' => $datasetId])->first();
 
         // Accessed through the accessor
-        $durIds = array_column($dataset->allDurs, 'id') ?? [];
-        $collectionIds = array_column($dataset->allCollections, 'id') ?? [];
-        $publicationIds = array_column($dataset->allPublications, 'id') ?? [];
-        $toolIds = array_column($dataset->allTools, 'id') ?? [];
+        $durIds = array_column($dataset->allActiveDurs, 'id') ?? [];
+        $collectionIds = array_column($dataset->allActiveCollections, 'id') ?? [];
+        $publicationIds = array_column($dataset->allActivePublications, 'id') ?? [];
+        $toolIds = array_column($dataset->allActiveTools, 'id') ?? [];
 
         $version = $dataset->latestVersion();
         $withLinks = DatasetVersion::where('id', $version['id'])
@@ -839,7 +850,7 @@ class DataCustodianNetworksController extends Controller
             ]);
         }
 
-        $this->datasets[] = [
+        $this->networkDatasets[] = [
             'id' => $dataset->id,
             'status' => $dataset->status,
             'title' => $title,
@@ -847,10 +858,10 @@ class DataCustodianNetworksController extends Controller
             'datasetType' => $datasetType
         ];
 
-        $this->durs = array_unique(array_merge($this->durs, $durIds));
-        $this->publications = array_unique(array_merge($this->publications, $publicationIds));
-        $this->tools = array_unique(array_merge($this->tools, $toolIds));
-        $this->collections = array_unique(array_merge($this->collections, $collectionIds));
+        $this->networkDurIds = array_unique(array_merge($this->networkDurIds, $durIds));
+        $this->networkPublicationIds = array_unique(array_merge($this->networkPublicationIds, $publicationIds));
+        $this->networkToolIds = array_unique(array_merge($this->networkToolIds, $toolIds));
+        $this->networkCollectionIds = array_unique(array_merge($this->networkCollectionIds, $collectionIds));
 
         $datasetResources = [
             'durs' => $durIds,
