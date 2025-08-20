@@ -238,7 +238,7 @@ class SearchController extends Controller
                 $datasetsArray[$i]['team']['id'] = $model['team']['id'];
                 $datasetsArray[$i]['team']['is_question_bank'] = $model['team']['is_question_bank'];
                 $teamDARTemplates = DataAccessTemplate::where([['team_id', $model['team']['id']], ['published', 1]])->get();
-                $datasetsArray[$i]['team']['has_dar_template_published'] = !$teamDARTemplates->isEmpty();
+                $datasetsArray[$i]['team']['has_published_dar_template'] = !$teamDARTemplates->isEmpty();
                 $datasetsArray[$i]['team']['name'] = $model['team']['name'];
                 $datasetsArray[$i]['team']['member_of'] = $model['team']['member_of'];
                 $datasetsArray[$i]['team']['is_dar'] = $model['team']['is_dar'];
