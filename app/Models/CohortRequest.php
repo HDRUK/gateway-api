@@ -137,7 +137,11 @@ class CohortRequest extends Model
             return $query;
         }
         return $query->whereHas('user', function ($query) use ($values) {
-            $query->whereIn('request_status', $values);
+            if (in_array("NULL", $values)) {
+                $query->whereIn('request_status', $values)->orWhere('request_status', null);
+            } else {
+                $query->whereIn('request_status', $values);
+            }
         });
     }
 
@@ -147,7 +151,11 @@ class CohortRequest extends Model
             return $query;
         }
         return $query->whereHas('user', function ($query) use ($values) {
-            $query->whereIn('nhse_sde_request_status', $values);
+            if (in_array("NULL", $values)) {
+                $query->whereIn('nhse_sde_request_status', $values)->orWhere('nhse_sde_request_status', null);
+            } else {
+                $query->whereIn('nhse_sde_request_status', $values);
+            }
         });
     }
 
