@@ -14,9 +14,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-use App\Models\Workgroup;
-use App\Models\UserHasWorkgroup;
-
 class User extends Authenticatable
 {
     use HasFactory;

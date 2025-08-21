@@ -4,7 +4,6 @@ namespace App\Http\Controllers\SSO;
 
 use App\Models\OauthUser;
 use Illuminate\Http\Request;
-use Laravel\Passport\Passport;
 use Laravel\Passport\Bridge\User;
 use App\Http\Controllers\Controller;
 use Laravel\Passport\ClientRepository;
@@ -14,7 +13,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use League\OAuth2\Server\AuthorizationServer;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Laravel\Passport\Http\Controllers\RetrievesAuthRequestFromSession;
-
 
 class OAuth2Controller extends Controller
 {
@@ -53,7 +51,7 @@ class OAuth2Controller extends Controller
             $authRequest->setUser($user);
             $authRequest->setAuthorizationApproved(true);
 
-            return $this->server->completeAuthorizationRequest($authRequest, new Psr7Response);
+            return $this->server->completeAuthorizationRequest($authRequest, new Psr7Response());
         });
     }
 }

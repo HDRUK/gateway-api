@@ -8,6 +8,7 @@ use App\Models\Dur;
 use App\Models\Dataset;
 use Illuminate\Support\Arr;
 use App\Models\DatasetVersion;
+use App\Models\DataAccessTemplate;
 use MetadataManagementController as MMC;
 use App\Http\Requests\V2\Dataset\GetDataset;
 
@@ -84,6 +85,10 @@ trait DatasetsV2Helpers
         } elseif ($outputSchemaModelVersion) {
             throw new Exception('You have given a schema_version but not schema_model');
         }
+
+        $teamPublishedDARTemplates = DataAccessTemplate::where([['team_id', $dataset['team']['id']], ['published', 1]])->pluck('id');
+        $dataset['team']['has_published_dar_template'] = !$teamPublishedDARTemplates->isEmpty();
+
         return $dataset;
     }
 

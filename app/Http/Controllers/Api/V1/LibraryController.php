@@ -9,6 +9,7 @@ use App\Models\Library;
 use App\Models\Dataset;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Models\DataAccessTemplate;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnauthorizedException;
@@ -106,6 +107,7 @@ class LibraryController extends Controller
             $transformedLibraries = $libraries->getCollection()->map(function ($library) {
                 $dataset = $library->dataset;
                 $team = $dataset->team;
+                $teamPublishedDARTemplates = DataAccessTemplate::where([['team_id', $team->id], ['published', 1]])->pluck('id');
 
                 // Using dynamic attributes to avoid undefined property error
                 $library->setAttribute('dataset_id', (int)$dataset->id);
@@ -114,7 +116,8 @@ class LibraryController extends Controller
                 $library->setAttribute('data_provider_id', $team->id);
                 $library->setAttribute('data_provider_dar_status', $team->uses_5_safes);
                 $library->setAttribute('data_provider_name', $team->name);
-                $library->setAttribute('data_provider_dar_enabled', $team->is_question_bank);
+                $library->setAttribute('data_provider_dar_enabled', !$teamPublishedDARTemplates->isEmpty());
+                $library->setAttribute('data_provider_published_dar_template', $team->is_question_bank);
                 $library->setAttribute('data_provider_member_of', $team->member_of);
                 $library->setAttribute('dataset_is_cohort_discovery', $dataset->is_cohort_discovery);
 
