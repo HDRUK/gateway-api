@@ -54,7 +54,8 @@ class AliasReplyScannerService
     public function getSanitisedBody($message)
     {
         $body = $message->getHTMLBody();
-        $sanitized = strip_tags($body);
+        //\Log::info($body);
+        $sanitized = strip_tags($body, "<br>");
         return $sanitized;
     }
     public function checkBodyIsSensible($text)
@@ -63,7 +64,7 @@ class AliasReplyScannerService
         $text = preg_replace('/[^a-zA-Z0-9\s]/', '', $text);
 
         // Tokenize the text into words
-        $words = str_word_count($text, 1);
+        $words = str_word_count($text, format: 1);
 
         if (count($words) == 0) {
             return false;
@@ -101,6 +102,7 @@ class AliasReplyScannerService
     public function scrapeAndStoreContent($message, $threadId)
     {
         $body = $this->getSanitisedBody($message);
+        \Log::info($body);
         $from = $message->getFrom();
         $pos1 = strpos($from, '<');
         $pos2 = strpos($from, '>');
@@ -116,6 +118,7 @@ class AliasReplyScannerService
         ]);
 
         $this->notifyDarManagesOfNewMessage($threadId);
+        $this->notifyUserOfDarResponse($threadId);
 
         unset($body);
         unset($from);
@@ -126,6 +129,57 @@ class AliasReplyScannerService
     public function deleteMessage($message)
     {
         return $message->delete($expunge = true);
+    }
+
+    public function notifyUserOfDarResponse($threadId) {
+        $enquiryThread = EnquiryThread::where('id', $threadId)->first();
+        $user = User::where([
+            'id' => $enquiryThread->user_id,
+        ])->first();
+        $enquiryMessage = EnquiryMessage::where([
+            'thread_id' => $threadId,
+        ])->latest()->first();
+        \Log::info($enquiryThread->user_id);
+        $enquiryMessage = EnquiryMessage::where([
+            'thread_id' => $threadId,
+        ])->latest()->first();
+        $uniqueKey = $enquiryThread->unique_key;
+        $usersToNotify[] = [
+                        'user' => $user->toArray(),
+                        'team' => null,
+                    ];
+
+        $usersToNotify[0]['user']['email'] = $enquiryThread->user_preferred_email === "primary" ? $user->email : $user->secondary_email;
+
+        \Log::info("users to notify", $usersToNotify);
+
+        $payload = [
+            'thread' => [
+                'user_id' => $enquiryThread->user_id,
+                'user_preferred_email' => $enquiryThread->user_preferred_email,
+                'team_ids' => [$enquiryThread->team_id],
+                'project_title' => $enquiryThread->project_title,
+                'unique_key' => $uniqueKey,
+            ],
+            'message' => [
+                'from' => $enquiryMessage->from,
+                'message_body' => [
+                    '[[USER_FIRST_NAME]]' => $user->firstname,
+                    '[[USER_LAST_NAME]]' => $user->lastname,
+                    '[[USER_ORGANISATION]]' => $user->organisation,
+                    '[[PROJECT_TITLE]]' => $enquiryThread->project_title,
+                    '[[CURRENT_YEAR]]' => date('Y'),
+                    '[[SENDER_NAME]]' => $enquiryMessage->from,
+                ],
+            ],
+        ];
+
+        $messageBody = $enquiryMessage->message_body;
+        $lines = preg_split('/\r\n|\r|\n/', $messageBody);
+        $cleanedText = implode("\n", array_filter($lines));
+        $body = trim(str_replace('P {margin-top:0;margin-bottom:0;}', '', str_replace(["\r\n", "\n"], "<br/>", $cleanedText)));
+        $this->sendEmail('dar.notifymessage', $payload, $usersToNotify, $enquiryThread->user_id, $body);
+
     }
 
     public function notifyDarManagesOfNewMessage($threadId)
@@ -175,7 +229,7 @@ class AliasReplyScannerService
                     '[[USER_LAST_NAME]]' => $user->lastname,
                     '[[USER_ORGANISATION]]' => $user->organisation,
                     '[[PROJECT_TITLE]]' => $enquiryThread->project_title,
-                    '[[CURRENT_YEAR]]' => date('Y'),
+                    '[[CURRENT_YEAR]]' => date(format: 'Y'),
                     '[[SENDER_NAME]]' => $enquiryMessage->from,
                 ],
             ],
@@ -205,7 +259,7 @@ class AliasReplyScannerService
         $something = null;
 
         $imapUsername = env('ARS_IMAP_USERNAME', 'devreply@healthdatagateway.org');
-        list($username, $domain) = explode('@', $imapUsername);
+        list($username, $domain) = explode('@', string: $imapUsername);
 
         try {
             $template = EmailTemplate::where('identifier', $ident)->first();
