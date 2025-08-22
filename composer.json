@@ -19,6 +19,7 @@
         "elasticsearch/elasticsearch": "^8.10",
         "google/cloud-logging": "^1.30",
         "google/cloud-pubsub": "^2.1",
+        "google/cloud-secret-manager": "^2.1",
         "guzzlehttp/guzzle": "^7.2",
         "intervention/image": "^3.7",
         "jumbojett/openid-connect-php": "dev-update-redirect-return",

@@ -178,7 +178,6 @@ trait MetadataOnboard
                 'response' => $traserResponse,
             ];
         }
-
     }
 
     private function mapCoverage(array $metadata, DatasetVersion $version): void
