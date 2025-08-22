@@ -116,6 +116,7 @@ class AliasReplyScannerService
         ]);
 
         $this->notifyDarManagesOfNewMessage($threadId);
+        $this->notifyUserOfDarResponse($threadId);
 
         unset($body);
         unset($from);
@@ -126,6 +127,52 @@ class AliasReplyScannerService
     public function deleteMessage($message)
     {
         return $message->delete($expunge = true);
+    }
+
+    public function notifyUserOfDarResponse($threadId) {
+        $enquiryThread = EnquiryThread::where('id', $threadId)->first();
+        $user = User::where([
+            'id' => $enquiryThread->user_id,
+        ])->first();
+        $enquiryMessage = EnquiryMessage::where([
+            'thread_id' => $threadId,
+        ])->latest()->first();
+
+        $uniqueKey = $enquiryThread->unique_key;
+        $usersToNotify[] = [
+                        'user' => $user->toArray(),
+                        'team' => null,
+                    ];
+
+        $usersToNotify[0]['user']['email'] = $enquiryThread->user_preferred_email === "primary" ? $user->email : $user->secondary_email;
+
+        $payload = [
+            'thread' => [
+                'user_id' => $enquiryThread->user_id,
+                'user_preferred_email' => $enquiryThread->user_preferred_email,
+                'team_ids' => [$enquiryThread->team_id],
+                'project_title' => $enquiryThread->project_title,
+                'unique_key' => $uniqueKey,
+            ],
+            'message' => [
+                'from' => $enquiryMessage->from,
+                'message_body' => [
+                    '[[USER_FIRST_NAME]]' => $user->firstname,
+                    '[[USER_LAST_NAME]]' => $user->lastname,
+                    '[[USER_ORGANISATION]]' => $user->organisation,
+                    '[[PROJECT_TITLE]]' => $enquiryThread->project_title,
+                    '[[CURRENT_YEAR]]' => date('Y'),
+                    '[[SENDER_NAME]]' => $enquiryMessage->from,
+                ],
+            ],
+        ];
+
+        $messageBody = $enquiryMessage->message_body;
+        $lines = preg_split('/\r\n|\r|\n/', $messageBody);
+        $cleanedText = implode("\n", array_filter($lines));
+        $body = trim(str_replace('P {margin-top:0;margin-bottom:0;}', '', str_replace(["\r\n", "\n"], "<br/>", $cleanedText)));
+        $this->sendEmail('dar.notifymessage', $payload, $usersToNotify, $enquiryThread->user_id, $body);
+
     }
 
     public function notifyDarManagesOfNewMessage($threadId)
