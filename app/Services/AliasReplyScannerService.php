@@ -63,7 +63,7 @@ class AliasReplyScannerService
         $text = preg_replace('/[^a-zA-Z0-9\s]/', '', $text);
 
         // Tokenize the text into words
-        $words = str_word_count($text, format: 1);
+        $words = str_word_count($text, 1);
 
         if (count($words) == 0) {
             return false;
@@ -222,7 +222,7 @@ class AliasReplyScannerService
                     '[[USER_LAST_NAME]]' => $user->lastname,
                     '[[USER_ORGANISATION]]' => $user->organisation,
                     '[[PROJECT_TITLE]]' => $enquiryThread->project_title,
-                    '[[CURRENT_YEAR]]' => date(format: 'Y'),
+                    '[[CURRENT_YEAR]]' => date('Y'),
                     '[[SENDER_NAME]]' => $enquiryMessage->from,
                 ],
             ],
@@ -252,7 +252,7 @@ class AliasReplyScannerService
         $something = null;
 
         $imapUsername = env('ARS_IMAP_USERNAME', 'devreply@healthdatagateway.org');
-        list($username, $domain) = explode('@', string: $imapUsername);
+        list($username, $domain) = explode('@', $imapUsername);
 
         try {
             $template = EmailTemplate::where('identifier', $ident)->first();
