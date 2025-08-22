@@ -54,7 +54,6 @@ class AliasReplyScannerService
     public function getSanitisedBody($message)
     {
         $body = $message->getHTMLBody();
-        //\Log::info($body);
         $sanitized = strip_tags($body, "<br>");
         return $sanitized;
     }
@@ -102,7 +101,6 @@ class AliasReplyScannerService
     public function scrapeAndStoreContent($message, $threadId)
     {
         $body = $this->getSanitisedBody($message);
-        \Log::info($body);
         $from = $message->getFrom();
         $pos1 = strpos($from, '<');
         $pos2 = strpos($from, '>');
@@ -139,10 +137,7 @@ class AliasReplyScannerService
         $enquiryMessage = EnquiryMessage::where([
             'thread_id' => $threadId,
         ])->latest()->first();
-        \Log::info($enquiryThread->user_id);
-        $enquiryMessage = EnquiryMessage::where([
-            'thread_id' => $threadId,
-        ])->latest()->first();
+
         $uniqueKey = $enquiryThread->unique_key;
         $usersToNotify[] = [
                         'user' => $user->toArray(),
@@ -150,8 +145,6 @@ class AliasReplyScannerService
                     ];
 
         $usersToNotify[0]['user']['email'] = $enquiryThread->user_preferred_email === "primary" ? $user->email : $user->secondary_email;
-
-        \Log::info("users to notify", $usersToNotify);
 
         $payload = [
             'thread' => [
