@@ -1,3 +1,10 @@
+## [2.21.2](https://github.com/HDRUK/gateway-api/compare/v2.21.1...v2.21.2) (2025-08-22)
+
+### 🐛 Bug Fixes
+
+* **GAT-7678:** Brings GMI into API to reduce significant complexity (#1370) ([7ae0911](https://github.com/HDRUK/gateway-api/commit/7ae0911a05f49e91d40188b5c97f049b07a33bb1)), closes [GAT-7678](GAT-7678)
+* **GAT-7678:** null check on auth_secret_key (#1380) ([aabb13c](https://github.com/HDRUK/gateway-api/commit/aabb13cc3b1cc0e5c6b386c02b30ff149df8d341)), closes [GAT-7678](GAT-7678)
+
 ## [2.21.1](https://github.com/HDRUK/gateway-api/compare/v2.21.0...v2.21.1) (2025-08-20)
 
 ### 🐛 Bug Fixes
