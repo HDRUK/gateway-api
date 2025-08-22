@@ -54,7 +54,7 @@ class AliasReplyScannerService
     public function getSanitisedBody($message)
     {
         $body = $message->getHTMLBody();
-        $sanitized = strip_tags($body, "<br>");
+        $sanitized = strip_tags($body);
         return $sanitized;
     }
     public function checkBodyIsSensible($text)
