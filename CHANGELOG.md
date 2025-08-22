@@ -1,3 +1,9 @@
+## [2.21.3](https://github.com/HDRUK/gateway-api/compare/v2.21.2...v2.21.3) (2025-08-22)
+
+### 🐛 Bug Fixes
+
+* **GAT-1234:** Update env for API ([beb8f65](https://github.com/HDRUK/gateway-api/commit/beb8f65f69393ad9de52c6d4f29b4d722d4df1a9)), closes [GAT-1234](GAT-1234)
+
 ## [2.21.2](https://github.com/HDRUK/gateway-api/compare/v2.21.1...v2.21.2) (2025-08-22)
 
 ### 🐛 Bug Fixes
