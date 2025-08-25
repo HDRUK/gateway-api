@@ -867,6 +867,7 @@ class CohortRequestController extends Controller
                         'OrcId',
                         'Profile Updated At',
                         'Status',
+                        'Access To Environment',
                         'Date Requested',
                         'Date Actioned',
                         'Live',
@@ -882,7 +883,7 @@ class CohortRequestController extends Controller
 
                     // add the given number of rows to the file.
                     foreach ($result as $rowDetails) {
-                        if (!is_null($rowDetails['user'])){
+                        if (!is_null($rowDetails['user'])) {
                             $row = [
                                 (string)$rowDetails['user']['id'],
                                 (string)$rowDetails['user']['name'],
@@ -896,6 +897,7 @@ class CohortRequestController extends Controller
                                 (string)$rowDetails['user']['orcid'],
                                 (string)$rowDetails['user']['updated_at'],
                                 (string)$rowDetails['request_status'],
+                                (string)$rowDetails['access_to_env'],
                                 (string)$rowDetails['created_at'],
                                 (string)$rowDetails['updated_at'],
                                 (string)$rowDetails['accept_declaration'],

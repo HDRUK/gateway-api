@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Http\Traits\IndexElastic;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
@@ -23,6 +24,7 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
     use Queueable;
     use SerializesModels;
     use LoggingContext;
+    use IndexElastic;
 
     private int $datasetVersionId = 0;
     private ?array $loggingContext = null;
@@ -57,9 +59,9 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
         $linkagePublicationUsingDataset = 'metadata.linkage.publicationUsingDataset';
 
         $metadata = \DB::table('dataset_versions')
-                ->where('id', $datasetVersionId)
-                ->select('id', 'dataset_id', 'metadata', \DB::raw('JSON_TYPE(metadata) as metadata_type'))
-                ->first();
+            ->where('id', $datasetVersionId)
+            ->select('id', 'dataset_id', 'metadata', \DB::raw('JSON_TYPE(metadata) as metadata_type'))
+            ->first();
 
         if (is_null($metadata)) {
             \Log::warning('ExtractPublicationsFromMetadata :: Metadata not found.', $this->loggingContext);
@@ -126,6 +128,8 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
                 $pub = Publication::where('id', $publicationId)->first();
                 if (!is_null($pub)) {
                     $this->createLinkPublicationDatasetVersion($publicationId, $datasetVersionId, $type);
+                    $this->indexElasticPublication((string) $publicationId);
+
                     continue;
                 }
             }
@@ -135,6 +139,8 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
             if (!is_null($checkPublication)) {
                 \Log::warning('ExtractPublicationsFromMetadata :: Publication already exists.', $this->loggingContext);
                 $this->createLinkPublicationDatasetVersion($checkPublication->id, $datasetVersionId, $type);
+                $this->indexElasticPublication((string) $checkPublication->id);
+
                 continue;
             }
 
@@ -181,6 +187,7 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
                 );
 
                 $this->createLinkPublicationDatasetVersion($publicationId, $datasetVersionId, $type);
+                $this->indexElasticPublication((string) $publicationId);
 
                 continue;
             }

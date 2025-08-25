@@ -144,4 +144,11 @@ class User extends Authenticatable
         return $this->hasMany(CohortRequest::class);
     }
 
+    public function workgroups(): BelongsToMany
+    {
+        return $this->belongsToMany(Workgroup::class, 'user_has_workgroups')
+            ->withPivot('user_id', 'workgroup_id')
+            ->orderBy('user_has_workgroups.workgroup_id');
+    }
+
 }

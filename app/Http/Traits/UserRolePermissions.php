@@ -4,11 +4,13 @@ namespace App\Http\Traits;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Models\Workgroup;
 use App\Models\Permission;
 use App\Models\TeamHasUser;
 use App\Models\UserHasRole;
 use App\Models\CohortRequest;
 use App\Models\TeamUserHasRole;
+use App\Models\UserHasWorkgroup;
 use App\Models\RoleHasPermission;
 use App\Exceptions\UnauthorizedException;
 use App\Models\CohortRequestHasPermission;
@@ -147,5 +149,19 @@ trait UserRolePermissions
         $cohortRequestRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
 
         return $cohortRequestRoles;
+    }
+
+    public function getUserWorkgroups(int $userId): array
+    {
+        $userWorkgroups = UserHasWorkgroup::where('user_id', $userId)->get();
+
+        if (!$userWorkgroups) {
+            return [];
+        }
+
+        $workgroupIds = $userWorkgroups->pluck('workgroup_id')->toArray();
+        $workgroups = Workgroup::whereIn('id', $workgroupIds)->pluck('name')->toArray();
+
+        return [ config('app.default_system') => $workgroups ];
     }
 }

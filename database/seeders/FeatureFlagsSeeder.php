@@ -18,5 +18,10 @@ class FeatureFlagsSeeder extends Seeder
             ['key' => 'Aliases'],
             ['enabled' => true]
         );
+
+        FeatureFlag::updateOrCreate(
+            ['key' => 'NhsSdeApplicationsEnabled'],
+            ['enabled' => false]
+        );
     }
 }

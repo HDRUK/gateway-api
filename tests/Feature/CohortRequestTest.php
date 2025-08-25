@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
-use App\Models\User;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasPermission;
 use Tests\Traits\Authorization;
