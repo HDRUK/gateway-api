@@ -27,6 +27,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use ZipArchive;
 
@@ -325,6 +326,8 @@ class TeamDataAccessApplicationController extends Controller
             $this->getApplicationWithQuestions($application);
             $application = $application->toArray();
 
+            \Log::info("Application", $application);
+
             if ($groupArrays) {
                 $questionsGrouped = $this->groupArraySections($application);
                 $application = array_merge($application, ['questions' => $questionsGrouped]);
@@ -554,7 +557,43 @@ class TeamDataAccessApplicationController extends Controller
         }
     }
 
-    public function downloadAllFiles(GetDataAccessApplication $request, int $teamId, int $id): StreamedResponse | JsonResponse
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/files/downloadAll",
+     *      summary="Download a file associated with a DAR application",
+     *      description="Download a file associated with a DAR application",
+     *      tags={"DataAccessApplication"},
+     *      summary="DataAccessApplication@downloadFile",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DAR application id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR application id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\MediaType(
+     *              mediaType="file"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function downloadAllFiles(GetDataAccessApplication $request, int $teamId, int $id): BinaryFileResponse | JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -578,23 +617,25 @@ class TeamDataAccessApplicationController extends Controller
                 ]);
 
                 $files = $uploads->all();
-
                 $zip = new ZipArchive();
 
-                $zipFilename = env('SCANNING_FILESYSTEM_DISK', 'local_scan') + "/" + time() + "_$id.zip";
+                $zipFilename = "/tmp/" . time() . "_$id.zip";
 
+                \Log::info($zipFilename);
                 if (!$zip->open($zipFilename, ZipArchive::CREATE)) {
                     throw new InternalServerErrorException("Zip file creation failed");
                 }
 
                 foreach ($files as $f) {
-                    $zip->addFile(Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')->path($f->file_location));
+                    $filePath = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')->path($f->file_location);
+                    $fileNameInZip = basename($f->file_location);
+                    $zip->addFile($filePath, $fileNameInZip);
                 }
 
                 $zip->close();
 
-                return Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
-                    ->download($zipFilename);            }
+                return response()->download($zipFilename);
+            }
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
