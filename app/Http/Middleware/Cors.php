@@ -19,8 +19,6 @@ class Cors
             $allowed[] = $dta;
         }
 
-        $isLocalhost = $origin && preg_match('#^https?://(localhost|127\.0\.0\.1)(:\d+)?$#', $origin);
-
         $headers = [
             'Access-Control-Allow-Credentials' => 'true',
             'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
@@ -28,7 +26,7 @@ class Cors
             'Vary' => 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
         ];
 
-        if ($origin && (in_array($origin, $allowed, true) || $isLocalhost)) {
+        if ($origin && (in_array($origin, $allowed, true))) {
             $headers['Access-Control-Allow-Origin'] = $origin;
         }
 
