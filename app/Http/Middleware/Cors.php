@@ -11,18 +11,22 @@ class Cors
     {
         $origin = $request->headers->get('origin');
 
-        $allowedOrigins = [
-            env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN'),
-            env('DTA_URL')
-        ];
+        $list = env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN', '');
+        $allowedOrigins = array_filter(array_map('trim', explode(',', $list)));
+
+        $dta = trim((string) env('DTA_URL', ''));
+        if ($dta !== '') {
+            $allowed[] = $dta;
+        }
 
         $headers = [
             'Access-Control-Allow-Credentials' => 'true',
             'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
             'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization, x-request-session-id',
+            'Vary' => 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
         ];
 
-        if (in_array($origin, $allowedOrigins)) {
+        if ($origin && (in_array($origin, $allowedOrigins, true))) {
             $headers['Access-Control-Allow-Origin'] = $origin;
         }
 
@@ -32,7 +36,7 @@ class Cors
 
         $response = $next($request);
         foreach ($headers as $key => $value) {
-            $response->headers->add([$key => $value]);
+            $response->headers->set($key, $value, false);
         }
 
         return $response;
