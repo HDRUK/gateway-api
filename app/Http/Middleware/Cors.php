@@ -12,7 +12,7 @@ class Cors
         $origin = $request->headers->get('origin');
 
         $list = env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN', '');
-        $allowed = array_filter(array_map('trim', explode(',', $list)));
+        $allowedOrigins = array_filter(array_map('trim', explode(',', $list)));
 
         $dta = trim((string) env('DTA_URL', ''));
         if ($dta !== '') {
@@ -26,7 +26,7 @@ class Cors
             'Vary' => 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
         ];
 
-        if ($origin && (in_array($origin, $allowed, true))) {
+        if ($origin && (in_array($origin, $allowedOrigins, true))) {
             $headers['Access-Control-Allow-Origin'] = $origin;
         }
 
