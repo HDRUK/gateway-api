@@ -420,9 +420,11 @@ class TeamDataAccessApplicationController extends Controller
                 'description' => 'DataAccessApplication answers getCsv ' . $id,
             ]);
 
+            $filename = '"dar_application_' . $id . '.csv"';
+
             $headers = [
                 'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="export.csv"',
+                'Content-Disposition' => 'attachment; filename=' . $filename,
             ];
 
             return response()->stream(
@@ -438,11 +440,12 @@ class TeamDataAccessApplicationController extends Controller
 
                     $answers = DataAccessApplicationAnswer::where('application_id', $id)->get();
 
+                    // Match questions to answers
                     foreach ($application['questions'] as $q) {
                         foreach ($answers as $ans) {
                             if ($ans['question_id'] == $q['question_id']) {
                                 $val = $ans['answer'];
-                                // If it's an array it contains files
+                                // If it's an array it's a file field
                                 if (is_array($val)) {
                                     // Handle if it contains one or multiple files
                                     $filenames = is_array($val['value'][0] ?? null)
@@ -457,15 +460,9 @@ class TeamDataAccessApplicationController extends Controller
                     }
                     fclose($f);
                 },
-                200,
+                (int)Config::get('statuscodes.STATUS_OK.code'),
                 $headers,
             );
-
-            /*return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $txt,
-            ], Config::get('statuscodes.STATUS_OK.code'));*/
-
         } catch (UnauthorizedException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
