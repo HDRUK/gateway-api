@@ -9,30 +9,36 @@ class Cors
 {
     public function handle(Request $request, Closure $next)
     {
-        $origin = $request->headers->get('origin');
+        $origin = $request->headers->get('Origin');
 
-        $allowedOrigins = [
-            env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN'),
-            env('DTA_URL')
-        ];
+        $list = env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN', '');
+        $allowed = array_filter(array_map('trim', explode(',', $list)));
+
+        $dta = trim((string) env('DTA_URL', ''));
+        if ($dta !== '') {
+            $allowed[] = $dta;
+        }
+
+        $isLocalhost = $origin && preg_match('#^https?://(localhost|127\.0\.0\.1)(:\d+)?$#', $origin);
 
         $headers = [
+            'Access-Control-Allow-Methods'  => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers'  => $request->headers->get('Access-Control-Request-Headers', 'Content-Type, Authorization, Origin, X-Requested-With, Accept, x-request-session-id'),
             'Access-Control-Allow-Credentials' => 'true',
-            'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization, x-request-session-id',
+            'Vary' => 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
         ];
 
-        if (in_array($origin, $allowedOrigins)) {
+        if ($origin && (in_array($origin, $allowed, true) || $isLocalhost)) {
             $headers['Access-Control-Allow-Origin'] = $origin;
         }
 
         if ($request->getMethod() === 'OPTIONS') {
-            return response('OK')->withHeaders($headers);
+            return response()->noContent(204)->withHeaders($headers);
         }
 
         $response = $next($request);
         foreach ($headers as $key => $value) {
-            $response->headers->add([$key => $value]);
+            $response->headers->set($key, $value, false);
         }
 
         return $response;
