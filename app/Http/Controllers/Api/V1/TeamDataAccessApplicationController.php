@@ -326,8 +326,6 @@ class TeamDataAccessApplicationController extends Controller
             $this->getApplicationWithQuestions($application);
             $application = $application->toArray();
 
-            \Log::info("Application", $application);
-
             if ($groupArrays) {
                 $questionsGrouped = $this->groupArraySections($application);
                 $application = array_merge($application, ['questions' => $questionsGrouped]);
@@ -353,6 +351,121 @@ class TeamDataAccessApplicationController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+    
+    /**
+     * @OA\Get(
+     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/answers",
+     *      summary="Return answers from a single DAR application",
+     *      description="Return answers from a single DAR application",
+     *      tags={"DataAccessApplication"},
+     *      summary="DataAccessApplication@showAnswers",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DAR application id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR application id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="answers", type="array", @OA\Items()),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function getCsv(GetDataAccessApplication $request, int $teamId, int $id): StreamedResponse | JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $this->checkTeamAccess($teamId, $id, 'view');
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'DataAccessApplication answers getCsv ' . $id,
+            ]);
+
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="export.csv"',
+            ];
+
+            return response()->stream(
+                function () use ($id){
+                    $f = fopen('php://output', 'w');
+
+                    $application = DataAccessApplication::where('id', $id)
+                        ->with(['questions'])
+                        ->first();
+
+                    $this->getApplicationWithQuestions($application);
+                    $application = $application->toArray();
+
+                    $answers = DataAccessApplicationAnswer::where('application_id', $id)->get();
+
+                    foreach ($application['questions'] as $q) {
+                        foreach ($answers as $ans) {
+                            if ($ans['question_id'] == $q['question_id']) {
+                                $val = $ans['answer'];
+                                // If it's an array it contains files
+                                if (is_array($val)) {
+                                    // Handle if it contains one or multiple files
+                                    $filenames = is_array($val['value'][0] ?? null)
+                                        ? array_column($val['value'], 'filename')
+                                        : [$val['value']['filename'] ?? null];
+                                    $val = implode(",", $filenames);
+                                } 
+                                $line = ["question" => $q['title'], "answer" => $val ];
+                                fputcsv($f, $line);
+                            }
+                        }
+                    }
+                    fclose($f);
+                },
+                200,
+                $headers,
+            );
+
+            /*return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $txt,
+            ], Config::get('statuscodes.STATUS_OK.code'));*/
+
         } catch (UnauthorizedException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
@@ -613,7 +726,7 @@ class TeamDataAccessApplicationController extends Controller
                     'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'GET',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'DataAccessApplication list files ' . $id,
+                    'description' => 'DataAccessApplication download all files ' . $id,
                 ]);
 
                 $files = $uploads->all();
