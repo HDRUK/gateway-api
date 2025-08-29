@@ -4144,7 +4144,7 @@ return [
         'name' => 'dar/applications',
         'method' => 'get',
         'path' => '/teams/{teamId}/dar/applications/{id}/downloadCsv',
-        'methodController' => 'TeamDataAccessApplicationController@getCsv',
+        'methodController' => 'TeamDataAccessApplicationController@downloadCsv',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',

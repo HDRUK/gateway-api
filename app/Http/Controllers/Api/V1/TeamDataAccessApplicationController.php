@@ -369,11 +369,11 @@ class TeamDataAccessApplicationController extends Controller
     
     /**
      * @OA\Get(
-     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/answers",
-     *      summary="Return answers from a single DAR application",
-     *      description="Return answers from a single DAR application",
+     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/downloadCsv",
+     *      summary="Returns a DAR form in CSV format",
+     *      description="Returns a DAR form in CSV format",
      *      tags={"DataAccessApplication"},
-     *      summary="DataAccessApplication@showAnswers",
+     *      summary="DataAccessApplication@downloadCsv",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -389,13 +389,9 @@ class TeamDataAccessApplicationController extends Controller
      *      @OA\Response(
      *          response=200,
      *          description="Success",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="answers", type="array", @OA\Items()),
-     *              )
-     *          ),
+     *          @OA\MediaType(
+     *              mediaType="file"
+     *          )
      *      ),
      *      @OA\Response(
      *          response=404,
@@ -406,7 +402,7 @@ class TeamDataAccessApplicationController extends Controller
      *      )
      * )
      */
-    public function getCsv(GetDataAccessApplication $request, int $teamId, int $id): StreamedResponse | JsonResponse
+    public function downloadCsv(GetDataAccessApplication $request, int $teamId, int $id): StreamedResponse | JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -671,8 +667,8 @@ class TeamDataAccessApplicationController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/teams/{teamId}/dar/applications/{id}/files/downloadAll",
-     *      summary="Download a file associated with a DAR application",
-     *      description="Download a file associated with a DAR application",
+     *      summary="Download all the files associated with a DAR application",
+     *      description="Download all the files associated with a DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@downloadFile",
      *      security={{"bearerAuth":{}}},
