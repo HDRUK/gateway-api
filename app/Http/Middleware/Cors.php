@@ -9,7 +9,7 @@ class Cors
 {
     public function handle(Request $request, Closure $next)
     {
-        $origin = $request->headers->get('Origin');
+        $origin = $request->headers->get('origin');
 
         $list = env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN', '');
         $allowed = array_filter(array_map('trim', explode(',', $list)));
@@ -22,9 +22,9 @@ class Cors
         $isLocalhost = $origin && preg_match('#^https?://(localhost|127\.0\.0\.1)(:\d+)?$#', $origin);
 
         $headers = [
-            'Access-Control-Allow-Methods'  => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers'  => $request->headers->get('Access-Control-Request-Headers', 'Content-Type, Authorization, Origin, X-Requested-With, Accept, x-request-session-id'),
             'Access-Control-Allow-Credentials' => 'true',
+            'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization, x-request-session-id',
             'Vary' => 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
         ];
 
@@ -33,7 +33,7 @@ class Cors
         }
 
         if ($request->getMethod() === 'OPTIONS') {
-            return response()->noContent(204)->withHeaders($headers);
+            return response('OK')->withHeaders($headers);
         }
 
         $response = $next($request);
