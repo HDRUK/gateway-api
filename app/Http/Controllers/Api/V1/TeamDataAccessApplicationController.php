@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\InternalServerErrorException;
 use Auditor;
 use Config;
 use Exception;
@@ -19,16 +20,16 @@ use App\Models\DataAccessApplicationComment;
 use App\Models\DataAccessApplicationReview;
 use App\Models\DataAccessApplicationStatus;
 use App\Models\DataAccessApplicationAnswer;
-use App\Models\Dataset;
 use App\Models\EmailTemplate;
-use App\Models\Team;
 use App\Models\TeamHasDataAccessApplication;
 use App\Models\Upload;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use ZipArchive;
 
 class TeamDataAccessApplicationController extends Controller
 {
@@ -365,6 +366,114 @@ class TeamDataAccessApplicationController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+    
+    /**
+     * @OA\Get(
+     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/downloadCsv",
+     *      summary="Returns a DAR form in CSV format",
+     *      description="Returns a DAR form in CSV format",
+     *      tags={"DataAccessApplication"},
+     *      summary="DataAccessApplication@downloadCsv",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DAR application id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR application id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\MediaType(
+     *              mediaType="file"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function downloadCsv(GetDataAccessApplication $request, int $teamId, int $id): StreamedResponse | JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $this->checkTeamAccess($teamId, $id, 'view');
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'DataAccessApplication answers getCsv ' . $id,
+            ]);
+
+            $filename = '"dar_application_' . $id . '.csv"';
+
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename=' . $filename,
+            ];
+
+            return response()->stream(
+                function () use ($id){
+                    $f = fopen('php://output', 'w');
+
+                    $application = DataAccessApplication::where('id', $id)
+                        ->with(['questions'])
+                        ->first();
+
+                    $this->getApplicationWithQuestions($application);
+                    $application = $application->toArray();
+
+                    $answers = DataAccessApplicationAnswer::where('application_id', $id)->get();
+
+                    // Match questions to answers
+                    foreach ($application['questions'] as $q) {
+                        foreach ($answers as $ans) {
+                            if ($ans['question_id'] == $q['question_id']) {
+                                $val = $ans['answer'];
+                                // If it's an array it's a file field
+                                if (is_array($val)) {
+                                    // Handle if it contains one or multiple files
+                                    $filenames = is_array($val['value'][0] ?? null)
+                                        ? array_column($val['value'], 'filename')
+                                        : [$val['value']['filename'] ?? null];
+                                    $val = implode(",", $filenames);
+                                } 
+                                $line = ["question" => $q['title'], "answer" => $val ];
+                                fputcsv($f, $line);
+                            }
+                        }
+                    }
+                    fclose($f);
+                },
+                (int)Config::get('statuscodes.STATUS_OK.code'),
+                $headers,
+            );
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
 
     /**
      * @OA\Get(
@@ -533,6 +642,105 @@ class TeamDataAccessApplicationController extends Controller
 
                 return Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
                     ->download($file->file_location);
+            }
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/files/downloadAll",
+     *      summary="Download all the files associated with a DAR application",
+     *      description="Download all the files associated with a DAR application",
+     *      tags={"DataAccessApplication"},
+     *      summary="DataAccessApplication@downloadFile",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DAR application id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR application id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\MediaType(
+     *              mediaType="file"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function downloadAllFiles(GetDataAccessApplication $request, int $teamId, int $id): BinaryFileResponse | JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $this->checkTeamAccess($teamId, $id, 'view');
+            $application = DataAccessApplication::where('id', $id)->first();
+
+            $isDraft = $application['submission_status'] === 'DRAFT';
+            if ($isDraft) {
+                throw new Exception('Files associated with a data access request cannot be viewed when the request is still a draft.');
+            }
+            $uploads = Upload::where('entity_id', $id)->get();
+
+            if ($uploads) {
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'DataAccessApplication download all files ' . $id,
+                ]);
+
+                $files = $uploads->all();
+                $zip = new ZipArchive();
+
+                $zipFilename = "/tmp/" . time() . "_$id.zip";
+
+                \Log::info($zipFilename);
+                if (!$zip->open($zipFilename, ZipArchive::CREATE)) {
+                    throw new InternalServerErrorException("Zip file creation failed");
+                }
+
+                foreach ($files as $f) {
+                    $filePath = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')->path($f->file_location);
+                    $fileNameInZip = basename($f->file_location);
+                    $zip->addFile($filePath, $fileNameInZip);
+                }
+
+                $zip->close();
+
+                return response()->download($zipFilename);
             }
 
             return response()->json([
