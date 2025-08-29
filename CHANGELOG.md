@@ -1,3 +1,9 @@
+## [2.22.1](https://github.com/HDRUK/gateway-api/compare/v2.22.0...v2.22.1) (2025-08-29)
+
+### 🐛 Bug Fixes
+
+* **GAT-0000:** Remove TestFederation.php which was incorrectly in 1.21.0 release but broke the build. (#1389) ([4dee483](https://github.com/HDRUK/gateway-api/commit/4dee4832172a46944906c2c1bd63955cbc626d1f)), closes [GAT-0000](GAT-0000)
+
 ## [2.22.0](https://github.com/HDRUK/gateway-api/compare/v2.21.1...v2.22.0) (2025-08-29)
 
 ### ✨ Features
