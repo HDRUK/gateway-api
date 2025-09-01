@@ -100,7 +100,6 @@ jobs:
           echo "Starting new AppCheck scan..."
           curl -fsSL -X POST "${BASE_URL}/start" -H "Content-Length: 0"
 
-
       - name: Run Notification
         id: runnotificationsent
         uses: act10ns/slack@v1
