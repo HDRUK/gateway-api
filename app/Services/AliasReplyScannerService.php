@@ -129,7 +129,8 @@ class AliasReplyScannerService
         return $message->delete($expunge = true);
     }
 
-    public function notifyUserOfDarResponse($threadId) {
+    public function notifyUserOfDarResponse($threadId)
+    {
         $enquiryThread = EnquiryThread::where('id', $threadId)->first();
         $user = User::where([
             'id' => $enquiryThread->user_id,

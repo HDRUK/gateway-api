@@ -17,7 +17,9 @@ class DatasetVersionObserver
      */
     public function created(DatasetVersion $datasetVersion): void
     {
-        $this->elasticDatasetVersion($datasetVersion);
+        if (true === false) {
+            $this->elasticDatasetVersion($datasetVersion);
+        }
     }
 
     /**
@@ -25,7 +27,9 @@ class DatasetVersionObserver
      */
     public function updated(DatasetVersion $datasetVersion): void
     {
-        $this->elasticDatasetVersion($datasetVersion);
+        if (true === false) {
+            $this->elasticDatasetVersion($datasetVersion);
+        }
     }
 
     /**
@@ -33,7 +37,9 @@ class DatasetVersionObserver
      */
     public function deleted(DatasetVersion $datasetVersion): void
     {
-        $this->elasticDatasetVersion($datasetVersion);
+        if (true === false) {
+            $this->elasticDatasetVersion($datasetVersion);
+        }
     }
 
     /**

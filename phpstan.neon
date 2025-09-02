@@ -10,7 +10,6 @@ parameters:
 
     ignoreErrors:
         - '#Call to an undefined method Laravel\\Socialite\\Contracts\\Provider::with\(\)#'
-        - '#Call to static method translateDataModelType\(\) on an unknown class App\\Traits\\MMC#'
 
 #    excludePaths:
 #        - ./*/*/FileToBeExcluded.php
