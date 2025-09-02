@@ -1,3 +1,11 @@
+## [2.22.2](https://github.com/HDRUK/gateway-api/compare/v2.22.1...v2.22.2) (2025-09-02)
+
+### 🐛 Bug Fixes
+
+* **GAT-7678:** Brings GMI into API to reduce significant complexity (#1370) ([d3619e8](https://github.com/HDRUK/gateway-api/commit/d3619e8722b1f2466749171188f02bdf78c97087)), closes [GAT-7678](GAT-7678)
+* **GAT-7678:** Fix for MDW East mids which didn't return a fully formed JSON response, and thus failed pull. Changes work for both KMS and EM. (#1392) ([feeb373](https://github.com/HDRUK/gateway-api/commit/feeb37325975bc63ce871120533a9ec6a841bb92))
+* **GAT-7678:** Slight tweak to include team_id in duplicate check (#1395) ([820c80a](https://github.com/HDRUK/gateway-api/commit/820c80ab56ff198966923053b387d6d098932076)), closes [GAT-7678](GAT-7678)
+
 ## [2.22.1](https://github.com/HDRUK/gateway-api/compare/v2.22.0...v2.22.1) (2025-08-29)
 
 ### 🐛 Bug Fixes
