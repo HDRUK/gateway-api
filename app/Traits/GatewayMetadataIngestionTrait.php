@@ -36,10 +36,13 @@ trait GatewayMetadataIngestionTrait
     {
         $response = Http::get(
             $federation->endpoint_baseurl . $federation->endpoint_datasets,
-            $this->determineAuthType($federation, $gsms)
+            [ 
+                $this->determineAuthType($federation, $gsms),
+                'Accept' => 'application/json',
+            ]
         );
         if ($response->status() === 200) {
-            return collect($response->json()['items'])->keyBy('persistentId');
+            return collect(json_decode($response->body(), true)['items'])->keyBy('persistentId');
         }
 
         return [
@@ -104,6 +107,7 @@ trait GatewayMetadataIngestionTrait
 
                 $this->log('info', "dataset {$ds->id}, dataset_version {$dsv->id} and associated dataset_version_has_spatial_coverage deleted");
 
+                unset($dsvhsc);
                 unset($ds);
                 unset($dsv);
 
