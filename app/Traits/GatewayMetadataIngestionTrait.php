@@ -129,7 +129,10 @@ trait GatewayMetadataIngestionTrait
     ): void {
         $toCreate = $remoteItems->keys()->diff($localItems->keys());
         foreach ($toCreate as $pid) {
-            if (!Dataset::where('pid', $pid)->exists()) {
+            if (!Dataset::where([
+                'pid' => $pid,
+                'team_id' => $gmi->getTeam(),
+                ])->exists()) {
                 $data = $remoteItems[$pid];
                 $response = Http::get($this->makeDatasetUrl($federation, $data), $this->determineAuthType($federation, $gms));
                 if ($response->status() === 200) {
