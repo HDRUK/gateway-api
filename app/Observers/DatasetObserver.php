@@ -49,7 +49,6 @@ class DatasetObserver
             if ($dataset->team_id) {
                 $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
             }
-
         }
 
         if ($dataset->status === Dataset::STATUS_ACTIVE && !is_null($datasetVersion)) {
@@ -57,7 +56,6 @@ class DatasetObserver
             if ($dataset->team_id) {
                 $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
             }
-
         }
     }
 
@@ -81,7 +79,6 @@ class DatasetObserver
             if ($dataset->team_id) {
                 $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
             }
-
         }
     }
 

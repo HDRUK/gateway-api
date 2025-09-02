@@ -4,6 +4,8 @@ namespace App\Traits;
 
 use Http;
 use Config;
+use MetadataManagementController as MMC;
+
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
 
@@ -34,10 +36,13 @@ trait GatewayMetadataIngestionTrait
     {
         $response = Http::get(
             $federation->endpoint_baseurl . $federation->endpoint_datasets,
-            $this->determineAuthType($federation, $gsms)
+            [ 
+                $this->determineAuthType($federation, $gsms),
+                'Accept' => 'application/json',
+            ]
         );
         if ($response->status() === 200) {
-            return collect($response->json()['items'])->keyBy('persistentId');
+            return collect(json_decode($response->body(), true)['items'])->keyBy('persistentId');
         }
 
         return [
@@ -77,27 +82,42 @@ trait GatewayMetadataIngestionTrait
         ])->get())->keyBy('pid');
     }
 
-    public function deleteLocalDatasetsNotInRemoteCatalogue(Collection $localItems, Collection $remoteItems): void
+    public function deleteLocalDatasetsNotInRemoteCatalogue(Collection $localItems, Collection $remoteItems): bool
     {
+        $this->log('info', 'testing REMOTE collection for LOCAL deletions');
+
+        $haveDeleted = false;
+
         $toDelete = $localItems->keys()->diff($remoteItems->keys());
+
         foreach ($toDelete as $pid) {
             try {
+                $this->log('info', "dataset {$pid} detected LOCALLY, but NOT in REMOTE collection - DELETING");
+
                 $ds = Dataset::where('pid', $pid)->first();
+                $this->log('info', 'dataset for deletion ' . $ds->id);
+
                 $dsv = DatasetVersion::where('dataset_id', $ds->id)->first();
+                $this->log('info', 'dataset_version for deletion ' . $dsv->id);
 
                 // Due to constraints, delete spatial coverage first.
-                DatasetVersionHasSpatialCoverage::where('dataset_version_id', $dsv->id)->delete();
-                // Next dataset versions.
+                $dsvhsc = DatasetVersionHasSpatialCoverage::where('dataset_version_id', $dsv->id)->delete();
                 $dsv->delete();
-                // finally dataset.
                 $ds->delete();
 
+                $this->log('info', "dataset {$ds->id}, dataset_version {$dsv->id} and associated dataset_version_has_spatial_coverage deleted");
+
+                unset($dsvhsc);
                 unset($ds);
                 unset($dsv);
+
+                $haveDeleted = true;
             } catch (\Exception $e) {
                 $this->log('error', 'encountered internal error: ' . json_encode($e));
             }
         }
+
+        return $haveDeleted;
     }
 
     public function createLocalDatasetsMissingFromRemoteCatalogue(
@@ -109,26 +129,31 @@ trait GatewayMetadataIngestionTrait
     ): void {
         $toCreate = $remoteItems->keys()->diff($localItems->keys());
         foreach ($toCreate as $pid) {
-            $data = $remoteItems[$pid];
-            $response = Http::get($this->makeDatasetUrl($federation, $data), $this->determineAuthType($federation, $gms));
-            if ($response->status() === 200) {
-                try {
-                    $input = [
-                        'status' => 'ACTIVE',
-                        'create_origin' => 'GMI',
-                        'user_id' => Config::get('metadata.system_user_id'),
-                        'team_id' => $gmi->getTeam(),
-                        'metadata' => [
-                            'metadata' => $response->json(),
-                        ],
-                        'pid' => $pid,
-                    ];
+            if (!Dataset::where('pid', $pid)->exists()) {
+                $data = $remoteItems[$pid];
+                $response = Http::get($this->makeDatasetUrl($federation, $data), $this->determineAuthType($federation, $gms));
+                if ($response->status() === 200) {
+                    try {
+                        $input = [
+                            'status' => 'ACTIVE',
+                            'create_origin' => 'GMI',
+                            'user_id' => Config::get('metadata.system_user_id'),
+                            'team_id' => $gmi->getTeam(),
+                            'metadata' => [
+                                'metadata' => $response->json(),
+                            ],
+                            'pid' => $pid,
+                        ];
 
-                    $result = $gmi->storeMetadata($input);
-                    $this->log('info', "dataset {$pid} detected in REMOTE collection, but NOT LOCALLY - CREATED");
-                } catch (\Exception $e) {
-                    $this->log('error', 'encountered internal error while CREATING local dataset from remote source: ' . json_encode($e));
+                        $result = $gmi->storeMetadata($input);
+                        $this->log('info', "dataset {$pid} detected in REMOTE collection, but NOT LOCALLY - CREATED");
+                    } catch (\Exception $e) {
+                        dd($e->getMessage());
+                        $this->log('error', 'encountered internal error while CREATING local dataset from remote source: ' . json_encode($e));
+                    }
                 }
+            } else {
+                $this->log('info', "attempted to re-create a dataset that already exists @ {$pid}");
             }
         }
     }
@@ -164,6 +189,7 @@ trait GatewayMetadataIngestionTrait
                     $this->log('info', "version compare of REMOTE v{$data['version']} and LOCAL v{$dv['metadata']['metadata']['required']['version']}");
 
                     if (version_compare($data['version'], $dv['metadata']['metadata']['required']['version'], '>')) {
+                        $this->log('info', "found version difference in REMOTE metadata of v{$data['version']} vs local {$dv['metadata']['metadata']['required']['version']} - UPDATING LOCAL");
                         $traserResponse = MMC::translateDataModelType(
                             json_encode($payload),
                             Config::get('metadata.GWDM.name'),
