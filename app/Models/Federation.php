@@ -67,8 +67,6 @@ class Federation extends Model
         'enabled',
         'tested',
         'pid',
-        'last_run_at',
-        'last_completed_at',
     ];
 
     /**
