@@ -85,6 +85,8 @@ return [
 
     'cohort_discovery' => [
         'init_url' => env('COHORT_DISCOVERY_URL', 'http://rquest.local'),
+        'service_account' => env('COHORT_DISCOVERY_SERVICE_ACCOUNT', 'cohort-service@hdruk.ac.uk'),
+        'use_oauth2' => env('COHORT_DISCOVERY_USE_OAUTH2', false),
     ],
 
     'media' => [

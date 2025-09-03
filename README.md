@@ -3,17 +3,22 @@
 Welcome to the HDR UK Gateway API, a Laravel application that powers the Gateway.
 
 # Getting Started
+
 Follow these steps to install and run the project on your local machine.
 
 ## Prerequisites
+
 There are two ways to run our API.
-- With Tilt/Helm into a local Kubernetes cluster
-- Or manually, via `php artisan octane:frankenphp --host=0.0.0.0 --port=8100`
+
+-   With Tilt/Helm into a local Kubernetes cluster
+-   Or manually, via `php artisan octane:frankenphp --host=0.0.0.0 --port=8100`
 
 Let's take you through both!
 
 # Tilt/Helm & Kubernetes
+
 Start by installing Rancher-Desktop: https://rancherdesktop.io/
+
 -   Ensure that Kubernetes is enabled and running
 -   This can be tested by running `kubectl get all` - if running, you'll be presented with a list of running pods, something similar to the following:
 
@@ -26,10 +31,11 @@ metadata-fed-766d88664b-mpxk2       1/1     Running   1              161d
 
 Once confirmed your cluster is up and running, you can now install the remaining tools.
 
-- Helm: https://helm.sh/docs/intro/install/
-- Tilt: https://docs.tilt.dev/install.html
+-   Helm: https://helm.sh/docs/intro/install/
+-   Tilt: https://docs.tilt.dev/install.html
 
 With Rancher-desktop, Helm and Tilt installed, you'll need an instance of mysql. Using Helm you can run the following commands:
+
 -   To install the mysql repo: `helm repo add bitnami https://charts.bitnami.com/bitnami`
 -   To install mysql container: `helm install mysql bitnami/mysql`
     -   alternatively you can use mariadb: `helm install mariadb oci://registry-1.docker.io/bitnamicharts/mariadb`
@@ -68,6 +74,7 @@ MAIL_FROM_NAME="${APP_NAME}"
 ```
 
 ### tiltconf.json
+
 If you've opted to use Tilt/Helm, then you'll need to create a `tiltconf.json` file within the root of your cloned project. The file should contain the following:
 
 ```
@@ -111,24 +118,27 @@ tilt up
 You'll see that Tilt starts invoking Docker to build an image, and ultimately instructs Helm to deploy the pod/service to your local cluster. If you've configured `web` and any of the other services, then these are built and deployed at the same time!
 
 #### Manual
-- If you've opted to run manually, then within the root of your cloned directory, run the following command:
+
+-   If you've opted to run manually, then within the root of your cloned directory, run the following command:
 
 ```
 php artisan octane:frankenphp --host=0.0.0.0 --port=8100
 ```
+
 Note: This will run only the API. No other services, nor the web client.
 
 By default, the application, under both forms of running, will be available at: `http://localhost:8100/api/v1/...`
 
 ## Available Composer Scripts
-- `composer run phpstan` - Runs PHPStan to perform static analysis on code
-- `composer run behat` - Runs Behat BDD tests
-- `composer run phpcs` - Runs PHP Code Sniffer linting checks
-- `composer run pest` - Runs the main Unit/Feature tests
-- `composer run lint` - Runs Laravel Pint for PSR specific linting
 
+-   `composer run phpstan` - Runs PHPStan to perform static analysis on code
+-   `composer run behat` - Runs Behat BDD tests
+-   `composer run phpcs` - Runs PHP Code Sniffer linting checks
+-   `composer run pest` - Runs the main Unit/Feature tests
+-   `composer run lint` - Runs Laravel Pint for PSR specific linting
 
 ## Migration and Databse Seeding
+
 ### Migration
 
 When needing to update your database schema, you can use the following artisan functions:
@@ -139,15 +149,34 @@ If running in a docker container, you'll need to remotely interact with artisan 
 ### Seeding
 
 The database can be seeded for local testing using:
+
 ```
 kubectl exec -it $(kubectl get pods | awk '/gateway-api/ {print $1}') -- php artisan db:seed
 ```
 
-
 To migrate and seed at the same time you can do:
+
 ```
-kubectl exec -it $(kubectl get pods | awk '/gateway-api/ {print $1}') -- php artisan migrate:fresh --seed 
+kubectl exec -it $(kubectl get pods | awk '/gateway-api/ {print $1}') -- php artisan migrate:fresh --seed
 ```
+
+## Cohort Discovery
+
+Firstly, setup env vars for cohort discovery and a service account:
+
+```
+COHORT_DISCOVERY_URL="http://localhost:3001"
+COHORT_DISCOVERY_SERVICE_ACCOUNT=cohort-service@hdruk.ac.uk
+COHORT_DISCOVERY_USE_OAUTH2=true
+```
+
+If you want to use OAUTH2, you need to enable the .env var and then setup a service account and an oauth2 client, which can be done via:
+
+```
+php artisan db:seed --class=CohortServiceUserSeeder
+```
+
+Copy the `id` and the `secret` for use with your oauth2 from the `oauth2_clients` table.
 
 ## Contributions
 

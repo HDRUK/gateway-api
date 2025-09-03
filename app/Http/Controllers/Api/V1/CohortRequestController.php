@@ -1221,36 +1221,37 @@ class CohortRequestController extends Controller
                 'description' => 'Access rquest for user',
             ]);
 
+            $cohortDiscoveryUrl = Config::get('services.cohort_discovery.init_url');
 
-            $cohortServiceAccount = User::where([
-                'email' => 'cohort-service@hdruk.ac.uk',
-                'provider' => 'service'
-            ])->first();
+            if (Config::get('services.cohort_discovery.use_oauth2')) {
+                $cohortServiceAccount = User::where([
+                    'email' => Config::get('services.cohort_discovery.service_account'),
+                    'provider' => 'service'
+                ])->first();
 
-            if (!$cohortServiceAccount) {
-                throw new Exception('Cannot find cohort service account');
+                if (!$cohortServiceAccount) {
+                    throw new Exception('Cannot find cohort service account');
+                }
+
+                $cohortClient = OauthClient::where([
+                    'user_id' => $cohortServiceAccount->id,
+                ])->first();
+
+                if (!$cohortClient) {
+                    throw new Exception('Cannot find cohort service oauth client');
+                }
+
+                $cohortDiscoveryUrl = env('APP_URL') .
+                    "/oauth2/authorize?response_type=code" .
+                    "&client_id=$cohortClient->id" .
+                    "&scope=openid email profile rquestroles" .
+                    "&redirect_uri=$cohortClient->redirect";
             }
 
-            $cohortClient = OauthClient::where([
-                'user_id' => $cohortServiceAccount->id,
-            ])->first();
-
-            if (!$cohortClient) {
-                throw new Exception('Cannot find cohort service oauth client');
-            }
-
-            $cohortInitUrl = env('APP_URL') .
-                "/oauth2/authorize?response_type=code" .
-                "&client_id=$cohortClient->id" .
-                "&scope=openid email profile rquestroles" .
-                "&redirect_uri=$cohortClient->redirect";
-
-            //$cohortInitUrl = Config::get('services.cohort_discovery.init_url');
 
             return response()->json([
                 'data' => [
-                    'redirect_url' => $cohortInitUrl,
-                    'temp' => $cohortClient
+                    'redirect_url' => $cohortDiscoveryUrl,
                 ],
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
