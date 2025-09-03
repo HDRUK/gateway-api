@@ -39,7 +39,7 @@ class CohortServiceUserSeeder extends Seeder
             'name' => 'cohort-discovery-oauth-client',
             'secret' => Hash::make(Str::random(40)),
             'provider' => null,
-            'redirect' => Config::get('services.cohort_discovery.init_url'),
+            'redirect' => Config::get('services.cohort_discovery.auth_url'),
             'personal_access_client' => false,
             'password_client' => false,
             'revoked' => false,
