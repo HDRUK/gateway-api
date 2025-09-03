@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use ZipArchive;
+use File;
 
 class TeamDataAccessApplicationController extends Controller
 {
@@ -474,11 +475,11 @@ class TeamDataAccessApplicationController extends Controller
                     }
                 }
             }
-            fclose($f);
+            fclose(stream: $f);
             $zip->addFile($csvFilename, "dar_application.csv");
-
             $zip->close();
-            return response()->download($zipFilename)->deleteFileAfterSend(true);;
+            File::delete($csvFilename);
+            return response()->download($zipFilename)->deleteFileAfterSend(true);
 
         } catch (UnauthorizedException $e) {
             return response()->json([
