@@ -1,3 +1,41 @@
+## [2.22.2](https://github.com/HDRUK/gateway-api/compare/v2.22.1...v2.22.2) (2025-09-02)
+
+### 🐛 Bug Fixes
+
+* **GAT-7678:** Brings GMI into API to reduce significant complexity (#1370) ([d3619e8](https://github.com/HDRUK/gateway-api/commit/d3619e8722b1f2466749171188f02bdf78c97087)), closes [GAT-7678](GAT-7678)
+* **GAT-7678:** Fix for MDW East mids which didn't return a fully formed JSON response, and thus failed pull. Changes work for both KMS and EM. (#1392) ([feeb373](https://github.com/HDRUK/gateway-api/commit/feeb37325975bc63ce871120533a9ec6a841bb92))
+* **GAT-7678:** Slight tweak to include team_id in duplicate check (#1395) ([820c80a](https://github.com/HDRUK/gateway-api/commit/820c80ab56ff198966923053b387d6d098932076)), closes [GAT-7678](GAT-7678)
+
+## [2.22.1](https://github.com/HDRUK/gateway-api/compare/v2.22.0...v2.22.1) (2025-08-29)
+
+### 🐛 Bug Fixes
+
+* **GAT-0000:** Remove TestFederation.php which was incorrectly in 1.21.0 release but broke the build. (#1389) ([4dee483](https://github.com/HDRUK/gateway-api/commit/4dee4832172a46944906c2c1bd63955cbc626d1f)), closes [GAT-0000](GAT-0000)
+
+## [2.22.0](https://github.com/HDRUK/gateway-api/compare/v2.21.1...v2.22.0) (2025-08-29)
+
+### ✨ Features
+
+* **GAT-1234:** Change collection_has_dataset_version table primary key (#1368) ([4b538ce](https://github.com/HDRUK/gateway-api/commit/4b538ce7846570a82de8a8c1505c46a311ddae69)), closes [GAT-1234](GAT-1234)
+* **GAT-7614:** Update overlay for Cohort Discovery admin panel content download (#1379) ([a863d7e](https://github.com/HDRUK/gateway-api/commit/a863d7e44fb255c7885c5e5e8d0f23304ffcc585)), closes [GAT-7614](GAT-7614)
+* **GAT-7683:** Dataset default values (#1371) ([3248f09](https://github.com/HDRUK/gateway-api/commit/3248f09a4bc42e6b464e855f587e12129616c2da)), closes [GAT-7683](GAT-7683)
+* **GAT-7683:** Dataset default values (#1373) ([ba09fbe](https://github.com/HDRUK/gateway-api/commit/ba09fbe77f84903c78db5a9cd10e2b631aaa78df)), closes [GAT-7683](GAT-7683)
+* **GAT-7683:** Revert default value for datatype (#1374) ([02776e0](https://github.com/HDRUK/gateway-api/commit/02776e032c45ff729f8b5f90c46a35219b3cb6ab)), closes [GAT-7683](GAT-7683)
+* **GAT-7731:** Add NhsSdeApplicationsEnabled feature flag to FeatureFlagSeeder. (#1372) ([ce0451e](https://github.com/HDRUK/gateway-api/commit/ce0451ee0edc2c872b2bbaf0dceb7a64106831b0)), closes [GAT-7731](GAT-7731)
+
+### 🐛 Bug Fixes
+
+* **GAT-7351:** none breaking V3 changes which actually are... (#1376) ([2d5ac50](https://github.com/HDRUK/gateway-api/commit/2d5ac509f7580d2a12836549cbb3d7ada19dc79f)), closes [GAT-7351](GAT-7351)
+* **GAT-7550:** Supply information about DAR templates' publication status per dataset to FE (#1378) ([a676589](https://github.com/HDRUK/gateway-api/commit/a67658960e2459c49092be000185953ee2ae1e9b)), closes [GAT-7550](GAT-7550)
+* **GAT-7665:** Fix Network counts reporting (#1375) ([c78cbb0](https://github.com/HDRUK/gateway-api/commit/c78cbb09699628fcd67c7e109069fb9bc5f482ae))
+* **GAT-7678:** null check on auth_secret_key (#1380) ([aa3e7ff](https://github.com/HDRUK/gateway-api/commit/aa3e7ffe154caa158971a3c0ec7109b90c3ec0d0)), closes [GAT-7678](GAT-7678)
+
+## [2.21.1](https://github.com/HDRUK/gateway-api/compare/v2.21.0...v2.21.1) (2025-08-20)
+
+### 🐛 Bug Fixes
+
+* **GAT-7351:** none breaking V3 changes which actually are... (#1376) ([eae4854](https://github.com/HDRUK/gateway-api/commit/eae48547b82a47c6aca5d9031b8076838d39b881)), closes [GAT-7351](GAT-7351)
+
 ## [2.21.0](https://github.com/HDRUK/gateway-api/compare/v2.20.2...v2.21.0) (2025-08-18)
 
 ### ✨ Features
