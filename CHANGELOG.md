@@ -1,3 +1,9 @@
+## [2.22.3](https://github.com/HDRUK/gateway-api/compare/v2.22.2...v2.22.3) (2025-09-03)
+
+### 🐛 Bug Fixes
+
+* **GAT-7678:** More defensive work (#1397) ([0080267](https://github.com/HDRUK/gateway-api/commit/0080267e9411842a083346dc21580a7d349c5268)), closes [GAT-7678](GAT-7678)
+
 ## [2.22.2](https://github.com/HDRUK/gateway-api/compare/v2.22.1...v2.22.2) (2025-09-02)
 
 ### 🐛 Bug Fixes
