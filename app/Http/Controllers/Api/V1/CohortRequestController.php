@@ -27,6 +27,7 @@ use App\Http\Requests\CohortRequest\DeleteCohortRequest;
 use App\Http\Requests\CohortRequest\UpdateCohortRequest;
 use App\Http\Requests\CohortRequest\AssignAdminCohortRequest;
 use App\Http\Requests\CohortRequest\RemoveAdminCohortRequest;
+use App\Models\OauthClient;
 
 class CohortRequestController extends Controller
 {
@@ -200,9 +201,9 @@ class CohortRequestController extends Controller
                         $query->whereHas('user', function ($q) use ($filterText) {
                             $q->where('name', 'LIKE', '%' . $filterText . '%');
                         })
-                        ->orWhereHas('user.teams', function ($q) use ($filterText) {
-                            $q->where('name', 'LIKE', '%' . $filterText . '%');
-                        });
+                            ->orWhereHas('user.teams', function ($q) use ($filterText) {
+                                $q->where('name', 'LIKE', '%' . $filterText . '%');
+                            });
                     });
                 });
 
@@ -320,7 +321,7 @@ class CohortRequestController extends Controller
                     },
                     'permissions',
                     'logs.user:id,name',
-                    ])
+                ])
                 ->first()->toArray();
 
             if (isset($cohortRequests['logs'])) {
@@ -403,7 +404,7 @@ class CohortRequestController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $user = User::where([ 'id' => $jwtUser['id'] ])->first();
+            $user = User::where(['id' => $jwtUser['id']])->first();
             if (!$user->name || strlen(trim($user->name)) === 0) {
                 throw new Exception("The user name not found!");
             }
@@ -468,7 +469,6 @@ class CohortRequestController extends Controller
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $id ?: $cohortRequest->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
-
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -931,7 +931,6 @@ class CohortRequestController extends Controller
             ]);
 
             return $response;
-
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1222,11 +1221,37 @@ class CohortRequestController extends Controller
                 'description' => 'Access rquest for user',
             ]);
 
-            $rquestInitUrl = Config::get('services.rquest.init_url');
+            $cohortDiscoveryUrl = Config::get('services.cohort_discovery.init_url');
+
+            if (Config::get('services.cohort_discovery.use_oauth2')) {
+                $cohortServiceAccount = User::where([
+                    'email' => Config::get('services.cohort_discovery.service_account'),
+                    'provider' => 'service'
+                ])->first();
+
+                if (!$cohortServiceAccount) {
+                    throw new Exception('Cannot find cohort service account');
+                }
+
+                $cohortClient = OauthClient::where([
+                    'user_id' => $cohortServiceAccount->id,
+                ])->first();
+
+                if (!$cohortClient) {
+                    throw new Exception('Cannot find cohort service oauth client');
+                }
+
+                $cohortDiscoveryUrl = env('APP_URL') .
+                    "/oauth2/authorize?response_type=code" .
+                    "&client_id=$cohortClient->id" .
+                    "&scope=openid email profile rquestroles" .
+                    "&redirect_uri=$cohortClient->redirect";
+            }
+
 
             return response()->json([
                 'data' => [
-                    'redirect_url' => $rquestInitUrl,
+                    'redirect_url' => $cohortDiscoveryUrl,
                 ],
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
@@ -1300,7 +1325,6 @@ class CohortRequestController extends Controller
             if ($template) {
                 SendEmailJob::dispatch($to, $template, $replacements);
             }
-
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
