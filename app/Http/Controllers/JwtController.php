@@ -13,6 +13,7 @@ use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Validation\Constraint;
 use App\Http\Traits\UserRolePermissions;
 use App\Exceptions\UnauthorizedException;
+use Config;
 
 class JwtController extends Controller
 {
@@ -79,6 +80,7 @@ class JwtController extends Controller
                 ->canOnlyBeUsedAfter($currentTime) // nbf claim
                 ->expiresAt($expireTime) // exp claim
                 ->withClaim('user', $user) // custom claim - user
+                ->withClaim('cohort_discovery_url', Config::get('services.cohort_discovery.init_url'))
                 ->getToken($this->config->signer(), $this->config->signingKey());
 
             $jwt = $token->toString();
