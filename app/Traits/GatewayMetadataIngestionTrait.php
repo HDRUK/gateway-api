@@ -34,13 +34,18 @@ trait GatewayMetadataIngestionTrait
 
     private function getCatalogueFromFederationModel(Federation $federation, GoogleSecretManagerService $gsms): Collection|array
     {
+        $url = $federation->endpoint_baseurl . $federation->endpoint_datasets;
+        $this->log('info', "calling REMOTE collection @ {$url}");
+
         $response = Http::get(
-            $federation->endpoint_baseurl . $federation->endpoint_datasets,
+            $url,
             [ 
                 $this->determineAuthType($federation, $gsms),
                 'Accept' => 'application/json',
             ]
         );
+        $this->log('info', "response from REMOTE collection: status={$response->status()}, body=" . json_encode($response->body()));
+
         if ($response->status() === 200) {
             return collect(json_decode($response->body(), true)['items'])->keyBy('persistentId');
         }
@@ -82,11 +87,11 @@ trait GatewayMetadataIngestionTrait
         ])->get())->keyBy('pid');
     }
 
-    public function deleteLocalDatasetsNotInRemoteCatalogue(Collection $localItems, Collection $remoteItems): bool
+    public function deleteLocalDatasetsNotInRemoteCatalogue(Collection $localItems, Collection $remoteItems): int
     {
         $this->log('info', 'testing REMOTE collection for LOCAL deletions');
 
-        $haveDeleted = false;
+        $deletedCount = 0;
 
         $toDelete = $localItems->keys()->diff($remoteItems->keys());
 
@@ -101,9 +106,9 @@ trait GatewayMetadataIngestionTrait
                 $this->log('info', 'dataset_version for deletion ' . $dsv->id);
 
                 // Due to constraints, delete spatial coverage first.
-                $dsvhsc = DatasetVersionHasSpatialCoverage::where('dataset_version_id', $dsv->id)->delete();
-                $dsv->delete();
-                $ds->delete();
+                $dsvhsc = DatasetVersionHasSpatialCoverage::where('dataset_version_id', $dsv->id)->forceDelete();
+                $dsv->forceDelete();
+                $ds->forceDelete();
 
                 $this->log('info', "dataset {$ds->id}, dataset_version {$dsv->id} and associated dataset_version_has_spatial_coverage deleted");
 
@@ -111,13 +116,13 @@ trait GatewayMetadataIngestionTrait
                 unset($ds);
                 unset($dsv);
 
-                $haveDeleted = true;
+                $deletedCount++;
             } catch (\Exception $e) {
-                $this->log('error', 'encountered internal error: ' . json_encode($e));
+                $this->log('error', 'encountered internal error: ' . json_encode($e->getMessage()));
             }
         }
 
-        return $haveDeleted;
+        return $deletedCount;
     }
 
     public function createLocalDatasetsMissingFromRemoteCatalogue(
@@ -126,7 +131,8 @@ trait GatewayMetadataIngestionTrait
         Federation $federation,
         GoogleSecretManagerService $gms,
         GatewayMetadataIngestionService $gmi
-    ): void {
+    ): int {
+        $createdCount = 0;
         $toCreate = $remoteItems->keys()->diff($localItems->keys());
         foreach ($toCreate as $pid) {
             if (!Dataset::where([
@@ -135,6 +141,10 @@ trait GatewayMetadataIngestionTrait
                 ])->exists()) {
                 $data = $remoteItems[$pid];
                 $response = Http::get($this->makeDatasetUrl($federation, $data), $this->determineAuthType($federation, $gms));
+
+                $this->log('info', "attempting to call dataset @ {$pid} from REMOTE collection: 
+                    status={$response->status()}, url={$this->makeDatasetUrl($federation, $data)}");
+                
                 if ($response->status() === 200) {
                     try {
                         $input = [
@@ -149,9 +159,9 @@ trait GatewayMetadataIngestionTrait
                         ];
 
                         $result = $gmi->storeMetadata($input);
+                        $createdCount++;
                         $this->log('info', "dataset {$pid} detected in REMOTE collection, but NOT LOCALLY - CREATED");
                     } catch (\Exception $e) {
-                        dd($e->getMessage());
                         $this->log('error', 'encountered internal error while CREATING local dataset from remote source: ' . json_encode($e));
                     }
                 }
@@ -159,6 +169,8 @@ trait GatewayMetadataIngestionTrait
                 $this->log('info', "attempted to re-create a dataset that already exists @ {$pid}");
             }
         }
+
+        return $createdCount;
     }
 
     public function updateLocalDatasetsChangedInRemoteCatalogue(
@@ -167,7 +179,8 @@ trait GatewayMetadataIngestionTrait
         Federation $federation,
         GoogleSecretManagerService $gms,
         GatewayMetadataIngestionService $gmi
-    ): void {
+    ): int {
+        $updatedCount = 0;
         foreach ($remoteItems as $pid => $data) {
             if ($localItems->has($pid)) {
                 $local = $localItems[$pid];
@@ -175,7 +188,10 @@ trait GatewayMetadataIngestionTrait
                 $response = Http::get($this->makeDatasetUrl($federation, $data), $this->determineAuthType($federation, $gms));
                 if ($response->status() === 200) {
                     $team = Team::where('id', $gmi->getTeam())->first();
-                    $ds = Dataset::where('pid', $pid)->first();
+                    $ds = Dataset::where([
+                        'pid' => $pid,
+                        'team_id' => $gmi->getTeam(),
+                    ])->first();
                     $dv = DatasetVersion::where('dataset_id', $local->id)->orderBy('id', 'desc')->first()->toArray();
 
                     $payload = [
@@ -191,7 +207,7 @@ trait GatewayMetadataIngestionTrait
 
                     $this->log('info', "version compare of REMOTE v{$data['version']} and LOCAL v{$dv['metadata']['metadata']['required']['version']}");
 
-                    if (version_compare($data['version'], $dv['metadata']['metadata']['required']['version'], '>')) {
+                    if (version_compare($data['version'], $dv['metadata']['metadata']['required']['version'], '<>')) {
                         $this->log('info', "found version difference in REMOTE metadata of v{$data['version']} vs local {$dv['metadata']['metadata']['required']['version']} - UPDATING LOCAL");
                         $traserResponse = MMC::translateDataModelType(
                             json_encode($payload),
@@ -210,6 +226,8 @@ trait GatewayMetadataIngestionTrait
                                 $traserResponse['metadata'],
                                 $data,
                             );
+
+                            $updatedCount++;
                         }
 
                         $this->log('info', "dataset {$pid} detected as CHANGED in REMOTE collection - UPDATED");
@@ -219,6 +237,8 @@ trait GatewayMetadataIngestionTrait
                 }
             }
         }
+
+        return $updatedCount;
     }
 
     public function determineAuthType(Federation|array $federation, GoogleSecretManagerService $gsms, bool $testMode = false): array
