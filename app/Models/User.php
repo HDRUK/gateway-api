@@ -59,7 +59,9 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $hidden = [
-        'password', 'remember_token', 'providerid',
+        'password',
+        'remember_token',
+        'providerid',
     ];
 
     /**
@@ -150,5 +152,4 @@ class User extends Authenticatable
             ->withPivot('user_id', 'workgroup_id')
             ->orderBy('user_has_workgroups.workgroup_id');
     }
-
 }

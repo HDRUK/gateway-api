@@ -79,6 +79,7 @@ class JwtController extends Controller
                 ->canOnlyBeUsedAfter($currentTime) // nbf claim
                 ->expiresAt($expireTime) // exp claim
                 ->withClaim('user', $user) // custom claim - user
+                ->withClaim('cohort_discovery_url', 'http://localhost:3000')
                 ->getToken($this->config->signer(), $this->config->signingKey());
 
             $jwt = $token->toString();

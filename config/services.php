@@ -87,6 +87,11 @@ return [
         'init_url' => env('RQUEST_INIT_URL', 'http://rquest.local'),
     ],
 
+    'cohort_discovery' => [
+        'init_url' => env('COHORT_DISCOVERY_URL', 'http://daphne.locsal'),
+    ],
+
+
     'media' => [
         'base_url' => env('MEDIA_URL', 'http://media.local'),
     ]
