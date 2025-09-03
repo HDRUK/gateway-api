@@ -4190,14 +4190,13 @@ return [
         'name' => 'dar/applications',
         'method' => 'get',
         'path' => '/users/{userId}/dar/applications/{id}/files/{fileId}/download',
-        'methodController' => 'UserDataAccessApplicationController@downloadFile',
+        'methodController' => 'UserDataAccessApplicationController@download',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
         ],
         'constraint' => [
             'id' => '[0-9]+',
-            'fileId' => '[0-9]+',
             'userId' => '[0-9]+',
         ],
     ],
