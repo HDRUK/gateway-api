@@ -478,7 +478,7 @@ class TeamDataAccessApplicationController extends Controller
             $zip->addFile($csvFilename, "dar_application.csv");
 
             $zip->close();
-            return response()->download($zipFilename);
+            return response()->download($zipFilename)->deleteFileAfterSend(true);;
 
         } catch (UnauthorizedException $e) {
             return response()->json([
