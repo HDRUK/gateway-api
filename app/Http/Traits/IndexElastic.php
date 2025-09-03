@@ -53,7 +53,6 @@ trait IndexElastic
      */
     public function reindexElastic(string $datasetId, bool $returnParams = false, bool $activeCheck = true): null|array
     {
-        return null;
         try {
             $datasetMatch = Dataset::where('id', $datasetId)
                 ->firstOrFail();
@@ -114,6 +113,7 @@ trait IndexElastic
             }
             ECC::indexDocument($params);
             return null;
+
         } catch (Exception $e) {
             \Log::error('Error reindexing ElasticSearch', [
                 'datasetId' => $datasetId,
@@ -149,7 +149,6 @@ trait IndexElastic
      */
     public function reindexElasticDataProvider(string $teamId, bool $returnParams = false): null|array
     {
-        return null;
         try {
             $datasets = Dataset::where([
                 'team_id' => $teamId,
@@ -258,6 +257,7 @@ trait IndexElastic
 
             ECC::indexDocument($params);
             return null;
+
         } catch (Exception $e) {
             \Log::error('Error reindexing ElasticSearch', [
                 'teamId' => $teamId,
@@ -270,7 +270,6 @@ trait IndexElastic
 
     public function reindexElasticDataProviderWithRelations(string $teamId, string $relation = 'undefined')
     {
-        return null;
         try {
             $team = Team::where('id', $teamId)->select(['id', 'pid', 'name'])->first();
             if (is_null($team)) {
@@ -323,6 +322,7 @@ trait IndexElastic
             ]);
             throw new Exception($e->getMessage());
         }
+
     }
 
     /**
@@ -334,7 +334,6 @@ trait IndexElastic
      */
     public function indexElasticCollections(int $collectionId, bool $returnParams = false): null|array
     {
-        return null;
         $collection = Collection::with(['team', 'keywords'])->where('id', $collectionId)->first();
         $datasets = $collection->allDatasets  ?? [];
 
@@ -393,6 +392,7 @@ trait IndexElastic
             }
             ECC::indexDocument($params);
             return null;
+
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -412,7 +412,6 @@ trait IndexElastic
      */
     private function indexElasticDataProviderColl(int $id): void
     {
-        return;
         $provider = DataProviderColl::where('id', $id)->with('teams')->first();
 
 
@@ -448,6 +447,7 @@ trait IndexElastic
             ];
 
             ECC::indexDocument($params);
+
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -469,7 +469,6 @@ trait IndexElastic
      */
     public function indexElasticDur(string $id, bool $returnParams = false): null|array
     {
-        return null;
         try {
 
             $durMatch = Dur::where(['id' => $id])
@@ -539,6 +538,7 @@ trait IndexElastic
 
             ECC::indexDocument($params);
             return null;
+
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -560,7 +560,6 @@ trait IndexElastic
      */
     public function indexElasticPublication(string $id, bool $returnParams = false): null|array
     {
-        return null;
         try {
             $pubMatch = Publication::where(['id' => $id])->first();
             $datasets = $pubMatch->allDatasets;
@@ -627,6 +626,7 @@ trait IndexElastic
 
             ECC::indexDocument($params);
             return null;
+
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -647,7 +647,6 @@ trait IndexElastic
      */
     public function indexElasticTools(int $toolId, bool $returnParams = false): null|array
     {
-        return null;
         try {
             $tool = Tool::where('id', $toolId)
                 ->with([
@@ -756,6 +755,7 @@ trait IndexElastic
 
             ECC::indexDocument($params);
             return null;
+
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -808,6 +808,7 @@ trait IndexElastic
             ];
 
             ECC::deleteDocument($params);
+
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -888,14 +889,13 @@ trait IndexElastic
      */
     public function indexElasticDataCustodianNetwork(int $dataCustodianNetworkId, bool $returnParams = false): null|array
     {
-        return null;
         try {
             $dpc = DataProviderColl::select('id', 'name', 'img_url', 'enabled', 'url', 'service', 'summary')
                 ->with('teams')
                 ->where([
                     'id' => $dataCustodianNetworkId,
                     'enabled' => 1,
-                ])->first();
+            ])->first();
 
             $teamsResult = $this->getInfoTeams($dpc);
 
@@ -1028,8 +1028,8 @@ trait IndexElastic
         $collectionNames = [];
 
         $collectionHasDurs = CollectionHasDur::where([
-            'dur_id' => $durId,
-        ])
+                'dur_id' => $durId,
+            ])
             ->select('collection_id')
             ->get()
             ->toArray();
@@ -1039,10 +1039,10 @@ trait IndexElastic
         }
         $collectionIds = convertArrayToArrayWithKeyName($collectionHasDurs, 'collection_id');
         $collectionNames = Collection::where('status', Collection::STATUS_ACTIVE)
-            ->whereIn('id', $collectionIds)
-            ->select('name')
-            ->get()
-            ->toArray();
+                            ->whereIn('id', $collectionIds)
+                            ->select('name')
+                            ->get()
+                            ->toArray();
         return convertArrayToArrayWithKeyName($collectionNames, 'name');
     }
 }

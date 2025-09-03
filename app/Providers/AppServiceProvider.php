@@ -63,4 +63,5 @@ class AppServiceProvider extends ServiceProvider
 
         DataAccessApplication::observe(DataAccessApplicationObserver::class);
     }
+
 }

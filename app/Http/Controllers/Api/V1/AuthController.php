@@ -79,9 +79,7 @@ class AuthController extends Controller
         try {
             $input = $request->all();
 
-            $user = User::where('email', $input['email'])
-                ->where('provider', Config::get('constants.provider.service'))
-                ->first();
+            $user = User::where('email', $input['email'])->where('provider', Config::get('constants.provider.service'))->first();
             if (!$user) {
                 throw new Exception("User not found");
             }
@@ -95,7 +93,7 @@ class AuthController extends Controller
             Auditor::log([
                 'user_id' => $user['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Autorization for user",
             ]);
 
@@ -159,7 +157,7 @@ class AuthController extends Controller
             Auditor::log([
                 'user_id' => $user['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Refresh Token",
             ]);
 
