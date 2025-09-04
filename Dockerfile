@@ -65,6 +65,9 @@ RUN composer install --optimize-autoloader \
 # Generate Swagger
 RUN php artisan l5-swagger:generate
 
+# Cleanup unwanted files
+RUN rm /var/www/public/.htaccess
+
 # Generate private and public keys
 # RUN php artisan passport:keys
 
