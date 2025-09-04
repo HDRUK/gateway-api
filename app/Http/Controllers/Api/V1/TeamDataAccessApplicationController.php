@@ -437,16 +437,19 @@ class TeamDataAccessApplicationController extends Controller
             }
 
             $uploads = Upload::where('entity_id', $id)->get();
-
+            $files = [];
             if ($uploads) {
                 $files = $uploads->all();
 
                 foreach ($files as $f) {
                     $filePath = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')->path($f->file_location);
                     $fileNameInZip = basename($f->file_location);
-                    $zip->addFile($filePath, $fileNameInZip);
+                    $files[] = $filePath; 
+                    //$zip->addFile($filePath, $fileNameInZip);
                 }
             }
+
+            return response()->json($files);
 
             $csvFilename = "/tmp/csv" . time() . "_$id.csv";
 
