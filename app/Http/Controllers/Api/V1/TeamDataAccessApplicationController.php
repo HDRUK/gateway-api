@@ -443,13 +443,15 @@ class TeamDataAccessApplicationController extends Controller
 
                 foreach ($files as $f) {
                     $filePath = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')->path($f->file_location);
+                    $contents = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')->get($f->file_location);
+
                     $fileNameInZip = basename($f->file_location);
                     $files[] = $filePath; 
-                    //$zip->addFile($filePath, $fileNameInZip);
+                    $zip->addFromString($fileNameInZip, $contents);
                 }
             }
 
-            return response()->json($files);
+            //return response()->json($files);
 
             $csvFilename = "/tmp/csv" . time() . "_$id.csv";
 
