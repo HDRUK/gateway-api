@@ -10,13 +10,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\User;
 use App\Models\UserHasRole;
-use Illuminate\Http\Request;
 use App\Http\Requests\User\GetUser;
 use App\Models\UserHasNotification;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\EditUser;
 use App\Http\Traits\HubspotContacts;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\BadRequestException;
 use App\Http\Requests\User\IndexUser;
 use App\Http\Requests\User\CreateUser;
 use App\Http\Requests\User\DeleteUser;
@@ -506,11 +506,6 @@ class UserController extends Controller
                         }
                     }
 
-
-
-
-
-
                     if ($user->provider === 'open-athens') {
                         // If the user has a secondary email, use it; otherwise, use the input value.
                         $array['secondary_email'] = is_null($user->secondary_email) ? $input['secondary_email'] : $user->secondary_email;
@@ -521,7 +516,15 @@ class UserController extends Controller
                 }
 
                 if (array_key_exists('preferred_email', $input)) {
+                    // The preferred email must be verified
+                    $is_secondary = $input['preferred_email'] === "secondary";
+
+                    if ($is_secondary && is_null($user->secondary_email_verified_at)) {
+                        throw new BadRequestException("Secondary email must be verified before it can be set as preferred");
+                    }
+
                     $array['preferred_email'] = $user->provider === 'open-athens' ? $user->preferred_email : $input['preferred_email'];
+
                 }
 
                 $arrayUserNotification = array_key_exists('notifications', $input) ?
