@@ -361,40 +361,52 @@ class EnquiryThreadController extends Controller
 
         [$conciergeId, $conciergeName] = $this->getNetworkConcierge();
         $sdeTeamIds = $this->getSdeTeamIds();
-        $multipleDatasets = count($datasets) > 1;
 
         if ($input['is_general_enquiry']) {
-            foreach ($datasets as $dataset) {
-                $team = Team::find($dataset['team_id']);
-                if ($this->shouldUseConcierge($team->id, $sdeTeamIds, $multipleDatasets)) {
-                    $teamIds[] = $conciergeId;
-                    $teamNames[] = $conciergeName;
-                } else {
-                    $teamIds[] = $team->id;
-                    $teamNames[] = $team->name;
-                }
+            // gotta get em all team IDs
+            $teamIds = array_map(fn ($dataset) => $dataset['team_id'], $datasets);
+            $teamNames = array_map(fn ($id) => Team::find($id)->name, $teamIds);
+
+            $sdeInTeams = array_intersect($teamIds, $sdeTeamIds);
+
+            // SDE/Concierge logic
+            if (count($sdeInTeams) > 1 || (count($sdeInTeams) === 1 && count($teamIds) > 1)) {
+                $teamIds = array_values(array_diff($teamIds, $sdeInTeams));
+                $teamIds[] = $conciergeId;
+
+                $teamNames = array_values(array_diff($teamNames, array_map(fn ($id) => Team::find($id)->name, $sdeInTeams)));
+                $teamNames[] = $conciergeName;
             }
+
         } elseif ($input['is_feasibility_enquiry'] || $input['is_dar_dialogue']) {
-            // Batch load datasets to avoid N+1 queries
             $datasetIds = collect($datasets)->pluck('dataset_id');
             $datasetsWithMetadata = Dataset::with('latestMetadata')
                 ->whereIn('id', $datasetIds)
                 ->get()
                 ->keyBy('id');
 
+            $teamIds = [];
+            $teamNames = [];
+
             foreach ($datasets as $dataset) {
                 $datasetModel = $datasetsWithMetadata[$dataset['dataset_id']];
                 $team = $this->getTeamFromDataset($datasetModel);
+                $teamIds[] = $team->id;
+                $teamNames[] = $team->name;
+            }
 
-                if ($this->shouldUseConcierge($team->id, $sdeTeamIds, $multipleDatasets)) {
-                    $teamIds[] = $conciergeId;
-                    $teamNames[] = $conciergeName;
-                } else {
-                    $teamIds[] = $team->id;
-                    $teamNames[] = $team->name;
-                }
+            $sdeInTeams = array_intersect($teamIds, $sdeTeamIds);
+
+            if (count($sdeInTeams) > 1 || (count($sdeInTeams) === 1 && count($teamIds) > 1)) {
+                $teamIds = array_values(array_diff($teamIds, $sdeInTeams));
+                $teamIds[] = $conciergeId;
+
+                $teamNames = array_values(array_diff($teamNames, array_map(fn ($id) => Team::find($id)->name, $sdeInTeams)));
+                $teamNames[] = $conciergeName;
             }
         }
+
+
 
         return [
             'team_ids' => array_unique($teamIds),
@@ -424,9 +436,9 @@ class EnquiryThreadController extends Controller
         return $sdeNetwork ? $sdeNetwork->teams->pluck('id')->toArray() : [];
     }
 
-    private function shouldUseConcierge(int $teamId, array $sdeTeamIds, bool $multipleDatasets): bool
+    private function shouldUseConcierge(int $teamId, array $sdeTeamIds): bool
     {
-        return in_array($teamId, $sdeTeamIds) && $multipleDatasets;
+        return in_array($teamId, $sdeTeamIds);
     }
 
     private function getTeamFromDataset($dataset): Team
