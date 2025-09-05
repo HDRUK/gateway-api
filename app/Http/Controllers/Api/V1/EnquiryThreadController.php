@@ -363,18 +363,43 @@ class EnquiryThreadController extends Controller
         $sdeTeamIds = $this->getSdeTeamIds();
 
         if ($input['is_general_enquiry']) {
+            $teamIds = [];
+            $teamNames = [];
+
             foreach ($datasets as $dataset) {
                 $team = Team::find($dataset['team_id']);
-                if ($this->shouldUseConcierge($team->id, $sdeTeamIds)) {
-                    $teamIds[] = $conciergeId;
-                    $teamNames[] = $conciergeName;
-                } else {
-                    $teamIds[] = $team->id;
-                    $teamNames[] = $team->name;
-                }
+                $teamIds[] = $team->id;
+                $teamNames[] = $team->name;
             }
+
+
+            $sdeInTeams = array_intersect($teamIds, $sdeTeamIds);
+
+            if (count($sdeInTeams) > 1) {
+
+                $teamIds = array_diff($teamIds, $sdeInTeams);
+                $teamIds[] = $conciergeId;
+
+
+                $teamNames = array_values(array_diff($teamNames, array_map(fn ($id) => Team::find($id)->name, $sdeInTeams)));
+                $teamNames[] = $conciergeName;
+            } elseif (count($sdeInTeams) === 1 && count($teamIds) > 1) {
+
+                $teamIds = array_diff($teamIds, $sdeInTeams);
+                $teamIds[] = $conciergeId;
+
+                $teamNames = array_values(array_diff($teamNames, array_map(fn ($id) => Team::find($id)->name, $sdeInTeams)));
+                $teamNames[] = $conciergeName;
+            }
+
+            $teamIds = array_values($teamIds);
+            $teamNames = array_values($teamNames);
+
         } elseif ($input['is_feasibility_enquiry'] || $input['is_dar_dialogue']) {
-            // Batch load datasets to avoid N+1 queries
+            $teamIds = [];
+            $teamNames = [];
+
+
             $datasetIds = collect($datasets)->pluck('dataset_id');
             $datasetsWithMetadata = Dataset::with('latestMetadata')
                 ->whereIn('id', $datasetIds)
@@ -384,16 +409,31 @@ class EnquiryThreadController extends Controller
             foreach ($datasets as $dataset) {
                 $datasetModel = $datasetsWithMetadata[$dataset['dataset_id']];
                 $team = $this->getTeamFromDataset($datasetModel);
-
-                if ($this->shouldUseConcierge($team->id, $sdeTeamIds)) {
-                    $teamIds[] = $conciergeId;
-                    $teamNames[] = $conciergeName;
-                } else {
-                    $teamIds[] = $team->id;
-                    $teamNames[] = $team->name;
-                }
+                $teamIds[] = $team->id;
+                $teamNames[] = $team->name;
             }
+
+
+            $sdeInTeams = array_intersect($teamIds, $sdeTeamIds);
+
+            if (count($sdeInTeams) > 1) {
+                $teamIds = array_diff($teamIds, $sdeInTeams);
+                $teamIds[] = $conciergeId;
+
+                $teamNames = array_values(array_diff($teamNames, array_map(fn ($id) => Team::find($id)->name, $sdeInTeams)));
+                $teamNames[] = $conciergeName;
+            } elseif (count($sdeInTeams) === 1 && count($teamIds) > 1) {
+                $teamIds = array_diff($teamIds, $sdeInTeams);
+                $teamIds[] = $conciergeId;
+
+                $teamNames = array_values(array_diff($teamNames, array_map(fn ($id) => Team::find($id)->name, $sdeInTeams)));
+                $teamNames[] = $conciergeName;
+            }
+
+            $teamIds = array_values($teamIds);
+            $teamNames = array_values($teamNames);
         }
+
 
         return [
             'team_ids' => array_unique($teamIds),
