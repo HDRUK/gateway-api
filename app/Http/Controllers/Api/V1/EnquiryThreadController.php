@@ -301,6 +301,7 @@ class EnquiryThreadController extends Controller
         }
     }
 
+
     private function buildPayload(array $input, User $user): array
     {
         return [
@@ -363,44 +364,72 @@ class EnquiryThreadController extends Controller
         $sdeTeamIds = $this->getSdeTeamIds();
 
         if ($input['is_general_enquiry']) {
+            $teamIds = [];
+            $teamNames = [];
+
             foreach ($datasets as $dataset) {
                 $team = Team::find($dataset['team_id']);
                 $teamIds[] = $team->id;
                 $teamNames[] = $team->name;
-
             }
-            if (count($teamIds) > 1) {
-                // 1/2/3 none sde and 1/2/3 sde - does go to con
-                // 1 sde - does not go to con - exact words from Big Stephen
-                if ($this->shouldUseConcierge($teamIds, $sdeTeamIds)) {
-                    $teamIds[] = $conciergeId;
-                    $teamNames[] = $conciergeName;
+
+            $sdeOverlap = array_intersect($teamIds, $sdeTeamIds);
+
+            if (count($teamIds) > 1 && !empty($sdeOverlap)) {
+                $filteredIds = array_diff($teamIds, $sdeTeamIds);
+                $filteredNames = [];
+
+                foreach ($filteredIds as $id) {
+                    $team = Team::find($id);
+                    $filteredNames[] = $team->name;
                 }
+
+                $filteredIds[] = $conciergeId;
+                $filteredNames[] = $conciergeName;
+
+                $teamIds = array_values($filteredIds);
+                $teamNames = array_values($filteredNames);
             }
 
         } elseif ($input['is_feasibility_enquiry'] || $input['is_dar_dialogue']) {
-            // Batch load datasets to avoid N+1 queries
             $datasetIds = collect($datasets)->pluck('dataset_id');
+
             $datasetsWithMetadata = Dataset::with('latestMetadata')
                 ->whereIn('id', $datasetIds)
                 ->get()
                 ->keyBy('id');
 
+            $teamIds = [];
+            $teamNames = [];
+
             foreach ($datasets as $dataset) {
                 $datasetModel = $datasetsWithMetadata[$dataset['dataset_id']];
                 $team = $this->getTeamFromDataset($datasetModel);
+
                 $teamIds[] = $team->id;
                 $teamNames[] = $team->name;
             }
 
-            if (count($teamIds) > 1) {
-                if ($this->shouldUseConcierge($teamIds, $sdeTeamIds)) {
-                    $teamIds[] = $conciergeId;
-                    $teamNames[] = $conciergeName;
-                }
-            }
+            $sdeOverlap = array_intersect($teamIds, $sdeTeamIds);
 
+            if (count($teamIds) > 1 && !empty($sdeOverlap)) {
+                $filteredIds = array_diff($teamIds, $sdeTeamIds);
+                $filteredNames = [];
+
+                foreach ($filteredIds as $id) {
+                    $team = Team::find($id);
+                    $filteredNames[] = $team->name;
+                }
+
+                $filteredIds[] = $conciergeId;
+                $filteredNames[] = $conciergeName;
+
+                $teamIds = array_values($filteredIds);
+                $teamNames = array_values($filteredNames);
+            }
         }
+
+
 
         return [
             'team_ids' => array_unique($teamIds),
