@@ -375,7 +375,7 @@ class EnquiryThreadController extends Controller
 
             $sdeOverlap = array_intersect($teamIds, $sdeTeamIds);
 
-            if (count($teamIds) > 1 && !empty($sdeOverlap)) {
+            if (!empty($sdeOverlap)) {
                 $filteredIds = array_diff($teamIds, $sdeTeamIds);
                 $filteredNames = [];
 
@@ -412,7 +412,7 @@ class EnquiryThreadController extends Controller
 
             $sdeOverlap = array_intersect($teamIds, $sdeTeamIds);
 
-            if (count($teamIds) > 1 && !empty($sdeOverlap)) {
+            if (!empty($sdeOverlap)) {
                 $filteredIds = array_diff($teamIds, $sdeTeamIds);
                 $filteredNames = [];
 
