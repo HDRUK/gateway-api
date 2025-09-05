@@ -445,7 +445,7 @@ class EnquiryThreadTest extends TestCase
             ],
         ];
 
-        // Multi-dataset enquiry directs to concierge
+        // Multi-dataset enquiry should not direct to concierge, because its 1 sde
         $body = [
             'project_title' => 'Test Enquiry',
             'from' => 'example.test@hdruk.ac.uk',
@@ -472,9 +472,9 @@ class EnquiryThreadTest extends TestCase
 
         $numThreadsAfter = EnquiryThread::count();
 
-        // Test that an email was sent to the network concierge
+        // Test that an email was not sent to the network concierge
         Queue::assertPushed(function (SendEmailJob $email) {
-            return $email->to['to']['name'] === 'SDE Network Concierge';
+            return $email->to['to']['name'] !== 'SDE Network Concierge';
         });
 
         $this->assertEquals($numThreadsAfter, $numThreadsBefore + count($datasets));
