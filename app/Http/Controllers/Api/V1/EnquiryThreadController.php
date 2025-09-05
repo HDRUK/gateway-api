@@ -374,7 +374,7 @@ class EnquiryThreadController extends Controller
                 $teamNames[] = $team->name;
 
             }
-            if ($teamIds.length() > 1) {
+            if (count($teamIds) > 1) {
                 // 1/2/3 none sde and 1/2/3 sde - does go to con
                 // 1 sde - does not go to con - exact words from Big Stephen
                 if ($this->shouldUseConcierge($teamIds, $sdeTeamIds, $multipleDatasets)) {
@@ -398,7 +398,7 @@ class EnquiryThreadController extends Controller
                 $teamNames[] = $team->name;
             }
 
-            if ($teamIds.length() > 1) {
+            if (count($teamIds) > 1) {
                 if ($this->shouldUseConcierge($teamIds, $sdeTeamIds, $multipleDatasets)) {
                     $teamIds[] = $conciergeId;
                     $teamNames[] = $conciergeName;
