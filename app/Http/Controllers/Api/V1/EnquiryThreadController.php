@@ -375,20 +375,22 @@ class EnquiryThreadController extends Controller
 
             $sdeOverlap = array_intersect($teamIds, $sdeTeamIds);
 
-            if (!empty($sdeOverlap)) {
-                $filteredIds = array_diff($teamIds, $sdeTeamIds);
-                $filteredNames = [];
+            if (count($teamIds) > 1 && count($sdeOverlap) >= 1) {
+                if (count($sdeOverlap) > 1) {
+                    $filteredIds = array_diff($teamIds, $sdeTeamIds);
+                    $filteredNames = [];
 
-                foreach ($filteredIds as $id) {
-                    $team = Team::find($id);
-                    $filteredNames[] = $team->name;
+                    foreach ($filteredIds as $id) {
+                        $team = Team::find($id);
+                        $filteredNames[] = $team->name;
+                    }
+
+                    $filteredIds[] = $conciergeId;
+                    $filteredNames[] = $conciergeName;
+
+                    $teamIds = array_values($filteredIds);
+                    $teamNames = array_values($filteredNames);
                 }
-
-                $filteredIds[] = $conciergeId;
-                $filteredNames[] = $conciergeName;
-
-                $teamIds = array_values($filteredIds);
-                $teamNames = array_values($filteredNames);
             }
 
         } elseif ($input['is_feasibility_enquiry'] || $input['is_dar_dialogue']) {
@@ -412,22 +414,25 @@ class EnquiryThreadController extends Controller
 
             $sdeOverlap = array_intersect($teamIds, $sdeTeamIds);
 
-            if (!empty($sdeOverlap)) {
-                $filteredIds = array_diff($teamIds, $sdeTeamIds);
-                $filteredNames = [];
+            if (count($teamIds) > 1 && count($sdeOverlap) >= 1) {
+                if (count($sdeOverlap) > 1) {
+                    $filteredIds = array_diff($teamIds, $sdeTeamIds);
+                    $filteredNames = [];
 
-                foreach ($filteredIds as $id) {
-                    $team = Team::find($id);
-                    $filteredNames[] = $team->name;
+                    foreach ($filteredIds as $id) {
+                        $team = Team::find($id);
+                        $filteredNames[] = $team->name;
+                    }
+
+                    $filteredIds[] = $conciergeId;
+                    $filteredNames[] = $conciergeName;
+
+                    $teamIds = array_values($filteredIds);
+                    $teamNames = array_values($filteredNames);
                 }
-
-                $filteredIds[] = $conciergeId;
-                $filteredNames[] = $conciergeName;
-
-                $teamIds = array_values($filteredIds);
-                $teamNames = array_values($filteredNames);
             }
         }
+
 
 
 
