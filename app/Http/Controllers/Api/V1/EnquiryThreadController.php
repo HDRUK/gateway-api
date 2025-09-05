@@ -361,11 +361,6 @@ class EnquiryThreadController extends Controller
 
         [$conciergeId, $conciergeName] = $this->getNetworkConcierge();
         $sdeTeamIds = $this->getSdeTeamIds();
-        $multipleDatasets = count($datasets) > 1;
-
-
-
-
 
         if ($input['is_general_enquiry']) {
             foreach ($datasets as $dataset) {
@@ -377,7 +372,7 @@ class EnquiryThreadController extends Controller
             if (count($teamIds) > 1) {
                 // 1/2/3 none sde and 1/2/3 sde - does go to con
                 // 1 sde - does not go to con - exact words from Big Stephen
-                if ($this->shouldUseConcierge($teamIds, $sdeTeamIds, $multipleDatasets)) {
+                if ($this->shouldUseConcierge($teamIds, $sdeTeamIds)) {
                     $teamIds[] = $conciergeId;
                     $teamNames[] = $conciergeName;
                 }
@@ -399,7 +394,7 @@ class EnquiryThreadController extends Controller
             }
 
             if (count($teamIds) > 1) {
-                if ($this->shouldUseConcierge($teamIds, $sdeTeamIds, $multipleDatasets)) {
+                if ($this->shouldUseConcierge($teamIds, $sdeTeamIds)) {
                     $teamIds[] = $conciergeId;
                     $teamNames[] = $conciergeName;
                 }
@@ -435,9 +430,9 @@ class EnquiryThreadController extends Controller
         return $sdeNetwork ? $sdeNetwork->teams->pluck('id')->toArray() : [];
     }
 
-    private function shouldUseConcierge(array $teamIds, array $sdeTeamIds, bool $multipleDatasets): bool
+    private function shouldUseConcierge(array $teamIds, array $sdeTeamIds): bool
     {
-        return !empty(array_intersect($teamIds, $sdeTeamIds)) && $multipleDatasets;
+        return !empty(array_intersect($teamIds, $sdeTeamIds));
     }
 
     private function getTeamFromDataset($dataset): Team
