@@ -87,7 +87,7 @@ class ProcessFederation implements ShouldQueue
         // Refresh our potentially mutated list of local items
         $localItems = $this->getLocalDatasetsForFederatedTeam($this->gmi);
 
-        $deleted = $this->deleteLocalDatasetsNotInRemoteCatalogue($localItems, $remoteItems);
+        $deleted = $this->deleteLocalDatasetsNotInRemoteCatalogue($localItems, $remoteItems, $this->gmi);
 
         $this->log('info', "metadata ingestion completed for team {$this->gmi->getTeam()} - created: {$created}, updated: {$updated}, deleted: {$deleted}");
 
