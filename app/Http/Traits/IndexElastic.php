@@ -64,7 +64,11 @@ trait IndexElastic
             }
 
             if (DatasetVersion::where('dataset_id', $datasetId)->count() === 0) {
-                throw new \Exception("Error: DatasetVersion is missing for dataset ID=$datasetId.");
+                return null;
+                // This has been removed pending further investigation of the behaviour of the observers under GMI deletion.
+                // There's a non-zero chance we'll end up with a dataset hanging around for a moment in the index
+                // with no metadata associated, but that shouldn't cause upsets.
+                // throw new \Exception("Error: DatasetVersion is missing for dataset ID=$datasetId.");
             }
 
             $metadata = $datasetMatch->latestVersion()->metadata;
@@ -171,18 +175,22 @@ trait IndexElastic
             $toolNames = [];
             foreach ($datasets as $dataset) {
                 $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages);
-                $datasetVersionIds[] = $dataset->latestVersion()->id;
-                $metadata = $dataset->latestVersion()->metadata;
-                $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-                $types = explode(';,;', $metadata['metadata']['summary']['datasetType']);
-                foreach ($types as $t) {
-                    if (!in_array($t, $dataTypes)) {
-                        $dataTypes[] = $t;
-                    }
-                }
                 foreach ($dataset['spatialCoverage'] as $loc) {
                     if (!in_array($loc['region'], $locations)) {
                         $locations[] = $loc['region'];
+                    }
+                }
+
+                $latestVersion = $dataset->latestVersion();
+                if ($latestVersion) {
+                    $datasetVersionIds[] = $latestVersion->id;
+                    $metadata = $latestVersion->metadata;
+                    $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+                    $types = explode(';,;', $metadata['metadata']['summary']['datasetType']);
+                    foreach ($types as $t) {
+                        if (!in_array($t, $dataTypes)) {
+                            $dataTypes[] = $t;
+                        }
                     }
                 }
 
