@@ -171,18 +171,22 @@ trait IndexElastic
             $toolNames = [];
             foreach ($datasets as $dataset) {
                 $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages);
-                $datasetVersionIds[] = $dataset->latestVersion()->id;
-                $metadata = $dataset->latestVersion()->metadata;
-                $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-                $types = explode(';,;', $metadata['metadata']['summary']['datasetType']);
-                foreach ($types as $t) {
-                    if (!in_array($t, $dataTypes)) {
-                        $dataTypes[] = $t;
-                    }
-                }
                 foreach ($dataset['spatialCoverage'] as $loc) {
                     if (!in_array($loc['region'], $locations)) {
                         $locations[] = $loc['region'];
+                    }
+                }
+
+                $latestVersion = $dataset->latestVersion();
+                if ($latestVersion) {
+                    $datasetVersionIds[] = $latestVersion->id;
+                    $metadata = $latestVersion->metadata;
+                    $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+                    $types = explode(';,;', $metadata['metadata']['summary']['datasetType']);
+                    foreach ($types as $t) {
+                        if (!in_array($t, $dataTypes)) {
+                            $dataTypes[] = $t;
+                        }
                     }
                 }
 
