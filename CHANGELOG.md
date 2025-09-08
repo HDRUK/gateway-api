@@ -1,3 +1,9 @@
+## [2.22.4](https://github.com/HDRUK/gateway-api/compare/v2.22.3...v2.22.4) (2025-09-08)
+
+### 🐛 Bug Fixes
+
+* **GAT-7678:** Observers fixes (#1405) ([a59576f](https://github.com/HDRUK/gateway-api/commit/a59576ff0790fb9e70d2f55fc415531fd25346d9))
+
 ## [2.22.3](https://github.com/HDRUK/gateway-api/compare/v2.22.2...v2.22.3) (2025-09-03)
 
 ### 🐛 Bug Fixes
