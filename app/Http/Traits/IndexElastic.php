@@ -64,7 +64,11 @@ trait IndexElastic
             }
 
             if (DatasetVersion::where('dataset_id', $datasetId)->count() === 0) {
-                throw new \Exception("Error: DatasetVersion is missing for dataset ID=$datasetId.");
+                return null;
+                // This has been removed pending further investigation of the behaviour of the observers under GMI deletion.
+                // There's a non-zero chance we'll end up with a dataset hanging around for a moment in the index
+                // with no metadata associated, but that shouldn't cause upsets.
+                // throw new \Exception("Error: DatasetVersion is missing for dataset ID=$datasetId.");
             }
 
             $metadata = $datasetMatch->latestVersion()->metadata;
