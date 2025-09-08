@@ -57,10 +57,10 @@ class ProcessFederation implements ShouldQueue
             return;
         }
         // hack to remove last dataset
-        $this->log('info', 'popping');
-        $this->log('info', $remoteItems);
-        $remoteItems->shift();
-        $this->log('info', 'popped');
+        // $this->log('info', 'popping');
+        // $this->log('info', $remoteItems);
+        // $remoteItems->shift();
+        // $this->log('info', 'popped');
         $this->log('info', $remoteItems);
         $this->log('info', 'found items in remote collection ' . json_encode($remoteItems));
         $this->gmi->setTeam($this->federation->team[0]->id);
