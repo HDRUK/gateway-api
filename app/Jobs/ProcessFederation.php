@@ -56,6 +56,8 @@ class ProcessFederation implements ShouldQueue
             $this->log('warning', 'REMOTE catalogue returned empty "items" array - aborting');
             return;
         }
+        // hack to remove last dataset
+        array_pop($remoteItems);
 
         $this->log('info', 'found items in remote collection ' . json_encode($remoteItems));
         $this->gmi->setTeam($this->federation->team[0]->id);
