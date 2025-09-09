@@ -1,3 +1,30 @@
+## [2.23.0](https://github.com/HDRUK/gateway-api/compare/v2.22.4...v2.23.0) (2025-09-09)
+
+### ✨ Features
+
+* **GAT-7614:** Update overlay for Cohort Discovery admin panel content download (#1379) ([deaa055](https://github.com/HDRUK/gateway-api/commit/deaa0551948bb23f97a50b3d3e1ed3dc0ae4444a)), closes [GAT-7614](GAT-7614)
+* **GAT-7683:** Dataset default values (#1371) ([7b3787d](https://github.com/HDRUK/gateway-api/commit/7b3787d48bcf9f922f043ccc1713456bdc959a69)), closes [GAT-7683](GAT-7683)
+* **GAT-7683:** Dataset default values (#1373) ([126379e](https://github.com/HDRUK/gateway-api/commit/126379eba46668121851116fd8925fc312759625)), closes [GAT-7683](GAT-7683)
+* **GAT-7683:** Revert default value for datatype (#1374) ([0d21100](https://github.com/HDRUK/gateway-api/commit/0d211000fe458079b73757f97a435f34583601b5)), closes [GAT-7683](GAT-7683)
+* **GAT-7731:** Add NhsSdeApplicationsEnabled feature flag to FeatureFlagSeeder. (#1372) ([1d3614a](https://github.com/HDRUK/gateway-api/commit/1d3614afca233dc06e3cc4899eb7514a955e892b)), closes [GAT-7731](GAT-7731)
+* **GAT-7805:** Setting up OAuth Service for Cohort Discovery (#1396) ([16a3db7](https://github.com/HDRUK/gateway-api/commit/16a3db723a74c4dfe60950b8586e5336a8297795)), closes [GAT-7805](GAT-7805)
+
+### 🐛 Bug Fixes
+
+* **GAT-0000:** CORs is wrong (#1386) ([b22eba9](https://github.com/HDRUK/gateway-api/commit/b22eba9f3b03648fcb8d893bd646a64fc3263e49)), closes [GAT-0000](GAT-0000)
+* **GAT-0000:** Remove TestFederation.php which was incorrectly in 1.21.0 release but broke the build. (#1389) ([83c7481](https://github.com/HDRUK/gateway-api/commit/83c7481221f31af6129a2a847fecca14434acdbf)), closes [GAT-0000](GAT-0000)
+* **GAT-1234:** Update env for API ([beb8f65](https://github.com/HDRUK/gateway-api/commit/beb8f65f69393ad9de52c6d4f29b4d722d4df1a9)), closes [GAT-1234](GAT-1234)
+* **GAT-7351:** none breaking V3 changes which actually are... (#1376) ([a2c82b3](https://github.com/HDRUK/gateway-api/commit/a2c82b30a3196dfbd872bed8181192b689d7fcad)), closes [GAT-7351](GAT-7351)
+* **GAT-7550:** Supply information about DAR templates' publication status per dataset to FE (#1378) ([2c8c6c1](https://github.com/HDRUK/gateway-api/commit/2c8c6c129693e612d3b43f2f3386ca074a7744fe)), closes [GAT-7550](GAT-7550)
+* **GAT-7665:** Fix Network counts reporting (#1375) ([8a964a5](https://github.com/HDRUK/gateway-api/commit/8a964a5355365f9bd60e83d03d6837400e25167d))
+* **GAT-7678:** Brings GMI into API to reduce significant complexity (#1370) ([7ae0911](https://github.com/HDRUK/gateway-api/commit/7ae0911a05f49e91d40188b5c97f049b07a33bb1)), closes [GAT-7678](GAT-7678)
+* **GAT-7678:** Brings GMI into API to reduce significant complexity (#1370) ([550eac2](https://github.com/HDRUK/gateway-api/commit/550eac23936b70f7f6256eeb1adf89923abeecc2)), closes [GAT-7678](GAT-7678)
+* **GAT-7678:** Fix for MDW East mids which didn't return a fully formed JSON response, and thus failed pull. Changes work for both KMS and EM. (#1392) ([4126d83](https://github.com/HDRUK/gateway-api/commit/4126d83d9a35f97b9277258b1cab7f9b96245777))
+* **GAT-7678:** null check on auth_secret_key (#1380) ([aabb13c](https://github.com/HDRUK/gateway-api/commit/aabb13cc3b1cc0e5c6b386c02b30ff149df8d341)), closes [GAT-7678](GAT-7678)
+* **GAT-7678:** null check on auth_secret_key (#1380) ([27df2f2](https://github.com/HDRUK/gateway-api/commit/27df2f2c0a975834d1217579eef3e7412b05b9d6)), closes [GAT-7678](GAT-7678)
+* **GAT-7678:** Slight tweak to include team_id in duplicate check (#1395) ([2d3a671](https://github.com/HDRUK/gateway-api/commit/2d3a671a43772117eda9d7ddd693b335b5f27f9c)), closes [GAT-7678](GAT-7678)
+* **GAT-7812:** Remove htaccess file (#1399) ([3fd603c](https://github.com/HDRUK/gateway-api/commit/3fd603cb06450d05b807c310cf323ae58905fcf8)), closes [GAT-7812](GAT-7812)
+
 ## [2.22.4](https://github.com/HDRUK/gateway-api/compare/v2.22.3...v2.22.4) (2025-09-08)
 
 ### 🐛 Bug Fixes
