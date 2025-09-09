@@ -116,6 +116,7 @@ class AliasReplyScannerService
         ]);
 
         $this->notifyDarManagesOfNewMessage($threadId);
+        $this->notifyUserOfDarResponse($threadId);
 
         unset($body);
         unset($from);
