@@ -477,6 +477,9 @@ class UserController extends Controller
                         // below if a user already has a secondary verified email and is changing
                         $array['secondary_email_verified_at'] = null;
 
+                        // Set the preferred email notification to primary as the secondary isn't verified
+                        $array['preferred_email'] = "primary";
+
                         EmailVerification::where('user_id', $user->id)->update(['expires_at' => now()]);
 
                         $newToken = Str::uuid();
