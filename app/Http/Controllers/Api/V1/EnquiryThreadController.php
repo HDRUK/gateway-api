@@ -12,14 +12,21 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Laravel\Pennant\Feature;
 use App\Models\EnquiryThread;
-use App\Models\DataProviderColl;
 use Illuminate\Http\JsonResponse;
 use App\Http\Traits\EnquiriesTrait;
 use App\Http\Controllers\Controller;
+use App\Services\SDEConciergeService;
 
 class EnquiryThreadController extends Controller
 {
     use EnquiriesTrait;
+
+    protected SDEConciergeService $sdeConciergeService;
+
+    public function __construct(SDEConciergeService $sdeConciergeService)
+    {
+        $this->sdeConciergeService = $sdeConciergeService;
+    }
 
     /**
      * @OA\Get(
@@ -359,60 +366,7 @@ class EnquiryThreadController extends Controller
             return $this->getStandardTeamConfiguration($datasets);
         }
 
-        [$conciergeId, $conciergeName] = $this->getNetworkConcierge();
-        $sdeTeamIds = $this->getSdeTeamIds();
-
-        if ($input['is_general_enquiry']) {
-            // gotta get em all team IDs
-            $teamIds = array_map(fn ($dataset) => $dataset['team_id'], $datasets);
-            $teamNames = array_map(fn ($id) => Team::find($id)->name, $teamIds);
-
-            $sdeInTeams = array_intersect($teamIds, $sdeTeamIds);
-
-            // SDE/Concierge logic
-            if (count($sdeInTeams) > 1 || (count($sdeInTeams) === 1 && count($teamIds) > 1)) {
-                $teamIds = array_values(array_diff($teamIds, $sdeInTeams));
-                $teamIds[] = $conciergeId;
-
-                $teamNames = array_values(array_diff($teamNames, array_map(fn ($id) => Team::find($id)->name, $sdeInTeams)));
-                $teamNames[] = $conciergeName;
-            }
-
-        } elseif ($input['is_feasibility_enquiry'] || $input['is_dar_dialogue']) {
-            $datasetIds = collect($datasets)->pluck('dataset_id');
-            $datasetsWithMetadata = Dataset::with('latestMetadata')
-                ->whereIn('id', $datasetIds)
-                ->get()
-                ->keyBy('id');
-
-            $teamIds = [];
-            $teamNames = [];
-
-            foreach ($datasets as $dataset) {
-                $datasetModel = $datasetsWithMetadata[$dataset['dataset_id']];
-                $team = $this->getTeamFromDataset($datasetModel);
-                $teamIds[] = $team->id;
-                $teamNames[] = $team->name;
-            }
-
-            $sdeInTeams = array_intersect($teamIds, $sdeTeamIds);
-
-            if (count($sdeInTeams) > 1 || (count($sdeInTeams) === 1 && count($teamIds) > 1)) {
-                $teamIds = array_values(array_diff($teamIds, $sdeInTeams));
-                $teamIds[] = $conciergeId;
-
-                $teamNames = array_values(array_diff($teamNames, array_map(fn ($id) => Team::find($id)->name, $sdeInTeams)));
-                $teamNames[] = $conciergeName;
-            }
-        }
-
-
-
-        return [
-            'team_ids' => array_unique($teamIds),
-            'team_names' => array_unique($teamNames),
-            'data_custodians' => array_unique($dataCustodians),
-        ];
+        return $this->sdeConciergeService->getSdeTeamConfiguration($datasets, $input);
     }
 
     private function getStandardTeamConfiguration(array $datasets): array
@@ -427,38 +381,6 @@ class EnquiryThreadController extends Controller
         ];
     }
 
-    private function getSdeTeamIds(): array
-    {
-        $sdeNetwork = DataProviderColl::where('name', 'LIKE', '%SDE%')
-            ->with('teams')
-            ->first();
-
-        return $sdeNetwork ? $sdeNetwork->teams->pluck('id')->toArray() : [];
-    }
-
-    private function shouldUseConcierge(int $teamId, array $sdeTeamIds): bool
-    {
-        return in_array($teamId, $sdeTeamIds);
-    }
-
-    private function getTeamFromDataset($dataset): Team
-    {
-        $metadata = $dataset->latestMetadata;
-        $gatewayId = $metadata->metadata['metadata']['summary']['publisher']['gatewayId'];
-
-        return is_numeric($gatewayId)
-            ? Team::find($gatewayId)
-            : Team::where('pid', $gatewayId)->first();
-    }
-
-    private function getNetworkConcierge(): array
-    {
-        $team = Team::where('name', 'LIKE', '%SDE Network%')->first();
-        if ($team) {
-            return array($team->id, $team->name);
-        }
-        return array(null, null);
-    }
     private function mapDatasets(array $datasets): array
     {
         $arr = [];
