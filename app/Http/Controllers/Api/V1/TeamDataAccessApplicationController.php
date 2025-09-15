@@ -481,8 +481,6 @@ class TeamDataAccessApplicationController extends Controller
 
             $updateArray = array();
 
-            \Log::info("state of play", $application);
-
             if ($application['submission_status'] === "SUBMITTED" && $application['approval_status'] === null) {
                 $updateArray['approval_status'] = "FEEDBACK";
             }
