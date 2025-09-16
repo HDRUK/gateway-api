@@ -59,7 +59,9 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $hidden = [
-        'password', 'remember_token', 'providerid',
+        'password',
+        'remember_token',
+        'providerid',
     ];
 
     /**
@@ -119,6 +121,12 @@ class User extends Authenticatable
             ->orderBy('team_has_users.team_id');
     }
 
+    public function teamUsers(): HasMany
+    {
+        return $this->hasMany(TeamHasUser::class, 'user_id', 'id')
+            ->orderBy('team_id');
+    }
+
     public function notifications(): BelongsToMany
     {
         return $this->belongsToMany(Notification::class, 'user_has_notifications');
@@ -150,5 +158,4 @@ class User extends Authenticatable
             ->withPivot('user_id', 'workgroup_id')
             ->orderBy('user_has_workgroups.workgroup_id');
     }
-
 }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TeamHasUser extends Model
 {
@@ -33,6 +34,11 @@ class TeamHasUser extends Model
     // {
     //     return $this->belongsToMany(Permission::class, 'team_user_has_permissions');
     // }
+
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class, 'team_id', 'id');
+    }
 
     public function roles(): BelongsToMany
     {
