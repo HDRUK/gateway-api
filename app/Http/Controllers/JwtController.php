@@ -80,6 +80,8 @@ class JwtController extends Controller
                 ])
                 ->first();
 
+            // name this as adminTeams (admin_teams)
+            // - because we're plucking teams where the user is custodain.team.admin
             $user->setRelation('adminTeams', $user->teamUsers->pluck('team'));
             $user->unsetRelation('teamUsers');
 
