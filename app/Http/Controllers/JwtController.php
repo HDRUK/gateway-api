@@ -66,24 +66,13 @@ class JwtController extends Controller
             $expireTime = $currentTime->addSeconds(env('JWT_EXPIRATION'));
 
             $user = User::with([
-                'workgroups',
-                'teamUsers' => function ($q) {
-                    $q->whereHas('roles', function ($r) {
-                        $r->where('name', 'custodian.team.admin');
-                    })
-                        ->with(['team:id,name'])
-                        ->select(['id', 'team_id', 'user_id']);
-                },
+                'workgroups:id,name,active',
+                'adminTeams:id,name'
             ])
-                ->where([
-                    'id' => $userId,
-                ])
-                ->first();
+                ->find($userId);
 
-            // name this as adminTeams (admin_teams)
-            // - because we're plucking teams where the user is custodain.team.admin
-            $user->setRelation('adminTeams', $user->teamUsers->pluck('team'));
-            $user->unsetRelation('teamUsers');
+            $user->adminTeams->makeHidden('pivot');
+            $user->workgroups->makeHidden('pivot');
 
             $token = $this->config->builder()
                 ->issuedBy((string)env('APP_URL')) // iss claim

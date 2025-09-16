@@ -127,6 +127,12 @@ class User extends Authenticatable
             ->orderBy('team_id');
     }
 
+    public function adminTeams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class, 'team_has_users', 'user_id', 'team_id')
+            ->whereHas('teamUsers.roles', fn($q) => $q->where('name', 'custodian.team.admin'));
+    }
+
     public function notifications(): BelongsToMany
     {
         return $this->belongsToMany(Notification::class, 'user_has_notifications');
