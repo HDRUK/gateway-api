@@ -65,11 +65,14 @@ class JwtController extends Controller
             $currentTime = CarbonImmutable::now();
             $expireTime = $currentTime->addSeconds(env('JWT_EXPIRATION'));
 
-            $user = User::with('workgroups')
-                ->where([
-                    'id' => $userId,
-                ])
-                ->first();
+            $user = User::with([
+                'workgroups:id,name,active',
+                'adminTeams:id,name'
+            ])
+                ->find($userId);
+
+            $user->adminTeams->makeHidden('pivot');
+            $user->workgroups->makeHidden('pivot');
 
             $token = $this->config->builder()
                 ->issuedBy((string)env('APP_URL')) // iss claim
