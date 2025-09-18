@@ -69,10 +69,6 @@ class JwtController extends Controller
             $user->workgroups->makeHidden('pivot');
 
             if (Config::get('services.cohort_discovery.add_teams_to_jwt')) {
-                // Temp for development for DAPHNE
-                // - load teams that the user is custodian.team.admin for 
-                // - this tells DAPHNE what teams (custodians) are in the GW
-                //   and if the user is allowed to admin for this team
                 $user->load(['adminTeams' => function ($query) {
                     $query->select('teams.id', 'teams.name');
                 }]);
