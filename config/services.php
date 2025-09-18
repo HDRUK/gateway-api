@@ -88,6 +88,7 @@ return [
         'auth_url' => env('COHORT_DISCOVERY_AUTH_URL', 'http://auth.rquest.local'),
         'service_account' => env('COHORT_DISCOVERY_SERVICE_ACCOUNT', 'cohort-service@hdruk.ac.uk'),
         'use_oauth2' => env('COHORT_DISCOVERY_USE_OAUTH2', false),
+        'add_teams_to_jwt' => env('COHORT_DISCOVERY_ADD_TEAMS_TO_JWT', false),
     ],
 
     'media' => [
