@@ -70,7 +70,16 @@ class LicenseController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $licenses = License::where('valid_until', null)->paginate(Config::get('constants.per_page'), ['*'], 'page');
+            $perPage = (int) request('per_page', Config::get('constants.per_page'));
+
+            $licenses = License::where('valid_until', null);
+
+            $licenses = $licenses->paginate(function ($total) use ($perPage) {
+                if ($perPage === -1) {
+                    return $total;
+                }
+                return $perPage;
+            }, ['*'], 'page');
 
             Auditor::log([
                 'action_type' => 'GET',
