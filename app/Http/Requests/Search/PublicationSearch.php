@@ -28,7 +28,7 @@ class PublicationSearch extends BaseFormRequest
                     // Allow array of alphanumeric strings
                     if (is_array($value)) {
                         foreach ($value as $item) {
-                            if (!is_string($item) || !preg_match('/^[a-zA-Z0-9]*$/', $item)) {
+                            if (!is_string($item) || !preg_match('/^[a-zA-Z0-9\s]*$/', $item)) {
                                 $fail('The '.$attribute.' must be alphanumeric or an array of alphanumeric strings.');
                                 return;
                             }
