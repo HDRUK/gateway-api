@@ -22,7 +22,7 @@ class PublicationSearch extends BaseFormRequest
                         return;
                     }
                     // Allow string (alphanumeric)
-                    if (is_string($value) && preg_match('/^[a-zA-Z0-9]*$/', $value)) {
+                    if (is_string($value) && preg_match('/^[a-zA-Z0-9\s]*$/', $value)) {
                         return;
                     }
                     // Allow array of alphanumeric strings
