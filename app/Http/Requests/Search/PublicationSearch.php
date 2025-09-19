@@ -15,8 +15,13 @@ class PublicationSearch extends BaseFormRequest
     {
         return [
             'query' => [
-                'alpha_dash',
                 'nullable',
+                'sometimes',
+                'array',
+            ],
+            'query.*' => [
+                'nullable',
+                'alpha_num:ascii',
                 'max:255'
             ],
             'source' => [

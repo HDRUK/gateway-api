@@ -20,7 +20,7 @@ class Search extends BaseFormRequest
                 'max:255'
             ],
             'sort' => [
-                'regex:/^(updated_at|name|score|date|title):(asc|desc)$/i'
+                'regex:/^(projectTitle|updated_at|name|score|date|title):(asc|desc)$/i'
             ],
             'download' => 'boolean',
         ];
