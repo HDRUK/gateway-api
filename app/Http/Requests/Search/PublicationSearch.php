@@ -17,10 +17,6 @@ class PublicationSearch extends BaseFormRequest
             'query' => [
                 'nullable',
                 function ($attribute, $value, $fail) {
-                    // Allow empty
-                    if (is_null($value) || $value === '') {
-                        return;
-                    }
                     // Allow string (alphanumeric)
                     if (is_string($value) && preg_match('/^[a-zA-Z0-9\s]*$/', $value)) {
                         return;
@@ -36,11 +32,11 @@ class PublicationSearch extends BaseFormRequest
                         return;
                     }
                     // Allow URL
-                    if (filter_var($value, FILTER_VALIDATE_URL)) {
+                    if (is_string($value) && filter_var($value, FILTER_VALIDATE_URL)) {
                         return;
                     }
                     // If none of the above, fail
-                    $fail('The '.$attribute.' must be a string, an array, a URL, or empty.');
+                    $fail('The '.$attribute.' must be an alphanumeric string, an array, a URL, or empty.');
                 },
                 'max:255',
             ],
