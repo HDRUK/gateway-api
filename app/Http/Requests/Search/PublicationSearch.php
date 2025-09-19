@@ -14,6 +14,32 @@ class PublicationSearch extends BaseFormRequest
     public function rules(): array
     {
         return [
+            'query' => [
+                'nullable',
+                function ($attribute, $value, $fail) {
+                    // Allow string (alphanumeric)
+                    if (is_string($value) && preg_match('/^[a-zA-Z0-9\s]*$/', $value)) {
+                        return;
+                    }
+                    // Allow array of alphanumeric strings
+                    if (is_array($value)) {
+                        foreach ($value as $item) {
+                            if (!is_string($item) || !preg_match('/^[a-zA-Z0-9\s]*$/', $item)) {
+                                $fail('The '.$attribute.' must be alphanumeric or an array of alphanumeric strings.');
+                                return;
+                            }
+                        }
+                        return;
+                    }
+                    // Allow URL
+                    if (is_string($value) && filter_var($value, FILTER_VALIDATE_URL)) {
+                        return;
+                    }
+                    // If none of the above, fail
+                    $fail('The '.$attribute.' must be an alphanumeric string, an array, a URL, or empty.');
+                },
+                'max:255',
+            ],
             'source' => [
                 'nullable',
                 'string',
