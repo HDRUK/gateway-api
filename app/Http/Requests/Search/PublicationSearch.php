@@ -35,8 +35,12 @@ class PublicationSearch extends BaseFormRequest
                         }
                         return;
                     }
+                    // Allow URL
+                    if (filter_var($value, FILTER_VALIDATE_URL)) {
+                        return;
+                    }
                     // If none of the above, fail
-                    $fail('The '.$attribute.' must be a string, an array, or empty.');
+                    $fail('The '.$attribute.' must be a string, an array, a URL, or empty.');
                 },
                 'max:255',
             ],
