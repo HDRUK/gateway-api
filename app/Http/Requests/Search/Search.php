@@ -4,7 +4,7 @@ namespace App\Http\Requests\Search;
 
 use App\Http\Requests\BaseFormRequest;
 
-class PublicationSearch extends BaseFormRequest
+class Search extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -19,21 +19,10 @@ class PublicationSearch extends BaseFormRequest
                 'nullable',
                 'max:255'
             ],
-            'source' => [
-                'nullable',
-                'string',
-                'in:GAT,FED',
+            'sort' => [
+                'regex:/^(score|date|title):(asc|desc)$/i'
             ],
+            'download' => 'boolean',
         ];
-    }
-
-    /**
-     * Add Query parameters to the FormRequest.
-     *
-     * @return void
-     */
-    protected function prepareForValidation()
-    {
-        $this->merge(['source' => $this->query('source')]);
     }
 }
