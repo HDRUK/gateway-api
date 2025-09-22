@@ -91,21 +91,48 @@ class SDEConciergeService
         }
     }
 
-    public function determineEnquiryToSdeTeamOrConcierge(array &$teamIds, array &$teamNames, array $sdeInTeams, int $conciergeId, string $conciergeName): void
-    {
-        if (count($sdeInTeams) > 1 || (count($sdeInTeams) === 1 && count($teamIds) > 1)) {
-            // Enquiry goes to SDE Concierge, as multiple SDE teams or SDE and non-SDE teams
-            $teamIds = array_values(array_diff($teamIds, $sdeInTeams));
-            $teamIds[] = $conciergeId;
-
-            $teamNames = array_values(array_diff($teamNames, array_map(fn ($id) => Team::find($id)->name, $sdeInTeams)));
-            $teamNames[] = $conciergeName;
+    public function determineEnquiryToSdeTeamOrConcierge(
+        array &$teamIds,
+        array &$teamNames,
+        array $sdeInTeams,
+        int $conciergeId,
+        string $conciergeName
+    ): void {
+        // CASE 1: Single dataset enquiry
+        if (count($teamIds) === 1) {
+            // Whether SDE or non-SDE, honour the custodian
             return;
         }
 
-        // Enquiry goes to team that uploaded metadata
+        // CASE 2: Multi-dataset enquiry, all datasets belong to one SDE team
+        if (count($sdeInTeams) === 1 && empty(array_diff($teamIds, $sdeInTeams))) {
+            // All datasets are from a single SDE custodian
+            return;
+        }
+
+        // CASE 3: Multi-dataset enquiry, multiple SDE custodians
+        if (count($sdeInTeams) > 1 && empty(array_diff($teamIds, $sdeInTeams))) {
+            // All datasets are SDE but from different custodians → concierge
+            $teamIds = [$conciergeId];
+            $teamNames = [$conciergeName];
+            return;
+        }
+
+        // CASE 4: Multi-dataset enquiry, SDE + non-SDE mix
+        if (!empty($sdeInTeams) && !empty(array_diff($teamIds, $sdeInTeams))) {
+            $nonSdeTeamIds = array_diff($teamIds, $sdeInTeams);
+            $nonSdeTeamNames = array_map(fn ($id) => Team::find($id)->name, $nonSdeTeamIds);
+
+            $teamIds = array_merge($nonSdeTeamIds, [$conciergeId]);
+            $teamNames = array_merge($nonSdeTeamNames, [$conciergeName]);
+            return;
+        }
+
+        // CASE 5: Multi-dataset enquiry, all non-SDE
+        // → honor all custodians
         return;
     }
+
 
     public function getSdeNetworkConcierge(): array
     {
@@ -124,11 +151,6 @@ class SDEConciergeService
             ->first();
 
         return $sdeNetwork ? $sdeNetwork->teams->pluck('id')->toArray() : [];
-    }
-
-    public function shouldUseConcierge(int $teamId, array $sdeTeamIds): bool
-    {
-        return in_array($teamId, $sdeTeamIds);
     }
 
     public function getTeamFromDataset($dataset): Team
