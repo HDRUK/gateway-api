@@ -519,6 +519,99 @@ class EnquiryThreadTest extends TestCase
         });
     }
 
+    /**
+     * Create an enquiry with a single SDE dataset
+     * and ensure it does NOT go to the concierge
+     *
+     * @return void
+     */
+    public function test_add_new_single_sde_enquiry_thread_stays_with_sde(): void
+    {
+        Feature::define('SDEConciergeServiceEnquiry', true);
+
+        $uniqueUserId = $this->createUser();
+        $teamId = $this->createTeam([$uniqueUserId]);
+        $url = '/api/v1/teams/' . $teamId . '/users';
+        $responseUserRole = $this->json(
+            'POST',
+            $url,
+            [
+                'userId' => $uniqueUserId,
+                'roles' => [
+                    'custodian.dar.manager'
+                ]
+            ],
+            $this->header
+        );
+        $responseUserRole->assertStatus(201);
+
+        $response = $this->json(
+            'POST',
+            '/api/v1/data_provider_colls',
+            [
+                'name' => 'SDE Network Test',
+                'summary' => 'SDE Network Test',
+                'img_url' => 'https://doesntexist.com/img.jpeg',
+                'enabled' => 1,
+                'team_ids' => [$teamId],
+            ],
+            $this->header,
+        );
+        $response->assertStatus(201);
+
+        $responseCreateDataset = $this->json(
+            'POST',
+            'api/v1/datasets',
+            [
+                'team_id' => $teamId,
+                'user_id' => $uniqueUserId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseCreateDataset->assertStatus(201);
+        $datasetId = $responseCreateDataset['data'];
+
+        Queue::fake();
+
+        $body = [
+           'project_title' => 'Test Enquiry - single SDE stays with SDE',
+           'from' => 'example.test@hdruk.ac.uk',
+           'contact_number' => '000111444',
+           'is_dar_dialogue' => false,
+           'is_dar_status' => false,
+           'is_feasibility_enquiry' => false,
+           'is_general_enquiry' => true,
+           'datasets' => [
+               0 => [
+                   'dataset_id' => $datasetId,
+                   'interest_type' => 'PRIMARY'
+               ],
+           ],
+           'message' => 'Testing singular SDE case'
+        ];
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL . '/',
+            $body,
+            $this->header
+        );
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        Queue::assertPushed(function (SendEmailJob $email) {
+            return $email->to['to']['name'] !== 'SDE Network Concierge';
+        });
+    }
+
+
     private function createUser(): int
     {
         $responseCreateUser = $this->json(
