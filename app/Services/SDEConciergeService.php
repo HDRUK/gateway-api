@@ -44,7 +44,7 @@ class SDEConciergeService
                 $teamNames[] = $team->name;
             }
 
-            $sdeInTeams = array_intersect($teamIds, $sdeTeamIds);
+            $sdeInTeams = array_values(array_unique(array_intersect($teamIds, $sdeTeamIds)));
 
             $this->determineEnquiryToSdeTeamOrConcierge(
                 $teamIds,
