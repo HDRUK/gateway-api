@@ -28,7 +28,7 @@ class CustomLogoutController extends Controller
             $redirectUrl = env('GATEWAY_URL');
             return redirect()->away($redirectUrl);
         } catch (Exception $e) {
-            throw new Exception($e);
+            throw new Exception($e->getMessage());
         }
     }
 }

@@ -370,11 +370,11 @@ class TeamDataAccessApplicationController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/downloadCsv",
-     *      summary="Returns a DAR form in CSV format",
-     *      description="Returns a DAR form in CSV format",
+     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/download",
+     *      summary="Returns a DAR form as a CSV with attached files as a zip",
+     *      description="Returns a DAR form as a CSV with attached files as a zip",
      *      tags={"DataAccessApplication"},
-     *      summary="DataAccessApplication@downloadCsv",
+     *      summary="DataAccessApplication@download",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -437,14 +437,13 @@ class TeamDataAccessApplicationController extends Controller
             }
 
             $uploads = Upload::where('entity_id', $id)->get();
-
             if ($uploads) {
                 $files = $uploads->all();
 
                 foreach ($files as $f) {
-                    $filePath = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')->path($f->file_location);
+                    $contents = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')->get($f->file_location);
                     $fileNameInZip = basename($f->file_location);
-                    $zip->addFile($filePath, $fileNameInZip);
+                    $zip->addFromString($fileNameInZip, $contents);
                 }
             }
 
@@ -479,6 +478,18 @@ class TeamDataAccessApplicationController extends Controller
             $zip->addFile($csvFilename, "dar_application.csv");
             $zip->close();
             File::delete($csvFilename);
+
+            $updateArray = array();
+
+            if ($application['submission_status'] === "SUBMITTED" && $application['approval_status'] === null) {
+                $updateArray['approval_status'] = "FEEDBACK";
+            }
+
+            $application = DataAccessApplication::where('id', $id)
+            ->first();
+
+            $application->update($updateArray);
+
             return response()->download($zipFilename)->deleteFileAfterSend(true);
 
         } catch (UnauthorizedException $e) {

@@ -257,16 +257,16 @@ class Team extends Model
     {
         return $this->hasManyDeep(
             Role::class,
-            [TeamHasUser::class,TeamUserHasRole::class],
+            [TeamHasUser::class, TeamUserHasRole::class],
             [
-               'team_id', // Foreign key on the "TeamHasUser" table.
-               'team_has_user_id',    // Foreign key on the "TeamUserHasRoles" table.
-               'id'     // Foreign key on the "Roles" table.
+                'team_id', // Foreign key on the "TeamHasUser" table.
+                'team_has_user_id',    // Foreign key on the "TeamUserHasRoles" table.
+                'id'     // Foreign key on the "Roles" table.
             ],
             [
-              'id', // Local key on the "Team" table.
-              'id', // Local key on the "TeamHasUser" table.
-              'role_id'  // Local key on the "TeamUserHasRole" table.
+                'id', // Local key on the "Team" table.
+                'id', // Local key on the "TeamHasUser" table.
+                'role_id'  // Local key on the "TeamUserHasRole" table.
             ]
         )
             ->withIntermediate(TeamUserHasRole::class)
@@ -285,7 +285,11 @@ class Team extends Model
                 "users.secondary_email as user_secondary_email",
                 "users.preferred_email as user_preferred_email"
             ]);
+    }
 
+    public function teamUsers(): HasMany
+    {
+        return $this->hasMany(TeamHasUser::class, 'team_id', 'id');
     }
 
     /**

@@ -87,8 +87,11 @@ trait GatewayMetadataIngestionTrait
         ])->get())->keyBy('pid');
     }
 
-    public function deleteLocalDatasetsNotInRemoteCatalogue(Collection $localItems, Collection $remoteItems): int
-    {
+    public function deleteLocalDatasetsNotInRemoteCatalogue(
+        Collection $localItems,
+        Collection $remoteItems,
+        GatewayMetadataIngestionService $gmi
+    ): int {
         $this->log('info', 'testing REMOTE collection for LOCAL deletions');
 
         $deletedCount = 0;
@@ -99,23 +102,30 @@ trait GatewayMetadataIngestionTrait
             try {
                 $this->log('info', "dataset {$pid} detected LOCALLY, but NOT in REMOTE collection - DELETING");
 
-                $ds = Dataset::where('pid', $pid)->first();
+                $ds = Dataset::where([
+                    'pid' => $pid,
+                    'team_id' => $gmi->getTeam(),
+                    'create_origin' => 'GMI',
+                ])->first();
                 $this->log('info', 'dataset for deletion ' . $ds->id);
 
                 $dsv = DatasetVersion::where('dataset_id', $ds->id)->first();
-                $this->log('info', 'dataset_version for deletion ' . $dsv->id);
+                if ($dsv) {
+                    $this->log('info', 'dataset_version for deletion ' . $dsv->id);
+                    // Due to constraints, delete spatial coverage first.
+                    $dsvhsc = DatasetVersionHasSpatialCoverage::where('dataset_version_id', $dsv->id)->forceDelete();
+                    $dsv->forceDelete();
 
-                // Due to constraints, delete spatial coverage first.
-                $dsvhsc = DatasetVersionHasSpatialCoverage::where('dataset_version_id', $dsv->id)->forceDelete();
-                $dsv->forceDelete();
+                    unset($dsvhsc);
+                    unset($dsv);
+                } else {
+                    $this->log('warning', "no dataset_version found for dataset {$ds->id} - skipping deletion");
+                }
+
                 $ds->forceDelete();
+                $this->log('info', "dataset {$ds->id} deleted");
 
-                $this->log('info', "dataset {$ds->id}, dataset_version {$dsv->id} and associated dataset_version_has_spatial_coverage deleted");
-
-                unset($dsvhsc);
                 unset($ds);
-                unset($dsv);
-
                 $deletedCount++;
             } catch (\Exception $e) {
                 $this->log('error', 'encountered internal error: ' . json_encode($e->getMessage()));
