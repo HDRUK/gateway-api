@@ -16,7 +16,7 @@ class Cors
 
         $dta = trim((string) env('DTA_URL', ''));
         if ($dta !== '') {
-            $allowed[] = $dta;
+            $allowedOrigins[] = $dta;
         }
 
         $headers = [
