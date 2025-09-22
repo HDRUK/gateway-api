@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Team;
 use App\Models\Dataset;
 use App\Models\DataProviderColl;
+use Illuminate\Support\Facades\Log;
 
 class SDEConciergeService
 {
@@ -68,12 +69,19 @@ class SDEConciergeService
         int $conciergeId,
         string $conciergeName
     ): void {
+        Log::info('Debugging SDE determineGeneralEnquiryToSdeTeamOrConcierge', [
+            'teamIds' => $teamIds,
+            'sdeInTeams' => $sdeInTeams,
+            'conciergeId' => $conciergeId,
+        ]);
         if (count($teamIds) === 1) {
+            Log::info('1 <<<<determineGeneralEnquiryToSdeTeamOrConcierge');
             // Enquiry goes to team that uploaded metadata
             return;
         }
 
         if (empty(array_diff($teamIds, $sdeInTeams))) {
+            Log::info('2 <<<<determineGeneralEnquiryToSdeTeamOrConcierge');
             // Enquiry goes to SDE Concierge, as all teams are SDE
             $teamIds = [$conciergeId];
             $teamNames = [$conciergeName];
@@ -81,6 +89,7 @@ class SDEConciergeService
         }
 
         if (!empty($sdeInTeams) && !empty(array_diff($teamIds, $sdeInTeams))) {
+            Log::info('3 <<<<determineGeneralEnquiryToSdeTeamOrConcierge');
             // Enquiry goes to SDE Concierge _and_ teams that uploaded metadata
             $nonSdeTeamIds = array_diff($teamIds, $sdeInTeams);
             $nonSdeTeamNames = array_map(fn ($id) => Team::find($id)->name, $nonSdeTeamIds);
@@ -98,20 +107,29 @@ class SDEConciergeService
         int $conciergeId,
         string $conciergeName
     ): void {
+        Log::info('Debugging SDE determineEnquiryToSdeTeamOrConcierge', [
+            'teamIds' => $teamIds,
+            'sdeInTeams' => $sdeInTeams,
+            'conciergeId' => $conciergeId,
+        ]);
+
         // CASE 1: Single dataset enquiry
         if (count($teamIds) === 1) {
+            Log::info('1 <<<<determineEnquiryToSdeTeamOrConcierge');
             // Whether SDE or non-SDE, honour the custodian
             return;
         }
 
         // CASE 2: Multi-dataset enquiry, all datasets belong to one SDE team
         if (count($sdeInTeams) === 1 && empty(array_diff($teamIds, $sdeInTeams))) {
+            Log::info('2 <<<<determineEnquiryToSdeTeamOrConcierge');
             // All datasets are from a single SDE custodian
             return;
         }
 
         // CASE 3: Multi-dataset enquiry, multiple SDE custodians
         if (count($sdeInTeams) > 1 && empty(array_diff($teamIds, $sdeInTeams))) {
+            Log::info('3 <<<<determineEnquiryToSdeTeamOrConcierge');
             // All datasets are SDE but from different custodians → concierge
             $teamIds = [$conciergeId];
             $teamNames = [$conciergeName];
@@ -120,6 +138,7 @@ class SDEConciergeService
 
         // CASE 4: Multi-dataset enquiry, SDE + non-SDE mix
         if (!empty($sdeInTeams) && !empty(array_diff($teamIds, $sdeInTeams))) {
+            Log::info('4 <<<<determineEnquiryToSdeTeamOrConcierge');
             $nonSdeTeamIds = array_diff($teamIds, $sdeInTeams);
             $nonSdeTeamNames = array_map(fn ($id) => Team::find($id)->name, $nonSdeTeamIds);
 
@@ -130,6 +149,7 @@ class SDEConciergeService
 
         // CASE 5: Multi-dataset enquiry, all non-SDE
         // → honor all custodians
+        Log::info('5 <<<<determineEnquiryToSdeTeamOrConcierge');
         return;
     }
 
