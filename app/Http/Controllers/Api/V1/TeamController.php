@@ -383,7 +383,7 @@ class TeamController extends Controller
                 'description' => $e,
             ]);
 
-            throw new Exception($e);
+            throw new Exception($e->getMessage());
         }
     }
 
@@ -1227,7 +1227,7 @@ class TeamController extends Controller
             );
 
         } catch (Exception $e) {
-            throw new Exception($e);
+            throw new Exception($e->getMessage());
         }
     }
 

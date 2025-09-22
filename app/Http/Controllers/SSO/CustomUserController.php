@@ -69,7 +69,7 @@ class CustomUserController extends Controller
                 'rquestroles' => $rRoles,
             ]);
         } catch (Exception $e) {
-            throw new Exception($e);
+            throw new Exception($e->getMessage());
         }
     }
 }
