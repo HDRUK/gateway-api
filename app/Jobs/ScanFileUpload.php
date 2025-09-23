@@ -130,6 +130,9 @@ class ScanFileUpload implements ShouldQueue
                     'storage' => $this->fileSystem,
                 ]),
                 'application/json',
+            )->withBasicAuth(
+                env('CLAMAV_BASIC_AUTH_USERNAME', 'user1'), // bite me
+                env('CLAMAV_BASIC_AUTH_PASSWORD', 'passw0rd'),
             )->post(env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file');
 
             $response = $response->json();
