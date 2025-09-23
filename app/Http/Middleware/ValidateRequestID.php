@@ -16,10 +16,9 @@ class ValidateRequestID
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $header = $request->header('x-request-session-id');
-        \Log::info($header);
-        \Log::info(!preg_match('/^[a-zA-Z0-9-]+$/', $header));
-        if ($header !== null && !preg_match('/^[a-zA-Z0-9-]+$/', $header)) {
+        $header = trim($request->header('x-request-session-id'));
+        // Header can have web: appended to it by front end
+        if ($header !== null && !preg_match('/^[a-zA-Z0-9: -]+$/', $header)) {
             throw new UnauthorizedException('The credentials provided are invalid');
 
         }
