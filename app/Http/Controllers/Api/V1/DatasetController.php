@@ -916,7 +916,7 @@ class DatasetController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception($e);
+            throw new Exception($e->getMessage());
         }
     }
 

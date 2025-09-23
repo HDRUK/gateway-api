@@ -65,11 +65,15 @@ class JwtController extends Controller
             $currentTime = CarbonImmutable::now();
             $expireTime = $currentTime->addSeconds(env('JWT_EXPIRATION'));
 
-            $user = User::with('workgroups')
-                ->where([
-                    'id' => $userId,
-                ])
-                ->first();
+            $user = User::with('workgroups:id,name,active')->find($userId);
+            $user->workgroups->makeHidden('pivot');
+
+            if (Config::get('services.cohort_discovery.add_teams_to_jwt')) {
+                $user->load(['adminTeams' => function ($query) {
+                    $query->select('teams.id', 'teams.name');
+                }]);
+                $user->adminTeams->makeHidden('pivot');
+            }
 
             $token = $this->config->builder()
                 ->issuedBy((string)env('APP_URL')) // iss claim
