@@ -22,6 +22,9 @@ class Search extends BaseFormRequest
             'sort' => [
                 'regex:/^(projectTitle|updated_at|name|score|date|title):(asc|desc)$/i'
             ],
+            'page' => 'integer',
+            'view_type' => ['nullable', 'in:full,mini'],
+            'per_page' => 'integer',
             'download' => 'boolean',
         ];
     }
