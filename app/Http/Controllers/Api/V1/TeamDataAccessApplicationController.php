@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\InternalServerErrorException;
 use Auditor;
 use Config;
 use Exception;
@@ -19,16 +20,17 @@ use App\Models\DataAccessApplicationComment;
 use App\Models\DataAccessApplicationReview;
 use App\Models\DataAccessApplicationStatus;
 use App\Models\DataAccessApplicationAnswer;
-use App\Models\Dataset;
 use App\Models\EmailTemplate;
-use App\Models\Team;
 use App\Models\TeamHasDataAccessApplication;
 use App\Models\Upload;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use ZipArchive;
+use File;
 
 class TeamDataAccessApplicationController extends Controller
 {
@@ -350,6 +352,146 @@ class TeamDataAccessApplicationController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/download",
+     *      summary="Returns a DAR form as a CSV with attached files as a zip",
+     *      description="Returns a DAR form as a CSV with attached files as a zip",
+     *      tags={"DataAccessApplication"},
+     *      summary="DataAccessApplication@download",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DAR application id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR application id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\MediaType(
+     *              mediaType="file"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function download(GetDataAccessApplication $request, int $teamId, int $id): BinaryFileResponse | JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $this->checkTeamAccess($teamId, $id, 'view');
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'DataAccessApplication download ' . $id,
+            ]);
+
+            $this->checkTeamAccess($teamId, $id, 'view');
+
+
+            $application = DataAccessApplication::where('id', $id)
+            ->with(['questions'])
+            ->first();
+
+            $isDraft = $application['submission_status'] === 'DRAFT';
+            if ($isDraft) {
+                throw new Exception('Files associated with a data access request cannot be viewed when the request is still a draft.');
+            }
+
+            $zip = new ZipArchive();
+
+            $zipFilename = "/tmp/" . time() . "_$id.zip";
+            if (!$zip->open($zipFilename, ZipArchive::CREATE)) {
+                throw new InternalServerErrorException("Zip file creation failed");
+            }
+
+            $uploads = Upload::where('entity_id', $id)->get();
+            if ($uploads) {
+                $files = $uploads->all();
+
+                foreach ($files as $f) {
+                    $contents = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')->get($f->file_location);
+                    $fileNameInZip = basename($f->file_location);
+                    $zip->addFromString($fileNameInZip, $contents);
+                }
+            }
+
+            $csvFilename = "/tmp/csv" . time() . "_$id.csv";
+
+            $f = fopen($csvFilename, 'w');
+
+            $this->getApplicationWithQuestions($application);
+            $application = $application->toArray();
+
+            $answers = DataAccessApplicationAnswer::where('application_id', $id)->get();
+
+            // Match questions to answers
+            foreach ($application['questions'] as $q) {
+                foreach ($answers as $ans) {
+                    if ($ans['question_id'] == $q['question_id']) {
+                        $val = $ans['answer'];
+                        // If it's an array it's a file field
+                        if (is_array($val)) {
+                            // Handle if it contains one or multiple files
+                            $filenames = is_array($val['value'][0] ?? null)
+                                ? array_column($val['value'], 'filename')
+                                : [$val['value']['filename'] ?? null];
+                            $val = implode(",", $filenames);
+                        }
+                        $line = ["question" => $q['title'], "answer" => $val ];
+                        fputcsv($f, $line);
+                    }
+                }
+            }
+            fclose(stream: $f);
+            $zip->addFile($csvFilename, "dar_application.csv");
+            $zip->close();
+            File::delete($csvFilename);
+
+            $updateArray = array();
+
+            if ($application['submission_status'] === "SUBMITTED" && $application['approval_status'] === null) {
+                $updateArray['approval_status'] = "FEEDBACK";
+            }
+
+            $application = DataAccessApplication::where('id', $id)
+            ->first();
+
+            $application->update($updateArray);
+
+            return response()->download($zipFilename)->deleteFileAfterSend(true);
+
         } catch (UnauthorizedException $e) {
             return response()->json([
                 'message' => $e->getMessage(),

@@ -39,7 +39,7 @@ trait GatewayMetadataIngestionTrait
 
         $response = Http::get(
             $url,
-            [ 
+            [
                 $this->determineAuthType($federation, $gsms),
                 'Accept' => 'application/json',
             ]
@@ -154,7 +154,7 @@ trait GatewayMetadataIngestionTrait
 
                 $this->log('info', "attempting to call dataset @ {$pid} from REMOTE collection: 
                     status={$response->status()}, url={$this->makeDatasetUrl($federation, $data)}");
-                
+
                 if ($response->status() === 200) {
                     try {
                         $input = [
