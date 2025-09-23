@@ -1,3 +1,23 @@
+## [2.24.0](https://github.com/HDRUK/gateway-api/compare/v2.23.0...v2.24.0) (2025-09-23)
+
+### ✨ Features
+
+* **GAT-7354:** Enable download of DAR and attached files (#1383) ([cd8a180](https://github.com/HDRUK/gateway-api/commit/cd8a180098e56360eb686668ea6ee9ca17775032)), closes [GAT-7354](GAT-7354)
+* **GAT-7805:** Setting up OAuth Service for Cohort Discovery (#1396) ([42c8f5a](https://github.com/HDRUK/gateway-api/commit/42c8f5a2376a825223e015dc7c5e6999e63e98e8)), closes [GAT-7805](GAT-7805)
+* **GAT-7854:** Block all WebSockets connections (#1416) ([9fb89db](https://github.com/HDRUK/gateway-api/commit/9fb89db76d821f437d2e615cbf32770c2676f27d)), closes [GAT-7854](GAT-7854)
+* **GAT-7856:** Never return a bare Exception object (#1414) ([71d6dea](https://github.com/HDRUK/gateway-api/commit/71d6dea9ab48d27eced43758beaeadc385b75bbb)), closes [GAT-7856](GAT-7856)
+* **GAT-7880:** Change jwt claims for CD (#1410) ([e2dcfab](https://github.com/HDRUK/gateway-api/commit/e2dcfabebb06d5e52365d702e713948446e7320e)), closes [GAT-7880](GAT-7880)
+
+### 🐛 Bug Fixes
+
+* **GAT-6005:** SDE con email change and logic (#1401) ([f3e50c2](https://github.com/HDRUK/gateway-api/commit/f3e50c285b9d11a1de119700b1f738b75ac1d027)), closes [GAT-6005](GAT-6005)
+* **GAT-7678:** More defensive work (#1397) ([d54ba61](https://github.com/HDRUK/gateway-api/commit/d54ba61fd6f34845cdfa8fcf7c88447df515880d)), closes [GAT-7678](GAT-7678)
+* **GAT-7678:** Observers fixes (#1405) ([b8570de](https://github.com/HDRUK/gateway-api/commit/b8570de8b6791b5c55b35aeebba9ea06d30c6f49))
+* **GAT-7694:** Return full list of licenses (#1408) ([d293155](https://github.com/HDRUK/gateway-api/commit/d293155ee9f9e12b84507a2ff91cffd7e4f24443)), closes [GAT-7694](GAT-7694)
+* **GAT-7812:** Remove htaccess file (#1399) ([2c2b5a6](https://github.com/HDRUK/gateway-api/commit/2c2b5a68640d5969f95bd476c9bfbcb810947b8d)), closes [GAT-7812](GAT-7812)
+* **GAT-7880:** JWT token injection fix (#1411) ([221e6f3](https://github.com/HDRUK/gateway-api/commit/221e6f3f5b82adfa4b1de61f4a490ddaa526b39d))
+* **GAT-7880:** remove comment (#1412) ([f5802c8](https://github.com/HDRUK/gateway-api/commit/f5802c82fff3ca206a6dac33e5eaf50864d98b51)), closes [GAT-7880](GAT-7880)
+
 ## [2.23.0](https://github.com/HDRUK/gateway-api/compare/v2.22.4...v2.23.0) (2025-09-09)
 
 ### ✨ Features
