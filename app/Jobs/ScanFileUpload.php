@@ -137,7 +137,7 @@ class ScanFileUpload implements ShouldQueue
 
             $response = $response->json();
 
-            \Log::info('Malware scan response', $response);
+            \Log::info('Malware scan response ', $response);
 
             $isError = isset($response['isError']) ? $response['isError'] : false;
 
