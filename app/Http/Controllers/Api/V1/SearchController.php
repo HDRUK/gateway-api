@@ -53,6 +53,7 @@ use App\Http\Requests\Search\PublicationSearch;
 use Illuminate\Http\Client\ConnectionException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use App\Http\Requests\Search\Search;
+
 class SearchController extends Controller
 {
     use IndexElastic;
