@@ -137,7 +137,7 @@ class ScanFileUpload implements ShouldQueue
             )->post(env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file');
 
             if (!$response->successful()) {
-                if ($response->getStatusCode() === Response::HTTP_UNAUTHORIZED) {
+                if ($response->status() === Response::HTTP_UNAUTHORIZED) {
                     \Log::info('Malware scan not authorized.', $this->loggingContext);
                     throw new Exception('Malware scan not authorized.');
                 }
