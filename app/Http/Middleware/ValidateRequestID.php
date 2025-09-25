@@ -18,6 +18,7 @@ class ValidateRequestID
     {
         $header = $request->header('x-request-session-id', "");
         // Header can have web: appended to it by front end
+        // so can't just be alphanumeric and -
         if ($header !== "" && !preg_match('/^[a-zA-Z0-9: -]+$/', $header)) {
             throw new UnauthorizedException('The credentials provided are invalid');
 
