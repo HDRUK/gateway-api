@@ -658,12 +658,19 @@ class TeamDataAccessApplicationController extends Controller
         try {
             $this->checkTeamAccess($teamId, $id, 'view');
             $application = DataAccessApplication::where('id', $id)->first();
+            \Log::info($id);
+            \Log::info($application->id);
+            // Check the file belongs to the application
 
             $isDraft = $application['submission_status'] === 'DRAFT';
             if ($isDraft) {
                 throw new Exception('Files associated with a data access request cannot be downloaded when the request is still a draft.');
             }
             $file = Upload::where('id', $fileId)->first();
+
+            if ($file->entity_id !== $id) {
+                throw new UnauthorizedException("File does not belong to this application.");
+            }
 
             if ($file) {
                 Auditor::log([
