@@ -276,7 +276,7 @@ trait EnquiriesTrait
             $str .= 'Potential research benefits: ' . $in['message']['message_body']['[[PUBLIC_BENEFIT]]'] . '<br/>';
             $str .= 'This enquiry has also been sent to the following Data Custodians: ' . $dataCustodiansStr . '<br/>';
         } elseif ($in['thread']['is_general_enquiry']) {
-            $str .= 'Enquiry: ' . $in['message']['message_body']['[[QUERY]]'] . '<br/>';
+            $str .= 'Enquiry:<br/>' . $in['message']['message_body']['[[QUERY]]'] . '<br/><br/>';
             $str .= 'This enquiry has also been sent to the following Data Custodians: ' . $dataCustodiansStr . '<br/>';
         } elseif ($in['thread']['is_dar_dialogue']) {
             $str .= $in['message']['message_body']['[[MESSAGE]]'] . '<br/>';
