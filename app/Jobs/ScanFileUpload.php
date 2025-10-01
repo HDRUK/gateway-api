@@ -140,8 +140,7 @@ class ScanFileUpload implements ShouldQueue
                 if ($response->status() === Response::HTTP_UNAUTHORIZED) {
                     \Log::info('Malware scan not authorized.', $this->loggingContext);
                     throw new Exception('Malware scan not authorized.');
-                }
-                else {
+                } else {
                     \Log::info('Malware scan not available.', $this->loggingContext);
                     throw new Exception('Malware scan not available.');
                 }
