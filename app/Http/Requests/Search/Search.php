@@ -6,6 +6,13 @@ use App\Http\Requests\BaseFormRequest;
 
 class Search extends BaseFormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'query' => preg_replace('/[^a-zA-Z0-9_-]/', '', $this->input('query')),
+        ]);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
