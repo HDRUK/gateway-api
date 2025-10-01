@@ -241,7 +241,6 @@ class EnquiryThreadController extends Controller
             $teamConfig = $this->getTeamConfiguration($input, $payload['thread']['datasets']);
 
             $payload['thread']['dataCustodians'] = $teamConfig['data_custodians'] ?? [];
-            $payload['message']['message_body']['[[TEAM_NAME]]'] = array_unique($teamConfig['team_names'] ?? []);
 
             // For each dataset we need to determine if teams are responsible for the data providing
             // if not, then a separate enquiry thread and message are created for that team also.
@@ -328,7 +327,6 @@ class EnquiryThreadController extends Controller
             'message' => [
                 'from' => $input['from'],
                 'message_body' => [
-                    '[[TEAM_NAME]]' => [],
                     '[[USER_FIRST_NAME]]' => $user->firstname,
                     '[[USER_LAST_NAME]]' => $user->lastname,
                     '[[USER_ORGANISATION]]' => $user->organisation ?? $input['organisation'],
