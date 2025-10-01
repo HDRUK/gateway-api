@@ -48,7 +48,7 @@ jobs:
           service_account: "${{ secrets.WIF_SERVICE_ACCOUNT }}"
 
       - name: Deploy to Cloud Run
-        uses: actions-hub/gcloud@master
+        uses: actions-hub/gcloud@540.0.0
         id: deploy
         env:
           PROJECT_ID: ${{ secrets.PROJECT_ID }}
