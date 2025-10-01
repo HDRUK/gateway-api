@@ -22,7 +22,6 @@ class Search extends BaseFormRequest
     {
         return [
             'query' => [
-                'alpha_dash',
                 'nullable',
                 'max:255'
             ],
