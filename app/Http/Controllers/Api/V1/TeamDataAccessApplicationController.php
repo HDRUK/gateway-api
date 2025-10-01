@@ -666,7 +666,7 @@ class TeamDataAccessApplicationController extends Controller
             $file = Upload::where('id', $fileId)->first();
 
             // Check the file belongs to the application
-            if ($file->entity_id !== $id) {
+            if ($file->entity_id !== $id || $file->entity_type !== 'dataAccessApplication') {
                 throw new UnauthorizedException("File does not belong to this application.");
             }
 
