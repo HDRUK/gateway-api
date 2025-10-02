@@ -75,10 +75,10 @@ trait DatasetsV2Helpers
                 $withLinks['metadata'] = json_encode(['metadata' => $translated['metadata']]);
                 $dataset->setAttribute('versions', [$withLinks]);
             } else {
-                return response()->json([
+                return [null, response()->json([
                     'message' => 'failed to translate',
                     'details' => $translated
-                ], 400);
+                ], 400)];
             }
         } elseif ($outputSchemaModel) {
             throw new Exception('You have given a schema_model but not a schema_version');
@@ -89,7 +89,7 @@ trait DatasetsV2Helpers
         $teamPublishedDARTemplates = DataAccessTemplate::where([['team_id', $dataset['team']['id']], ['published', 1]])->pluck('id');
         $dataset['team']['has_published_dar_template'] = !$teamPublishedDARTemplates->isEmpty();
 
-        return $dataset;
+        return [$dataset, null];
     }
 
     /**
