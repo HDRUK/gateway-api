@@ -1129,7 +1129,6 @@ class SearchController extends Controller
             $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
             $input = $request->all();
-
             $download = array_key_exists('download', $input) ? $input['download'] : false;
             $sort = $request->query('sort', 'score:desc');
 

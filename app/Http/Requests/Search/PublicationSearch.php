@@ -6,10 +6,22 @@ use App\Http\Requests\BaseFormRequest;
 
 class PublicationSearch extends BaseFormRequest
 {
+    private function validateQuery($query) {
+        if (filter_var($query, FILTER_VALIDATE_URL)) {
+            $parse = parse_url($query);
+            if ($parse['host'] === "doi.org") {
+                return $query;
+            }
+        }
+
+        return preg_replace('/[^a-zA-Z0-9_-]/', '', $query);
+    }
+
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'query' => preg_replace('/[^a-zA-Z0-9_-]/', '', $this->input('query')),
+            'query' => $this->validateQuery($this->input('query')),
+            'source' => $this->source ?? 'GAT'
         ]);
     }
 
@@ -33,7 +45,8 @@ class PublicationSearch extends BaseFormRequest
             'page' => 'integer',
             'per_page' => 'integer',
             'sort' => [
-                'regex:/^(projectTitle|updated_at|name|score|date|title):(asc|desc)$/i'
+                'regex:/^(projectTitle|created_at|year_of_publication|updated_at|name|score|date|title):(asc|desc)$/i',
+                'nullable'
             ],
         ];
     }

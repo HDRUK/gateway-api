@@ -26,7 +26,8 @@ class Search extends BaseFormRequest
                 'max:255'
             ],
             'sort' => [
-                'regex:/^(projectTitle|updated_at|name|score|date|title):(asc|desc)$/i'
+                'regex:/^(projectTitle|updated_at|name|score|date|title):(asc|desc)$/i',
+                'nullable'
             ],
             'page' => 'integer',
             'view_type' => ['nullable', 'in:full,mini'],
