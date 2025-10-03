@@ -311,6 +311,7 @@ class FederationController extends Controller
                 'endpoint_datasets' => $input['endpoint_datasets'],
                 'endpoint_dataset' => $input['endpoint_dataset'],
                 'run_time_hour' => $input['run_time_hour'],
+                'run_time_minute' => $input['run_time_minute'],
                 'enabled' => $input['enabled'],
                 'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0,
             ];
