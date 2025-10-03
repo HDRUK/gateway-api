@@ -6,7 +6,8 @@ use App\Http\Requests\BaseFormRequest;
 
 class PublicationSearch extends BaseFormRequest
 {
-    private function validateQuery($query) {
+    private function validateQuery($query)
+    {
         if (filter_var($query, FILTER_VALIDATE_URL)) {
             $parse = parse_url($query);
             if ($parse['host'] === "doi.org") {
