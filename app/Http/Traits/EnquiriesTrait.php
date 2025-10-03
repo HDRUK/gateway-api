@@ -94,6 +94,10 @@ trait EnquiriesTrait
             }
         }
 
+        // If (in a reply scenario) the original enquirer is also in one of the teams that should receive replies, then
+        // ensure the email is sent to the email address they selected in the enquiry form, not their usually preferred address.
+        // This _will_ mean that such a user will receive the email twice - once to this address and once to their default email -
+        // but that's an unlikely scenario outside of testing.
         if ($currUserId) {
             $user = User::where('id', $currUserId)
                         ->select(['id', 'name', 'firstname', 'lastname', 'email', 'secondary_email', 'preferred_email'])
@@ -217,14 +221,14 @@ trait EnquiriesTrait
                     $to = [
                         'to' => [
                             'email' => ($currentUserPreferredEmail === 'primary') ? $user['user']['email'] : $user['user']['secondary_email'],
-                            'name' => $user['user']['firstname'] . ' ' . $user['user']['lastname'],
+                            'name' => $user['user']['firstname'] ? $user['user']['firstname'] . ' ' . $user['user']['lastname'] : $user['user']['name'],
                         ],
                     ];
                 } else {
                     $to = [
                         'to' => [
                             'email' => ($user['user']['preferred_email'] === 'primary') ? $user['user']['email'] : $user['user']['secondary_email'],
-                            'name' => $user['user']['firstname'] . ' ' . $user['user']['lastname'],
+                            'name' => $user['user']['firstname'] ? $user['user']['firstname'] . ' ' . $user['user']['lastname'] : $user['user']['name'],
                         ],
                     ];
                 }
