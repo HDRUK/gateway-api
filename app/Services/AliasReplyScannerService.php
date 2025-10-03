@@ -115,7 +115,7 @@ class AliasReplyScannerService
             "thread_id" => $threadId,
         ]);
 
-        $this->notifyDarManagesOfNewMessage($threadId);
+        $this->notifyDarManagersOfNewMessage($threadId);
         $this->notifyUserOfDarResponse($threadId);
 
         unset($body);
@@ -176,7 +176,7 @@ class AliasReplyScannerService
 
     }
 
-    public function notifyDarManagesOfNewMessage($threadId)
+    public function notifyDarManagersOfNewMessage($threadId)
     {
         $usersToNotify = [];
 

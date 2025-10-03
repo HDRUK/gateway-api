@@ -27,6 +27,7 @@ trait EnquiriesTrait
         $selectRoles = ['custodian.dar.manager'];
         $roles = Role::whereIn('name', $selectRoles)->select(['id'])->get()->toArray();
         $roleIds = convertArrayToArrayWithKeyName($roles, 'id');
+
         foreach ($teamIds as $teamId) {
             $team = Team::where('id', $teamId)->first();
             if (is_null($team)) {
@@ -188,7 +189,6 @@ trait EnquiriesTrait
 
             $replacements = [
                 '[[CURRENT_YEAR]]' => $threadDetail['message']['message_body']['[[CURRENT_YEAR]]'],
-                '[[TEAM_NAME]]' => '',
                 '[[SENDER_NAME]]' => $threadDetail['message']['message_body']['[[SENDER_NAME]]'] ?? '',
                 '[[USER_FIRST_NAME]]' => $threadDetail['message']['message_body']['[[USER_FIRST_NAME]]'],
                 '[[USER_LAST_NAME]]' => $threadDetail['message']['message_body']['[[USER_LAST_NAME]]'],
@@ -276,7 +276,7 @@ trait EnquiriesTrait
             $str .= 'Potential research benefits: ' . $in['message']['message_body']['[[PUBLIC_BENEFIT]]'] . '<br/>';
             $str .= 'This enquiry has also been sent to the following Data Custodians: ' . $dataCustodiansStr . '<br/>';
         } elseif ($in['thread']['is_general_enquiry']) {
-            $str .= 'Enquiry: ' . $in['message']['message_body']['[[QUERY]]'] . '<br/>';
+            $str .= 'Enquiry:<br/>' . $in['message']['message_body']['[[QUERY]]'] . '<br/><br/>';
             $str .= 'This enquiry has also been sent to the following Data Custodians: ' . $dataCustodiansStr . '<br/>';
         } elseif ($in['thread']['is_dar_dialogue']) {
             $str .= $in['message']['message_body']['[[MESSAGE]]'] . '<br/>';

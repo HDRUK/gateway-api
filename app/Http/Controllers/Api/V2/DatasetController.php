@@ -265,7 +265,12 @@ class DatasetController extends Controller
             if (!$dataset) {
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
-            $dataset = $this->getDatasetDetails($dataset, $request);
+            list($dataset, $response) = $this->getDatasetDetails($dataset, $request);
+
+            if ($response) {
+                return $response;
+            }
+
             $latestVersionId = $dataset->latestVersionID($id);
 
             if ($exportStructuralMetadata === 'structuralMetadata') {

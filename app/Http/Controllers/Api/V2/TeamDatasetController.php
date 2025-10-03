@@ -317,7 +317,11 @@ class TeamDatasetController extends Controller
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
 
-            $dataset = $this->getDatasetDetails($dataset, $request);
+            list($dataset, $response) = $this->getDatasetDetails($dataset, $request);
+
+            if ($response) {
+                return $response;
+            }
 
             if ($exportStructuralMetadata === 'structuralMetadata') {
                 $arrayDataset = $dataset->toArray();
