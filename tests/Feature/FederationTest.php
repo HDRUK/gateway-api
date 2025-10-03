@@ -108,6 +108,7 @@ class FederationTest extends TestCase
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
                 'run_time_hour' => 11,
+                'run_time_minute' => '07',
                 'enabled' => true,
                 'notifications' => [
                     '1',
@@ -250,6 +251,7 @@ class FederationTest extends TestCase
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
                 'run_time_hour' => 11,
+                'run_time_minute' => '07',
                 'enabled' => true,
                 'notifications' => [
                     '1',
@@ -380,6 +382,7 @@ class FederationTest extends TestCase
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
                 'run_time_hour' => 11,
+                'run_time_minute' => '07',
                 'enabled' => true,
                 'notifications' => [
                     '1',
@@ -529,6 +532,7 @@ class FederationTest extends TestCase
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
                 'run_time_hour' => 11,
+                'run_time_minute' => '07',
                 'enabled' => true,
                 'notifications' => [
                     '1',
