@@ -115,8 +115,7 @@ class AliasReplyScannerService
             "thread_id" => $threadId,
         ]);
 
-        $this->notifyDarManagersOfNewMessage($threadId);
-        $this->notifyUserOfDarResponse($threadId);
+        $this->notifyAllOfNewMessage($threadId, $email);
 
         unset($body);
         unset($from);
@@ -129,92 +128,51 @@ class AliasReplyScannerService
         return $message->delete($expunge = true);
     }
 
-    public function notifyUserOfDarResponse($threadId)
+    public function notifyAllOfNewMessage($threadId, $senderEmail)
     {
         $enquiryThread = EnquiryThread::where('id', $threadId)->first();
-        $user = User::where([
-            'id' => $enquiryThread->user_id,
-        ])->first();
-        $enquiryMessage = EnquiryMessage::where([
-            'thread_id' => $threadId,
-        ])->latest()->first();
 
-        $uniqueKey = $enquiryThread->unique_key;
-        $usersToNotify[] = [
-                        'user' => $user->toArray(),
-                        'team' => null,
-                    ];
-
-        $usersToNotify[0]['user']['email'] = $enquiryThread->user_preferred_email === "primary" ? $user->email : $user->secondary_email;
-
-        $payload = [
-            'thread' => [
-                'user_id' => $enquiryThread->user_id,
-                'user_preferred_email' => $enquiryThread->user_preferred_email,
-                'team_ids' => [$enquiryThread->team_id],
-                'project_title' => $enquiryThread->project_title,
-                'unique_key' => $uniqueKey,
-            ],
-            'message' => [
-                'from' => $enquiryMessage->from,
-                'message_body' => [
-                    '[[USER_FIRST_NAME]]' => $user->firstname,
-                    '[[USER_LAST_NAME]]' => $user->lastname,
-                    '[[USER_ORGANISATION]]' => $user->organisation,
-                    '[[PROJECT_TITLE]]' => $enquiryThread->project_title,
-                    '[[CURRENT_YEAR]]' => date('Y'),
-                    '[[SENDER_NAME]]' => $enquiryMessage->from,
-                ],
-            ],
-        ];
-
-        $messageBody = $enquiryMessage->message_body;
-        $lines = preg_split('/\r\n|\r|\n/', $messageBody);
-        $cleanedText = implode("\n", array_filter($lines));
-        $body = trim(str_replace('P {margin-top:0;margin-bottom:0;}', '', str_replace(["\r\n", "\n"], "<br/>", $cleanedText)));
-        $this->sendEmail('dar.notifymessage', $payload, $usersToNotify, $enquiryThread->user_id, $body);
-
-    }
-
-    public function notifyDarManagersOfNewMessage($threadId)
-    {
-        $usersToNotify = [];
-
-        $enquiryThread = EnquiryThread::where('id', $threadId)->first();
-
-        $uniqueKey = $enquiryThread->unique_key;
-
-        $usersToNotify = $this->getUsersByTeamIds([$enquiryThread->team_id], $enquiryThread->user_id, $enquiryThread->user_preferred_email);
+        // Get all custodian users
+        $allUsersToNotify = $this->getUsersByTeamIds([$enquiryThread->team_id], $enquiryThread->user_id, $enquiryThread->user_preferred_email);
 
         if (empty($usersToNotify)) {
             $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
             \Log::info(
-                'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' . $threadId,
+                'EnquiryThread exists, but no custodian.dar.managers found to notify for thread ' . $threadId,
                 $this->loggingContext,
             );
             return;
         }
 
-        $enquiryMessage = EnquiryMessage::where([
-            'thread_id' => $threadId,
-        ])->latest()->first();
-
+        // Add the enquiry user
         $user = User::where([
             'id' => $enquiryThread->user_id,
         ])->first();
 
-        $teamNames = [];
-        $team = Team::where('id', $enquiryThread->team_id)->first();
-        $teamNames[] = $team->name;
+        $user->preferred_email = $enquiryThread->user_preferred_email;
+
+        $usersToNotify[] = [
+            'user' => $user->toArray(),
+            'team' => null,
+        ];
+
+        // Don't send an email to any user if it is their own message
+        $usersToNotify = array_filter($allUsersToNotify, function($entry) {
+            $emailToUse = ($entry['user']['preferred_email'] === 'primary') ? $entry['user']['email'] : $entry['user']['secondary_email'];
+            return $emailToUse !== $senderEmail;
+        });
+
+        $enquiryMessage = EnquiryMessage::where([
+            'thread_id' => $threadId,
+        ])->latest()->first();
 
         $payload = [
             'thread' => [
                 'user_id' => $enquiryThread->user_id,
                 'user_preferred_email' => $enquiryThread->user_preferred_email,
                 'team_ids' => [$enquiryThread->team_id],
-                'team_names' => $teamNames,
                 'project_title' => $enquiryThread->project_title,
-                'unique_key' => $uniqueKey, // Not random, but should be unique
+                'unique_key' => $enquiryThread->unique_key,
             ],
             'message' => [
                 'from' => $enquiryMessage->from,
@@ -233,7 +191,16 @@ class AliasReplyScannerService
         $lines = preg_split('/\r\n|\r|\n/', $messageBody);
         $cleanedText = implode("\n", array_filter($lines));
         $body = trim(str_replace('P {margin-top:0;margin-bottom:0;}', '', str_replace(["\r\n", "\n"], "<br/>", $cleanedText)));
-        $this->sendEmail('dar.notifymessage', $payload, $usersToNotify, $enquiryThread->user_id, $body);
+        // Bug to be fixed once templates are designed: this template is used even when the original thread was a General or Feasibility Enquiry.
+        if ($enquiryThread->is_general_enquiry) {
+            $this->sendEmail('dar.notifymessage', $payload, $usersToNotify, $enquiryThread->user_id, $body);
+        } elseif ($enquiryThread->is_feasibility_enquiry) {
+            $this->sendEmail('dar.notifymessage', $payload, $usersToNotify, $enquiryThread->user_id, $body);
+        } elseif ($enquiryThread->is_dar_dialogue) {
+            $this->sendEmail('dar.notifymessage', $payload, $usersToNotify, $enquiryThread->user_id, $body);
+        } else {
+            $this->sendEmail('dar.notifymessage', $payload, $usersToNotify, $enquiryThread->user_id, $body);
+        }
 
         unset(
             $payload,
@@ -257,6 +224,7 @@ class AliasReplyScannerService
 
         try {
             $template = EmailTemplate::where('identifier', $ident)->first();
+            // TODO: once templates reworking is done, we will need to increase or standardise the replacements in use
             $replacements = array_merge(
                 [
                     '[[CURRENT_YEAR]]' => $threadDetail['message']['message_body']['[[CURRENT_YEAR]]'],
@@ -271,8 +239,8 @@ class AliasReplyScannerService
                 $replacements['[[RECIPIENT_NAME]]'] = $user['user']['name'];
                 $to = [
                     'to' => [
-                        'email' => $user['user']['email'],
-                        'name' => $user['user']['name'],
+                        'email' => ($user['user']['preferred_email'] === 'primary') ? $user['user']['email'] : $user['user']['secondary_email'],
+                        'name' => $user['user']['firstname'] ? $user['user']['firstname'] . ' ' . $user['user']['lastname'] : $user['user']['name'],
                     ],
                 ];
 
