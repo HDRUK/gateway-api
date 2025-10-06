@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use App\Models\Team;
 use App\Models\Federation;
 use App\Http\Traits\MetadataOnboard;
-
+use Exception;
 use Illuminate\Database\Eloquent\Collection;
 
 class GatewayMetadataIngestionService
