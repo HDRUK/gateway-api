@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use App\Models\Team;
 use App\Models\Federation;
 use App\Http\Traits\MetadataOnboard;
-
+use Exception;
 use Illuminate\Database\Eloquent\Collection;
 
 class GatewayMetadataIngestionService
@@ -41,10 +41,8 @@ class GatewayMetadataIngestionService
             return true;
         }
 
-        return [
-            'message' => 'metadata cannot be validated',
-            'details' => $metadataResult['response'],
-        ];
+
+        throw new Exception('metadata cannot be validated');
     }
 
     public function getActiveFederations(): Collection
