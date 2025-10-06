@@ -41,10 +41,8 @@ class GatewayMetadataIngestionService
             return true;
         }
 
-        return [
-            'message' => 'metadata cannot be validated',
-            'details' => $metadataResult['response'],
-        ];
+
+        throw new Exception('metadata cannot be validated');
     }
 
     public function getActiveFederations(): Collection
