@@ -1,3 +1,17 @@
+## [2.25.0](https://github.com/HDRUK/gateway-api/compare/v2.24.0...v2.25.0) (2025-10-07)
+
+### ✨ Features
+
+* **GAT-6585:** Return section_id with template questions (#1418) ([8b643bb](https://github.com/HDRUK/gateway-api/commit/8b643bbc98f37f2d651ff9c17d8e465411760b94)), closes [GAT-6585](GAT-6585)
+* **GAT-7767:** Bug - Incorrect template being used for enquiry replies (#1422) ([2ebf2e5](https://github.com/HDRUK/gateway-api/commit/2ebf2e5ad4a03c67f817094680c750635334cad6)), closes [GAT-7767](GAT-7767)
+* **GAT-7864:** Update scanning (clamav) service with basic auth (#1417) ([5be335a](https://github.com/HDRUK/gateway-api/commit/5be335a1d732d1dd11ce4ab01a920714a4cb13f5)), closes [GAT-7864](GAT-7864)
+* **GAT-7992:** update sdne link (#1421) ([4640f93](https://github.com/HDRUK/gateway-api/commit/4640f939e9a0433d3c9a571c3c23fbd7cb4fef8e)), closes [GAT-7992](GAT-7992)
+
+### 🐛 Bug Fixes
+
+* **GAT-7836:** Minutes missing from Intergrations (#1423) ([5012440](https://github.com/HDRUK/gateway-api/commit/501244008c7ca21a8de267580a700f9a066d0b64)), closes [GAT-7836](GAT-7836)
+* **GAT-7836:** Minutes missing from Intergrations (#1424) ([188d4df](https://github.com/HDRUK/gateway-api/commit/188d4df4571c5204ce0723978395efe965a85d0d)), closes [GAT-7836](GAT-7836)
+
 ## [2.24.0](https://github.com/HDRUK/gateway-api/compare/v2.23.0...v2.24.0) (2025-09-23)
 
 ### ✨ Features
