@@ -186,13 +186,14 @@ class DataAccessTemplateController extends Controller
 
             $template = DataAccessTemplate::where('id', $id)->with(['questions','files'])->first();
             foreach ($template['questions'] as $i => $q) {
-                $version = QuestionBank::with([
+                $question = QuestionBank::with([
                     'latestVersion',
                     'latestVersion.childVersions',
                 ])->where('id', $q->question_id)
                     ->first()
                     ->toArray();
-                $template['questions'][$i]['latest_version'] = $version['latest_version'];
+                $template['questions'][$i]['latest_version'] = $question['latest_version'];
+                $template['questions'][$i]['section_id'] = $question['section_id'];
             }
 
             if ($template) {

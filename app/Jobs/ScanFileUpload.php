@@ -23,6 +23,7 @@ use App\Http\Traits\LoggingContext;
 use App\Http\Traits\MetadataOnboard;
 use MetadataManagementController as MMC;
 use Illuminate\Bus\Queueable;
+use Illuminate\Http\Response;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -130,13 +131,29 @@ class ScanFileUpload implements ShouldQueue
                     'storage' => $this->fileSystem,
                 ]),
                 'application/json',
+            )->withBasicAuth(
+                env('CLAMAV_BASIC_AUTH_USERNAME', ''),
+                env('CLAMAV_BASIC_AUTH_PASSWORD', ''),
             )->post(env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file');
 
+            if (!$response->successful()) {
+                if ($response->status() === Response::HTTP_UNAUTHORIZED) {
+                    \Log::info('Malware scan not authorized.', $this->loggingContext);
+                    throw new Exception('Malware scan not authorized.');
+                } else {
+                    \Log::info('Malware scan not available.', $this->loggingContext);
+                    throw new Exception('Malware scan not available.');
+                }
+            }
+
             $response = $response->json();
+
+            \Log::info('Malware scan response ', $response);
 
             $isError = isset($response['isError']) ? $response['isError'] : false;
 
             if ($isError === true) {
+                \Log::info('Malware scan isError', $this->loggingContext);
                 throw new Exception($response['error']);
             }
 

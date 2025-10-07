@@ -49,10 +49,10 @@ use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Models\PublicationHasDatasetVersion;
-use Illuminate\Database\Eloquent\Casts\Json;
 use App\Http\Requests\Search\PublicationSearch;
 use Illuminate\Http\Client\ConnectionException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Http\Requests\Search\Search;
 
 class SearchController extends Controller
 {
@@ -144,7 +144,7 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function datasets(Request $request): JsonResponse|BinaryFileResponse
+    public function datasets(Search $request): JsonResponse|BinaryFileResponse
     {
         try {
             $loggingContext = $this->getLoggingContext($request);
@@ -478,7 +478,7 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function tools(Request $request): JsonResponse|BinaryFileResponse
+    public function tools(Search $request): JsonResponse|BinaryFileResponse
     {
         try {
             $loggingContext = $this->getLoggingContext($request);
@@ -723,7 +723,7 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function collections(Request $request): JsonResponse
+    public function collections(Search $request): JsonResponse
     {
         try {
             $loggingContext = $this->getLoggingContext($request);
@@ -895,12 +895,13 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function dataUses(Request $request): JsonResponse|BinaryFileResponse
+    public function dataUses(Search $request): JsonResponse|BinaryFileResponse
     {
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         $input = $request->all();
+
         $download = array_key_exists('download', $input) ? $input['download'] : false;
         $sort = $request->query('sort', 'score:desc');
 
@@ -1128,7 +1129,6 @@ class SearchController extends Controller
             $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
             $input = $request->all();
-
             $download = array_key_exists('download', $input) ? $input['download'] : false;
             $sort = $request->query('sort', 'score:desc');
 
@@ -1738,7 +1738,7 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function dataCustodians(Request $request): JsonResponse|BinaryFileResponse
+    public function dataCustodians(Search $request): JsonResponse|BinaryFileResponse
     {
         try {
             $loggingContext = $this->getLoggingContext($request);
