@@ -1,3 +1,9 @@
+## [2.25.1](https://github.com/HDRUK/gateway-api/compare/v2.25.0...v2.25.1) (2025-10-07)
+
+### 🐛 Bug Fixes
+
+* **GAT-8013:** when fail in traser, throw error (#1425) ([5baa0d6](https://github.com/HDRUK/gateway-api/commit/5baa0d6879abf4b7c21db58c511d07cabd260430)), closes [GAT-8013](GAT-8013)
+
 ## [2.25.0](https://github.com/HDRUK/gateway-api/compare/v2.24.0...v2.25.0) (2025-10-07)
 
 ### ✨ Features
