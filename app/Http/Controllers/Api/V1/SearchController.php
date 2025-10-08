@@ -205,7 +205,13 @@ class SearchController extends Controller
                     continue;
                 }
 
-                $model['metadata'] = $model->latestVersion()['metadata']['metadata'];
+                $latestVersion = $model->latestVersion();
+                if (is_null($latestVersion)) {
+                    \Log::warning('No version found for dataset id=' . $matchedId);
+                    continue;
+                }
+
+                $model['metadata'] = $latestVersion['metadata']['metadata'];
 
                 $metadata = $model['metadata'];
 
