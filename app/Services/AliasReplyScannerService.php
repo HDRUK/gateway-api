@@ -157,7 +157,7 @@ class AliasReplyScannerService
         ];
 
         // Don't send an email to any user if it is their own message
-        $usersToNotify = array_filter($allUsersToNotify, function($entry) {
+        $usersToNotify = array_filter($allUsersToNotify, function($entry) use ($senderEmail) {
             $emailToUse = ($entry['user']['preferred_email'] === 'primary') ? $entry['user']['email'] : $entry['user']['secondary_email'];
             return $emailToUse !== $senderEmail;
         });
