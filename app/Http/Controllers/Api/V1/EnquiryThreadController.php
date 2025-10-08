@@ -177,8 +177,8 @@ class EnquiryThreadController extends Controller
     /**
      * @OA\Post(
      *      path="/api/v1/enquiry_threads",
-     *      summary="Create a new EnquiryThread",
-     *      description="Creates a new EnquiryThread",
+     *      summary="Create one or more new EnquiryThreads",
+     *      description="Creates one or more new EnquiryThreads",
      *      tags={"EnquiryThread"},
      *      summary="EnquiryThread@store",
      *      security={{"bearerAuth":{}}},

@@ -83,7 +83,7 @@ class AliasReplyScannerJob implements ShouldQueue
     {
         return [
             'alias_reply_scanner',
-            'no_of_messages_found:' . $this->noMessagesFound,
+            'no_of_messages_found:' . $this->noMessagesFound, //Bug: this value doesn't get updated before the tag is published, so it's always 0
         ];
     }
 }

@@ -29,7 +29,7 @@ class UpdateDarMessagesGat7767 extends Command
         EmailTemplate::where([
             'identifier' => 'dar.notifymessage'
         ])->update([
-            'subject' => 'New Data Access Enquiry reply from [[USER_FIRST_NAME]] [[USER_LAST_NAME]]: [[PROJECT_TITLE]]',
+            'subject' => 'New Data Access Request reply from [[USER_FIRST_NAME]] [[USER_LAST_NAME]]: [[PROJECT_TITLE]]',
             'body' => '
                 <mjml>
                     <mj-head>
@@ -101,7 +101,7 @@ class UpdateDarMessagesGat7767 extends Command
         EmailTemplate::where([
             'identifier' => 'dar.firstmessage',
         ])->update([
-            'subject' => 'New Data Access Enquiry from [[USER_FIRST_NAME]] [[USER_LAST_NAME]]: [[PROJECT_TITLE]]',
+            'subject' => 'New Data Access Request from [[USER_FIRST_NAME]] [[USER_LAST_NAME]]: [[PROJECT_TITLE]]',
             'body' => '
                 <mjml>
                     <mj-head>
