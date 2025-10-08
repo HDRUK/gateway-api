@@ -135,7 +135,7 @@ class AliasReplyScannerService
         // Get all custodian users
         $allUsersToNotify = $this->getUsersByTeamIds([$enquiryThread->team_id], $enquiryThread->user_id, $enquiryThread->user_preferred_email);
 
-        if (empty($usersToNotify)) {
+        if (empty($allUsersToNotify)) {
             $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
             \Log::info(
                 'EnquiryThread exists, but no custodian.dar.managers found to notify for thread ' . $threadId,
@@ -151,7 +151,7 @@ class AliasReplyScannerService
 
         $user->preferred_email = $enquiryThread->user_preferred_email;
 
-        $usersToNotify[] = [
+        $allUsersToNotify[] = [
             'user' => $user->toArray(),
             'team' => null,
         ];
