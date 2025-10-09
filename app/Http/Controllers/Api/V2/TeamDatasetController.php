@@ -112,12 +112,31 @@ class TeamDatasetController extends Controller
 
             $perPage = request('per_page', Config::get('constants.per_page'));
 
-            $datasets = $this->indexTeamDataset(
+            $teamDatasets = $this->indexTeamDataset(
                 $teamId,
                 $status,
                 $perPage,
                 $withMetadata,
             );
+
+            $datasets = [];
+
+            // If we've received a 'title' for the search, then only return
+            // datasets that match that title
+            if (!empty($filterTitle)) {
+                foreach ($teamDatasets as $d) {
+                    $version = DatasetVersion::where('dataset_id', $d)
+                    ->filterTitle($filterTitle)
+                    ->select('dataset_id')
+                    ->first();
+
+                    if ($version) {
+                        $datasets[] = $d;
+                    }
+                }
+            } else {
+                $datasets = $teamDatasets;
+            }
 
             foreach ($datasets as &$d) {
                 $miniMetadata = $this->trimDatasets($d->latestMetadata['metadata'], [
