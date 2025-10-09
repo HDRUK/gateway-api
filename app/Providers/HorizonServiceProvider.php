@@ -32,7 +32,7 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
         // inject authenticated users into the closure, therefore, for now
         // we remove the forced requirement to auth.
         Gate::define('viewHorizon', function (?User $user = null) {
-            return true;
+            return env('APP_ENV') === 'dev' || env('APP_ENV') === 'local';
         });
     }
 }
