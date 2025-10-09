@@ -963,7 +963,7 @@ class CollectionTeamTest extends TestCase
         return $return;
     }
 
-    private function getNonAdminUserAsCustodianTeamAdminInTeam(mixed $jwt = null, Team $team = null)
+    private function getNonAdminUserAsCustodianTeamAdminInTeam(mixed $jwt = null, ?Team $team = null)
     {
         if (!$jwt) {
             $jwt = $this->nonAdminJwt;

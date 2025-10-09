@@ -1117,11 +1117,11 @@ trait MockExternalApis
                string $dataset,
                string $outputSchema,
                string $outputVersion,
-               string $inputSchema = null,
-               string $inputVersion = null,
+               ?string $inputSchema = null,
+               ?string $inputVersion = null,
                bool $validateInput = true,
                bool $validateOutput = true,
-               string $subsection = null
+               ?string $subsection = null
            ) {
                $metadata = json_decode($dataset, true)["metadata"];
                //mock translating alternative schemas via traser - just give it a new GWDM metadata
