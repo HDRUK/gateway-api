@@ -114,13 +114,13 @@ class TeamDatasetController extends Controller
 
             $filterTitle = $request->query('title', null);
 
-            $teamDatasets = Dataset::where(['team_id' => $teamId, 'status' => strtoupper($status)])->pluck("id");
+            $teamDatasetIds = Dataset::where(['team_id' => $teamId, 'status' => strtoupper($status)])->pluck("id");
             $datasetIds = [];
 
             // If we've received a 'title' for the search, then only return
             // datasets that match that title
             if (!empty($filterTitle)) {
-                foreach ($teamDatasets as $d) {
+                foreach ($teamDatasetIds as $d) {
                     $version = DatasetVersion::where('dataset_id', $d)
                     ->filterTitle($filterTitle)
                     ->select('dataset_id')
@@ -131,7 +131,7 @@ class TeamDatasetController extends Controller
                     }
                 }
             } else {
-                $datasetIds = $teamDatasets;
+                $datasetIds = $teamDatasetIds;
             }
 
             // Fetch metadata
