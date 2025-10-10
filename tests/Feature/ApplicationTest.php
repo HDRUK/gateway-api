@@ -10,11 +10,10 @@ use Database\Seeders\ApplicationSeeder;
 use Tests\Traits\MockExternalApis;
 use App\Http\Traits\IntegrationOverride;
 use Database\Seeders\EmailTemplateSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class ApplicationTest extends TestCase
 {
-    use RefreshDatabase;
     use IntegrationOverride;
     use MockExternalApis {
         setUp as commonSetUp;
@@ -31,6 +30,8 @@ class ApplicationTest extends TestCase
      */
     public function setUp(): void
     {
+        parent::setUp();
+
         $this->commonSetUp();
 
         $this->seed([

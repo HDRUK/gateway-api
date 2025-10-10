@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use MetadataManagementController as MMC;
+use App\Models\User;
 
 trait MockExternalApis
 {
@@ -75,9 +76,9 @@ trait MockExternalApis
     {
         parent::setUp();
 
-        $this->seed([
-            SectorSeeder::class,
-        ]);
+        // $this->seed([
+        //     SectorSeeder::class,
+        // ]);
 
         Queue::fake([
             LinkageExtraction::class,

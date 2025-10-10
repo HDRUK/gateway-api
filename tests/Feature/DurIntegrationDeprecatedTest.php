@@ -33,12 +33,12 @@ use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\DurHasDatasetVersionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class DurIntegrationDeprecatedTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

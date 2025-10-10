@@ -17,11 +17,11 @@ use Illuminate\Support\Facades\Queue;
 use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Support\Facades\Storage;
 use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class DatasetTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

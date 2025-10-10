@@ -50,12 +50,12 @@ use App\Http\Controllers\Api\V1\ToolController;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\DatasetVersionHasToolSeeder;
 use Database\Seeders\EmailTemplateSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class ToolV2Test extends TestCase
 {
-    use RefreshDatabase;
+    
     use Authorization;
     use Helpers;
     use MockExternalApis {

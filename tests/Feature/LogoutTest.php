@@ -4,11 +4,11 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use Tests\Traits\Authorization;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class LogoutTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use Authorization;
 
     public const USERS_URL = '/api/v1/users';

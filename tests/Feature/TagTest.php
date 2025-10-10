@@ -6,11 +6,11 @@ use App\Models\Tag;
 use Tests\TestCase;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class TagTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

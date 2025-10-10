@@ -7,11 +7,11 @@ use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class KeywordTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

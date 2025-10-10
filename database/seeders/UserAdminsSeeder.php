@@ -17,6 +17,7 @@ class UserAdminsSeeder extends Seeder
      */
     public function run(): void
     {
+        var_dump('begin UserAdminsSeeder');
         // Create our super user account
         $this->createUser(
             'HDRUK',
@@ -154,5 +155,7 @@ class UserAdminsSeeder extends Seeder
                 'hdruk.admin'
             ]
         );
+        var_dump('end UserAdminsSeeder');
+
     }
 }

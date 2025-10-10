@@ -12,9 +12,11 @@ use App\Models\Keyword;
 use App\Models\Collection;
 use App\Models\CollectionHasUser;
 use App\Models\Publication;
+use App\Models\User;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
+use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
@@ -23,6 +25,7 @@ use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
@@ -31,14 +34,14 @@ use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
 use Database\Seeders\DurHasDatasetVersionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionHasPublicationSeeder;
 use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class CollectionTest extends TestCase
 {
-    use RefreshDatabase;
+    use Authorization;
+
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -59,31 +62,33 @@ class CollectionTest extends TestCase
      */
     public function setUp(): void
     {
+        var_dump('begin CollectionTest::setUp()');
         $this->commonSetUp();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            ApplicationSeeder::class,
-            CollectionSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            KeywordSeeder::class,
-            CategorySeeder::class,
-            TypeCategorySeeder::class,
-            LicenseSeeder::class,
-            ToolSeeder::class,
-            TagSeeder::class,
-            DurSeeder::class,
-            DurHasDatasetVersionSeeder::class,
-            CollectionHasKeywordSeeder::class,
-            CollectionHasDatasetVersionSeeder::class,
-            CollectionHasToolSeeder::class,
-            CollectionHasDurSeeder::class,
-            PublicationSeeder::class,
-            PublicationHasDatasetVersionSeeder::class,
-            CollectionHasPublicationSeeder::class,
-            CollectionHasUserSeeder::class,
-        ]);
+        // $this->seed([
+        //     MinimalUserSeeder::class,
+        //     TeamHasUserSeeder::class,
+        //     ApplicationSeeder::class,
+        //     CollectionSeeder::class,
+        //     DatasetSeeder::class,
+        //     DatasetVersionSeeder::class,
+        //     KeywordSeeder::class,
+        //     CategorySeeder::class,
+        //     TypeCategorySeeder::class,
+        //     LicenseSeeder::class,
+        //     ToolSeeder::class,
+        //     TagSeeder::class,
+        //     DurSeeder::class,
+        //     DurHasDatasetVersionSeeder::class,
+        //     CollectionHasKeywordSeeder::class,
+        //     CollectionHasDatasetVersionSeeder::class,
+        //     CollectionHasToolSeeder::class,
+        //     CollectionHasDurSeeder::class,
+        //     PublicationSeeder::class,
+        //     PublicationHasDatasetVersionSeeder::class,
+        //     CollectionHasPublicationSeeder::class,
+        //     CollectionHasUserSeeder::class,
+        // ]);
 
         // Generate non-admin user for CREATOR
         $this->authorisationUser(false);
@@ -102,7 +107,7 @@ class CollectionTest extends TestCase
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $this->nonAdmin2Jwt,
         ];
-
+        var_dump('end CollectionTest::setUp()');
     }
 
     /**
@@ -260,6 +265,7 @@ class CollectionTest extends TestCase
      */
     public function test_add_new_active_collection_with_success(): void
     {
+        var_dump('begin test_add_new_active_collection_with_success()');
         $datasets = $this->generateDatasets();
         $nActive = Dataset::whereIn("id", array_column($datasets, 'id'))
             ->where('status', Dataset::STATUS_ACTIVE)
@@ -281,6 +287,7 @@ class CollectionTest extends TestCase
             "status" => "ACTIVE"
         ];
 
+        var_dump('$this->headerNonAdmin', $this->headerNonAdmin);
         $response = $this->json(
             'POST',
             self::TEST_URL_V2,
@@ -290,10 +297,10 @@ class CollectionTest extends TestCase
 
         $countAfter = Collection::count();
         $countNewRow = $countAfter - $countBefore;
-
+        var_dump($response->decodeResponseJson());
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
         $response->assertStatus(201);
-
+        var_dump('end test_add_new_active_collection_with_success()');
     }
 
     public function test_add_new_draft_collection_with_success(): void

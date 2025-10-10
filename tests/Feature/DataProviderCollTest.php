@@ -27,14 +27,14 @@ use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\DataProviderCollsSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Database\Seeders\CollectionHasPublicationSeeder;
 use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class DataProviderCollTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

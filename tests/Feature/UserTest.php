@@ -10,11 +10,11 @@ use Database\Seeders\SectorSeeder;
 use Illuminate\Support\Facades\Http;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class UserTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use Authorization;
 
     public const TEST_URL = '/api/v1/users';

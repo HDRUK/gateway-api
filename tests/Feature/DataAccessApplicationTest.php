@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
+// 
 use Config;
 use Tests\TestCase;
 use App\Models\Team;
@@ -26,11 +26,11 @@ use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
 use Database\Seeders\DataAccessTemplateSeeder;
 use Database\Seeders\DataAccessApplicationSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class DataAccessApplicationTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

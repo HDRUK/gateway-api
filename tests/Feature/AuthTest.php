@@ -5,11 +5,9 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AuthTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
 
     public const TEST_URL_AUTH = '/api/v1/auth';

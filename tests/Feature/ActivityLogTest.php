@@ -9,11 +9,9 @@ use Database\Seeders\ActivityLogTypeSeeder;
 use Database\Seeders\ActivityLogUserTypeSeeder;
 use Database\Seeders\ActivityLogSeeder;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ActivityLogTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -24,6 +22,7 @@ class ActivityLogTest extends TestCase
 
     public function setUp(): void
     {
+        var_dump('this->commonSetUp()');
         $this->commonSetUp();
 
         $this->seed([

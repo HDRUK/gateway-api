@@ -29,11 +29,11 @@ use Database\Seeders\SpatialCoverageSeeder;
 use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class DurObserverTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

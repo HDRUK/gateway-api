@@ -36,11 +36,11 @@ use Database\Seeders\PublicationHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class ToolIntegrationDeprecatedTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

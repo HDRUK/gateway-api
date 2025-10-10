@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Artisan;
 use Behat\Behat\Hook\Scope\BeforeFeatureScope;
 use Behat\Testwork\Hook\Scope\BeforeSuiteScope;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Illuminate\Foundation\Testing\Concerns\InteractsWithDatabase;
 
 /**
@@ -15,7 +15,7 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithDatabase;
  */
 class FeatureContext implements Context
 {
-    use RefreshDatabase;
+    
     use InteractsWithDatabase;
 
     private $sharedContext;

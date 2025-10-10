@@ -7,11 +7,11 @@ use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ActivityLogUserTypeSeeder;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class ActivityLogUserTypeTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

@@ -7,11 +7,11 @@ use Tests\TestCase;
 use App\Models\Permission;
 use Database\Seeders\PermissionSeeder;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class PermissionTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

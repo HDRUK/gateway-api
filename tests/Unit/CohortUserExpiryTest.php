@@ -12,11 +12,11 @@ use Database\Seeders\PermissionSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use App\Models\CohortRequestHasPermission;
 use Database\Seeders\EmailTemplateSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class CohortUserExpiryTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

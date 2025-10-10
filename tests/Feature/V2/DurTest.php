@@ -26,11 +26,11 @@ use Illuminate\Support\Facades\Storage;
 use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class DurTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use Authorization;
     use Helpers;
     use MockExternalApis {

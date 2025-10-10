@@ -9,11 +9,11 @@ use Laravel\Pennant\Feature;
 use Database\Seeders\AliasSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class AliasTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

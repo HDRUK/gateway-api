@@ -35,14 +35,14 @@ use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
 use Database\Seeders\DurHasDatasetVersionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Database\Seeders\CollectionHasPublicationSeeder;
 use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class CollectionTeamTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -64,6 +64,8 @@ class CollectionTeamTest extends TestCase
      */
     public function setUp(): void
     {
+        parent::setUp();
+
         $this->commonSetUp();
 
         $this->seed([

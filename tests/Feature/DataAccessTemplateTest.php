@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
 use App\Http\Enums\TeamMemberOf;
 use Tests\TestCase;
@@ -10,13 +9,11 @@ use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\DataAccessTemplateSeeder;
 use Database\Seeders\QuestionBankSeeder;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 class DataAccessTemplateTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -43,6 +40,7 @@ class DataAccessTemplateTest extends TestCase
     {
         $response = $this->get('api/v1/dar/templates', $this->header);
 
+        var_dump($response->decodeResponseJson());
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'current_page',

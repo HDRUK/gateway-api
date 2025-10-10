@@ -30,6 +30,8 @@ trait Authorization
 
     public function authorisationUser(bool $admin = true, int $nonAdminId = 1): bool
     {
+        var_dump('authorisationUser()');
+
         if ($admin) {
             $user = [
                 'name' => Config::get(self::CFG_TEST_NAME),
@@ -77,6 +79,7 @@ trait Authorization
 
     public function getAuthorisationJwt(bool $admin = true, int $nonAdminId = 1): mixed
     {
+        var_dump('getAuthorisationJwt()');
         if ($admin) {
             $authData = [
                 'email' => Config::get(self::CFG_TEST_EMAIL),
@@ -101,11 +104,12 @@ trait Authorization
 
     public function getUserFromJwt(string $jwt): mixed
     {
+        var_dump('getUserFromJwt()');
         $jwtController = new JwtController();
         $jwtController->setJwt($jwt);
         $payloadJwt = $jwtController->decode();
         $userJwt = $payloadJwt['user'];
-
+        // var_dump($userJwt);
         return $userJwt;
     }
 

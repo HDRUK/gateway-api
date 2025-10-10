@@ -28,11 +28,11 @@ use Database\Seeders\CollectionHasUserSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use App\Observers\DurHasDatasetVersionObserver;
 use Database\Seeders\ProgrammingLanguageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class DurHasDatasetVersionObserverTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

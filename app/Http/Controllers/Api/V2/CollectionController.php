@@ -29,6 +29,7 @@ use App\Http\Requests\V2\Collection\EditCollection;
 use App\Http\Requests\V2\Collection\GetCollection;
 use App\Http\Requests\V2\Collection\UpdateCollection;
 use App\Models\CollectionHasUser;
+use Illuminate\Support\Facades\Route;
 
 class CollectionController extends Controller
 {
@@ -340,7 +341,10 @@ class CollectionController extends Controller
     {
         // no checks on permissions are required, so long as you're logged in, and that will be checked by jwt middleware.
 
+        $m = Route::getCurrentRoute()->middleware();
+        var_dump($m);
         $input = $request->all();
+        var_dump('$input', $input);
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {

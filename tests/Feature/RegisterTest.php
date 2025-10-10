@@ -7,11 +7,11 @@ use Tests\TestCase;
 use App\Models\User;
 use Database\Seeders\SectorSeeder;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class RegisterTest extends TestCase
 {
-    use RefreshDatabase;
+    
 
     public const TEST_URL = '/api/v1/register';
 

@@ -36,6 +36,8 @@ class JwtMiddleware
     {
         // Cater for auth token coming in via cookie - as sent originally during
         // the socialite oath flow
+        $request->merge(
+                ['test_Sam' => 'testSam']);
         if ($request->cookie('token')) {
             $authorization = $request->cookie('token');
             $jwtController = new JwtController();

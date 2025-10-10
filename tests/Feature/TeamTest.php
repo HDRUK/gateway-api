@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
+// 
 use Config;
 use Tests\TestCase;
 use App\Models\Team;
@@ -14,11 +14,11 @@ use Tests\Traits\MockExternalApis;
 use Database\Seeders\MinimalUserSeeder;
 use MetadataManagementController as MMC;
 use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class TeamTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

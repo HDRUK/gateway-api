@@ -8,11 +8,11 @@ use Tests\Traits\Authorization;
 use Database\Seeders\SectorSeeder;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class UserRoleTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use Authorization;
 
     protected $header = [];

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Config;
 use Laravel\Passport\Passport;
+use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use App\Http\Controllers\SSO\CustomAccessToken;
 use App\Models\DataAccessApplication;
@@ -45,7 +46,7 @@ class AppServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(Router $router)
     {
         Passport::tokensCan([
             'openid' => 'openid',

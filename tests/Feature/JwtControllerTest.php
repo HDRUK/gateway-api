@@ -7,11 +7,11 @@ use App\Models\User;
 use Tests\Traits\MockExternalApis;
 use App\Http\Controllers\JwtController;
 use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class JwtControllerTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

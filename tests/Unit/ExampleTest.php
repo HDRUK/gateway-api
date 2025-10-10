@@ -4,11 +4,11 @@ namespace Tests\Unit;
 
 use Tests\TestCase;
 use Tests\Traits\Authorization;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class ExampleTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use Authorization;
 
     public function setUp(): void

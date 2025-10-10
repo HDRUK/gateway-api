@@ -10,12 +10,12 @@ use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use App\Http\Traits\EnquiriesTrait;
 use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class EnquiriesManagementControllerTest extends TestCase
 {
     use EnquiriesTrait;
-    use RefreshDatabase;
+    
 
     public function setUp(): void
     {

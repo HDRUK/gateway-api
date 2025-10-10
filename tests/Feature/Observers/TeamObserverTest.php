@@ -10,11 +10,11 @@ use App\Models\DatasetVersion;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class TeamObserverTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

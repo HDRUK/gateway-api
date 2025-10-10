@@ -11,11 +11,11 @@ use Tests\Traits\MockExternalApis;
 use Database\Seeders\MinimalUserSeeder;
 use App\Models\FederationHasNotification;
 use Database\Seeders\EmailTemplateSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class FederationTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

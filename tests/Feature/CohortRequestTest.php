@@ -14,11 +14,11 @@ use Illuminate\Support\Facades\Mail;
 use Database\Seeders\CohortRequestSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\EmailTemplateSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class CohortRequestTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

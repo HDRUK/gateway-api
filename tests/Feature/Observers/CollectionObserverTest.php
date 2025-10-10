@@ -11,12 +11,12 @@ use Tests\Traits\MockExternalApis;
 use App\Observers\CollectionObserver;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use ElasticClientController as ECC;
 
 class CollectionObserverTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use MockExternalApis {
         setUp as commonSetUp;
     }

@@ -55,12 +55,12 @@ use App\Models\ProgrammingPackage;
 use App\Models\TypeCategory;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\DatasetVersionHasToolSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class ToolTest extends TestCase
 {
-    use RefreshDatabase;
+    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
