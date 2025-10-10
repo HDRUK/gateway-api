@@ -138,7 +138,7 @@ class TeamDatasetController extends Controller
             $datasets = Dataset::whereIn("id", $datasetIds)
                 ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
                 ->applySorting()
-                ->paginate($perPage);
+                ->paginate((int) $perPage, ['*'], 'page');
 
             foreach ($datasets as &$d) {
                 $miniMetadata = $this->trimDatasets($d->latestMetadata['metadata'], [
