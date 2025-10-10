@@ -112,14 +112,10 @@ class TeamDatasetController extends Controller
 
             $perPage = request('per_page', Config::get('constants.per_page'));
 
-            $teamDatasets = $this->indexTeamDataset(
-                $teamId,
-                $status,
-                $perPage,
-                $withMetadata,
-            );
+            $filterTitle = $request->query('title', null);
 
-            $datasets = [];
+            $teamDatasets = Dataset::where(['team_id' => $teamId, 'status' => strtoupper($status)])->pluck("id");
+            $datasetIds = [];
 
             // If we've received a 'title' for the search, then only return
             // datasets that match that title
@@ -131,12 +127,18 @@ class TeamDatasetController extends Controller
                     ->first();
 
                     if ($version) {
-                        $datasets[] = $d;
+                        $datasetIds[] = $d;
                     }
                 }
             } else {
-                $datasets = $teamDatasets;
+                $datasetIds = $teamDatasets;
             }
+
+            // Fetch metadata
+            $datasets = Dataset::whereIn("id", $datasetIds)
+                ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
+                ->applySorting()
+                ->paginate($perPage);
 
             foreach ($datasets as &$d) {
                 $miniMetadata = $this->trimDatasets($d->latestMetadata['metadata'], [
@@ -895,15 +897,5 @@ class TeamDatasetController extends Controller
             ]);
             throw new Exception($e->getMessage());
         }
-    }
-
-    private function indexTeamDataset(int $teamId, string $status, int $perPage, int $withMetadata)
-    {
-        $datasets = Dataset::where(['team_id' => $teamId, 'status' => strtoupper($status)])
-            ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
-            ->applySorting()
-            ->paginate((int) $perPage, ['*'], 'page');
-
-        return $datasets;
     }
 }
