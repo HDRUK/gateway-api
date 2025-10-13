@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\TeamHasUser;
-use App\Models\UserHasRole;
+use App\Models\TeamHasUserRole;
 use Illuminate\Support\Facades\Hash;
 
 class TestDevUsersSeeder extends Seeder
@@ -37,15 +37,15 @@ class TestDevUsersSeeder extends Seeder
                     'password' => Hash::make(env('TEST_USER_PASSWORD')),
                 ]
             );
-            TeamHasUser::create(
+            $teamUser = TeamHasUser::create(
                 [
                     'team_id' => $teamId,
                     'user_id' => $user->id,
                 ]
             );
             foreach ($data['role_ids'] as $role_id) {
-                UserHasRole::firstOrCreate([
-                    'user_id' => $user->id,
+                TeamHasUserRole::firstOrCreate([
+                    'team_has_user_id' => $teamUser->id,
                     'role_id' => $role_id,
                 ]);
             }
