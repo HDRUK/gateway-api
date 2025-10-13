@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\TeamHasUser;
-use App\Models\TeamHasUserRole;
+use App\Models\TeamUserHasRole;
 use Illuminate\Support\Facades\Hash;
 
 class TestDevUsersSeeder extends Seeder
@@ -44,7 +44,7 @@ class TestDevUsersSeeder extends Seeder
                 ]
             );
             foreach ($data['role_ids'] as $role_id) {
-                TeamHasUserRole::firstOrCreate([
+                TeamUserHasRole::firstOrCreate([
                     'team_has_user_id' => $teamUser->id,
                     'role_id' => $role_id,
                 ]);
