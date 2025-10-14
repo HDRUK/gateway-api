@@ -12,7 +12,6 @@ trait RefreshDatabaseLite
 
     public function liteSetUp(): void
     {
-        var_dump('begin liteSetup');
         parent::setUp();
 
         if (!static::$migrated) {
@@ -29,12 +28,10 @@ trait RefreshDatabaseLite
 
         // Start a manual transaction
         DB::beginTransaction();
-        var_dump('completed liteSetup()');
     }
 
     public function tearDown(): void
     {
-        var_dump('begin tearDown');
         // Rollback after each test
         DB::rollBack();
 
