@@ -29,22 +29,17 @@ class DatasetObserverTest extends TestCase
 
         DatasetVersion::flushEventListeners();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-        ]);
-
         $this->metadata = $this->getMetadata();
+        $this->initialCountDatasets = Dataset::count();
     }
 
     public function testDatasetObserverReindexesElasticOnCreatedEeventIfActiveAndHasVersion()
     {
         $observer = Mockery::mock(DatasetObserver::class)->makePartial();
-        $observer->shouldReceive('reindexElastic')->with(2);
+        $observer->shouldReceive('reindexElastic')->with($this->initialCountDatasets + 1);
 
         $teamHasUser = TeamHasUser::all()->random();
         $dataset = Dataset::create([
-            'id' => 1,
             'user_id' => $teamHasUser->user_id,
             'team_id' => $teamHasUser->team_id,
             'create_origin' => Dataset::ORIGIN_MANUAL,
@@ -61,31 +56,28 @@ class DatasetObserverTest extends TestCase
         $observer->created($dataset);
 
         $this->assertDatabaseHas('datasets', [
-            'id' => 1,
             'user_id' => $teamHasUser->user_id,
             'team_id' => $teamHasUser->team_id,
             'create_origin' => Dataset::ORIGIN_MANUAL,
             'status' => Dataset::STATUS_ACTIVE,
         ]);
-        $this->assertDatabaseHas('dataset_versions', ['dataset_id' => 1]);
+        $this->assertDatabaseHas('dataset_versions', ['dataset_id' => $this->initialCountDatasets + 1]);
 
     }
 
     public function testDatasetObserverSetsPreviousStatusOnUpdatingEvent()
     {
         $observer = Mockery::mock(DatasetObserver::class)->makePartial();
-        $observer->shouldReceive('reindexElastic')->with(1);
+        $observer->shouldReceive('reindexElastic')->with($this->initialCountDatasets + 1);
 
         $teamHasUser = TeamHasUser::all()->random();
         $dataset = Dataset::create([
-            'id' => 1,
             'user_id' => $teamHasUser->user_id,
             'team_id' => $teamHasUser->team_id,
             'create_origin' => Dataset::ORIGIN_MANUAL,
             'status' => Dataset::STATUS_DRAFT,
         ]);
 
-        $observer = new DatasetObserver();
         $dataset->status = Dataset::STATUS_ACTIVE;
         $observer->updating($dataset);
 
@@ -95,12 +87,11 @@ class DatasetObserverTest extends TestCase
     public function testDatasetObserverReindexesOrDeletesFromElasticOnUpdatedEventBasedOnStatusChange()
     {
         $observer = Mockery::mock(DatasetObserver::class)->makePartial();
-        $observer->shouldReceive('reindexElastic')->with(1);
-        $observer->shouldReceive('deleteDatasetFromElastic')->once()->with(1);
+        $observer->shouldReceive('reindexElastic')->with($this->initialCountDatasets + 1);
+        $observer->shouldReceive('deleteDatasetFromElastic')->once()->with($this->initialCountDatasets + 1);
 
         $teamHasUser = TeamHasUser::all()->random();
         $dataset = Dataset::create([
-            'id' => 1,
             'user_id' => $teamHasUser->user_id,
             'team_id' => $teamHasUser->team_id,
             'create_origin' => Dataset::ORIGIN_MANUAL,
@@ -120,18 +111,18 @@ class DatasetObserverTest extends TestCase
     public function testDatasetObserverReindexesElasticOnDeletedEvent()
     {
         $observer = Mockery::mock(DatasetObserver::class)->makePartial();
-        $observer->shouldReceive('reindexElastic')->with(1);
+        $observer->shouldReceive('reindexElastic')->with($this->initialCountDatasets + 1);
+        $observer->shouldReceive('deleteDatasetFromElastic')->once()->with($this->initialCountDatasets + 1);
 
         $teamHasUser = TeamHasUser::all()->random();
         $dataset = Dataset::create([
-            'id' => 1,
             'user_id' => $teamHasUser->user_id,
             'team_id' => $teamHasUser->team_id,
             'create_origin' => Dataset::ORIGIN_MANUAL,
             'status' => Dataset::STATUS_ACTIVE,
         ]);
 
-        DatasetVersion::factory()->create(['dataset_id' => 1]);
+        DatasetVersion::factory()->create(['dataset_id' => $this->initialCountDatasets + 1]);
 
         DatasetVersion::factory()->create([
             'dataset_id' => $dataset->id,
@@ -143,26 +134,25 @@ class DatasetObserverTest extends TestCase
         $observer->created($dataset);
 
         $this->assertDatabaseHas('datasets', [
-            'id' => 1,
             'user_id' => $teamHasUser->user_id,
             'team_id' => $teamHasUser->team_id,
             'create_origin' => Dataset::ORIGIN_MANUAL,
             'status' => Dataset::STATUS_ACTIVE,
         ]);
-        $this->assertDatabaseHas('dataset_versions', ['dataset_id' => 1]);
+        $this->assertDatabaseHas('dataset_versions', ['dataset_id' => $this->initialCountDatasets + 1]);
 
-        Dataset::where('id', 1)->delete();
-        $dataset = Dataset::where('id', 1)->withTrashed()->first();
+        Dataset::where('id', $this->initialCountDatasets + 1)->first()->delete();
+        $dataset = Dataset::where('id', $this->initialCountDatasets + 1)->withTrashed()->first();
+        $dataset->prevStatus = Dataset::STATUS_ACTIVE;
 
         $observer->deleted($dataset);
 
         $this->assertDatabaseHas('datasets', [
-            'id' => 1,
             'user_id' => $teamHasUser->user_id,
             'team_id' => $teamHasUser->team_id,
             'create_origin' => Dataset::ORIGIN_MANUAL,
             'status' => Dataset::STATUS_ACTIVE,
         ]);
-        $this->assertSoftDeleted('datasets', ['id' => 1]);
+        $this->assertSoftDeleted('datasets', ['id' => $this->initialCountDatasets + 1]);
     }
 }

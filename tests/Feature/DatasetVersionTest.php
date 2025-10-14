@@ -39,13 +39,6 @@ class DatasetVersionTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-        $this->seed([
-            PermissionSeeder::class,
-            RoleSeeder::class,
-            SpatialCoverageSeeder::class,
-            TeamSeeder::class,
-            UserSeeder::class
-        ]);
 
         $this->metadata = $this->getMetadata();
     }
@@ -653,13 +646,6 @@ class DatasetVersionTest extends TestCase
 
     public function test_get_datasets_with_multiple_versions(): void
     {
-        $this->seed([
-            MinimalUserSeeder::class,
-            DatasetSeeder::class, //10 datasets
-            DatasetSeeder::class, //another 10
-            DatasetVersionSeeder::class,//seed the 20 with random number of versions
-        ]);
-
         $responseGetDatasets = $this->json(
             'GET',
             self::TEST_URL_DATASET,
@@ -667,7 +653,7 @@ class DatasetVersionTest extends TestCase
         );
 
         $responseGetDatasets->assertStatus(200);
-        $this->assertCount(20, $responseGetDatasets['data']);
+        $this->assertCount(10, $responseGetDatasets['data']);
 
         foreach ($responseGetDatasets['data'] as $dataset) {
             $this->assertArrayHasKey('latest_metadata', $dataset);
@@ -682,13 +668,6 @@ class DatasetVersionTest extends TestCase
 
     public function test_get_datasets_with_changing_per_page(): void
     {
-        $this->seed([
-            MinimalUserSeeder::class,
-            DatasetSeeder::class, //10 datasets
-            DatasetSeeder::class, //another 10
-            DatasetVersionSeeder::class,//seed the 20 with random number of versions
-        ]);
-
         $responseGetDatasets = $this->json(
             'GET',
             self::TEST_URL_DATASET,
@@ -696,7 +675,7 @@ class DatasetVersionTest extends TestCase
         );
 
         $responseGetDatasets->assertStatus(200);
-        $this->assertCount(20, $responseGetDatasets['data']);
+        $this->assertCount(10, $responseGetDatasets['data']);
 
         foreach ($responseGetDatasets['data'] as $dataset) {
             $this->assertArrayHasKey('latest_metadata', $dataset);
