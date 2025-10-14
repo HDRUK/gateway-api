@@ -14,8 +14,6 @@ class ProdUserAdminSeeder extends Seeder
      */
     public function run(): void
     {
-        var_dump('begin ProdUserAdminSeeder');
-
         $this->createUser(
             'HDRUK',
             'Developers',

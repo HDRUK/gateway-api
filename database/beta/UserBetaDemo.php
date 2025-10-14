@@ -19,7 +19,6 @@ class UserBetaDemo extends Seeder
     public function run(): void
     {
         // Create our super user account
-        var_dump('begin UserBetaDemo (seeder)');
         $users = [
             [
                 'firstname' => 'HDRUK',
