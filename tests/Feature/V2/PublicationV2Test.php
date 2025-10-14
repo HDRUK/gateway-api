@@ -48,21 +48,6 @@ class PublicationV2Test extends TestCase
         DatasetVersion::flushEventListeners();
         Publication::flushEventListeners();
         PublicationHasDatasetVersion::flushEventListeners();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            TeamHasUserSeeder::class,
-            PublicationSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            PublicationHasDatasetVersionSeeder::class,
-            LicenseSeeder::class,
-            CategorySeeder::class,
-            TypeCategorySeeder::class,
-            ToolSeeder::class,
-            TagSeeder::class,
-            PublicationHasToolSeeder::class,
-        ]);
     }
 
     /**

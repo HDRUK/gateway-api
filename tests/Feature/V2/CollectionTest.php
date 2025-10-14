@@ -62,33 +62,7 @@ class CollectionTest extends TestCase
      */
     public function setUp(): void
     {
-        var_dump('begin CollectionTest::setUp()');
         $this->commonSetUp();
-
-        // $this->seed([
-        //     MinimalUserSeeder::class,
-        //     TeamHasUserSeeder::class,
-        //     ApplicationSeeder::class,
-        //     CollectionSeeder::class,
-        //     DatasetSeeder::class,
-        //     DatasetVersionSeeder::class,
-        //     KeywordSeeder::class,
-        //     CategorySeeder::class,
-        //     TypeCategorySeeder::class,
-        //     LicenseSeeder::class,
-        //     ToolSeeder::class,
-        //     TagSeeder::class,
-        //     DurSeeder::class,
-        //     DurHasDatasetVersionSeeder::class,
-        //     CollectionHasKeywordSeeder::class,
-        //     CollectionHasDatasetVersionSeeder::class,
-        //     CollectionHasToolSeeder::class,
-        //     CollectionHasDurSeeder::class,
-        //     PublicationSeeder::class,
-        //     PublicationHasDatasetVersionSeeder::class,
-        //     CollectionHasPublicationSeeder::class,
-        //     CollectionHasUserSeeder::class,
-        // ]);
 
         // Generate non-admin user for CREATOR
         $this->authorisationUser(false);
@@ -107,7 +81,6 @@ class CollectionTest extends TestCase
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $this->nonAdmin2Jwt,
         ];
-        var_dump('end CollectionTest::setUp()');
     }
 
     /**

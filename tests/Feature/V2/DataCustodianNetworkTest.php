@@ -45,32 +45,6 @@ class DataCustodianNetworkTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            TeamSeeder::class,
-            TeamHasUserSeeder::class,
-            DataProviderCollsSeeder::class,
-            ApplicationSeeder::class,
-            CollectionSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            KeywordSeeder::class,
-            CategorySeeder::class,
-            TypeCategorySeeder::class,
-            LicenseSeeder::class,
-            ToolSeeder::class,
-            TagSeeder::class,
-            DurSeeder::class,
-            CollectionHasKeywordSeeder::class,
-            CollectionHasDatasetVersionSeeder::class,
-            CollectionHasToolSeeder::class,
-            CollectionHasDurSeeder::class,
-            PublicationSeeder::class,
-            PublicationHasDatasetVersionSeeder::class,
-            CollectionHasPublicationSeeder::class,
-            CollectionHasUserSeeder::class,
-        ]);
     }
 
     public function test_get_all_data_custodian_networks_with_success(): void
