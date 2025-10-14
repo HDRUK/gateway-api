@@ -6,9 +6,7 @@ use Config;
 use Tests\TestCase;
 use App\Models\Alias;
 use Laravel\Pennant\Feature;
-use Database\Seeders\AliasSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\MinimalUserSeeder;
 
 
 class AliasTest extends TestCase

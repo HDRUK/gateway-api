@@ -10,9 +10,6 @@ use Tests\Traits\MockExternalApis;
 
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\MinimalUserSeeder;
 
 class AdminDatasetControllerTest extends TestCase
 {

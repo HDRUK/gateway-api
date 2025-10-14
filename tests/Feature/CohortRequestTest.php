@@ -7,13 +7,9 @@ use Tests\TestCase;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasPermission;
 use Tests\Traits\Authorization;
-use Database\Seeders\SectorSeeder;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use Database\Seeders\CohortRequestSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\EmailTemplateSeeder;
 
 
 class CohortRequestTest extends TestCase

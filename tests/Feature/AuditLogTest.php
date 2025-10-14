@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\AuditLogSeeder;
 use Tests\Traits\MockExternalApis;
 
