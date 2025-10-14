@@ -11,6 +11,7 @@ use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\NamedEntities;
 use App\Models\Permission;
+use App\Models\Team;
 use Illuminate\Support\Carbon;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
@@ -49,12 +50,6 @@ class DatasetTest extends TestCase
 
         Dataset::flushEventListeners();
         DatasetVersion::flushEventListeners();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-            EmailTemplateSeeder::class,
-        ]);
 
         $this->metadata = $this->getMetadata();
         $this->metadataAlt = $this->metadata;
@@ -113,6 +108,8 @@ class DatasetTest extends TestCase
      */
     public function test_get_all_team_datasets_with_success_v2(): void
     {
+        $countInitialDatasets = Dataset::count();
+        $countInitialTeams = Team::count();
         // First create a notification to be used by the new team
         $notificationID = $this->createNotification();
 
@@ -203,7 +200,7 @@ class DatasetTest extends TestCase
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
-        $this->assertCount(4, $response['data']);
+        $this->assertCount($countInitialDatasets + 4, $response['data']);
         $response->assertJsonStructure([
             'current_page',
             'data',
@@ -404,7 +401,7 @@ class DatasetTest extends TestCase
                 $responseDeleteDataset = $this->json(
                     'DELETE',
                     $this->team_datasets_url($teamId1) .
-                    '/' . $i,
+                    '/' . ($countInitialDatasets + $i),
                     [],
                     $this->headerNonAdmin
                 );
@@ -422,7 +419,7 @@ class DatasetTest extends TestCase
                 $responseDeleteDataset = $this->json(
                     'DELETE',
                     $this->team_datasets_url($teamId1) .
-                    '/' . $i,
+                    '/' . ($countInitialDatasets + $i),
                     [],
                     $this->headerNonAdmin
                 );
@@ -434,7 +431,7 @@ class DatasetTest extends TestCase
                 $responseDeleteDataset = $this->json(
                     'DELETE',
                     $this->team_datasets_url($teamId2) .
-                    '/' . $i,
+                    '/' . ($countInitialDatasets + $i),
                     [],
                     $this->headerNonAdmin
                 );
@@ -446,7 +443,7 @@ class DatasetTest extends TestCase
                 $responseDeleteDataset = $this->json(
                     'DELETE',
                     $this->team_datasets_url($teamId1) .
-                    '/' . $i,
+                    '/' . ($countInitialDatasets + $i),
                     [],
                     $this->headerNonAdmin2
                 );
@@ -458,7 +455,7 @@ class DatasetTest extends TestCase
                 $responseDeleteDataset = $this->json(
                     'DELETE',
                     $this->team_datasets_url($teamId2) .
-                    '/' . $i,
+                    '/' . ($countInitialDatasets + $i),
                     [],
                     $this->headerNonAdmin2
                 );
@@ -471,7 +468,7 @@ class DatasetTest extends TestCase
 
         for ($i = 1; $i <= 2; $i++) {
             // delete team
-            $this->deleteTeam($i);
+            $this->deleteTeam($countInitialTeams + $i);
         }
     }
 
@@ -482,6 +479,7 @@ class DatasetTest extends TestCase
      */
     public function test_app_can_get_all_team_datasets_with_success(): void
     {
+        $countInitialDatasets = Dataset::count();
         // First create a notification to be used by the new team
         $notificationID = $this->createNotification();
 
@@ -535,7 +533,7 @@ class DatasetTest extends TestCase
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
-        $this->assertCount(2, $response['data']);
+        $this->assertCount($countInitialDatasets + 2, $response['data']);
         $response->assertJsonStructure([
             'current_page',
             'data',
