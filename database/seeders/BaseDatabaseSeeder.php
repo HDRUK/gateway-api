@@ -60,6 +60,8 @@ class BaseDatabaseSeeder extends Seeder
             AliasSeeder::class,
             AuditLogSeeder::class,
             CohortRequestSeeder::class,
+            DataAccessApplicationSeeder::class,
+            DataAccessTemplateSeeder::class,
         ]);
     }
 }

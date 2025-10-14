@@ -5,8 +5,6 @@ namespace Tests\Feature;
 // 
 use Config;
 use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\QuestionBankSeeder;
 use Tests\Traits\MockExternalApis;
 
 use Illuminate\Support\Facades\DB;
@@ -23,11 +21,6 @@ class DataAccessSectionTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            QuestionBankSeeder::class,
-        ]);
     }
 
     /**
