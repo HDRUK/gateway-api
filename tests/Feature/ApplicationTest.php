@@ -30,15 +30,7 @@ class ApplicationTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
-
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            ApplicationSeeder::class,
-            EmailTemplateSeeder::class,
-        ]);
     }
 
     public function test_get_all_applications_with_success(): void
