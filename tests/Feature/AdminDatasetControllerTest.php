@@ -26,11 +26,6 @@ class AdminDatasetControllerTest extends TestCase
     protected function setUp(): void
     {
         $this->commonSetUp();
-        $this->seed([
-            MinimalUserSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-        ]);
     }
 
     public function testTriggerTermExtractionWithDefaults()

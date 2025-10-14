@@ -38,12 +38,6 @@ class CohortRequestTest extends TestCase
         parent::setUp();
         $this->runMockHubspot();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            SectorSeeder::class,
-            CohortRequestSeeder::class,
-            EmailTemplateSeeder::class,
-        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

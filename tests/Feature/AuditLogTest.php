@@ -23,11 +23,6 @@ class AuditLogTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            AuditLogSeeder::class,
-        ]);
     }
 
     /**

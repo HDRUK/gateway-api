@@ -25,11 +25,6 @@ class AliasTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            AliasSeeder::class,
-        ]);
     }
 
     /**

@@ -21,11 +21,6 @@ class ActivityLogTypeTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            ActivityLogTypeSeeder::class,
-        ]);
     }
 
     /**

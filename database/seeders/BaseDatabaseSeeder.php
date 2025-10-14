@@ -33,6 +33,7 @@ class BaseDatabaseSeeder extends Seeder
             UserAdminsSeeder::class,
             MinimalUserSeeder::class,
             TeamHasUserSeeder::class,
+            DataProviderCollsSeeder::class,
             ApplicationSeeder::class,
             CollectionSeeder::class,
             DatasetSeeder::class,
@@ -53,6 +54,12 @@ class BaseDatabaseSeeder extends Seeder
             PublicationHasDatasetVersionSeeder::class,
             CollectionHasPublicationSeeder::class,
             CollectionHasUserSeeder::class,
+            ActivityLogTypeSeeder::class,
+            ActivityLogUserTypeSeeder::class,
+            ActivityLogSeeder::class,
+            AliasSeeder::class,
+            AuditLogSeeder::class,
+            CohortRequestSeeder::class,
         ]);
     }
 }
