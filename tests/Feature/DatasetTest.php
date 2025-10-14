@@ -21,7 +21,6 @@ use Database\Seeders\SpatialCoverageSeeder;
 
 class DatasetTest extends TestCase
 {
-    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

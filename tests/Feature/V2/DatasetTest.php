@@ -24,7 +24,6 @@ use App\Jobs\LinkageExtraction;
 
 class DatasetTest extends TestCase
 {
-    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

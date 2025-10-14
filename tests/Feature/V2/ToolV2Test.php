@@ -55,7 +55,6 @@ use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class ToolV2Test extends TestCase
 {
-    
     use Authorization;
     use Helpers;
     use MockExternalApis {

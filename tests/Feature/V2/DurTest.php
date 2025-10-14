@@ -30,7 +30,6 @@ use Database\Seeders\SpatialCoverageSeeder;
 
 class DurTest extends TestCase
 {
-    
     use Authorization;
     use Helpers;
     use MockExternalApis {

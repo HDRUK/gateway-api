@@ -34,7 +34,6 @@ use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class DataCustodianNetworkTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

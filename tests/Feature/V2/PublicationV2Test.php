@@ -27,7 +27,6 @@ use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class PublicationV2Test extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

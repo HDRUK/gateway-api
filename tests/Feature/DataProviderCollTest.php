@@ -34,7 +34,6 @@ use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class DataProviderCollTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }
