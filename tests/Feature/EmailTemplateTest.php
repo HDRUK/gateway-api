@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\EmailTemplate;
 use Tests\TestCase;
-use Database\Seeders\EmailTemplateSeeder;
 use Tests\Traits\MockExternalApis;
 
 
@@ -27,10 +26,6 @@ class EmailTemplateTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            EmailTemplateSeeder::class,
-        ]);
     }
 
     /**

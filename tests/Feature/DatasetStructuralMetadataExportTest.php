@@ -8,7 +8,6 @@ use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
-use Database\Seeders\SpatialCoverageSeeder;
 use App\Exports\DatasetStructuralMetadataExport;
 
 
@@ -25,10 +24,6 @@ class DatasetStructuralMetadataExportTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            SpatialCoverageSeeder::class,
-        ]);
 
         $this->testMetadata = $this->getMetadata();
     }

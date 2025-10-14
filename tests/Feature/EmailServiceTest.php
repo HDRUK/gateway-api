@@ -8,7 +8,6 @@ use App\Models\EmailTemplate;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
 
 
@@ -20,10 +19,6 @@ class EmailServiceTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-
-        $this->seed([
-            EmailTemplateSeeder::class,
-        ]);
 
         Bus::fake();
     }

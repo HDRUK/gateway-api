@@ -9,10 +9,6 @@ use App\Models\DarIntegration;
 use App\Models\Application;
 use App\Models\Permission;
 use App\Models\ApplicationHasPermission;
-use Database\Seeders\DarIntegrationSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\ApplicationSeeder;
-
 use Tests\Traits\MockExternalApis;
 
 class DarIntegrationTest extends TestCase
@@ -31,12 +27,6 @@ class DarIntegrationTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            ApplicationSeeder::class,
-            DarIntegrationSeeder::class,
-        ]);
 
         $this->integration = Application::where('id', 1)->first();
 

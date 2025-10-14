@@ -62,6 +62,9 @@ class BaseDatabaseSeeder extends Seeder
             CohortRequestSeeder::class,
             DataAccessApplicationSeeder::class,
             DataAccessTemplateSeeder::class,
+            DarIntegrationSeeder::class,
+            DurHasPublicationSeeder::class,
+            DurHasToolSeeder::class,
         ]);
     }
 }

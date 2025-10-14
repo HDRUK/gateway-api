@@ -11,15 +11,6 @@ use App\Models\User;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 use App\Http\Enums\TeamMemberOf;
-use Database\Seeders\TeamSeeder;
-use Database\Seeders\RoleSeeder;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
-use Database\Seeders\UserSeeder;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\MinimalUserSeeder;
-
 
 class DatasetVersionTest extends TestCase
 {

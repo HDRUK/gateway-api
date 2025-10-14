@@ -11,12 +11,9 @@ use Illuminate\Support\Carbon;
 use App\Jobs\LinkageExtraction;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
-use Database\Seeders\EmailTemplateSeeder;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Queue;
-use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Support\Facades\Storage;
-use Database\Seeders\SpatialCoverageSeeder;
 
 
 class DatasetTest extends TestCase
