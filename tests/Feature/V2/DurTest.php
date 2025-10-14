@@ -116,21 +116,6 @@ class DurTest extends TestCase
 
         Dur::flushEventListeners();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            KeywordSeeder::class,
-            DurSeeder::class,
-            PublicationSeeder::class,
-            LicenseSeeder::class,
-            TypeCategorySeeder::class,
-            ToolSeeder::class,
-            CollectionSeeder::class,
-            EmailTemplateSeeder::class,
-        ]);
-
         // Generate non-admin user for general usage
         $this->authorisationUser(false);
         $this->nonAdminJwt = $this->getAuthorisationJwt(false);
@@ -427,6 +412,7 @@ class DurTest extends TestCase
             ],
             $this->headerNonAdmin,
         );
+        var_dump($responseCreateDurArchived->decodeResponseJson());
         $responseCreateDurArchived->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
 
         /*

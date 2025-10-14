@@ -12,32 +12,10 @@ use App\Models\Sector;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Publication;
-use Database\Seeders\DurSeeder;
-use Database\Seeders\TagSeeder;
 use App\Http\Enums\TeamMemberOf;
-use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\LicenseSeeder;
 use App\Models\DurHasDatasetVersion;
-use Database\Seeders\CategorySeeder;
-use Database\Seeders\CollectionSeeder;
-use Database\Seeders\DurHasToolSeeder;
-use Database\Seeders\ApplicationSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\PublicationSeeder;
 use Illuminate\Support\Facades\Storage;
-use Database\Seeders\TypeCategorySeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\CollectionHasUserSeeder;
-use Database\Seeders\DurHasPublicationSeeder;
-use Database\Seeders\ProgrammingPackageSeeder;
-use Database\Seeders\PublicationHasToolSeeder;
-use Database\Seeders\ProgrammingLanguageSeeder;
-use Database\Seeders\DurHasDatasetVersionSeeder;
-
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class DurTest extends TestCase
 {
@@ -61,30 +39,6 @@ class DurTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            CategorySeeder::class,
-            TypeCategorySeeder::class,
-            ProgrammingLanguageSeeder::class,
-            ProgrammingPackageSeeder::class,
-            LicenseSeeder::class,
-            TagSeeder::class,
-            ApplicationSeeder::class,
-            CollectionSeeder::class,
-            CollectionHasUserSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            KeywordSeeder::class,
-            ToolSeeder::class,
-            DurSeeder::class,
-            PublicationSeeder::class,
-            PublicationHasDatasetVersionSeeder::class,
-            PublicationHasToolSeeder::class,
-            DurHasPublicationSeeder::class,
-            DurHasToolSeeder::class,
-            DurHasDatasetVersionSeeder::class,
-        ]);
     }
     /**
      * Get All Data Use Registers with success
