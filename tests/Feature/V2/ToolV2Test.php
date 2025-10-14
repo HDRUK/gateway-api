@@ -83,33 +83,6 @@ class ToolV2Test extends TestCase
     {
         $this->commonSetUp();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            CategorySeeder::class,
-            TypeCategorySeeder::class,
-            ProgrammingLanguageSeeder::class,
-            ProgrammingPackageSeeder::class,
-            LicenseSeeder::class,
-            TagSeeder::class,
-            KeywordSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            ToolSeeder::class,
-            ToolHasTagSeeder::class,
-            PublicationSeeder::class,
-            PublicationHasDatasetVersionSeeder::class,
-            PublicationHasToolSeeder::class,
-            ApplicationSeeder::class,
-            DurSeeder::class,
-            DurHasPublicationSeeder::class,
-            DurHasToolSeeder::class,
-            CollectionSeeder::class,
-            CollectionHasToolSeeder::class,
-            DatasetVersionHasToolSeeder::class,
-            CollectionHasUserSeeder::class,
-            EmailTemplateSeeder::class,
-        ]);
-
         $this->authorisationUser(false);
         $this->nonAdminJwt = $this->getAuthorisationJwt(false);
         $this->nonAdminUser = $this->getUserFromJwt($this->nonAdminJwt);
@@ -1170,7 +1143,6 @@ class ToolV2Test extends TestCase
 
     public function test_v2_update_tool_by_team_with_success(): void
     {
-
         ECC::shouldReceive("indexDocument")
             ->times(1);
 
@@ -1278,7 +1250,7 @@ class ToolV2Test extends TestCase
         $this->assertEquals($responseUpdate['data']['license']['id'], $mockDataUpdate['license']);
         $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
         $this->assertEquals($responseUpdate['data']['category_id'], $mockDataUpdate['category_id']);
-        $this->assertEquals($responseUpdate['data']['user_id'], $mockDataUpdate['user_id']);
+        $this->assertEquals($responseUpdate['data']['user_id'], $this->currentUser['id']);
         $this->assertEquals($responseUpdate['data']['enabled'], $mockDataUpdate['enabled']);
 
         $toolHasTags = ToolHasTag::where('tool_id', $toolIdInsert)->get();
