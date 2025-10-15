@@ -216,7 +216,6 @@ class CollectionTest extends TestCase
      */
     public function test_add_new_active_collection_with_success(): void
     {
-        var_dump('begin test_add_new_active_collection_with_success()');
         $datasets = $this->generateDatasets();
         $nActive = Dataset::whereIn("id", array_column($datasets, 'id'))
             ->where('status', Dataset::STATUS_ACTIVE)
@@ -238,7 +237,6 @@ class CollectionTest extends TestCase
             "status" => "ACTIVE"
         ];
 
-        var_dump('$this->headerNonAdmin', $this->headerNonAdmin);
         $response = $this->json(
             'POST',
             self::TEST_URL_V2,
@@ -248,10 +246,9 @@ class CollectionTest extends TestCase
 
         $countAfter = Collection::count();
         $countNewRow = $countAfter - $countBefore;
-        var_dump($response->decodeResponseJson());
+
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
         $response->assertStatus(201);
-        var_dump('end test_add_new_active_collection_with_success()');
     }
 
     public function test_add_new_draft_collection_with_success(): void
