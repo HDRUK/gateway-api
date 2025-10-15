@@ -6,9 +6,6 @@ use Config;
 use Tests\TestCase;
 use App\Models\Library;
 use App\Models\User;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\MinimalUserSeeder;
 
 use Tests\Traits\MockExternalApis;
 
@@ -29,13 +26,7 @@ class LibraryTest extends TestCase
     {
         $this->commonSetUp();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-        ]);
-
-        $this->user = User::where('id', 1)->first();
+        $this->user = User::where('id', $this->currentUser['id'])->first();
 
         Library::factory(10)->create(['user_id' => $this->user->id]);
         Library::factory(10)->create(['user_id' => User::all()->random()]);
