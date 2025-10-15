@@ -9,7 +9,6 @@ use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
-
 use Tests\Traits\MockExternalApis;
 
 class TeamUserTest extends TestCase

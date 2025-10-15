@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Queue;
 
 class DataAccessApplicationTest extends TestCase
 {
-    
     // use MockExternalApis {
     //     setUp as commonSetUp;
     // }

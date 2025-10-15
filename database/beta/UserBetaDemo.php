@@ -19,6 +19,7 @@ class UserBetaDemo extends Seeder
     public function run(): void
     {
         // Create our super user account
+
         $users = [
             [
                 'firstname' => 'HDRUK',

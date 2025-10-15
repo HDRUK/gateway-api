@@ -2,11 +2,9 @@
 
 namespace Tests\Feature;
 
-// 
 use Config;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
-
 use Illuminate\Support\Facades\DB;
 
 class DataAccessSectionTest extends TestCase

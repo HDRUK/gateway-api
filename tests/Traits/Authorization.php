@@ -105,7 +105,7 @@ trait Authorization
         $jwtController->setJwt($jwt);
         $payloadJwt = $jwtController->decode();
         $userJwt = $payloadJwt['user'];
-        // var_dump($userJwt);
+
         return $userJwt;
     }
 

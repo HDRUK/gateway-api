@@ -6,7 +6,6 @@ use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasDatasetVersion;
 use Tests\TestCase;
-
 use App\Http\Traits\MetadataVersioning;
 
 class MetadataRelationshipTest extends TestCase

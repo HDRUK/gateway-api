@@ -11,7 +11,6 @@ use Illuminate\Foundation\Testing\WithFaker;
 class ReviewTest extends TestCase
 {
     use WithFaker;
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

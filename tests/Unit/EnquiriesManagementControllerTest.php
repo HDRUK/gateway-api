@@ -13,7 +13,6 @@ use App\Http\Traits\EnquiriesTrait;
 class EnquiriesManagementControllerTest extends TestCase
 {
     use EnquiriesTrait;
-    
 
     public function setUp(): void
     {

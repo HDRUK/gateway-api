@@ -2,14 +2,12 @@
 
 namespace Tests\Feature;
 
-// 
 use Config;
 use App\Models\QuestionBank;
 use App\Models\QuestionBankVersion;
 use App\Models\QuestionHasTeam;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
-
 use Illuminate\Support\Facades\DB;
 
 class QuestionBankTest extends TestCase

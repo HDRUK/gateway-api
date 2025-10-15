@@ -5,12 +5,10 @@ namespace Tests\Unit;
 use App\Mail\Email;
 use App\Models\EmailTemplate;
 use Tests\TestCase;
-
 use Illuminate\Support\Facades\Http;
 
 class EmailServiceTest extends TestCase
 {
-    
 
     public function setUp(): void
     {

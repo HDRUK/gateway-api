@@ -3,12 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\CustomerSatisfaction;
-
 use Tests\TestCase;
 
 class CustomerSatisfactionTest extends TestCase
 {
-    
 
     /**
      * Test creating a CustomerSatisfaction entry.

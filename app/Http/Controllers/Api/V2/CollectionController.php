@@ -29,7 +29,6 @@ use App\Http\Requests\V2\Collection\EditCollection;
 use App\Http\Requests\V2\Collection\GetCollection;
 use App\Http\Requests\V2\Collection\UpdateCollection;
 use App\Models\CollectionHasUser;
-use Illuminate\Support\Facades\Route;
 
 class CollectionController extends Controller
 {

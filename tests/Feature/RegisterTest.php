@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Http;
 
 class RegisterTest extends TestCase
 {
-    
 
     public const TEST_URL = '/api/v1/register';
 

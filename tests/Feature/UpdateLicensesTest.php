@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Http;
 
 class UpdateLicensesTest extends TestCase
 {
-    
 
     public function setUp(): void
     {

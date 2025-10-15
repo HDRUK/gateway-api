@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-// 
 use Config;
 use Tests\TestCase;
 use App\Models\Team;

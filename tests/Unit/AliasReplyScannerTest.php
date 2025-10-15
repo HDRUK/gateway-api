@@ -17,7 +17,6 @@ use Webklex\PHPIMAP\Support\MessageCollection;
 
 class AliasReplyScannerTest extends TestCase
 {
-
     use MockExternalApis {
         setUp as commonSetUp;
     }

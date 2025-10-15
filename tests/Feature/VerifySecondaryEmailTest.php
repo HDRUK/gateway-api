@@ -4,14 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\EmailVerification;
-
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Tests\TestCase;
 
 class VerifySecondaryEmailTest extends TestCase
 {
-    
 
     public function test_successful_secondary_email_verification()
     {

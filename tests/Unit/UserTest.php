@@ -7,7 +7,6 @@ use Tests\TestCase;
 
 class UserTest extends TestCase
 {
-    
 
     public function test_that_user_emails_are_unique()
     {

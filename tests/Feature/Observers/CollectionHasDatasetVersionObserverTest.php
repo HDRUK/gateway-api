@@ -10,7 +10,6 @@ use App\Models\TeamHasUser;
 use App\Models\DatasetVersion;
 use Tests\Traits\MockExternalApis;
 use App\Models\CollectionHasDatasetVersion;
-
 use App\Observers\CollectionHasDatasetVersionObserver;
 use Config;
 
