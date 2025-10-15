@@ -169,6 +169,24 @@ return [
         ],
         'constraint' => [],
     ],
+[
+        'name' => 'widgets',
+        'method' => 'delete',
+        'path' => '/widgets/{id}',
+        'methodController' => 'WidgetController@destroy',
+        'namespaceController' => 'App\Http\Controllers',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,widgets.read',
+
+        ],
+         'constraint' => [
+            'id' => '[0-9]+',
+        ]
+    ],
+
+
+
     // features
     [
         'name' => 'features',

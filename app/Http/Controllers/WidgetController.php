@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Config;
 use App\Models\Widget;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -14,7 +15,7 @@ class WidgetController extends Controller
      *    deprecated=true,
      *    operationId="fetch_all_widgets",
      *    tags={"Widgets"},
-     *    summary="WidgetController@index",
+     *    summary="WidgetController@get",
      *    description="Get All Widgets",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
@@ -61,5 +62,67 @@ class WidgetController extends Controller
             ]);
 
         return response()->json([ 'data' => $widgets]);
+    }
+
+
+
+    /**
+    * @OA\Delete(
+    *      path="/api/v1/widgets/{id}",
+    *      deprecated=true,
+    *      operationId="delete_widget",
+    *      summary="Delete a widget",
+    *      description="Delete a widget",
+    *      tags={"Widgets"},
+    *      summary="WidgetController@destroy",
+    *      security={{"bearerAuth":{}}},
+    *      @OA\Parameter(
+    *         name="id",
+    *         in="path",
+    *         description="widget id",
+    *         required=true,
+    *         example="1",
+    *         @OA\Schema(
+    *            type="integer",
+    *            description="widget id",
+    *         ),
+    *      ),
+    *      @OA\Response(
+    *          response=404,
+    *          description="Not found response",
+    *          @OA\JsonContent(
+    *              @OA\Property(property="message", type="string", example="not found")
+    *           ),
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Success",
+    *          @OA\JsonContent(
+    *              @OA\Property(property="message", type="string", example="success")
+    *          ),
+    *      ),
+    *      @OA\Response(
+    *          response=500,
+    *          description="Error",
+    *          @OA\JsonContent(
+    *              @OA\Property(property="message", type="string", example="error")
+    *          )
+    *      )
+    * )
+    */
+    public function destroy(Request $request, string $id) // softdelete
+    {
+        try {
+            $input = $request->all();
+            Widget::where('id', $id)->delete();
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+
+
+            throw new Exception($e->getMessage());
+        }
     }
 }
