@@ -3,9 +3,6 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-use Database\Seeders\TeamSeeder;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RoleSeeder;
 use App\Models\Role;
 use App\Models\RoleHasPermission;
 use Tests\Traits\MockExternalApis;
@@ -30,12 +27,6 @@ class RoleTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            TeamSeeder::class,
-            PermissionSeeder::class,
-            RoleSeeder::class,
-        ]);
     }
 
     /**

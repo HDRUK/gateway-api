@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Tag;
 use Tests\TestCase;
-use Database\Seeders\TagSeeder;
 use Tests\Traits\MockExternalApis;
 
 
@@ -27,10 +26,6 @@ class TagTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            TagSeeder::class,
-        ]);
     }
 
     /**

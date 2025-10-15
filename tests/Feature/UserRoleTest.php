@@ -5,9 +5,6 @@ namespace Tests\Feature;
 use App\Models\UserHasRole;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
-use Database\Seeders\SectorSeeder;
-// use Illuminate\Foundation\Testing\WithFaker;
-use Database\Seeders\MinimalUserSeeder;
 
 
 class UserRoleTest extends TestCase
@@ -26,10 +23,6 @@ class UserRoleTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            SectorSeeder::class,
-        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

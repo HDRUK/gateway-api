@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\License;
 use Tests\TestCase;
-use Database\Seeders\LicenseSeeder;
 use Illuminate\Support\Facades\Http;
 
 
@@ -15,10 +14,6 @@ class UpdateLicensesTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-
-        $this->seed([
-            LicenseSeeder::class,
-        ]);
     }
 
     public function test_update_licenses_command_handles_success_response()

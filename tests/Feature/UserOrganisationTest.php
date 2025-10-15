@@ -4,8 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SectorSeeder;
 use Tests\Traits\Authorization;
 
 
@@ -27,10 +25,6 @@ class UserOrganisationTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            SectorSeeder::class,
-        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

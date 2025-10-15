@@ -6,10 +6,7 @@ use Hash;
 use Tests\TestCase;
 use App\Models\User;
 use Tests\Traits\Authorization;
-use Database\Seeders\SectorSeeder;
 use Illuminate\Support\Facades\Http;
-// use Illuminate\Foundation\Testing\WithFaker;
-use Database\Seeders\MinimalUserSeeder;
 
 
 class UserTest extends TestCase
@@ -33,10 +30,6 @@ class UserTest extends TestCase
         parent::setUp();
         $this->runMockHubspot();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            SectorSeeder::class,
-        ]);
         $this->authorisationUser();
         $this->adminJwt = $this->getAuthorisationJwt();
 

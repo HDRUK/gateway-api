@@ -9,9 +9,6 @@ use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
-use Database\Seeders\SectorSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\EmailTemplateSeeder;
 
 use Tests\Traits\MockExternalApis;
 
@@ -33,12 +30,6 @@ class TeamUserTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            SectorSeeder::class,
-            EmailTemplateSeeder::class,
-        ]);
     }
 
     /**

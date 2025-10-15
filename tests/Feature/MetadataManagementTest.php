@@ -7,10 +7,7 @@ use App\Models\Dataset;
 use App\Models\TeamHasUser;
 use App\Models\Team;
 use Tests\Traits\Authorization;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\DatasetVersionSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\SpatialCoverageSeeder;
 
 
 class MetadataManagementTest extends TestCase
@@ -29,11 +26,6 @@ class MetadataManagementTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            SpatialCoverageSeeder::class,
-            MinimalUserSeeder::class,
-        ]);
 
         //setup tests for non-admin
         $this->authorisationUser(false);

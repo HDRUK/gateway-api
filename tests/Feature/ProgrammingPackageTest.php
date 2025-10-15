@@ -5,8 +5,6 @@ namespace Tests\Feature;
 // 
 use Config;
 use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\ProgrammingPackageSeeder;
 use Tests\Traits\MockExternalApis;
 
 
@@ -22,11 +20,6 @@ class ProgrammingPackageTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            ProgrammingPackageSeeder::class,
-        ]);
     }
 
     /**

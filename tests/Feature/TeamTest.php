@@ -9,11 +9,8 @@ use App\Models\Team;
 use App\Models\Alias;
 use App\Models\Dataset;
 use App\Http\Enums\TeamMemberOf;
-use Database\Seeders\AliasSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\MinimalUserSeeder;
 use MetadataManagementController as MMC;
-use Database\Seeders\SpatialCoverageSeeder;
 
 
 class TeamTest extends TestCase
@@ -31,12 +28,6 @@ class TeamTest extends TestCase
         $this->commonSetUp();
 
         Team::flushEventListeners();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-            AliasSeeder::class,
-        ]);
 
         $this->metadata = $this->getMetadata();
     }

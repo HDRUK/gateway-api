@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\User;
-use Database\Seeders\SectorSeeder;
 use Illuminate\Support\Facades\Http;
 
 
@@ -25,10 +24,6 @@ class RegisterTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-
-        $this->seed([
-            SectorSeeder::class,
-        ]);
 
         $this->runMockHubspot();
 

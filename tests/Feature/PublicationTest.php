@@ -7,21 +7,9 @@ use App\Models\Tool;
 use App\Models\Dataset;
 use App\Models\Publication;
 use App\Models\DatasetVersion;
-use Database\Seeders\TagSeeder;
-use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\LicenseSeeder;
-use Database\Seeders\CategorySeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\PublicationSeeder;
-use Database\Seeders\TeamHasUserSeeder;
-use Database\Seeders\TypeCategorySeeder;
-use Database\Seeders\DatasetVersionSeeder;
 use App\Models\PublicationHasDatasetVersion;
-use Database\Seeders\PublicationHasToolSeeder;
 
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class PublicationTest extends TestCase
 {
@@ -47,21 +35,6 @@ class PublicationTest extends TestCase
         DatasetVersion::flushEventListeners();
         Publication::flushEventListeners();
         PublicationHasDatasetVersion::flushEventListeners();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            TeamHasUserSeeder::class,
-            PublicationSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            PublicationHasDatasetVersionSeeder::class,
-            LicenseSeeder::class,
-            CategorySeeder::class,
-            TypeCategorySeeder::class,
-            ToolSeeder::class,
-            TagSeeder::class,
-            PublicationHasToolSeeder::class,
-        ]);
     }
 
     /**
@@ -500,7 +473,7 @@ class PublicationTest extends TestCase
         );
         $response->assertStatus(200);
 
-        //filter to find this one active publciation
+        //filter to find this one active publication
         $countActive = Publication::where("status", Publication::STATUS_ACTIVE)->count();
         $response = $this->json(
             'GET',

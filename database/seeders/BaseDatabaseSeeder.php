@@ -32,6 +32,7 @@ class BaseDatabaseSeeder extends Seeder
             CohortRequestEmailSeeder::class,
             UserAdminsSeeder::class,
             MinimalUserSeeder::class,
+            TeamSeeder::class,
             TeamHasUserSeeder::class,
             DataProviderCollsSeeder::class,
             ApplicationSeeder::class,
@@ -66,6 +67,12 @@ class BaseDatabaseSeeder extends Seeder
             DurHasPublicationSeeder::class,
             DurHasToolSeeder::class,
             FeatureSeeder::class,
+            EnquiryThreadSeeder::class,
+            SDENetworkConciergeSeeder::class,
+            SavedSearchSeeder::class,
+            DatasetVersionHasDatasetVersionSeeder::class,
+            DatasetVersionHasToolSeeder::class,
+            PublicationHasToolSeeder::class,
         ]);
     }
 }

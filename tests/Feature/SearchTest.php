@@ -8,33 +8,9 @@ use Tests\TestCase;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
-use Database\Seeders\DurSeeder;
-use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
-use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\LicenseSeeder;
-use Database\Seeders\CategorySeeder;
-use Database\Seeders\CollectionSeeder;
-use Database\Seeders\DurHasToolSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\PublicationSeeder;
-use Database\Seeders\TeamHasUserSeeder;
-use Database\Seeders\TypeCategorySeeder;
 use MetadataManagementController as MMC;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\CollectionHasUserSeeder;
-use Database\Seeders\DataProviderCollsSeeder;
-use Database\Seeders\ProgrammingPackageSeeder;
-use Database\Seeders\PublicationHasToolSeeder;
-use Database\Seeders\ProgrammingLanguageSeeder;
-use Database\Seeders\CollectionHasKeywordSeeder;
-use Database\Seeders\DatasetVersionHasToolSeeder;
-
-use Database\Seeders\CollectionHasDatasetVersionSeeder;
-use Database\Seeders\DatasetVersionHasDatasetVersionSeeder;
 
 class SearchTest extends TestCase
 {
@@ -57,34 +33,6 @@ class SearchTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            TeamHasUserSeeder::class,
-            KeywordSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            LicenseSeeder::class,
-            CategorySeeder::class,
-            TypeCategorySeeder::class,
-            ToolSeeder::class,
-            CollectionSeeder::class,
-            KeywordSeeder::class,
-            CollectionHasDatasetVersionSeeder::class,
-            CollectionHasKeywordSeeder::class,
-            DatasetVersionHasDatasetVersionSeeder::class,
-            DatasetVersionHasToolSeeder::class,
-            DurSeeder::class,
-            PublicationSeeder::class,
-            ProgrammingLanguageSeeder::class,
-            ProgrammingPackageSeeder::class,
-            TagSeeder::class,
-            PublicationHasToolSeeder::class,
-            DataProviderCollsSeeder::class,
-            DurHasToolSeeder::class,
-            CollectionHasUserSeeder::class,
-            DatasetVersionSeeder::class,
-        ]);
 
         $this->metadata = $this->getMetadata();
     }

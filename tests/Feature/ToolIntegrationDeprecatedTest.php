@@ -11,31 +11,12 @@ use App\Models\Permission;
 use App\Models\ToolHasTag;
 use App\Models\Application;
 use App\Models\Publication;
-use Database\Seeders\DurSeeder;
-use Database\Seeders\TagSeeder;
-use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use App\Models\ToolHasTypeCategory;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\LicenseSeeder;
-use Database\Seeders\CategorySeeder;
-use Database\Seeders\DurHasToolSeeder;
-use Database\Seeders\ToolHasTagSeeder;
-use Database\Seeders\ApplicationSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\PublicationSeeder;
 use App\Models\ApplicationHasPermission;
-use Database\Seeders\TypeCategorySeeder;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\DurHasPublicationSeeder;
-use Database\Seeders\ProgrammingPackageSeeder;
-use Database\Seeders\PublicationHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
-use Database\Seeders\ProgrammingLanguageSeeder;
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 
 class ToolIntegrationDeprecatedTest extends TestCase
@@ -59,28 +40,6 @@ class ToolIntegrationDeprecatedTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            CategorySeeder::class,
-            TypeCategorySeeder::class,
-            ProgrammingLanguageSeeder::class,
-            ProgrammingPackageSeeder::class,
-            LicenseSeeder::class,
-            TagSeeder::class,
-            KeywordSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            ToolSeeder::class,
-            ToolHasTagSeeder::class,
-            PublicationSeeder::class,
-            PublicationHasDatasetVersionSeeder::class,
-            PublicationHasToolSeeder::class,
-            ApplicationSeeder::class,
-            DurSeeder::class,
-            DurHasPublicationSeeder::class,
-            DurHasToolSeeder::class,
-        ]);
 
         $this->integration = Application::where('id', 1)->first();
 

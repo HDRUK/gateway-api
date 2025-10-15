@@ -8,9 +8,6 @@ use App\Models\QuestionBank;
 use App\Models\QuestionBankVersion;
 use App\Models\QuestionHasTeam;
 use Tests\TestCase;
-use Database\Seeders\TeamSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\QuestionBankSeeder;
 use Tests\Traits\MockExternalApis;
 
 use Illuminate\Support\Facades\DB;
@@ -27,12 +24,6 @@ class QuestionBankTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            TeamSeeder::class,
-            MinimalUserSeeder::class,
-            QuestionBankSeeder::class,
-        ]);
     }
 
     /**
