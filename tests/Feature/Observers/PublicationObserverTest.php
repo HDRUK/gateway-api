@@ -9,8 +9,6 @@ use App\Models\Publication;
 use App\Models\DatasetVersion;
 use Tests\Traits\MockExternalApis;
 use App\Observers\PublicationObserver;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
 
 
 class PublicationObserverTest extends TestCase
@@ -27,20 +25,21 @@ class PublicationObserverTest extends TestCase
         Dataset::flushEventListeners();
         DatasetVersion::flushEventListeners();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-        ]);
+        $this->observer = Mockery::mock(PublicationObserver::class)->makePartial();
+        app()->instance(PublicationObserver::class, $this->observer);
     }
 
     public function testPublicationObserverCreatedEventIndexesPublicationIfActive()
     {
-        $observer = Mockery::mock(PublicationObserver::class)->makePartial();
-        app()->instance(PublicationObserver::class, $observer);
-        $observer->shouldReceive('indexElasticPublication')->once()->with(1);
+        $countInitialPublications = Publication::count();
+
+        Publication::observe(PublicationObserver::class);
+
+        $this->observer->shouldReceive('indexElasticPublication')
+            ->once()
+            ->with($countInitialPublications + 1);
 
         $publication = Publication::create([
-            'id' => 1,
             'paper_title' => fake()->words(5, true),
             'authors' => 'Author One, Author Two, Author Three, Author Four',
             'year_of_publication' => fake()->year(),
@@ -58,12 +57,9 @@ class PublicationObserverTest extends TestCase
 
     public function testPublicationObserverCreatedEventDoesNotIndexPublicationIfNotActive()
     {
-        $observer = Mockery::mock(PublicationObserver::class)->makePartial();
-        app()->instance(PublicationObserver::class, $observer);
-        $observer->shouldNotReceive('indexElasticPublication');
+        $this->observer->shouldNotReceive('indexElasticPublication');
 
         $publication = Publication::create([
-            'id' => 1,
             'paper_title' => fake()->words(5, true),
             'authors' => 'Author One, Author Two, Author Three, Author Four',
             'year_of_publication' => fake()->year(),
@@ -81,12 +77,11 @@ class PublicationObserverTest extends TestCase
 
     public function testPublicationObserverUpdatingEventSetsPrevStatus()
     {
-        $observer = Mockery::mock(PublicationObserver::class)->makePartial();
-        app()->instance(PublicationObserver::class, $observer);
-        $observer->shouldReceive('indexElasticPublication')->with(1);
+        $countInitialPublications = Publication::count();
+
+        $this->observer->shouldReceive('indexElasticPublication')->with($countInitialPublications + 1);
 
         $publication = Publication::create([
-            'id' => 1,
             'paper_title' => fake()->words(5, true),
             'authors' => 'Author One, Author Two, Author Three, Author Four',
             'year_of_publication' => fake()->year(),
@@ -99,22 +94,22 @@ class PublicationObserverTest extends TestCase
             'status' => Publication::STATUS_DRAFT,
         ]);
 
-        $observer = new PublicationObserver();
         $publication->status = Publication::STATUS_ACTIVE;
-        $observer->updating($publication);
+        $this->observer->updating($publication);
 
         $this->assertEquals(Dataset::STATUS_DRAFT, $publication->prevStatus);
     }
 
     public function testPublicationObserverDeletedEventRemovesFromElasticIfStatusWasActive()
     {
-        $observer = Mockery::mock(PublicationObserver::class)->makePartial();
-        app()->instance(PublicationObserver::class, $observer);
-        $observer->shouldReceive('indexElasticPublication')->with(1);
-        $observer->shouldReceive('deletePublicationFromElastic')->once()->with(1);
+        $countInitialPublications = Publication::count();
+
+        $this->observer->shouldReceive('indexElasticPublication')->with($countInitialPublications + 1);
+        $this->observer->shouldReceive('deletePublicationFromElastic')
+            ->once()
+            ->with($countInitialPublications + 1);
 
         $publication = Publication::create([
-            'id' => 1,
             'paper_title' => fake()->words(5, true),
             'authors' => 'Author One, Author Two, Author Three, Author Four',
             'year_of_publication' => fake()->year(),
@@ -130,19 +125,17 @@ class PublicationObserverTest extends TestCase
         $publication->prevStatus = Publication::STATUS_ACTIVE;
         $publication->status = Publication::STATUS_ARCHIVED;
 
-        $observer->updated($publication);
+        $this->observer->updated($publication);
 
         $this->assertEquals(Dataset::STATUS_ARCHIVED, $publication->status);
     }
 
     public function testPublicationObserverDeletedEventDoesNotRemoveFromElasticIfStatusWasNotActive()
     {
-        $observer = Mockery::mock(PublicationObserver::class)->makePartial();
-        app()->instance(PublicationObserver::class, $observer);
-        $observer->shouldReceive('deletePublicationFromElastic')->with(1);
+        $countInitialPublications = Publication::count();
+        $this->observer->shouldReceive('deletePublicationFromElastic')->with($countInitialPublications + 1);
 
         $publication = Publication::create([
-            'id' => 1,
             'paper_title' => fake()->words(5, true),
             'authors' => 'Author One, Author Two, Author Three, Author Four',
             'year_of_publication' => fake()->year(),
@@ -155,20 +148,19 @@ class PublicationObserverTest extends TestCase
             'status' => Publication::STATUS_ARCHIVED,
         ]);
 
-        $observer->created($publication);
+        $this->observer->created($publication);
 
         $this->assertDatabaseHas('publications', [
-            'id' => 1,
             'authors' => 'Author One, Author Two, Author Three, Author Four',
             'paper_doi' => '10.1000/182',
             'status' => Publication::STATUS_ARCHIVED,
         ]);
 
-        Publication::where('id', 1)->delete();
-        $publication = Publication::where('id', 1)->withTrashed()->first();
+        Publication::where('id', $publication->id)->delete();
+        $publication = Publication::where('id', $publication->id)->withTrashed()->first();
 
-        $observer->deleted($publication);
+        $this->observer->deleted($publication);
 
-        $this->assertSoftDeleted('publications', ['id' => 1]);
+        $this->assertSoftDeleted('publications', ['id' => $publication->id]);
     }
 }

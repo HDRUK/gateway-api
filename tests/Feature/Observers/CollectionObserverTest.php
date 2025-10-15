@@ -43,7 +43,7 @@ class CollectionObserverTest extends TestCase
 
         $this->observer->shouldReceive('indexElasticCollections')
             ->once()
-            ->with(11);
+            ->with($countInitialCollections + 1);
 
         $collection = Collection::factory()->create([
             'status' => Collection::STATUS_ACTIVE,
