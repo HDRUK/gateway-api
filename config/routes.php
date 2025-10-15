@@ -163,7 +163,9 @@ return [
         'methodController' => 'WidgetController@get',
         'namespaceController' => 'App\Http\Controllers',
         'middleware' => [
-            'jwt.verify'
+            'jwt.verify',
+            'check.access:permissions,widgets.read',
+
         ],
         'constraint' => [],
     ],
