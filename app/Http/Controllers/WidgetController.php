@@ -59,6 +59,6 @@ class WidgetController extends Controller
                 'unit'
             ]);
 
-        return response()->json($widgets);
+        return response()->json([ 'data' => $widgets]);
     }
 }
