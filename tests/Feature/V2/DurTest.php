@@ -399,7 +399,7 @@ class DurTest extends TestCase
             ],
             $this->headerNonAdmin,
         );
-        var_dump($responseCreateDurArchived->decodeResponseJson());
+
         $responseCreateDurArchived->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
 
         /*
