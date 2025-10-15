@@ -1,6 +1,6 @@
 {
   "name": "gateway-api",
-  "version": "2.25.1",
+  "version": "2.25.2",
   "private": true,
   "scripts": {
     "semi": "npx semantic-release"
