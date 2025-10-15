@@ -12,8 +12,6 @@ trait RefreshDatabaseLite
 
     public function liteSetUp(): void
     {
-        parent::setUp();
-
         if (!static::$migrated) {
             Artisan::call('migrate');
             Artisan::call('db:seed', ['--class' => 'BaseDatabaseSeeder']);

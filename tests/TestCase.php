@@ -19,11 +19,10 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        $this->disableObservers();
+
         $this->liteSetUp();
         
-        // $this->disableMiddleware();
-        // $this->disableObservers();
-
         if ($this->shouldFakeQueue) {
             Queue::fake();
         }
