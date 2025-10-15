@@ -24,16 +24,17 @@ class PublicationObserverTest extends TestCase
 
         Dataset::flushEventListeners();
         DatasetVersion::flushEventListeners();
+        Publication::flushEventListeners();
 
         $this->observer = Mockery::mock(PublicationObserver::class)->makePartial();
         app()->instance(PublicationObserver::class, $this->observer);
+
+        Publication::observe(PublicationObserver::class);
     }
 
     public function testPublicationObserverCreatedEventIndexesPublicationIfActive()
     {
         $countInitialPublications = Publication::count();
-
-        Publication::observe(PublicationObserver::class);
 
         $this->observer->shouldReceive('indexElasticPublication')
             ->once()

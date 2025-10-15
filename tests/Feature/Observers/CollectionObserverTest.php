@@ -28,18 +28,21 @@ class CollectionObserverTest extends TestCase
 
         Dataset::flushEventListeners();
         DatasetVersion::flushEventListeners();
+        Collection::flushEventListeners();
 
         $this->metadata = $this->getMetadata();
 
         $this->observer = Mockery::mock(CollectionObserver::class)->makePartial();
         app()->instance(CollectionObserver::class, $this->observer);
+
+        Collection::observe(CollectionObserver::class);
     }
 
     public function testCollectionObserverCreatedEventIndexesActiveCollection()
     {
         $countInitialCollections = Collection::count();
 
-        Collection::observe(CollectionObserver::class);
+        // Collection::observe(CollectionObserver::class);
 
         $this->observer->shouldReceive('indexElasticCollections')
             ->once()
@@ -57,15 +60,13 @@ class CollectionObserverTest extends TestCase
 
     public function testCollectionObserverUpdatingEventSetsPrevStatus()
     {
-        $observer = new CollectionObserver();
-
         $collection = Collection::factory()->create([
             'status' => Collection::STATUS_ARCHIVED,
         ]);
 
         // Simulate updating event
         $collection->status = Collection::STATUS_ACTIVE;
-        $observer->updating($collection);
+        $this->observer->updating($collection);
 
         // Assert the previous status is correctly set
         $this->assertEquals(Collection::STATUS_ARCHIVED, $collection->prevStatus);
