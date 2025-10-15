@@ -1,3 +1,9 @@
+## [2.25.2](https://github.com/HDRUK/gateway-api/compare/v2.25.1...v2.25.2) (2025-10-15)
+
+### 🐛 Bug Fixes
+
+* **GAT-1537:** Comment out ValidateRequest middleware (#1435) ([dc51aca](https://github.com/HDRUK/gateway-api/commit/dc51aca1dd1d8b26520cf7cda7b8c0023089f6dc)), closes [GAT-1537](GAT-1537)
+
 ## [2.25.1](https://github.com/HDRUK/gateway-api/compare/v2.25.0...v2.25.1) (2025-10-07)
 
 ### 🐛 Bug Fixes
