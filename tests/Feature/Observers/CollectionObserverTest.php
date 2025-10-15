@@ -9,8 +9,6 @@ use App\Models\Collection;
 use App\Models\DatasetVersion;
 use Tests\Traits\MockExternalApis;
 use App\Observers\CollectionObserver;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
 
 use ElasticClientController as ECC;
 
@@ -31,29 +29,25 @@ class CollectionObserverTest extends TestCase
         Dataset::flushEventListeners();
         DatasetVersion::flushEventListeners();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-        ]);
-
         $this->metadata = $this->getMetadata();
 
         $this->observer = Mockery::mock(CollectionObserver::class)->makePartial();
         app()->instance(CollectionObserver::class, $this->observer);
     }
 
-    public function testCollectionObserverCreatedEeventIndexesActiveCollection()
+    public function testCollectionObserverCreatedEventIndexesActiveCollection()
     {
+        $countInitialCollections = Collection::count();
+
+        Collection::observe(CollectionObserver::class);
+
         $this->observer->shouldReceive('indexElasticCollections')
             ->once()
-            ->with(1);
+            ->with(11);
 
         $collection = Collection::factory()->create([
-            'id' => 1,
             'status' => Collection::STATUS_ACTIVE,
         ]);
-
-        $collection->observe(CollectionObserver::class);
 
         $this->assertDatabaseHas('collections', [
             'id' => $collection->id,
@@ -100,7 +94,6 @@ class CollectionObserverTest extends TestCase
 
         // Create the collection
         $collection = Collection::factory()->create([
-            'id' => 1,
             'status' => Collection::STATUS_ACTIVE,
         ]);
 
@@ -133,11 +126,11 @@ class CollectionObserverTest extends TestCase
 
         ECC::shouldIgnoreMissing();
 
-        // Mock the observer's method
-        $this->observer->shouldReceive('deleteCollectionFromElastic')->once()->with(1);
-
         // Create a collection
-        $collection = Collection::factory()->create(['id' => 1]);
+        $collection = Collection::factory()->create();
+
+        // Mock the observer's method
+        $this->observer->shouldReceive('deleteCollectionFromElastic')->once()->with($collection->id);
 
         // Soft delete the collection and trigger the observer
         $collection->delete();

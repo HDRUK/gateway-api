@@ -23,6 +23,8 @@ abstract class TestCase extends BaseTestCase
 
         $this->liteSetUp();
         
+        $this->enableObservers();
+
         if ($this->shouldFakeQueue) {
             Queue::fake();
         }

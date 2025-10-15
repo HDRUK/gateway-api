@@ -9,9 +9,7 @@ use App\Models\Collection;
 use App\Models\TeamHasUser;
 use App\Models\DatasetVersion;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\MinimalUserSeeder;
 use App\Models\CollectionHasDatasetVersion;
-use Database\Seeders\SpatialCoverageSeeder;
 
 use App\Observers\CollectionHasDatasetVersionObserver;
 use Config;
@@ -39,11 +37,7 @@ class CollectionHasDatasetVersionObserverTest extends TestCase
         Dataset::flushEventListeners();
         DatasetVersion::flushEventListeners();
         Collection::flushEventListeners();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-        ]);
+        CollectionHasDatasetVersion::flushEventListeners();
 
         $this->metadata = $this->getMetadata();
         $this->metadataSecond = $this->metadata;
@@ -51,7 +45,6 @@ class CollectionHasDatasetVersionObserverTest extends TestCase
 
         $this->teamHasUser = TeamHasUser::all()->random();
         $this->datasetNew = Dataset::create([
-            'id' => 1,
             'user_id' => $this->teamHasUser->user_id,
             'team_id' => $this->teamHasUser->team_id,
             'create_origin' => Dataset::ORIGIN_MANUAL,
@@ -66,7 +59,6 @@ class CollectionHasDatasetVersionObserverTest extends TestCase
         ]);
 
         $this->datasetSecond = Dataset::create([
-            'id' => 2,
             'user_id' => $this->teamHasUser->user_id,
             'team_id' => $this->teamHasUser->team_id,
             'create_origin' => Dataset::ORIGIN_MANUAL,
@@ -80,6 +72,7 @@ class CollectionHasDatasetVersionObserverTest extends TestCase
             'metadata' => $this->metadataSecond,
         ]);
 
+        CollectionHasDatasetVersion::observe(CollectionHasDatasetVersionObserver::class);
     }
 
     public function testCollectionHasDatasetVersionObserverCreatedEventTriggersElasticIndexing()
@@ -128,10 +121,6 @@ class CollectionHasDatasetVersionObserverTest extends TestCase
             'status' => Collection::STATUS_ACTIVE,
         ]);
 
-        // Flush and re-register the event listeners for the test
-        CollectionHasDatasetVersion::flushEventListeners();
-        CollectionHasDatasetVersion::observe(CollectionHasDatasetVersionObserver::class);
-
         // Create a CollectionHasDatasetVersion instance
         $collectionHasDatasetVersion = CollectionHasDatasetVersion::create([
             'collection_id' => $collection->id,
@@ -166,10 +155,6 @@ class CollectionHasDatasetVersionObserverTest extends TestCase
 
         // Register the mocked observer
         app()->instance(CollectionHasDatasetVersionObserver::class, $observer);
-
-        // Flush and re-register the event listeners
-        CollectionHasDatasetVersion::flushEventListeners();
-        CollectionHasDatasetVersion::observe(CollectionHasDatasetVersionObserver::class);
 
         // Create related models
         $collection = Collection::factory()->create(['status' => Collection::STATUS_ACTIVE]);
