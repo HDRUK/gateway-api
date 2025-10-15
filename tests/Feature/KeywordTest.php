@@ -5,8 +5,6 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\MinimalUserSeeder;
 
 
 class KeywordTest extends TestCase
@@ -23,11 +21,6 @@ class KeywordTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            KeywordSeeder::class,
-        ]);
     }
 
     /**

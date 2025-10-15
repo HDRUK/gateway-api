@@ -7,9 +7,6 @@ use Config;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\FilterSeeder;
-
 class FilterTest extends TestCase
 {
     
@@ -22,13 +19,6 @@ class FilterTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed(
-            [
-            MinimalUserSeeder::class,
-            FilterSeeder::class,
-            ]
-        );
     }
 
     /**

@@ -65,6 +65,7 @@ class BaseDatabaseSeeder extends Seeder
             DarIntegrationSeeder::class,
             DurHasPublicationSeeder::class,
             DurHasToolSeeder::class,
+            FeatureSeeder::class,
         ]);
     }
 }

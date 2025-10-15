@@ -8,9 +8,7 @@ use App\Models\Federation;
 use App\Http\Enums\TeamMemberOf;
 use App\Models\TeamHasFederation;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\MinimalUserSeeder;
 use App\Models\FederationHasNotification;
-use Database\Seeders\EmailTemplateSeeder;
 
 
 class FederationTest extends TestCase
@@ -28,11 +26,6 @@ class FederationTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            EmailTemplateSeeder::class,
-        ]);
     }
 
     /**

@@ -8,14 +8,6 @@ use App\Models\Dataset;
 use App\Models\EnquiryThread;
 use App\Models\Team;
 use App\Jobs\SendEmailJob;
-
-use Database\Seeders\EmailTemplateSeeder;
-use Database\Seeders\SDENetworkConciergeSeeder;
-
-use Database\Seeders\EnquiryThreadSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
-
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 use Laravel\Pennant\Feature;
@@ -41,14 +33,6 @@ class EnquiryThreadTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-            EmailTemplateSeeder::class,
-            EnquiryThreadSeeder::class,
-            SDENetworkConciergeSeeder::class,
-        ]);
 
         $this->metadata = $this->getMetadata();
 

@@ -9,13 +9,7 @@ use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
-use Database\Seeders\SectorSeeder;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\TeamHasUserSeeder;
 use MetadataManagementController as MMC;
-use Database\Seeders\DatasetVersionSeeder;
 
 
 class FormHydrationTest extends TestCase
@@ -37,15 +31,6 @@ class FormHydrationTest extends TestCase
         parent::setUp();
 
         DatasetVersion::flushEventListeners();
-
-        $this->seed([
-            SectorSeeder::class,
-            MinimalUserSeeder::class,
-            TeamHasUserSeeder::class,
-            KeywordSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-        ]);
 
         $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v2p0_dataset_min.json', 0, null);
         $json = json_decode($jsonFile, true);
