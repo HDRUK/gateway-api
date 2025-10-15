@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use App\Models\TeamHasUser;
 use App\Models\Team;
 use Tests\Traits\Authorization;
@@ -61,6 +62,32 @@ class MetadataManagementTest extends TestCase
             'create_origin' => Dataset::ORIGIN_MANUAL,
             'status' => Dataset::STATUS_DRAFT,
         ])->pluck('id');
+
+        foreach ($this->initialActiveIds as $datasetId) {
+            // Generate a random number of dataset versions for each dataset
+            $numVersions = rand(1, 5);
+
+            for ($version = 1; $version <= $numVersions; $version++) {
+                DatasetVersion::factory()->create([
+                    'dataset_id' => $datasetId,
+                    'provider_team_id' => $this->teamId,
+                    'version' => $version, // Ensure the version increments
+                ]);
+            }
+        }
+
+        foreach ($this->initialDraftIds as $datasetId) {
+            // Generate a random number of dataset versions for each dataset
+            $numVersions = rand(1, 5);
+
+            for ($version = 1; $version <= $numVersions; $version++) {
+                DatasetVersion::factory()->create([
+                    'dataset_id' => $datasetId,
+                    'provider_team_id' => $this->teamId,
+                    'version' => $version, // Ensure the version increments
+                ]);
+            }
+        }
     }
 
 
