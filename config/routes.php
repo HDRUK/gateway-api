@@ -156,7 +156,17 @@ return [
             'id' => '[0-9]+',
         ],
     ],
-
+     [
+        'name' => 'widgets',
+        'method' => 'get',
+        'path' => '/widgets',
+        'methodController' => 'WidgetController@get',
+        'namespaceController' => 'App\Http\Controllers',
+        'middleware' => [
+            'jwt.verify'
+        ],
+        'constraint' => [],
+    ],
     // features
     [
         'name' => 'features',
