@@ -10,10 +10,8 @@ use App\Models\DatasetVersion;
 use Tests\Traits\MockExternalApis;
 use App\Models\PublicationHasDatasetVersion;
 
-
 class PublicationTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

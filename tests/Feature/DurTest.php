@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\Storage;
 
 class DurTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

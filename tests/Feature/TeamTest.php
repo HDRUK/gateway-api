@@ -12,10 +12,8 @@ use App\Http\Enums\TeamMemberOf;
 use Tests\Traits\MockExternalApis;
 use MetadataManagementController as MMC;
 
-
 class TeamTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

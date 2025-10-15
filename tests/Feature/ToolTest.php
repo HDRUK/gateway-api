@@ -35,7 +35,6 @@ use App\Models\TypeCategory;
 
 class ToolTest extends TestCase
 {
-    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\DB;
 
 class DataAccessSectionTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

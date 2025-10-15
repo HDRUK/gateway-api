@@ -9,12 +9,10 @@ use App\Models\Collection;
 use App\Models\DatasetVersion;
 use Tests\Traits\MockExternalApis;
 use App\Observers\CollectionObserver;
-
 use ElasticClientController as ECC;
 
 class CollectionObserverTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -41,8 +39,6 @@ class CollectionObserverTest extends TestCase
     public function testCollectionObserverCreatedEventIndexesActiveCollection()
     {
         $countInitialCollections = Collection::count();
-
-        // Collection::observe(CollectionObserver::class);
 
         $this->observer->shouldReceive('indexElasticCollections')
             ->once()

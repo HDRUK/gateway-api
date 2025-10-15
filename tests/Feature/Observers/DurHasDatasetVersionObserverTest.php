@@ -13,10 +13,8 @@ use App\Models\DurHasDatasetVersion;
 use App\Models\CollectionHasDatasetVersion;
 use App\Observers\DurHasDatasetVersionObserver;
 
-
 class DurHasDatasetVersionObserverTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

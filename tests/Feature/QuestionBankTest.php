@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\DB;
 
 class QuestionBankTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

@@ -6,10 +6,8 @@ use Config;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 
-
 class AuditLogTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

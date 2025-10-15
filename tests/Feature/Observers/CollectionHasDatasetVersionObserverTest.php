@@ -16,7 +16,6 @@ use Config;
 
 class CollectionHasDatasetVersionObserverTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

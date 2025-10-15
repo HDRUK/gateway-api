@@ -11,10 +11,8 @@ use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
 use MetadataManagementController as MMC;
 
-
 class FormHydrationTest extends TestCase
 {
-    
     use Authorization;
 
     protected $header = [];

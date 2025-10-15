@@ -7,10 +7,8 @@ use Config;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 
-
 class ProgrammingLanguageTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

@@ -11,10 +11,8 @@ use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 
-
 class CohortRequestTest extends TestCase
 {
-    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

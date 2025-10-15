@@ -14,7 +14,6 @@ use MetadataManagementController as MMC;
 
 class SearchTest extends TestCase
 {
-    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

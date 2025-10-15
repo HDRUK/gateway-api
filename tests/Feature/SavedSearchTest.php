@@ -7,10 +7,8 @@ use Tests\TestCase;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 
-
 class SavedSearchTest extends TestCase
 {
-    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

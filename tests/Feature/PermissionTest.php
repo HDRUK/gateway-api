@@ -7,10 +7,8 @@ use Tests\TestCase;
 use App\Models\Permission;
 use Tests\Traits\MockExternalApis;
 
-
 class PermissionTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

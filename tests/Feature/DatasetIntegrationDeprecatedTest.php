@@ -13,10 +13,8 @@ use App\Http\Enums\TeamMemberOf;
 use Tests\Traits\MockExternalApis;
 use App\Models\ApplicationHasPermission;
 
-
 class DatasetIntegrationDeprecatedTest extends TestCase
 {
-    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

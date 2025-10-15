@@ -14,10 +14,8 @@ use Tests\Traits\Authorization;
 use Illuminate\Http\UploadedFile;
 use Tests\Traits\MockExternalApis;
 
-
 class UploadTest extends TestCase
 {
-    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

@@ -10,10 +10,8 @@ use App\Models\TeamHasFederation;
 use Tests\Traits\MockExternalApis;
 use App\Models\FederationHasNotification;
 
-
 class FederationTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

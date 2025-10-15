@@ -18,7 +18,6 @@ use App\Models\ApplicationHasPermission;
 
 class CollectionIntegrationTest extends TestCase
 {
-    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

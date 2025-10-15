@@ -11,7 +11,6 @@ use App\Http\Traits\MetadataVersioning;
 
 class MetadataRelationshipTest extends TestCase
 {
-    
     use MetadataVersioning;
 
     public function setUp(): void

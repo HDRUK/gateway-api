@@ -5,10 +5,8 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
 
-
 class ValidationTest extends TestCase
 {
-    
     use Authorization;
 
     public const TEST_URL = '/api/v1/features';

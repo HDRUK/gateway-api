@@ -7,13 +7,11 @@ use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
-
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class AdminDatasetControllerTest extends TestCase
 {
-    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

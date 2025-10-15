@@ -7,10 +7,8 @@ use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 use App\Models\Feature as FeatureModel;
 
-
 class FeatureTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

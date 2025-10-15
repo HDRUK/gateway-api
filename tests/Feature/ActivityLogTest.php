@@ -17,7 +17,7 @@ class ActivityLogTest extends TestCase
     protected $header = [];
 
     public function setUp(): void
-    {        
+    {
         $this->commonSetUp();
     }
 

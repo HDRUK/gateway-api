@@ -6,10 +6,8 @@ use App\Models\Tag;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 
-
 class TagTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

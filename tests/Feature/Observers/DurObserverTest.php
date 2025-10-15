@@ -15,10 +15,8 @@ use App\Observers\DurObserver;
 use Tests\Traits\MockExternalApis;
 use App\Models\CollectionHasDatasetVersion;
 
-
 class DurObserverTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

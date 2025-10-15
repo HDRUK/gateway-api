@@ -12,7 +12,6 @@ use App\Models\DatasetVersion;
 use Tests\Traits\MockExternalApis;
 use App\Models\PublicationHasDatasetVersion;
 
-
 class PublicationV2Test extends TestCase
 {
     use MockExternalApis {

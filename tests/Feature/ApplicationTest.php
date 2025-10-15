@@ -8,7 +8,6 @@ use App\Models\Application;
 use Tests\Traits\MockExternalApis;
 use App\Http\Traits\IntegrationOverride;
 
-
 class ApplicationTest extends TestCase
 {
     use IntegrationOverride;

@@ -154,6 +154,5 @@ class UserAdminsSeeder extends Seeder
                 'hdruk.admin'
             ]
         );
-
     }
 }

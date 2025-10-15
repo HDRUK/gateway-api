@@ -16,7 +16,6 @@ use App\Models\ApplicationHasPermission;
 
 class DurIntegrationDeprecatedTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

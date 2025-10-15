@@ -13,7 +13,6 @@ use Tests\Traits\MockExternalApis;
 
 class DarIntegrationTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

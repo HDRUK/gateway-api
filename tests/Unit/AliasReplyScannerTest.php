@@ -15,7 +15,6 @@ use Tests\Traits\MockExternalApis;
 use App\Exceptions\AliasReplyScannerException;
 use Webklex\PHPIMAP\Support\MessageCollection;
 
-
 class AliasReplyScannerTest extends TestCase
 {
 

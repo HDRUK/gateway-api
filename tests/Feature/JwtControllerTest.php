@@ -7,10 +7,8 @@ use App\Models\User;
 use Tests\Traits\MockExternalApis;
 use App\Http\Controllers\JwtController;
 
-
 class JwtControllerTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

@@ -8,7 +8,6 @@ use App\Models\License;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Foundation\Testing\WithFaker;
 
-
 class ReviewTest extends TestCase
 {
     use WithFaker;

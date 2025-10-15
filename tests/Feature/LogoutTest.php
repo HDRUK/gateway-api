@@ -5,10 +5,8 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
 
-
 class LogoutTest extends TestCase
 {
-    
     use Authorization;
 
     public const USERS_URL = '/api/v1/users';

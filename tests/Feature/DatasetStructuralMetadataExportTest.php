@@ -10,10 +10,8 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use App\Exports\DatasetStructuralMetadataExport;
 
-
 class DatasetStructuralMetadataExportTest extends TestCase
 {
-    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

@@ -6,10 +6,8 @@ use App\Models\EmailTemplate;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 
-
 class EmailTemplateTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

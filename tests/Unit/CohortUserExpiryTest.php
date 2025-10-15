@@ -10,10 +10,8 @@ use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Mail;
 use App\Models\CohortRequestHasPermission;
 
-
 class CohortUserExpiryTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

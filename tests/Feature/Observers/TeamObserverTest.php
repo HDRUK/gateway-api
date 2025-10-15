@@ -9,10 +9,8 @@ use App\Http\Enums\TeamMemberOf;
 use App\Models\DatasetVersion;
 use Tests\Traits\MockExternalApis;
 
-
 class TeamObserverTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

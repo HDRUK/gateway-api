@@ -18,10 +18,8 @@ use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
 use App\Http\Controllers\Api\V1\ToolController;
 
-
 class ToolIntegrationDeprecatedTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

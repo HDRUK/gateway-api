@@ -11,7 +11,6 @@ use Tests\Traits\MockExternalApis;
 
 class LibraryTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

@@ -10,10 +10,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Foundation\Testing\WithFaker;
 
-
 class EmailServiceTest extends TestCase
 {
-    
     use WithFaker;
 
     public function setUp(): void

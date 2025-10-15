@@ -6,10 +6,8 @@ use App\Models\License;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 
-
 class LicenseTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

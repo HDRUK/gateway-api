@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\DB;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Queue;
 
-
 class DataAccessApplicationTest extends TestCase
 {
     

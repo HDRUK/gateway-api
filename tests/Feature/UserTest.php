@@ -8,10 +8,8 @@ use App\Models\User;
 use Tests\Traits\Authorization;
 use Illuminate\Support\Facades\Http;
 
-
 class UserTest extends TestCase
 {
-    
     use Authorization;
 
     public const TEST_URL = '/api/v1/users';

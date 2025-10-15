@@ -6,7 +6,6 @@ use App\Models\License;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Http;
 
-
 class UpdateLicensesTest extends TestCase
 {
     

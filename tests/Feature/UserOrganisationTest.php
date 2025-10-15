@@ -6,10 +6,8 @@ use App\Models\User;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
 
-
 class UserOrganisationTest extends TestCase
 {
-    
     use Authorization;
 
     public const TEST_URL = '/api/v1/users/organisations';

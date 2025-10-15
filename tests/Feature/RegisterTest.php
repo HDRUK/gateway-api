@@ -7,7 +7,6 @@ use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 
-
 class RegisterTest extends TestCase
 {
     

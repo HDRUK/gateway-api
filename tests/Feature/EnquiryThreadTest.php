@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Queue;
 
 class EnquiryThreadTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

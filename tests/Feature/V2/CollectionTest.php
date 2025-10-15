@@ -12,14 +12,10 @@ use App\Models\Keyword;
 use App\Models\Collection;
 use App\Models\CollectionHasUser;
 use App\Models\Publication;
-use App\Models\User;
-use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 
 class CollectionTest extends TestCase
 {
-    use Authorization;
-
     use MockExternalApis {
         setUp as commonSetUp;
     }

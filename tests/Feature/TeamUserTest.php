@@ -14,7 +14,6 @@ use Tests\Traits\MockExternalApis;
 
 class TeamUserTest extends TestCase
 {
-    
     use Authorization;
     use MockExternalApis{
         setUp as commonSetUp;

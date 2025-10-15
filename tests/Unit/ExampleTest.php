@@ -5,10 +5,8 @@ namespace Tests\Unit;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
 
-
 class ExampleTest extends TestCase
 {
-    
     use Authorization;
 
     public function setUp(): void

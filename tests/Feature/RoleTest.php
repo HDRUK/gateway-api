@@ -7,10 +7,8 @@ use App\Models\Role;
 use App\Models\RoleHasPermission;
 use Tests\Traits\MockExternalApis;
 
-
 class RoleTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

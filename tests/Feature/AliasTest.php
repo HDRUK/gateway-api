@@ -8,10 +8,8 @@ use App\Models\Alias;
 use Laravel\Pennant\Feature;
 use Tests\Traits\MockExternalApis;
 
-
 class AliasTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

@@ -10,7 +10,6 @@ use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use App\Http\Traits\EnquiriesTrait;
 
-
 class EnquiriesManagementControllerTest extends TestCase
 {
     use EnquiriesTrait;

@@ -8,10 +8,8 @@ use App\Http\Enums\TeamMemberOf;
 use App\Models\TeamHasNotification;
 use Tests\Traits\MockExternalApis;
 
-
 class TeamNotificationTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

@@ -9,7 +9,6 @@ use Tests\Traits\MockExternalApis;
 
 class FilterTest extends TestCase
 {
-    
     use MockExternalApis {
         setUp as commonSetUp;
     }

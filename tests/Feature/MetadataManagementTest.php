@@ -10,10 +10,8 @@ use App\Models\Team;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 
-
 class MetadataManagementTest extends TestCase
 {
-    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

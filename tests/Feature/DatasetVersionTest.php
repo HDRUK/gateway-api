@@ -14,7 +14,6 @@ use App\Http\Enums\TeamMemberOf;
 
 class DatasetVersionTest extends TestCase
 {
-    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

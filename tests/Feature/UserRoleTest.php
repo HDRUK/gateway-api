@@ -6,10 +6,8 @@ use App\Models\UserHasRole;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
 
-
 class UserRoleTest extends TestCase
 {
-    
     use Authorization;
 
     protected $header = [];
