@@ -15,43 +15,18 @@ use App\Models\Collection;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Models\Publication;
-use Database\Seeders\DurSeeder;
-use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
 use Tests\Traits\Helpers;
 use App\Http\Enums\TeamMemberOf;
-use Database\Seeders\ToolSeeder;
 use App\Models\CollectionHasTool;
 use App\Models\PublicationHasTool;
 use Tests\Traits\MockExternalApis;
 use App\Models\ToolHasTypeCategory;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\LicenseSeeder;
 use ElasticClientController as ECC;
-use Database\Seeders\CategorySeeder;
 use App\Models\DatasetVersionHasTool;
-use Database\Seeders\CollectionSeeder;
-use Database\Seeders\DurHasToolSeeder;
-use Database\Seeders\ToolHasTagSeeder;
-use Database\Seeders\ApplicationSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\PublicationSeeder;
-use Database\Seeders\TypeCategorySeeder;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\CollectionHasToolSeeder;
-use Database\Seeders\CollectionHasUserSeeder;
-use Database\Seeders\DurHasPublicationSeeder;
-use Database\Seeders\ProgrammingPackageSeeder;
-use Database\Seeders\PublicationHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
-use Database\Seeders\ProgrammingLanguageSeeder;
-use Database\Seeders\DatasetVersionHasToolSeeder;
-use Database\Seeders\EmailTemplateSeeder;
-
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class ToolV2Test extends TestCase
 {

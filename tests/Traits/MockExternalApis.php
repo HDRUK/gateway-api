@@ -76,10 +76,6 @@ trait MockExternalApis
     {
         parent::setUp();
 
-        // $this->seed([
-        //     SectorSeeder::class,
-        // ]);
-
         Queue::fake([
             LinkageExtraction::class,
             TermExtraction::class

@@ -9,21 +9,9 @@ use App\Models\User;
 use App\Models\Dataset;
 use App\Models\Publication;
 use App\Models\DatasetVersion;
-use Database\Seeders\TagSeeder;
-use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\LicenseSeeder;
-use Database\Seeders\CategorySeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\PublicationSeeder;
-use Database\Seeders\TeamHasUserSeeder;
-use Database\Seeders\TypeCategorySeeder;
-use Database\Seeders\DatasetVersionSeeder;
 use App\Models\PublicationHasDatasetVersion;
-use Database\Seeders\PublicationHasToolSeeder;
 
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class PublicationV2Test extends TestCase
 {

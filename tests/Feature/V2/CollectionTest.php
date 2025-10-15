@@ -13,30 +13,8 @@ use App\Models\Collection;
 use App\Models\CollectionHasUser;
 use App\Models\Publication;
 use App\Models\User;
-use Database\Seeders\DurSeeder;
-use Database\Seeders\TagSeeder;
-use Database\Seeders\ToolSeeder;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\LicenseSeeder;
-use Database\Seeders\CategorySeeder;
-use Database\Seeders\CollectionSeeder;
-use Database\Seeders\ApplicationSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\TeamHasUserSeeder;
-use Database\Seeders\PublicationSeeder;
-use Database\Seeders\TypeCategorySeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\CollectionHasDurSeeder;
-use Database\Seeders\CollectionHasToolSeeder;
-use Database\Seeders\CollectionHasUserSeeder;
-use Database\Seeders\CollectionHasKeywordSeeder;
-use Database\Seeders\DurHasDatasetVersionSeeder;
-use Database\Seeders\CollectionHasPublicationSeeder;
-use Database\Seeders\CollectionHasDatasetVersionSeeder;
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class CollectionTest extends TestCase
 {

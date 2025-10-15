@@ -5,7 +5,6 @@ namespace Tests\Unit;
 use App\Mail\Email;
 use App\Models\EmailTemplate;
 use Tests\TestCase;
-use Database\Seeders\EmailTemplateSeeder;
 
 use Illuminate\Support\Facades\Http;
 
@@ -16,10 +15,6 @@ class EmailServiceTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-
-        $this->seed([
-            EmailTemplateSeeder::class,
-        ]);
     }
 
     /**

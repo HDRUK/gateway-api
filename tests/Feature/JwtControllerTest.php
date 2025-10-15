@@ -6,7 +6,6 @@ use Tests\TestCase;
 use App\Models\User;
 use Tests\Traits\MockExternalApis;
 use App\Http\Controllers\JwtController;
-use Database\Seeders\MinimalUserSeeder;
 
 
 class JwtControllerTest extends TestCase

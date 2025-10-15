@@ -16,9 +16,6 @@ use Illuminate\Support\Carbon;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
-use Database\Seeders\EmailTemplateSeeder;
 
 use Illuminate\Support\Facades\Queue;
 use App\Jobs\LinkageExtraction;

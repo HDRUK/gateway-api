@@ -8,8 +8,6 @@ use App\Models\Dataset;
 use App\Http\Enums\TeamMemberOf;
 use App\Models\DatasetVersion;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
 
 
 class TeamObserverTest extends TestCase
@@ -29,11 +27,6 @@ class TeamObserverTest extends TestCase
         // Team::flushEventListeners();
         Dataset::flushEventListeners();
         DatasetVersion::flushEventListeners();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-        ]);
 
         $this->metadata = $this->getMetadata();
     }

@@ -26,7 +26,6 @@ class LogoutTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

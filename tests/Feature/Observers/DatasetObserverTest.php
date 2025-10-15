@@ -9,8 +9,6 @@ use App\Models\TeamHasUser;
 use App\Models\DatasetVersion;
 use App\Observers\DatasetObserver;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
 
 
 class DatasetObserverTest extends TestCase

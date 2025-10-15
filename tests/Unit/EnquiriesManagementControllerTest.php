@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use App\Http\Traits\EnquiriesTrait;
-use Database\Seeders\MinimalUserSeeder;
 
 
 class EnquiriesManagementControllerTest extends TestCase
@@ -20,10 +19,6 @@ class EnquiriesManagementControllerTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-        ]);
     }
 
     public function test_it_can_determine_dar_managers_from_team_id(): void

@@ -5,12 +5,6 @@ namespace Tests\Unit;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasDatasetVersion;
-use Database\Seeders\RoleSeeder;
-use Database\Seeders\TeamSeeder;
-use Database\Seeders\UserSeeder;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\TeamHasUserSeeder;
-use Database\Seeders\TeamUserHasRoleSeeder;
 use Tests\TestCase;
 
 use App\Http\Traits\MetadataVersioning;
@@ -23,15 +17,6 @@ class MetadataRelationshipTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-
-        $this->seed([
-            TeamSeeder::class,
-            PermissionSeeder::class,
-            RoleSeeder::class,
-            UserSeeder::class,
-            TeamHasUserSeeder::class,
-            TeamUserHasRoleSeeder::class,
-        ]);
     }
 
     // LS - Removed due to versioning needing a re-think

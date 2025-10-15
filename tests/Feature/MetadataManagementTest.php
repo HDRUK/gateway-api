@@ -61,9 +61,6 @@ class MetadataManagementTest extends TestCase
             'create_origin' => Dataset::ORIGIN_MANUAL,
             'status' => Dataset::STATUS_DRAFT,
         ])->pluck('id');
-
-        $this->seed([DatasetVersionSeeder::class]);
-
     }
 
 

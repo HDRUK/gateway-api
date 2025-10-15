@@ -3,34 +3,10 @@
 namespace Tests\Feature\V2;
 
 use Tests\TestCase;
-use Database\Seeders\DurSeeder;
-use Database\Seeders\TagSeeder;
 use App\Models\DataProviderColl;
-use Database\Seeders\TeamSeeder;
-use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\LicenseSeeder;
 use ElasticClientController as ECC;
-use Database\Seeders\CategorySeeder;
-use Database\Seeders\CollectionSeeder;
 use App\Models\DataProviderCollHasTeam;
-use Database\Seeders\ApplicationSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\PublicationSeeder;
-use Database\Seeders\TeamHasUserSeeder;
-use Database\Seeders\TypeCategorySeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\CollectionHasDurSeeder;
-use Database\Seeders\CollectionHasToolSeeder;
-use Database\Seeders\CollectionHasUserSeeder;
-use Database\Seeders\DataProviderCollsSeeder;
-use Database\Seeders\CollectionHasKeywordSeeder;
-
-use Database\Seeders\CollectionHasPublicationSeeder;
-use Database\Seeders\CollectionHasDatasetVersionSeeder;
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class DataCustodianNetworkTest extends TestCase
 {

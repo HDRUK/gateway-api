@@ -10,23 +10,10 @@ use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Publication;
 use Illuminate\Support\Carbon;
-use Database\Seeders\DurSeeder;
 use Tests\Traits\Authorization;
 use Tests\Traits\Helpers;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\ToolSeeder;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\LicenseSeeder;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\EmailTemplateSeeder;
-use Database\Seeders\CollectionSeeder;
-use Database\Seeders\PublicationSeeder;
-use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Support\Facades\Storage;
-use Database\Seeders\TypeCategorySeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
-
 
 class DurTest extends TestCase
 {

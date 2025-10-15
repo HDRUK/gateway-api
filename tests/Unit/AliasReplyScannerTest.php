@@ -11,23 +11,13 @@ use Webklex\PHPIMAP\Message;
 use AliasReplyScanner as ARS;
 use App\Models\EnquiryThread;
 use App\Models\EnquiryMessage;
-use Database\Seeders\RoleSeeder;
-use Database\Seeders\TeamSeeder;
-use Database\Seeders\UserSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\TeamHasUserSeeder;
-use Database\Seeders\EnquiryThreadSeeder;
-use Database\Seeders\EmailTemplateSeeder;
-use Database\Seeders\EnquiryMessageSeeder;
-use Database\Seeders\TeamUserHasRoleSeeder;
 use App\Exceptions\AliasReplyScannerException;
 use Webklex\PHPIMAP\Support\MessageCollection;
 
 
 class AliasReplyScannerTest extends TestCase
 {
-    
 
     use MockExternalApis {
         setUp as commonSetUp;
@@ -38,20 +28,7 @@ class AliasReplyScannerTest extends TestCase
 
     public function setUp(): void
     {
-
         $this->commonSetUp();
-
-        $this->seed([
-            TeamSeeder::class,
-            PermissionSeeder::class,
-            RoleSeeder::class,
-            UserSeeder::class,
-            TeamHasUserSeeder::class,
-            TeamUserHasRoleSeeder::class,
-            EnquiryThreadSeeder::class,
-            EnquiryMessageSeeder::class,
-            EmailTemplateSeeder::class,
-        ]);
 
         $unique_key = EnquiryThread::get()->first()->unique_key;
 
