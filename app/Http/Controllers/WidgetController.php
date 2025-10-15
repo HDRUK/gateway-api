@@ -52,6 +52,7 @@ class WidgetController extends Controller
 
         $widgets = Widget::where('team_id', $teamId)
             ->get([
+                'id',
                 'widget_name',
                 'size_width',
                 'size_height',
