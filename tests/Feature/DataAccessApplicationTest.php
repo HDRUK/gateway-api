@@ -6,7 +6,6 @@ use Config;
 use Tests\TestCase;
 use App\Models\Team;
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use App\Models\DataAccessSection;
 use App\Models\DataAccessTemplate;
 use App\Models\QuestionBank;
@@ -33,7 +32,6 @@ class DataAccessApplicationTest extends TestCase
         $this->commonSetUp();
 
         Team::flushEventListeners();
-        DatasetVersion::flushEventListeners();
 
         Queue::fake([
             LinkageExtraction::class,
