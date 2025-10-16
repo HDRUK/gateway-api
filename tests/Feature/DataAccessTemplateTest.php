@@ -31,7 +31,6 @@ class DataAccessTemplateTest extends TestCase
     {
         $response = $this->get('api/v1/dar/templates', $this->header);
 
-        var_dump($response->decodeResponseJson());
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'current_page',

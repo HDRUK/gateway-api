@@ -74,7 +74,7 @@ class DataAccessApplicationTest extends TestCase
             ],
             $this->header
         );
-        var_dump($response->decodeResponseJson());
+
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $response = $this->get('api/v1/teams/' . $teamId . '/dar/applications', $this->header);
