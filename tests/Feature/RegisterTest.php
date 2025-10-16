@@ -39,6 +39,17 @@ class RegisterTest extends TestCase
             'contact_feedback' => 1,
             'contact_news' => 1,
         ];
+
+        $this->user2 = [
+            'name' => Config::get('constants.test.non_admin.name'),
+            'firstname' => Config::get('constants.test.non_admin.firstname'),
+            'lastname' => Config::get('constants.test.non_admin.lastname'),
+            'email' => Config::get('constants.test.non_admin.email'),
+            'password' => Config::get('constants.test.non_admin.email'),
+            'sector_id' => 1,
+            'contact_feedback' => 1,
+            'contact_news' => 1,
+        ];
     }
 
     /**
@@ -66,10 +77,10 @@ class RegisterTest extends TestCase
     {
         $this->withExceptionHandling();
 
-        $responseFirst = $this->json('POST', self::TEST_URL, $this->user, ['Accept' => 'application/json']);
+        $responseFirst = $this->json('POST', self::TEST_URL, $this->user2, ['Accept' => 'application/json']);
         $responseFirst->assertStatus(200);
 
-        $responseSecond = $this->json('POST', self::TEST_URL, $this->user, ['Accept' => 'application/json']);
+        $responseSecond = $this->json('POST', self::TEST_URL, $this->user2, ['Accept' => 'application/json']);
         $responseSecond->assertStatus(400);
     }
 
