@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Config;
+use Auditor;
 use Exception;
 use App\Models\Widget;
 use Illuminate\Http\Request;
