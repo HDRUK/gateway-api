@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Config;
+use Exception;
 use App\Models\Widget;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
