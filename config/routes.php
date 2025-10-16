@@ -171,8 +171,37 @@ return [
             'teamId' => '[0-9]+',
         ],
     ],
-[
-        'name' => 'widgets',
+    [
+        'name' => 'create_widget',
+        'method' => 'post',
+        'path' => '/teams/{teamId}/widgets',
+        'methodController' => 'WidgetController@store',
+        'namespaceController' => 'App\Http\Controllers',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,widgets.create',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'update_widget',
+        'method' => 'patch',
+        'path' => '/teams/{teamId}/widgets/{id}',
+        'methodController' => 'WidgetController@update',
+        'namespaceController' => 'App\Http\Controllers',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,widgets.update',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'delete_widgets',
         'method' => 'delete',
        'path' => '/teams/{teamId}/widgets/{id}',
         'methodController' => 'WidgetController@destroy',
