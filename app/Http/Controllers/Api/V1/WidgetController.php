@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Auditor;
 use Exception;
+use App\Http\Controllers\Controller;
 use App\Models\Widget;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +19,6 @@ class WidgetController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/teams/{teamId}/widgets",
-     *    deprecated=true,
      *    operationId="fetch_all_widgets",
      *    tags={"Widgets"},
      *    summary="WidgetController@get",
@@ -79,36 +79,32 @@ class WidgetController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/teams/{teamId}/widgets/{id}",
-     *    deprecated=true,
      *    operationId="fetch_widget",
      *    tags={"Widgets"},
      *    summary="WidgetController@retrieve",
-     *    description="Get Widget",
+     *    description="Get a single Widget",
      *    security={{"bearerAuth":{}}},
      *    @OA\Response(
-     *       response="200",
+     *       response=200,
      *       description="Success response",
      *       @OA\JsonContent(
      *          @OA\Property(
      *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
+     *             type="object",
+     *             example={"id": 1, "widget_name": "Example Widget"}
      *          )
      *       )
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Widget not found",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="not found")
+     *       )
      *    )
-     *      @OA\Response(
-     *          response=404,
-     *          description="Widget not found",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="not found")
-     *          )
-     *      )
      * )
      */
+
     public function retrieve(Request $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();

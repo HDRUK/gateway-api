@@ -161,7 +161,7 @@ return [
         'method' => 'get',
         'path' => '/teams/{teamId}/widgets',
         'methodController' => 'WidgetController@get',
-        'namespaceController' => 'App\Http\Controllers',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,widgets.read',
@@ -176,7 +176,7 @@ return [
         'method' => 'get',
         'path' => '/teams/{teamId}/widgets/{id}',
         'methodController' => 'WidgetController@retrieve',
-        'namespaceController' => 'App\Http\Controllers',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,widgets.read',
@@ -192,7 +192,7 @@ return [
         'method' => 'post',
         'path' => '/teams/{teamId}/widgets',
         'methodController' => 'WidgetController@store',
-        'namespaceController' => 'App\Http\Controllers',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,widgets.create',
@@ -206,7 +206,7 @@ return [
         'method' => 'patch',
         'path' => '/teams/{teamId}/widgets/{id}',
         'methodController' => 'WidgetController@update',
-        'namespaceController' => 'App\Http\Controllers',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,widgets.update',
@@ -221,7 +221,7 @@ return [
         'method' => 'delete',
        'path' => '/teams/{teamId}/widgets/{id}',
         'methodController' => 'WidgetController@destroy',
-        'namespaceController' => 'App\Http\Controllers',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,widgets.read',
