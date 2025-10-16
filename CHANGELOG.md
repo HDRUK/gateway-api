@@ -1,3 +1,9 @@
+## [2.25.3](https://github.com/HDRUK/gateway-api/compare/v2.25.2...v2.25.3) (2025-10-16)
+
+### 🐛 Bug Fixes
+
+* **GAT-8078:** Remove sanitisation from both search requests since they break multi-word search (#1438) ([a521dc1](https://github.com/HDRUK/gateway-api/commit/a521dc149e747f7f60f315123b13b6556201963d)), closes [GAT-8078](GAT-8078)
+
 ## [2.25.2](https://github.com/HDRUK/gateway-api/compare/v2.25.1...v2.25.2) (2025-10-15)
 
 ### 🐛 Bug Fixes
