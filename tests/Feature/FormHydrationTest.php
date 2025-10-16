@@ -8,12 +8,17 @@ use App\Models\Team;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
 use App\Http\Enums\TeamMemberOf;
 use MetadataManagementController as MMC;
 
 class FormHydrationTest extends TestCase
 {
     use Authorization;
+
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     protected $header = [];
     protected $metadata;
@@ -26,7 +31,7 @@ class FormHydrationTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         DatasetVersion::flushEventListeners();
 
