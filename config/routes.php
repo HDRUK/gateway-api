@@ -509,6 +509,18 @@ return [
         ],
         'constraint' => [],
     ],
+
+[
+        'name' => 'teams',
+        'method' => 'get',
+        'path' => '/teams/names',
+        'methodController' => 'TeamController@getNames',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
     [
         'name' => 'teams',
         'method' => 'get',
