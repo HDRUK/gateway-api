@@ -7,9 +7,13 @@ use Exception;
 use App\Models\Widget;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Http\Traits\LoggingContext;
 
 class WidgetController extends Controller
 {
+    use LoggingContext;
+
+
     /**
      * @OA\Get(
      *    path="/api/v1/teams/{teamId}/widgets",
