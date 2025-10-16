@@ -69,6 +69,71 @@ class WidgetController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *    path="/api/v1/teams/{teamId}/widgets/{id}",
+     *    deprecated=true,
+     *    operationId="fetch_widget",
+     *    tags={"Widgets"},
+     *    summary="WidgetController@retrieve",
+     *    description="Get Widget",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="array",
+     *             example="[]",
+     *             @OA\Items(
+     *                type="array",
+     *                @OA\Items()
+     *             )
+     *          )
+     *       )
+     *    )
+     *      @OA\Response(
+     *          response=404,
+     *          description="Widget not found",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *          )
+     *      )
+     * )
+     */
+    public function retrieve(Request $request, int $teamId, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $widget = Widget::where('id', $id)
+               ->where('team_id', $teamId)
+               ->first();
+
+            if (! $widget) {
+                return response()->json(['message' => 'not found'], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+            }
+
+
+            return response()->json([ 'data' => $widget]);
+
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+            \Log::info($e->getMessage(), $loggingContext);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+
+    /**
      * @OA\Post(
      *      path="/api/v1/teams/{teamId}/widgets",
      *      operationId="create_widget",
@@ -230,7 +295,7 @@ class WidgetController extends Controller
                 ->first();
 
             if (! $widget) {
-                return response()->json(['message' => 'not found'], 404);
+                return response()->json(['message' => 'not found'], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
             }
 
             $validated = $request->validate([
@@ -249,7 +314,7 @@ class WidgetController extends Controller
             return response()->json([
                 'message' => 'success',
                 'data' => $widget
-            ], 200);
+            ], Config::get('statuscodes.STATUS_OK.code'));
 
         } catch (Exception $e) {
             Auditor::log([
@@ -326,14 +391,14 @@ class WidgetController extends Controller
             if (! $widget) {
                 return response()->json([
                     'message' => 'not found',
-                ], 404);
+                ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
             }
 
             $widget->delete();
 
             return response()->json([
                 'message' => 'success',
-            ], 200);
+            ], Config::get('statuscodes.STATUS_OK.code'));
 
         } catch (Exception $e) {
             Auditor::log([

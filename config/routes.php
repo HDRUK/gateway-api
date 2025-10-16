@@ -172,6 +172,22 @@ return [
         ],
     ],
     [
+        'name' => 'widget',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/widgets/{id}',
+        'methodController' => 'WidgetController@retrieve',
+        'namespaceController' => 'App\Http\Controllers',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,widgets.read',
+
+        ],
+       'constraint' => [
+          'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
         'name' => 'create_widget',
         'method' => 'post',
         'path' => '/teams/{teamId}/widgets',
