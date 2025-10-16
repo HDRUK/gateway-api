@@ -130,6 +130,15 @@ trait MockExternalApis
             )
         ]);
 
+        Http::fake([
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/filters' => Http::response(
+                [
+                    200,
+                    ['application/json']
+                ]
+            )
+        ]);
+
         // Mock the search service - datasets
         Http::fake([
             env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/datasets*' => Http::response(
