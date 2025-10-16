@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Config;
 use App\Models\Widget;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -11,24 +10,13 @@ class WidgetController extends Controller
 {
     /**
      * @OA\Get(
-     *    path="/api/v1/widgets",
+     *    path="/api/v1/teams/{teamId}/widgets",
      *    deprecated=true,
      *    operationId="fetch_all_widgets",
      *    tags={"Widgets"},
      *    summary="WidgetController@get",
      *    description="Get All Widgets",
      *    security={{"bearerAuth":{}}},
-     *    @OA\Parameter(
-     *       name="team_id",
-     *       in="query",
-     *       description="team id",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema(
-     *          type="integer",
-     *          description="team id",
-     *       ),
-     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -46,10 +34,9 @@ class WidgetController extends Controller
      *    )
      * )
      */
-    public function get(Request $request): JsonResponse
+    public function get(Request $request, int $teamId): JsonResponse
     {
-        $teamId = $request->query('team_id', null);
-        \Log::info('This is a log message.'. $teamId);
+        //\Log::info('This is a log message.'. $teamId);
 
         $widgets = Widget::where('team_id', $teamId)
             ->get([
@@ -67,62 +54,77 @@ class WidgetController extends Controller
 
 
     /**
-    * @OA\Delete(
-    *      path="/api/v1/widgets/{id}",
-    *      deprecated=true,
-    *      operationId="delete_widget",
-    *      summary="Delete a widget",
-    *      description="Delete a widget",
-    *      tags={"Widgets"},
-    *      summary="WidgetController@destroy",
-    *      security={{"bearerAuth":{}}},
-    *      @OA\Parameter(
-    *         name="id",
-    *         in="path",
-    *         description="widget id",
-    *         required=true,
-    *         example="1",
-    *         @OA\Schema(
-    *            type="integer",
-    *            description="widget id",
-    *         ),
-    *      ),
-    *      @OA\Response(
-    *          response=404,
-    *          description="Not found response",
-    *          @OA\JsonContent(
-    *              @OA\Property(property="message", type="string", example="not found")
-    *           ),
-    *      ),
-    *      @OA\Response(
-    *          response=200,
-    *          description="Success",
-    *          @OA\JsonContent(
-    *              @OA\Property(property="message", type="string", example="success")
-    *          ),
-    *      ),
-    *      @OA\Response(
-    *          response=500,
-    *          description="Error",
-    *          @OA\JsonContent(
-    *              @OA\Property(property="message", type="string", example="error")
-    *          )
-    *      )
-    * )
-    */
-    public function destroy(Request $request, string $id) // softdelete
+ * @OA\Delete(
+ *      path="/api/v1/teams/{teamId}/widgets/{id}",
+ *      operationId="delete_widget",
+ *      summary="Delete a widget",
+ *      description="Soft delete a widget belonging to a specific team",
+ *      tags={"Widgets"},
+ *      security={{"bearerAuth":{}}},
+ *      @OA\Parameter(
+ *         name="teamId",
+ *         in="path",
+ *         description="Team ID",
+ *         required=true,
+ *         example="5",
+ *         @OA\Schema(type="integer"),
+ *      ),
+ *      @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         description="Widget ID",
+ *         required=true,
+ *         example="1",
+ *         @OA\Schema(type="integer"),
+ *      ),
+ *      @OA\Response(
+ *          response=404,
+ *          description="Widget not found",
+ *          @OA\JsonContent(
+ *              @OA\Property(property="message", type="string", example="not found")
+ *          )
+ *      ),
+ *      @OA\Response(
+ *          response=200,
+ *          description="Widget deleted successfully",
+ *          @OA\JsonContent(
+ *              @OA\Property(property="message", type="string", example="success")
+ *          )
+ *      ),
+ *      @OA\Response(
+ *          response=500,
+ *          description="Server error",
+ *          @OA\JsonContent(
+ *              @OA\Property(property="message", type="string", example="error")
+ *          )
+ *      )
+ * )
+ */
+    public function destroy(Request $request, int $teamId, int $id)
     {
         try {
-            $input = $request->all();
-            Widget::where('id', $id)->delete();
+            $widget = Widget::where('id', $id)
+                ->where('team_id', $teamId)
+                ->first();
+
+            if (! $widget) {
+                return response()->json([
+                    'message' => 'not found',
+                ], 404);
+            }
+
+            $widget->delete();
 
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-            ], Config::get('statuscodes.STATUS_OK.code'));
-        } catch (Exception $e) {
+                'message' => 'success',
+            ], 200);
 
-
-            throw new Exception($e->getMessage());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'error',
+                'error' => $e->getMessage(),
+            ], 500);
         }
+
     }
 }

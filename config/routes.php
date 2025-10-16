@@ -159,7 +159,7 @@ return [
      [
         'name' => 'widgets',
         'method' => 'get',
-        'path' => '/widgets',
+        'path' => '/teams/{teamId}/widgets',
         'methodController' => 'WidgetController@get',
         'namespaceController' => 'App\Http\Controllers',
         'middleware' => [
@@ -167,12 +167,14 @@ return [
             'check.access:permissions,widgets.read',
 
         ],
-        'constraint' => [],
+       'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
     ],
 [
         'name' => 'widgets',
         'method' => 'delete',
-        'path' => '/widgets/{id}',
+       'path' => '/teams/{teamId}/widgets/{id}',
         'methodController' => 'WidgetController@destroy',
         'namespaceController' => 'App\Http\Controllers',
         'middleware' => [
@@ -182,6 +184,7 @@ return [
         ],
          'constraint' => [
             'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ]
     ],
 
