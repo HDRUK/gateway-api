@@ -6,6 +6,17 @@ use App\Http\Requests\BaseFormRequest;
 
 class PublicationSearch extends BaseFormRequest
 {
+
+    /**
+     * Add Query parameters to the FormRequest.
+     *
+     * @return void
+     */
+    protected function prepareForValidation()
+    {
+        $this->merge(['source' => $this->query('source')]);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
