@@ -5,13 +5,17 @@ namespace Tests\Feature;
 use App\Models\License;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Http;
+use Tests\Traits\MockExternalApis;
 
 class UpdateLicensesTest extends TestCase
 {
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
     }
 
     public function test_update_licenses_command_handles_success_response()

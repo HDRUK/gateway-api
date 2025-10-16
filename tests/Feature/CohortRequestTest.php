@@ -29,7 +29,7 @@ class CohortRequestTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
         $this->runMockHubspot();
 
         $this->authorisationUser();

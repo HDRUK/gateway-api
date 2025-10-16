@@ -5,14 +5,18 @@ namespace Tests\Unit;
 use App\Mail\Email;
 use App\Models\EmailTemplate;
 use Tests\TestCase;
+use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Http;
 
 class EmailServiceTest extends TestCase
 {
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
     }
 
     /**

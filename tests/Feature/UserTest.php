@@ -6,11 +6,15 @@ use Hash;
 use Tests\TestCase;
 use App\Models\User;
 use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Http;
 
 class UserTest extends TestCase
 {
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public const TEST_URL = '/api/v1/users';
 
@@ -25,7 +29,7 @@ class UserTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
         $this->runMockHubspot();
 
         $this->authorisationUser();

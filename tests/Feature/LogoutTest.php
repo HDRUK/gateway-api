@@ -4,10 +4,14 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
 
 class LogoutTest extends TestCase
 {
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public const USERS_URL = '/api/v1/users';
     public const LOGOUT_URL = '/api/v1/logout';
@@ -15,14 +19,9 @@ class LogoutTest extends TestCase
 
     protected $header = [];
 
-    /**
-     * Set up the database
-     *
-     * @return void
-     */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();

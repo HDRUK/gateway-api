@@ -8,15 +8,19 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
+use Tests\Traits\MockExternalApis;
 use App\Http\Traits\EnquiriesTrait;
 
 class EnquiriesManagementControllerTest extends TestCase
 {
     use EnquiriesTrait;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
     }
 
     public function test_it_can_determine_dar_managers_from_team_id(): void

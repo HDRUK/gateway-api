@@ -18,7 +18,7 @@ class CohortUserExpiryTest extends TestCase
 
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
     }
 
     public function test_it_can_run(): void

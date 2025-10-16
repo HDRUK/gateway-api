@@ -6,9 +6,13 @@ use Config;
 use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
+use Tests\Traits\MockExternalApis;
 
 class RegisterTest extends TestCase
 {
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public const TEST_URL = '/api/v1/register';
 
@@ -21,7 +25,7 @@ class RegisterTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->runMockHubspot();
 

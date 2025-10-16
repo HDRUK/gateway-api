@@ -5,10 +5,14 @@ namespace Tests\Feature;
 use App\Models\UserHasRole;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
 
 class UserRoleTest extends TestCase
 {
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     protected $header = [];
 
@@ -19,7 +23,7 @@ class UserRoleTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();

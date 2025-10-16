@@ -7,14 +7,18 @@ use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasDatasetVersion;
 use Tests\TestCase;
 use App\Http\Traits\MetadataVersioning;
+use Tests\Traits\MockExternalApis;
 
 class MetadataRelationshipTest extends TestCase
 {
     use MetadataVersioning;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
     }
 
     // LS - Removed due to versioning needing a re-think
