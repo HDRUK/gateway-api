@@ -75,6 +75,7 @@ return new class () extends Migration {
             $table->boolean('is_locked')->default(false);
             $table->text('reason')->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('dur_id')->references('id')->on('dur');
             $table->foreign('dataset_id')->references('id')->on('datasets');

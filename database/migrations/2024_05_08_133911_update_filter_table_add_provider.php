@@ -65,6 +65,10 @@ return new class () extends Migration {
             $table->renameColumn('type_old', 'type');
         });
 
+        Schema::table('filters', function (Blueprint $table) {
+            $table->unique(['type', 'keys']);
+        });
+
         Schema::enableForeignKeyConstraints();
     }
 

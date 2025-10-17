@@ -20,22 +20,8 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        Schema::disableForeignKeyConstraints();
-
-        $foreignKeys = $this->listTableForeignKeys('filters');
-
-        if (in_array('filters_type_keys_unique', $foreignKeys)) {
-            DB::statement('ALTER TABLE `filters` DROP FOREIGN KEY `filters_type_keys_unique`');
-            DB::statement('ALTER TABLE `filters` DROP KEY `filters_type_keys_unique`');
-        }
-
-        Schema::enableForeignKeyConstraints();
-    }
-
-    public function listTableForeignKeys($table)
-    {
-        return array_map(function ($key) {
-            return $key->getName();
-        }, Schema::getForeignKeys($table));
+        Schema::table('filters', function (Blueprint $table) {
+            $table->dropUnique('filters_type_keys_unique');
+        });
     }
 };

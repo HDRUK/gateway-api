@@ -27,7 +27,7 @@ return new class () extends Migration {
         Schema::table('dar_application_statuses', function (Blueprint $table) {
             $table->dropForeign(['team_id']);
             $table->dropForeign(['review_id']);
-            // $table->dropColumn(['team_id', 'review_id']);
+            $table->dropColumn(['team_id', 'review_id']);
         });
     }
 };
