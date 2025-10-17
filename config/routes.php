@@ -1,16 +1,7 @@
 <?php
 
 return [
-    // register
-    [
-        'name' => 'register',
-        'method' => 'post',
-        'path' => '/register',
-        'methodController' => 'RegisterController@create',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
-        'constraint' => [],
-    ],
+    // auth
     [
         'name' => 'api.v1.auth.register',
         'method' => 'post',
