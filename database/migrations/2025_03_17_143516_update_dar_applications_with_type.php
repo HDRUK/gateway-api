@@ -20,8 +20,20 @@ return new class () extends Migration {
      */
     public function down(): void
     {
+        // Schema::table('dar_application_has_dataset', function (Blueprint $table) {
+        //     $table->dropForeign('dar_application_has_dataset_dar_application_id_foreign');
+        // });
+
+        // Schema::table('dar_application_reviews', function (Blueprint $table) {
+        //     $table->dropForeign('dar_application_reviews_application_id_foreign');
+        // });
+
+        // Schema::table('dar_application_statuses', function (Blueprint $table) {
+        //     $table->dropForeign('dar_application_statuses_application_id_foreign');
+        // });
+
         Schema::table('dar_applications', function (Blueprint $table) {
-            $table->dropIfExists('application_type');
+            $table->dropColumn('application_type');
         });
     }
 };

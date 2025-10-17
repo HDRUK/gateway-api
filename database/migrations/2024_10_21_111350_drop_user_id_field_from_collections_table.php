@@ -54,7 +54,7 @@ return new class () extends Migration {
                 });
             }
 
-            $collections = CollectionHasUser::select(['collection_id', 'user_id', 'CREATOR'])->get();
+            $collections = CollectionHasUser::withTrashed()->where(['role' => 'CREATOR'])->select(['collection_id', 'user_id'])->get();
             foreach ($collections as $collection) {
                 Collection::where([
                     'id' => $collection->collection_id,

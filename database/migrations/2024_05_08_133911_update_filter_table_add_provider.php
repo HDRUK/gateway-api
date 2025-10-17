@@ -70,10 +70,8 @@ return new class () extends Migration {
 
     public function listTableForeignKeys($table)
     {
-        $conn = Schema::getConnection()->getDoctrineSchemaManager();
-
         return array_map(function ($key) {
             return $key->getName();
-        }, $conn->listTableForeignKeys($table));
+        }, Schema::getForeignKeys($table));
     }
 };

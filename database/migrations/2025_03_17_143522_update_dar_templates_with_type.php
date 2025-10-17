@@ -20,8 +20,12 @@ return new class () extends Migration {
      */
     public function down(): void
     {
+    //     Schema::table('dar_template_has_files', function (Blueprint $table) {
+    //         $table->dropForeign('dar_template_has_files_template_id_foreign');
+    //     });
+
         Schema::table('dar_templates', function (Blueprint $table) {
-            $table->dropIfExists('template_type');
+            $table->dropColumn('template_type');
         });
     }
 };

@@ -46,6 +46,7 @@ return new class () extends Migration {
             $table->index('dataset_version_id');
             $table->index('user_id');
             $table->index('application_id');
+            $table->index('deleted_at');
         });
 
         DB::table('collection_has_dataset_version')->insert(
@@ -101,6 +102,7 @@ return new class () extends Migration {
             $table->index('dataset_version_id');
             $table->index('user_id');
             $table->index('application_id');
+            $table->index('deleted_at');
         });
 
         DB::table('collection_has_dataset_version')->insert(
