@@ -7,6 +7,10 @@ use Auditor;
 use Exception;
 use App\Http\Controllers\Controller;
 use App\Models\Widget;
+use App\Models\Dataset;
+use App\Models\Collection;
+use App\Models\Tool;
+use App\Models\Dur;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Traits\LoggingContext;
@@ -137,6 +141,102 @@ class WidgetController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/teams/{teamId}/widgets/data",
+     *      tags={"Widgets"},
+     *      summary="WidgetController@getWidgetData",
+     *      description="Fetch lightweight data (id, name, etc.) for multiple teams across datasets, tools, collections, and DURS",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="teamIds",
+     *          in="query",
+     *          required=true,
+     *          description="Comma-separated list of team IDs to filter data",
+     *          example="1,2,3",
+     *          @OA\Schema(type="string")
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Aggregated data retrieved successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="datasets", type="array", @OA\Items(type="object")),
+     *              @OA\Property(property="tools", type="array", @OA\Items(type="object")),
+     *              @OA\Property(property="collections", type="array", @OA\Items(type="object")),
+     *              @OA\Property(property="durs", type="array", @OA\Items(type="object"))
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Invalid or missing teamIds parameter",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="teamIds parameter is required")
+     *          )
+     *      )
+     * )
+     */
+    public function getWidgetData(Request $request, int $teamId): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $loggingContext = $this->getLoggingContext($request);
+        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
+        try {
+            $teamIdsParam = $request->query('teamIds');
+            if (!$teamIdsParam) {
+                return response()->json([
+                    'message' => 'teamIds parameter is required',
+                ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+            }
+
+
+            $teamIds = is_array($teamIdsParam)
+                ? $teamIdsParam
+                : explode(',', $teamIdsParam);
+
+            $teamIds = array_map('intval', $teamIds);
+
+            $datasets = Dataset::whereIn('team_id', $teamIds)
+                ->get(['datasetid', 'team_id', 'id'])
+                ->map(fn ($dataset) => [
+                    'datasetid' => $dataset->datasetid,
+                    'title' => $dataset->getTitle(),
+                    'team_id' => $dataset->team_id,
+                ]);
+
+
+            $tools = Tool::whereIn('team_id', $teamIds)
+                ->get(['id', 'name', 'team_id']);
+
+            $collections = Collection::whereIn('team_id', $teamIds)
+                ->get(['id', 'name', 'team_id']);
+
+            $durs = Dur::whereIn('team_id', $teamIds)
+                ->get(['id', 'project_title', 'team_id']);
+
+            return response()->json([ 'data' => [
+                'datasets' => $datasets,
+                'tools' => $tools,
+                'collections' => $collections,
+                'durs' => $durs,
+            ]], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (\Exception $e) {
+            Auditor::log([
+                   'user_id' => (int)$jwtUser['id'],
+                   'team_id' => $teamId,
+                   'action_type' => 'EXCEPTION',
+                   'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                   'description' => $e->getMessage(),
+               ]);
+            \Log::info($e->getMessage(), $loggingContext);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
 
 
     /**

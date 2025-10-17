@@ -188,6 +188,20 @@ return [
         ],
     ],
     [
+        'name' => 'widgets-data',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/widgets/data',
+        'methodController' => 'WidgetController@getWidgetData',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,widgets.read',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
         'name' => 'create_widget',
         'method' => 'post',
         'path' => '/teams/{teamId}/widgets',
