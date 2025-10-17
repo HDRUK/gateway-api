@@ -129,6 +129,11 @@ class PermissionSeeder extends Seeder
                 'question-bank.read',
                 'question-bank.update',
                 'question-bank.delete',
+
+                'widgets.create',
+                'widgets.read',
+                'widgets.update',
+                'widgets.delete',
             ],
             'cohort' => [
                 'GENERAL_ACCESS',

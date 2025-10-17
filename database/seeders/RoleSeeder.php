@@ -216,6 +216,11 @@ class RoleSeeder extends Seeder
                     'integrations.metadata',
                     'integrations.dar',
 
+                    'widgets.create',
+                    'widgets.read',
+                    'widgets.update',
+                    'widgets.delete',
+
                     'datasets.read',
                 ],
             ],
