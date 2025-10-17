@@ -12,28 +12,11 @@ use App\Models\Dataset;
 use App\Models\Collection;
 use App\Models\DatasetVersion;
 use App\Observers\DurObserver;
-use Database\Seeders\TagSeeder;
-use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\LicenseSeeder;
-use Database\Seeders\CategorySeeder;
-use Database\Seeders\CollectionSeeder;
-use Database\Seeders\ApplicationSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\TypeCategorySeeder;
-use Database\Seeders\DatasetVersionSeeder;
 use App\Models\CollectionHasDatasetVersion;
-use Database\Seeders\SpatialCoverageSeeder;
-use Database\Seeders\CollectionHasUserSeeder;
-use Database\Seeders\ProgrammingPackageSeeder;
-use Database\Seeders\ProgrammingLanguageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DurObserverTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -49,39 +32,26 @@ class DurObserverTest extends TestCase
         DatasetVersion::flushEventListeners();
         Collection::flushEventListeners();
         CollectionHasDatasetVersion::flushEventListeners();
+        Dur::flushEventListeners();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-            CategorySeeder::class,
-            TypeCategorySeeder::class,
-            ProgrammingLanguageSeeder::class,
-            ProgrammingPackageSeeder::class,
-            LicenseSeeder::class,
-            TagSeeder::class,
-            ApplicationSeeder::class,
-            CollectionSeeder::class,
-            CollectionHasUserSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            KeywordSeeder::class,
-            ToolSeeder::class,
-        ]);
+        $this->observer = Mockery::mock(DurObserver::class)->makePartial();
+        app()->instance(DurObserver::class, $this->observer);
+
+        Dur::observe(DurObserver::class);
+
         $this->userId = User::all()->random()->id;
         $this->teamId = Team::all()->random()->id;
     }
 
     public function testDurObserverCreatedEventIndexesActiveDur()
     {
-        $observer = Mockery::mock(DurObserver::class)->makePartial();
-        app()->instance(DurObserver::class, $observer);
-        $observer->shouldReceive('indexElasticDur')->once()->with(1);
+        $countInitialDur = Dur::count();
+        $this->observer->shouldReceive('indexElasticDur')->once()->with($countInitialDur + 1);
 
         $userId = User::all()->random()->id;
         $teamId = Team::all()->random()->id;
 
         $dur = Dur::create([
-            'id' => 1,
             'non_gateway_datasets' => ['ICNARC'],
             'non_gateway_applicants' => ['Lila Kilback'],
             'funders_and_sponsors' => ['Newcastle Upon Tyne Hospitals NHS Foundation Trust'],
@@ -138,12 +108,11 @@ class DurObserverTest extends TestCase
 
     public function testDurObserverUpdatedEventDeletesActiveDur()
     {
-        $observer = Mockery::mock(DurObserver::class)->makePartial();
-        app()->instance(DurObserver::class, $observer);
-        $observer->shouldReceive('indexElasticDur')->once()->with(1);
+        $countInitialDur = Dur::count();
+
+        $this->observer->shouldReceive('indexElasticDur')->once()->with($countInitialDur + 1);
 
         $dur = Dur::create([
-            'id' => 1,
             'non_gateway_datasets' => ['ICNARC'],
             'non_gateway_applicants' => ['Lila Kilback'],
             'funders_and_sponsors' => ['Newcastle Upon Tyne Hospitals NHS Foundation Trust'],
@@ -189,10 +158,8 @@ class DurObserverTest extends TestCase
             'status' => Dur::STATUS_ACTIVE,
         ]);
 
-        $observer = Mockery::mock(DurObserver::class)->makePartial();
-        $observer->shouldReceive('deleteDurFromElastic')->once()->with(1);
-
-        app()->instance(DurObserver::class, $observer);
+        
+        $this->observer->shouldReceive('deleteDurFromElastic')->once()->with($countInitialDur + 1);
 
         $dur->update(['status' => Dur::STATUS_ARCHIVED]);
 
@@ -204,8 +171,9 @@ class DurObserverTest extends TestCase
 
     public function testDurObserverUpdatedEventIndexesWhenStatusBecomesActive()
     {
+        $countInitialDur = Dur::count();
+
         $dur = Dur::create([
-            'id' => 1,
             'non_gateway_datasets' => ['ICNARC'],
             'non_gateway_applicants' => ['Lila Kilback'],
             'funders_and_sponsors' => ['Newcastle Upon Tyne Hospitals NHS Foundation Trust'],
@@ -251,9 +219,7 @@ class DurObserverTest extends TestCase
             'status' => Dur::STATUS_DRAFT,
         ]);
 
-        $observer = Mockery::mock(DurObserver::class)->makePartial();
-        $observer->shouldReceive('indexElasticDur')->once()->with(1);
-        app()->instance(DurObserver::class, $observer);
+        $this->observer->shouldReceive('indexElasticDur')->once()->with($countInitialDur + 1);
 
         $dur->update(['status' => Dur::STATUS_ACTIVE]);
 
@@ -265,10 +231,10 @@ class DurObserverTest extends TestCase
 
     public function testDurObserverDeletedEventRemovesActiveDurFromElastic()
     {
-        $observer = Mockery::mock(DurObserver::class)->makePartial();
-        $observer->shouldReceive('deleteDurFromElastic')->once()->with(1);
-        $observer->shouldReceive('indexElasticDur')->once()->with(1);
-        app()->instance(DurObserver::class, $observer);
+        $countInitialDur = Dur::count();
+
+        $this->observer->shouldReceive('deleteDurFromElastic')->once()->with($countInitialDur + 1);
+        $this->observer->shouldReceive('indexElasticDur')->once()->with($countInitialDur + 1);
 
         $dur = Dur::create([
             'id' => 1,
@@ -318,12 +284,12 @@ class DurObserverTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('dur', [
-            'id' => 1,
+            'id' => $countInitialDur + 1,
         ]);
 
         $dur->delete();
 
-        $this->assertSoftDeleted('dur', ['id' => 1]);
+        $this->assertSoftDeleted('dur', ['id' => $countInitialDur + 1]);
     }
 
 }

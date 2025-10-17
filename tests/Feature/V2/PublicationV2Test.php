@@ -9,25 +9,11 @@ use App\Models\User;
 use App\Models\Dataset;
 use App\Models\Publication;
 use App\Models\DatasetVersion;
-use Database\Seeders\TagSeeder;
-use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\LicenseSeeder;
-use Database\Seeders\CategorySeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\PublicationSeeder;
-use Database\Seeders\TeamHasUserSeeder;
-use Database\Seeders\TypeCategorySeeder;
-use Database\Seeders\DatasetVersionSeeder;
 use App\Models\PublicationHasDatasetVersion;
-use Database\Seeders\PublicationHasToolSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class PublicationV2Test extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -49,21 +35,6 @@ class PublicationV2Test extends TestCase
         DatasetVersion::flushEventListeners();
         Publication::flushEventListeners();
         PublicationHasDatasetVersion::flushEventListeners();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            TeamHasUserSeeder::class,
-            PublicationSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            PublicationHasDatasetVersionSeeder::class,
-            LicenseSeeder::class,
-            CategorySeeder::class,
-            TypeCategorySeeder::class,
-            ToolSeeder::class,
-            TagSeeder::class,
-            PublicationHasToolSeeder::class,
-        ]);
     }
 
     /**

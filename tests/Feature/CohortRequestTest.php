@@ -7,18 +7,12 @@ use Tests\TestCase;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasPermission;
 use Tests\Traits\Authorization;
-use Database\Seeders\SectorSeeder;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use Database\Seeders\CohortRequestSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\EmailTemplateSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CohortRequestTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
@@ -35,15 +29,9 @@ class CohortRequestTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
         $this->runMockHubspot();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            SectorSeeder::class,
-            CohortRequestSeeder::class,
-            EmailTemplateSeeder::class,
-        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

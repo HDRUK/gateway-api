@@ -3,12 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\CustomerSatisfaction;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class CustomerSatisfactionTest extends TestCase
 {
-    use RefreshDatabase;
 
     /**
      * Test creating a CustomerSatisfaction entry.

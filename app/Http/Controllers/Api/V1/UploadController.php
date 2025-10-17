@@ -95,7 +95,7 @@ class UploadController extends Controller
             $filePath = $file->storeAs(
                 '',
                 $storedFilename,
-                $fileSystem . '.unscanned'
+                $fileSystem . '_unscanned'
             );
 
             // if there is an error, storeAs returns false and does not actually throw...
@@ -273,7 +273,7 @@ class UploadController extends Controller
                     'message' => 'File failed scan, content cannot be retrieved'
                 ]);
             } else {
-                $contents = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
+                $contents = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '_scanned')
                     ->get($upload->file_location);
 
                 Auditor::log([

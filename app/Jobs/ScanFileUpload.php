@@ -167,7 +167,7 @@ class ScanFileUpload implements ShouldQueue
                     'status' => 'FAILED',
                     'error' => $response['viruses']
                 ]);
-                Storage::disk($this->fileSystem . '.unscanned')
+                Storage::disk($this->fileSystem . '_unscanned')
                     ->delete($upload->file_location);
 
                 \Log::info('Uploaded file failed malware scan', $this->loggingContext);
@@ -182,10 +182,10 @@ class ScanFileUpload implements ShouldQueue
                 \Log::info('Uploaded file passed malware scan', $this->loggingContext);
 
                 $loc = $upload->file_location;
-                $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
+                $content = Storage::disk($this->fileSystem . '_unscanned')->get($loc);
 
-                Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
-                Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
+                Storage::disk($this->fileSystem . '_scanned')->put($loc, $content);
+                Storage::disk($this->fileSystem . '_unscanned')->delete($loc);
 
                 \Log::info('Uploaded file moved to safe scanned storage', $this->loggingContext);
 
@@ -251,14 +251,14 @@ class ScanFileUpload implements ShouldQueue
                 'user_id' => $this->userId,
                 'team_id' => $this->teamId,
             ];
-            $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
+            $path = Storage::disk($this->fileSystem . '_scanned')->path($loc);
 
             $import = new ImportDur($data);
 
             if ($this->isLocalOrTestEnv) {
                 Excel::import($import, $path);
             } else {
-                Excel::import($import, $path, $this->fileSystem . '.scanned');
+                Excel::import($import, $path, $this->fileSystem . '_scanned');
             }
 
             $durIds = $import->durImport->durIds;
@@ -344,7 +344,7 @@ class ScanFileUpload implements ShouldQueue
         try {
             $team = Team::findOrFail($this->teamId)->toArray();
 
-            $content = Storage::disk($this->fileSystem . '.scanned')->get($loc);
+            $content = Storage::disk($this->fileSystem . '_scanned')->get($loc);
             $metadata = json_decode($content, true);
 
 
@@ -427,14 +427,14 @@ class ScanFileUpload implements ShouldQueue
     private function attachStructuralMetadata(string $loc, Upload $upload)
     {
         try {
-            $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
+            $path = Storage::disk($this->fileSystem . '_scanned')->path($loc);
 
             $import = [];
 
             if ($this->isLocalOrTestEnv) {
                 $import = Excel::toArray(new ImportStructuralMetadata(), $path);
             } else {
-                $import = Excel::toArray(new ImportStructuralMetadata(), $path, $this->fileSystem . '.scanned');
+                $import = Excel::toArray(new ImportStructuralMetadata(), $path, $this->fileSystem . '_scanned');
             }
 
             $structuralMetadata = array();
@@ -700,13 +700,13 @@ class ScanFileUpload implements ShouldQueue
     {
         try {
             $entityId = $entity->id;
-            $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
+            $path = Storage::disk($this->fileSystem . '_scanned')->path($loc);
 
             $imageValid = $this->validateImage($path);
 
             if ($imageValid['result']) {
-                $content = Storage::disk($this->fileSystem . '.scanned')->get($loc);
-                Storage::disk($this->fileSystem . '.media')->put('/' . $entityName . '/' . $loc, $content);
+                $content = Storage::disk($this->fileSystem . '_scanned')->get($loc);
+                Storage::disk($this->fileSystem . '_media')->put('/' . $entityName . '/' . $loc, $content);
                 $newPath = '/' . $entityName . '/' . $loc;
 
                 $entity->update([
@@ -756,7 +756,7 @@ class ScanFileUpload implements ShouldQueue
         $manager = new ImageManager(Driver::class);
         if ($this->fileSystem === 'gcs') {
             $image = $manager->read(
-                Storage::disk($this->fileSystem . '.scanned')->get($path)
+                Storage::disk($this->fileSystem . '_scanned')->get($path)
             );
         } else {
             $image = $manager->read($path);

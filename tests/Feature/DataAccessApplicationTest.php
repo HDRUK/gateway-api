@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
 use Tests\TestCase;
 use App\Models\Team;
@@ -17,20 +16,10 @@ use App\Http\Enums\TeamMemberOf;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\DatasetSeeder;
 use Illuminate\Support\Facades\Queue;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\QuestionBankSeeder;
-use Database\Seeders\EmailTemplateSeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
-use Database\Seeders\DataAccessTemplateSeeder;
-use Database\Seeders\DataAccessApplicationSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DataAccessApplicationTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -48,17 +37,6 @@ class DataAccessApplicationTest extends TestCase
             LinkageExtraction::class,
             TermExtraction::class,
             SendEmailJob::class,
-        ]);
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            QuestionBankSeeder::class,
-            DataAccessApplicationSeeder::class,
-            DataAccessTemplateSeeder::class,
-            SpatialCoverageSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            EmailTemplateSeeder::class,
         ]);
 
         $this->metadata = $this->getMetadata();
@@ -79,7 +57,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'project_title' => 'A test DAR',
                 'dataset_ids' => [$datasetId]
             ],
@@ -90,12 +68,13 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PATCH',
-            'api/v1/users/1/dar/applications/' . $applicationId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId,
             [
                 'submission_status' => 'SUBMITTED',
             ],
             $this->header
         );
+
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $response = $this->get('api/v1/teams/' . $teamId . '/dar/applications', $this->header);
@@ -129,7 +108,7 @@ class DataAccessApplicationTest extends TestCase
                 'total',
             ]);
 
-        $response = $this->get('api/v1/users/1/dar/applications', $this->header);
+        $response = $this->get('api/v1/users/' . $this->currentUser['id'] . '/dar/applications', $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -168,7 +147,7 @@ class DataAccessApplicationTest extends TestCase
      */
     public function test_the_application_can_count_dar_applications()
     {
-        $response = $this->get('api/v1/users/1/dar/applications/count', $this->header);
+        $response = $this->get('api/v1/users/' . $this->currentUser['id'] . '/dar/applications/count', $this->header);
         $initialContent = $response->decodeResponseJson()['data'];
 
         $entityIds1 = $this->createDatasetForDar();
@@ -179,7 +158,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test draft DAR',
                 'dataset_ids' => [$datasetId1]
@@ -196,7 +175,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'project_title' => 'A test joint DAR',
                 'dataset_ids' => [$datasetId1, $datasetId2]
             ],
@@ -207,7 +186,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PATCH',
-            'api/v1/users/1/dar/applications/' . $applicationId2,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId2,
             [
                 'submission_status' => 'SUBMITTED',
             ],
@@ -243,7 +222,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'project_title' => 'A test joint DAR',
                 'dataset_ids' => [$datasetId1, $datasetId3]
             ],
@@ -254,7 +233,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PATCH',
-            'api/v1/users/1/dar/applications/' . $applicationId3,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId3,
             [
                 'submission_status' => 'SUBMITTED',
             ],
@@ -283,7 +262,7 @@ class DataAccessApplicationTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
         $reviewId = $response->decodeResponseJson()['data'];
 
-        $response = $this->get('api/v1/users/1/dar/applications/count', $this->header);
+        $response = $this->get('api/v1/users/' . $this->currentUser['id'] . '/dar/applications/count', $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $content = $response->decodeResponseJson()['data'];
@@ -318,7 +297,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PUT',
-            'api/v1/users/1/dar/applications/' . $applicationId3 . '/reviews/' . $reviewId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId3 . '/reviews/' . $reviewId,
             [
                 'comment' => 'A test reply from the user',
             ],
@@ -350,7 +329,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'approval_status' => 'APPROVED_COMMENTS',
@@ -390,7 +369,7 @@ class DataAccessApplicationTest extends TestCase
                 ],
             ]);
 
-        $response = $this->get('api/v1/users/1/dar/applications/' . $content['data'], $this->header);
+        $response = $this->get('api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $content['data'], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -441,7 +420,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'approval_status' => 'APPROVED_COMMENTS',
@@ -487,7 +466,7 @@ class DataAccessApplicationTest extends TestCase
                 ],
             ]);
 
-        $response = $this->get('api/v1/users/1/dar/applications/' . $content['data'] . '?group_arrays=true', $this->header);
+        $response = $this->get('api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $content['data'] . '?group_arrays=true', $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -535,7 +514,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'approval_status' => 'APPROVED_COMMENTS',
@@ -569,7 +548,7 @@ class DataAccessApplicationTest extends TestCase
         // test it can list files
         $response = $this->json(
             'GET',
-            'api/v1/users/1/dar/applications/' . $applicationId . '/files',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/files',
             [],
             $this->header,
         );
@@ -597,7 +576,7 @@ class DataAccessApplicationTest extends TestCase
         // test downloading a file associated with the dar application
         $response = $this->json(
             'GET',
-            'api/v1/users/1/dar/applications/' . $applicationId . '/files/' . $fileId . '/download',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/files/' . $fileId . '/download',
             [],
             $this->header,
         );
@@ -623,7 +602,7 @@ class DataAccessApplicationTest extends TestCase
         // test user can delete the file while the application is still a draft
         $response = $this->json(
             'DELETE',
-            'api/v1/users/1/dar/applications/' . $applicationId . '/files/' . $fileId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/files/' . $fileId,
             [],
             $this->header,
         );
@@ -648,7 +627,7 @@ class DataAccessApplicationTest extends TestCase
         // submit the application
         $response = $this->json(
             'PATCH',
-            'api/v1/users/1/dar/applications/' . $applicationId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId,
             [
                 'submission_status' => 'SUBMITTED',
             ],
@@ -694,7 +673,7 @@ class DataAccessApplicationTest extends TestCase
         // test user cannot delete the file now the application has been submitted
         $response = $this->json(
             'DELETE',
-            'api/v1/users/1/dar/applications/' . $applicationId . '/files/' . $fileId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/files/' . $fileId,
             [],
             $this->header,
         );
@@ -709,7 +688,7 @@ class DataAccessApplicationTest extends TestCase
     public function test_the_application_fails_to_list_a_single_dar_application()
     {
         $beyondId = DB::table('dar_applications')->max('id') + 1;
-        $response = $this->get('api/v1/users/1/dar/applications/' . $beyondId, $this->header);
+        $response = $this->get('api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $beyondId, $this->header);
         $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
     }
 
@@ -729,7 +708,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'approval_status' => 'APPROVED_COMMENTS',
@@ -821,7 +800,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'dataset_ids' => [$datasetId]
@@ -838,7 +817,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'GET',
-            'api/v1/users/1/dar/applications/' . $applicationId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId,
             [],
             $this->header
         );
@@ -882,7 +861,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'approval_status' => 'APPROVED_COMMENTS',
@@ -898,7 +877,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PUT',
-            'api/v1/users/1/dar/applications/' . $applicationId . '/answers',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/answers',
             [
                 'answers' => [
                     0 => [
@@ -922,7 +901,7 @@ class DataAccessApplicationTest extends TestCase
         // Test it can retrieve the answers
         $response = $this->json(
             'GET',
-            'api/v1/users/1/dar/applications/' . $applicationId . '/answers',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/answers',
             [],
             $this->header
         );
@@ -1066,7 +1045,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'approval_status' => 'APPROVED_COMMENTS',
@@ -1102,7 +1081,7 @@ class DataAccessApplicationTest extends TestCase
         // get answers
         $response = $this->json(
             'GET',
-            'api/v1/users/1/dar/applications/' . $applicationId . '/answers',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/answers',
             [],
             $this->header
         );
@@ -1121,7 +1100,7 @@ class DataAccessApplicationTest extends TestCase
         // test deleting file deletes the answer too
         $response = $this->json(
             'DELETE',
-            'api/v1/users/1/dar/applications/' . $applicationId . '/files/' . $fileId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/files/' . $fileId,
             [],
             $this->header,
         );
@@ -1129,7 +1108,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'GET',
-            'api/v1/users/1/dar/applications/' . $applicationId . '/answers',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/answers',
             [],
             $this->header
         );
@@ -1175,7 +1154,7 @@ class DataAccessApplicationTest extends TestCase
         // get answers
         $response = $this->json(
             'GET',
-            'api/v1/users/1/dar/applications/' . $applicationId . '/answers',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/answers',
             [],
             $this->header
         );
@@ -1196,7 +1175,7 @@ class DataAccessApplicationTest extends TestCase
         // test deleting one of the files deletes the answer too
         $response = $this->json(
             'DELETE',
-            'api/v1/users/1/dar/applications/' . $applicationId . '/files/' . $fileIdTwo,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/files/' . $fileIdTwo,
             [],
             $this->header,
         );
@@ -1204,7 +1183,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'GET',
-            'api/v1/users/1/dar/applications/' . $applicationId . '/answers',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/answers',
             [],
             $this->header
         );
@@ -1238,7 +1217,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'approval_status' => 'APPROVED_COMMENTS',
@@ -1310,7 +1289,7 @@ class DataAccessApplicationTest extends TestCase
         // User adds another comment to the review
         $response = $this->json(
             'PUT',
-            'api/v1/users/1/dar/applications/' . $applicationId . '/questions/' . $questionId . '/reviews/' . $reviewId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/questions/' . $questionId . '/reviews/' . $reviewId,
             [
                 'comment' => 'Another test review comment',
             ],
@@ -1400,7 +1379,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'approval_status' => 'APPROVED_COMMENTS',
@@ -1480,7 +1459,7 @@ class DataAccessApplicationTest extends TestCase
         // User adds another comment to the review
         $response = $this->json(
             'PUT',
-            'api/v1/users/1/dar/applications/' . $applicationId . '/reviews/' . $reviewId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId,
             [
                 'comment' => 'Another test review comment',
             ],
@@ -1532,7 +1511,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'approval_status' => 'APPROVED',
@@ -1589,7 +1568,7 @@ class DataAccessApplicationTest extends TestCase
 
         // user can download
         $response = $this->get(
-            'api/v1/users/1/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/download/' . $uploadId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/download/' . $uploadId,
             $this->header
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
@@ -1621,7 +1600,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'First test DAR',
                 'dataset_ids' => [$datasetId],
@@ -1641,7 +1620,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'project_title' => 'Second test DAR',
                 'dataset_ids' => [$datasetId],
             ],
@@ -1657,7 +1636,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PATCH',
-            'api/v1/users/1/dar/applications/' . $applicationIdTwo,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationIdTwo,
             [
                 'submission_status' => 'SUBMITTED',
             ],
@@ -1847,7 +1826,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'First test DAR',
                 'dataset_ids' => [$datasetIdOne],
@@ -1867,7 +1846,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'project_title' => 'Second test DAR',
                 'dataset_ids' => [$datasetIdOne, $datasetIdTwo],
             ],
@@ -1883,7 +1862,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PATCH',
-            'api/v1/users/1/dar/applications/' . $applicationIdTwo,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationIdTwo,
             [
                 'submission_status' => 'SUBMITTED',
             ],
@@ -1920,7 +1899,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'GET',
-            'api/v1/users/1/dar/applications',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications',
             [],
             $this->header
         );
@@ -1982,7 +1961,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'GET',
-            'api/v1/users/1/dar/applications?sort=project_title:desc',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications?sort=project_title:desc',
             [],
             $this->header
         );
@@ -1992,7 +1971,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'GET',
-            'api/v1/users/1/dar/applications?submission_status=SUBMITTED',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications?submission_status=SUBMITTED',
             [],
             $this->header
         );
@@ -2002,7 +1981,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'GET',
-            'api/v1/users/1/dar/applications?approval_status=APPROVED_COMMENTS',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications?approval_status=APPROVED_COMMENTS',
             [],
             $this->header
         );
@@ -2014,7 +1993,7 @@ class DataAccessApplicationTest extends TestCase
         // waiting for a response from the applicant
         $response = $this->json(
             'GET',
-            'api/v1/users/1/dar/applications?action_required=false',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications?action_required=false',
             [],
             $this->header
         );
@@ -2025,7 +2004,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'GET',
-            'api/v1/users/1/dar/applications/count/submission_status',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/count/submission_status',
             [],
             $this->header
         );
@@ -2039,7 +2018,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'GET',
-            'api/v1/users/1/dar/applications/count/action_required',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/count/action_required',
             [],
             $this->header
         );
@@ -2103,7 +2082,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'Test DAR',
                 'dataset_ids' => [$datasetId],
@@ -2121,7 +2100,7 @@ class DataAccessApplicationTest extends TestCase
         // Add answers to the primary applicant name and org questions
         $response = $this->json(
             'PUT',
-            'api/v1/users/1/dar/applications/' . $applicationId . '/answers',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/answers',
             [
                 'answers' => [
                     0 => [
@@ -2138,13 +2117,13 @@ class DataAccessApplicationTest extends TestCase
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
 
-        $response = $this->get('api/v1/users/1/dar/applications/' . $applicationId . '/answers', $this->header);
+        $response = $this->get('api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/answers', $this->header);
 
         // Call the dashboard endpoint
         // Check the values of primary applicant name and org match answers
         $response = $this->json(
             'GET',
-            'api/v1/users/1/dar/applications',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications',
             [],
             $this->header
         );
@@ -2284,7 +2263,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'approval_status' => 'APPROVED_COMMENTS',
@@ -2301,7 +2280,7 @@ class DataAccessApplicationTest extends TestCase
 
         // Test questions are merged
         $applicationId = $response->decodeResponseJson()['data'];
-        $response = $this->get('api/v1/users/1/dar/applications/' . $applicationId, $this->header);
+        $response = $this->get('api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId, $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -2380,7 +2359,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'INVALID',
                 'project_title' => 'A test DAR',
             ],
@@ -2412,7 +2391,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'Test DAR',
                 'dataset_ids' => [$datasetId],
@@ -2425,9 +2404,9 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PUT',
-            'api/v1/users/1/dar/applications/' . $applicationId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId,
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'answers' => [
@@ -2469,7 +2448,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'dataset_ids' => [$datasetId],
@@ -2482,7 +2461,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PATCH',
-            'api/v1/users/1/dar/applications/' . $applicationId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId,
             [
                 'submission_status' => 'DRAFT',
                 'answers' => [
@@ -2524,7 +2503,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PATCH',
-            'api/v1/users/1/dar/applications/' . $applicationId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId,
             [
                 'submission_status' => 'SUBMITTED',
             ],
@@ -2543,7 +2522,7 @@ class DataAccessApplicationTest extends TestCase
         // Test the user can push the submitted application to DRAFT
         $response = $this->json(
             'PATCH',
-            'api/v1/users/1/dar/applications/' . $applicationId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId,
             [
                 'submission_status' => 'DRAFT',
             ],
@@ -2557,7 +2536,7 @@ class DataAccessApplicationTest extends TestCase
         // Resubmit
         $response = $this->json(
             'PATCH',
-            'api/v1/users/1/dar/applications/' . $applicationId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId,
             [
                 'submission_status' => 'SUBMITTED',
             ],
@@ -2608,7 +2587,7 @@ class DataAccessApplicationTest extends TestCase
         // Test that user cannot change application to DRAFT now it has been approved
         $response = $this->json(
             'PATCH',
-            'api/v1/users/1/dar/applications/' . $applicationId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId,
             [
                 'submission_status' => 'DRAFT',
             ],
@@ -2736,7 +2715,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'dataset_ids' => [$datasetId],
@@ -2752,7 +2731,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PATCH',
-            'api/v1/users/1/dar/applications/' . $applicationId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId,
             [
                 'submission_status' => 'SUBMITTED',
             ],
@@ -2780,7 +2759,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'dataset_ids' => [1,2],
@@ -2795,7 +2774,7 @@ class DataAccessApplicationTest extends TestCase
             'PUT',
             'api/v1/dar/applications/' . $applicationId,
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'SUBMITTED',
                 'project_title' => 'A test DAR',
                 'answers' => [
@@ -2844,7 +2823,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'dataset_ids' => [1,2],
@@ -2856,7 +2835,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PATCH',
-            'api/v1/users/1/dar/applications/' . $content['data'],
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $content['data'],
             [
                 'approval_status' => 'WITHDRAWN',
             ],
@@ -2867,7 +2846,7 @@ class DataAccessApplicationTest extends TestCase
         // But a user cannot approve their own application
         $response = $this->json(
             'PATCH',
-            'api/v1/users/1/dar/applications/' . $content['data'],
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $content['data'],
             [
                 'approval_status' => 'APPROVED',
             ],
@@ -2888,7 +2867,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'dataset_ids' => [1,2],
@@ -2923,7 +2902,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'submission_status' => 'DRAFT',
                 'project_title' => 'A test DAR',
                 'dataset_ids' => [1,2],
@@ -2935,7 +2914,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'DELETE',
-            'api/v1/users/1/dar/applications/' . $content['data'],
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $content['data'],
             [],
             $this->header
         );
@@ -2950,7 +2929,7 @@ class DataAccessApplicationTest extends TestCase
             'POST',
             'api/v1/dar/applications',
             [
-                'applicant_id' => 1,
+                'applicant_id' => $this->currentUser['id'],
                 'project_title' => 'A test DAR',
                 'dataset_ids' => [1,2],
             ],
@@ -2961,7 +2940,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'PATCH',
-            'api/v1/users/1/dar/applications/' . $applicationId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId,
             [
                 'submission_status' => 'SUBMITTED',
             ],
@@ -2971,7 +2950,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response = $this->json(
             'DELETE',
-            'api/v1/users/1/dar/applications/' . $applicationId,
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId,
             [],
             $this->header
         );

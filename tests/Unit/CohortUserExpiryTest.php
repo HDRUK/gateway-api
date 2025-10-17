@@ -8,28 +8,17 @@ use App\Models\CohortRequest;
 use Illuminate\Support\Carbon;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Mail;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\MinimalUserSeeder;
 use App\Models\CohortRequestHasPermission;
-use Database\Seeders\EmailTemplateSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CohortUserExpiryTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
 
     public function setUp(): void
     {
-        parent::setUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            PermissionSeeder::class,
-            EmailTemplateSeeder::class,
-        ]);
+        $this->commonSetUp();
     }
 
     public function test_it_can_run(): void

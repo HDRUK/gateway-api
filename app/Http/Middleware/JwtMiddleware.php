@@ -35,7 +35,7 @@ class JwtMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // Cater for auth token coming in via cookie - as sent originally during
-        // the socialite oath flow
+        // the socialite oauth flow
         if ($request->cookie('token')) {
             $authorization = $request->cookie('token');
             $jwtController = new JwtController();

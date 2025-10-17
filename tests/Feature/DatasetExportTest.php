@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use Tests\Traits\MockExternalApis;
 use App\Exports\DatasetListExport;
 use App\Exports\DatasetTableExport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -10,9 +11,13 @@ use Illuminate\Support\Facades\Storage;
 
 class DatasetExportTest extends TestCase
 {
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
+
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
     }
 
     public function test_generates_excel_dataset_download_type_table(): void

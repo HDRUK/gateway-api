@@ -5,15 +5,14 @@ namespace Tests\Feature;
 use App\Models\UserHasRole;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
-use Database\Seeders\SectorSeeder;
-// use Illuminate\Foundation\Testing\WithFaker;
-use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Traits\MockExternalApis;
 
 class UserRoleTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     protected $header = [];
 
@@ -24,12 +23,8 @@ class UserRoleTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            SectorSeeder::class,
-        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

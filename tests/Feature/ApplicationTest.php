@@ -5,16 +5,11 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Application;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\ApplicationSeeder;
 use Tests\Traits\MockExternalApis;
 use App\Http\Traits\IntegrationOverride;
-use Database\Seeders\EmailTemplateSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ApplicationTest extends TestCase
 {
-    use RefreshDatabase;
     use IntegrationOverride;
     use MockExternalApis {
         setUp as commonSetUp;
@@ -32,12 +27,6 @@ class ApplicationTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            ApplicationSeeder::class,
-            EmailTemplateSeeder::class,
-        ]);
     }
 
     public function test_get_all_applications_with_success(): void
