@@ -4,16 +4,10 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\ActivityLogTypeSeeder;
-use Database\Seeders\ActivityLogUserTypeSeeder;
-use Database\Seeders\ActivityLogSeeder;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ActivityLogTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -25,13 +19,6 @@ class ActivityLogTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            ActivityLogTypeSeeder::class,
-            ActivityLogUserTypeSeeder::class,
-            ActivityLogSeeder::class,
-        ]);
     }
 
     /**

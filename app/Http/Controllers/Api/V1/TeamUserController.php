@@ -746,7 +746,7 @@ class TeamUserController extends Controller
                 'team_has_user_id' => $teamHasUsers->id,
             ])->get();
             foreach ($currRoleIds as $currRoleId) {
-                $role = Role::where('id', $currRoleId->role_id)->first();
+                $role = Role::where('id', $currRoleId['role_id'])->first();
                 if (!is_null($role)) {
                     $this->beforeRoleNames[] = $role['name'];
                 }

@@ -9,14 +9,10 @@ use App\Models\Collection;
 use App\Models\DatasetVersion;
 use Tests\Traits\MockExternalApis;
 use App\Observers\CollectionObserver;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use ElasticClientController as ECC;
 
 class CollectionObserverTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -30,30 +26,27 @@ class CollectionObserverTest extends TestCase
 
         Dataset::flushEventListeners();
         DatasetVersion::flushEventListeners();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-        ]);
+        Collection::flushEventListeners();
 
         $this->metadata = $this->getMetadata();
 
         $this->observer = Mockery::mock(CollectionObserver::class)->makePartial();
         app()->instance(CollectionObserver::class, $this->observer);
+
+        Collection::observe(CollectionObserver::class);
     }
 
-    public function testCollectionObserverCreatedEeventIndexesActiveCollection()
+    public function testCollectionObserverCreatedEventIndexesActiveCollection()
     {
+        $countInitialCollections = Collection::count();
+
         $this->observer->shouldReceive('indexElasticCollections')
             ->once()
-            ->with(1);
+            ->with($countInitialCollections + 1);
 
         $collection = Collection::factory()->create([
-            'id' => 1,
             'status' => Collection::STATUS_ACTIVE,
         ]);
-
-        $collection->observe(CollectionObserver::class);
 
         $this->assertDatabaseHas('collections', [
             'id' => $collection->id,
@@ -63,15 +56,13 @@ class CollectionObserverTest extends TestCase
 
     public function testCollectionObserverUpdatingEventSetsPrevStatus()
     {
-        $observer = new CollectionObserver();
-
         $collection = Collection::factory()->create([
             'status' => Collection::STATUS_ARCHIVED,
         ]);
 
         // Simulate updating event
         $collection->status = Collection::STATUS_ACTIVE;
-        $observer->updating($collection);
+        $this->observer->updating($collection);
 
         // Assert the previous status is correctly set
         $this->assertEquals(Collection::STATUS_ARCHIVED, $collection->prevStatus);
@@ -100,7 +91,6 @@ class CollectionObserverTest extends TestCase
 
         // Create the collection
         $collection = Collection::factory()->create([
-            'id' => 1,
             'status' => Collection::STATUS_ACTIVE,
         ]);
 
@@ -133,11 +123,11 @@ class CollectionObserverTest extends TestCase
 
         ECC::shouldIgnoreMissing();
 
-        // Mock the observer's method
-        $this->observer->shouldReceive('deleteCollectionFromElastic')->once()->with(1);
-
         // Create a collection
-        $collection = Collection::factory()->create(['id' => 1]);
+        $collection = Collection::factory()->create();
+
+        // Mock the observer's method
+        $this->observer->shouldReceive('deleteCollectionFromElastic')->once()->with($collection->id);
 
         // Soft delete the collection and trigger the observer
         $collection->delete();

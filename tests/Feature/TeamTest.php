@@ -2,23 +2,17 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
 use Tests\TestCase;
 use App\Models\Team;
 use App\Models\Alias;
 use App\Models\Dataset;
 use App\Http\Enums\TeamMemberOf;
-use Database\Seeders\AliasSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\MinimalUserSeeder;
 use MetadataManagementController as MMC;
-use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class TeamTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -31,12 +25,6 @@ class TeamTest extends TestCase
         $this->commonSetUp();
 
         Team::flushEventListeners();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-            AliasSeeder::class,
-        ]);
 
         $this->metadata = $this->getMetadata();
     }

@@ -7,16 +7,11 @@ use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\MinimalUserSeeder;
 
 class AdminDatasetControllerTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
@@ -26,11 +21,6 @@ class AdminDatasetControllerTest extends TestCase
     protected function setUp(): void
     {
         $this->commonSetUp();
-        $this->seed([
-            MinimalUserSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-        ]);
     }
 
     public function testTriggerTermExtractionWithDefaults()

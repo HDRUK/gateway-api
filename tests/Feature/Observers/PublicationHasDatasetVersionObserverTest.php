@@ -8,19 +8,11 @@ use App\Models\Dataset;
 use App\Models\Publication;
 use App\Models\DatasetVersion;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\PublicationSeeder;
-use Database\Seeders\TeamHasUserSeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
 use App\Models\PublicationHasDatasetVersion;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Observers\PublicationHasDatasetVersionObserver;
 
 class PublicationHasDatasetVersionObserverTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -32,15 +24,6 @@ class PublicationHasDatasetVersionObserverTest extends TestCase
         Dataset::flushEventListeners();
         DatasetVersion::flushEventListeners();
         Publication::flushEventListeners();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-            TeamHasUserSeeder::class,
-            PublicationSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-        ]);
     }
 
     public function testPublicationHasDatasetVersionObserverCreatedEventTriggersElasticIndexing()

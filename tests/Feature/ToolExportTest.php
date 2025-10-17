@@ -4,14 +4,19 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Exports\ToolListExport;
+use Tests\Traits\MockExternalApis;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 
 class ToolExportTest extends TestCase
 {
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
+
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
     }
 
     public function test_generates_excel_dataset_download_type_list(): void

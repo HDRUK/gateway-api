@@ -5,13 +5,9 @@ namespace Tests\Feature;
 use App\Models\License;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\LicenseSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class LicenseTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -23,11 +19,6 @@ class LicenseTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            LicenseSeeder::class,
-        ]);
     }
 
     public function test_get_all_licenses_with_success(): void

@@ -11,7 +11,7 @@ return new class () extends Migration {
     public function up(): void
     {
         Schema::table('dur', function (Blueprint $table) {
-            $table->text('project_title')->change();
+            $table->text('project_title')->nullable()->change();
         });
     }
 
@@ -22,7 +22,7 @@ return new class () extends Migration {
     {
         if (Schema::hasTable('dur')) {
             Schema::table('dur', function (Blueprint $table) {
-                $table->string('project_title')->change();
+                $table->string('project_title')->nullable()->change();
             });
         }
     }

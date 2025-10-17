@@ -11,17 +11,12 @@ use Illuminate\Support\Carbon;
 use App\Jobs\LinkageExtraction;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
-use Database\Seeders\EmailTemplateSeeder;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Queue;
-use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Support\Facades\Storage;
-use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
@@ -41,12 +36,6 @@ class DatasetTest extends TestCase
 
         Dataset::flushEventListeners();
         DatasetVersion::flushEventListeners();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-            EmailTemplateSeeder::class,
-        ]);
 
         $this->metadata = $this->getMetadata();
         $this->metadataAlt = $this->metadata;
@@ -86,6 +75,7 @@ class DatasetTest extends TestCase
      */
     public function test_get_all_team_datasets_with_success(): void
     {
+        $initialDatasetCount = Dataset::count();
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
             'POST',
@@ -274,7 +264,7 @@ class DatasetTest extends TestCase
         );
         $response->assertStatus(200);
 
-        $this->assertCount(3, $response['data']);
+        $this->assertCount($initialDatasetCount + 3, $response['data']);
         $response->assertJsonStructure([
             'current_page',
             'data',

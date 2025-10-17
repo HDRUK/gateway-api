@@ -2,17 +2,12 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
 use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\ProgrammingPackageSeeder;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ProgrammingPackageTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -22,11 +17,6 @@ class ProgrammingPackageTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            ProgrammingPackageSeeder::class,
-        ]);
     }
 
     /**

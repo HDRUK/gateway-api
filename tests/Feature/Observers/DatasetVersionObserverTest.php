@@ -8,14 +8,10 @@ use App\Models\Dataset;
 use App\Models\TeamHasUser;
 use App\Models\DatasetVersion;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\MinimalUserSeeder;
 use App\Observers\DatasetVersionObserver;
-use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetVersionObserverTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -28,30 +24,22 @@ class DatasetVersionObserverTest extends TestCase
         $this->commonSetUp();
 
         Dataset::flushEventListeners();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-        ]);
+        DatasetVersion::flushEventListeners();
 
         $this->metadata = $this->getMetadata();
         $this->metadataAlt = $this->metadata;
         $this->metadataAlt['metadata']['summary']['title'] = 'ABC title';
+
+        $this->observer = Mockery::mock(DatasetVersionObserver::class)->makePartial();
+
     }
 
     public function testDatasetVersionObserverCreatedEventTriggersElasticDatasetVersion()
     {
-        // Create a mock for the observer
-        $observerMock = Mockery::mock(DatasetVersionObserver::class)->makePartial();
-
         // Mock the elasticDatasetVersion method
-        $observerMock->shouldReceive('elasticDatasetVersion')
+        $this->observer->shouldReceive('elasticDatasetVersion')
             ->once()
             ->with(Mockery::type(DatasetVersion::class));
-
-
-        // Detach any default observers to prevent conflicts
-        DatasetVersion::flushEventListeners();
 
         // Create a dataset and dataset version
         $teamHasUser = TeamHasUser::all()->random();
@@ -70,7 +58,7 @@ class DatasetVersionObserverTest extends TestCase
             'metadata' => $this->metadata,
         ]);
 
-        $observerMock->created($datasetVersion);
+        $this->observer->created($datasetVersion);
 
         // Assertions
         $this->assertDatabaseHas('datasets', [
@@ -82,22 +70,14 @@ class DatasetVersionObserverTest extends TestCase
             'id' => $datasetVersion->id,
             'dataset_id' => $dataset->id,
         ]);
-
-        Mockery::close();
     }
 
     public function testDatasetVersionObserverUpdatedEventTriggersElasticDatasetVersion()
     {
-        // Create a mock for the observer
-        $observerMock = Mockery::mock(DatasetVersionObserver::class)->makePartial();
-
         // Mock the elasticDatasetVersion method
-        $observerMock->shouldReceive('elasticDatasetVersion')
+        $this->observer->shouldReceive('elasticDatasetVersion')
             ->once()
             ->with(Mockery::type(DatasetVersion::class));
-
-        // Detach any default observers to prevent conflicts
-        DatasetVersion::flushEventListeners();
 
         // Create a dataset and dataset version
         $teamHasUser = TeamHasUser::all()->random();
@@ -121,7 +101,7 @@ class DatasetVersionObserverTest extends TestCase
         $datasetVersion->save();
 
         // Manually trigger the updated method on the observer
-        $observerMock->updated($datasetVersion);
+        $this->observer->updated($datasetVersion);
 
         // Assertions
         $this->assertDatabaseHas('datasets', [
@@ -140,21 +120,14 @@ class DatasetVersionObserverTest extends TestCase
 
     public function testDatasetVersionObserverDeletedEventTriggersElasticDatasetVersion()
     {
-        // Create a mock for the observer
-        $observerMock = Mockery::mock(DatasetVersionObserver::class)->makePartial();
-
         // Mock the elasticDatasetVersion method
-        $observerMock->shouldReceive('elasticDatasetVersion')
+        $this->observer->shouldReceive('elasticDatasetVersion')
             ->once()
             ->with(Mockery::type(DatasetVersion::class));
-
-        // Detach any default observers to prevent conflicts
-        DatasetVersion::flushEventListeners();
 
         // Create a dataset and dataset version
         $teamHasUser = TeamHasUser::all()->random();
         $dataset = Dataset::create([
-            'id' => 1,
             'user_id' => $teamHasUser->user_id,
             'team_id' => $teamHasUser->team_id,
             'create_origin' => Dataset::ORIGIN_MANUAL,
@@ -168,10 +141,10 @@ class DatasetVersionObserverTest extends TestCase
             'metadata' => $this->metadata,
         ]);
 
-        DatasetVersion::where('id', 1)->delete();
+        DatasetVersion::where('id', $datasetVersion->id)->delete();
 
         // Manually trigger the deleted method on the observer
-        $observerMock->deleted($datasetVersion);
+        $this->observer->deleted($datasetVersion);
 
         // Assertions
         $this->assertDatabaseHas('datasets', [

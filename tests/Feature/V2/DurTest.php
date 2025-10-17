@@ -10,27 +10,13 @@ use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Publication;
 use Illuminate\Support\Carbon;
-use Database\Seeders\DurSeeder;
 use Tests\Traits\Authorization;
 use Tests\Traits\Helpers;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\ToolSeeder;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\LicenseSeeder;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\EmailTemplateSeeder;
-use Database\Seeders\CollectionSeeder;
-use Database\Seeders\PublicationSeeder;
-use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Support\Facades\Storage;
-use Database\Seeders\TypeCategorySeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DurTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
     use Helpers;
     use MockExternalApis {
@@ -116,21 +102,6 @@ class DurTest extends TestCase
         $this->commonSetUp();
 
         Dur::flushEventListeners();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            KeywordSeeder::class,
-            DurSeeder::class,
-            PublicationSeeder::class,
-            LicenseSeeder::class,
-            TypeCategorySeeder::class,
-            ToolSeeder::class,
-            CollectionSeeder::class,
-            EmailTemplateSeeder::class,
-        ]);
 
         // Generate non-admin user for general usage
         $this->authorisationUser(false);
@@ -428,6 +399,7 @@ class DurTest extends TestCase
             ],
             $this->headerNonAdmin,
         );
+
         $responseCreateDurArchived->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
 
         /*

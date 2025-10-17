@@ -6,12 +6,9 @@ use Tests\TestCase;
 use App\Models\User;
 use Tests\Traits\MockExternalApis;
 use App\Http\Controllers\JwtController;
-use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class JwtControllerTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -21,10 +18,6 @@ class JwtControllerTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-        ]);
     }
 
     /**

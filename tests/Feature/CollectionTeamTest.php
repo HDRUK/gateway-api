@@ -14,35 +14,10 @@ use App\Models\Collection;
 use App\Models\CollectionHasUser;
 use App\Models\Publication;
 use App\Models\TeamHasUser;
-use Database\Seeders\DurSeeder;
-use Database\Seeders\TagSeeder;
-use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\LicenseSeeder;
-use Database\Seeders\CategorySeeder;
-use Database\Seeders\CollectionSeeder;
-use Database\Seeders\ApplicationSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\PublicationSeeder;
-use Database\Seeders\TeamHasUserSeeder;
-use Database\Seeders\TypeCategorySeeder;
-use Database\Seeders\EmailTemplateSeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\CollectionHasDurSeeder;
-use Database\Seeders\CollectionHasToolSeeder;
-use Database\Seeders\CollectionHasUserSeeder;
-use Database\Seeders\CollectionHasKeywordSeeder;
-use Database\Seeders\DurHasDatasetVersionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Database\Seeders\CollectionHasPublicationSeeder;
-use Database\Seeders\CollectionHasDatasetVersionSeeder;
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class CollectionTeamTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -65,32 +40,6 @@ class CollectionTeamTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            TeamHasUserSeeder::class,
-            ApplicationSeeder::class,
-            CollectionSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            KeywordSeeder::class,
-            CategorySeeder::class,
-            TypeCategorySeeder::class,
-            LicenseSeeder::class,
-            ToolSeeder::class,
-            TagSeeder::class,
-            DurSeeder::class,
-            DurHasDatasetVersionSeeder::class,
-            CollectionHasKeywordSeeder::class,
-            CollectionHasDatasetVersionSeeder::class,
-            CollectionHasToolSeeder::class,
-            CollectionHasDurSeeder::class,
-            PublicationSeeder::class,
-            PublicationHasDatasetVersionSeeder::class,
-            CollectionHasPublicationSeeder::class,
-            CollectionHasUserSeeder::class,
-            EmailTemplateSeeder::class,
-        ]);
 
         $this->authorisationUser(false);
         $this->nonAdminJwt = $this->getAuthorisationJwt(false);
@@ -963,7 +912,7 @@ class CollectionTeamTest extends TestCase
         return $return;
     }
 
-    private function getNonAdminUserAsCustodianTeamAdminInTeam(mixed $jwt = null, Team $team = null)
+    private function getNonAdminUserAsCustodianTeamAdminInTeam(mixed $jwt = null, ?Team $team = null)
     {
         if (!$jwt) {
             $jwt = $this->nonAdminJwt;

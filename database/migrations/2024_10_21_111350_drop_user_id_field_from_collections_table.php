@@ -14,10 +14,9 @@ return new class () extends Migration {
     {
         Schema::disableForeignKeyConstraints();
 
-        $foreignKeys = $this->listTableForeignKeys('collections');
-        if (in_array('collections_user_id_foreign', $foreignKeys)) {
-            DB::statement('ALTER TABLE `collections` DROP FOREIGN KEY `collections_user_id_foreign`');
-        }
+        Schema::table('collections', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+        });
 
         if (Schema::hasColumn('collections', 'user_id')) {
             $collections = Collection::select(['id', 'user_id'])->get();
@@ -33,7 +32,8 @@ return new class () extends Migration {
             }
 
             Schema::table('collections', function (Blueprint $table) {
-                $table->dropColumn('user_id');
+                $table->dropIndex(['user_id']);
+                $table->dropColumn(['user_id']);
             });
         }
 
@@ -68,12 +68,4 @@ return new class () extends Migration {
         Schema::enableForeignKeyConstraints();
     }
 
-    public function listTableForeignKeys($table)
-    {
-        $conn = Schema::getConnection()->getDoctrineSchemaManager();
-
-        return array_map(function ($key) {
-            return $key->getName();
-        }, $conn->listTableForeignKeys($table));
-    }
 };

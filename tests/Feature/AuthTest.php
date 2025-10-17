@@ -5,12 +5,14 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Traits\MockExternalApis;
 
 class AuthTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public const TEST_URL_AUTH = '/api/v1/auth';
 
@@ -21,7 +23,7 @@ class AuthTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->user = [
             'name' => Config::get('constants.test.user.name'),
