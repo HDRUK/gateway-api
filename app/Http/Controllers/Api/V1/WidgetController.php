@@ -11,6 +11,7 @@ use App\Models\Dataset;
 use App\Models\Collection;
 use App\Models\Tool;
 use App\Models\Dur;
+use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Traits\LoggingContext;
@@ -138,8 +139,27 @@ class WidgetController extends Controller
                 return response()->json(['message' => 'not found'], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
             }
 
+            $transformed = $widget->toArray();
 
-            return response()->json([ 'data' => $widget]);
+            foreach ([
+                'included_datasets',
+                'included_data_uses',
+                'included_scripts',
+                'included_collections',
+                'data_custodian_entities_ids',
+                'permitted_domains',
+            ] as $field) {
+                if (!empty($transformed[$field])) {
+                    $transformed[$field] = array_filter(
+                        array_map('trim', explode(',', $transformed[$field]))
+                    );
+                } else {
+                    $transformed[$field] = [];
+                }
+            }
+
+            return response()->json(['data' => $transformed], Config::get('statuscodes.STATUS_OK.code'));
+
 
         } catch (Exception $e) {
             Auditor::log([
