@@ -434,7 +434,7 @@ class WidgetController extends Controller
      *          required=true,
      * @OA\JsonContent(
      *         required={"widget_name"},
-     *         @OA\Property(property="widget_name", type="string", example="Cohort Dashboard"),
+     *         @OA\Property(property="widget_name", type="string", example="A really nice name"),
      *         @OA\Property(property="size_width", type="integer", example=400),
      *         @OA\Property(property="size_height", type="integer", example=300),
      *         @OA\Property(property="unit", type="string", enum={"px","%","rem"}, example="px"),
