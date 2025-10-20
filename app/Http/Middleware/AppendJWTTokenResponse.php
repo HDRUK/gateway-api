@@ -17,6 +17,8 @@ use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Token\Parser;
 use Lcobucci\JWT\Signer\Key\InMemory;
 
+use function Laravel\Prompts\error;
+
 class AppendJWTTokenResponse
 {
     use CustomIdTokenTrait;
@@ -42,6 +44,7 @@ class AppendJWTTokenResponse
             // Configure the parser. No validation needed, just parsing.
             $config = Configuration::forSymmetricSigner($signer, $key);
             $token = $config->parser()->parse($content['access_token']);
+            error_log('access_token=' . $content['access_token']);
 
             $jwtClass = new JwtController();
             /** @phpstan-ignore-next-line */

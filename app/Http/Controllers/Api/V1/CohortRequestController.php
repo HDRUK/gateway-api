@@ -1165,6 +1165,9 @@ class CohortRequestController extends Controller
      */
     public function checkAccess(Request $request)
     {
+
+        error_log("\033[31mCALLING CHECK ACCESS\033[0m");
+
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 

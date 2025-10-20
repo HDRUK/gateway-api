@@ -33,6 +33,9 @@ class OAuth2Controller extends Controller
         Request $request,
         ClientRepository $clients,
     ) {
+        error_log('session=' . session('cr_uid'));
+        error_log('env=' . env('CR_UID_DEBUG'));
+
         $userId = session('cr_uid') ?? env('CR_UID_DEBUG');
 
         if (!$userId) {
