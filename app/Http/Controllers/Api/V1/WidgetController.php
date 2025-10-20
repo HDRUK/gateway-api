@@ -296,21 +296,34 @@ class WidgetController extends Controller
 
 
             $datasets = Dataset::whereIn('id', $datasetIds)
-                ->get(['id', 'team_id'])
-                ->map(fn ($d) => [
-                    'id' => $d->id,
-                    'title' => $d->getTitle(),
-                    'team_id' => $d->team_id,
-                ]);
+             ->get(['id', 'team_id'])
+             ->map(fn ($d) => [
+                 'id' => $d->id,
+                 'name' => $d->getTitle(),
+
+                 'team_id' => $d->team_id,
+             ]);
 
             $dataUses = Dur::whereIn('id', $dataUseIds)
-                ->get(['id', 'project_title']);
+                ->get(['id', 'project_title'])
+                ->map(fn ($du) => [
+                    'id' => $du->id,
+                    'name' => $du->project_title,
+                ]);
 
             $scripts = Tool::whereIn('id', $scriptIds)
-                ->get(['id', 'name']);
+                ->get(['id', 'name'])
+                ->map(fn ($s) => [
+                    'id' => $s->id,
+                    'name' => $s->name,
+                ]);
 
             $collections = Collection::whereIn('id', $collectionIds)
-                ->get(['id', 'name']);
+                ->get(['id', 'name'])
+                ->map(fn ($c) => [
+                    'id' => $c->id,
+                    'name' => $c->name,
+                ]);
 
 
             return response()->json([
