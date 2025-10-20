@@ -54,7 +54,7 @@ class WidgetController extends Controller
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         try {
-            $widgets = Widget::with(['team'])
+            $widgets = Widget::with(['team:id,name'])
                 ->where('team_id', $teamId)
                 ->get([
                     'id',
