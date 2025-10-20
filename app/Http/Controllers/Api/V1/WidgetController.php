@@ -432,17 +432,58 @@ class WidgetController extends Controller
      *      ),
      *      @OA\RequestBody(
      *          required=true,
-     *          @OA\JsonContent(
-     *              required={"widget_name"},
-     *              @OA\Property(property="widget_name", type="string", example="Cohort Dashboard"),
-     *              @OA\Property(property="size_width", type="integer", example=400),
-     *              @OA\Property(property="size_height", type="integer", example=300),
-     *              @OA\Property(property="unit", type="string", example="px"),
-     *              @OA\Property(property="include_search_bar", type="boolean", example=true),
-     *              @OA\Property(property="include_cohort_link", type="boolean", example=false),
-     *              @OA\Property(property="keep_proportions", type="boolean", example=true),
-     *              @OA\Property(property="permitted_domains", type="string", example="example.com,example.org")
-     *          )
+     * @OA\JsonContent(
+     *         required={"widget_name"},
+     *         @OA\Property(property="widget_name", type="string", example="Cohort Dashboard"),
+     *         @OA\Property(property="size_width", type="integer", example=400),
+     *         @OA\Property(property="size_height", type="integer", example=300),
+     *         @OA\Property(property="unit", type="string", enum={"px","%","rem"}, example="px"),
+     *         @OA\Property(property="include_search_bar", type="boolean", example=true),
+     *         @OA\Property(property="include_cohort_link", type="boolean", example=false),
+     *         @OA\Property(property="keep_proportions", type="boolean", example=true),
+     *
+     *         @OA\Property(
+     *             property="permitted_domains",
+     *             type="array",
+     *             @OA\Items(type="string", example="example.com"),
+     *             example={"example.com", "example.org"}
+     *         ),
+     *
+     *         @OA\Property(
+     *             property="included_datasets",
+     *             type="array",
+     *             @OA\Items(type="integer", example=1),
+     *             example={1,2,3}
+     *         ),
+     *
+     *         @OA\Property(
+     *             property="included_data_uses",
+     *             type="array",
+     *             @OA\Items(type="integer", example=10),
+     *             example={10,11}
+     *         ),
+     *
+     *         @OA\Property(
+     *             property="included_scripts",
+     *             type="array",
+     *             @OA\Items(type="integer", example=5),
+     *             example={5,6}
+     *         ),
+     *
+     *         @OA\Property(
+     *             property="included_collections",
+     *             type="array",
+     *             @OA\Items(type="integer", example=99),
+     *             example={99,100}
+     *         ),
+     *         @OA\Property(
+     *             property="data_custodian_entities_ids",
+     *             type="array",
+     *             @OA\Items(type="integer", example=99),
+     *             example={99,100}
+     *         ),
+     *
+     *     )
      *      ),
      *      @OA\Response(
      *          response=201,
@@ -484,16 +525,29 @@ class WidgetController extends Controller
                 'include_search_bar'   => 'boolean',
                 'include_cohort_link'  => 'boolean',
                 'keep_proportions'     => 'boolean',
-                'permitted_domains'    => 'nullable|string',
-                'data_custodian_entities_ids' => 'nullable|string',
-                'included_datasets'    => 'nullable|string',
-                'included_data_uses'   => 'nullable|string',
-                'included_scripts'     => 'nullable|string',
-                'included_collections' => 'nullable|string',
+                'permitted_domains'    => 'nullable|array',
+                'data_custodian_entities_ids' => 'nullable|array',
+                'included_datasets'    => 'nullable|array',
+                'included_data_uses'   => 'nullable|array',
+                'included_scripts'     => 'nullable|array',
+                'included_collections' => 'nullable|array',
             ]);
 
             $validated['team_id'] = $teamId;
+            $arrayFields = [
+                        'included_datasets',
+                        'included_data_uses',
+                        'included_scripts',
+                        'included_collections',
+                        'permitted_domains',
+                        'data_custodian_entities_ids'
+                    ];
 
+            foreach ($arrayFields as $field) {
+                if (isset($validated[$field]) && is_array($validated[$field])) {
+                    $validated[$field] = implode(',', array_filter($validated[$field]));
+                }
+            }
             $widget = Widget::create($validated);
 
             return response()->json([
@@ -516,57 +570,92 @@ class WidgetController extends Controller
     }
 
     /**
- * @OA\Patch(
- *      path="/api/v1/teams/{teamId}/widgets/{id}",
- *      operationId="update_widget",
- *      summary="Update a widget",
- *      description="Update specific fields of a widget belonging to a given team",
- *      tags={"Widgets"},
- *      security={{"bearerAuth":{}}},
- *      @OA\Parameter(
- *          name="teamId",
- *          in="path",
- *          description="Team ID",
- *          required=true,
- *          example="5",
- *          @OA\Schema(type="integer")
- *      ),
- *      @OA\Parameter(
- *          name="id",
- *          in="path",
- *          description="Widget ID",
- *          required=true,
- *          example="12",
- *          @OA\Schema(type="integer")
- *      ),
- *      @OA\RequestBody(
- *          required=true,
- *          @OA\JsonContent(
- *              @OA\Property(property="widget_name", type="string", example="Updated Widget"),
- *              @OA\Property(property="size_width", type="integer", example=500),
- *              @OA\Property(property="size_height", type="integer", example=300),
- *              @OA\Property(property="unit", type="string", example="px"),
- *              @OA\Property(property="include_search_bar", type="boolean", example=true),
- *              @OA\Property(property="include_cohort_link", type="boolean", example=false)
- *          )
- *      ),
- *      @OA\Response(
- *          response=200,
- *          description="Widget updated successfully",
- *          @OA\JsonContent(
- *              @OA\Property(property="message", type="string", example="success"),
- *              @OA\Property(property="data", type="object")
- *          )
- *      ),
- *      @OA\Response(
- *          response=404,
- *          description="Widget not found",
- *          @OA\JsonContent(
- *              @OA\Property(property="message", type="string", example="not found")
- *          )
- *      )
- * )
- */
+     * @OA\Patch(
+     *     path="/api/v1/teams/{teamId}/widgets/{id}",
+     *     tags={"Widgets"},
+     *     summary="Update an existing widget",
+     *     description="Updates an existing widget for a given team ID",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         required=true,
+     *         description="Team ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Widget ID",
+     *         @OA\Schema(type="integer", example=12)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=false,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="widget_name", type="string", example="Updated Widget Name"),
+     *             @OA\Property(property="size_width", type="integer", example=600),
+     *             @OA\Property(property="size_height", type="integer", example=400),
+     *             @OA\Property(property="unit", type="string", enum={"px","%","rem"}, example="px"),
+     *             @OA\Property(property="include_search_bar", type="boolean", example=true),
+     *             @OA\Property(property="include_cohort_link", type="boolean", example=false),
+     *             @OA\Property(property="keep_proportions", type="boolean", example=true),
+     *
+     *             @OA\Property(
+     *                 property="permitted_domains",
+     *                 type="array",
+     *                 @OA\Items(type="string", example="example.com"),
+     *                 example={"example.com", "example.org"}
+     *             ),
+     *
+     *             @OA\Property(
+     *                 property="included_datasets",
+     *                 type="array",
+     *                 @OA\Items(type="integer", example=1),
+     *                 example={1,2,3}
+     *             ),
+     *
+     *             @OA\Property(
+     *                 property="included_data_uses",
+     *                 type="array",
+     *                 @OA\Items(type="integer", example=10),
+     *                 example={10,11}
+     *             ),
+     *
+     *             @OA\Property(
+     *                 property="data_custodian_entities_ids",
+     *                 type="array",
+     *                 @OA\Items(type="integer", example=10),
+     *                 example={10,11}
+     *             ),
+     *
+     *             @OA\Property(
+     *                 property="included_scripts",
+     *                 type="array",
+     *                 @OA\Items(type="integer", example=5),
+     *                 example={5,6}
+     *             ),
+     *
+     *             @OA\Property(
+     *                 property="included_collections",
+     *                 type="array",
+     *                 @OA\Items(type="integer", example=99),
+     *                 example={99,100}
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Widget successfully updated",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Widget not found"),
+     *     @OA\Response(response=500, description="Internal server error")
+     * )
+     */
     public function update(Request $request, int $teamId, int $id)
     {
         $input = $request->all();
@@ -584,15 +673,26 @@ class WidgetController extends Controller
             }
 
             $validated = $request->validate([
-                'widget_name'          => 'sometimes|string|max:255',
-                'size_width'           => 'sometimes|integer',
-                'size_height'          => 'sometimes|integer',
-                'unit'                 => 'sometimes|string|in:px,%,rem',
-                'include_search_bar'   => 'sometimes|boolean',
-                'include_cohort_link'  => 'sometimes|boolean',
-                'keep_proportions'     => 'sometimes|boolean',
-                'permitted_domains'    => 'sometimes|string|nullable',
-            ]);
+            'widget_name'          => 'sometimes|string|max:255',
+            'size_width'           => 'sometimes|integer',
+            'size_height'          => 'sometimes|integer',
+            'unit'                 => 'sometimes|string|in:px,%,rem',
+            'include_search_bar'   => 'sometimes|boolean',
+            'include_cohort_link'  => 'sometimes|boolean',
+            'keep_proportions'     => 'sometimes|boolean',
+            'permitted_domains'    => 'sometimes|array|nullable',
+            'included_datasets'    => 'sometimes|array|nullable',
+            'included_data_uses'   => 'sometimes|array|nullable',
+            'included_scripts'     => 'sometimes|array|nullable',
+            'included_collections' => 'sometimes|array|nullable',
+            'data_custodian_entities_ids' => 'sometimes|array|nullable',
+
+        ]);
+            foreach (['permitted_domains', 'included_datasets', 'included_data_uses', 'included_scripts', 'included_collections', 'data_custodian_entities_ids'] as $field) {
+                if (isset($validated[$field]) && is_array($validated[$field])) {
+                    $validated[$field] = implode(',', $validated[$field]);
+                }
+            }
 
             $widget->update($validated);
 
