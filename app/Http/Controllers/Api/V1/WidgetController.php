@@ -259,6 +259,20 @@ class WidgetController extends Controller
      *          description="Widget ID",
      *          @OA\Schema(type="integer")
      *      ),
+     *     @OA\Parameter(
+     *         name="domain_origin",
+     *         in="query",
+     *         required=true,
+     *         description="Optional domain URL to check against the widget's permitted_domains list",
+     *         @OA\Schema(type="string", example="https://example.com")
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden — domain not permitted for this widget",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="forbidden — domain not permitted for this widget")
+     *         )
+     *     ),
      *      @OA\Response(
      *          response=200,
      *          description="Widget data retrieved successfully",
@@ -275,13 +289,36 @@ class WidgetController extends Controller
     public function retrieveData(Request $request, int $teamId, int $id)
     {
         try {
+            $domainOrigin = $request->query('domain_origin');
+            if (!$domainOrigin) {
+                return response()->json(['message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message')], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+            }
             $widget = Widget::where('id', $id)
                 ->where('team_id', $teamId)
                 ->first();
 
-            if (! $widget) {
-                return response()->json(['message' => 'not found'], 404);
+            if (!$widget) {
+                return response()->json(['message' =>  Config::get('statuscodes.STATUS_NOT_FOUND.message')], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
             }
+
+            if ($domainOrigin) {
+                $permittedDomains = is_string($widget->permitted_domains)
+                    ? array_map('trim', explode(',', $widget->permitted_domains))
+                    : [];
+
+                $normalizedOrigin = rtrim(preg_replace('#^https?://#', '', strtolower($domainOrigin)), '/');
+
+                $allowed = collect($permittedDomains)
+                    ->map(fn ($d) => rtrim(preg_replace('#^https?://#', '', strtolower($d)), '/'))
+                    ->contains(fn ($d) => $normalizedOrigin === $d);
+
+                if (!$allowed) {
+                    return response()->json([
+                        'message' => 'forbidden — domain not permitted for this widget',
+                    ], Config::get('statuscodes.STATUS__FORBIDDEN.code'));
+                }
+            }
+
 
             $datasetIds     = is_string($widget->included_datasets) ? array_filter(explode(',', $widget->included_datasets)) : ($widget->included_datasets ?? []);
             $dataUseIds     = is_string($widget->included_data_uses) ? array_filter(explode(',', $widget->included_data_uses)) : ($widget->included_data_uses ?? []);
@@ -331,7 +368,7 @@ class WidgetController extends Controller
                 'data_uses' => $dataUses,
                 'scripts' => $scripts,
                 'collections' => $collections,
-            ], 200);
+            ], Config::get('statuscodes.STATUS_OK.code'));
 
         } catch (Exception $e) {
             \Log::error('Error retrieving widget data', [
@@ -340,7 +377,7 @@ class WidgetController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json(['message' => 'error'], 500);
+            return response()->json(['message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message')], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
         }
     }
 
