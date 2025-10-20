@@ -8,22 +8,19 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
+use Tests\Traits\MockExternalApis;
 use App\Http\Traits\EnquiriesTrait;
-use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EnquiriesManagementControllerTest extends TestCase
 {
     use EnquiriesTrait;
-    use RefreshDatabase;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public function setUp(): void
     {
-        parent::setUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-        ]);
+        $this->commonSetUp();
     }
 
     public function test_it_can_determine_dar_managers_from_team_id(): void

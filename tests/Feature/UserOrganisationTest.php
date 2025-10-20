@@ -4,15 +4,15 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SectorSeeder;
 use Tests\Traits\Authorization;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Traits\MockExternalApis;
 
 class UserOrganisationTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public const TEST_URL = '/api/v1/users/organisations';
 
@@ -25,12 +25,8 @@ class UserOrganisationTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            SectorSeeder::class,
-        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

@@ -4,21 +4,18 @@ namespace Tests\Feature;
 
 use App\Models\License;
 use Tests\TestCase;
-use Database\Seeders\LicenseSeeder;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Traits\MockExternalApis;
 
 class UpdateLicensesTest extends TestCase
 {
-    use RefreshDatabase;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public function setUp(): void
     {
-        parent::setUp();
-
-        $this->seed([
-            LicenseSeeder::class,
-        ]);
+        $this->commonSetUp();
     }
 
     public function test_update_licenses_command_handles_success_response()

@@ -4,12 +4,14 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use Tests\Traits\Authorization;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Traits\MockExternalApis;
 
 class ValidationTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public const TEST_URL = '/api/v1/features';
 
@@ -22,9 +24,8 @@ class ValidationTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
-        $this->seed([]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

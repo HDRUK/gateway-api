@@ -8,20 +8,17 @@ use App\Models\Team;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
 use App\Http\Enums\TeamMemberOf;
-use Database\Seeders\SectorSeeder;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\TeamHasUserSeeder;
 use MetadataManagementController as MMC;
-use Database\Seeders\DatasetVersionSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class FormHydrationTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
+
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     protected $header = [];
     protected $metadata;
@@ -34,18 +31,9 @@ class FormHydrationTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         DatasetVersion::flushEventListeners();
-
-        $this->seed([
-            SectorSeeder::class,
-            MinimalUserSeeder::class,
-            TeamHasUserSeeder::class,
-            KeywordSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-        ]);
 
         $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v2p0_dataset_min.json', 0, null);
         $json = json_decode($jsonFile, true);

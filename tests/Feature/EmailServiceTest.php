@@ -5,25 +5,22 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use App\Jobs\SendEmailJob;
 use App\Models\EmailTemplate;
+use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use Database\Seeders\EmailTemplateSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class EmailServiceTest extends TestCase
 {
-    use RefreshDatabase;
     use WithFaker;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public function setUp(): void
     {
-        parent::setUp();
-
-        $this->seed([
-            EmailTemplateSeeder::class,
-        ]);
+        $this->commonSetUp();
 
         Bus::fake();
     }

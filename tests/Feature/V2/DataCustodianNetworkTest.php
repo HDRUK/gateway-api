@@ -3,38 +3,13 @@
 namespace Tests\Feature\V2;
 
 use Tests\TestCase;
-use Database\Seeders\DurSeeder;
-use Database\Seeders\TagSeeder;
 use App\Models\DataProviderColl;
-use Database\Seeders\TeamSeeder;
-use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\LicenseSeeder;
 use ElasticClientController as ECC;
-use Database\Seeders\CategorySeeder;
-use Database\Seeders\CollectionSeeder;
 use App\Models\DataProviderCollHasTeam;
-use Database\Seeders\ApplicationSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\PublicationSeeder;
-use Database\Seeders\TeamHasUserSeeder;
-use Database\Seeders\TypeCategorySeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\CollectionHasDurSeeder;
-use Database\Seeders\CollectionHasToolSeeder;
-use Database\Seeders\CollectionHasUserSeeder;
-use Database\Seeders\DataProviderCollsSeeder;
-use Database\Seeders\CollectionHasKeywordSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Database\Seeders\CollectionHasPublicationSeeder;
-use Database\Seeders\CollectionHasDatasetVersionSeeder;
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class DataCustodianNetworkTest extends TestCase
 {
-    use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -46,32 +21,6 @@ class DataCustodianNetworkTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            TeamSeeder::class,
-            TeamHasUserSeeder::class,
-            DataProviderCollsSeeder::class,
-            ApplicationSeeder::class,
-            CollectionSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            KeywordSeeder::class,
-            CategorySeeder::class,
-            TypeCategorySeeder::class,
-            LicenseSeeder::class,
-            ToolSeeder::class,
-            TagSeeder::class,
-            DurSeeder::class,
-            CollectionHasKeywordSeeder::class,
-            CollectionHasDatasetVersionSeeder::class,
-            CollectionHasToolSeeder::class,
-            CollectionHasDurSeeder::class,
-            PublicationSeeder::class,
-            PublicationHasDatasetVersionSeeder::class,
-            CollectionHasPublicationSeeder::class,
-            CollectionHasUserSeeder::class,
-        ]);
     }
 
     public function test_get_all_data_custodian_networks_with_success(): void

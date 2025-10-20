@@ -5,7 +5,6 @@ namespace Tests\Traits;
 use Config;
 use Http\Mock\Client;
 use Nyholm\Psr7\Response;
-use Database\Seeders\SectorSeeder;
 use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
 use Illuminate\Support\Facades\Queue;
@@ -75,10 +74,6 @@ trait MockExternalApis
     {
         parent::setUp();
 
-        $this->seed([
-            SectorSeeder::class,
-        ]);
-
         Queue::fake([
             LinkageExtraction::class,
             TermExtraction::class
@@ -132,6 +127,15 @@ trait MockExternalApis
                 ['id' => 11, 'extracted_terms' => ['test', 'fake']],
                 201,
                 ['application/json']
+            )
+        ]);
+
+        Http::fake([
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/filters' => Http::response(
+                [
+                    200,
+                    ['application/json']
+                ]
             )
         ]);
 
@@ -1117,11 +1121,11 @@ trait MockExternalApis
                string $dataset,
                string $outputSchema,
                string $outputVersion,
-               string $inputSchema = null,
-               string $inputVersion = null,
+               ?string $inputSchema = null,
+               ?string $inputVersion = null,
                bool $validateInput = true,
                bool $validateOutput = true,
-               string $subsection = null
+               ?string $subsection = null
            ) {
                $metadata = json_decode($dataset, true)["metadata"];
                //mock translating alternative schemas via traser - just give it a new GWDM metadata

@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use Exception;
-use App\Models\Team;
 use App\Models\User;
 use App\Jobs\SendEmailJob;
 use App\Models\EmailTemplate;
@@ -157,7 +156,7 @@ class AliasReplyScannerService
         ];
 
         // Don't send an email to any user if it is their own message
-        $usersToNotify = array_filter($allUsersToNotify, function($entry) use ($senderEmail) {
+        $usersToNotify = array_filter($allUsersToNotify, function ($entry) use ($senderEmail) {
             $emailToUse = ($entry['user']['preferred_email'] === 'primary') ? $entry['user']['email'] : $entry['user']['secondary_email'];
             return $emailToUse !== $senderEmail;
         });

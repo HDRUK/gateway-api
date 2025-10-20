@@ -13,31 +13,11 @@ return new class () extends Migration {
     public function up()
     {
         Schema::table('libraries', function (Blueprint $table) {
-            $table->renameColumn('user_id', 'old_user_id');
-        });
+            $table->bigInteger('user_id')->unsigned()->nullable()->change();
+            $table->bigInteger('dataset_id')->unsigned()->nullable()->change();
 
-        Schema::table('libraries', function (Blueprint $table) {
-            $table->renameColumn('dataset_id', 'old_dataset_id');
-        });
-
-        Schema::table('libraries', function (Blueprint $table) {
-            $table->bigInteger('user_id')->unsigned()->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->bigInteger('dataset_id')->unsigned()->nullable();
             $table->foreign('dataset_id')->references('id')->on('datasets')->onDelete('cascade');
-        });
-
-        Schema::table('libraries', function (Blueprint $table) {
-            DB::statement("UPDATE libraries SET user_id = old_user_id");
-            DB::statement("UPDATE libraries SET dataset_id = old_dataset_id");
-        });
-
-        Schema::table('libraries', function (Blueprint $table) {
-            $table->dropColumn(['old_user_id']);
-        });
-
-        Schema::table('libraries', function (Blueprint $table) {
-            $table->dropColumn(['old_dataset_id']);
         });
     }
 
