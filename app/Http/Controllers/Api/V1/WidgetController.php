@@ -47,35 +47,48 @@ class WidgetController extends Controller
      */
     public function get(Request $request, int $teamId): JsonResponse
     {
-        //\Log::info('This is a log message.'. $teamId);
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         try {
-            $widgets = Widget::where('team_id', $teamId)
+            $widgets = Widget::with(['team:id,name'])
+                ->where('team_id', $teamId)
                 ->get([
                     'id',
                     'widget_name',
                     'size_width',
                     'size_height',
                     'updated_at',
-                    'unit'
-                ]);
+                    'unit',
+                    'team_id'
+                ])
+                ->map(function ($widget) {
+                    return [
+                        'id' => $widget->id,
+                        'widget_name' => $widget->widget_name,
+                        'size_width' => $widget->size_width,
+                        'size_height' => $widget->size_height,
+                        'updated_at' => $widget->updated_at,
+                        'unit' => $widget->unit,
+                        'team_id' => $widget->team_id,
+                        'team_name' => $widget->team->name,
+                    ];
+                });
 
-            return response()->json([ 'data' => $widgets]);
+            return response()->json(['data' => $widgets]);
 
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage(), $loggingContext);
 
+            \Log::info($e->getMessage(), $loggingContext);
             throw new Exception($e->getMessage());
         }
     }
