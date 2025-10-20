@@ -11,7 +11,7 @@ use App\Models\Dataset;
 use App\Models\Collection;
 use App\Models\Tool;
 use App\Models\Dur;
-use App\Models\Team;
+
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Traits\LoggingContext;
@@ -54,7 +54,7 @@ class WidgetController extends Controller
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         try {
-            $widgets = Widget::with(['team:id,name'])
+            $widgets = Widget::with(['team'])
                 ->where('team_id', $teamId)
                 ->get([
                     'id',
