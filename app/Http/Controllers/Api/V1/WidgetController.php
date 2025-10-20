@@ -216,19 +216,38 @@ class WidgetController extends Controller
                 ->get(['team_id', 'id'])
                 ->map(fn ($dataset) => [
                     'id' => $dataset->id,
-                    'title' => $dataset->getTitle(),
+                     'title' => $dataset->getTitle(),
                     'team_id' => $dataset->team_id,
+                    'team_name' => $dataset->team->name,
+
                 ]);
 
 
             $tools = Tool::whereIn('team_id', $teamIds)
-                ->get(['id', 'name', 'team_id']);
+                ->get(['id', 'name', 'team_id'])->map(fn ($s) => [
+                'id' => $s->id,
+                'name' => $s->name,
+                'team_id' => $s->team_id,
+                'team_name' => optional($s->team)->name,
+            ]);
 
             $collections = Collection::whereIn('team_id', $teamIds)
-                ->get(['id', 'name', 'team_id']);
+                ->get(['id', 'name', 'team_id'])->map(fn ($c) => [
+                'id' => $c->id,
+                'name' => $c->name,
+                'team_id' => $c->team_id,
+                'team_name' => optional($c->team)->name,
+            ]);
+            ;
 
             $durs = Dur::whereIn('team_id', $teamIds)
-                ->get(['id', 'project_title', 'team_id']);
+                ->get(['id', 'project_title', 'team_id'])->map(fn ($du) => [
+                'id' => $du->id,
+                'name' => $du->project_title,
+                'team_id' => $du->team_id,
+                'team_name' => optional($du->team)->name,
+            ]);
+            ;
 
             return response()->json([ 'data' => [
                 'datasets' => $datasets,
