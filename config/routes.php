@@ -188,6 +188,18 @@ return [
         ],
     ],
     [
+        'name' => 'widget',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/widgets/{id}/data',
+        'methodController' => 'WidgetController@retrieveData',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+       'constraint' => [
+          'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
         'name' => 'widgets-data',
         'method' => 'get',
         'path' => '/teams/{teamId}/widgets/data',

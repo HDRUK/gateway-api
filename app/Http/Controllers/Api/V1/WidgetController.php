@@ -151,7 +151,7 @@ class WidgetController extends Controller
      *      description="Fetch lightweight data (id, name, etc.) for multiple teams across datasets, tools, collections, and DURS",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
-     *          name="teamIds",
+     *          name="team_ids",
      *          in="query",
      *          required=true,
      *          description="Comma-separated list of team IDs to filter data",
@@ -172,7 +172,7 @@ class WidgetController extends Controller
      *          response=400,
      *          description="Invalid or missing teamIds parameter",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="teamIds parameter is required")
+     *              @OA\Property(property="message", type="string", example="team_ids parameter is required")
      *          )
      *      )
      * )
@@ -185,10 +185,10 @@ class WidgetController extends Controller
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         try {
-            $teamIdsParam = $request->query('teamIds');
+            $teamIdsParam = $request->query('team_ids');
             if (!$teamIdsParam) {
                 return response()->json([
-                    'message' => 'teamIds parameter is required',
+                    'message' => 'team_ids parameter is required',
                 ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
             }
 
@@ -200,9 +200,9 @@ class WidgetController extends Controller
             $teamIds = array_map('intval', $teamIds);
 
             $datasets = Dataset::whereIn('team_id', $teamIds)
-                ->get(['datasetid', 'team_id', 'id'])
+                ->get(['team_id', 'id'])
                 ->map(fn ($dataset) => [
-                    'datasetid' => $dataset->datasetid,
+                    'id' => $dataset->id,
                     'title' => $dataset->getTitle(),
                     'team_id' => $dataset->team_id,
                 ]);
@@ -237,6 +237,99 @@ class WidgetController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *      path="/api/v1/teams/{teamId}/widgets/{id}/data",
+     *      operationId="retrieve_widget_data",
+     *      summary="Retrieve data related to a widget",
+     *      description="Fetches datasets, data uses, scripts, and collections linked to a widget",
+     *      tags={"Widgets"},
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="teamId",
+     *          in="path",
+     *          required=true,
+     *          description="Team ID",
+     *          @OA\Schema(type="integer")
+     *      ),
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          required=true,
+     *          description="Widget ID",
+     *          @OA\Schema(type="integer")
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Widget data retrieved successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="datasets", type="array", @OA\Items(type="object")),
+     *              @OA\Property(property="data_uses", type="array", @OA\Items(type="object")),
+     *              @OA\Property(property="scripts", type="array", @OA\Items(type="object")),
+     *              @OA\Property(property="collections", type="array", @OA\Items(type="object"))
+     *          )
+     *      ),
+     *      @OA\Response(response=404, description="Widget not found")
+     * )
+     */
+    public function retrieveData(Request $request, int $teamId, int $id)
+    {
+        try {
+            $widget = Widget::where('id', $id)
+                ->where('team_id', $teamId)
+                ->first();
+
+            if (! $widget) {
+                return response()->json(['message' => 'not found'], 404);
+            }
+
+            $datasetIds     = is_string($widget->included_datasets) ? array_filter(explode(',', $widget->included_datasets)) : ($widget->included_datasets ?? []);
+            $dataUseIds     = is_string($widget->included_data_uses) ? array_filter(explode(',', $widget->included_data_uses)) : ($widget->included_data_uses ?? []);
+            $scriptIds      = is_string($widget->included_scripts) ? array_filter(explode(',', $widget->included_scripts)) : ($widget->included_scripts ?? []);
+            $collectionIds  = is_string($widget->included_collections) ? array_filter(explode(',', $widget->included_collections)) : ($widget->included_collections ?? []);
+
+
+            $datasetIds     = array_map('intval', $datasetIds);
+            $dataUseIds     = array_map('intval', $dataUseIds);
+            $scriptIds      = array_map('intval', $scriptIds);
+            $collectionIds  = array_map('intval', $collectionIds);
+
+
+            $datasets = Dataset::whereIn('id', $datasetIds)
+                ->get(['id', 'team_id'])
+                ->map(fn ($d) => [
+                    'id' => $d->id,
+                    'title' => $d->getTitle(),
+                    'team_id' => $d->team_id,
+                ]);
+
+            $dataUses = Dur::whereIn('id', $dataUseIds)
+                ->get(['id', 'project_title']);
+
+            $scripts = Tool::whereIn('id', $scriptIds)
+                ->get(['id', 'name']);
+
+            $collections = Collection::whereIn('id', $collectionIds)
+                ->get(['id', 'name']);
+
+
+            return response()->json([
+                'datasets' => $datasets,
+                'data_uses' => $dataUses,
+                'scripts' => $scripts,
+                'collections' => $collections,
+            ], 200);
+
+        } catch (Exception $e) {
+            \Log::error('Error retrieving widget data', [
+                'team_id' => $teamId,
+                'widget_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json(['message' => 'error'], 500);
+        }
+    }
 
 
     /**
