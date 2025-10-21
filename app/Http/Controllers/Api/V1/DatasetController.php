@@ -1376,9 +1376,6 @@ class DatasetController extends Controller
                     if (empty($rowDetails['metadata']) || !isset($rowDetails['metadata'])) {
                         // this needs refactoring to mark the metadata as corrupt or missing and
                         // then set them as draft and alert the FE
-
-                        // if your missing a dataset on the FE, its because this geezer
-                        // this has been put in to stop the BE blowing up on missing metadata.
                         unset($results[$key]);
                         continue;
                     }
