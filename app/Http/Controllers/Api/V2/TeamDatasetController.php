@@ -116,7 +116,6 @@ class TeamDatasetController extends Controller
 
             $teamDatasetIds = Dataset::where(['team_id' => $teamId, 'status' => strtoupper($status)])->pluck("id");
             $datasetIds = [];
-
             // If we've received a 'title' for the search, then only return
             // datasets that match that title
             if (!empty($filterTitle)) {
@@ -133,14 +132,21 @@ class TeamDatasetController extends Controller
             } else {
                 $datasetIds = $teamDatasetIds;
             }
-
             // Fetch metadata
             $datasets = Dataset::whereIn("id", $datasetIds)
                 ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
                 ->applySorting()
                 ->paginate((int) $perPage, ['*'], 'page');
 
-            foreach ($datasets as &$d) {
+
+            foreach ($datasets as $key => &$d) {
+                if (empty($d->latestMetadata) || !isset($d->latestMetadata['metadata'])) {
+                    // this needs refactoring to mark the metadata as corrupt or missing and
+                    // then set them as draft and alert the FE
+                    unset($datasets[$key]);
+                    continue;
+                }
+
                 $miniMetadata = $this->trimDatasets($d->latestMetadata['metadata'], [
                     'summary',
                     'required',
@@ -155,13 +161,11 @@ class TeamDatasetController extends Controller
                 $d['latest_metadata'] = $miniMetadata;
             }
 
-
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Team Dataset get all by status',
             ]);
-
             return response()->json(
                 $datasets
             );

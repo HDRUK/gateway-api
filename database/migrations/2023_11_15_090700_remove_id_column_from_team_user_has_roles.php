@@ -11,7 +11,7 @@ return new class () extends Migration {
     public function up(): void
     {
         // Create a new table without a primary key constraint
-         Schema::create('team_user_has_roles_tmp', function (Blueprint $table) {
+        Schema::create('team_user_has_roles_tmp', function (Blueprint $table) {
             $table->bigInteger('team_has_user_id')->unsigned();
             $table->bigInteger('role_id')->unsigned();
 
