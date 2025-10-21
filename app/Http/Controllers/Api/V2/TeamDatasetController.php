@@ -109,6 +109,7 @@ class TeamDatasetController extends Controller
 
         try {
             $withMetadata = $request->boolean('with_metadata', true);
+            \Log::info('here <<<<');
 
             $perPage = request('per_page', Config::get('constants.per_page'));
 
@@ -116,7 +117,7 @@ class TeamDatasetController extends Controller
 
             $teamDatasetIds = Dataset::where(['team_id' => $teamId, 'status' => strtoupper($status)])->pluck("id");
             $datasetIds = [];
-
+            \Log::info('here1 <<<<');
             // If we've received a 'title' for the search, then only return
             // datasets that match that title
             if (!empty($filterTitle)) {
@@ -133,14 +134,22 @@ class TeamDatasetController extends Controller
             } else {
                 $datasetIds = $teamDatasetIds;
             }
-
+            \Log::info('here2 <<<<');
             // Fetch metadata
             $datasets = Dataset::whereIn("id", $datasetIds)
                 ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
                 ->applySorting()
                 ->paginate((int) $perPage, ['*'], 'page');
 
-            foreach ($datasets as &$d) {
+
+            foreach ($datasets as $key => &$d) {
+                if (empty($d->latestMetadata) || !isset($d->latestMetadata['metadata'])) {
+                    // if your missing a dataset on the FE, its because this geezer
+                    // this has been put in to stop the BE blowing up on missing metadata.
+                    unset($datasets[$key]);
+                    continue;
+                }
+
                 $miniMetadata = $this->trimDatasets($d->latestMetadata['metadata'], [
                     'summary',
                     'required',
@@ -155,13 +164,12 @@ class TeamDatasetController extends Controller
                 $d['latest_metadata'] = $miniMetadata;
             }
 
-
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Team Dataset get all by status',
             ]);
-
+            \Log::info('here5 <<<<');
             return response()->json(
                 $datasets
             );
