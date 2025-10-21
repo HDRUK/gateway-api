@@ -109,7 +109,6 @@ class TeamDatasetController extends Controller
 
         try {
             $withMetadata = $request->boolean('with_metadata', true);
-            \Log::info('here <<<<');
 
             $perPage = request('per_page', Config::get('constants.per_page'));
 
@@ -117,7 +116,6 @@ class TeamDatasetController extends Controller
 
             $teamDatasetIds = Dataset::where(['team_id' => $teamId, 'status' => strtoupper($status)])->pluck("id");
             $datasetIds = [];
-            \Log::info('here1 <<<<');
             // If we've received a 'title' for the search, then only return
             // datasets that match that title
             if (!empty($filterTitle)) {
@@ -134,7 +132,6 @@ class TeamDatasetController extends Controller
             } else {
                 $datasetIds = $teamDatasetIds;
             }
-            \Log::info('here2 <<<<');
             // Fetch metadata
             $datasets = Dataset::whereIn("id", $datasetIds)
                 ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
@@ -169,7 +166,6 @@ class TeamDatasetController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Team Dataset get all by status',
             ]);
-            \Log::info('here5 <<<<');
             return response()->json(
                 $datasets
             );
