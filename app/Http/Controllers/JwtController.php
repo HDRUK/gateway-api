@@ -63,7 +63,7 @@ class JwtController extends Controller
     {
         try {
             $currentTime = CarbonImmutable::now();
-            $expireTime = $currentTime->addSeconds(env('JWT_EXPIRATION'));
+            $expireTime = $currentTime->addSeconds(intval(env('JWT_EXPIRATION')));
 
             $user = User::with('workgroups:id,name,active')->find($userId);
             $user->workgroups->makeHidden('pivot');
