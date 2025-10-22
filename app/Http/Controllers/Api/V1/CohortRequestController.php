@@ -1241,7 +1241,7 @@ class CohortRequestController extends Controller
                     throw new Exception('Cannot find cohort service oauth client');
                 }
 
-                $cohortDiscoveryUrl = env('APP_URL') .
+                $cohortDiscoveryUrl = config('app.url') .
                     "/oauth2/authorize?response_type=code" .
                     "&client_id=$cohortClient->id" .
                     "&scope=openid email profile rquestroles" .

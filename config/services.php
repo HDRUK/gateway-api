@@ -91,6 +91,14 @@ return [
         'add_teams_to_jwt' => env('COHORT_DISCOVERY_ADD_TEAMS_TO_JWT', false),
     ],
 
+    'traser' => [
+        'service_url' => env('TRASER_SERVICE_URL', ''),
+    ],
+
+    'gmi' => [
+        'service_url' => env('GMI_SERVICE_URL', ''),
+    ],
+
     'media' => [
         'base_url' => env('MEDIA_URL', 'http://media.local'),
     ]

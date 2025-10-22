@@ -91,7 +91,7 @@ return new class () extends Migration {
         }
 
         // Now apply permissions to other users
-        foreach ($this->envUsers[env('APP_ENV')] as $email) {
+        foreach ($this->envUsers[config('APP_ENV')] as $email) {
             $user = User::where('email', $email)->select('id')->first();
             if (!$user) {
                 \Log::info('User with email ' . $email . ' does not exist, skipping.');

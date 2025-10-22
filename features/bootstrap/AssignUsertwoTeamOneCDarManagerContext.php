@@ -30,7 +30,7 @@ class AssignUsertwoTeamOneCDarManagerContext implements Context
      */
     public function __construct()
     {
-        $this->baseUri = env('APP_URL');
+        $this->baseUri = config('app.url');
         $this->faker = Faker::create();
         $this->accessToken = SharedContext::get('jwt.user.one');
         $this->userTwo = SharedContext::get('user.two');

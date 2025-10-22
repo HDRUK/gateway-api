@@ -33,7 +33,7 @@ class Email extends Mailable
         $this->template = $template;
         $this->replacements = $replacements;
         $this->subject = $this->template['subject'];
-        $this->fromAddress = $fromAddress ?? env('MAIL_FROM_ADDRESS', 'noreply@healthdatagateway.org');
+        $this->fromAddress = $fromAddress ?? config('MAIL_FROM_ADDRESS', 'noreply@healthdatagateway.org');
     }
 
     /**
@@ -73,10 +73,10 @@ class Email extends Mailable
             $this->replaceBodyText();
 
             $response = Http::withBasicAuth(
-                env('MJML_API_APPLICATION_KEY', ''),
-                env('MJML_API_KEY', '')
+                config('MJML_API_APPLICATION_KEY', ''),
+                config('MJML_API_KEY', '')
             )
-                ->post(env('MJML_RENDER_URL', ''), [
+                ->post(config('MJML_RENDER_URL', ''), [
                     'mjml' => $this->template['body'],
                 ]);
 
@@ -105,14 +105,14 @@ class Email extends Mailable
         if (isset($this->template['buttons'])) {
             $buttons = json_decode($this->template['buttons'], true);
             foreach ($buttons['replacements'] as $b) {
-                $containsEnv = strpos($b['actual'], 'env(');
+                $containsEnv = strpos($b['actual'], 'config(');
 
                 if ($containsEnv !== false) {
-                    $start = $containsEnv + strlen('env(');
+                    $start = $containsEnv + strlen('config(');
                     $end = strpos($b['actual'], ')', $start);
                     $subject = substr($b['actual'], $start, $end - $start);
 
-                    $b['actual'] = str_replace('env(' . $subject . ')', env($subject), $b['actual']);
+                    $b['actual'] = str_replace('config(' . $subject . ')', config($subject), $b['actual']);
                 }
 
                 // In case of dynamic values within the 'actual' link we need to replace those

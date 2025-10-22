@@ -395,7 +395,7 @@ class EnquiryThreadController extends Controller
                 ];
             } else {
                 $ds = Dataset::with('latestMetadata')->where('id', $dataset['dataset_id'])->first();
-                $datasetUrl = env('GATEWAY_URL') . '/dataset/' . $ds->id . '?section=1';
+                $datasetUrl = config('gateway.gateway_url') . '/dataset/' . $ds->id . '?section=1';
 
                 $arr[] = [
                     'title' => $ds->latestMetadata->metadata['metadata']['summary']['shortTitle'],

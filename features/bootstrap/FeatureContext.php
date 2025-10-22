@@ -35,7 +35,7 @@ class FeatureContext implements Context
      */
     public static function before(BeforeSuiteScope $scope)
     {
-        $behatMigrateAndSeed = env('BEHAT_MIGRATE_AND_SEED', false);
+        $behatMigrateAndSeed = config('BEHAT_MIGRATE_AND_SEED', false);
 
         echo "Run a new suite ...\n";
         echo "Initializing test environment...\n";

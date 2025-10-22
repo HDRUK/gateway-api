@@ -27,7 +27,7 @@ class RemoveUserTwoFromTeamOneByUserOneContext implements Context
      */
     public function __construct()
     {
-        $this->baseUri = env('APP_URL');
+        $this->baseUri = config('app.url');
         $this->faker = Faker::create();
         $this->userOne = SharedContext::get('user.one');
         $this->userTwo = SharedContext::get('user.two');

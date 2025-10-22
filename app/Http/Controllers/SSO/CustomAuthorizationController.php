@@ -54,7 +54,7 @@ class CustomAuthorizationController extends Controller
         $userId = session('cr_uid');
 
         if (!$userId) {
-            return redirect()->away(env('GATEWAY_URL', 'http://localhost'));
+            return redirect()->away(config('gateway.gateway_url', 'http://localhost'));
         }
 
         // save nonce and user_id for id_token

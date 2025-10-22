@@ -37,7 +37,7 @@ class AppendJWTTokenResponse
         if (isset($content['access_token'])) {
 
             $signer = new Sha256();
-            $key = InMemory::plainText(env('JWT_SECRET'));
+            $key = InMemory::plainText(config('jwt.jwt_secret'));
 
             // Configure the parser. No validation needed, just parsing.
             $config = Configuration::forSymmetricSigner($signer, $key);

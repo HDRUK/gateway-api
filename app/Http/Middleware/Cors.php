@@ -11,10 +11,10 @@ class Cors
     {
         $origin = $request->headers->get('origin');
 
-        $list = env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN', '');
+        $list = config('CORS_ACCESS_CONTROL_ALLOW_ORIGIN', '');
         $allowedOrigins = array_filter(array_map('trim', explode(',', $list)));
 
-        $dta = trim((string) env('DTA_URL', ''));
+        $dta = trim((string) config('DTA_URL', ''));
         if ($dta !== '') {
             $allowedOrigins[] = $dta;
         }

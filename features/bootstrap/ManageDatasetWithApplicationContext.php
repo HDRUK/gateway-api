@@ -27,7 +27,7 @@ class ManageDatasetWithApplicationContext implements Context
      */
     public function __construct()
     {
-        $this->baseUri = env('APP_URL');
+        $this->baseUri = config('app.url');
         $this->faker = Faker::create();
         $this->application = SharedContext::get('application');
     }

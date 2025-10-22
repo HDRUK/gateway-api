@@ -34,7 +34,7 @@ class LoginUserAdminContext implements Context
      */
     public function gatherContexts(BeforeScenarioScope $scope)
     {
-        $this->baseUri = env('APP_URL');
+        $this->baseUri = config('app.url');
     }
 
     /**

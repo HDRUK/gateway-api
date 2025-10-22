@@ -10,7 +10,7 @@ class JwksController extends Controller
 {
     public function getJwks(Request $request)
     {
-        $publicKeyContent = str_replace('\\n', "\n", env('PASSPORT_PUBLIC_KEY'));
+        $publicKeyContent = str_replace('\\n', "\n", config('passport.public_key'));
         if (empty($publicKeyContent)) {
             throw new Exception('Public key not found in environment variables');
         }
@@ -23,7 +23,7 @@ class JwksController extends Controller
             'use' => 'sig',
             'n'   => strtr(rtrim(base64_encode($details['rsa']['n']), '='), '+/', '-_'),
             'e'   => strtr(rtrim(base64_encode($details['rsa']['e']), '='), '+/', '-_'),
-            'kid' => env('JWT_KID', 'jwtkidnotfound'),
+            'kid' => config('JWT_KID', 'jwtkidnotfound'),
         ];
 
         // we can generate for server
