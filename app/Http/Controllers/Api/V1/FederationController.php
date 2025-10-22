@@ -321,13 +321,13 @@ class FederationController extends Controller
             $secrets_payload = $this->getSecretsPayload($input);
 
             if ($secrets_payload) {
-                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . $federation->id;
+                $auth_secret_key_location = config('gateway.google_secrets_gmi_prepend_name') . $federation->id;
                 $payload = [
-                    "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
+                    "path" => config('gateway.google_application_project_path'),
                     "secret_id" => $auth_secret_key_location,
                     "payload" => json_encode($secrets_payload)
                 ];
-                $response = Http::withHeaders($loggingContext)->post(env('GMI_SERVICE_URL') . '/federation', $payload);
+                $response = Http::withHeaders($loggingContext)->post(config('gmi.service_url') . '/federation', $payload);
 
                 if (!$response->successful()) {
                     Federation::where('id', $federation->id)->delete();
@@ -491,14 +491,14 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
             if ($secrets_payload) {
-                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . $federationId;
+                $auth_secret_key_location = config('gateway.google_secrets_gmi_prepend_name') . $federationId;
                 $payload = [
-                    "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
+                    "path" => config('gateway.google_application_project_path'),
                     "secret_id" => $auth_secret_key_location,
                     "payload" => json_encode($secrets_payload)
                 ];
 
-                $response = Http::withHeaders($loggingContext)->patch(env('GMI_SERVICE_URL') . '/federation', $payload);
+                $response = Http::withHeaders($loggingContext)->patch(config('gmi.service_url') . '/federation', $payload);
 
                 if (!$response->successful()) {
                     return response()->json([
@@ -668,14 +668,14 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
             if ($secrets_payload) {
-                $auth_secret_key_location = env('GOOGLE_SECRETS_GMI_PREPEND_NAME') . $federationId;
+                $auth_secret_key_location = config('gateway.google_secrets_gmi_prepend_name') . $federationId;
                 $payload = [
-                    "path" => env('GOOGLE_APPLICATION_PROJECT_PATH'),
+                    "path" => config('gateway.google_application_project_path'),
                     "secret_id" => $auth_secret_key_location,
                     "payload" => json_encode($secrets_payload)
                 ];
 
-                $response = Http::withHeaders($loggingContext)->patch(env('GMI_SERVICE_URL') . '/federation', $payload);
+                $response = Http::withHeaders($loggingContext)->patch(config('gmi.service_url') . '/federation', $payload);
 
                 if (!$response->successful()) {
                     return response()->json([

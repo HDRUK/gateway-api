@@ -30,8 +30,8 @@ class ConceptSeeder extends Seeder
         // Enable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
 
-        $nChunk = env('OMOP_SEEDING_NCHUNKS', 500);
-        $useInFileSQL = filter_var(env('OMOP_SEEDING_USE_INFILE', true), FILTER_VALIDATE_BOOLEAN);
+        $nChunk = config('OMOP_SEEDING_NCHUNKS', 500);
+        $useInFileSQL = filter_var(config('OMOP_SEEDING_USE_INFILE', true), FILTER_VALIDATE_BOOLEAN);
 
         foreach ($this->folders as $folder) {
             $tableName = strtolower($folder);

@@ -441,7 +441,7 @@ class TeamDataAccessApplicationController extends Controller
                 $files = $uploads->all();
 
                 foreach ($files as $f) {
-                    $contents = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '_scanned')->get($f->file_location);
+                    $contents = Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')->get($f->file_location);
                     $fileNameInZip = basename($f->file_location);
                     $zip->addFromString($fileNameInZip, $contents);
                 }
@@ -678,7 +678,7 @@ class TeamDataAccessApplicationController extends Controller
                     'description' => 'DataAccessApplication ' . $id . ' download file ' . $fileId,
                 ]);
 
-                return Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '_scanned')
+                return Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
                     ->download($file->file_location);
             }
 
@@ -1062,7 +1062,7 @@ class TeamDataAccessApplicationController extends Controller
 
             $file = Upload::where('id', $fileId)->first();
 
-            Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '_scanned')
+            Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
                 ->delete($file->file_location);
 
             $file->delete();

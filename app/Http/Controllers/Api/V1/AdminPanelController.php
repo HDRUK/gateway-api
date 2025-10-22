@@ -14,7 +14,7 @@ class AdminPanelController extends Controller
 
         // Rather poor, but pretty secure method to police these
         // temporary routes
-        if (!isset($input['secret_key']) || !$input['secret_key'] === env('APP_AUTH_PRIVATE_SALT')) {
+        if (!isset($input['secret_key']) || !$input['secret_key'] === config('auth.private_salt')) {
             return response()->json([
                 'message' => 'not allowed',
             ], 401);

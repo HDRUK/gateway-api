@@ -36,7 +36,7 @@ class FixImages extends Command
                 continue;
             }
 
-            $fixed_team_logo = str_replace(env('MEDIA_URL'), '', $team->team_logo);
+            $fixed_team_logo = str_replace(config('gateway.media_url'), '', $team->team_logo);
             if (!str_starts_with($fixed_team_logo, '/teams')) {
                 $fixed_team_logo = null;
             }

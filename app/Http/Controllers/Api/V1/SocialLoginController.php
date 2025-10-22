@@ -80,7 +80,7 @@ class SocialLoginController extends Controller
     */
     public function dtaLogin(Request $request, string $provider): mixed
     {
-        return $this->handleLogin($request, $provider, env('DTA_URL'), env('OPENATHENS_REDIRECT_DTA_URL'), true);
+        return $this->handleLogin($request, $provider, config('services.dta.url'), config('services.openathens.dta_redirect'), true);
     }
 
 
@@ -131,7 +131,7 @@ class SocialLoginController extends Controller
      */
     public function login(Request $request, string $provider): mixed
     {
-        return $this->handleLogin($request, $provider, env('GATEWAY_URL'), env('OPENATHENS_REDIRECT_URL'), false);
+        return $this->handleLogin($request, $provider, config('gateway.gateway_url'), config('services.openathens.redirect'), false);
 
     }
 
@@ -160,7 +160,7 @@ class SocialLoginController extends Controller
                 'scope' => 'openid',
                 'state' => bin2hex(random_bytes(16))
             ];
-            $oaUrl = env('OPENATHENS_ISSUER_URL') . '/oidc/auth?' . http_build_query($params);
+            $oaUrl = config('services.openathens.issuer') . '/oidc/auth?' . http_build_query($params);
 
             return redirect()->away($oaUrl);
         } else {
@@ -169,8 +169,8 @@ class SocialLoginController extends Controller
             }
             if ($isDTA) {
                 $providerURL = config("services.$provider.redirect");
-                if (env('APP_ENV') !== 'local') {
-                    $providerURL = str_replace(env('APP_URL').'/api/v1/auth', env('DTA_API_URL').'/api/v1/auth/dta', $providerURL);
+                if (config('app.env') !== 'local') {
+                    $providerURL = str_replace(config('app.url').'/api/v1/auth', config('services.dta.api_url').'/api/v1/auth/dta', $providerURL);
                 }
 
                 return Socialite::driver($provider)
@@ -223,7 +223,7 @@ class SocialLoginController extends Controller
          */
     public function dtaCallback(Request $request, string $provider): mixed
     {
-        $openAthensRedirectUrl = env('OPENATHENS_REDIRECT_URL');
+        $openAthensRedirectUrl = config('services.openathens.redirect');
 
         $user = null;
         try {
@@ -248,10 +248,10 @@ class SocialLoginController extends Controller
                     Config::get('services.openathens.client_secret')
                 );
                 $oidc->providerConfigParam([
-                    'authorization_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/auth',
-                    'jwks_uri' => env('OPENATHENS_ISSUER_URL') . '/oidc/jwks',
-                    'token_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/token',
-                    'userinfo_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/userinfo',
+                    'authorization_endpoint' => config('services.openathens.issuer') . '/oidc/auth',
+                    'jwks_uri' => config('services.openathens.issuer') . '/oidc/jwks',
+                    'token_endpoint' => config('services.openathens.issuer') . '/oidc/token',
+                    'userinfo_endpoint' => config('services.openathens.issuer') . '/oidc/userinfo',
                 ]);
 
                 $oidc->setRedirectUrl($openAthensRedirectUrl);
@@ -264,8 +264,8 @@ class SocialLoginController extends Controller
                 $user = User::where('providerid', $socialUserDetails['providerid'])->first();
             } else {
                 $providerURL = config("services.$provider.redirect");
-                if (env('APP_ENV') !== 'local') {
-                    $providerURL = str_replace(env('APP_URL').'/api/v1/auth', env('DTA_API_URL').'/api/v1/auth/dta', $providerURL);
+                if (config('app.env') !== 'local') {
+                    $providerURL = str_replace(config('app.url').'/api/v1/auth', config('services.dta.url').'/api/v1/auth/dta', $providerURL);
                 }                $socialUser = Socialite::driver($provider)
                 ->with(['redirect_uri' => $providerURL])
                 ->stateless()
@@ -304,10 +304,10 @@ class SocialLoginController extends Controller
             $cookies = [Cookie::make('token', $jwt)];
 
             if ($user['name'] === '' || $user['email'] === '') {
-                return redirect()->away(env('DTA_URL') . '/account/profile')->withCookies($cookies);
+                return redirect()->away(config('services.dta.url') . '/account/profile')->withCookies($cookies);
             } else {
                 $redirectUrl = session('redirectUrl');
-                return redirect()->away($redirectUrl ?? env('DTA_URL'))->withCookies($cookies);
+                return redirect()->away($redirectUrl ?? config('services.dta.url'))->withCookies($cookies);
             }
         } catch (Exception $e) {
             Auditor::log([
@@ -357,8 +357,8 @@ class SocialLoginController extends Controller
      */
     public function callback(Request $request, string $provider): mixed
     {
-        $baseRedirectUrl = env('GATEWAY_URL');
-        $openAthensRedirectUrl =  env('OPENATHENS_REDIRECT_URL');
+        $baseRedirectUrl = config('gateway.gateway_url');
+        $openAthensRedirectUrl =  config('services.openathens.redirect');
         $user = null;
         try {
             if (strtolower($provider) === 'linkedin') {
@@ -382,10 +382,10 @@ class SocialLoginController extends Controller
                     Config::get('services.openathens.client_secret')
                 );
                 $oidc->providerConfigParam([
-                    'authorization_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/auth',
-                    'jwks_uri' => env('OPENATHENS_ISSUER_URL') . '/oidc/jwks',
-                    'token_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/token',
-                    'userinfo_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/userinfo',
+                    'authorization_endpoint' => config('services.openathens.issuer') . '/oidc/auth',
+                    'jwks_uri' => config('services.openathens.issuer') . '/oidc/jwks',
+                    'token_endpoint' => config('services.openathens.issuer') . '/oidc/token',
+                    'userinfo_endpoint' => config('services.openathens.issuer') . '/oidc/userinfo',
                 ]);
 
                 $oidc->setRedirectUrl($openAthensRedirectUrl);

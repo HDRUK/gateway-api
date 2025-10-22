@@ -571,7 +571,7 @@ class DatasetController extends Controller
 
             return [
                 'title' => $dv->short_title,
-                'url' => env('GATEWAY_URL') . '/en/dataset/' . $d->id,
+                'url' => config('gateway.gateway_url') . '/en/dataset/' . $d->id,
                 'dataset_id' => $d->id,
                 'linkage_type' => $linkage->linkage_type,
             ];

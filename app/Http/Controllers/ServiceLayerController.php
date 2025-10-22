@@ -122,7 +122,7 @@ class ServiceLayerController extends Controller
     {
         return $this->forwardRequest(
             $request,
-            env("DARQ_SERVICE"),
+            config("gateway.darq_service"),
             "api/services/darq/"
         );
     }
@@ -131,7 +131,7 @@ class ServiceLayerController extends Controller
     {
         return $this->forwardRequest(
             $request,
-            env('DARAS_SERVICE'),
+            config('gateway.daras_service'),
             'api/services/daras/'
         );
     }
@@ -140,7 +140,7 @@ class ServiceLayerController extends Controller
     {
         return $this->forwardRequest(
             $request,
-            env("TRASER_SERVICE_URL"),
+            config("gateway.traser.service_url"),
             "api/services/traser/"
         );
     }

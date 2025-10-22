@@ -72,4 +72,6 @@ return [
         'secret' => env('PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET'),
     ],
 
+    'cr_uid_debug' => env('CR_UID_DEBUG'),
+
 ];

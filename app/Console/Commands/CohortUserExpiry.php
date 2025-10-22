@@ -46,7 +46,7 @@ class CohortUserExpiry extends Command
 
                     $trueExpiryDate = $this->calculateTrueExpiry($r);
 
-                    $diff = $trueExpiryDate->diffInDays($now);
+                    $diff = (int) abs($trueExpiryDate->diffInDays($now));
 
                     if (in_array($diff, $warnings)) {
                         if ($r->request_status === 'APPROVED') {

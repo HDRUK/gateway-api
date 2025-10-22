@@ -85,7 +85,7 @@ class JwtMiddleware
             $clientId = $app->client_id;
             $clientSecret = $app->client_secret;
             if (!($clientId == $request->header('x-client-id') && Hash::check(
-                $appId . ':' . $clientId . ':' . env('APP_AUTH_PRIVATE_SALT') . ':' . env('APP_AUTH_PRIVATE_SALT_2'),
+                $appId . ':' . $clientId . ':' . config('auth.private_salt') . ':' . config('auth.private_salt_2'),
                 $clientSecret
             ))) {
                 throw new UnauthorizedException('The credentials provided are invalid');

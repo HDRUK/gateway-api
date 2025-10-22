@@ -114,4 +114,7 @@ return [
 
     'password_timeout' => 10800,
 
+    'private_salt' => env('auth.private_salt'),
+    'private_salt_2' => env('auth.private_salt_2'),
+
 ];

@@ -83,7 +83,7 @@ class FilterController extends Controller
         try {
             $filters = Filter::where('enabled', 1)->orderBy('type')->get()->toArray();
 
-            $urlString = env('SEARCH_SERVICE_URL') . '/filters';
+            $urlString = config('gateway.search_service_url') . '/filters';
 
             $response = Http::withBody(
                 json_encode(['filters' => $filters]),
@@ -177,7 +177,7 @@ class FilterController extends Controller
         try {
             $filter = Filter::findOrFail($id);
             if ($filter) {
-                $urlString = env('SEARCH_SERVICE_URL') . '/filters';
+                $urlString = config('gateway.search_service_url') . '/filters';
 
                 $response = Http::withBody(
                     json_encode(['filters' => [$filter->toArray()]]),

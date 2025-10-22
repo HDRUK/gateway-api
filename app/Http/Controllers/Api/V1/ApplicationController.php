@@ -315,8 +315,8 @@ class ApplicationController extends Controller
             $clientSecret = Hash::make(
                 $appId .
                 ':' . $clientId .
-                ':' . env('APP_AUTH_PRIVATE_SALT') .
-                ':' . env('APP_AUTH_PRIVATE_SALT_2')
+                ':' . config('auth.private_salt') .
+                ':' . config('auth.private_salt_2')
             );
 
             $array = [
@@ -785,8 +785,8 @@ class ApplicationController extends Controller
             $clientSecret = Hash::make(
                 $initApplication->app_id .
                 ':' . $clientId .
-                ':' . env('APP_AUTH_PRIVATE_SALT') .
-                ':' . env('APP_AUTH_PRIVATE_SALT_2')
+                ':' . config('auth.private_salt') .
+                ':' . config('auth.private_salt_2')
             );
 
             $array = [

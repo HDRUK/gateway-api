@@ -174,7 +174,7 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
     {
 
         try {
-            $latestApprovalDate = Carbon::createFromTimestamp(($excelDate - 25569) * 86400)->toDateString();
+            $latestApprovalDate = Carbon::createFromTimestampUTC(($excelDate - 25569) * 86400)->toDateString();
 
             if (!Carbon::hasFormat($latestApprovalDate, 'Y-m-d')) {
                 CloudLogger::write([

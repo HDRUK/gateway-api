@@ -113,7 +113,7 @@ class UpdateEmailTemplateAppFederation extends Command
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
+                            "actual": "config(\'gateway.gateway_url\')/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
                 }
@@ -207,7 +207,7 @@ class UpdateEmailTemplateAppFederation extends Command
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
+                            "actual": "config(\'gateway.gateway_url\')/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
                 }
@@ -299,7 +299,7 @@ class UpdateEmailTemplateAppFederation extends Command
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
+                            "actual": "config(\'gateway.gateway_url\')/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
                 }
@@ -393,7 +393,7 @@ class UpdateEmailTemplateAppFederation extends Command
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration/list"
+                            "actual": "config(\'gateway.gateway_url\')/en/account/team/[[TEAM_ID]]/integrations/integration/list"
                         }
                     ]
                 }
@@ -488,7 +488,7 @@ class UpdateEmailTemplateAppFederation extends Command
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration/list"
+                            "actual": "config(\'gateway.gateway_url\')/en/account/team/[[TEAM_ID]]/integrations/integration/list"
                         }
                     ]
                 }

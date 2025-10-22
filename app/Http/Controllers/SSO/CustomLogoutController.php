@@ -25,7 +25,7 @@ class CustomLogoutController extends Controller
             // Auth::guard()->logout();
             $request->session()->flush();
 
-            $redirectUrl = env('GATEWAY_URL');
+            $redirectUrl = config('gateway.gateway_url');
             return redirect()->away($redirectUrl);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());

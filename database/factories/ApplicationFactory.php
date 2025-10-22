@@ -24,7 +24,7 @@ class ApplicationFactory extends Factory
 
         $appId = fake()->regexify('[A-Za-z0-9]{40}');
         $clientId = fake()->regexify('[A-Za-z0-9]{40}');
-        $clientSecret = Hash::make($appId . ':' . $clientId . ':' . env('APP_AUTH_PRIVATE_SALT') . ':' . env('APP_AUTH_PRIVATE_SALT_2'));
+        $clientSecret = Hash::make($appId . ':' . $clientId . ':' . config('auth.private_salt') . ':' . config('auth.private_salt_2'));
 
         return [
             'name' => fake()->text(100),

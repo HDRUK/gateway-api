@@ -144,7 +144,7 @@ class UpdateTeamEmailTemplates extends Command
                         "replacements": [
                             {
                                 "placeholder": "[[BUTTON_1_URL]]",
-                                "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/team-management"
+                                "actual": "config(\'gateway.gateway_url\')/en/account/team/[[TEAM_ID]]/team-management"
                             }
                         ]
                     }
@@ -233,7 +233,7 @@ class UpdateTeamEmailTemplates extends Command
                         "replacements": [
                             {
                                 "placeholder": "[[BUTTON_1_URL]]",
-                                "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/team-management"
+                                "actual": "config(\'gateway.gateway_url\')/en/account/team/[[TEAM_ID]]/team-management"
                             }
                         ]
                     }

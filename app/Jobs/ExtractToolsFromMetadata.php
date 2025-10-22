@@ -116,7 +116,7 @@ class ExtractToolsFromMetadata implements ShouldQueue
         foreach ($arrTools as $item) {
             \Log::info('ExtractToolsFromMetadata :: tool - ' . $item, $this->loggingContext);
 
-            if (str_contains($item, env('GATEWAY_URL'))) {
+            if (str_contains($item, config('gateway.gateway_url'))) {
                 $exploded = explode('/', $item);
                 $toolId = (int) end($exploded);
                 $t = Tool::where('id', $toolId)->first();

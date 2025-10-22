@@ -541,7 +541,7 @@ class IntegrationDatasetController extends Controller
 
                 $revisions = [
                     [
-                        "url" => env('GATEWAY_URL') . '/dataset' .'/' . $dataset->id . '?version=1.0.0',
+                        "url" => config('gateway.gateway_url') . '/dataset' .'/' . $dataset->id . '?version=1.0.0',
                         'version' => $this->formatVersion(1)
                     ]
                 ];
@@ -817,7 +817,7 @@ class IntegrationDatasetController extends Controller
                 //       - url set with a placeholder right now, should be revised before production
                 //       - https://hdruk.atlassian.net/browse/GAT-3392
                 $input['metadata']['metadata']['required']['revisions'][] = [
-                    "url" => env('GATEWAY_URL') . '/dataset' .'/' . $id . '?version=' . $currentVersionCode,
+                    "url" => config('gateway.gateway_url') . '/dataset' .'/' . $id . '?version=' . $currentVersionCode,
                     'version' => $currentVersionCode
                 ];
 
