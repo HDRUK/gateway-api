@@ -10,10 +10,12 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-         Schema::table('team_user_has_roles', function (Blueprint $table) {
-            $table->dropForeign('team_has_user_id2_fk');
-            $table->dropForeign('role_id_fk');
-         });
+        if (DB::getDriverName() !== 'sqlite') {
+            Schema::table('team_user_has_roles', function (Blueprint $table) {
+                $table->dropForeign('team_has_user_id2_fk');
+                $table->dropForeign('role_id_fk');
+            });
+        }
 
         // Create a new table without a primary key constraint
         Schema::create('team_user_has_roles_tmp', function (Blueprint $table) {
