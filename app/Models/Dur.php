@@ -44,7 +44,7 @@ class Dur extends Model
     /**
      * The attributes that are mass assignable
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'non_gateway_datasets',
