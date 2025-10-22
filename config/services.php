@@ -49,6 +49,8 @@ return [
         'client_secret' => env('OPENATHENS_CLIENT_SECRET'),
         'issuer' => env('OPENATHENS_ISSUER_URL'),
         'open_id' => true,
+        'redirect' => env('OPENATHENS_REDIRECT_URL'),
+        'dta_redirect' => env('OPENATHENS_REDIRECT_DTA_URL'),
     ],
 
     'azure' => [
@@ -97,6 +99,28 @@ return [
 
     'gmi' => [
         'service_url' => env('GMI_SERVICE_URL', ''),
+    ],
+
+    'mjml' => [
+        'render_url' => env('MJML_RENDER_URL', ''),
+        'api_application_key' => env('MJML_API_APPLICATION_KEY', ''),
+        'api_key' => env('MJML_API_KEY', ''),
+    ],
+
+    'clamav' => [
+        'api_url' => env('CLAMAV_API_URL', ''),
+        'basic_auth_username' => env('services.clamav.basic_auth_username', ''),
+        'basic_auth_password' => env('services.clamav.basic_auth_password', ''),
+    ],
+
+    'dta' => [
+        'api_url' => env("DTA_API_URL"),
+        'url' => env("DTA_URL"),
+    ],
+
+    'mauro' => [
+        'app_key' => env("MAURO_APP_KEY"),
+        'api_url' => env("MAURO_API_URL"),
     ],
 
     'media' => [

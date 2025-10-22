@@ -34,7 +34,7 @@ class TestDevUsersSeeder extends Seeder
                     'email' => $data['email'],
                     'name' => $data['name'],
                     'provider' => 'service',
-                    'password' => Hash::make(config('TEST_USER_PASSWORD')),
+                    'password' => Hash::make(config('gateway.test_user_password')),
                 ]
             );
             $teamUser = TeamHasUser::create(

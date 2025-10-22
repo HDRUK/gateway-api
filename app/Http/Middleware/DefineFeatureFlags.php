@@ -9,7 +9,7 @@ class DefineFeatureFlags
 {
     public function handle($request, Closure $next)
     {
-        $url = config('FEATURE_FLAGGING_CONFIG_URL');
+        $url = config('gateway.feature_flagging_config_url');
         if (app()->environment('testing') || !$url) {
             return $next($request);
         }

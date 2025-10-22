@@ -63,7 +63,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         // TODO - Change this when we're ready to introduce rate limiting proper
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(config('RATE_LIMIT', 2000))->by($request->user()?->id ?: $request->ip());
+            return Limit::perMinute(config('gateway.rate_limit', 2000))->by($request->user()?->id ?: $request->ip());
         });
     }
 }

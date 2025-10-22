@@ -1103,7 +1103,7 @@ trait MockExternalApis
         ]);
 
         Http::fake([
-            config('CLAMAV_API_URL', 'http://clamav:3001') . '*' => Http::response(
+            config('services.clamav.api_url', 'http://clamav:3001') . '*' => Http::response(
                 [
                     'isError' => false,
                     'isInfected' => false,
@@ -1148,7 +1148,7 @@ trait MockExternalApis
         // Removed for now, as the email service test contains its own mock
         // for mjml.
         // Http::fake([
-        //     config('MJML_RENDER_URL') => Http::response(
+        //     config('mjml.render_url') => Http::response(
         //         ["html" => "<html>content</html>"],
         //         201,
         //         ['application/json']

@@ -33,7 +33,7 @@ class OAuth2Controller extends Controller
         Request $request,
         ClientRepository $clients,
     ) {
-        $userId = session('cr_uid') ?? config('CR_UID_DEBUG');
+        $userId = session('cr_uid') ?? config('passport.cr_uid_debug');
 
         if (!$userId) {
             abort(401, 'User not authenticated');

@@ -102,7 +102,7 @@ trait CustomAccessTokenTrait
             ->withClaim('resource_access', $resourceAccess)
             ->withClaim('scope', "openid profile email rquestroles")
             ->withClaim('rquestroles', $rquestroles)
-            ->withHeader('kid', config('JWT_KID', 'jwtkidnotfound'))
+            ->withHeader('kid', config('jwt.kid', 'jwtkidnotfound'))
             ->getToken($config->signer(), $config->signingKey());
     }
 

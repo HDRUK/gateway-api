@@ -23,7 +23,7 @@ class JwksController extends Controller
             'use' => 'sig',
             'n'   => strtr(rtrim(base64_encode($details['rsa']['n']), '='), '+/', '-_'),
             'e'   => strtr(rtrim(base64_encode($details['rsa']['e']), '='), '+/', '-_'),
-            'kid' => config('JWT_KID', 'jwtkidnotfound'),
+            'kid' => config('jwt.kid', 'jwtkidnotfound'),
         ];
 
         // we can generate for server

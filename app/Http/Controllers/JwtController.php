@@ -33,7 +33,7 @@ class JwtController extends Controller
         ];
         $this->payload = [];
         $this->jwt = '';
-        $this->secretKey = (string) config('jwt.jwt_secret');
+        $this->secretKey = (string) config('jwt.secret');
 
         $this->config = Configuration::forSymmetricSigner(
             new Sha256(),
@@ -63,7 +63,7 @@ class JwtController extends Controller
     {
         try {
             $currentTime = CarbonImmutable::now();
-            $expireTime = $currentTime->addSeconds(intval(config('jwt.jwt_expiration')));
+            $expireTime = $currentTime->addSeconds(intval(config('jwt.expiration')));
 
             $user = User::with('workgroups:id,name,active')->find($userId);
             $user->workgroups->makeHidden('pivot');

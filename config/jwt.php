@@ -1,6 +1,7 @@
 <?php
 
 return [
-    "jwt_secret" => env("JWT_SECRET", 300),
-    "jwt_expiration" => env("JWT_EXPIRATION", 86400),
+    "kid" => env("JWT_KID"),
+    "secret" => env("JWT_SECRET", 300),
+    "expiration" => env("JWT_EXPIRATION", 86400),
 ];

@@ -46,7 +46,7 @@ class EmailServiceTest extends TestCase
         $email = new Email($template, $replacements);
 
         Http::fake([
-            config('MJML_RENDER_URL') => Http::response([
+            config('mjml.render_url') => Http::response([
                     "html" => $this->mockedEmailContent($template, $replacements)
             ], 200),
         ]);
