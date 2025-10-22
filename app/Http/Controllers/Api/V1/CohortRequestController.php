@@ -1152,8 +1152,8 @@ class CohortRequestController extends Controller
      *         @OA\Schema(
      *            type="string"
      *         )
-     *       }
-     *    )
+     *      )
+     *    ),
      *    @OA\Response(
      *       response=500,
      *       description="Error",
