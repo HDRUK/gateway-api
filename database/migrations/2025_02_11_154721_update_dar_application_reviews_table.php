@@ -29,7 +29,7 @@ return new class () extends Migration {
         });
 
         Schema::table('dar_application_reviews', function (Blueprint $table) {
-            $table->dropIfExists('resolved');
+            $table->dropColumn('resolved');
         });
     }
 };

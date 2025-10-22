@@ -29,7 +29,7 @@ return new class () extends Migration {
 
         if (Schema::hasTable('enquiry_threads')) {
             Schema::table('enquiry_threads', function (Blueprint $table) {
-                $table->dropIndex('enquiry_thread_team_id_index');
+                $table->dropIndex('enquiry_threads_team_id_index');
                 $table->dropColumn('team_id');
             });
         }
@@ -40,6 +40,10 @@ return new class () extends Migration {
      */
     public function down(): void
     {
+        Schema::table('enquiry_threads', function (Blueprint $table) {
+            $table->integer('team_id')->index();
+        });
+
         $equiryTreads = \DB::SELECT('SELECT id, team_ids FROM enquiry_threads');
         foreach ($equiryTreads as $equiryTread) {
             $teamId = $equiryTread->team_ids;

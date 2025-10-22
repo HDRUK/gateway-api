@@ -32,6 +32,7 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::table('filters', function (Blueprint $table) {
+            $table->dropColumn('type');
             $table->enum('type', ['dataset','collection','tool','course','project','paper','dataUseRegister','dataProvider'])->nullable();
         });
     }

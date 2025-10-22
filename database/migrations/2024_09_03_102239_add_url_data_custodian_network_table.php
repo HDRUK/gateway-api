@@ -21,7 +21,7 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::table('data_provider_colls', function (Blueprint $table) {
-            $table->string('url', 2048)->nullable();
+            $table->dropColumn('url');
         });
     }
 };

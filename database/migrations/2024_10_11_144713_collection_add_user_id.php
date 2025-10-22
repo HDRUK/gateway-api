@@ -23,7 +23,6 @@ return new class () extends Migration {
     {
         Schema::table('collections', function (Blueprint $table) {
             $table->dropForeign(['user_id']);
-            $table->dropIndex(['user_id']);
             $table->dropColumn('user_id');
         });
     }

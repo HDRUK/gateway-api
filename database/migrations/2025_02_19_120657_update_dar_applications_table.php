@@ -22,7 +22,7 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::table('dar_applications', function (Blueprint $table) {
-            $table->string('submission_status')->nullable()->default('DRAFT');
+            $table->string('submission_status')->nullable()->default('DRAFT')->index();
             $table->string('approval_status')->nullable();
         });
     }
