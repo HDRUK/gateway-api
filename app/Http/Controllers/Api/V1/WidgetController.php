@@ -420,6 +420,15 @@ class WidgetController extends Controller
                 'data_uses' => $dataUses,
                 'scripts' => $scripts,
                 'collections' => $collections,
+                'widget' => [
+                    'widget_name' => $widget->widget_name,
+                    'size_width'  => $widget->size_width,
+                    'size_height'  => $widget->size_height,
+                    'unit'  => $widget->unit,
+                    'include_search_bar'  => $widget->include_search_bar,
+                    'include_cohort_link'  => $widget->include_cohort_link,
+                    'keep_proportions' => $widget->keep_proportions,
+                ]
             ], Config::get('statuscodes.STATUS_OK.code'));
 
         } catch (Exception $e) {
