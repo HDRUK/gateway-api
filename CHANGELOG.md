@@ -1,3 +1,21 @@
+## [2.26.0](https://github.com/HDRUK/gateway-api/compare/v2.25.3...v2.26.0) (2025-10-23)
+
+### ✨ Features
+
+* **GAT-1234:** Cypress Test Dev Users (#1432) ([8b142bb](https://github.com/HDRUK/gateway-api/commit/8b142bbf402b12764b658ce37bddd3e2c471ecc7)), closes [GAT-1234](GAT-1234)
+* **GAT-1234:** fix migrations (#1441) ([69944a2](https://github.com/HDRUK/gateway-api/commit/69944a22892f930cf17c116cd5f85eed09ea4760))
+* **GAT-7803:** Upgrade to laravel 11 (#1434) ([663745a](https://github.com/HDRUK/gateway-api/commit/663745a16506d2f3c2296fa5e734f6607d14fa2d)), closes [GAT-7803](GAT-7803)
+
+### 🐛 Bug Fixes
+
+* **GAT-1234:** Cypress Test Users (#1433) ([c42d45e](https://github.com/HDRUK/gateway-api/commit/c42d45ea89b0feeafd9358e03aa5a774b35644e7)), closes [GAT-1234](GAT-1234)
+* **GAT-1234:** Make search controller robust to datasets missing versions. (#1429) ([eb7f08c](https://github.com/HDRUK/gateway-api/commit/eb7f08c2b5559261fd26d75adbd964db4e36e463)), closes [GAT-1234](GAT-1234)
+* **GAT-1537:** Comment out ValidateRequest middleware (#1435) ([3ab1489](https://github.com/HDRUK/gateway-api/commit/3ab148974b939676172e406b6d28351f42d36433)), closes [GAT-1537](GAT-1537)
+* **GAT-7714:** Allow searching through a teams datasets (#1431) ([b12e014](https://github.com/HDRUK/gateway-api/commit/b12e0140a5c7f097e56bb6513a84f41e127b38ca)), closes [GAT-7714](GAT-7714)
+* **GAT-7861:** Simplify and correct messaging logic (#1430) ([95b8a08](https://github.com/HDRUK/gateway-api/commit/95b8a086488202df3c36df15eab5a4d497963bc1)), closes [GAT-7861](GAT-7861)
+* **GAT-8078:** Remove sanitisation from both search requests since they break multi-word search (#1438) ([80c56b8](https://github.com/HDRUK/gateway-api/commit/80c56b803abfc6dd17119e5ac013f88d53a1b237)), closes [GAT-8078](GAT-8078)
+* **GAT-8082:** remove dataset with no metadata before trim (#1440) ([bdb9cea](https://github.com/HDRUK/gateway-api/commit/bdb9cea4c1a0ebdc348b9cc7b0e35b50dd1d2c7d)), closes [GAT-8082](GAT-8082)
+
 ## [2.25.3](https://github.com/HDRUK/gateway-api/compare/v2.25.2...v2.25.3) (2025-10-16)
 
 ### 🐛 Bug Fixes
