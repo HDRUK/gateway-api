@@ -5,21 +5,18 @@ namespace Tests\Unit;
 use App\Mail\Email;
 use App\Models\EmailTemplate;
 use Tests\TestCase;
-use Database\Seeders\EmailTemplateSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Http;
 
 class EmailServiceTest extends TestCase
 {
-    use RefreshDatabase;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public function setUp(): void
     {
-        parent::setUp();
-
-        $this->seed([
-            EmailTemplateSeeder::class,
-        ]);
+        $this->commonSetUp();
     }
 
     /**

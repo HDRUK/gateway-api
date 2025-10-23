@@ -21,7 +21,7 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::table('dar_application_statuses', function (Blueprint $table) {
-            $table->dropIfExists('submission_status');
+            $table->dropColumn('submission_status');
         });
     }
 };

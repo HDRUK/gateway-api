@@ -381,12 +381,12 @@ trait DataAccessApplicationHelpers
 
             foreach ($teamUserHasRoles as $tuhr) {
                 $roleIdeal = Role::where([
-                    'id' => $tuhr->role_id,
+                    'id' => $tuhr['role_id'],
                     'name' => 'custodian.dar.manager',
                 ])->first();
 
                 $roleSecondary = Role::where([
-                    'id' => $tuhr->role_id,
+                    'id' => $tuhr['role_id'],
                     'name' => 'dar.manager',
                 ])->first();
 

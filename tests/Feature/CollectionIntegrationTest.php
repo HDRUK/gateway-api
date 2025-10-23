@@ -12,35 +12,12 @@ use App\Models\Collection;
 use App\Models\Permission;
 use App\Models\Application;
 use App\Models\Publication;
-use Database\Seeders\DurSeeder;
-use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
-use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
-// use Illuminate\Foundation\Testing\WithFaker;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\LicenseSeeder;
-use Database\Seeders\CategorySeeder;
-use Database\Seeders\CollectionSeeder;
-use Database\Seeders\ApplicationSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\PublicationSeeder;
 use App\Models\ApplicationHasPermission;
-use Database\Seeders\TypeCategorySeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\CollectionHasDurSeeder;
-use Database\Seeders\CollectionHasToolSeeder;
-use Database\Seeders\CollectionHasUserSeeder;
-use Database\Seeders\CollectionHasKeywordSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Database\Seeders\CollectionHasPublicationSeeder;
-use Database\Seeders\CollectionHasDatasetVersionSeeder;
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class CollectionIntegrationTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
@@ -58,29 +35,6 @@ class CollectionIntegrationTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            ApplicationSeeder::class,
-            CollectionSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            KeywordSeeder::class,
-            CategorySeeder::class,
-            TypeCategorySeeder::class,
-            LicenseSeeder::class,
-            ToolSeeder::class,
-            TagSeeder::class,
-            DurSeeder::class,
-            CollectionHasKeywordSeeder::class,
-            CollectionHasDatasetVersionSeeder::class,
-            CollectionHasToolSeeder::class,
-            CollectionHasDurSeeder::class,
-            PublicationSeeder::class,
-            PublicationHasDatasetVersionSeeder::class,
-            CollectionHasPublicationSeeder::class,
-            CollectionHasUserSeeder::class,
-        ]);
 
         $this->integration = Application::where('id', 1)->first();
 

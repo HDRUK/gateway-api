@@ -13,19 +13,9 @@ use App\Models\QuestionBank;
 use Tests\Traits\Authorization;
 use Illuminate\Http\UploadedFile;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\CollectionSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\SpatialCoverageSeeder;
-use Database\Seeders\CollectionHasUserSeeder;
-use Database\Seeders\QuestionBankSeeder;
-use Database\Seeders\DataAccessApplicationSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class UploadTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
@@ -43,17 +33,6 @@ class UploadTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            SpatialCoverageSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            CollectionSeeder::class,
-            CollectionHasUserSeeder::class,
-            QuestionBankSeeder::class,
-            DataAccessApplicationSeeder::class,
-        ]);
     }
 
     /**

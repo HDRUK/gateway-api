@@ -4,16 +4,11 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
-use Database\Seeders\FilterSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SavedSearchSeeder;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SavedSearchTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
@@ -24,12 +19,6 @@ class SavedSearchTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            FilterSeeder::class,
-            MinimalUserSeeder::class,
-            SavedSearchSeeder::class,
-        ]);
     }
 
     /**

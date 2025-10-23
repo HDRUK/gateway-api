@@ -11,7 +11,7 @@ return new class () extends Migration {
     public function up(): void
     {
         Schema::table('collections', function (Blueprint $table) {
-            $table->text('image_link')->change();
+            $table->text('image_link')->nullable()->change();
         });
     }
 
@@ -21,7 +21,7 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::table('collections', function (Blueprint $table) {
-            $table->string('image_link')->change();
+            $table->string('image_link')->nullable()->change();
         });
     }
 };

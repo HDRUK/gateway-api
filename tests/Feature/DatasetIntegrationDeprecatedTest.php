@@ -10,19 +10,11 @@ use App\Models\Application;
 use App\Models\DatasetVersion;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
-use Database\Seeders\TeamSeeder;
-use Database\Seeders\SectorSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\ApplicationSeeder;
-use Database\Seeders\MinimalUserSeeder;
 use App\Models\ApplicationHasPermission;
-use Database\Seeders\SpatialCoverageSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetIntegrationDeprecatedTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
@@ -51,15 +43,6 @@ class DatasetIntegrationDeprecatedTest extends TestCase
 
         Dataset::flushEventListeners();
         DatasetVersion::flushEventListeners();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            DatasetSeeder::class,
-            SectorSeeder::class,
-            TeamSeeder::class,
-            ApplicationSeeder::class,
-            SpatialCoverageSeeder::class,
-        ]);
 
         $this->integration = Application::where('id', 1)->first();
 

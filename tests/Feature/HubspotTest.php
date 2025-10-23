@@ -2,24 +2,20 @@
 
 namespace Tests\Feature;
 
-use Config;
 use Tests\TestCase;
 use App\Services\Hubspot;
 use Illuminate\Support\Facades\Http;
+use Tests\Traits\MockExternalApis;
 
 class HubspotTest extends TestCase
 {
-    protected function setUp(): void
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
+
+    public function setUp(): void
     {
-        parent::setUp();
-
-        Config::shouldReceive('get')
-            ->with('services.hubspot.base_url')
-            ->andReturn('http://hub.local');
-
-        Config::shouldReceive('get')
-            ->with('services.hubspot.key')
-            ->andReturn('test_api_key');
+        $this->commonSetUp();
     }
 
     public function testCreateContact()
@@ -39,10 +35,6 @@ class HubspotTest extends TestCase
                 ['property' => 'email', 'value' => 'john.doe@example.com'],
             ],
         ];
-
-        Http::fake([
-            'http://hub.local/contacts/v1/contact' => Http::response(['vid' => 12345], 200),
-        ]);
 
         $response = $hubspotService->createContact($properties);
 
@@ -74,10 +66,6 @@ class HubspotTest extends TestCase
             ],
         ];
 
-        Http::fake([
-            "http://hub.local/contacts/v1/contact/vid/{$id}/profile" => Http::response([], 204),
-        ]);
-
         $response = $hubspotService->updateContactById($id, $properties);
 
         $this->assertEmpty($response);
@@ -96,10 +84,6 @@ class HubspotTest extends TestCase
 
         $email = 'john.doe@example.com';
 
-        Http::fake([
-            "http://hub.local/contacts/v1/contact/email/{$email}/profile" => Http::response(['vid' => 12345], 200),
-        ]);
-
         $response = $hubspotService->getContactByEmail($email);
 
         $this->assertEquals(12345, $response);
@@ -116,10 +100,6 @@ class HubspotTest extends TestCase
         $hubspotService = new Hubspot();
 
         $id = 12345;
-
-        Http::fake([
-            "http://hub.local/contacts/v1/contact/vid/{$id}/profile" => Http::response(['vid' => 12345, 'properties' => []], 200),
-        ]);
 
         $response = $hubspotService->getContactById($id);
 
@@ -138,10 +118,6 @@ class HubspotTest extends TestCase
         $hubspotService = new Hubspot();
 
         $id = 12345;
-
-        Http::fake([
-            "http://hub.local/contacts/v1/contact/vid/{$id}" => Http::response([], 200),
-        ]);
 
         $response = $hubspotService->deleteContactById($id);
 

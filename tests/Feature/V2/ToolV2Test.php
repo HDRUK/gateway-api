@@ -15,47 +15,21 @@ use App\Models\Collection;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Models\Publication;
-use Database\Seeders\DurSeeder;
-use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
 use Tests\Traits\Helpers;
 use App\Http\Enums\TeamMemberOf;
-use Database\Seeders\ToolSeeder;
 use App\Models\CollectionHasTool;
 use App\Models\PublicationHasTool;
 use Tests\Traits\MockExternalApis;
 use App\Models\ToolHasTypeCategory;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\KeywordSeeder;
-use Database\Seeders\LicenseSeeder;
 use ElasticClientController as ECC;
-use Database\Seeders\CategorySeeder;
 use App\Models\DatasetVersionHasTool;
-use Database\Seeders\CollectionSeeder;
-use Database\Seeders\DurHasToolSeeder;
-use Database\Seeders\ToolHasTagSeeder;
-use Database\Seeders\ApplicationSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\PublicationSeeder;
-use Database\Seeders\TypeCategorySeeder;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\CollectionHasToolSeeder;
-use Database\Seeders\CollectionHasUserSeeder;
-use Database\Seeders\DurHasPublicationSeeder;
-use Database\Seeders\ProgrammingPackageSeeder;
-use Database\Seeders\PublicationHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
-use Database\Seeders\ProgrammingLanguageSeeder;
-use Database\Seeders\DatasetVersionHasToolSeeder;
-use Database\Seeders\EmailTemplateSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Database\Seeders\PublicationHasDatasetVersionSeeder;
 
 class ToolV2Test extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
     use Helpers;
     use MockExternalApis {
@@ -83,33 +57,6 @@ class ToolV2Test extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-
-        $this->seed([
-            MinimalUserSeeder::class,
-            CategorySeeder::class,
-            TypeCategorySeeder::class,
-            ProgrammingLanguageSeeder::class,
-            ProgrammingPackageSeeder::class,
-            LicenseSeeder::class,
-            TagSeeder::class,
-            KeywordSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-            ToolSeeder::class,
-            ToolHasTagSeeder::class,
-            PublicationSeeder::class,
-            PublicationHasDatasetVersionSeeder::class,
-            PublicationHasToolSeeder::class,
-            ApplicationSeeder::class,
-            DurSeeder::class,
-            DurHasPublicationSeeder::class,
-            DurHasToolSeeder::class,
-            CollectionSeeder::class,
-            CollectionHasToolSeeder::class,
-            DatasetVersionHasToolSeeder::class,
-            CollectionHasUserSeeder::class,
-            EmailTemplateSeeder::class,
-        ]);
 
         $this->authorisationUser(false);
         $this->nonAdminJwt = $this->getAuthorisationJwt(false);
@@ -1171,7 +1118,6 @@ class ToolV2Test extends TestCase
 
     public function test_v2_update_tool_by_team_with_success(): void
     {
-
         ECC::shouldReceive("indexDocument")
             ->times(1);
 
@@ -1279,7 +1225,7 @@ class ToolV2Test extends TestCase
         $this->assertEquals($responseUpdate['data']['license']['id'], $mockDataUpdate['license']);
         $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
         $this->assertEquals($responseUpdate['data']['category_id'], $mockDataUpdate['category_id']);
-        $this->assertEquals($responseUpdate['data']['user_id'], $mockDataUpdate['user_id']);
+        $this->assertEquals($responseUpdate['data']['user_id'], $this->currentUser['id']);
         $this->assertEquals($responseUpdate['data']['enabled'], $mockDataUpdate['enabled']);
 
         $toolHasTags = ToolHasTag::where('tool_id', $toolIdInsert)->get();

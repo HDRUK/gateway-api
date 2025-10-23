@@ -6,16 +6,15 @@ use Hash;
 use Tests\TestCase;
 use App\Models\User;
 use Tests\Traits\Authorization;
-use Database\Seeders\SectorSeeder;
+use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Http;
-// use Illuminate\Foundation\Testing\WithFaker;
-use Database\Seeders\MinimalUserSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class UserTest extends TestCase
 {
-    use RefreshDatabase;
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public const TEST_URL = '/api/v1/users';
 
@@ -30,13 +29,9 @@ class UserTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
         $this->runMockHubspot();
 
-        $this->seed([
-            MinimalUserSeeder::class,
-            SectorSeeder::class,
-        ]);
         $this->authorisationUser();
         $this->adminJwt = $this->getAuthorisationJwt();
 

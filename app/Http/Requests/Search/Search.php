@@ -6,7 +6,6 @@ use App\Http\Requests\BaseFormRequest;
 
 class Search extends BaseFormRequest
 {
-
     // SC: removing since this removes spaces from search queries
 
     // protected function prepareForValidation(): void

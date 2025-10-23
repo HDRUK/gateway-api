@@ -339,8 +339,8 @@ class CollectionController extends Controller
     public function store(CreateCollection $request): JsonResponse
     {
         // no checks on permissions are required, so long as you're logged in, and that will be checked by jwt middleware.
-
         $input = $request->all();
+
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
