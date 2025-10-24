@@ -160,7 +160,7 @@ return [
         'name' => 'widgets',
         'method' => 'get',
         'path' => '/teams/{teamId}/widgets',
-        'methodController' => 'WidgetController@get',
+        'methodController' => 'TeamWidgetController@get',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -175,7 +175,7 @@ return [
         'name' => 'widget',
         'method' => 'get',
         'path' => '/teams/{teamId}/widgets/{id}',
-        'methodController' => 'WidgetController@retrieve',
+        'methodController' => 'TeamWidgetController@retrieve',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -191,7 +191,7 @@ return [
         'name' => 'widget',
         'method' => 'get',
         'path' => '/teams/{teamId}/widgets/{id}/data',
-        'methodController' => 'WidgetController@retrieveData',
+        'methodController' => 'TeamWidgetController@retrieveData',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
        'constraint' => [
@@ -203,7 +203,7 @@ return [
         'name' => 'widgets-data',
         'method' => 'get',
         'path' => '/teams/{teamId}/widgets/data',
-        'methodController' => 'WidgetController@getWidgetData',
+        'methodController' => 'TeamWidgetController@getWidgetData',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -217,7 +217,7 @@ return [
         'name' => 'create_widget',
         'method' => 'post',
         'path' => '/teams/{teamId}/widgets',
-        'methodController' => 'WidgetController@store',
+        'methodController' => 'TeamWidgetController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -231,7 +231,7 @@ return [
         'name' => 'update_widget',
         'method' => 'patch',
         'path' => '/teams/{teamId}/widgets/{id}',
-        'methodController' => 'WidgetController@update',
+        'methodController' => 'TeamWidgetController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -246,7 +246,7 @@ return [
         'name' => 'delete_widgets',
         'method' => 'delete',
        'path' => '/teams/{teamId}/widgets/{id}',
-        'methodController' => 'WidgetController@destroy',
+        'methodController' => 'TeamWidgetController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',

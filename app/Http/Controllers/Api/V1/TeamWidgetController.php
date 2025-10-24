@@ -16,7 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Traits\LoggingContext;
 
-class WidgetController extends Controller
+class TeamWidgetController extends Controller
 {
     use LoggingContext;
 
@@ -383,15 +383,14 @@ class WidgetController extends Controller
             $scriptIds      = array_map('intval', $scriptIds);
             $collectionIds  = array_map('intval', $collectionIds);
 
-
             $datasets = Dataset::whereIn('id', $datasetIds)
-             ->get(['id', 'team_id'])
-             ->map(fn ($d) => [
-                 'id' => $d->id,
-                 'name' => $d->getTitle(),
-
-                 'team_id' => $d->team_id,
-             ]);
+                 ->get(['id', 'team_id'])
+                 ->map(fn ($d) => [
+                     'id' => $d->id,
+                      'title' => $d->id,
+                    ...$d->getSummary(),
+                     'team_id' => $d->team_id,
+                 ]);
 
             $dataUses = Dur::whereIn('id', $dataUseIds)
                 ->get(['id', 'project_title'])
