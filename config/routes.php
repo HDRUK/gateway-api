@@ -147,6 +147,110 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+     [
+        'name' => 'widgets',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/widgets',
+        'methodController' => 'TeamWidgetController@get',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,widgets.read',
+
+        ],
+       'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'widget',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/widgets/{id}',
+        'methodController' => 'TeamWidgetController@retrieve',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,widgets.read',
+
+        ],
+       'constraint' => [
+          'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'widget',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/widgets/{id}/data',
+        'methodController' => 'TeamWidgetController@retrieveData',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+       'constraint' => [
+          'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'widgets-data',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/widgets/data',
+        'methodController' => 'TeamWidgetController@getWidgetData',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,widgets.read',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'create_widget',
+        'method' => 'post',
+        'path' => '/teams/{teamId}/widgets',
+        'methodController' => 'TeamWidgetController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,widgets.create',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'update_widget',
+        'method' => 'patch',
+        'path' => '/teams/{teamId}/widgets/{id}',
+        'methodController' => 'TeamWidgetController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,widgets.update',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'delete_widgets',
+        'method' => 'delete',
+       'path' => '/teams/{teamId}/widgets/{id}',
+        'methodController' => 'TeamWidgetController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,widgets.read',
+
+        ],
+         'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
+        ]
+    ],
+
+
 
     // features
     [
@@ -416,6 +520,18 @@ return [
         'method' => 'get',
         'path' => '/teams',
         'methodController' => 'TeamController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+
+[
+        'name' => 'teams',
+        'method' => 'get',
+        'path' => '/teams/names',
+        'methodController' => 'TeamController@getNames',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',

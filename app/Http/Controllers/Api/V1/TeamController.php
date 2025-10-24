@@ -171,6 +171,78 @@ class TeamController extends Controller
         }
     }
 
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/teams/names",
+     *      tags={"Teams"},
+     *      summary="TeamController@getNames",
+     *      description="Returns a simple list of enabled teams (id and name only)",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success response",
+     *          @OA\JsonContent(
+     *              type="array",
+     *              @OA\Items(
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Research Data Team")
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function getNames(Request $request): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $query = Team::where('enabled', 1)
+                ->select(['id', 'name']);
+
+            if ($request->has('sort')) {
+                $sortDirection = strtolower($request->query('sort')) === 'desc' ? 'desc' : 'asc';
+                $query->orderBy('name', $sortDirection);
+            } else {
+                $query->orderBy('name', 'asc');
+            }
+
+            $teams = $query->get();
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Get team names and IDs',
+            ]);
+
+            return response()->json(['data' => $teams], 200);
+
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'error',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
     /**
      * @OA\Get(
      *      path="/api/v1/teams/{teamId}",

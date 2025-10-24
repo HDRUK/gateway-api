@@ -17,6 +17,10 @@ return [
         'code' => 401,
         'message' => 'unauthorized',
     ],
+    'STATUS__FORBIDDEN' => [
+        'code' => 403,
+        'message' => 'forbidden',
+    ],
     'STATUS_NOT_FOUND' => [
         'code' => 404,
         'message' => 'not found',

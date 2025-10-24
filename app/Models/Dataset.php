@@ -244,6 +244,33 @@ class Dataset extends Model
         $datasetVersion = DatasetVersion::findOrFail($version)->toArray();
         return $datasetVersion['metadata']['metadata']['summary']['title'];
     }
+    /**
+         * Helper function to grab a summary for dataset from latest metadata.
+         */
+    public function getSummary(): array
+    {
+        $version = DatasetVersion::where('dataset_id', $this->id)
+            ->select(['version', 'id'])
+            ->orderBy('version', 'desc')
+            ->first()
+            ->id;
+
+        $datasetVersion = DatasetVersion::findOrFail($version)->toArray();
+        $keywords = [];
+        if (!empty($datasetVersion['metadata']['metadata']['summary']['keywords'])) {
+            $keywords = array_filter(array_map('trim', explode(';,;', $datasetVersion['metadata']['metadata']['summary']['keywords'] ?? null)));
+        }
+        return [
+            'title' => $datasetVersion['metadata']['metadata']['summary']['title'] ?? null,
+            'short_title' => $datasetVersion['metadata']['metadata']['summary']['shortTitle'] ?? null,
+            'description' => $datasetVersion['metadata']['metadata']['summary']['description'] ?? null,
+            'keywords' => $keywords,
+            'population_size' => $datasetVersion['metadata']['metadata']['summary']['populationSize'] ?? null,
+            'start_date' => $datasetVersion['metadata']['metadata']['provenance']['temporal']['startDate'] ?? null,
+            'end_date' => $datasetVersion['metadata']['metadata']['provenance']['temporal']['endDate'] ?? null,
+            'publisher' => $datasetVersion['metadata']['metadata']['summary']['publisher'] ?? null,
+        ];
+    }
 
     /**
      * Order by raw metadata extract
