@@ -19,5 +19,7 @@ class Authenticate extends Middleware
         if (!$request->expectsJson() && (strpos($currentUrl, 'oauth/logoutme') !== false || strpos($currentUrl, '/bcrquest') !== false)) {
             return route('login');
         }
+
+        return null;
     }
 }
