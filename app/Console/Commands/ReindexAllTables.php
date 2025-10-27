@@ -26,7 +26,7 @@ class ReindexAllTables extends Command
      */
     public function handle()
     {
-        $database = env('DB_DATABASE');
+        $database = config('database.connections.mysql.database');
 
         $tables = DB::select('SHOW TABLES');
 
