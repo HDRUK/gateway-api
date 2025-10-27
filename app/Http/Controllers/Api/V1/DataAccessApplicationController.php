@@ -20,6 +20,7 @@ use App\Models\DataAccessApplicationHasDataset;
 use App\Models\DataAccessApplicationHasQuestion;
 use App\Models\DataAccessTemplate;
 use App\Models\Dataset;
+use App\Models\QuestionBank;
 use App\Models\Team;
 use App\Models\TeamHasDataAccessApplication;
 use App\Models\Upload;

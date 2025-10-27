@@ -28,7 +28,8 @@ class Library extends Model
 
     public $timestamps = true;
 
-    /**
+    /** @return BelongsTo<Dataset, $this>
+     *
      * Relationship to Dataset model.
      */
     public function dataset(): BelongsTo

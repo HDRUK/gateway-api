@@ -340,8 +340,9 @@ class IntegrationDurController extends Controller
      */
     public function show(GetDur $request, int $id): JsonResponse
     {
+        $input = $request->all();
+
         try {
-            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $dur = $this->getDurById($id);

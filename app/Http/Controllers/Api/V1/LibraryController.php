@@ -104,7 +104,7 @@ class LibraryController extends Controller
                 return $perPage;
             }, ['*'], 'page');
 
-            $transformedLibraries = $libraries->getCollection()->map(function ($library) {
+            $transformedLibraries = $libraries->getCollection()->map(function (Library $library) {
                 $dataset = $library->dataset;
                 $team = $dataset->team;
                 $teamPublishedDARTemplates = DataAccessTemplate::where([['team_id', $team->id], ['published', 1]])->pluck('id');

@@ -78,6 +78,7 @@ class Federation extends Model
         'tested' => 'boolean',
     ];
 
+    /** @return BelongsToMany<Team, $this> */
     public function team(): BelongsToMany
     {
         return $this->belongsToMany(Team::class, 'team_has_federations');
