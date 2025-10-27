@@ -212,10 +212,10 @@ class LicenseController extends Controller
      */
     public function store(CreateLicense $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $license = License::create([
                 'code' => strtoupper($input['code']),
                 'label' => $input['label'],
@@ -319,7 +319,7 @@ class LicenseController extends Controller
     public function update(UpdateLicense $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
             License::where('id', $id)->update([
@@ -424,10 +424,10 @@ class LicenseController extends Controller
      */
     public function edit(EditLicense $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $arrayKeys = [
                 'code',
                 'label',
@@ -509,7 +509,7 @@ class LicenseController extends Controller
     public function destroy(DeleteLicense $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
             License::where(['id' => $id])->delete();

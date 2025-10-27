@@ -87,10 +87,10 @@ class LibraryController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $perPage = (int) request('per_page', Config::get('constants.per_page'));
 
             $libraries = Library::where('user_id', $jwtUser['id'])
@@ -208,9 +208,10 @@ class LibraryController extends Controller
      */
     public function show(GetLibrary $request, int $id): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $jwtUserIsAdmin = $jwtUser['is_admin'];
 
             // Fetch the library with dataset and team
@@ -308,10 +309,10 @@ class LibraryController extends Controller
      */
     public function store(CreateLibrary $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $library = Library::updateOrCreate([
                 'user_id' => (int)$jwtUser['id'],
                 'dataset_id' => $input['dataset_id'],
@@ -400,10 +401,10 @@ class LibraryController extends Controller
      */
     public function update(UpdateLibrary $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $library = Library::where('id', $id)->first();
             if ($library['user_id'] != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to edit this library');
@@ -495,10 +496,10 @@ class LibraryController extends Controller
      */
     public function edit(EditLibrary $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $arrayKeys = [
                 'user_id',
                 'dataset_id',
@@ -580,10 +581,10 @@ class LibraryController extends Controller
      */
     public function destroy(DeleteLibrary $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $library = Library::findOrFail($id);
             if ($library) {
 
