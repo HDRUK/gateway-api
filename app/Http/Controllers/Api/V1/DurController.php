@@ -398,10 +398,9 @@ class DurController extends Controller
      */
     public function show(GetDur $request, int $id): JsonResponse
     {
+        list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
+
         try {
-
-            list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
-
             $dur = $this->getDurById($id);
 
             if (!empty($dur['user'])) {

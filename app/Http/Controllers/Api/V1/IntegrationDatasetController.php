@@ -319,9 +319,9 @@ class IntegrationDatasetController extends Controller
      */
     public function show(GetDataset $request, int $id): JsonResponse
     {
+        $input = $request->all();
 
         try {
-            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
             $dataset = Dataset::findOrFail($id);
 
@@ -463,9 +463,9 @@ class IntegrationDatasetController extends Controller
      */
     public function store(CreateDataset $request): JsonResponse
     {
-        try {
-            $input = $request->all();
+        $input = $request->all();
 
+        try {
             // If this is coming from an integration, we override the default settings
             // so these aren't required as part of the payload and inferred from the
             // application token being used instead
@@ -913,8 +913,9 @@ class IntegrationDatasetController extends Controller
      */
     public function edit(EditDataset $request, int $id)
     {
+        $input = $request->all();
+
         try {
-            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             if ($request->has('unarchive')) {
@@ -1062,8 +1063,9 @@ class IntegrationDatasetController extends Controller
      */
     public function destroy(Request $request, string $id) // softdelete
     {
+        $input = $request->all();
+
         try {
-            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $dataset = Dataset::findOrFail($id);
