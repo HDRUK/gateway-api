@@ -254,19 +254,21 @@ class Dataset extends Model
             ->orderBy('version', 'desc')
             ->first()
             ->id;
+
+        $datasetVersion = DatasetVersion::findOrFail($version)->toArray();
         $keywords = [];
-        if (!empty($version['metadata']['metadata']['summary']['keywords'])) {
-            $keywords = array_filter(array_map('trim', explode(';,;', $version['metadata']['metadata']['summary']['keywords'] ?? null)));
+        if (!empty($datasetVersion['metadata']['metadata']['summary']['keywords'])) {
+            $keywords = array_filter(array_map('trim', explode(';,;', $datasetVersion['metadata']['metadata']['summary']['keywords'] ?? null)));
         }
         return [
-            'title' => $version['metadata']['metadata']['summary']['title'] ?? null,
-            'short_title' => $version['metadata']['metadata']['summary']['shortTitle'] ?? null,
-            'description' => $version['metadata']['metadata']['summary']['description'] ?? null,
+            'title' => $datasetVersion['metadata']['metadata']['summary']['title'] ?? null,
+            'short_title' => $datasetVersion['metadata']['metadata']['summary']['shortTitle'] ?? null,
+            'description' => $datasetVersion['metadata']['metadata']['summary']['description'] ?? null,
             'keywords' => $keywords,
-            'population_size' => $version['metadata']['metadata']['summary']['populationSize'] ?? null,
-            'start_date' => $version['metadata']['metadata']['provenance']['temporal']['startDate'] ?? null,
-            'end_date' => $version['metadata']['metadata']['provenance']['temporal']['endDate'] ?? null,
-            'publisher' => $version['metadata']['metadata']['summary']['publisher'] ?? null,
+            'population_size' => $datasetVersion['metadata']['metadata']['summary']['populationSize'] ?? null,
+            'start_date' => $datasetVersion['metadata']['metadata']['provenance']['temporal']['startDate'] ?? null,
+            'end_date' => $datasetVersion['metadata']['metadata']['provenance']['temporal']['endDate'] ?? null,
+            'publisher' => $datasetVersion['metadata']['metadata']['summary']['publisher'] ?? null,
         ];
     }
 
