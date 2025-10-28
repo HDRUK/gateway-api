@@ -234,41 +234,46 @@ class TeamWidgetController extends Controller
             $teamIds = array_map('intval', $teamIds);
 
             $datasets = Dataset::whereIn('team_id', $teamIds)
-                ->get(['team_id', 'id'])
-                ->map(fn ($dataset) => [
-                    'id' => $dataset->id,
-                     'title' => $dataset->getTitle(),
-                    'team_id' => $dataset->team_id,
-                    'team_name' => $dataset->team->name,
+    ->where('status', 'ACTIVE')
+    ->get(['team_id', 'id'])
+    ->map(fn ($dataset) => [
+        'id' => $dataset->id,
+        'title' => $dataset->getTitle(),
+        'team_id' => $dataset->team_id,
+        'team_name' => optional($dataset->team)->name,
+    ]);
 
+            $tools = Tool::whereIn('team_id', $teamIds)
+                ->where('status', 'ACTIVE')
+                ->get(['id', 'name', 'team_id'])
+                ->map(fn ($s) => [
+                    'id' => $s->id,
+                    'name' => $s->name,
+                    'team_id' => $s->team_id,
+                    'team_name' => optional($s->team)->name,
+                ]);
+
+            $collections = Collection::whereIn('team_id', $teamIds)
+                ->where('status', 'ACTIVE')
+                ->get(['id', 'name', 'team_id'])
+                ->map(fn ($c) => [
+                    'id' => $c->id,
+                    'name' => $c->name,
+                    'team_id' => $c->team_id,
+                    'team_name' => optional($c->team)->name,
+                ]);
+
+            $durs = Dur::whereIn('team_id', $teamIds)
+                ->where('status', 'ACTIVE')
+                ->get(['id', 'project_title', 'team_id'])
+                ->map(fn ($du) => [
+                    'id' => $du->id,
+                    'name' => $du->project_title,
+                    'team_id' => $du->team_id,
+                    'team_name' => optional($du->team)->name,
                 ]);
 
 
-            $tools = Tool::whereIn('team_id', $teamIds)
-                ->get(['id', 'name', 'team_id'])->map(fn ($s) => [
-                'id' => $s->id,
-                'name' => $s->name,
-                'team_id' => $s->team_id,
-                'team_name' => optional($s->team)->name,
-            ]);
-
-            $collections = Collection::whereIn('team_id', $teamIds)
-                ->get(['id', 'name', 'team_id'])->map(fn ($c) => [
-                'id' => $c->id,
-                'name' => $c->name,
-                'team_id' => $c->team_id,
-                'team_name' => optional($c->team)->name,
-            ]);
-            ;
-
-            $durs = Dur::whereIn('team_id', $teamIds)
-                ->get(['id', 'project_title', 'team_id'])->map(fn ($du) => [
-                'id' => $du->id,
-                'name' => $du->project_title,
-                'team_id' => $du->team_id,
-                'team_name' => optional($du->team)->name,
-            ]);
-            ;
 
             return response()->json([ 'data' => [
                 'datasets' => $datasets,
@@ -383,96 +388,100 @@ class TeamWidgetController extends Controller
             $dataUseIds     = array_map('intval', $dataUseIds);
             $scriptIds      = array_map('intval', $scriptIds);
             $collectionIds  = array_map('intval', $collectionIds);
-            $ids = implode(',', $datasetIds);
+            if (!empty($datasetIds)) {
+                $ids = implode(',', $datasetIds);
 
-            $datasets = collect(DB::select("
-                SELECT 
-                    d.id AS id,
-                    d.team_id,
-                    dv.id AS dataset_version_id,
-                    JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.title')) AS title,
-                    JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.shortTitle')) AS short_title,
-                    JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.description')) AS description,
-                    JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.keywords')) AS raw_keywords,
-                    JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.populationSize')) AS population_size,
-                    JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.provenance.temporal.startDate')) AS start_date,
-                    JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.provenance.temporal.endDate')) AS end_date,
-                    JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.publisher.name')) AS publisher
-                FROM datasets d
-                JOIN dataset_versions dv ON dv.dataset_id = d.id
-                WHERE dv.version = (
-                    SELECT MAX(dv2.version)
-                    FROM dataset_versions dv2
-                    WHERE dv2.dataset_id = d.id
-                )
-                AND d.id IN ($ids)
-            "))
-            ->map(function ($row) {
-                return [
-                    'id' => $row->id,
-                    'title' => $row->title,
-                    'short_title' => $row->short_title,
-                    'description' => $row->description,
-                    'keywords' => !empty($row->raw_keywords)
-                        ? array_filter(array_map('trim', explode(';,;', $row->raw_keywords)))
-                        : [],
-                    'population_size' => $row->population_size,
-                    'start_date' => $row->start_date,
-                    'end_date' => $row->end_date,
-                    'publisher' => $row->publisher,
-                    'team_id' => $row->team_id,
-                ];
-            });
-
-
-
-            $dataUses = Dur::with('team:id,name')
-            ->whereIn('id', $dataUseIds)
-            ->get(['id', 'project_title', 'organisation_name', 'team_id'])
-            ->map(function ($du) {
-                $dataset = DB::table('dur as d')
-                    ->join('dur_has_dataset_version as dhdv', 'dhdv.dur_id', '=', 'd.id')
-                    ->join('dataset_versions as dv', 'dv.id', '=', 'dhdv.dataset_version_id')
-                    ->join('datasets as ds', 'ds.id', '=', 'dv.dataset_id')
-                    ->joinSub(
-                        DB::table('dur as d2')
-                            ->join('dur_has_dataset_version as dhdv2', 'dhdv2.dur_id', '=', 'd2.id')
-                            ->join('dataset_versions as dv2', 'dv2.id', '=', 'dhdv2.dataset_version_id')
-                            ->join('datasets as ds2', 'ds2.id', '=', 'dv2.dataset_id')
-                            ->whereNull('d2.deleted_at')
-                            ->select('d2.id as dur_id', DB::raw('COUNT(DISTINCT ds2.id) as dataset_count'))
-                            ->groupBy('d2.id'),
-                        'counts',
-                        'counts.dur_id',
-                        '=',
-                        'd.id'
+                $datasets = DB::select("
+                    SELECT 
+                        d.id AS id,
+                        d.team_id,
+                        dv.id AS dataset_version_id,
+                        JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.title')) AS title,
+                        JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.shortTitle')) AS short_title,
+                        JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.description')) AS description,
+                        JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.keywords')) AS raw_keywords,
+                        JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.populationSize')) AS population_size,
+                        JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.provenance.temporal.startDate')) AS start_date,
+                        JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.provenance.temporal.endDate')) AS end_date,
+                        JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.publisher.name')) AS publisher
+                    FROM datasets d
+                    JOIN dataset_versions dv ON dv.dataset_id = d.id
+                    WHERE dv.version = (
+                        SELECT MAX(dv2.version)
+                        FROM dataset_versions dv2
+                        WHERE dv2.dataset_id = d.id
                     )
-                    ->whereNull('d.deleted_at')
-                    ->where('d.id', $du->id)
-                    ->where('ds.status', 'ACTIVE')
-                    ->select([
-                        'ds.id as dataset_id',
-                        DB::raw("JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.title')) as dataset_title"),
-                        'counts.dataset_count',
-                    ])
-                    ->limit(1)
-                    ->first();
+                    AND d.id IN ($ids)
+                ");
+            } else {
+                $datasets = [];
+            }
 
-                return [
-                    'id' => $du->id,
-                    'name' => $du->project_title,
-                    'team_name' => $du->team?->name,
-                    'team_id' => $du->team?->id,
-                    'organisation_name' => $du->organisation_name,
-                    'dataset' => $dataset,
-                ];
-            });
+            if (!empty($dataUseIds)) {
+                $dataUses = Dur::with('team:id,name')
+                    ->whereIn('id', $dataUseIds)
+                    ->get(['id', 'project_title', 'organisation_name', 'team_id'])
+                    ->map(function ($du) {
+                        $dataset = DB::table('dur as d')
+                            ->join('dur_has_dataset_version as dhdv', 'dhdv.dur_id', '=', 'd.id')
+                            ->join('dataset_versions as dv', 'dv.id', '=', 'dhdv.dataset_version_id')
+                            ->join('datasets as ds', 'ds.id', '=', 'dv.dataset_id')
+                            ->joinSub(
+                                DB::table('dur as d2')
+                                    ->join('dur_has_dataset_version as dhdv2', 'dhdv2.dur_id', '=', 'd2.id')
+                                    ->join('dataset_versions as dv2', 'dv2.id', '=', 'dhdv2.dataset_version_id')
+                                    ->join('datasets as ds2', 'ds2.id', '=', 'dv2.dataset_id')
+                                    ->whereNull('d2.deleted_at')
+                                    ->select('d2.id as dur_id', DB::raw('COUNT(DISTINCT ds2.id) as dataset_count'))
+                                    ->groupBy('d2.id'),
+                                'counts',
+                                'counts.dur_id',
+                                '=',
+                                'd.id'
+                            )
+                            ->whereNull('d.deleted_at')
+                            ->where('d.id', $du->id)
+                            ->where('ds.status', 'ACTIVE')
+                            ->select([
+                                'ds.id as dataset_id',
+                                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.title')) as dataset_title"),
+                                'counts.dataset_count',
+                            ])
+                            ->limit(1)
+                            ->first();
 
-            $scripts = DB::select('SELECT id, name, description FROM tools WHERE id IN (?)', [implode(',', $scriptIds)]);
+                        return [
+                            'id' => $du->id,
+                            'name' => $du->project_title,
+                            'team_name' => $du->team?->name,
+                            'team_id' => $du->team?->id,
+                            'organisation_name' => $du->organisation_name,
+                            'dataset' => $dataset,
+                        ];
+                    });
+            } else {
+                $dataUses = [];
+            }
 
+            if (!empty($scriptIds)) {
+                $placeholders = implode(',', array_fill(0, count($scriptIds), '?'));
+                $scripts = DB::select(
+                    "SELECT id, name, description FROM tools WHERE id IN ($placeholders)",
+                    $scriptIds
+                );
+            } else {
+                $scripts = [];
+            }
 
-            $collections = DB::select('SELECT id, name, image_link FROM collections WHERE id IN (?)', [implode(',', $collectionIds)]);
-
+            if (!empty($collectionIds)) {
+                $placeholders = implode(',', array_fill(0, count($collectionIds), '?'));
+                $collections = DB::select(
+                    "SELECT id, name, image_link FROM collections WHERE id IN ($placeholders)",
+                    $collectionIds
+                );
+            } else {
+                $collections = [];
+            }
 
 
             return response()->json([
