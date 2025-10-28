@@ -400,6 +400,8 @@ class TeamWidgetController extends Controller
                 'name' => $du->project_title,
                 'team_name' => $du->team?->name,
                 'team_id' => $du->team?->id,
+                'organisation_name' => $du->organisation_name,
+
             ]);
 
             $scripts = Tool::whereIn('id', $scriptIds)
@@ -407,6 +409,7 @@ class TeamWidgetController extends Controller
                 ->map(fn ($s) => [
                     'id' => $s->id,
                     'name' => $s->name,
+                    'description' => $s->description,
                 ]);
 
             $collections = Collection::whereIn('id', $collectionIds)
@@ -414,6 +417,7 @@ class TeamWidgetController extends Controller
                 ->map(fn ($c) => [
                     'id' => $c->id,
                     'name' => $c->name,
+                    'image_link' => $c->image_link,
                 ]);
 
 
