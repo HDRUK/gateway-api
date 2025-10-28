@@ -393,21 +393,21 @@ class TeamWidgetController extends Controller
                  ]);
 
             $dataUses = Dur::whereIn('id', $dataUseIds)
-                ->get(['id', 'project_title'])
+                ->get(['id', 'project_title', 'organisation_name', 'team_id'])
                 ->map(fn ($du) => [
                     'id' => $du->id,
                     'name' => $du->project_title,
                 ]);
 
             $scripts = Tool::whereIn('id', $scriptIds)
-                ->get(['id', 'name'])
+                ->get(['id', 'name', 'description'])
                 ->map(fn ($s) => [
                     'id' => $s->id,
                     'name' => $s->name,
                 ]);
 
             $collections = Collection::whereIn('id', $collectionIds)
-                ->get(['id', 'name'])
+                ->get(['id', 'name', 'image_link'])
                 ->map(fn ($c) => [
                     'id' => $c->id,
                     'name' => $c->name,
