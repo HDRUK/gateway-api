@@ -11,6 +11,7 @@ use App\Models\Dataset;
 use App\Models\Collection;
 use App\Models\Tool;
 use App\Models\Dur;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -395,14 +396,44 @@ class TeamWidgetController extends Controller
             $dataUses = Dur::with('team:id,name')
             ->whereIn('id', $dataUseIds)
             ->get(['id', 'project_title', 'organisation_name', 'team_id'])
-            ->map(fn ($du) => [
-                'id' => $du->id,
-                'name' => $du->project_title,
-                'team_name' => $du->team?->name,
-                'team_id' => $du->team?->id,
-                'organisation_name' => $du->organisation_name,
+            ->map(function ($du) {
+                $dataset = DB::table('dur as d')
+                    ->join('dur_has_dataset_version as dhdv', 'dhdv.dur_id', '=', 'd.id')
+                    ->join('dataset_versions as dv', 'dv.id', '=', 'dhdv.dataset_version_id')
+                    ->join('datasets as ds', 'ds.id', '=', 'dv.dataset_id')
+                    ->joinSub(
+                        DB::table('dur as d2')
+                            ->join('dur_has_dataset_version as dhdv2', 'dhdv2.dur_id', '=', 'd2.id')
+                            ->join('dataset_versions as dv2', 'dv2.id', '=', 'dhdv2.dataset_version_id')
+                            ->join('datasets as ds2', 'ds2.id', '=', 'dv2.dataset_id')
+                            ->whereNull('d2.deleted_at')
+                            ->select('d2.id as dur_id', DB::raw('COUNT(DISTINCT ds2.id) as dataset_count'))
+                            ->groupBy('d2.id'),
+                        'counts',
+                        'counts.dur_id',
+                        '=',
+                        'd.id'
+                    )
+                    ->whereNull('d.deleted_at')
+                    ->where('d.id', $du->id)
+                    ->where('ds.status', 'ACTIVE')
+                    ->select([
+                        'ds.id as dataset_id',
+                        DB::raw("JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.title')) as dataset_title"),
+                        'counts.dataset_count',
+                    ])
+                    ->limit(1)
+                    ->first();
 
-            ]);
+                return [
+                    'id' => $du->id,
+                    'name' => $du->project_title,
+                    'team_name' => $du->team?->name,
+                    'team_id' => $du->team?->id,
+                    'organisation_name' => $du->organisation_name,
+                    'dataset' => $dataset,
+                ];
+            });
 
             $scripts = Tool::whereIn('id', $scriptIds)
                 ->get(['id', 'name', 'description'])
