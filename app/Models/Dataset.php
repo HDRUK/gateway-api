@@ -249,13 +249,10 @@ class Dataset extends Model
          */
     public function getSummary(): array
     {
-        $version = DatasetVersion::where('dataset_id', $this->id)
-            ->select(['version', 'id'])
+        $datasetVersion = DatasetVersion::where('dataset_id', $this->id)
             ->orderBy('version', 'desc')
-            ->first()
-            ->id;
-
-        $datasetVersion = DatasetVersion::findOrFail($version)->toArray();
+            ->firstOrFail()
+            ->toArray();
         $keywords = [];
         if (!empty($datasetVersion['metadata']['metadata']['summary']['keywords'])) {
             $keywords = array_filter(array_map('trim', explode(';,;', $datasetVersion['metadata']['metadata']['summary']['keywords'] ?? null)));
