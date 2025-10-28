@@ -383,15 +383,48 @@ class TeamWidgetController extends Controller
             $dataUseIds     = array_map('intval', $dataUseIds);
             $scriptIds      = array_map('intval', $scriptIds);
             $collectionIds  = array_map('intval', $collectionIds);
+            $ids = implode(',', $datasetIds);
 
-            $datasets = Dataset::whereIn('id', $datasetIds)
-                 ->get(['id', 'team_id'])
-                 ->map(fn ($d) => [
-                     'id' => $d->id,
-                      'title' => $d->id,
-                    ...$d->getSummary(),
-                     'team_id' => $d->team_id,
-                 ]);
+            $datasets = collect(DB::select("
+                SELECT 
+                    d.id AS id,
+                    d.team_id,
+                    dv.id AS dataset_version_id,
+                    JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.title')) AS title,
+                    JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.shortTitle')) AS short_title,
+                    JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.description')) AS description,
+                    JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.keywords')) AS raw_keywords,
+                    JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.populationSize')) AS population_size,
+                    JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.provenance.temporal.startDate')) AS start_date,
+                    JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.provenance.temporal.endDate')) AS end_date,
+                    JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.publisher.name')) AS publisher
+                FROM datasets d
+                JOIN dataset_versions dv ON dv.dataset_id = d.id
+                WHERE dv.version = (
+                    SELECT MAX(dv2.version)
+                    FROM dataset_versions dv2
+                    WHERE dv2.dataset_id = d.id
+                )
+                AND d.id IN ($ids)
+            "))
+            ->map(function ($row) {
+                return [
+                    'id' => $row->id,
+                    'title' => $row->title,
+                    'short_title' => $row->short_title,
+                    'description' => $row->description,
+                    'keywords' => !empty($row->raw_keywords)
+                        ? array_filter(array_map('trim', explode(';,;', $row->raw_keywords)))
+                        : [],
+                    'population_size' => $row->population_size,
+                    'start_date' => $row->start_date,
+                    'end_date' => $row->end_date,
+                    'publisher' => $row->publisher,
+                    'team_id' => $row->team_id,
+                ];
+            });
+
+
 
             $dataUses = Dur::with('team:id,name')
             ->whereIn('id', $dataUseIds)
@@ -435,21 +468,11 @@ class TeamWidgetController extends Controller
                 ];
             });
 
-            $scripts = Tool::whereIn('id', $scriptIds)
-                ->get(['id', 'name', 'description'])
-                ->map(fn ($s) => [
-                    'id' => $s->id,
-                    'name' => $s->name,
-                    'description' => $s->description,
-                ]);
+            $scripts = DB::select('SELECT id, name, description FROM tools WHERE id IN (?)', [implode(',', $scriptIds)]);
 
-            $collections = Collection::whereIn('id', $collectionIds)
-                ->get(['id', 'name', 'image_link'])
-                ->map(fn ($c) => [
-                    'id' => $c->id,
-                    'name' => $c->name,
-                    'image_link' => $c->image_link,
-                ]);
+
+            $collections = DB::select('SELECT id, name, image_link FROM collections WHERE id IN (?)', [implode(',', $collectionIds)]);
+
 
 
             return response()->json([
