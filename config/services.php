@@ -94,11 +94,11 @@ return [
     ],
 
     'traser' => [
-        'service_url' => env('TRASER_SERVICE_URL', ''),
+        'url' => env('TRASER_SERVICE_URL', ''),
     ],
 
     'gmi' => [
-        'service_url' => env('GMI_SERVICE_URL', ''),
+        'url' => env('GMI_SERVICE_URL', ''),
     ],
 
     'mjml' => [

@@ -140,7 +140,7 @@ class ServiceLayerController extends Controller
     {
         return $this->forwardRequest(
             $request,
-            config("gateway.traser.service_url"),
+            config("services.traser.url"),
             "api/services/traser/"
         );
     }

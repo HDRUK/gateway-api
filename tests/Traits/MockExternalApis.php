@@ -1156,7 +1156,7 @@ trait MockExternalApis
         // ]);
 
         Http::fake([
-            config('gmi.service_url').'*' => Http::response(
+            config('services.gmi.url').'*' => Http::response(
                 ['message' => 'success'],
                 200,
                 ['application/json']

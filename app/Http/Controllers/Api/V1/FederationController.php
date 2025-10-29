@@ -327,7 +327,7 @@ class FederationController extends Controller
                     "secret_id" => $auth_secret_key_location,
                     "payload" => json_encode($secrets_payload)
                 ];
-                $response = Http::withHeaders($loggingContext)->post(config('gmi.service_url') . '/federation', $payload);
+                $response = Http::withHeaders($loggingContext)->post(config('services.gmi.url') . '/federation', $payload);
 
                 if (!$response->successful()) {
                     Federation::where('id', $federation->id)->delete();
@@ -498,7 +498,7 @@ class FederationController extends Controller
                     "payload" => json_encode($secrets_payload)
                 ];
 
-                $response = Http::withHeaders($loggingContext)->patch(config('gmi.service_url') . '/federation', $payload);
+                $response = Http::withHeaders($loggingContext)->patch(config('services.gmi.url') . '/federation', $payload);
 
                 if (!$response->successful()) {
                     return response()->json([
@@ -675,7 +675,7 @@ class FederationController extends Controller
                     "payload" => json_encode($secrets_payload)
                 ];
 
-                $response = Http::withHeaders($loggingContext)->patch(config('gmi.service_url') . '/federation', $payload);
+                $response = Http::withHeaders($loggingContext)->patch(config('services.gmi.url') . '/federation', $payload);
 
                 if (!$response->successful()) {
                     return response()->json([

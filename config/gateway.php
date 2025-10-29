@@ -6,7 +6,6 @@ return [
     "darq_service" => env("DARQ_SERVICE", ""),
     "feature_flagging_config_url" => env("FEATURE_FLAGGING_CONFIG_URL", ""),
     "gateway_url" => env("GATEWAY_URL", ""),
-    "gmi_service_url" => env("GMI_SERVICE_URL", ""),
     "google_application_project_path" => env("GOOGLE_APPLICATION_PROJECT_PATH", ""),
     "google_secrets_gmi_prepend_name" => env("GOOGLE_SECRETS_GMI_PREPEND_NAME", ""),
     "media_url" => env("MEDIA_URL", ""),
