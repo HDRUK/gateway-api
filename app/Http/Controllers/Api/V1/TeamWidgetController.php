@@ -426,26 +426,19 @@ class TeamWidgetController extends Controller
                             ->join('dur_has_dataset_version as dhdv', 'dhdv.dur_id', '=', 'd.id')
                             ->join('dataset_versions as dv', 'dv.id', '=', 'dhdv.dataset_version_id')
                             ->join('datasets as ds', 'ds.id', '=', 'dv.dataset_id')
-                            ->joinSub(
-                                DB::table('dur as d2')
-                                    ->join('dur_has_dataset_version as dhdv2', 'dhdv2.dur_id', '=', 'd2.id')
-                                    ->join('dataset_versions as dv2', 'dv2.id', '=', 'dhdv2.dataset_version_id')
-                                    ->join('datasets as ds2', 'ds2.id', '=', 'dv2.dataset_id')
-                                    ->whereNull('d2.deleted_at')
-                                    ->select('d2.id as dur_id', DB::raw('COUNT(DISTINCT ds2.id) as dataset_count'))
-                                    ->groupBy('d2.id'),
-                                'counts',
-                                'counts.dur_id',
-                                '=',
-                                'd.id'
-                            )
                             ->whereNull('d.deleted_at')
                             ->where('d.id', $du->id)
                             ->where('ds.status', 'ACTIVE')
                             ->select([
                                 'ds.id as dataset_id',
                                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.title')) as dataset_title"),
-                                'counts.dataset_count',
+                                DB::raw('(
+                                    SELECT COUNT(DISTINCT ds2.id)
+                                    FROM dur_has_dataset_version dhdv2
+                                    JOIN dataset_versions dv2 ON dv2.id = dhdv2.dataset_version_id
+                                    JOIN datasets ds2 ON ds2.id = dv2.dataset_id
+                                    WHERE dhdv2.dur_id = d.id
+                                ) as dataset_count'),
                             ])
                             ->limit(1)
                             ->first();
