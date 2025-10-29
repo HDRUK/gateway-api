@@ -234,14 +234,14 @@ class TeamWidgetController extends Controller
             $teamIds = array_map('intval', $teamIds);
 
             $datasets = Dataset::whereIn('team_id', $teamIds)
-    ->where('status', 'ACTIVE')
-    ->get(['team_id', 'id'])
-    ->map(fn ($dataset) => [
-        'id' => $dataset->id,
-        'title' => $dataset->getTitle(),
-        'team_id' => $dataset->team_id,
-        'team_name' => optional($dataset->team)->name,
-    ]);
+                ->where('status', 'ACTIVE')
+                ->get(['team_id', 'id'])
+                ->map(fn ($dataset) => [
+                    'id' => $dataset->id,
+                    'title' => $dataset->getTitle(),
+                    'team_id' => $dataset->team_id,
+                    'team_name' => optional($dataset->team)->name,
+                ]);
 
             $tools = Tool::whereIn('team_id', $teamIds)
                 ->where('status', 'ACTIVE')
@@ -392,26 +392,39 @@ class TeamWidgetController extends Controller
                 $ids = implode(',', $datasetIds);
 
                 $datasets = DB::select("
-                    SELECT 
-                        d.id AS id,
-                        d.team_id,
-                        dv.id AS dataset_version_id,
-                        JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.title')) AS title,
-                        JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.shortTitle')) AS short_title,
-                        JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.description')) AS description,
-                        JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.keywords')) AS raw_keywords,
-                        JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.populationSize')) AS population_size,
-                        JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.provenance.temporal.startDate')) AS start_date,
-                        JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.provenance.temporal.endDate')) AS end_date,
-                        JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.publisher.name')) AS publisher
-                    FROM datasets d
-                    JOIN dataset_versions dv ON dv.dataset_id = d.id
-                    WHERE dv.version = (
-                        SELECT MAX(dv2.version)
-                        FROM dataset_versions dv2
-                        WHERE dv2.dataset_id = d.id
+                    WITH normalized AS (
+                        SELECT
+                            d.id,
+                            d.team_id,
+                            dv.id AS dataset_version_id,
+                        CASE
+                            WHEN JSON_VALID(dv.metadata)
+                                AND JSON_TYPE(JSON_EXTRACT(dv.metadata, '$')) = 'STRING'
+                            THEN JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$'))
+                            ELSE dv.metadata
+                        END AS metadata
+                        FROM datasets d
+                        JOIN dataset_versions dv ON dv.dataset_id = d.id
+                        WHERE dv.version = (
+                            SELECT MAX(dv2.version)
+                            FROM dataset_versions dv2
+                            WHERE dv2.dataset_id = d.id
+                        )
+                        AND d.id IN ($ids)
                     )
-                    AND d.id IN ($ids)
+                    SELECT
+                        id,
+                        team_id,
+                        dataset_version_id,
+                        JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.summary.title')) AS title,
+                        JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.summary.shortTitle')) AS short_title,
+                        JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.summary.description')) AS description,
+                        JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.summary.keywords')) AS raw_keywords,
+                        JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.summary.populationSize')) AS population_size,
+                        JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.provenance.temporal.startDate')) AS start_date,
+                        JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.provenance.temporal.endDate')) AS end_date,
+                        JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.summary.publisher.name')) AS publisher
+                    FROM normalized
                 ");
             } else {
                 $datasets = [];
@@ -431,8 +444,20 @@ class TeamWidgetController extends Controller
                             ->where('ds.status', 'ACTIVE')
                             ->select([
                                 'ds.id as dataset_id',
-                                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.title')) as dataset_title"),
-                                DB::raw('(
+                               DB::raw("
+                                JSON_UNQUOTE(
+                                    JSON_EXTRACT(
+                                        CASE
+                                            WHEN JSON_VALID(dv.metadata)
+                                                AND JSON_TYPE(JSON_EXTRACT(dv.metadata, '$')) = 'STRING'
+                                            THEN JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$'))
+                                            ELSE dv.metadata
+                                        END,
+                                        '$.metadata.summary.title'
+                                    )
+                                ) AS dataset_title
+                            "),
+                            DB::raw('(
                                     SELECT COUNT(DISTINCT ds2.id)
                                     FROM dur_has_dataset_version dhdv2
                                     JOIN dataset_versions dv2 ON dv2.id = dhdv2.dataset_version_id
