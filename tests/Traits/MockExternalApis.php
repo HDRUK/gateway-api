@@ -1148,7 +1148,7 @@ trait MockExternalApis
         // Removed for now, as the email service test contains its own mock
         // for mjml.
         // Http::fake([
-        //     config('mjml.render_url') => Http::response(
+        //     config('services.mjml.render_url') => Http::response(
         //         ["html" => "<html>content</html>"],
         //         201,
         //         ['application/json']

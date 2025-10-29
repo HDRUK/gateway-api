@@ -36,7 +36,7 @@ class EmailServiceTest extends TestCase
         Mail::fake();
 
         Http::fake([
-            config('mjml.render_url') => Http::response(
+            config('services.mjml.render_url') => Http::response(
                 ["html" => "<html>content</html>"],
                 201,
                 ['application/json']

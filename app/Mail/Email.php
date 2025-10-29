@@ -76,9 +76,9 @@ class Email extends Mailable
                 config('services.mjml.api_application_key', ''),
                 config('services.mjml.api_key', '')
             )
-                ->post(config('mjml.render_url', ''), [
-                    'mjml' => $this->template['body'],
-                ]);
+            ->post(config('services.mjml.render_url', ''), [
+                'mjml' => $this->template['body'],
+            ]);
 
 
             if ($response->successful()) {
@@ -105,14 +105,14 @@ class Email extends Mailable
         if (isset($this->template['buttons'])) {
             $buttons = json_decode($this->template['buttons'], true);
             foreach ($buttons['replacements'] as $b) {
-                $containsEnv = strpos($b['actual'], 'config(');
+                $containsEnv = strpos($b['actual'], 'env(');
 
                 if ($containsEnv !== false) {
-                    $start = $containsEnv + strlen('config(');
+                    $start = $containsEnv + strlen('env(');
                     $end = strpos($b['actual'], ')', $start);
                     $subject = substr($b['actual'], $start, $end - $start);
 
-                    $b['actual'] = str_replace('config(' . $subject . ')', config($subject), $b['actual']);
+                    $b['actual'] = str_replace('env(' . $subject . ')', config($subject), $b['actual']);
                 }
 
                 // In case of dynamic values within the 'actual' link we need to replace those
