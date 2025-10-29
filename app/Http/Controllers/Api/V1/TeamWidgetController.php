@@ -416,16 +416,15 @@ class TeamWidgetController extends Controller
                         id,
                         team_id,
                         dataset_version_id,
-                        JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.summary.title')) AS title,
                         JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.summary.shortTitle')) AS short_title,
                         JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.summary.description')) AS description,
-                        JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.summary.keywords')) AS raw_keywords,
                         JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.summary.populationSize')) AS population_size,
                         JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.provenance.temporal.startDate')) AS start_date,
                         JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.provenance.temporal.endDate')) AS end_date,
                         JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.summary.publisher.name')) AS publisher
                     FROM normalized
                 ");
+
             } else {
                 $datasets = [];
             }
