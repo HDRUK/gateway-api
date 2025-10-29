@@ -97,7 +97,7 @@ class UpdateEmailTemplateTeamNotifications extends Command
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "config(\'gateway.gateway_url\')/en/account/team/[[TEAM_ID]]/team-management"
+                            "actual": "env(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/team-management"
                         }
                     ]
                 }

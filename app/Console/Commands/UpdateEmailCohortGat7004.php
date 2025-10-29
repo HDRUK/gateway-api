@@ -94,7 +94,7 @@ class UpdateEmailCohortGat7004 extends Command
                     "replacements": [
                         {
                             "placeholder": "[[COHORT_DISCOVERY_RENEW_URL]]",
-                            "actual": "config(\'gateway.gateway_url\')/en/about/cohort-discovery"
+                            "actual": "env(gateway.gateway_url)/en/about/cohort-discovery"
                         }
                     ]
                 }

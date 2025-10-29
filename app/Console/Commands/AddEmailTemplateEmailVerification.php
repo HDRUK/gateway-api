@@ -108,7 +108,7 @@ class AddEmailTemplateEmailVerification extends Command
                         "replacements": [
                             {
                                 "placeholder": "[[BUTTON_1_URL]]",
-                                "actual": "config(\'gateway.gateway_url\')/en/verification/[[UUID]]"
+                                "actual": "env(gateway.gateway_url)/en/verification/[[UUID]]"
                             }
                         ]
                     }
