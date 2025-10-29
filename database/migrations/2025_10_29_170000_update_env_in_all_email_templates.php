@@ -13,7 +13,7 @@ return new class () extends Migration {
         $emailTemplates = EmailTemplate::all();
         foreach ($emailTemplates as $template) {
             if (isset($template['buttons'])) {
-                $template['buttons'] = str_replace("GATEWAY_URL", "gateway.gateway_url", $template['buttons']);
+                $template['buttons'] = str_replace("env(GATEWAY_URL)", "config(gateway.gateway_url)", $template['buttons']);
                 $template->save();
             }
         }
@@ -27,7 +27,7 @@ return new class () extends Migration {
         $emailTemplates = EmailTemplate::all();
         foreach ($emailTemplates as $template) {
             if (isset($template['buttons'])) {
-                $template['buttons'] = str_replace("gateway.gateway_url", "GATEWAY_URL", $template['buttons']);
+                $template['buttons'] = str_replace("config(gateway.gateway_url)", "env(GATEWAY_URL)", $template['buttons']);
                 $template->save();
             }
         }

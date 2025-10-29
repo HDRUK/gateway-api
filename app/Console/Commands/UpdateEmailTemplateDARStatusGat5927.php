@@ -112,7 +112,7 @@ class UpdateEmailTemplateDARStatusGat5927 extends Command
                         "replacements": [
                             {
                                 "placeholder": "[[BUTTON_1_URL]]",
-                                "actual": "env(gateway.gateway_url)/en/account/data-access-requests/application/[[APPLICATION_ID]]"
+                                "actual": "config(gateway.gateway_url)/en/account/data-access-requests/application/[[APPLICATION_ID]]"
                             }
                         ]
                     }

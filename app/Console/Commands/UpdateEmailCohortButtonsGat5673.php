@@ -95,7 +95,7 @@ class UpdateEmailCohortButtonsGat5673 extends Command
                     "replacements": [
                         {
                             "placeholder": "[[COHORT_DISCOVERY_RENEW_URL]]",
-                            "actual": "env(gateway.gateway_url)/en/about/cohort-discovery"
+                            "actual": "config(gateway.gateway_url)/en/about/cohort-discovery"
                         }
                     ]
                 }
@@ -171,7 +171,7 @@ class UpdateEmailCohortButtonsGat5673 extends Command
                     "replacements": [
                         {
                             "placeholder": "[[COHORT_DISCOVERY_RENEW_URL]]",
-                            "actual": "env(gateway.gateway_url)/en/about/cohort-discovery"
+                            "actual": "config(gateway.gateway_url)/en/about/cohort-discovery"
                         }
                     ]
                 }
@@ -249,7 +249,7 @@ class UpdateEmailCohortButtonsGat5673 extends Command
                     "replacements": [
                         {
                             "placeholder": "[[COHORT_DISCOVERY_ACCESS_URL]]",
-                            "actual": "env(gateway.gateway_url)/en/about/cohort-discovery"
+                            "actual": "config(gateway.gateway_url)/en/about/cohort-discovery"
                         }
                     ]
                 }
