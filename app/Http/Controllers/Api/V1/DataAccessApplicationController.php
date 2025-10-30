@@ -20,6 +20,7 @@ use App\Models\DataAccessApplicationHasDataset;
 use App\Models\DataAccessApplicationHasQuestion;
 use App\Models\DataAccessTemplate;
 use App\Models\Dataset;
+use App\Models\QuestionBank;
 use App\Models\Team;
 use App\Models\TeamHasDataAccessApplication;
 use App\Models\Upload;
@@ -339,7 +340,7 @@ class DataAccessApplicationController extends Controller
         try {
             $file = Upload::where('id', $fileId)->first();
 
-            Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '_scanned')
+            Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
                 ->delete($file->file_location);
 
             $file->delete();

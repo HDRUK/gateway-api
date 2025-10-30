@@ -62,9 +62,10 @@ class DataAccessSectionController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $perPage = (int) request('per_page', Config::get('constants.per_page'));
             $page = (int) $request->query('page', 1);
 
@@ -153,10 +154,10 @@ class DataAccessSectionController extends Controller
      */
     public function show(GetDataAccessSection $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $section = DataAccessSection::findOrFail($id);
 
             if ($section) {
@@ -226,10 +227,10 @@ class DataAccessSectionController extends Controller
      */
     public function store(CreateDataAccessSection $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $section = DataAccessSection::create([
                 'name' => $input['name'],
                 'description' => $input['description'],
@@ -325,10 +326,10 @@ class DataAccessSectionController extends Controller
      */
     public function update(UpdateDataAccessSection $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $section = DataAccessSection::findOrFail($id);
 
             $section->update([
@@ -425,10 +426,10 @@ class DataAccessSectionController extends Controller
      */
     public function edit(EditDataAccessSection $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $section = DataAccessSection::findOrFail($id);
 
             $arrayKeys = [
@@ -507,10 +508,10 @@ class DataAccessSectionController extends Controller
      */
     public function destroy(DeleteDataAccessSection $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $section = DataAccessSection::findOrFail($id);
             $section->delete();
 

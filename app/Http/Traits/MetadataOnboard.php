@@ -86,7 +86,7 @@ trait MetadataOnboard
             $publisher = null;
             $revisions = [
                 [
-                    "url" => env('GATEWAY_URL') . '/dataset' .'/' . $dataset->id . '?version=1.0.0',
+                    "url" => config('gateway.gateway_url') . '/dataset' .'/' . $dataset->id . '?version=1.0.0',
                     'version' => $this->formatVersion(1)
                 ]
             ];

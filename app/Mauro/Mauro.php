@@ -15,12 +15,12 @@ class Mauro
      */
     public function getFolders(): array
     {
-        $url = env('MAURO_API_URL');
+        $url = config('mauro.api_url');
         $url .= '/folders';
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->get($url);
@@ -41,12 +41,12 @@ class Mauro
      */
     public function getFolderById(string $id): array
     {
-        $url = env('MAURO_API_URL');
+        $url = config('mauro.api_url');
         $url .= '/folders/' . $id;
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->get($url);
@@ -67,12 +67,12 @@ class Mauro
      */
     public function getFoldersByParentId(string $parentId): array
     {
-        $url = env('MAURO_API_URL');
+        $url = config('mauro.api_url');
         $url .= '/folders/' . $parentId . '/folders';
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->get($url);
@@ -91,12 +91,12 @@ class Mauro
      */
     public function getDatasets(): array
     {
-        $url = env('MAURO_API_URL');
+        $url = config('mauro.api_url');
         $url .= '/dataModels/';
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->get($url);
@@ -116,13 +116,13 @@ class Mauro
      */
     public function getDatasetById(string $datasetId): array
     {
-        $url = env('MAURO_API_URL');
+        $url = config('mauro.api_url');
         $url .= '/dataModels/' . $datasetId;
         $overallResponse = [];
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
                 ->acceptJson()
                 ->get($url);
@@ -146,12 +146,12 @@ class Mauro
      */
     public function getDatasetByIdProfile(string $datasetId): array
     {
-        $url = env('MAURO_API_URL');
+        $url = config('mauro.api_url');
         $url .= '/dataModels/' . $datasetId . '/profile/uk.ac.ox.softeng.maurodatamapper.profile.provider/Template/3.0.0';
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
                 ->acceptJson()
                 ->get($url);
@@ -170,12 +170,12 @@ class Mauro
      */
     public function getDatasetByIdMetadata(string $datasetId): array
     {
-        $url = env('MAURO_API_URL');
+        $url = config('mauro.api_url');
         $url .= '/dataModels/' . $datasetId . '/metadata?max=1000';
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
                 ->acceptJson()
                 ->get($url);
@@ -195,12 +195,12 @@ class Mauro
      */
     public function getDatasetsByFolder(string $parentId): array
     {
-        $url = env('MAURO_API_URL');
+        $url = config('mauro.api_url');
         $url .= '/dataModels/' . $parentId . '/dataModels';
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->get($url);
@@ -223,7 +223,7 @@ class Mauro
      */
     public function createFolder(string $label, string $description, string $parentFolderId = ''): array
     {
-        $postUrl = env('MAURO_API_URL');
+        $postUrl = config('mauro.api_url');
 
         if ($parentFolderId !== '') {
             $postUrl .= '/folders/' . $parentFolderId . '/folders';
@@ -233,7 +233,7 @@ class Mauro
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->post($postUrl, [
@@ -260,7 +260,7 @@ class Mauro
      */
     public function deleteFolder(string $id, string $permanentDeletion = 'true', string $parentFolderId = ''): bool
     {
-        $postUrl = env('MAURO_API_URL');
+        $postUrl = config('mauro.api_url');
 
         if ($parentFolderId !== '') {
             $postUrl .= '/folders/' . $parentFolderId . '/folders/' . $id . '?permanent=' . $permanentDeletion;
@@ -270,7 +270,7 @@ class Mauro
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->delete($postUrl);
@@ -297,7 +297,7 @@ class Mauro
     {
         $overallResponse = [];
 
-        $postUrl = env('MAURO_API_URL');
+        $postUrl = config('mauro.api_url');
         $postUrl .= '/folders/' . $parentFolderId . '/dataModels';
 
         try {
@@ -305,7 +305,7 @@ class Mauro
             // need to be created as a Schema->DataClass, and not be held
             // along with the summary metadata
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->post($postUrl, [
@@ -349,14 +349,14 @@ class Mauro
     {
         $overallResponse = [];
 
-        $url = env('MAURO_API_URL') . '/dataModels/' . $dataModelId;
+        $url = config('mauro.api_url') . '/dataModels/' . $dataModelId;
 
         try {
             // Structural meta data held within the incoming dataset, will
             // need to be created as a Schema->DataClass, and not be held
             // along with the summary metadata
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
                 ->acceptJson()
                 ->put($url, [
@@ -386,10 +386,10 @@ class Mauro
     // {asynchronous: false}
     public function duplicateDataModel(string $id)
     {
-        $url = env('MAURO_API_URL').'/dataModels/' . $id . '/newBranchModelVersion';
+        $url = config('mauro.api_url').'/dataModels/' . $id . '/newBranchModelVersion';
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
                 ->acceptJson()
                 ->put($url, [
@@ -421,12 +421,12 @@ class Mauro
     {
         $overallResponse = [];
 
-        $postUrl = env('MAURO_API_URL');
+        $postUrl = config('mauro.api_url');
         $postUrl .= '/folders/' . $parentFolderId . '/dataModels';
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->post($postUrl, [
@@ -476,12 +476,12 @@ class Mauro
      */
     public function deleteDataModel(string $id, string $permanentDeletion = 'false'): bool
     {
-        $url = env('MAURO_API_URL');
+        $url = config('mauro.api_url');
         $url .= '/dataModels/' . $id . '?permanent=' . $permanentDeletion;
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->delete($url);
@@ -502,12 +502,12 @@ class Mauro
      */
     public function restoreDataModel(string $id): bool
     {
-        $url = env('MAURO_API_URL');
+        $url = config('mauro.api_url');
         $url .= '/admin/dataModels/' . $id . '/undoSoftDelete';
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->put($url);
@@ -530,12 +530,12 @@ class Mauro
      */
     public function createDataClass(string $parentModelId, string $name, string $description): array
     {
-        $postUrl = env('MAURO_API_URL');
+        $postUrl = config('mauro.api_url');
         $postUrl .= '/dataModels/' . $parentModelId . '/dataClasses';
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->post($postUrl, [
@@ -565,10 +565,10 @@ class Mauro
     public function updateDataClass(string $parentModelId, string $name, string $description, string $dataClassId): array
     {
         try {
-            $url = env('MAURO_API_URL') . '/dataModels/' . $parentModelId . '/dataClasses/' . $dataClassId;
+            $url = config('mauro.api_url') . '/dataModels/' . $parentModelId . '/dataClasses/' . $dataClassId;
 
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
                 ->acceptJson()
                 ->put($url, [
@@ -594,10 +594,10 @@ class Mauro
     public function getAllDataClasses(string $parentModelId): array
     {
         try {
-            $url = env('MAURO_API_URL') . '/dataModels/' . $parentModelId . '/dataClasses';
+            $url = config('mauro.api_url') . '/dataModels/' . $parentModelId . '/dataClasses';
 
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->get($url);
@@ -619,11 +619,11 @@ class Mauro
      */
     public function deleteDataClass(string $id, string $parentModelId): bool
     {
-        $url = env('MAURO_API_URL') . '/dataModels/' . $parentModelId . '/dataClasses/' . $id;
+        $url = config('mauro.api_url') . '/dataModels/' . $parentModelId . '/dataClasses/' . $id;
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->delete($url);
@@ -647,12 +647,12 @@ class Mauro
      */
     public function createDataElement(string $parentModelId, string $parentDataClassId, string $name, string $description, string $type): array
     {
-        $postUrl = env('MAURO_API_URL');
+        $postUrl = config('mauro.api_url');
         $postUrl .= '/dataModels/' . $parentModelId . '/dataClasses/' . $parentDataClassId . '/dataElements';
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->post($postUrl, [
@@ -687,10 +687,10 @@ class Mauro
     public function updateDataElement(string $parentModelId, string $name, string $description, string $dataClassId, string $dataElementId): array
     {
         try {
-            $url = env('MAURO_API_URL') . '/dataModels/' . $parentModelId . '/dataClasses/' . $dataClassId . '/dataElements/' . $dataElementId;
+            $url = config('mauro.api_url') . '/dataModels/' . $parentModelId . '/dataClasses/' . $dataClassId . '/dataElements/' . $dataElementId;
 
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
                 ->acceptJson()
                 ->put($url, [
@@ -717,10 +717,10 @@ class Mauro
     public function getAllDataElements(string $parentModelId, string $parentDataClassId)
     {
         try {
-            $url = env('MAURO_API_URL') . '/dataModels/' . $parentModelId . '/dataClasses/' . $parentDataClassId . '/dataElements';
+            $url = config('mauro.api_url') . '/dataModels/' . $parentModelId . '/dataClasses/' . $parentDataClassId . '/dataElements';
 
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->get($url);
@@ -742,12 +742,12 @@ class Mauro
      */
     public function deleteDataElement(string $id, string $parentModelId, string $parentDataClassId): bool
     {
-        $postUrl = env('MAURO_API_URL');
+        $postUrl = config('mauro.api_url');
         $postUrl .= '/dataModels/' . $parentModelId . '/dataClasses/' . $parentDataClassId . '/dataElements/' . $id;
 
         try {
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->delete($postUrl);
@@ -769,10 +769,10 @@ class Mauro
     public function getDataModelHierarchy(string $dataModelId): array
     {
         try {
-            $url = env('MAURO_API_URL') . '/dataModels/' . $dataModelId . '/hierarchy';
+            $url = config('mauro.api_url') . '/dataModels/' . $dataModelId . '/hierarchy';
 
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->get($url);
@@ -798,7 +798,7 @@ class Mauro
      */
     public function finaliseDataModel(string $id, string $semverChange = 'major', string $semverVersion = ''): array
     {
-        $url = env('MAURO_API_URL');
+        $url = config('mauro.api_url');
         $url .= '/dataModels/' . $id . '/finalise';
 
         $payload = [];
@@ -812,7 +812,7 @@ class Mauro
             }
 
             $response = Http::withHeaders([
-                'apiKey' => env('MAURO_APP_KEY'),
+                'apiKey' => config('mauro.app_key'),
             ])
             ->acceptJson()
             ->put($url, $payload);

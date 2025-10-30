@@ -133,6 +133,8 @@ class Dataset extends Model
     }
 
     /**
+     * @return HasMany<DatasetVersion, $this>
+     *
      * The version history of metadata that respond to this dataset.
      */
     public function versions(): HasMany
@@ -188,6 +190,7 @@ class Dataset extends Model
         return null;
     }
 
+    /** @return HasOne<DatasetVersion, $this> */
     public function latestMetadata(): HasOne
     {
         return $this->hasOne(DatasetVersion::class, 'dataset_id')->withTrashed()
@@ -290,6 +293,8 @@ class Dataset extends Model
     }
 
     /**
+     * @return BelongsTo<Team, $this>
+     *
      * The team for the dataset.
      */
     public function team(): BelongsTo

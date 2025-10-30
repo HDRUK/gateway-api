@@ -127,10 +127,10 @@ class CategoryController extends Controller
      */
     public function show(Request $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $category = Category::where(['id' => $id,])->get();
 
             Auditor::log([
@@ -192,10 +192,10 @@ class CategoryController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $category = Category::create([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
@@ -284,10 +284,10 @@ class CategoryController extends Controller
      */
     public function update(Request $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             Category::where('id', $id)->update([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
@@ -375,10 +375,10 @@ class CategoryController extends Controller
      */
     public function edit(Request $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $arrayKeys = [
                 'name',
                 'enabled',
@@ -455,10 +455,10 @@ class CategoryController extends Controller
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $category = Category::findOrFail($id);
             if ($category) {
                 $category->enabled = false;
@@ -486,6 +486,7 @@ class CategoryController extends Controller
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             Auditor::log([
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),

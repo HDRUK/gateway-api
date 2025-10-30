@@ -22,4 +22,5 @@ return [
     'exposed_headers' => explode(',', env('CORS_EXPOSED_HEADERS', '')),
     'max_age' => env('CORS_MAX_AGE', 0),
     'supports_credentials' => env('CORS_SUPPORTS_CREDENTIALS', true),
+    'access_control_allow_origin' => env('CORS_ACCESS_CONTROL_ALLOW_ORIGIN', ''),
 ];

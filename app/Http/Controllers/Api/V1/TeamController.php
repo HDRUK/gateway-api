@@ -324,7 +324,7 @@ class TeamController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *               @OA\Property(property="data", type="array",
+     *              @OA\Property(property="data", type="array",
      *                  @OA\Items(type="object",
      *                    @OA\Property(property="id", type="integer", example="123"),
      *                    @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
@@ -347,6 +347,8 @@ class TeamController extends Controller
      *                    @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *                    @OA\Property(property="introduction", type="string", example="info about the team"),
      *                    @OA\Property(property="service", type="string", example="https://example"),
+     *                 ),
+     *              ),
      *          ),
      *      ),
      *      @OA\Response(

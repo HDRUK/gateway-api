@@ -187,16 +187,7 @@ class DurController extends Controller
                 ])
             )
             ->applySorting()
-            ->paginate((int) $perPage, ['*'], 'page')
-            ->through(function ($dur) {
-                if ($dur->datasets) {
-                    $dur->datasets = $dur->datasets->map(function ($dataset) {
-                        $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
-                        return $dataset;
-                    });
-                }
-                return $dur;
-            });
+            ->paginate((int) $perPage, ['*'], 'page');
 
             // SC: disabling for now (see comment above)
             // $durs->getCollection()->transform(function ($dur) {

@@ -107,7 +107,7 @@ class ExtractToolsFromMetadataGat6414 extends Command
         foreach ($arrTools as $item) {
             $this->info($item);
 
-            if (str_contains($item, env('GATEWAY_URL'))) {
+            if (str_contains($item, config('gateway.gateway_url'))) {
                 $exploded = explode('/', $item);
                 $toolId = (int) end($exploded);
                 $t = Tool::where('id', $toolId)->first();

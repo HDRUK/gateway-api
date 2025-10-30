@@ -79,13 +79,10 @@ class TeamNotificationController extends Controller
      */
     public function show(Request $request, int $teamId): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            $jwtUserId = $jwtUser['id'];
-
             $team = Team::where('id', $teamId)->with(['notifications'])->first();
 
             Auditor::log([
@@ -97,7 +94,7 @@ class TeamNotificationController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $this->getTeamNotifications($team, $teamId, $jwtUserId)
+                'data' => $this->getTeamNotifications($team, $teamId, $jwtUser['id'])
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
@@ -174,10 +171,10 @@ class TeamNotificationController extends Controller
      */
     public function store(CreateTeamNotification $request, int $teamId)
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             // team user has notification
             $this->teamUserNotification($input, $teamId);
 

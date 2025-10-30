@@ -60,9 +60,10 @@ class SavedSearchController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $jwtUserIsAdmin = $jwtUser['is_admin'];
 
             $perPage = request('per_page', Config::get('constants.per_page'));
@@ -149,9 +150,10 @@ class SavedSearchController extends Controller
      */
     public function show(GetSavedSearch $request, int $id): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $jwtUserIsAdmin = $jwtUser['is_admin'];
 
             $savedSearch = SavedSearch::where(['id' => $id,])->with(['filters'])->get();
@@ -225,10 +227,10 @@ class SavedSearchController extends Controller
      */
     public function store(CreateSavedSearch $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $arraySearch = array_filter($input, function ($key) {
                 return $key !== 'filters';
             }, ARRAY_FILTER_USE_KEY);
@@ -352,10 +354,10 @@ class SavedSearchController extends Controller
      */
     public function update(UpdateSavedSearch $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $savedSearch = SavedSearch::where('id', $id)->first();
             if ($savedSearch['user_id'] != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to edit this saved search');
@@ -474,10 +476,10 @@ class SavedSearchController extends Controller
      */
     public function edit(EditSavedSearch $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $arrayKeys = [
                 'name',
                 'search_term',
@@ -574,10 +576,10 @@ class SavedSearchController extends Controller
      */
     public function destroy(DeleteSavedSearch $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $savedSearch = SavedSearch::findOrFail($id);
             if ($savedSearch) {
 
