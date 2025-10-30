@@ -139,12 +139,18 @@ class TeamDatasetController extends Controller
                 ->paginate((int) $perPage, ['*'], 'page');
 
 
-            foreach ($datasets as $key => &$d) {
+            foreach ($datasets as $key => & $d) {
+
                 if (empty($d->latestMetadata) || !isset($d->latestMetadata['metadata'])) {
                     // this needs refactoring to mark the metadata as corrupt or missing and
                     // then set them as draft and alert the FE
                     unset($datasets[$key]);
                     continue;
+                }
+
+                $latestVersion = $d->latestVersion(['updated_at']);
+                if ($latestVersion) {
+                    $d->updated_at = $latestVersion->updated_at;
                 }
 
                 $miniMetadata = $this->trimDatasets($d->latestMetadata['metadata'], [
