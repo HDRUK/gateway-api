@@ -11,6 +11,7 @@ use App\Models\Upload;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Exceptions\UnauthorizedException;
 
 class UploadController extends Controller
 {
@@ -289,6 +290,96 @@ class UploadController extends Controller
                     ]
                 ]);
             }
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+        /**
+     * @OA\Delete(
+     *      path="/api/v1/files/processed/{id}",
+     *      summary="Delete a processed file",
+     *      description="Delete a processed file",
+     *      tags={"Upload"},
+     *      summary="Upload@destroy",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="file id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="file id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *           ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function destroy(Request $request, int $id) {
+
+        try {
+            $file = Upload::findOrFail($id);
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            if ($file->user_id === $jwtUser['id']) {
+                $fileDeleted = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '_scanned')
+                    ->delete($file->file_location);
+
+                if (!$fileDeleted) {
+                    throw new Exception("Deleting file id " . $id . "failed. ");
+                }
+
+                $dbRowDeleted = $file->delete();
+
+                if (!$dbRowDeleted) {
+                    throw new Exception("Deleting db row for file id " . $id . "failed. ");
+                }
+
+                Auditor::log([
+                    'action_type' => 'DELETE',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'File ' . $file->file_location . ' deleted',
+                ]);
+
+                if ($fileDeleted && $dbRowDeleted) {
+                    return response()->json([
+                        'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    ]);
+                } 
+            }
+            else {
+                throw new UnauthorizedException("File id " . $id . " does not belong to user");
+            }
+
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',

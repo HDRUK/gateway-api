@@ -3700,6 +3700,17 @@ return [
         ],
         'constraint' => [],
     ],
+    [
+        'name' => 'uploads',
+        'method' => 'delete',
+        'path' => '/files/processed/{id}',
+        'methodController' => 'UploadController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
 
     // libraries
     [

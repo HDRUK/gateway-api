@@ -214,6 +214,9 @@ class ScanFileUpload implements ShouldQueue
                     case 'dar-review-upload':
                         $this->darReviewUpload($loc, $upload);
                         break;
+                    case 'document-exchange-upload':
+                        $this->uploadDocumentExchange($loc, $upload);
+                        break;
                 }
 
                 \Log::info('Uploaded file passed malware scan and processed', $this->loggingContext);
@@ -496,6 +499,32 @@ class ScanFileUpload implements ShouldQueue
             //     ]);
             // }
         } catch (Exception $e) {
+            // Record exception in uploads table
+            $upload->update([
+                'status' => 'FAILED',
+                'file_location' => $loc,
+                'error' => $e->getMessage()
+            ]);
+
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    private function uploadDocumentExchange(string $loc, Upload $upload): void {
+        try {
+            $upload->update([
+                'status' => 'PROCESSED',
+                'file_location' => $loc,
+                'entity_type' => 'documentExchange',
+            ]);
+        }
+        catch (Exception $e) {
             // Record exception in uploads table
             $upload->update([
                 'status' => 'FAILED',
