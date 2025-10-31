@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\UnauthorizedException;
+use App\Models\Upload;
 use Auditor;
 use Config;
 use Exception;
@@ -928,6 +930,9 @@ class QuestionBankController extends Controller
 
             $this->handleChildren($questionVersion, $input, 1, $jwtUser);
 
+            if ($input['document'] !== null) {
+                $this->handleDocumentExchange($input['document']['value']['id'], $question->id, $input);
+            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1518,6 +1523,7 @@ class QuestionBankController extends Controller
                     'component' => $input['component'],
                     'validations' => empty($input['validations']) ? null : $input['validations'],
                     'options' => array_column($input['options'], 'label'),
+                    'document' => empty($input['document']) ? null : $input['document'],
                 ],
                 'title' => $input['title'],
                 'guidance' => $input['guidance'],
@@ -1725,6 +1731,23 @@ class QuestionBankController extends Controller
                     ]);
                 }
             }
+        }
+    }
+
+    private function handleDocumentExchange(int $fileId, int $questionId, array $input) {
+        // The file for the document exchange will currently have a null entityid
+        // so we update it to belong to the question
+        $file = Upload::where('id', $fileId)->firstOrFail();
+        
+        // Stop the user updating any random file
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        if ($file->user_id === $jwtUser['id']) {
+            $file->update([
+                "entity_id" => $questionId
+            ]);
+        } else {
+            throw new UnauthorizedException("File does not belong to user");
         }
     }
 }
