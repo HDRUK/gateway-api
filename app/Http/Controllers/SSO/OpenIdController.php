@@ -12,6 +12,7 @@ class OpenIdController extends Controller
         'email',
         'profile',
         'rquestroles',
+        'cohort_discovery_roles',
     ];
     protected $response_types_supported = [
         'code',

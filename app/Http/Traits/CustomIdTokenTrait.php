@@ -60,6 +60,7 @@ trait CustomIdTokenTrait
             ->withClaim('given_name', $claims['given_name'])
             ->withClaim('family_name', $claims['family_name'])
             ->withClaim('rquestroles', $claims['rquestroles'])
+            ->withClaim('cohort_discovery_roles', $claims['cohort_discovery_roles'])
             ->withHeader('kid', config('jwt.kid', 'jwtkidnotfound'))
             ->getToken($config->signer(), $config->signingKey());
 

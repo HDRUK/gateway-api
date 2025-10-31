@@ -50,10 +50,10 @@ class CustomUserController extends Controller
                 $crRoleIds[] = $cohortRequestRoleId['permission_id'];
             }
 
-            $rquestrRoles = Permission::select('name')->whereIn('id', $crRoleIds)->get()->toArray();
-            $rRoles = [];
-            foreach ($rquestrRoles as $rquestrRole) {
-                $rRoles[] = $rquestrRole['name'];
+            $permissions = Permission::select('name')->whereIn('id', $crRoleIds)->get()->toArray();
+            $cohortDiscoveryRoles = [];
+            foreach ($permissions as $role) {
+                $cohortDiscoveryRoles[] = $role['name'];
             }
 
             return response()->json([
@@ -66,7 +66,8 @@ class CustomUserController extends Controller
                 'given_name' => $user->firstname,
                 'family_name' => $user->lastname,
                 'email' => ($user->provider === 'open-athens' || $user->preferred_email === 'secondary') ? $user->secondary_email : $user->email,
-                'rquestroles' => $rRoles,
+                'rquestroles' => $cohortDiscoveryRoles,
+                'cohort_discovery_roles' => $cohortDiscoveryRoles,
             ]);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Config;
-use App\Models\User;
 use App\Http\Traits\DatasetFetch;
 use App\Models\Traits\SortManager;
 use App\Models\Traits\EntityCounter;

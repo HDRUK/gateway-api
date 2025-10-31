@@ -50,7 +50,7 @@ class ProgrammingLanguageController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
-        
+
         $perPage = (int) request('per_page', Config::get('constants.per_page'));
         try {
             $programming_languages = ProgrammingLanguage::where('enabled', 1)
