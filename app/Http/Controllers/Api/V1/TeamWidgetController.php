@@ -75,7 +75,7 @@ class TeamWidgetController extends Controller
                         'updated_at' => $widget->updated_at,
                         'unit' => $widget->unit,
                         'team_id' => $widget->team_id,
-                        'team_name' => $widget->team?->name,
+                        'team_name' => $widget->team['name'],
                     ];
                 });
 
@@ -470,8 +470,8 @@ class TeamWidgetController extends Controller
                         return [
                             'id' => $datause->id,
                             'name' => $datause->project_title,
-                            'team_name' => $datause->team?->name,
-                            'team_id' => $datause->team?->id,
+                            'team_name' => $datause->team['name'],
+                            'team_id' => $datause->team['id'],
                             'organisation_name' => $datause->organisation_name,
                             'dataset' => $dataset,
                         ];
