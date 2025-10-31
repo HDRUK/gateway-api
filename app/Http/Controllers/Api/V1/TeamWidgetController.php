@@ -246,11 +246,11 @@ class TeamWidgetController extends Controller
             $tools = Tool::whereIn('team_id', $teamIds)
                 ->where('status', 'ACTIVE')
                 ->get(['id', 'name', 'team_id'])
-                ->map(fn ($s) => [
-                    'id' => $s->id,
-                    'name' => $s->name,
-                    'team_id' => $s->team_id,
-                    'team_name' => optional($s->team)->name,
+                ->map(fn ($tool) => [
+                    'id' => $tool->id,
+                    'name' => $tool->name,
+                    'team_id' => $tool->team_id,
+                    'team_name' => optional($tool->team)->name,
                 ]);
 
             $collections = Collection::whereIn('team_id', $teamIds)
@@ -266,11 +266,11 @@ class TeamWidgetController extends Controller
             $durs = Dur::whereIn('team_id', $teamIds)
                 ->where('status', 'ACTIVE')
                 ->get(['id', 'project_title', 'team_id'])
-                ->map(fn ($du) => [
-                    'id' => $du->id,
-                    'name' => $du->project_title,
-                    'team_id' => $du->team_id,
-                    'team_name' => optional($du->team)->name,
+                ->map(fn ($dur) => [
+                    'id' => $dur->id,
+                    'name' => $dur->project_title,
+                    'team_id' => $dur->team_id,
+                    'team_name' => optional($dur->team)->name,
                 ]);
 
 
@@ -373,7 +373,7 @@ class TeamWidgetController extends Controller
                 if (!$allowed) {
                     return response()->json([
                         'message' => 'forbidden — domain not permitted for this widget',
-                    ], Config::get('statuscodes.STATUS__FORBIDDEN.code'));
+                    ], Config::get('statuscodes.STATUS_FORBIDDEN.code'));
                 }
             }
 
