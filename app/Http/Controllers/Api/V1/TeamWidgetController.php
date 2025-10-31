@@ -75,7 +75,7 @@ class TeamWidgetController extends Controller
                         'updated_at' => $widget->updated_at,
                         'unit' => $widget->unit,
                         'team_id' => $widget->team_id,
-                        'team_name' => $widget->team->name,
+                        'team_name' => $widget->team?->name,
                     ];
                 });
 
@@ -256,11 +256,11 @@ class TeamWidgetController extends Controller
             $collections = Collection::whereIn('team_id', $teamIds)
                 ->where('status', 'ACTIVE')
                 ->get(['id', 'name', 'team_id'])
-                ->map(fn ($c) => [
-                    'id' => $c->id,
-                    'name' => $c->name,
-                    'team_id' => $c->team_id,
-                    'team_name' => optional($c->team)->name,
+                ->map(fn ($collection) => [
+                    'id' => $collection->id,
+                    'name' => $collection->name,
+                    'team_id' => $collection->team_id,
+                    'team_name' => optional($collection->team)->name,
                 ]);
 
             $durs = Dur::whereIn('team_id', $teamIds)
@@ -433,13 +433,13 @@ class TeamWidgetController extends Controller
                 $dataUses = Dur::with('team:id,name')
                     ->whereIn('id', $dataUseIds)
                     ->get(['id', 'project_title', 'organisation_name', 'team_id'])
-                    ->map(function ($du) {
+                    ->map(function ($datause) {
                         $dataset = DB::table('dur as d')
                             ->join('dur_has_dataset_version as dhdv', 'dhdv.dur_id', '=', 'd.id')
                             ->join('dataset_versions as dv', 'dv.id', '=', 'dhdv.dataset_version_id')
                             ->join('datasets as ds', 'ds.id', '=', 'dv.dataset_id')
                             ->whereNull('d.deleted_at')
-                            ->where('d.id', $du->id)
+                            ->where('d.id', $datause->id)
                             ->where('ds.status', 'ACTIVE')
                             ->select([
                                 'ds.id as dataset_id',
@@ -468,11 +468,11 @@ class TeamWidgetController extends Controller
                             ->first();
 
                         return [
-                            'id' => $du->id,
-                            'name' => $du->project_title,
-                            'team_name' => $du->team?->name,
-                            'team_id' => $du->team?->id,
-                            'organisation_name' => $du->organisation_name,
+                            'id' => $datause->id,
+                            'name' => $datause->project_title,
+                            'team_name' => $datause->team?->name,
+                            'team_id' => $datause->team?->id,
+                            'organisation_name' => $datause->organisation_name,
                             'dataset' => $dataset,
                         ];
                     });
