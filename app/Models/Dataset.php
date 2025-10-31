@@ -242,11 +242,7 @@ class Dataset extends Model
             ->first()
             ->id;
         $datasetVersion = DatasetVersion::findOrFail($version)->toArray();
-        // can the above not just be one?  DatasetVersion::where('dataset_id', $this->id)
-        // ->orderBy('version', 'desc')
-        // ->firstOrFail()
-        // ->toArray();
-        // someone in CR confirm for me plz
+
         return $datasetVersion['metadata']['metadata']['summary']['title'];
     }
 
