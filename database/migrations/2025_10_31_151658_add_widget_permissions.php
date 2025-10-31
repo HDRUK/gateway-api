@@ -35,23 +35,22 @@ return new class extends Migration
 
         $developerRole = DB::table('roles')->where('name', 'developer')->first();
 
-        if (! $developerRole) {
-            throw new Exception("Developer role not found — migration aborted.");
-        }
+        if ($developerRole) {
+           foreach ($permissionIds as $permissionId) {
+                $exists = DB::table('role_has_permissions')
+                    ->where('role_id', $developerRole->id)
+                    ->where('permission_id', $permissionId)
+                    ->exists();
 
-        foreach ($permissionIds as $permissionId) {
-            $exists = DB::table('role_has_permissions')
-                ->where('role_id', $developerRole->id)
-                ->where('permission_id', $permissionId)
-                ->exists();
-
-            if (! $exists) {
-                DB::table('role_has_permissions')->insert([
-                    'role_id' => $developerRole->id,
-                    'permission_id' => $permissionId,
-                ]);
+                if (! $exists) {
+                    DB::table('role_has_permissions')->insert([
+                        'role_id' => $developerRole->id,
+                        'permission_id' => $permissionId,
+                    ]);
+                }
             }
         }
+        
     }
 
     public function down(): void
