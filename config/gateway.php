@@ -16,5 +16,3 @@ return [
     "search_service_url" => env("SEARCH_SERVICE_URL", ""),
     "test_user_password" => env("TEST_USER_PASSWORD", "")
 ];
-
-

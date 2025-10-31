@@ -481,6 +481,7 @@ class TeamController extends Controller
                     'firstname',
                     'lastname',
                     'rquestroles',
+                    'cohort_discovery_roles'
                 ];
                 $user = $this->checkEditArray($user, $arrayKeys);
                 $tool['user'] = $user;
