@@ -521,7 +521,7 @@ class UserController extends Controller
                 }
 
                 if (array_key_exists('preferred_email', $input)) {
-                    $array['preferred_email'] = $user->provider === 'open-athens' ? $user->preferred_email : $input['preferred_email'];
+                    $array['preferred_email'] = $input['preferred_email'];
                 }
 
                 $arrayUserNotification = array_key_exists('notifications', $input) ?
