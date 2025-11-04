@@ -153,7 +153,8 @@ class CohortRequestController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+
         $email = $request->query('email', null);
         $organisation = $request->query('organisation', null);
         $name = $request->query('name', null);
@@ -310,7 +311,7 @@ class CohortRequestController extends Controller
     public function show(GetCohortRequest $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
             $cohortRequests = CohortRequest::where('id', $id)
@@ -401,7 +402,7 @@ class CohortRequestController extends Controller
         // - handle nhs status and datestamps
         // - handle logic of when this should create or block creation
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
             $user = User::where(['id' => $jwtUser['id']])->first();
@@ -553,7 +554,7 @@ class CohortRequestController extends Controller
     public function update(UpdateCohortRequest $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
             $requestStatus = strtoupper(trim($input['request_status']));
@@ -705,7 +706,7 @@ class CohortRequestController extends Controller
     public function destroy(DeleteCohortRequest $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
             $cohortRequest = CohortRequest::withTrashed()->findOrFail($id);
@@ -810,10 +811,10 @@ class CohortRequestController extends Controller
      */
     public function export(Request $request): StreamedResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $query = CohortRequest::with(['user', 'logs', 'logs.user', 'user.sector']);
 
             // filter by users.organisation
@@ -994,10 +995,10 @@ class CohortRequestController extends Controller
      */
     public function assignAdminPermission(AssignAdminCohortRequest $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $permissionName = 'SYSTEM_ADMIN';
             $perms = Permission::where('name', $permissionName)->first();
             if (!$perms) {
@@ -1090,10 +1091,10 @@ class CohortRequestController extends Controller
      */
     public function removeAdminPermission(RemoveAdminCohortRequest $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $permissionName = 'SYSTEM_ADMIN';
             $perms = Permission::where('name', $permissionName)->first();
             if (!$perms) {
@@ -1152,8 +1153,8 @@ class CohortRequestController extends Controller
      *         @OA\Schema(
      *            type="string"
      *         )
-     *       }
-     *    )
+     *      )
+     *    ),
      *    @OA\Response(
      *       response=500,
      *       description="Error",
@@ -1166,7 +1167,7 @@ class CohortRequestController extends Controller
     public function checkAccess(Request $request)
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         if (!array_key_exists('id', $jwtUser)) {
             throw new Exception('Unauthorized');
@@ -1241,10 +1242,10 @@ class CohortRequestController extends Controller
                     throw new Exception('Cannot find cohort service oauth client');
                 }
 
-                $cohortDiscoveryUrl = env('APP_URL') .
+                $cohortDiscoveryUrl = config('app.url') .
                     "/oauth2/authorize?response_type=code" .
                     "&client_id=$cohortClient->id" .
-                    "&scope=openid email profile rquestroles" .
+                    "&scope=openid email profile rquestroles cohort_discovery_roles" .
                     "&redirect_uri=$cohortClient->redirect";
             }
 

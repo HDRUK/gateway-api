@@ -48,6 +48,7 @@ class DataAccessTemplate extends Model
         return $this->belongsTo(Team::class);
     }
 
+    /** @return HasMany<DataAccessTemplateHasQuestion, $this> */
     public function questions(): HasMany
     {
         return $this->hasMany(DataAccessTemplateHasQuestion::class, 'template_id');

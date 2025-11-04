@@ -128,10 +128,10 @@ class TypeCategoryController extends Controller
      */
     public function show(GetTypeCategory $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $typeCategory = TypeCategory::findOrFail($id);
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -194,10 +194,10 @@ class TypeCategoryController extends Controller
      */
     public function store(CreateTypeCategory $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $typeCategory = TypeCategory::create([
                 'name' => $input['name'],
                 'description' => $input['description'],
@@ -289,10 +289,10 @@ class TypeCategoryController extends Controller
      */
     public function update(UpdateTypeCategory $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             TypeCategory::where('id', $id)->update([
                 'name' => $input['name'],
                 'description' => $input['description'],
@@ -382,10 +382,10 @@ class TypeCategoryController extends Controller
      */
     public function edit(EditTypeCategory $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $arrayKeys = [
                 'name',
                 'description',

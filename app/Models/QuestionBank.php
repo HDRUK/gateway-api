@@ -56,6 +56,8 @@ class QuestionBank extends Model
     ];
 
     /**
+     * @return HasMany<QuestionBankVersion, $this>
+     *
      * The question versions associated with this question.
      */
     public function versions(): HasMany
@@ -63,6 +65,7 @@ class QuestionBank extends Model
         return $this->hasMany(QuestionBankVersion::class, 'question_id');
     }
 
+    /** @return HasOne<QuestionBankVersion, $this> */
     public function latestVersion(): HasOne
     {
         return $this->hasOne(QuestionBankVersion::class, 'question_id')

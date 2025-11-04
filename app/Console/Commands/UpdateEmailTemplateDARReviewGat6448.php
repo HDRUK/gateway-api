@@ -113,7 +113,7 @@ class UpdateEmailTemplateDARReviewGat6448 extends Command
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/data-access-requests"
+                            "actual": "config(gateway.gateway_url)/en/account/data-access-requests"
                         }
                     ]
                 }
@@ -208,7 +208,7 @@ class UpdateEmailTemplateDARReviewGat6448 extends Command
                         "replacements": [
                             {
                                 "placeholder": "[[BUTTON_1_URL]]",
-                                "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/data-access-requests/applications"
+                                "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/data-access-requests/applications"
                             }
                         ]
                     }

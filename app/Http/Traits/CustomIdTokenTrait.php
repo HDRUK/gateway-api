@@ -12,8 +12,8 @@ trait CustomIdTokenTrait
     public function generateIdToken($accessToken)
     {
         // Load private and public keys
-        $privateKey = env('PASSPORT_PRIVATE_KEY');
-        $publicKey = env('PASSPORT_PUBLIC_KEY');
+        $privateKey = config('passport.private_key');
+        $publicKey = config('passport.public_key');
 
         // Configure lcobucci/jwt
         $config = Configuration::forAsymmetricSigner(
@@ -43,7 +43,7 @@ trait CustomIdTokenTrait
             ->expiresAt($now->modify('+15 days'))
             ->permittedFor($claims['aud'][0])
             ->identifiedBy($claims['jti'])
-            ->issuedBy(env('APP_URL'))
+            ->issuedBy(config('app.url'))
             ->relatedTo($claims['sub'])
             ->withClaim('sid', $claims['session_state'])
             ->withClaim('nonce', $claims['nonce'])
@@ -60,7 +60,8 @@ trait CustomIdTokenTrait
             ->withClaim('given_name', $claims['given_name'])
             ->withClaim('family_name', $claims['family_name'])
             ->withClaim('rquestroles', $claims['rquestroles'])
-            ->withHeader('kid', env('JWT_KID', 'jwtkidnotfound'))
+            ->withClaim('cohort_discovery_roles', $claims['cohort_discovery_roles'])
+            ->withHeader('kid', config('jwt.kid', 'jwtkidnotfound'))
             ->getToken($config->signer(), $config->signingKey());
 
         return $newToken->toString();
