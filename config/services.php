@@ -109,8 +109,8 @@ return [
 
     'clamav' => [
         'api_url' => env('CLAMAV_API_URL', ''),
-        'basic_auth_username' => env('services.clamav.basic_auth_username', ''),
-        'basic_auth_password' => env('services.clamav.basic_auth_password', ''),
+        'basic_auth_username' => env('CLAMAV_BASIC_AUTH_USERNAME', ''),
+        'basic_auth_password' => env('CLAMAV_BASIC_AUTH_PASSWORD', ''),
     ],
 
     'dta' => [
