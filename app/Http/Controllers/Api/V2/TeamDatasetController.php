@@ -123,6 +123,8 @@ class TeamDatasetController extends Controller
                 d.team_id,
                 d.status,
                 d.user_id,
+                d.created,
+                d.updated,
                 d.created_at,
                 d.updated_at,
                 d.deleted_at,
