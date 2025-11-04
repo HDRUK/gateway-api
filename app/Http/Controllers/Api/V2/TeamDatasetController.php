@@ -114,23 +114,24 @@ class TeamDatasetController extends Controller
             $perPage = request('per_page', Config::get('constants.per_page'));
             $page = max(1, (int)$request->query('page', 1));
             $offset = ($page - 1) * $perPage;
+            $sort = $request->query('sort', 'created:desc');
 
             $filterTitle = $request->query('title', null);
 
             $sql = "
                 SELECT
                 d.id AS id,
-                d.team_id,
-                d.status,
-                d.user_id,
-                d.created,
-                d.updated,
-                d.created_at,
-                d.updated_at,
-                d.deleted_at,
-                d.submitted,
-                d.is_cohort_discovery,
-                d.has_technical_details,
+                d.team_id AS team_id,
+                d.status AS status,
+                d.user_id AS user_id,
+                d.created AS created,
+                d.updated AS updated,
+                d.created_at AS created_at,
+                d.updated_at AS updated_at,
+                d.deleted_at AS deleted_at,
+                d.submitted AS submitted,
+                d.is_cohort_discovery AS is_cohort_discovery,
+                d.has_technical_details AS has_technical_details,
                 d.create_origin AS create_origin,
                 lv.metadata AS latest_metadata
                 FROM datasets d
@@ -161,7 +162,9 @@ class TeamDatasetController extends Controller
                 $params['filterTitle'] = '%' . $filterTitle . '%';
             }
 
-            // $sql .= " ORDER BY lv.updated_at DESC";
+            $sortParts = explode(':', $sort);
+
+            $sql .= " ORDER BY {$sortParts[0]} {$sortParts[1]}";
             $sql .= " LIMIT :limit OFFSET :offset";
             $params['limit'] = (int)$perPage;
             $params['offset'] = (int)$offset;
