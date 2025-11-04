@@ -188,17 +188,31 @@ class TeamDatasetController extends Controller
                 }
             }
 
+            $total = 0;
             $countSql = "
                 SELECT COUNT(*) AS total
                 FROM datasets d
+                INNER JOIN dataset_versions dv ON dv.dataset_id = d.id
                 WHERE d.team_id = :teamId
                 AND d.status = :status
                 AND d.deleted_at IS NULL
             ";
-            $total = DB::selectOne($countSql, [
-                'teamId' => $teamId,
-                'status' => strtoupper($status),
-            ])->total;
+
+            if (!empty($filterTitle)) {
+                $countSql .= " AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.title'))) LIKE LOWER(:filterTitle) ";
+                $params['filterTitle'] = '%' . $filterTitle . '%';
+
+                $total = DB::selectOne($countSql, [
+                    'teamId' => $params['teamId'],
+                    'status' => $params['status'],
+                    'filterTitle' => $params['filterTitle'],
+                ])->total;                
+            } else {
+                $total = DB::selectOne($countSql, [
+                    'teamId' => $params['teamId'],
+                    'status' => $params['status'],
+                ])->total;
+            }
 
             $paginated = new LengthAwarePaginator(
                 $datasets,
