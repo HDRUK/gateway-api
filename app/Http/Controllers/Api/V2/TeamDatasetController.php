@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V2;
 
+use DB;
 use Config;
 use Auditor;
 use Exception;
@@ -31,6 +32,7 @@ use App\Http\Requests\V2\Dataset\CreateTeamDataset;
 use App\Http\Requests\V2\Dataset\UpdateTeamDataset;
 use App\Exports\DatasetStructuralMetadataExport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class TeamDatasetController extends Controller
 {
@@ -109,63 +111,91 @@ class TeamDatasetController extends Controller
 
         try {
             $withMetadata = $request->boolean('with_metadata', true);
-
             $perPage = request('per_page', Config::get('constants.per_page'));
+            $page = max(1, (int)$request->query('page', 1));
+            $offset = ($page - 1) * $perPage;
 
             $filterTitle = $request->query('title', null);
 
-            $teamDatasetIds = Dataset::where(['team_id' => $teamId, 'status' => strtoupper($status)])->pluck("id");
-            $datasetIds = [];
-            // If we've received a 'title' for the search, then only return
-            // datasets that match that title
+            $sql = "
+                SELECT
+                d.id AS id,
+                d.team_id,
+                d.status,
+                d.user_id,
+                d.created_at,
+                d.updated_at,
+                d.deleted_at,
+                d.submitted,
+                d.is_cohort_discovery,
+                d.has_technical_details,
+                d.create_origin AS create_origin,
+                lv.metadata AS latest_metadata
+                FROM datasets d
+                INNER JOIN (
+                SELECT dv1.*
+                FROM dataset_versions dv1
+                INNER JOIN (
+                    SELECT dataset_id, MAX(created_at) AS max_created
+                    FROM dataset_versions
+                    GROUP BY dataset_id
+                ) dv2 
+                    ON dv1.dataset_id = dv2.dataset_id 
+                    AND dv1.created_at = dv2.max_created
+                ) lv 
+                    ON lv.dataset_id = d.id
+                WHERE d.team_id = :teamId
+                AND d.status = :status
+                AND d.deleted_at IS NULL
+            ";
+
+            $params = [
+                'teamId' => $teamId,
+                'status' => strtoupper($status),
+            ];
+
             if (!empty($filterTitle)) {
-                foreach ($teamDatasetIds as $d) {
-                    $version = DatasetVersion::where('dataset_id', $d)
-                    ->filterTitle($filterTitle)
-                    ->select('dataset_id')
-                    ->first();
-
-                    if ($version) {
-                        $datasetIds[] = $d;
-                    }
-                }
-            } else {
-                $datasetIds = $teamDatasetIds;
+                $sql .= " AND JSON_UNQUOTE(JSON_EXTRACT(lv.metadata, '$.metadata.summary.title')) LIKE :filterTitle ";
+                $params['filterTitle'] = '%' . $filterTitle . '%';
             }
-            // Fetch metadata
-            $datasets = Dataset::whereIn("id", $datasetIds)
-                ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
-                ->applySorting()
-                ->paginate((int) $perPage, ['*'], 'page');
 
+            // $sql .= " ORDER BY lv.updated_at DESC";
+            $sql .= " LIMIT :limit OFFSET :offset";
+            $params['limit'] = (int)$perPage;
+            $params['offset'] = (int)$offset;
 
-            foreach ($datasets as $key => & $d) {
+            $datasets = DB::select($sql, $params);
 
-                if (empty($d->latestMetadata) || !isset($d->latestMetadata['metadata'])) {
-                    // this needs refactoring to mark the metadata as corrupt or missing and
-                    // then set them as draft and alert the FE
-                    unset($datasets[$key]);
-                    continue;
+            foreach ($datasets as &$d) {
+                if ($withMetadata && !empty($d->latest_metadata)) {
+                    $d->latest_metadata = $this->trimDatasets(json_decode($d->latest_metadata, true), [
+                        'summary',
+                        'required',
+                    ]);
+                } else {
+                    unset($d->latest_metadata);
                 }
-
-                $latestVersion = $d->latestVersion(['updated_at']);
-                if ($latestVersion) {
-                    $d->updated_at = $latestVersion->updated_at;
-                }
-
-                $miniMetadata = $this->trimDatasets($d->latestMetadata['metadata'], [
-                    'summary',
-                    'required',
-                ]);
-
-                // latestMetadata is a relation and cannot be assigned at this
-                // level, safely. So, unset all forms of metadata on the object
-                // and overwrite with out minimal version
-                unset($d['latest_metadata']);
-                unset($d['latestMetadata']);
-
-                $d['latest_metadata'] = $miniMetadata;
             }
+
+            $countSql = "
+                SELECT COUNT(*) AS total
+                FROM datasets d
+                WHERE d.team_id = :teamId
+                AND d.status = :status
+                AND d.deleted_at IS NULL
+            ";
+            $total = DB::selectOne($countSql, [
+                'teamId' => $teamId,
+                'status' => strtoupper($status),
+            ])->total;
+
+            $paginated = new LengthAwarePaginator(
+                $datasets,
+                $total,
+                $perPage,
+                $page,
+                ['path' => request()->url(), 'query' => request()->query()]
+            );
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -173,7 +203,7 @@ class TeamDatasetController extends Controller
                 'description' => 'Team Dataset get all by status',
             ]);
             return response()->json(
-                $datasets
+                $paginated
             );
         } catch (Exception $e) {
             Auditor::log([
