@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V2;
 
+use DB;
 use Config;
 use Auditor;
 use Exception;
@@ -31,6 +32,7 @@ use App\Http\Requests\V2\Dataset\CreateTeamDataset;
 use App\Http\Requests\V2\Dataset\UpdateTeamDataset;
 use App\Exports\DatasetStructuralMetadataExport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class TeamDatasetController extends Controller
 {
@@ -109,63 +111,116 @@ class TeamDatasetController extends Controller
 
         try {
             $withMetadata = $request->boolean('with_metadata', true);
-
             $perPage = request('per_page', Config::get('constants.per_page'));
+            $page = max(1, (int)$request->query('page', 1));
+            $offset = ($page - 1) * $perPage;
+            $sort = $request->query('sort', 'created:desc');
 
             $filterTitle = $request->query('title', null);
 
-            $teamDatasetIds = Dataset::where(['team_id' => $teamId, 'status' => strtoupper($status)])->pluck("id");
-            $datasetIds = [];
-            // If we've received a 'title' for the search, then only return
-            // datasets that match that title
+            $sql = "
+                SELECT
+                d.id AS id,
+                d.team_id AS team_id,
+                d.status AS status,
+                d.user_id AS user_id,
+                d.created AS created,
+                d.updated AS updated,
+                d.created_at AS created_at,
+                d.updated_at AS updated_at,
+                d.deleted_at AS deleted_at,
+                d.submitted AS submitted,
+                d.is_cohort_discovery AS is_cohort_discovery,
+                d.has_technical_details AS has_technical_details,
+                d.create_origin AS create_origin,
+                lv.metadata AS latest_metadata
+                FROM datasets d
+                INNER JOIN (
+                SELECT dv1.*
+                FROM dataset_versions dv1
+                INNER JOIN (
+                    SELECT dataset_id, MAX(created_at) AS max_created
+                    FROM dataset_versions
+                    GROUP BY dataset_id
+                ) dv2 
+                    ON dv1.dataset_id = dv2.dataset_id 
+                    AND dv1.created_at = dv2.max_created
+                ) lv 
+                    ON lv.dataset_id = d.id
+                WHERE d.team_id = :teamId
+                AND d.status = :status
+                AND d.deleted_at IS NULL
+            ";
+
+            $params = [
+                'teamId' => $teamId,
+                'status' => strtoupper($status),
+            ];
+
             if (!empty($filterTitle)) {
-                foreach ($teamDatasetIds as $d) {
-                    $version = DatasetVersion::where('dataset_id', $d)
-                    ->filterTitle($filterTitle)
-                    ->select('dataset_id')
-                    ->first();
+                $sql .= " AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(lv.metadata, '$.metadata.summary.title'))) LIKE LOWER(:filterTitle) ";
+                $params['filterTitle'] = '%' . $filterTitle . '%';
+            }
 
-                    if ($version) {
-                        $datasetIds[] = $d;
+            $sortParts = explode(':', $sort);
+
+            $sql .= " ORDER BY {$sortParts[0]} {$sortParts[1]}";
+            $sql .= " LIMIT :limit OFFSET :offset";
+            $params['limit'] = (int)$perPage;
+            $params['offset'] = (int)$offset;
+
+            $datasets = DB::select($sql, $params);
+
+            foreach ($datasets as &$d) {
+                if ($withMetadata && !empty($d->latest_metadata)) {
+                    // Weird hack to prevent trimDatasets from failing when latest_metadata is a string
+                    // even though we explicitly decode it below, certain dataset metadata appear to be double encoded?
+                    if (is_string(json_decode($d->latest_metadata, true))) {
+                        $d->latest_metadata = json_decode($d->latest_metadata, true);
                     }
+
+                    $d->latest_metadata = $this->trimDatasets(json_decode($d->latest_metadata, true), [
+                        'summary',
+                        'required',
+                    ]);
+                } else {
+                    unset($d->latest_metadata);
                 }
+            }
+
+            $total = 0;
+            $countSql = "
+                SELECT COUNT(*) AS total
+                FROM datasets d
+                INNER JOIN dataset_versions dv ON dv.dataset_id = d.id
+                WHERE d.team_id = :teamId
+                AND d.status = :status
+                AND d.deleted_at IS NULL
+            ";
+
+            if (!empty($filterTitle)) {
+                $countSql .= " AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$.metadata.summary.title'))) LIKE LOWER(:filterTitle) ";
+                $params['filterTitle'] = '%' . $filterTitle . '%';
+
+                $total = DB::selectOne($countSql, [
+                    'teamId' => $params['teamId'],
+                    'status' => $params['status'],
+                    'filterTitle' => $params['filterTitle'],
+                ])->total;                
             } else {
-                $datasetIds = $teamDatasetIds;
+                $total = DB::selectOne($countSql, [
+                    'teamId' => $params['teamId'],
+                    'status' => $params['status'],
+                ])->total;
             }
-            // Fetch metadata
-            $datasets = Dataset::whereIn("id", $datasetIds)
-                ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
-                ->applySorting()
-                ->paginate((int) $perPage, ['*'], 'page');
 
-
-            foreach ($datasets as $key => & $d) {
-
-                if (empty($d->latestMetadata) || !isset($d->latestMetadata['metadata'])) {
-                    // this needs refactoring to mark the metadata as corrupt or missing and
-                    // then set them as draft and alert the FE
-                    unset($datasets[$key]);
-                    continue;
-                }
-
-                $latestVersion = $d->latestVersion(['updated_at']);
-                if ($latestVersion) {
-                    $d->updated_at = $latestVersion->updated_at;
-                }
-
-                $miniMetadata = $this->trimDatasets($d->latestMetadata['metadata'], [
-                    'summary',
-                    'required',
-                ]);
-
-                // latestMetadata is a relation and cannot be assigned at this
-                // level, safely. So, unset all forms of metadata on the object
-                // and overwrite with out minimal version
-                unset($d['latest_metadata']);
-                unset($d['latestMetadata']);
-
-                $d['latest_metadata'] = $miniMetadata;
-            }
+            $paginated = new LengthAwarePaginator(
+                $datasets,
+                $total,
+                $perPage,
+                $page,
+                ['path' => request()->url(), 'query' => request()->query()]
+            );
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -173,7 +228,7 @@ class TeamDatasetController extends Controller
                 'description' => 'Team Dataset get all by status',
             ]);
             return response()->json(
-                $datasets
+                $paginated
             );
         } catch (Exception $e) {
             Auditor::log([
