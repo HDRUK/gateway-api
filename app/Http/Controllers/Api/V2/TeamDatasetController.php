@@ -158,7 +158,7 @@ class TeamDatasetController extends Controller
             ];
 
             if (!empty($filterTitle)) {
-                $sql .= " AND JSON_UNQUOTE(JSON_EXTRACT(lv.metadata, '$.metadata.summary.title')) LIKE :filterTitle ";
+                $sql .= " AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(lv.metadata, '$.metadata.summary.title'))) LIKE LOWER(:filterTitle) ";
                 $params['filterTitle'] = '%' . $filterTitle . '%';
             }
 
