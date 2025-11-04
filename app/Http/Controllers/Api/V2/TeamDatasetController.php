@@ -173,6 +173,12 @@ class TeamDatasetController extends Controller
 
             foreach ($datasets as &$d) {
                 if ($withMetadata && !empty($d->latest_metadata)) {
+                    // Weird hack to prevent trimDatasets from failing when latest_metadata is a string
+                    // even though we explicitly decode it below, certain dataset metadata appear to be double encoded?
+                    if (is_string(json_decode($d->latest_metadata, true))) {
+                        $d->latest_metadata = json_decode($d->latest_metadata, true);
+                    }
+
                     $d->latest_metadata = $this->trimDatasets(json_decode($d->latest_metadata, true), [
                         'summary',
                         'required',
