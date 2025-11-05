@@ -75,6 +75,46 @@ return new class () extends Migration {
      */
     public function down(): void
     {
+        // Update the DAR answers that involve files with the uuids
+        $rows = DB::table("dar_application_answers")->get();
+
+        foreach ($rows as $k => $row) {
+            $answer = json_decode($row->answer, true);
+            $isFileAnswer = $this->isFileAnswer($answer);
+
+            if (!$isFileAnswer['is_file']) {
+                continue;
+            }
+            \Log::info("Updating row ID: {$row->id}");
+
+            $value = $answer['value'];
+
+            if ($isFileAnswer['multifile']) {
+                foreach ($value as $i => $a) {
+                    if (array_key_exists("uuid", $a)) {
+                        $uploadRow = DB::table("uploads")->where('uuid', $a['uuid'])->first();
+                        if (!$uploadRow) {
+                            \Log::error("Upload not found for uuid: {$a['uuid']}");
+                            continue;
+                        }
+                        $a['id'] = $uploadRow->id;
+                        unset($a['uuid']);
+                        DB::table("dar_application_answers")->where("id", $row->id)->update(['answer' => ['value' => $a]]);
+                    }
+                }
+            } else {
+                if (array_key_exists("uuid", $value)) {
+                    $uploadRow = DB::table("uploads")->where('uuid', $value['uuid'])->first();
+                    if (!$uploadRow) {
+                        continue;
+                    }
+                    unset($value['uuid']);
+                    $value['id'] = $uploadRow->id;
+                    DB::table("dar_application_answers")->where("id", $row->id)->update(['answer' => ['value' => $value]]);
+                }
+            }
+        }
+            
         Schema::table('uploads', function (Blueprint $table) {
             $table->dropColumn('uuid');
         });
