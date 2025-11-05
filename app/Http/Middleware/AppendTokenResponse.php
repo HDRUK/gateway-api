@@ -22,19 +22,20 @@ class AppendTokenResponse
      */
     public function handle(Request $request, Closure $next): Response|JsonResponse
     {
-       Log::debug('AppendTokenResponse before $next() call');
-        Log::debug('AppendTokenResponse incoming request payload', [
+       Log::info('AppendTokenResponse before $next() call');
+        Log::info('AppendTokenResponse incoming request payload', [
             'headers' => [
                 'Content-Type' => $request->header('Content-Type'),
                 'Accept' => $request->header('Accept'),
             ],
-            'body' => $request,
+            'input' => $request->input(),
+            'all' => $request->all(),
             'query' => $request->query(),
         ]);
         try {
             $response = $next($request);
         } catch (\Throwable $e) {
-            Log::debug('AppendTokenResponse caught exception during $next()', [
+            Log::info('AppendTokenResponse caught exception during $next()', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
