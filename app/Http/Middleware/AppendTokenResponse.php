@@ -27,7 +27,20 @@ class AppendTokenResponse
             'method' => $request->method(),
         ]);
 
-        $response = $next($request);
+    
+        Log::info('AppendTokenResponse before $next() call');
+
+        try {
+            $response = $next($request);
+        } catch (\Throwable $e) {
+            Log::error('AppendTokenResponse caught exception during $next()', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e; 
+        }
+
+        Log::info('AppendTokenResponse after $next() call');
 
         $currentUrl = $request->url();
         Log::info('AppendTokenResponse current URL check', ['url' => $currentUrl]);
