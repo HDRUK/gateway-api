@@ -23,6 +23,7 @@ use App\Models\Dataset;
 use App\Models\Team;
 use App\Models\TeamHasDataAccessApplication;
 use App\Models\Upload;
+use App\Exceptions\UnauthorizedException;
 
 class DataAccessApplicationController extends Controller
 {
@@ -304,8 +305,8 @@ class DataAccessApplicationController extends Controller
      *         required=true,
      *         example="1",
      *         @OA\Schema(
-     *            type="integer",
-     *            description="File id",
+     *            type="string",
+     *            description="File uuid",
      *         ),
      *      ),
      *      @OA\Response(
@@ -331,24 +332,28 @@ class DataAccessApplicationController extends Controller
      *      )
      * )
      */
-    public function destroyFile(DeleteDataAccessApplicationFile $request, int $id, int $fileId): JsonResponse
+    public function destroyFile(DeleteDataAccessApplicationFile $request, int $id, string $fileuuid): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $file = Upload::where('id', $fileId)->first();
+            $upload = Upload::where('uuid', $fileuuid)->first();
+
+            if ($jwtUser['id'] !== $upload->user_id) {
+                throw new UnauthorizedException("File does not belong to user");
+            }
 
             Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
-                ->delete($file->file_location);
+                ->delete($upload->file_location);
 
-            $file->delete();
+            $upload->delete();
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'DataAccessApplication ' . $id . ' file ' . $fileId . ' deleted',
+                'description' => 'DataAccessApplication ' . $id . ' file ' . $fileuuid . ' deleted',
             ]);
 
             return response()->json([

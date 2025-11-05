@@ -650,7 +650,7 @@ class TeamDataAccessApplicationController extends Controller
      *      )
      * )
      */
-    public function downloadFile(GetDataAccessApplicationFile $request, int $teamId, int $id, int $fileId): StreamedResponse | JsonResponse
+    public function downloadFile(GetDataAccessApplicationFile $request, int $teamId, int $id, string $fileId): StreamedResponse | JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -663,7 +663,7 @@ class TeamDataAccessApplicationController extends Controller
             if ($isDraft) {
                 throw new Exception('Files associated with a data access request cannot be downloaded when the request is still a draft.');
             }
-            $file = Upload::where('id', $fileId)->first();
+            $file = Upload::where('uuid', $fileId)->first();
 
             // Check the file belongs to the application
             if ($file->entity_id !== $id || $file->entity_type !== 'dataAccessApplication') {

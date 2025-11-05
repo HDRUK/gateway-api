@@ -624,8 +624,8 @@ class UserDataAccessApplicationController extends Controller
      *         required=true,
      *         example="1",
      *         @OA\Schema(
-     *            type="integer",
-     *            description="File id",
+     *            type="string",
+     *            description="File uuid",
      *         ),
      *      ),
      *      @OA\Response(
@@ -644,7 +644,7 @@ class UserDataAccessApplicationController extends Controller
      *      )
      * )
      */
-    public function downloadFile(GetUserDataAccessApplicationFile $request, int $userId, int $id, int $fileId): StreamedResponse | JsonResponse
+    public function downloadFile(GetUserDataAccessApplicationFile $request, int $userId, int $id, string $fileId): StreamedResponse | JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -654,7 +654,7 @@ class UserDataAccessApplicationController extends Controller
             if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
                 throw new UnauthorizedException('User does not have permission to use this endpoint to download this files.');
             }
-            $file = Upload::where('id', $fileId)->first();
+            $file = Upload::where('uuid', $fileId)->first();
 
             if ($file) {
                 Auditor::log([
@@ -1083,12 +1083,12 @@ class UserDataAccessApplicationController extends Controller
      *      @OA\Parameter(
      *         name="fileId",
      *         in="path",
-     *         description="File id",
+     *         description="File uuid",
      *         required=true,
      *         example="1",
      *         @OA\Schema(
-     *            type="integer",
-     *            description="File id",
+     *            type="string",
+     *            description="File uuid",
      *         ),
      *      ),
      *      @OA\Response(
@@ -1114,7 +1114,7 @@ class UserDataAccessApplicationController extends Controller
      *      )
      * )
      */
-    public function destroyFile(DeleteUserDataAccessApplicationFile $request, int $userId, int $id, int $fileId): JsonResponse
+    public function destroyFile(DeleteUserDataAccessApplicationFile $request, int $userId, int $id, string $fileId): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -1153,7 +1153,7 @@ class UserDataAccessApplicationController extends Controller
                 }
             }
 
-            $file = Upload::where('id', $fileId)->first();
+            $file = Upload::where('uuid', $fileId)->first();
 
             Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
                 ->delete($file->file_location);
@@ -1347,28 +1347,6 @@ class UserDataAccessApplicationController extends Controller
         }
 
         return $formatted;
-    }
-
-    private function isFileAnswer(array | string $answer): array
-    {
-        $isFile = false;
-        $isMulti = false;
-
-        if (isset($answer['value']) && is_array($answer['value'])) {
-            if (isset($answer['value']['filename'])) {
-                $isFile = true;
-            }
-
-            if (isset($answer['value'][0]['filename'])) {
-                $isFile = true;
-                $isMulti = true;
-            }
-        }
-
-        return [
-            'is_file' => $isFile,
-            'multifile' => $isMulti,
-        ];
     }
 
     private function splitSubmittedApplication(DataAccessApplication $application): void
