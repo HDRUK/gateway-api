@@ -22,14 +22,15 @@ class AppendTokenResponse
      */
     public function handle(Request $request, Closure $next): Response|JsonResponse
     {
-        Log::info('AppendTokenResponse middleware triggered', [
-            'url' => $request->url(),
-            'method' => $request->method(),
+       Log::info('AppendTokenResponse before $next() call');
+        Log::info('AppendTokenResponse incoming request payload', [
+            'headers' => [
+                'Content-Type' => $request->header('Content-Type'),
+                'Accept' => $request->header('Accept'),
+            ],
+            'body' => $request,
+            'query' => $request->query(),
         ]);
-
-    
-        Log::info('AppendTokenResponse before $next() call');
-
         try {
             $response = $next($request);
         } catch (\Throwable $e) {
@@ -39,47 +40,16 @@ class AppendTokenResponse
             ]);
             throw $e; 
         }
-
         Log::info('AppendTokenResponse after $next() call');
 
         $currentUrl = $request->url();
-        Log::info('AppendTokenResponse current URL check', ['url' => $currentUrl]);
 
         if (strpos($currentUrl, 'oauth/token') !== false) {
-            Log::info('Matched oauth/token endpoint. Processing token response.');
-
             $content = json_decode($response->getContent(), true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                Log::info('Failed to decode JSON from response', [
-                    'error' => json_last_error_msg(),
-                    'response_content' => $response->getContent(),
-                ]);
-                return $response;
-            }
-
-            if (!isset($content['access_token'])) {
-                Log::info('Response missing access_token', ['content' => $content]);
-                return $response;
-            }
-
-            try {
-                $content['id_token'] = $this->generateIdToken($content['access_token']);
-                Log::info('Generated id_token successfully.');
-            } catch (\Throwable $e) {
-                Log::info('Error generating id_token', [
-                    'message' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
-                ]);
-                return $response; 
-            }
-
-            Log::info('Final modified response', ['content' => $content]);
-
+            $content['id_token'] = $this->generateIdToken($content['access_token']);
             return response()->json($content, $response->getStatusCode(), $response->headers->all());
         }
 
-        Log::info('URL did not match oauth/token. Returning unmodified response.');
         return $response;
     }
 }
