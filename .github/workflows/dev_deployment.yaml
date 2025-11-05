@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - 'dev'
+      - 'laravel12'
 
 env:
   PROJECT_ID: '${{ secrets.PROJECT_ID }}'
@@ -20,13 +21,13 @@ jobs:
       id-token: write
 
     runs-on: ubuntu-latest
-    environment: dev
+    environment: preprod
     steps:
       - name: Checkout
         id: checkout
         uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: laravel12
 
       - name: Read VERSION file
         id: getversion
@@ -70,13 +71,13 @@ jobs:
       id-token: write
 
     runs-on: ubuntu-latest
-    environment: dev
+    environment: preprod
     steps:
       - name: Checkout
         id: checkout
         uses: actions/checkout@v4
         with:
-          ref: dev
+          ref: laravel12
 
       - name: Google Auth
         id: auth
