@@ -22,6 +22,13 @@ class AppendTokenResponse
      */
     public function handle(Request $request, Closure $next): Response|JsonResponse
     {
+        Log::info('AppendTokenResponse::handle called', [
+        'route' => $request->route()?->getName(),
+        'controller' => $request->route()?->getActionName(),
+        'request_body' => $request->all(),
+        'query' => $request->query(),
+        'headers' => $request->headers->all(),
+    ]);
        Log::info('AppendTokenResponse before $next() call');
         Log::info('AppendTokenResponse incoming request payload', [
             'headers' => [
