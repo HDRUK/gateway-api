@@ -22,8 +22,8 @@ class AppendTokenResponse
      */
     public function handle(Request $request, Closure $next): Response|JsonResponse
     {
-       Log::info('AppendTokenResponse before $next() call');
-        Log::info('AppendTokenResponse incoming request payload', [
+       Log::debug('AppendTokenResponse before $next() call');
+        Log::debug('AppendTokenResponse incoming request payload', [
             'headers' => [
                 'Content-Type' => $request->header('Content-Type'),
                 'Accept' => $request->header('Accept'),
@@ -34,13 +34,13 @@ class AppendTokenResponse
         try {
             $response = $next($request);
         } catch (\Throwable $e) {
-            Log::error('AppendTokenResponse caught exception during $next()', [
+            Log::debug('AppendTokenResponse caught exception during $next()', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
             throw $e; 
         }
-        Log::info('AppendTokenResponse after $next() call');
+        Log::debug('AppendTokenResponse after $next() call');
 
         $currentUrl = $request->url();
 
