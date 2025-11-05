@@ -8,7 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log; 
 use App\Http\Traits\CustomIdTokenTrait;
 use Symfony\Component\HttpFoundation\Response;
-
+use DB;
 class AppendTokenResponse
 {
     use CustomIdTokenTrait;
@@ -39,15 +39,28 @@ class AppendTokenResponse
             'all' => $request->all(),
             'query' => $request->query(),
         ]);
+
+
        try {
-        $response = $next($request);
+           DB::enableQueryLog();
+           $response = $next($request);
         } catch (\Throwable $e) {
             Log::info('AppendTokenResponse caught exception during $next()', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'queries' => DB::getQueryLog(),
             ]);
             throw $e;
         }
+    //    try {
+    //     $response = $next($request);
+    //     } catch (\Throwable $e) {
+    //         Log::info('AppendTokenResponse caught exception during $next()', [
+    //             'message' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString()
+    //         ]);
+    //         throw $e;
+    //     }
         Log::debug('AppendTokenResponse after $next() call');
 
         $currentUrl = $request->url();
