@@ -44,8 +44,7 @@ class AppendTokenResponse
         } catch (\Throwable $e) {
             Log::info('AppendTokenResponse caught exception during $next()', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'backtrace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS),
+                'trace' => $e->getTraceAsString()
             ]);
             throw $e;
         }
