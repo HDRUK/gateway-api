@@ -32,14 +32,15 @@ class AppendTokenResponse
             'all' => $request->all(),
             'query' => $request->query(),
         ]);
-        try {
-            $response = $next($request);
+       try {
+        $response = $next($request);
         } catch (\Throwable $e) {
             Log::info('AppendTokenResponse caught exception during $next()', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
+                'backtrace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS),
             ]);
-            throw $e; 
+            throw $e;
         }
         Log::debug('AppendTokenResponse after $next() call');
 
