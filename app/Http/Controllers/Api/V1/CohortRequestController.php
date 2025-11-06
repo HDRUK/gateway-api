@@ -28,6 +28,7 @@ use App\Http\Requests\CohortRequest\UpdateCohortRequest;
 use App\Http\Requests\CohortRequest\AssignAdminCohortRequest;
 use App\Http\Requests\CohortRequest\RemoveAdminCohortRequest;
 use App\Models\OauthClient;
+use Illuminate\Support\Facades\Log; 
 
 class CohortRequestController extends Controller
 {
@@ -1241,7 +1242,8 @@ class CohortRequestController extends Controller
                 if (!$cohortClient) {
                     throw new Exception('Cannot find cohort service oauth client');
                 }
-
+                Log::info('AppendTokenResponse $cohortClient->redirect'. $cohortClient->redirect);
+                
                 $cohortDiscoveryUrl = config('app.url') .
                     "/oauth2/authorize?response_type=code" .
                     "&client_id=$cohortClient->id" .
