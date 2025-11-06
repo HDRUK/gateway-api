@@ -22,46 +22,46 @@ class AppendTokenResponse
      */
     public function handle(Request $request, Closure $next): Response|JsonResponse
     {
-    //     Log::info('AppendTokenResponse::handle called', [
-    //     'route' => $request->route()?->getName(),
-    //     'controller' => $request->route()?->getActionName(),
-    //     'request_body' => $request->all(),
-    //     'query' => $request->query(),
-    //     'headers' => $request->headers->all(),
-    // ]);
-    //    Log::info('AppendTokenResponse before $next() call');
-    //     Log::info('AppendTokenResponse incoming request payload', [
-    //         'headers' => [
-    //             'Content-Type' => $request->header('Content-Type'),
-    //             'Accept' => $request->header('Accept'),
-    //         ],
-    //         'input' => $request->input(),
-    //         'all' => $request->all(),
-    //         'query' => $request->query(),
-    //     ]);
+        Log::info('AppendTokenResponse::handle called', [
+        'route' => $request->route()?->getName(),
+        'controller' => $request->route()?->getActionName(),
+        'request_body' => $request->all(),
+        'query' => $request->query(),
+        'headers' => $request->headers->all(),
+    ]);
+       Log::info('AppendTokenResponse before $next() call');
+        Log::info('AppendTokenResponse incoming request payload', [
+            'headers' => [
+                'Content-Type' => $request->header('Content-Type'),
+                'Accept' => $request->header('Accept'),
+            ],
+            'input' => $request->input(),
+            'all' => $request->all(),
+            'query' => $request->query(),
+        ]);
 
+//  $response = $next($request);
+//        try {
+//            DB::enableQueryLog();
+//            $response = $next($request);
+//         } catch (\Throwable $e) {
+//             Log::info('AppendTokenResponse caught exception during $next()', [
+//                 'message' => $e->getMessage(),
+//                 'trace' => $e->getTraceAsString(),
+//                 'queries' => DB::getQueryLog(),
+//             ]);
+//             throw $e;
+//         }
+       try {
         $response = $next($request);
-    //    try {
-    //        DB::enableQueryLog();
-    //        $response = $next($request);
-    //     } catch (\Throwable $e) {
-    //         Log::info('AppendTokenResponse caught exception during $next()', [
-    //             'message' => $e->getMessage(),
-    //             'trace' => $e->getTraceAsString(),
-    //             'queries' => DB::getQueryLog(),
-    //         ]);
-    //         throw $e;
-    //     }
-    //    try {
-    //     $response = $next($request);
-    //     } catch (\Throwable $e) {
-    //         Log::info('AppendTokenResponse caught exception during $next()', [
-    //             'message' => $e->getMessage(),
-    //             'trace' => $e->getTraceAsString()
-    //         ]);
-    //         throw $e;
-    //     }
-        // Log::debug('AppendTokenResponse after $next() call');
+        } catch (\Throwable $e) {
+            Log::info('AppendTokenResponse caught exception during $next()', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
+        Log::debug('AppendTokenResponse after $next() call');
 
         $currentUrl = $request->url();
 
