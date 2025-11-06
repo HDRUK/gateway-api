@@ -36,6 +36,19 @@ trait CustomIdTokenTrait
             $claims['family_name'],
         ];
 
+
+
+        $signer = $config->signer();
+        $key = $config->signingKey();
+
+        if (empty($key)) {
+            \Log::info('AppendTokenResponse JWT signing key is empty!');
+        }
+
+        if (!$signer) {
+            \Log::info('AppendTokenResponse JWT signer not configured!');
+        }
+
         // Generate new token with similar claims
         $now = new \DateTimeImmutable();
         $newToken = $config->builder()
