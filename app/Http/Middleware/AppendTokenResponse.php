@@ -29,6 +29,7 @@ class AppendTokenResponse
         'query' => $request->query(),
         'headers' => $request->headers->all(),
     ]);
+    
        Log::info('AppendTokenResponse before $next() call');
         Log::info('AppendTokenResponse incoming request payload', [
             'headers' => [
