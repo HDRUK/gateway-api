@@ -31,15 +31,15 @@ class AppendTokenResponse
         // ]);
 
     //    Log::info('AppendTokenResponse before $next() call');
-    //     Log::info('AppendTokenResponse incoming request payload', [
-    //         'headers' => [
-    //             'Content-Type' => $request->header('Content-Type'),
-    //             'Accept' => $request->header('Accept'),
-    //         ],
-    //         'input' => $request->input(),
-    //         'all' => $request->all(),
-    //         'query' => $request->query(),
-    //     ]);
+        Log::info('AppendTokenResponse incoming request payload', [
+            'headers' => [
+                'Content-Type' => $request->header('Content-Type'),
+                'Accept' => $request->header('Accept'),
+            ],
+            'input' => $request->input(),
+            'all' => $request->all(),
+            'query' => $request->query(),
+        ]);
 
 //  $response = $next($request);
 //        try {
@@ -70,6 +70,7 @@ class AppendTokenResponse
         if (strpos($currentUrl, 'oauth/token') !== false) {
             $content = json_decode($response->getContent(), true);
             $content['id_token'] = $this->generateIdToken($content['access_token']);
+            Log::info('AppendTokenResponse id_token '. $content['id_token']);
             return response()->json($content, $response->getStatusCode(), $response->headers->all());
         }
 

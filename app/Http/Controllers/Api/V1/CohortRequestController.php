@@ -1247,7 +1247,7 @@ class CohortRequestController extends Controller
                 $cohortDiscoveryUrl = config('app.url') .
                     "/oauth2/authorize?response_type=code" .
                     "&client_id=$cohortClient->id" .
-                    "&scope=openid email profile rquestroles" .
+                    "&scope=openid email profile rquestroles cohort_discovery_roles" .
                     "&redirect_uri=$cohortClient->redirect";
             }
 

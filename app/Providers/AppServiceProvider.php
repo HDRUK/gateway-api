@@ -51,7 +51,8 @@ class AppServiceProvider extends ServiceProvider
             'openid' => 'openid',
             'email' => 'email',
             'profile' => 'profile',
-            'rquestroles' => 'rquestroles'
+            'rquestroles' => 'rquestroles',
+            'cohort_discovery_roles' => 'cohort_discovery_roles',
         ]);
 
         if (config('app.app_token_variant') === 'gateway') {
