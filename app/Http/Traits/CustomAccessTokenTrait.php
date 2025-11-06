@@ -36,7 +36,7 @@ trait CustomAccessTokenTrait
             InMemory::plainText($publicKey)
         );
 
-        $cohortDiscoveryRoles = $this->getCohortDiscoveryRoles($this->getUserIdentifier());
+        $rquestroles = $this->getRquestroles($this->getUserIdentifier());
 
         $user = User::where([
             'id' => $this->getUserIdentifier(),
@@ -100,9 +100,8 @@ trait CustomAccessTokenTrait
             ->withClaim('profile', $profile)
             ->withClaim('realm_access', $realmAccess)
             ->withClaim('resource_access', $resourceAccess)
-            ->withClaim('scope', "openid profile email rquestroles cohort_discovery_roles")
-            ->withClaim('rquestroles', $cohortDiscoveryRoles)
-            ->withClaim('cohort_discovery_roles', $cohortDiscoveryRoles)
+            ->withClaim('scope', "openid profile email rquestroles")
+            ->withClaim('rquestroles', $rquestroles)
             ->withHeader('kid', config('jwt.kid', 'jwtkidnotfound'))
             ->getToken($config->signer(), $config->signingKey());
     }
@@ -116,9 +115,9 @@ trait CustomAccessTokenTrait
     }
 
     /**
-     * get Cohort discovery roles from db
+     * get rquest roles from db
      */
-    public function getCohortDiscoveryRoles($id)
+    public function getRquestroles($id)
     {
         $cohortRequest = CohortRequest::where([
             'user_id' => $id,
@@ -138,12 +137,12 @@ trait CustomAccessTokenTrait
             $crRoleIds[] = $cohortRequestRoleId['permission_id'];
         }
 
-        $cohortDiscoveryRoles = Permission::select('name')->whereIn('id', $crRoleIds)->get()->toArray();
-        $cdRoles = [];
-        foreach ($cohortDiscoveryRoles as $role) {
-            $cdRoles[] = $role['name'];
+        $rquestrRoles = Permission::select('name')->whereIn('id', $crRoleIds)->get()->toArray();
+        $rRoles = [];
+        foreach ($rquestrRoles as $rquestrRole) {
+            $rRoles[] = $rquestrRole['name'];
         }
 
-        return $cdRoles;
+        return $rRoles;
     }
 }

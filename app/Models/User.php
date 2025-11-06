@@ -82,29 +82,7 @@ class User extends Authenticatable
     }
 
 
-    protected $appends = ['rquestroles', 'cohort_discovery_roles'];
-
-    public function getCohortDiscoveryRolesAttribute()
-    {
-        $id = $this->id;
-
-        $cohortRequest = CohortRequest::where([
-            'user_id' => $id,
-            'request_status' => 'APPROVED',
-        ])->first();
-
-        if (!$cohortRequest) {
-            return [];
-        }
-
-        $cohortRequestRoleIds = CohortRequestHasPermission::where([
-            'cohort_request_id' => $cohortRequest->id
-        ])->pluck('permission_id')->toArray();
-
-        $cohortRequestRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
-
-        return $cohortRequestRoles;
-    }
+    protected $appends = ['rquestroles'];
 
     public function getRquestRolesAttribute()
     {
