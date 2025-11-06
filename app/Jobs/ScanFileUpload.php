@@ -132,9 +132,9 @@ class ScanFileUpload implements ShouldQueue
                 ]),
                 'application/json',
             )->withBasicAuth(
-                config('services.clamav.basic_auth_username', ''),
-                config('services.clamav.basic_auth_password', ''),
-            )->post(config('services.clamav.api_url', 'http://clamav:3001') . '/scan_file');
+                config('services.clamav.basic_auth_username'),
+                config('services.clamav.basic_auth_password'),
+            )->post(config('services.clamav.api_url') . '/scan_file');
 
             if (!$response->successful()) {
                 if ($response->status() === Response::HTTP_UNAUTHORIZED) {

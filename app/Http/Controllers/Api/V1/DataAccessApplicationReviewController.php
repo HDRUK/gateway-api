@@ -335,7 +335,7 @@ class DataAccessApplicationReviewController extends Controller
                     'description' => 'DataAccessApplicationReview ' . $id . ' download file ' . $file->id,
                 ]);
 
-                return Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
+                return Storage::disk(config('gateway.scanning_filesystem_disk') . '_scanned')
                     ->download($file->file_location);
             }
 
@@ -452,7 +452,7 @@ class DataAccessApplicationReviewController extends Controller
                     'description' => 'DataAccessApplicationReview ' . $id . ' download file ' . $file->id,
                 ]);
 
-                return Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
+                return Storage::disk(config('gateway.scanning_filesystem_disk') . '_scanned')
                     ->download($file->file_location);
             }
 
@@ -1470,7 +1470,7 @@ class DataAccessApplicationReviewController extends Controller
         try {
             $file = Upload::where('id', $fileId)->first();
 
-            Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
+            Storage::disk(config('gateway.scanning_filesystem_disk') . '_scanned')
                 ->delete($file->file_location);
 
             DataAccessApplicationReviewHasFile::where('upload_id', $fileId)->delete();
