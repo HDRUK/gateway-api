@@ -339,7 +339,7 @@ class DataAccessApplicationController extends Controller
         try {
             $file = Upload::where('id', $fileId)->first();
 
-            Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
+            Storage::disk(config('gateway.scanning_filesystem_disk') . '_scanned')
                 ->delete($file->file_location);
 
             $file->delete();
