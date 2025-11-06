@@ -70,7 +70,7 @@ class AppendTokenResponse
         if (strpos($currentUrl, 'oauth/token') !== false) {
             $content = json_decode($response->getContent(), true);
             $content['id_token'] = $this->generateIdToken($content['access_token']);
-            Log::info('AppendTokenResponse id_token '. $content['id_token']);
+            Log::info('AppendTokenResponse id_token '. $content['id_token'] . '<<< is the token');
             return response()->json($content, $response->getStatusCode(), $response->headers->all());
         }
 
