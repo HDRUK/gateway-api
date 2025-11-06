@@ -626,12 +626,12 @@ class TeamDataAccessApplicationController extends Controller
      *      @OA\Parameter(
      *         name="fileId",
      *         in="path",
-     *         description="File id",
+     *         description="File uuid",
      *         required=true,
      *         example="1",
      *         @OA\Schema(
-     *            type="integer",
-     *            description="File id",
+     *            type="string",
+     *            description="File uuid",
      *         ),
      *      ),
      *      @OA\Response(
