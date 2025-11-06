@@ -34,7 +34,7 @@ class Email extends Mailable
         $this->template = $template;
         $this->replacements = $replacements;
         $this->subject = $this->template['subject'];
-        $this->fromAddress = $fromAddress ?? config('mail.from.address', 'noreply@healthdatagateway.org');
+        $this->fromAddress = $fromAddress ?? config('mail.from.address');
     }
 
     /**
@@ -74,10 +74,10 @@ class Email extends Mailable
             $this->replaceBodyText();
 
             $response = Http::withBasicAuth(
-                config('services.mjml.api_application_key', ''),
-                config('services.mjml.api_key', '')
+                config('services.mjml.api_application_key'),
+                config('services.mjml.api_key')
             )
-            ->post(config('services.mjml.render_url', ''), [
+            ->post(config('services.mjml.render_url'), [
                 'mjml' => $this->template['body'],
             ]);
 
