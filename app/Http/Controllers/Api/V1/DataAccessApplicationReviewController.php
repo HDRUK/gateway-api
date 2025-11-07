@@ -318,7 +318,6 @@ class DataAccessApplicationReviewController extends Controller
             $upload = Upload::where('uuid', $fileId)->first();
 
             if ($upload) {
-
                 $rhf = DataAccessApplicationReviewHasFile::where([
                     'review_id' => $reviewId,
                     'upload_id' => $upload->id,
@@ -445,13 +444,15 @@ class DataAccessApplicationReviewController extends Controller
 
             $file = Upload::where('uuid', $fileId)->first();
 
-            if (!is_null($file)) {
+            if ($file === null) {
+                throw new NotFoundException('File id did not match a file associated with this review.');
+            } else {
                 $rhf = DataAccessApplicationReviewHasFile::where([
                     'review_id' => $reviewId,
                     'upload_id' => $file->id,
                 ])->first();
 
-                if (is_null($rhf)) {
+                if ($rhf === null) {
                     throw new NotFoundException('File id did not match a file associated with this review.');
                 }
 
@@ -464,10 +465,6 @@ class DataAccessApplicationReviewController extends Controller
 
                 return Storage::disk(config('gateway.scanning_filesystem_disk') . '_scanned')
                     ->download($file->file_location);
-            } else {
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
-                ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
             }
 
 
