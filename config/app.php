@@ -205,6 +205,7 @@ return [
         App\Providers\CloudPubSubProvider::class,
         App\Providers\ElasticClientControllerServiceProvider::class,
         App\Providers\HelperServiceProvider::class,
+        Hdruk\LaravelMjml\Providers\LaravelMjmlServiceProvider::class,
     ],
 
     /*

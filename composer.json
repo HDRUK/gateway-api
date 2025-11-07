@@ -10,6 +10,10 @@
     "repositories": [
         {
             "type": "vcs",
+            "url": "git@github.com:HDRUK/laravel-mjml.git"
+        },
+        {
+            "type": "vcs",
             "url": "https://github.com/HDRUK/OpenID-Connect-PHP.git"
         }
     ],
@@ -68,7 +72,8 @@
             "Database\\Seeders\\": "database/seeders/",
             "Database\\Seeders\\Omop\\": "database/seeders/omop",
             "Database\\Migrations\\": "database/migrations/",
-            "Database\\Beta\\": "database/beta/"
+            "Database\\Beta\\": "database/beta/",
+            "Hdruk\\LaravelMjml\\": "hdruk/laravel-mjml/src/"
         },
         "files": [
             "app/Helpers/helpers.php"
