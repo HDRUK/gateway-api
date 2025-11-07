@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use CloudLogger;
+use Config;
 use App\Models\EmailTemplate;
 use App\Exceptions\MailSendException;
 use Exception;
