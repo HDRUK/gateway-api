@@ -670,6 +670,24 @@ class DataAccessApplicationTest extends TestCase
         );
         $response->assertStatus(200);
 
+        // Test we can't access a random file
+        $randomuuid = "d68dc845-b88e-43c6-aa55-304e4d3a1f4b";
+        $response = $this->json(
+            'GET',
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/files/' . $randomuuid . '/download',
+            [],
+            $this->header,
+        );
+        $response->assertStatus(400);
+
+        $response = $this->json(
+            'GET',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/files/' . $randomuuid . '/download',
+            [],
+            $this->header,
+        );
+        $response->assertStatus(400);
+
         // test user cannot delete the file now the application has been submitted
         $response = $this->json(
             'DELETE',
@@ -1558,6 +1576,7 @@ class DataAccessApplicationTest extends TestCase
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $uploadId = $response->decodeResponseJson()['data']['uuid'];
+        $randomuuid = "6b226923-ff88-4ca2-b99b-2d582b2245a8";
 
         // Team can download
         $response = $this->get(
@@ -1572,8 +1591,40 @@ class DataAccessApplicationTest extends TestCase
             'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/download/' . $uploadId,
             $this->header
         );
-        //dd($response->getContent());
+
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // Check team cannot download a random file not associated
+        $response = $this->get(
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/download/' . $randomuuid,
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+
+        // Check user cannot download a random file not associated
+        $response = $this->get(
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/download/' . $randomuuid,
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+
+        // Check we can't delete random files
+        $response = $this->json(
+            'DELETE',
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/files/' . $randomuuid,
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+
+        $response = $this->json(
+            'DELETE',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/files/' . $randomuuid,
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
 
         // team can delete
         $response = $this->json(
