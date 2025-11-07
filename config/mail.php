@@ -51,7 +51,7 @@ return [
                 'port'          => env('ARS_IMAP_PORT'),
                 'encryption'    => env('ARS_IMAP_ENCRYPTION'),
                 'validate_cert' => env('ARS_IMAP_VALIDATE_CERT'),
-                'username'      => env('ARS_IMAP_USERNAME'),
+                'username'      => env('ARS_IMAP_USERNAME', 'devreply@healthdatagateway.org'),
                 'password'      => env('ARS_IMAP_PASSWORD'),
                 'protocol'      => env('ARS_IMAP_PROTOCOL'),
             ],
@@ -105,7 +105,7 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        'address' => env('MAIL_FROM_ADDRESS', 'noreply@healthdatagateway.org'),
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 

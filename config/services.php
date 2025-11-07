@@ -94,7 +94,7 @@ return [
     ],
 
     'traser' => [
-        'url' => env('TRASER_SERVICE_URL', ''),
+        'url' => env('TRASER_SERVICE_URL', 'http://localhost:8002'),
     ],
 
     'gmi' => [
@@ -108,14 +108,14 @@ return [
     ],
 
     'clamav' => [
-        'api_url' => env('CLAMAV_API_URL', ''),
-        'basic_auth_username' => env('services.clamav.basic_auth_username', ''),
-        'basic_auth_password' => env('services.clamav.basic_auth_password', ''),
+        'api_url' => env('CLAMAV_API_URL', 'http://clamav:3001'),
+        'basic_auth_username' => env('CLAMAV_BASIC_AUTH_USERNAME', ''),
+        'basic_auth_password' => env('CLAMAV_BASIC_AUTH_PASSWORD', ''),
     ],
 
     'dta' => [
-        'api_url' => env("DTA_API_URL"),
-        'url' => env("DTA_URL"),
+        'api_url' => env("DTA_API_URL", ""),
+        'url' => env("DTA_URL", ""),
     ],
 
     'mauro' => [

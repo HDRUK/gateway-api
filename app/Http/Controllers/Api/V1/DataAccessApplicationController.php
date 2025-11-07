@@ -344,7 +344,7 @@ class DataAccessApplicationController extends Controller
                 throw new UnauthorizedException("File does not belong to user");
             }
 
-            Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
+            Storage::disk(config('gateway.scanning_filesystem_disk') . '_scanned')
                 ->delete($upload->file_location);
 
             $upload->delete();

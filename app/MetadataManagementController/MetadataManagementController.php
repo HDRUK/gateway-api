@@ -53,7 +53,7 @@ class MetadataManagementController
                 'subsection' => $subsection,
             ];
 
-            $urlString = config('services.traser.url', 'http://localhost:8002') . '/translate?' . http_build_query($queryParams);
+            $urlString = config('services.traser.url') . '/translate?' . http_build_query($queryParams);
 
             // !! Dragons ahead !!
             // Suggest that no one change this, ever. Took hours
@@ -135,7 +135,7 @@ class MetadataManagementController
 
             $urlString = sprintf(
                 '%s/validate?input_schema=%s&input_version=%s',
-                config('services.traser.url', 'http://localhost:8002'),
+                config('services.traser.url'),
                 $input_schema,
                 $input_version
             );

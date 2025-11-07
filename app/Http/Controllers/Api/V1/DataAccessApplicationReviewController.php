@@ -338,9 +338,19 @@ class DataAccessApplicationReviewController extends Controller
                     throw new NotFoundException('File id did not match a file associated with this review.');
                 }
             } else {
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
-                ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+                throw new NotFoundException('File id did not match a file associated with this review.');
+            }
+
+            if ($file) {
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'DataAccessApplicationReview ' . $id . ' download file ' . $file->id,
+                ]);
+
+                return Storage::disk(config('gateway.scanning_filesystem_disk') . '_scanned')
+                    ->download($file->file_location);
             }
         } catch (Exception $e) {
             Auditor::log([
@@ -452,7 +462,7 @@ class DataAccessApplicationReviewController extends Controller
                     'description' => 'DataAccessApplicationReview ' . $id . ' download file ' . $file->id,
                 ]);
 
-                return Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
+                return Storage::disk(config('gateway.scanning_filesystem_disk') . '_scanned')
                     ->download($file->file_location);
             } else {
                 return response()->json([

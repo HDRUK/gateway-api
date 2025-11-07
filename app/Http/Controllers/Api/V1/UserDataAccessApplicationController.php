@@ -664,7 +664,7 @@ class UserDataAccessApplicationController extends Controller
                     'description' => 'DataAccessApplication ' . $id . ' download file ' . $fileId,
                 ]);
 
-                return Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
+                return Storage::disk(config('gateway.scanning_filesystem_disk') . '_scanned')
                     ->download($file->file_location);
             }
 
@@ -1164,7 +1164,7 @@ class UserDataAccessApplicationController extends Controller
                 }
             }
 
-            Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
+            Storage::disk(config('gateway.scanning_filesystem_disk') . '_scanned')
                 ->delete($file->file_location);
 
             $file->delete();

@@ -1,3 +1,17 @@
+## [2.27.0](https://github.com/HDRUK/gateway-api/compare/v2.26.0...v2.27.0) (2025-11-04)
+
+### ✨ Features
+
+* **GAT-0000:** Implements additional token claims for cohort discove… (#1445) ([f5393a8](https://github.com/HDRUK/gateway-api/commit/f5393a8c67f58cefe7d733a1f96e18336f6f4d78)), closes [GAT-0000](GAT-0000)
+* **GAT-7803:** upgrade Laravel to v12 (#1442) ([6e68cae](https://github.com/HDRUK/gateway-api/commit/6e68cae50c6bf97919b5fdab80ffea5ba29034ad)), closes [GAT-7803](GAT-7803)
+
+### 🐛 Bug Fixes
+
+* **GAT-7803:** incorrect envs for auth (#1450) ([b6c9332](https://github.com/HDRUK/gateway-api/commit/b6c93323e0798490a525f7014b0d731eb72f0b6e)), closes [GAT-7803](GAT-7803)
+* **GAT-7803:** incorrect envs for clam (#1448) ([14b2236](https://github.com/HDRUK/gateway-api/commit/14b2236a71533daa98a0e683f7cdea3f53abe11c)), closes [GAT-7803](GAT-7803)
+* **GAT-8127:** allow change of preferred email (#1446) ([a83d831](https://github.com/HDRUK/gateway-api/commit/a83d831e18d726fe246adb32877e92537e563aa6)), closes [GAT-8127](GAT-8127)
+* **GAT-8128:** incorrect date for updated on team datasets (#1444) ([9ef73c2](https://github.com/HDRUK/gateway-api/commit/9ef73c2e1310ecb6953ea3a9d1f3e38e10959f52)), closes [GAT-8128](GAT-8128)
+
 ## [2.26.0](https://github.com/HDRUK/gateway-api/compare/v2.25.3...v2.26.0) (2025-10-23)
 
 ### ✨ Features

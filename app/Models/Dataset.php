@@ -245,6 +245,7 @@ class Dataset extends Model
             ->first()
             ->id;
         $datasetVersion = DatasetVersion::findOrFail($version)->toArray();
+
         return $datasetVersion['metadata']['metadata']['summary']['title'];
     }
 
