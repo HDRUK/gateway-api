@@ -258,7 +258,7 @@ class UploadController extends Controller
      *      )
      * )
      */
-    public function content(Request $request, int $uuid): JsonResponse
+    public function content(Request $request, string $uuid): JsonResponse
     {
         try {
             $input = $request->all();

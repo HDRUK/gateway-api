@@ -1129,6 +1129,16 @@ class UserDataAccessApplicationController extends Controller
                 throw new Exception('Files cannot be deleted after a data access request has been submitted.');
             }
 
+            $file = Upload::where('uuid', $fileId)->first();
+
+            if (is_null($file)) {
+                throw new Exception("File not found");
+            }
+
+            if ($file->entity_id !== $id) {
+                throw new Exception("File does not belong to application");
+            }
+
             $answers = DataAccessApplicationAnswer::where('application_id', $id)->get();
 
             foreach ($answers as $k => $answer) {
@@ -1139,7 +1149,7 @@ class UserDataAccessApplicationController extends Controller
                 if ($isFileAnswer['multifile']) {
                     $value = $answer->answer['value'];
                     foreach ($value as $i => $a) {
-                        if ($a['id'] === $fileId) {
+                        if ($a['uuid'] === $fileId) {
                             unset($value[$i]);
                             DataAccessApplicationAnswer::findOrFail($answer->id)->update([
                                 'answer' => ['value' => $value]
@@ -1147,13 +1157,12 @@ class UserDataAccessApplicationController extends Controller
                         }
                     }
                 } else {
-                    if ($answer->answer['value']['id'] === $fileId) {
+                    \Log::info($answer->answer['value']);
+                    if ($answer->answer['value']['uuid'] === $fileId) {
                         DataAccessApplicationAnswer::where('id', $answer->id)->delete();
                     }
                 }
             }
-
-            $file = Upload::where('uuid', $fileId)->first();
 
             Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
                 ->delete($file->file_location);

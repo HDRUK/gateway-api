@@ -101,13 +101,14 @@ class UploadTest extends TestCase
             ]
         );
 
-        $id = $response->decodeResponseJson()['data']['id'];
+        $id = $response->decodeResponseJson()['data']['uuid'];
 
         $response = $this->json('GET', self::TEST_URL . '/' . $id, [], $this->header);
 
         $response->assertJsonStructure([
             'data' => [
                 'id',
+                'uuid',
                 'created_at',
                 'updated_at',
                 'filename',
@@ -145,7 +146,9 @@ class UploadTest extends TestCase
             ]
         );
 
+        $uuid = $response->decodeResponseJson()['data']['uuid'];
         $id = $response->decodeResponseJson()['data']['id'];
+
 
         $upload = Upload::findOrFail($id);
         $upload->update([
@@ -153,7 +156,7 @@ class UploadTest extends TestCase
         ]);
         $response = $this->json(
             'GET',
-            self::TEST_URL . '/processed' . '/' . $id,
+            self::TEST_URL . '/processed' . '/' . $uuid,
             [],
             $this->header
         );
@@ -165,7 +168,7 @@ class UploadTest extends TestCase
         ]);
         $response = $this->json(
             'GET',
-            self::TEST_URL . '/processed' . '/' . $id,
+            self::TEST_URL . '/processed' . '/' . $uuid,
             [],
             $this->header
         );
@@ -177,7 +180,7 @@ class UploadTest extends TestCase
         ]);
         $response = $this->json(
             'GET',
-            self::TEST_URL . '/processed' . '/' . $id,
+            self::TEST_URL . '/processed' . '/' . $uuid,
             [],
             $this->header
         );
@@ -275,6 +278,7 @@ class UploadTest extends TestCase
         $response->assertJsonStructure([
             'data' => [
                 'id',
+                'uuid',
                 'created_at',
                 'updated_at',
                 'filename',
@@ -340,13 +344,14 @@ class UploadTest extends TestCase
         $this->assertEquals($content['error'], null);
 
         $response->assertStatus(200);
-        $id = $response->decodeResponseJson()['data']['id'];
+        $id = $response->decodeResponseJson()['data']['uuid'];
 
         $response = $this->json('GET', self::TEST_URL . '/' . $id, [], $this->header);
 
         $response->assertJsonStructure([
             'data' => [
                 'id',
+                'uuid',
                 'created_at',
                 'updated_at',
                 'filename',

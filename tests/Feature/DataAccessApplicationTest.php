@@ -571,7 +571,7 @@ class DataAccessApplicationTest extends TestCase
                 ]
             ]);
 
-        $fileId = $response->decodeResponseJson()['data'][0]['id'];
+        $fileId = $response->decodeResponseJson()['data'][0]['uuid'];
 
         // test downloading a file associated with the dar application
         $response = $this->json(
@@ -660,7 +660,7 @@ class DataAccessApplicationTest extends TestCase
                     ],
                 ]
             ]);
-        $fileId = $response->decodeResponseJson()['data'][0]['id'];
+        $fileId = $response->decodeResponseJson()['data'][0]['uuid'];
 
         $response = $this->json(
             'GET',
@@ -1076,7 +1076,7 @@ class DataAccessApplicationTest extends TestCase
             ]
         );
         $response->assertStatus(200);
-        $fileId = $response->decodeResponseJson()['data']['id'];
+        $fileId = $response->decodeResponseJson()['data']['uuid'];
 
         // get answers
         $response = $this->json(
@@ -1104,6 +1104,7 @@ class DataAccessApplicationTest extends TestCase
             [],
             $this->header,
         );
+
         $response->assertStatus(200);
 
         $response = $this->json(
@@ -1149,7 +1150,7 @@ class DataAccessApplicationTest extends TestCase
             ]
         );
         $response->assertStatus(200);
-        $fileIdTwo = $response->decodeResponseJson()['data']['id'];
+        $fileIdTwo = $response->decodeResponseJson()['data']['uuid'];
 
         // get answers
         $response = $this->json(
@@ -1556,7 +1557,7 @@ class DataAccessApplicationTest extends TestCase
             ]
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-        $uploadId = $response->decodeResponseJson()['data']['id'];
+        $uploadId = $response->decodeResponseJson()['data']['uuid'];
 
         // Team can download
         $response = $this->get(
@@ -1571,6 +1572,7 @@ class DataAccessApplicationTest extends TestCase
             'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/download/' . $uploadId,
             $this->header
         );
+        //dd($response->getContent());
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // team can delete

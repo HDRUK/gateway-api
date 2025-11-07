@@ -337,8 +337,7 @@ class DataAccessApplicationReviewController extends Controller
                 } else {
                     throw new NotFoundException('File id did not match a file associated with this review.');
                 }
-            }
-            else {
+            } else {
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
                 ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
@@ -436,15 +435,13 @@ class DataAccessApplicationReviewController extends Controller
 
             $file = Upload::where('uuid', $fileId)->first();
 
-            if ($file) {
+            if (!is_null($file)) {
                 $rhf = DataAccessApplicationReviewHasFile::where([
                     'review_id' => $reviewId,
                     'upload_id' => $file->id,
                 ])->first();
 
-                if ($rhf) {
-                    $file = Upload::where('id', $fileId)->first();
-                } else {
+                if (is_null($rhf)) {
                     throw new NotFoundException('File id did not match a file associated with this review.');
                 }
 
