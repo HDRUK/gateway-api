@@ -466,14 +466,6 @@ class DataAccessApplicationReviewController extends Controller
                 return Storage::disk(config('gateway.scanning_filesystem_disk') . '_scanned')
                     ->download($file->file_location);
             }
-
-
-
-            if ($file) {
-
-            }
-
-
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

@@ -1131,7 +1131,7 @@ class UserDataAccessApplicationController extends Controller
 
             $file = Upload::where('uuid', $fileId)->first();
 
-            if (is_null($file)) {
+            if ($file === null) {
                 throw new Exception("File not found");
             }
 
@@ -1157,7 +1157,6 @@ class UserDataAccessApplicationController extends Controller
                         }
                     }
                 } else {
-                    \Log::info($answer->answer['value']);
                     if ($answer->answer['value']['uuid'] === $fileId) {
                         DataAccessApplicationAnswer::where('id', $answer->id)->delete();
                     }
