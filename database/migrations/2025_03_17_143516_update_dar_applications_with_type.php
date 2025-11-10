@@ -21,7 +21,7 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::table('dar_applications', function (Blueprint $table) {
-            $table->dropIfExists('application_type');
+            $table->dropColumn('application_type');
         });
     }
 };

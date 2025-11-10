@@ -26,7 +26,6 @@ return new class () extends Migration {
 
         Schema::table('tools', function (Blueprint $table) {
             $table->dropConstrainedForeignId('team_id');
-            $table->dropIfExists('team_id');
         });
 
         Schema::enableForeignKeyConstraints();

@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use Config;
 use Tests\TestCase;
 use App\Services\Hubspot;
 use Illuminate\Support\Facades\Http;

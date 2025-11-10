@@ -132,9 +132,9 @@ class ScanFileUpload implements ShouldQueue
                 ]),
                 'application/json',
             )->withBasicAuth(
-                env('CLAMAV_BASIC_AUTH_USERNAME', ''),
-                env('CLAMAV_BASIC_AUTH_PASSWORD', ''),
-            )->post(env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file');
+                config('services.clamav.basic_auth_username'),
+                config('services.clamav.basic_auth_password'),
+            )->post(config('services.clamav.api_url') . '/scan_file');
 
             if (!$response->successful()) {
                 if ($response->status() === Response::HTTP_UNAUTHORIZED) {
@@ -297,7 +297,7 @@ class ScanFileUpload implements ShouldQueue
         $unmatched = array();
         foreach ($nonGatewayDatasets as $d) {
             // Try to match on url
-            if (str_contains($d, env('GATEWAY_URL'))) {
+            if (str_contains($d, config('gateway.gateway_url'))) {
                 $exploded = explode('/', $d);
                 $datasetId = (int) end($exploded);
                 $dataset = Dataset::where('id', $datasetId)->first();
@@ -315,7 +315,7 @@ class ScanFileUpload implements ShouldQueue
             // BES 30/10/24: skip this attempt if running on an sqlite DB_CONNECTION
             // because JSON_UNQUOTE does not exist in sqlite
             // and the alternative of grabbing and searching all the metadata is computationally infeasible
-            if (env('DB_CONNECTION') !== 'sqlite') {
+            if (config('database.default') !== 'sqlite') {
                 $dCleaned = trim($d);
                 $datasetVersion = DatasetVersion::whereRaw(
                     'LOWER(short_title) LIKE ?',

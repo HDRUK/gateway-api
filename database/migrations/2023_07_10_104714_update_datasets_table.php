@@ -59,7 +59,9 @@ return new class () extends Migration {
      */
     public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('datasets');
+        Schema::enableForeignKeyConstraints();
 
         Schema::create('datasets', function (Blueprint $table) {
             $table->id();

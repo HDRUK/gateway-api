@@ -72,10 +72,10 @@ class KeywordController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $perPage = (int) request('per_page', Config::get('constants.per_page'));
             $keywords = Keyword::where('enabled', 1)
                 ->paginate(function ($total) use ($perPage) {
@@ -151,10 +151,10 @@ class KeywordController extends Controller
      */
     public function show(GetKeyword $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $keyword = Keyword::where(['id' => $id])->get();
 
             Auditor::log([
@@ -223,10 +223,10 @@ class KeywordController extends Controller
      */
     public function store(CreateKeyword $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $checkKeyword = Keyword::where([
                 'name' => $input['name'],
             ])->first();
@@ -323,10 +323,10 @@ class KeywordController extends Controller
      */
     public function update(UpdateKeyword $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             Keyword::where('id', $id)->update([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
@@ -414,10 +414,10 @@ class KeywordController extends Controller
      */
     public function edit(EditKeyword $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $arrayKeys = [
                 'name',
                 'enabled',
@@ -493,10 +493,10 @@ class KeywordController extends Controller
      */
     public function destroy(DeleteKeyword $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             Keyword::where('id', '=', $id)->delete();
             CollectionHasKeyword::where('keyword_id', '=', $id)->delete();
 

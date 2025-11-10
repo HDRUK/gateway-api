@@ -15,7 +15,6 @@ use App\Models\ApplicationHasPermission;
 
 class DatasetIntegrationTest extends TestCase
 {
-    
     use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;

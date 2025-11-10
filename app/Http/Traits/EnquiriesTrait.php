@@ -181,7 +181,7 @@ trait EnquiriesTrait
     public function sendEmail(string $ident, array $threadDetail, array $usersToNotify, array $jwtUser, string $currentUserPreferredEmail = 'primary'): void
     {
         $something = null;
-        $imapUsername = env('ARS_IMAP_USERNAME', 'devreply@healthdatagateway.org');
+        $imapUsername = config('mail.mailers.ars.imap.username');
         list($username, $domain) = explode('@', $imapUsername);
 
         try {

@@ -45,5 +45,12 @@ return new class () extends Migration {
                 ]);
             });
         }
+        if (Schema::hasColumn('authorisation_codes', 'deleted_at')) {
+            Schema::table('authorisation_codes', function (Blueprint $table) {
+                $table->dropColumn([
+                    'deleted_at',
+                ]);
+            });
+        }
     }
 };

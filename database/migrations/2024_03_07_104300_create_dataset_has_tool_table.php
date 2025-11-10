@@ -26,7 +26,7 @@ return new class () extends Migration {
     public function down(): void
     {
         // Drop the foreign key constraint first
-        Schema::table('datasets_has_tool', function (Blueprint $table) {
+        Schema::table('dataset_has_tools', function (Blueprint $table) {
             $table->dropForeign(['dataset_id']);
             $table->dropForeign(['tool_id']);
         });

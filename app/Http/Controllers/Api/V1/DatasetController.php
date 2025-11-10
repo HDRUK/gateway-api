@@ -571,7 +571,7 @@ class DatasetController extends Controller
 
             return [
                 'title' => $dv->short_title,
-                'url' => env('GATEWAY_URL') . '/en/dataset/' . $d->id,
+                'url' => config('gateway.gateway_url') . '/en/dataset/' . $d->id,
                 'dataset_id' => $d->id,
                 'linkage_type' => $linkage->linkage_type,
             ];
@@ -1372,7 +1372,13 @@ class DatasetController extends Controller
                 fputcsv($handle, $headerRow);
 
                 // add the given number of rows to the file.
-                foreach ($results as $rowDetails) {
+                foreach ($results as $key => $rowDetails) {
+                    if (empty($rowDetails['metadata']) || !isset($rowDetails['metadata'])) {
+                        // this needs refactoring to mark the metadata as corrupt or missing and
+                        // then set them as draft and alert the FE
+                        unset($results[$key]);
+                        continue;
+                    }
                     $metadata = $rowDetails['metadata']['metadata'];
 
                     $publisherName = $metadata['metadata']['summary']['publisher'];

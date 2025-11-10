@@ -21,7 +21,7 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::table('dur_has_datasets', function (Blueprint $table) {
-            $table->dropIfExists('deleted_at');
+            $table->dropSoftDeletes();
         });
     }
 };

@@ -25,7 +25,7 @@ class User extends Authenticatable
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'name',
@@ -56,7 +56,7 @@ class User extends Authenticatable
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $hidden = [
         'password',
@@ -82,9 +82,31 @@ class User extends Authenticatable
     }
 
 
-    protected $appends = ['rquestroles'];
+    protected $appends = ['rquestroles', 'cohort_discovery_roles'];
 
-    public function getRquestrolesAttribute()
+    public function getCohortDiscoveryRolesAttribute()
+    {
+        $id = $this->id;
+
+        $cohortRequest = CohortRequest::where([
+            'user_id' => $id,
+            'request_status' => 'APPROVED',
+        ])->first();
+
+        if (!$cohortRequest) {
+            return [];
+        }
+
+        $cohortRequestRoleIds = CohortRequestHasPermission::where([
+            'cohort_request_id' => $cohortRequest->id
+        ])->pluck('permission_id')->toArray();
+
+        $cohortRequestRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
+
+        return $cohortRequestRoles;
+    }
+
+    public function getRquestRolesAttribute()
     {
         $id = $this->id;
 
@@ -153,6 +175,7 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class, 'user_has_roles');
     }
 
+    /** @return HasMany<CohortRequest, $this> */
     public function cohortRequests(): HasMany
     {
         return $this->hasMany(CohortRequest::class);

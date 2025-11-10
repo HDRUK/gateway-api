@@ -51,7 +51,7 @@ trait MetadataVersioning
             //       - url set with a placeholder right now, should be revised before production
             //       - https://hdruk.atlassian.net/browse/GAT-3392
             $newMetadata['required']['revisions'][] = [
-                "url" => env('GATEWAY_URL') . '/dataset' .'/' . $currDataset->id . '?version=' . $versionCode,
+                "url" => config('gateway.gateway_url') . '/dataset' .'/' . $currDataset->id . '?version=' . $versionCode,
                 "version" => $versionCode
             ];
         }

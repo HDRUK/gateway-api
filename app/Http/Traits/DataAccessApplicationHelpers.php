@@ -252,9 +252,9 @@ trait DataAccessApplicationHelpers
             'submission_status' => 'SUBMITTED',
         ])->first();
         if ($submissionAudit) {
-            $submissions['days_since_submission'] = $submissionAudit
+            $submissions['days_since_submission'] = (int) abs($submissionAudit
                 ->updated_at
-                ->diffInDays(Carbon::today());
+                ->diffInDays(Carbon::today()));
             $submissions['submission_date'] = $submissionAudit->updated_at;
             return $submissions;
         } else {

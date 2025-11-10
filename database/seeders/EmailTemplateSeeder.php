@@ -161,7 +161,7 @@ class EmailTemplateSeeder extends Seeder
                 "replacements": [
                     {
                         "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/team-management"
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/team-management"
                     }
                 ]
             }
@@ -609,7 +609,7 @@ class EmailTemplateSeeder extends Seeder
                 "replacements": [
                     {
                         "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
                     }
                 ]
             }
@@ -758,7 +758,7 @@ class EmailTemplateSeeder extends Seeder
             "replacements": [
                 {
                     "placeholder": "[[BUTTON_1_URL]]",
-                    "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/datasets"
+                    "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/datasets"
                 }
             ]
         }
@@ -911,7 +911,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/datasets"
+                            "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/datasets"
                         }
                     ]
                 }
@@ -1415,7 +1415,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[COHORT_DISCOVERY_RENEW_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/about/cohort-discovery"
+                            "actual": "config(gateway.gateway_url)/en/about/cohort-discovery"
                         }
                     ]
                 }
@@ -1492,7 +1492,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[COHORT_DISCOVERY_RENEW_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/about/cohort-discovery"
+                            "actual": "config(gateway.gateway_url)/en/about/cohort-discovery"
                         }
                     ]
                 }
@@ -1570,7 +1570,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[COHORT_DISCOVERY_ACCESS_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/about/cohort-discovery"
+                            "actual": "config(gateway.gateway_url)/en/about/cohort-discovery"
                         }
                     ]
                 }
@@ -1913,7 +1913,7 @@ class EmailTemplateSeeder extends Seeder
                 "replacements": [
                     {
                         "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/api-management"
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management"
                     }
                 ]
             }
@@ -1930,7 +1930,7 @@ class EmailTemplateSeeder extends Seeder
                 "replacements": [
                     {
                         "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/api-management"
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management"
                     }
                 ]
             }
@@ -2183,7 +2183,7 @@ class EmailTemplateSeeder extends Seeder
                 "replacements": [
                     {
                         "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
                     }
                 ]
             }
@@ -2200,7 +2200,7 @@ class EmailTemplateSeeder extends Seeder
                 "replacements": [
                     {
                         "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
                     }
                 ]
             }
@@ -2328,7 +2328,7 @@ class EmailTemplateSeeder extends Seeder
                 "replacements": [
                     {
                         "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
                     }
                 ]
             }
@@ -2345,7 +2345,7 @@ class EmailTemplateSeeder extends Seeder
                 "replacements": [
                     {
                         "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
                     }
                 ]
             }
@@ -2473,7 +2473,7 @@ class EmailTemplateSeeder extends Seeder
                 "replacements": [
                     {
                         "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
                     }
                 ]
             }
@@ -2490,7 +2490,7 @@ class EmailTemplateSeeder extends Seeder
                 "replacements": [
                     {
                         "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
                     }
                 ]
             }
@@ -2793,7 +2793,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
+                            "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
                 }
@@ -2884,7 +2884,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
+                            "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
                 }',
@@ -2974,7 +2974,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
+                            "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
                 }
@@ -3068,7 +3068,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration/list"
+                            "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration/list"
                         }
                     ]
                 }
@@ -3163,7 +3163,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration/list"
+                            "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration/list"
                         }
                     ]
                 }
@@ -3251,7 +3251,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/team-management"
+                            "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/team-management"
                         }
                     ]
                 }
@@ -3331,7 +3331,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/team-management"
+                            "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/team-management"
                         }
                     ]
                 }
@@ -3576,7 +3576,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/data-access-requests/application/[[APPLICATION_ID]]"
+                            "actual": "config(gateway.gateway_url)/en/account/data-access-requests/application/[[APPLICATION_ID]]"
                         }
                     ]
                 }
@@ -3667,7 +3667,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/data-access-requests/applications"
+                            "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/data-access-requests/applications"
                         }
                     ]
                 }
@@ -3755,7 +3755,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/data-access-requests/application/[[APPLICATION_ID]]"
+                            "actual": "config(gateway.gateway_url)/en/account/data-access-requests/application/[[APPLICATION_ID]]"
                         }
                     ]
                 }
@@ -3845,7 +3845,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
+                            "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
                 }',
@@ -3934,7 +3934,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/data-access-requests"
+                            "actual": "config(gateway.gateway_url)/en/account/data-access-requests"
                         }
                     ]
                 }
@@ -4023,7 +4023,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/data-access-requests/applications"
+                            "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/data-access-requests/applications"
                         }
                     ]
                 }
@@ -4101,7 +4101,7 @@ class EmailTemplateSeeder extends Seeder
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/team-management"
+                            "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/team-management"
                         }
                     ]
                 }
@@ -4187,7 +4187,7 @@ class EmailTemplateSeeder extends Seeder
                         "replacements": [
                             {
                                 "placeholder": "[[BUTTON_1_URL]]",
-                                "actual": "env(GATEWAY_URL)/en/verification/[[UUID]]"
+                                "actual": "config(gateway.gateway_url)/en/verification/[[UUID]]"
                             }
                         ]
                     }

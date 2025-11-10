@@ -21,6 +21,7 @@ return new class () extends Migration {
             $table->dropIndex('collection_has_dataset_version_dataset_version_id_index');
             $table->dropIndex('collection_has_dataset_version_user_id_index');
             $table->dropIndex('collection_has_dataset_version_application_id_index');
+            $table->dropIndex('collection_has_dataset_version_deleted_at_index');
         });
 
         Schema::rename('collection_has_dataset_version', 'collection_has_dataset_version_backup');
@@ -46,6 +47,7 @@ return new class () extends Migration {
             $table->index('dataset_version_id');
             $table->index('user_id');
             $table->index('application_id');
+            $table->index('deleted_at');
         });
 
         DB::table('collection_has_dataset_version')->insert(
@@ -101,6 +103,7 @@ return new class () extends Migration {
             $table->index('dataset_version_id');
             $table->index('user_id');
             $table->index('application_id');
+            $table->index('deleted_at');
         });
 
         DB::table('collection_has_dataset_version')->insert(

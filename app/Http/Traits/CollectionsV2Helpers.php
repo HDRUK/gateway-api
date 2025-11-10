@@ -11,6 +11,7 @@ use App\Models\Collection;
 use App\Models\DatasetVersion;
 use App\Models\Tool;
 use App\Models\Dur;
+use App\Models\User;
 use App\Models\Publication;
 use Illuminate\Support\Str;
 use App\Models\CollectionHasDur;
@@ -90,7 +91,7 @@ trait CollectionsV2Helpers
             }
 
             if ($collection->users) {
-                $collection->users->map(function ($user) {
+                $collection->users->map(function (User $user) {
                     $currentEmail = $user->email;
                     [$username, $domain] = explode('@', $currentEmail);
                     $user->email = Str::mask($username, '*', 1, strlen($username) - 2) . '@' . Str::mask($domain, '*', 1, strlen($domain) - 2);
@@ -104,7 +105,7 @@ trait CollectionsV2Helpers
             }
 
             if ($collection->datasetVersions) {
-                $collection->datasetVersions->map(function ($dv) {
+                $collection->datasetVersions->map(function (DatasetVersion $dv) {
                     $dataset = Dataset::where('id', $dv->dataset_id)->first();
                     if ($dataset->status === Dataset::STATUS_ACTIVE) {
                         return $dv;

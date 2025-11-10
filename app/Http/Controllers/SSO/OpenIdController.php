@@ -12,6 +12,7 @@ class OpenIdController extends Controller
         'email',
         'profile',
         'rquestroles',
+        'cohort_discovery_roles',
     ];
     protected $response_types_supported = [
         'code',
@@ -41,18 +42,18 @@ class OpenIdController extends Controller
     {
         $config = [
             // Required
-            'issuer'                    => env('APP_URL'),
-            'authorization_endpoint'    => env('APP_URL') . '/oauth/authorize',
-            'token_endpoint'            => env('APP_URL') . '/oauth/token',
-            'token_refresh_endpoint'    => env('APP_URL') . '/oauth/token/refresh',
-            'jwks_uri'                  => env('APP_URL') . '/oauth/.well-known/jwks',
+            'issuer'                    => config('app.url'),
+            'authorization_endpoint'    => config('app.url') . '/oauth/authorize',
+            'token_endpoint'            => config('app.url') . '/oauth/token',
+            'token_refresh_endpoint'    => config('app.url') . '/oauth/token/refresh',
+            'jwks_uri'                  => config('app.url') . '/oauth/.well-known/jwks',
             'response_types_supported'  => $this->response_types_supported,
             'subject_types_supported'   => $this->subject_types_supported,
             'id_token_signing_alg_values_supported' => $this->id_token_signing_alg_values_supported,
             'userinfo_signing_alg_values_supported' => $this->id_token_signing_alg_values_supported,
 
             // Recommended
-            'userinfo_endpoint'         => env('APP_URL') . '/api/oauth/userinfo',
+            'userinfo_endpoint'         => config('app.url') . '/api/oauth/userinfo',
             'registration_endpoint'     => '',
             'scopes_supported'          => $this->scopes_supported,
             'grant_types_supported'     => $this->grant_types_supported,
@@ -75,7 +76,7 @@ class OpenIdController extends Controller
             ],
 
             // logme out
-            'revocation_endpoint'       => env('APP_URL') . '/api/oauth/logmeout',
+            'revocation_endpoint'       => config('app.url') . '/api/oauth/logmeout',
 
             'token_endpoint_auth_methods_supported' => [
                 'none',

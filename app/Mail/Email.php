@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use CloudLogger;
+use Config;
 use App\Models\EmailTemplate;
 use App\Exceptions\MailSendException;
 use Exception;
@@ -33,7 +34,7 @@ class Email extends Mailable
         $this->template = $template;
         $this->replacements = $replacements;
         $this->subject = $this->template['subject'];
-        $this->fromAddress = $fromAddress ?? env('MAIL_FROM_ADDRESS', 'noreply@healthdatagateway.org');
+        $this->fromAddress = $fromAddress ?? config('mail.from.address');
     }
 
     /**
@@ -73,12 +74,12 @@ class Email extends Mailable
             $this->replaceBodyText();
 
             $response = Http::withBasicAuth(
-                env('MJML_API_APPLICATION_KEY', ''),
-                env('MJML_API_KEY', '')
+                config('services.mjml.api_application_key'),
+                config('services.mjml.api_key')
             )
-                ->post(env('MJML_RENDER_URL', ''), [
-                    'mjml' => $this->template['body'],
-                ]);
+            ->post(config('services.mjml.render_url'), [
+                'mjml' => $this->template['body'],
+            ]);
 
 
             if ($response->successful()) {
@@ -105,14 +106,14 @@ class Email extends Mailable
         if (isset($this->template['buttons'])) {
             $buttons = json_decode($this->template['buttons'], true);
             foreach ($buttons['replacements'] as $b) {
-                $containsEnv = strpos($b['actual'], 'env(');
+                $containsEnv = strpos($b['actual'], "config(");
 
                 if ($containsEnv !== false) {
-                    $start = $containsEnv + strlen('env(');
-                    $end = strpos($b['actual'], ')', $start);
+                    $start = $containsEnv + strlen("config(");
+                    $end = strpos($b['actual'], ")", $start);
                     $subject = substr($b['actual'], $start, $end - $start);
 
-                    $b['actual'] = str_replace('env(' . $subject . ')', env($subject), $b['actual']);
+                    $b['actual'] = str_replace("config(" . $subject . ")", config($subject), $b['actual']);
                 }
 
                 // In case of dynamic values within the 'actual' link we need to replace those

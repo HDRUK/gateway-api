@@ -158,7 +158,7 @@ class DurObserverTest extends TestCase
             'status' => Dur::STATUS_ACTIVE,
         ]);
 
-        
+
         $this->observer->shouldReceive('deleteDurFromElastic')->once()->with($countInitialDur + 1);
 
         $dur->update(['status' => Dur::STATUS_ARCHIVED]);

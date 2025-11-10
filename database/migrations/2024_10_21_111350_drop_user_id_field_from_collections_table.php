@@ -49,12 +49,12 @@ return new class () extends Migration {
         if (Schema::hasTable('collection_has_users')) {
             if (!Schema::hasColumn('collections', 'user_id')) {
                 Schema::table('collections', function (Blueprint $table) {
-                    $table->bigInteger('user_id')->nullable()->default(null)->unsigned();
+                    $table->bigInteger('user_id')->nullable()->default(null)->unsigned()->index();
                     $table->foreign('user_id')->references('id')->on('users');
                 });
             }
 
-            $collections = CollectionHasUser::select(['collection_id', 'user_id', 'CREATOR'])->get();
+            $collections = CollectionHasUser::withTrashed()->where(['role' => 'CREATOR'])->select(['collection_id', 'user_id'])->get();
             foreach ($collections as $collection) {
                 Collection::where([
                     'id' => $collection->collection_id,
@@ -62,8 +62,6 @@ return new class () extends Migration {
                     'user_id' => $collection->user_id,
                 ]);
             }
-
-            Schema::dropIfExists('collection_has_users');
         }
         Schema::enableForeignKeyConstraints();
     }

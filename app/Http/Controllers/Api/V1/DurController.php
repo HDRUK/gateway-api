@@ -220,16 +220,7 @@ class DurController extends Controller
                 $durs->orderBy('dur.' . $key, strtoupper($value));
             }
 
-            $durs = $durs->paginate((int) $perPage, ['*'], 'page')
-                ->through(function ($dur) {
-                    if ($dur->datasets) {
-                        $dur->datasets = $dur->datasets->map(function ($dataset) {
-                            $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
-                            return $dataset;
-                        });
-                    }
-                    return $dur;
-                });
+            $durs = $durs->paginate((int) $perPage, ['*'], 'page');
 
             $durs->getCollection()->transform(function ($dur) {
                 $userDatasets = $dur->userDatasets;
@@ -398,10 +389,9 @@ class DurController extends Controller
      */
     public function show(GetDur $request, int $id): JsonResponse
     {
+        list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
+
         try {
-
-            list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
-
             $dur = $this->getDurById($id);
 
             if (!empty($dur['user'])) {

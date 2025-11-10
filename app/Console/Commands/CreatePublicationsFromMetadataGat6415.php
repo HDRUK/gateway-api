@@ -112,7 +112,7 @@ class CreatePublicationsFromMetadataGat6415 extends Command
             $this->info($publication);
 
             // check if gateway url
-            if (str_contains($publication, env('GATEWAY_URL'))) {
+            if (str_contains($publication, config('gateway.gateway_url'))) {
                 $exploded = explode('/', $publication);
                 $publicationId = (int) end($exploded);
                 $pub = Publication::where('id', $publicationId)->first();
@@ -181,7 +181,7 @@ class CreatePublicationsFromMetadataGat6415 extends Command
         $payload = [
             'query' => $doi,
         ];
-        $url = env('APP_URL') . '/api/v1/search/doi';
+        $url = config('app.url') . '/api/v1/search/doi';
         $response = Http::post($url, $payload);
 
         if ($response->successful()) {
