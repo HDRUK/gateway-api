@@ -698,6 +698,94 @@ class DataAccessApplicationTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     }
 
+    public function test_cant_delete_other_peoples_files()
+    {
+        $responseCreateUser = $this->json(
+            'POST',
+            '/api/v1/users',
+            [
+                'firstname' => 'XXXXXXXXXX',
+                'lastname' => 'XXXXXXXXXX',
+                'email' => 'just.test.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/12345678",
+                'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",
+            ],
+            $this->header
+        );
+        $responseCreateUser->assertStatus(201);
+        $uniqueUserId = $responseCreateUser->decodeResponseJson()['data'];
+
+        $entityIds = $this->createDatasetForDar();
+        $datasetId = $entityIds['datasetId'];
+        $teamId = $entityIds['teamId'];
+        $questionId = $entityIds['questionId'];
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => $this->currentUser['id'],
+                'submission_status' => 'DRAFT',
+                'project_title' => 'A test DAR',
+                'approval_status' => 'APPROVED_COMMENTS',
+                'dataset_ids' => [$datasetId]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $applicationId = $content['data'];
+
+        $file = UploadedFile::fake()->create('test_dar_application.pdf');
+        $response = $this->json(
+            'POST',
+            'api/v1/files?entity_flag=dar-application-upload&application_id=' . $applicationId . '&question_id=' . $questionId,
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+
+        $response->assertStatus(200);
+
+        $fileId = $response->decodeResponseJson()['data']['uuid'];
+
+        // Check a file that we know exists cannot be deleted by a different user
+        $response = $this->json(
+            'DELETE',
+            'api/v1/users/' . $uniqueUserId . '/dar/applications/' . $applicationId . '/files/' . $fileId,
+            [],
+            $this->header,
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+
+        // But it can be deleted by us
+        $response = $this->json(
+            'DELETE',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/files/' . $fileId,
+            [],
+            $this->header,
+        );
+        $response->assertStatus(200);
+    }
+
     /**
      * Fails to return a single dar application
      *
