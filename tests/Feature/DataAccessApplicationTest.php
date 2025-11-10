@@ -670,24 +670,6 @@ class DataAccessApplicationTest extends TestCase
         );
         $response->assertStatus(200);
 
-        // Test we can't access a random file
-        $randomuuid = "d68dc845-b88e-43c6-aa55-304e4d3a1f4b";
-        $response = $this->json(
-            'GET',
-            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/files/' . $randomuuid . '/download',
-            [],
-            $this->header,
-        );
-        $response->assertStatus(400);
-
-        $response = $this->json(
-            'GET',
-            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/files/' . $randomuuid . '/download',
-            [],
-            $this->header,
-        );
-        $response->assertStatus(400);
-
         // test user cannot delete the file now the application has been submitted
         $response = $this->json(
             'DELETE',
@@ -698,7 +680,11 @@ class DataAccessApplicationTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     }
 
-    public function test_cant_delete_other_peoples_files()
+    /**
+     * Tests that users can't access files they shouldn't be able to
+     * @return void
+     */
+    public function test_file_access()
     {
         $responseCreateUser = $this->json(
             'POST',
@@ -728,6 +714,10 @@ class DataAccessApplicationTest extends TestCase
         $datasetId = $entityIds['datasetId'];
         $teamId = $entityIds['teamId'];
         $questionId = $entityIds['questionId'];
+
+        $entityIds2 = $this->createDatasetForDar();
+        $teamId2 = $entityIds2['teamId'];
+
 
         $response = $this->json(
             'POST',
@@ -764,8 +754,24 @@ class DataAccessApplicationTest extends TestCase
         );
 
         $response->assertStatus(200);
-
         $fileId = $response->decodeResponseJson()['data']['uuid'];
+
+        // Check file can't be accessed by a second user
+        $response = $this->json(
+            'GET',
+            'api/v1/teams/' . $teamId2 . '/dar/applications/' . $applicationId . '/files/' . $fileId . '/download',
+            [],
+            $this->header,
+        );
+        $response->assertStatus(401);
+
+        $response = $this->json(
+            'GET',
+            'api/v1/users/' . $uniqueUserId . '/dar/applications/' . $applicationId . '/files/' . $fileId . '/download',
+            [],
+            $this->header,
+        );
+        $response->assertStatus(500);
 
         // Check a file that we know exists cannot be deleted by a different user
         $response = $this->json(
