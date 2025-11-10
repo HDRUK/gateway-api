@@ -756,6 +756,25 @@ class DataAccessApplicationTest extends TestCase
         $response->assertStatus(200);
         $fileId = $response->decodeResponseJson()['data']['uuid'];
 
+        $applicationId2 = $applicationId + 1;
+
+        $file2 = UploadedFile::fake()->create('test_dar_application.pdf');
+        $response = $this->json(
+            'POST',
+            'api/v1/files?entity_flag=dar-application-upload&application_id=' . $applicationId2 . '&question_id=' . $questionId,
+            [
+                'file' => $file2
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+
+        $response->assertStatus(200);
+        $fileId2 = $response->decodeResponseJson()['data']['uuid'];
+
         // Check file can't be accessed by a second user
         $response = $this->json(
             'GET',
@@ -772,6 +791,16 @@ class DataAccessApplicationTest extends TestCase
             $this->header,
         );
         $response->assertStatus(500);
+
+        // Can it be accessed by someone accessing a different application?
+        $response = $this->json(
+            'GET',
+            'api/v1/users/' . $uniqueUserId . '/dar/applications/' . $applicationId . '/files/' . $fileId2 . '/download',
+            [],
+            $this->header,
+        );
+        $response->assertStatus(500);
+
 
         // Check a file that we know exists cannot be deleted by a different user
         $response = $this->json(
