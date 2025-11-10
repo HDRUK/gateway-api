@@ -1475,10 +1475,12 @@ class DataAccessApplicationReviewController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
+            $this->checkTeamAccess($teamId, $id, "delete files");
+
             $file = Upload::where('uuid', $fileId)->first();
 
             // Check this file is part of the application
-            $darFile = DataAccessApplicationReviewHasFile::where('upload_id', $file->id)->first();
+            $darFile = DataAccessApplicationReviewHasFile::where(['upload_id' => $file->id, "review_id" => $reviewId])->first();
 
             if ($darFile) {
                 Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')

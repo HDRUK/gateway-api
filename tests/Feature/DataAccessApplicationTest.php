@@ -1699,7 +1699,6 @@ class DataAccessApplicationTest extends TestCase
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $uploadId = $response->decodeResponseJson()['data']['uuid'];
-        $randomuuid = "6b226923-ff88-4ca2-b99b-2d582b2245a8";
 
         // Team can download
         $response = $this->get(
@@ -1717,38 +1716,6 @@ class DataAccessApplicationTest extends TestCase
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
-        // Check team cannot download a random file not associated
-        $response = $this->get(
-            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/download/' . $randomuuid,
-            $this->header
-        );
-        $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
-
-        // Check user cannot download a random file not associated
-        $response = $this->get(
-            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/download/' . $randomuuid,
-            $this->header
-        );
-
-        $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
-
-        // Check we can't delete random files
-        $response = $this->json(
-            'DELETE',
-            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/files/' . $randomuuid,
-            [],
-            $this->header
-        );
-        $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
-
-        $response = $this->json(
-            'DELETE',
-            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/files/' . $randomuuid,
-            [],
-            $this->header
-        );
-        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
-
         // team can delete
         $response = $this->json(
             'DELETE',
@@ -1757,6 +1724,138 @@ class DataAccessApplicationTest extends TestCase
             $this->header
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+    }
+
+    public function test_users_cannot_access_unassociated_files()
+    {
+        $entityIds = $this->createDatasetForDar();
+        $datasetId = $entityIds['datasetId'];
+        $teamId = $entityIds['teamId'];
+        $questionId = $entityIds['questionId'];
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => $this->currentUser['id'],
+                'submission_status' => 'DRAFT',
+                'project_title' => 'A test DAR',
+                'approval_status' => 'APPROVED',
+                'dataset_ids' => [$datasetId]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+        $applicationId = $response->decodeResponseJson()['data'];
+
+        // Add a review to the dar
+        $response = $this->json(
+            'POST',
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/reviews',
+            [
+                'comment' => 'A test review comment',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+        $reviewId = $response->decodeResponseJson()['data'];
+
+        // Create a second DAR and associated review
+        $entityIds2 = $this->createDatasetForDar();
+        $datasetId2 = $entityIds2['datasetId'];
+        $teamId2 = $entityIds2['teamId'];
+        $questionId2 = $entityIds2['questionId'];
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => $this->currentUser['id'],
+                'submission_status' => 'DRAFT',
+                'project_title' => 'A test DAR',
+                'approval_status' => 'APPROVED',
+                'dataset_ids' => [$datasetId2]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+        $applicationId2 = $response->decodeResponseJson()['data'];
+
+        // Add a review to the dar
+        $response = $this->json(
+            'POST',
+            'api/v1/teams/' . $teamId2 . '/dar/applications/' . $applicationId2 . '/reviews',
+            [
+                'comment' => 'A test review comment',
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data'
+            ]);
+        $reviewId2 = $response->decodeResponseJson()['data'];
+
+        // Add file to the review
+        $file2 = UploadedFile::fake()->create('test_dar_review.docx');
+        $response = $this->json(
+            'POST',
+            'api/v1/files?entity_flag=dar-review-upload&review_id=' . $reviewId2,
+            [
+                'file' => $file2
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $uploadId2 = $response->decodeResponseJson()['data']['uuid'];
+
+        // Check team cannot download a file not associated
+        $response = $this->get(
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/download/' . $uploadId2,
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+
+        // Check user cannot download a file not associated
+        $response = $this->get(
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/download/' . $uploadId2,
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+
+        // Check we can't delete unassociated files
+        $response = $this->json(
+            'DELETE',
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/files/' . $uploadId2,
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+
+        $response = $this->json(
+            'DELETE',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/files/' . $uploadId2,
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     }
 
     /**
