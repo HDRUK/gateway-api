@@ -1,3 +1,11 @@
+## [2.27.1](https://github.com/HDRUK/gateway-api/compare/v2.27.0...v2.27.1) (2025-11-11)
+
+### 🐛 Bug Fixes
+
+* **GAT-7803:** laravel 12 configurations (#1453) ([fe6e900](https://github.com/HDRUK/gateway-api/commit/fe6e90056726817063d40aab779e99d70cc99283)), closes [GAT-7803](GAT-7803)
+* **GAT-8175:** Config for emails (#1455) ([8206b2c](https://github.com/HDRUK/gateway-api/commit/8206b2cf74a872b5e99798a933ce25072abbcbd9)), closes [GAT-8175](GAT-8175)
+* **GAT-8176:** cannot approve users in cohort panel (#1454) ([74a842d](https://github.com/HDRUK/gateway-api/commit/74a842d8591ca43f11b5598afd8f096826311f3d)), closes [GAT-8176](GAT-8176)
+
 ## [2.27.0](https://github.com/HDRUK/gateway-api/compare/v2.26.0...v2.27.0) (2025-11-04)
 
 ### ✨ Features
