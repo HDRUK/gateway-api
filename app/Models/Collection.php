@@ -242,6 +242,7 @@ class Collection extends Model
         return $this->belongsTo(Team::class);
     }
 
+    /** @return BelongsToMany<User, $this> */
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(

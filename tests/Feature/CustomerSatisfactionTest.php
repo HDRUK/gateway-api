@@ -7,7 +7,6 @@ use Tests\TestCase;
 
 class CustomerSatisfactionTest extends TestCase
 {
-
     /**
      * Test creating a CustomerSatisfaction entry.
      *

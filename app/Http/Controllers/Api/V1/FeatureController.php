@@ -201,10 +201,10 @@ class FeatureController extends Controller
      */
     public function store(CreateFeature $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $feature = Feature::create([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
@@ -304,10 +304,10 @@ class FeatureController extends Controller
      */
     public function update(UpdateFeature $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             Feature::where('id', $id)->update([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
@@ -411,9 +411,10 @@ class FeatureController extends Controller
      */
     public function edit(EditFeature $request, int $id): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $arrayKeys = [
                 'name',
                 'enabled',
@@ -497,10 +498,10 @@ class FeatureController extends Controller
      */
     public function destroy(DeleteFeature $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $features = Feature::findOrFail($id);
             if ($features) {
                 $features->delete();

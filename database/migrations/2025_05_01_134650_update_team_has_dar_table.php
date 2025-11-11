@@ -64,7 +64,8 @@ return new class () extends Migration {
         Schema::table('team_has_dar_applications', function (Blueprint $table) {
             $table->string('approval_status')->nullable();
             $table->string('submission_status')->default('DRAFT');
-            $table->bigInteger('review_id')->nullable();
+            $table->bigInteger('review_id')->unsigned()->nullable();
+            $table->foreign('review_id')->references('id')->on('dar_application_reviews');
         });
     }
 };

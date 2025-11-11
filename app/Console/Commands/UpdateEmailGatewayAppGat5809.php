@@ -97,7 +97,7 @@ class UpdateEmailGatewayAppGat5809 extends Command
                         <mj-section>
                             <mj-column>
                                 <mj-text align="center">
-                                    <a style="text-decoration:none" href="env(GATEWAY_URL)">www.healthdatagateway.org</a>
+                                    <a style="text-decoration:none" href="config(gateway.gateway_url)">www.healthdatagateway.org</a>
                                 </mj-text>
                                 <mj-text color="#525252" align="center">
                                     @HDR UK [[CURRENT_YEAR]]. All rights reserved.
@@ -111,7 +111,7 @@ class UpdateEmailGatewayAppGat5809 extends Command
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
+                            "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
                 }
@@ -190,7 +190,7 @@ class UpdateEmailGatewayAppGat5809 extends Command
                         <mj-section>
                             <mj-column>
                                 <mj-text align="center">
-                                    <a style="text-decoration:none" href="env(GATEWAY_URL)">www.healthdatagateway.org</a>
+                                    <a style="text-decoration:none" href="config(gateway.gateway_url)">www.healthdatagateway.org</a>
                                 </mj-text>
                                 <mj-text color="#525252" align="center">
                                     @HDR UK [[CURRENT_YEAR]]. All rights reserved.
@@ -204,7 +204,7 @@ class UpdateEmailGatewayAppGat5809 extends Command
                     "replacements": [
                         {
                             "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
+                            "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
                 }

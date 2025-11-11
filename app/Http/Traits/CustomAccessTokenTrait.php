@@ -26,8 +26,8 @@ trait CustomAccessTokenTrait
     {
         // https://github.com/HDRUK/gateway-api/blob/2f0f2df3d94a75b8a1a4920a64cd0c6a2267c2d3/src/resources/utilities/ga4gh.utils.js#L10
         // Load private and public keys
-        $privateKey = env('PASSPORT_PRIVATE_KEY');
-        $publicKey = env('PASSPORT_PUBLIC_KEY');
+        $privateKey = config('passport.private_key');
+        $publicKey = config('passport.public_key');
 
         // Configure lcobucci/jwt
         $config = Configuration::forAsymmetricSigner(
@@ -36,7 +36,7 @@ trait CustomAccessTokenTrait
             InMemory::plainText($publicKey)
         );
 
-        $rquestroles = $this->getRquestroles($this->getUserIdentifier());
+        $cohortDiscoveryRoles = $this->getCohortDiscoveryRoles($this->getUserIdentifier());
 
         $user = User::where([
             'id' => $this->getUserIdentifier(),
@@ -44,7 +44,7 @@ trait CustomAccessTokenTrait
 
         $allowedOrigins = [
             "*",
-            env('APP_URL') . "/*",
+            config('app.url') . "/*",
         ];
         $realmAccess = [
             "roles" => [
@@ -78,7 +78,7 @@ trait CustomAccessTokenTrait
             ->permittedFor($this->getClient()->getIdentifier())
             ->identifiedBy($identifiedBy)
             ->issuedAt(new \DateTimeImmutable())
-            ->issuedBy(env('APP_URL'))
+            ->issuedBy(config('app.url'))
             ->canOnlyBeUsedAfter(new \DateTimeImmutable())
             ->expiresAt($this->getExpiryDateTime())
             ->relatedTo((string)$this->getUserIdentifier())
@@ -100,9 +100,10 @@ trait CustomAccessTokenTrait
             ->withClaim('profile', $profile)
             ->withClaim('realm_access', $realmAccess)
             ->withClaim('resource_access', $resourceAccess)
-            ->withClaim('scope', "openid profile email rquestroles")
-            ->withClaim('rquestroles', $rquestroles)
-            ->withHeader('kid', env('JWT_KID', 'jwtkidnotfound'))
+            ->withClaim('scope', "openid profile email rquestroles cohort_discovery_roles")
+            ->withClaim('rquestroles', $cohortDiscoveryRoles)
+            ->withClaim('cohort_discovery_roles', $cohortDiscoveryRoles)
+            ->withHeader('kid', config('jwt.kid'))
             ->getToken($config->signer(), $config->signingKey());
     }
 
@@ -115,9 +116,9 @@ trait CustomAccessTokenTrait
     }
 
     /**
-     * get rquest roles from db
+     * get Cohort discovery roles from db
      */
-    public function getRquestroles($id)
+    public function getCohortDiscoveryRoles($id)
     {
         $cohortRequest = CohortRequest::where([
             'user_id' => $id,
@@ -137,12 +138,12 @@ trait CustomAccessTokenTrait
             $crRoleIds[] = $cohortRequestRoleId['permission_id'];
         }
 
-        $rquestrRoles = Permission::select('name')->whereIn('id', $crRoleIds)->get()->toArray();
-        $rRoles = [];
-        foreach ($rquestrRoles as $rquestrRole) {
-            $rRoles[] = $rquestrRole['name'];
+        $cohortDiscoveryRoles = Permission::select('name')->whereIn('id', $crRoleIds)->get()->toArray();
+        $cdRoles = [];
+        foreach ($cohortDiscoveryRoles as $role) {
+            $cdRoles[] = $role['name'];
         }
 
-        return $rRoles;
+        return $cdRoles;
     }
 }

@@ -218,7 +218,7 @@ class AliasReplyScannerService
     {
         $something = null;
 
-        $imapUsername = env('ARS_IMAP_USERNAME', 'devreply@healthdatagateway.org');
+        $imapUsername = config('mail.mailers.ars.imap.username');
         list($username, $domain) = explode('@', $imapUsername);
 
         try {

@@ -62,7 +62,7 @@ class ExtractDatasetFromDur implements ShouldQueue
             $isUrl = Validator::make([
                 'url' => $nonDataset
             ], [
-                'url' => 'required|url|starts_with:' . env('GATEWAY_URL'),
+                'url' => 'required|url|starts_with:' . config('gateway.gateway_url'),
             ]);
 
             if (!$isUrl->fails()) {

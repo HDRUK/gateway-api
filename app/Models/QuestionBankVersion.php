@@ -52,6 +52,9 @@ class QuestionBankVersion extends Model
         return $this->belongsTo(QuestionBank::class, 'question_id');
     }
 
+    /**
+     * @return belongsToMany<QuestionBankVersion, $this>
+     */
     public function childVersions(): belongsToMany
     {
         return $this->belongsToMany(

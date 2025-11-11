@@ -55,18 +55,22 @@ return new class () extends Migration {
 
         if (in_array('tags_type_unique', $foreignKeys)) {
             DB::statement('ALTER TABLE `tags` DROP FOREIGN KEY `tags_type_unique`');
-            DB::statement('ALTER TABLE `tags` DROP KEY `tags_type_unique`');
         }
 
         Schema::enableForeignKeyConstraints();
+
+        Schema::table('tags', function (Blueprint $table) {
+            $table->char('description', 255)->nullable();
+            $table->dropUnique('tags_type_unique');
+            $table->enum('type', ['features', 'topics'])->change();
+        });
+
     }
 
     public function listTableForeignKeys($table)
     {
-        $conn = Schema::getConnection()->getDoctrineSchemaManager();
-
         return array_map(function ($key) {
             return $key->getName();
-        }, $conn->listTableForeignKeys($table));
+        }, Schema::getForeignKeys($table));
     }
 };

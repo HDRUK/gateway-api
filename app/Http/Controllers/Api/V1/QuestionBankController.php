@@ -127,10 +127,10 @@ class QuestionBankController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $sectionId = $input['section_id'] ?? null;
             $isChild = $input['is_child'] ?? null;
             $perPage = request('per_page', Config::get('constants.per_page'));
@@ -285,10 +285,10 @@ class QuestionBankController extends Controller
      */
     public function indexStandard(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $sectionId = $input['section_id'] ?? null;
             $isChild = $input['is_child'] ?? null;
             $perPage = request('per_page', Config::get('constants.per_page'));
@@ -444,10 +444,10 @@ class QuestionBankController extends Controller
      */
     public function indexCustom(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $sectionId = $input['section_id'] ?? null;
             $isChild = $input['is_child'] ?? null;
             $perPage = request('per_page', Config::get('constants.per_page'));
@@ -603,10 +603,10 @@ class QuestionBankController extends Controller
      */
     public function indexArchived(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $sectionId = $input['section_id'] ?? null;
             $isChild = $input['is_child'] ?? null;
             $perPage = request('per_page', Config::get('constants.per_page'));
@@ -726,7 +726,7 @@ class QuestionBankController extends Controller
     public function show(GetQuestionBankVersion $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
             $question = QuestionBank::with([
@@ -815,7 +815,7 @@ class QuestionBankController extends Controller
     public function showVersion(GetQuestionBankVersion $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
             $questionVersion = QuestionBankVersion::findOrFail($id);
@@ -901,10 +901,10 @@ class QuestionBankController extends Controller
      */
     public function store(CreateQuestionBank $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             if ($input['is_child'] ?? false) {
                 return response()->json([
                     'message' => 'Cannot create a child question directly'
@@ -1057,10 +1057,10 @@ class QuestionBankController extends Controller
      */
     public function update(UpdateQuestionBank $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $question = QuestionBank::findOrFail($id);
             if ($question->is_child) {
                 return response()->json([
@@ -1193,10 +1193,10 @@ class QuestionBankController extends Controller
      */
     public function edit(EditQuestionBank $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $question = QuestionBank::findOrFail($id);
 
             if ((isset($input['is_child'])) && ($input['is_child'] !== $question->is_child)) {
@@ -1349,7 +1349,7 @@ class QuestionBankController extends Controller
     public function updateStatus(UpdateStatusQuestionBank $request, int $id, string $status): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
             $question = QuestionBank::where('id', $id)->with('latestVersion.childVersions')->first();
@@ -1448,10 +1448,10 @@ class QuestionBankController extends Controller
      */
     public function destroy(DeleteQuestionBank $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $question = QuestionBank::findOrFail($id);
             if ($question->is_child) {
                 return response()->json([

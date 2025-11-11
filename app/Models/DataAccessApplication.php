@@ -84,7 +84,7 @@ class DataAccessApplication extends Model
     //     return $this->hasMany(TeamHasDataAccessApplication::class, 'dar_application_id');
     // }
 
-    public function teams(): Attribute
+    protected function teams(): Attribute
     {
         return Attribute::make(
             get: fn () => $this->hasMany(TeamHasDataAccessApplication::class, 'dar_application_id')

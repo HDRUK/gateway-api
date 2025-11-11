@@ -10,7 +10,6 @@ use Tests\TestCase;
 
 class VerifySecondaryEmailTest extends TestCase
 {
-
     public function test_successful_secondary_email_verification()
     {
         $user = User::factory()->create();

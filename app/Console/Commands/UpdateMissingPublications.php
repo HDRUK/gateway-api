@@ -65,7 +65,7 @@ class UpdateMissingPublications extends Command
                 continue;
             }
 
-            $url = env('SEARCH_SERVICE_URL') . '/search/federated_papers/doi';
+            $url = config('gateway.search_service_url') . '/search/federated_papers/doi';
             $response = Http::post($url, [
                 'query' => $publicationDoi,
             ]);

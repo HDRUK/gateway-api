@@ -49,6 +49,8 @@ return [
         'client_secret' => env('OPENATHENS_CLIENT_SECRET'),
         'issuer' => env('OPENATHENS_ISSUER_URL'),
         'open_id' => true,
+        'redirect' => env('OPENATHENS_REDIRECT_URL'),
+        'dta_redirect' => env('OPENATHENS_REDIRECT_DTA_URL'),
     ],
 
     'azure' => [
@@ -89,6 +91,36 @@ return [
         'service_account' => env('COHORT_DISCOVERY_SERVICE_ACCOUNT', 'cohort-service@hdruk.ac.uk'),
         'use_oauth2' => env('COHORT_DISCOVERY_USE_OAUTH2', false),
         'add_teams_to_jwt' => env('COHORT_DISCOVERY_ADD_TEAMS_TO_JWT', false),
+    ],
+
+    'traser' => [
+        'url' => env('TRASER_SERVICE_URL', 'http://localhost:8002'),
+    ],
+
+    'gmi' => [
+        'url' => env('GMI_SERVICE_URL', ''),
+    ],
+
+    'mjml' => [
+        'render_url' => env('MJML_RENDER_URL', ''),
+        'api_application_key' => env('MJML_API_APPLICATION_KEY', ''),
+        'api_key' => env('MJML_API_KEY', ''),
+    ],
+
+    'clamav' => [
+        'api_url' => env('CLAMAV_API_URL', 'http://clamav:3001'),
+        'basic_auth_username' => env('CLAMAV_BASIC_AUTH_USERNAME', ''),
+        'basic_auth_password' => env('CLAMAV_BASIC_AUTH_PASSWORD', ''),
+    ],
+
+    'dta' => [
+        'api_url' => env("DTA_API_URL", ""),
+        'url' => env("DTA_URL", ""),
+    ],
+
+    'mauro' => [
+        'app_key' => env("MAURO_APP_KEY"),
+        'api_url' => env("MAURO_API_URL"),
     ],
 
     'media' => [

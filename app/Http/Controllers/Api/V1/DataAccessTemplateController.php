@@ -80,7 +80,7 @@ class DataAccessTemplateController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
 
@@ -180,10 +180,10 @@ class DataAccessTemplateController extends Controller
      */
     public function show(GetDataAccessTemplate $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $template = DataAccessTemplate::where('id', $id)->with(['questions','files'])->first();
             foreach ($template['questions'] as $i => $q) {
                 $question = QuestionBank::with([
@@ -259,7 +259,7 @@ class DataAccessTemplateController extends Controller
     public function count(Request $request, string $field): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
             $counts = DataAccessTemplate::select($field)
@@ -332,7 +332,7 @@ class DataAccessTemplateController extends Controller
     public function downloadFile(Request $request, int $id): StreamedResponse | JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
             $template = DataAccessTemplate::findOrFail($id);
@@ -350,7 +350,7 @@ class DataAccessTemplateController extends Controller
                     'description' => 'DataAccessTemplate ' . $id . ' download file ' . $file->id,
                 ]);
 
-                return Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '_scanned')
+                return Storage::disk(config('gateway.scanning_filesystem_disk') . '_scanned')
                     ->download($file->file_location);
             }
 
@@ -415,10 +415,10 @@ class DataAccessTemplateController extends Controller
      */
     public function store(CreateDataAccessTemplate $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $template = DataAccessTemplate::create([
                 'user_id' => isset($input['user_id']) ? $input['user_id'] : $jwtUser['id'],
                 'team_id' => $input['team_id'],
@@ -525,10 +525,10 @@ class DataAccessTemplateController extends Controller
      */
     public function update(UpdateDataAccessTemplate $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $template = DataAccessTemplate::findOrFail($id);
 
             $template->update([
@@ -642,10 +642,10 @@ class DataAccessTemplateController extends Controller
      */
     public function edit(EditDataAccessTemplate $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $sectionId = $request->query('section_id', null);
 
             $template = DataAccessTemplate::findOrFail($id);
@@ -749,10 +749,10 @@ class DataAccessTemplateController extends Controller
      */
     public function destroy(DeleteDataAccessTemplate $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $template = DataAccessTemplate::findOrFail($id);
             DataAccessTemplateHasQuestion::where('template_id', $template->id)->delete();
             DataAccessTemplateHasFile::where('template_id', $template->id)->delete();

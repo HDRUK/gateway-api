@@ -51,6 +51,7 @@ class Application extends Model
         return $this->belongsToMany(Permission::class, 'application_has_permissions');
     }
 
+    /** @return BelongsTo<Team, $this> */
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);

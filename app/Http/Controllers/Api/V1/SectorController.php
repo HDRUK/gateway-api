@@ -48,10 +48,10 @@ class SectorController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $sectors = Sector::where('enabled', 1)
                 ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
@@ -121,10 +121,10 @@ class SectorController extends Controller
      */
     public function show(GetSector $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $sector = Sector::findOrFail($id);
             if ($sector) {
                 Auditor::log([
@@ -191,10 +191,10 @@ class SectorController extends Controller
      */
     public function store(CreateSector $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $sector = Sector::create([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
@@ -283,10 +283,10 @@ class SectorController extends Controller
      */
     public function update(UpdateSector $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             Sector::where('id', $id)->update([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
@@ -374,10 +374,10 @@ class SectorController extends Controller
      */
     public function edit(EditSector $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $arrayKeys = [
                 'name',
                 'enabled',
@@ -454,10 +454,10 @@ class SectorController extends Controller
      */
     public function destroy(DeleteSector $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $sector = Sector::findOrFail($id);
             if ($sector) {
                 $sector->enabled = false;

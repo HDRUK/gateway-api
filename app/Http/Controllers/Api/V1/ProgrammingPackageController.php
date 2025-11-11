@@ -48,10 +48,10 @@ class ProgrammingPackageController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $programming_packages = ProgrammingPackage::where('enabled', 1)
                 ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
@@ -121,10 +121,10 @@ class ProgrammingPackageController extends Controller
      */
     public function show(GetProgrammingPackage $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $programming_package = ProgrammingPackage::findOrFail($id);
             if ($programming_package) {
                 Auditor::log([
@@ -191,10 +191,10 @@ class ProgrammingPackageController extends Controller
      */
     public function store(CreateProgrammingPackage $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $programming_package = ProgrammingPackage::create([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
@@ -283,10 +283,10 @@ class ProgrammingPackageController extends Controller
      */
     public function update(UpdateProgrammingPackage $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             ProgrammingPackage::where('id', $id)->update([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
@@ -374,10 +374,10 @@ class ProgrammingPackageController extends Controller
      */
     public function edit(EditProgrammingPackage $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $arrayKeys = [
                 'name',
                 'enabled',
@@ -454,10 +454,10 @@ class ProgrammingPackageController extends Controller
      */
     public function destroy(DeleteProgrammingPackage $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $programming_package = ProgrammingPackage::findOrFail($id);
             $programming_package->enabled = false;
             if ($programming_package->save()) {

@@ -131,7 +131,7 @@ trait MockExternalApis
         ]);
 
         Http::fake([
-            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/filters' => Http::response(
+            config('gateway.search_service_url', 'http://localhost:8003') . '/filters' => Http::response(
                 [
                     200,
                     ['application/json']
@@ -141,7 +141,7 @@ trait MockExternalApis
 
         // Mock the search service - datasets
         Http::fake([
-            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/datasets*' => Http::response(
+            config('gateway.search_service_url', 'http://localhost:8003') . '/search/datasets*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -263,7 +263,7 @@ trait MockExternalApis
 
         // Mock the search service - similar datasets
         Http::fake([
-            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/similar/datasets*' => Http::response(
+            config('gateway.search_service_url', 'http://localhost:8003') . '/similar/datasets*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -362,7 +362,7 @@ trait MockExternalApis
 
         // Mock the search service - tools
         Http::fake([
-            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/tools*' => Http::response(
+            config('gateway.search_service_url', 'http://localhost:8003') . '/search/tools*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -467,7 +467,7 @@ trait MockExternalApis
 
         // Mock the search service - collections
         Http::fake([
-            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/collections*' => Http::response(
+            config('gateway.search_service_url', 'http://localhost:8003') . '/search/collections*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -560,7 +560,7 @@ trait MockExternalApis
 
         // Mock the search service - data uses
         Http::fake([
-            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur*' => Http::response(
+            config('gateway.search_service_url', 'http://localhost:8003') . '/search/dur*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -673,7 +673,7 @@ trait MockExternalApis
 
         // Mock the search service - publications
         Http::fake([
-            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/publications*' => Http::response(
+            config('gateway.search_service_url', 'http://localhost:8003') . '/search/publications*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -775,7 +775,7 @@ trait MockExternalApis
 
         // Mock the search service - publications
         Http::fake([
-            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search*' => Http::response(
+            config('gateway.search_service_url', 'http://localhost:8003') . '/search/federated_papers/field_search*' => Http::response(
                 [
                     'version' => '10.1',
                     'hitCount' => 2,
@@ -862,7 +862,7 @@ trait MockExternalApis
         ]);
 
         Http::fake([
-            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi' => Http::response(
+            config('gateway.search_service_url', 'http://localhost:8003') . '/search/federated_papers/doi' => Http::response(
                 [
                 "hitCount" => 1,
                 "resultList" => [
@@ -893,7 +893,7 @@ trait MockExternalApis
 
         // Mock the search service - data providers
         Http::fake([
-            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_providers*' => Http::response(
+            config('gateway.search_service_url', 'http://localhost:8003') . '/search/data_providers*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -974,7 +974,7 @@ trait MockExternalApis
 
         // Mock the search service - filters
         Http::fake([
-            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/filters*' => Http::response(
+            config('gateway.search_service_url', 'http://localhost:8003') . '/search/filters*' => Http::response(
                 [
                     'filters' => [
                         0 => [
@@ -1022,7 +1022,7 @@ trait MockExternalApis
 
         // Mock the search service - data providers
         Http::fake([
-            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_custodian_networks*' => Http::response(
+            config('gateway.search_service_url', 'http://localhost:8003') . '/search/data_custodian_networks*' => Http::response(
                 [
                     'took' => 4,
                     'timed_out' => false,
@@ -1103,7 +1103,7 @@ trait MockExternalApis
         ]);
 
         Http::fake([
-            env('CLAMAV_API_URL', 'http://clamav:3001') . '*' => Http::response(
+            config('services.clamav.api_url', 'http://clamav:3001') . '*' => Http::response(
                 [
                     'isError' => false,
                     'isInfected' => false,
@@ -1148,7 +1148,7 @@ trait MockExternalApis
         // Removed for now, as the email service test contains its own mock
         // for mjml.
         // Http::fake([
-        //     env('MJML_RENDER_URL') => Http::response(
+        //     config('services.mjml.render_url') => Http::response(
         //         ["html" => "<html>content</html>"],
         //         201,
         //         ['application/json']
@@ -1156,7 +1156,7 @@ trait MockExternalApis
         // ]);
 
         Http::fake([
-            env('GMI_SERVICE_URL').'*' => Http::response(
+            config('services.gmi.url').'*' => Http::response(
                 ['message' => 'success'],
                 200,
                 ['application/json']

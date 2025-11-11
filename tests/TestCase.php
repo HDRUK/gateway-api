@@ -22,7 +22,7 @@ abstract class TestCase extends BaseTestCase
         $this->disableObservers();
 
         $this->liteSetUp();
-        
+
         $this->enableObservers();
 
         if ($this->shouldFakeQueue) {

@@ -55,10 +55,10 @@ class NotificationController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $perPage = request('per_page', Config::get('constants.per_page'));
             $notifications = Notification::where('enabled', 1)->paginate($perPage);
 
@@ -131,10 +131,10 @@ class NotificationController extends Controller
      */
     public function show(GetNotification $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $notification = Notification::findOrFail($id);
 
             // mask the email if the user_id is supplied. Otherwise, return the full email.
@@ -211,10 +211,10 @@ class NotificationController extends Controller
      */
     public function store(CreateNotification $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $notification = Notification::create([
                 'notification_type' => $input['notification_type'],
                 'message' => $input['message'],
@@ -313,7 +313,7 @@ class NotificationController extends Controller
     public function update(UpdateNotification $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
             Notification::where('id', $id)->update([
@@ -412,10 +412,10 @@ class NotificationController extends Controller
      */
     public function edit(EditNotification $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        try {
             $arrayKeys = [
                 'notification_type',
                 'message',
@@ -497,7 +497,7 @@ class NotificationController extends Controller
     public function destroy(DeleteNotification $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
             $notification = Notification::findOrFail($id);

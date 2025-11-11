@@ -22,8 +22,8 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::table('data_provider_coll_has_teams', function (Blueprint $table) {
-            $table->dropIndex('data_provider_coll_id_index');
-            $table->dropIndex('team_id_index');
+            $table->dropIndex(['data_provider_coll_id']);
+            $table->dropIndex(['team_id']);
         });
     }
 };

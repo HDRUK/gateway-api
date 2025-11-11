@@ -6,7 +6,6 @@ use App\Http\Requests\BaseFormRequest;
 
 class PublicationSearch extends BaseFormRequest
 {
-
     /**
      * Add Query parameters to the FormRequest.
      *

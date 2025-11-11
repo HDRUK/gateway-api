@@ -27,6 +27,7 @@ return new class () extends Migration {
         Schema::table('datasets', function (Blueprint $table) {
             $table->json('dataset')->nullable();
             $table->char('version', 10)->nullable();
+            $table->json('datasetv2')->nullable();
         });
     }
 };
