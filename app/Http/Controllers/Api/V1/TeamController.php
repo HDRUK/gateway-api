@@ -1360,4 +1360,17 @@ class TeamController extends Controller
             ]);
         }
     }
+
+    private function updateTeamAlias(int $teamId, array $arrayTeamAlias): void
+    {
+        TeamHasAlias::where('team_id', $teamId)->delete();
+
+        foreach ($arrayTeamAlias as $aliasId) {
+            TeamHasAlias::updateOrCreate([
+                'team_id' => (int)$teamId,
+                'alias_id' => (int)$aliasId,
+            ]);
+        }
+    }
+
 }
