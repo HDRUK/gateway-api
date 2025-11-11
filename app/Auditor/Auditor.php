@@ -30,7 +30,7 @@ class Auditor
                 'description',
             ];
             $data = $this->checkEditArray($log, $arrayKeys);
-            $data['action_service'] = config('gateway.audit_action_service', 'gateway_api');
+            $data['action_service'] = config('gateway.audit_action_service');
             $data['action_name'] = strtolower($data['action_name']);
             $data['created_at'] = gettimeofday(true) * 1000000;
 

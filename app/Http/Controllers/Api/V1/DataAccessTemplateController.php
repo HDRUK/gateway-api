@@ -350,7 +350,7 @@ class DataAccessTemplateController extends Controller
                     'description' => 'DataAccessTemplate ' . $id . ' download file ' . $file->id,
                 ]);
 
-                return Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
+                return Storage::disk(config('gateway.scanning_filesystem_disk') . '_scanned')
                     ->download($file->file_location);
             }
 
