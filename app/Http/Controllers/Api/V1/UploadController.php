@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\UnauthorizedException;
 use Auditor;
 use Config;
 use Exception;
@@ -155,20 +156,20 @@ class UploadController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/files/{id}",
+     *      path="/api/v1/files/{uuid}",
      *      summary="Get the scanning status of an upload",
      *      description="Get the scanning status of an upload",
      *      tags={"Upload"},
      *      summary="Upload@show",
      *      @OA\Parameter(
-     *         name="id",
+     *         name="uuid",
      *         in="path",
      *         description="upload id",
      *         required=true,
      *         example="1",
      *         @OA\Schema(
-     *            type="integer",
-     *            description="upload id",
+     *            type="string",
+     *            description="upload uuid",
      *         ),
      *      ),
      *      @OA\Response(
@@ -188,10 +189,17 @@ class UploadController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(Request $request, string $uuid): JsonResponse
     {
         try {
-            $upload = Upload::findOrFail($id);
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+
+            $upload = Upload::where("uuid", $uuid)->firstOrFail();
+
+            if ($jwtUser['id'] !== $upload->user_id) {
+                throw new UnauthorizedException("File does not belong to user");
+            }
 
             if ($upload['structural_metadata']) {
                 $upload['structural_metadata'] = json_decode($upload['structural_metadata']);
@@ -220,7 +228,7 @@ class UploadController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/files/processed/{id}",
+     *      path="/api/v1/files/processed/{uuid}",
      *      summary="Get the content of a processed file",
      *      description="Get the content of a processed file",
      *      tags={"Upload"},
@@ -232,8 +240,8 @@ class UploadController extends Controller
      *         required=true,
      *         example="1",
      *         @OA\Schema(
-     *            type="integer",
-     *            description="upload id",
+     *            type="string",
+     *            description="upload uuid",
      *         ),
      *      ),
      *      @OA\Response(
@@ -250,10 +258,18 @@ class UploadController extends Controller
      *      )
      * )
      */
-    public function content(Request $request, int $id): JsonResponse
+    public function content(Request $request, string $uuid): JsonResponse
     {
         try {
-            $upload = Upload::findOrFail($id);
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+
+            $upload = Upload::where("uuid", $uuid)->firstOrFail();
+
+            if ($jwtUser['id'] !== $upload->user_id) {
+                throw new UnauthorizedException("File does not belong to user");
+            }
+
             if ($upload->status === 'PENDING') {
                 Auditor::log([
                     'action_type' => 'GET',

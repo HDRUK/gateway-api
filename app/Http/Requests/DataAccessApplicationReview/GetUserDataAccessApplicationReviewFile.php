@@ -25,9 +25,9 @@ class GetUserDataAccessApplicationReviewFile extends BaseFormRequest
                 'exists:dar_application_reviews,id',
             ],
             'fileId' => [
-                'int',
+                'string',
                 'required',
-                'exists:uploads,id',
+                'exists:uploads,uuid',
             ],
             'userId' => [
                 'int',

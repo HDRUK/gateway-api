@@ -25,9 +25,9 @@ class DeleteDataAccessApplicationReviewFile extends BaseFormRequest
                 'exists:teams,id'
             ],
             'fileId' => [
-                'int',
+                'string',
                 'required',
-                'exists:uploads,id',
+                'exists:uploads,uuid',
             ],
             'reviewId' => [
                 'int',

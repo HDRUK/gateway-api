@@ -101,13 +101,14 @@ class UploadTest extends TestCase
             ]
         );
 
-        $id = $response->decodeResponseJson()['data']['id'];
+        $id = $response->decodeResponseJson()['data']['uuid'];
 
         $response = $this->json('GET', self::TEST_URL . '/' . $id, [], $this->header);
 
         $response->assertJsonStructure([
             'data' => [
                 'id',
+                'uuid',
                 'created_at',
                 'updated_at',
                 'filename',
@@ -145,7 +146,9 @@ class UploadTest extends TestCase
             ]
         );
 
+        $uuid = $response->decodeResponseJson()['data']['uuid'];
         $id = $response->decodeResponseJson()['data']['id'];
+
 
         $upload = Upload::findOrFail($id);
         $upload->update([
@@ -153,7 +156,7 @@ class UploadTest extends TestCase
         ]);
         $response = $this->json(
             'GET',
-            self::TEST_URL . '/processed' . '/' . $id,
+            self::TEST_URL . '/processed' . '/' . $uuid,
             [],
             $this->header
         );
@@ -165,7 +168,7 @@ class UploadTest extends TestCase
         ]);
         $response = $this->json(
             'GET',
-            self::TEST_URL . '/processed' . '/' . $id,
+            self::TEST_URL . '/processed' . '/' . $uuid,
             [],
             $this->header
         );
@@ -177,7 +180,7 @@ class UploadTest extends TestCase
         ]);
         $response = $this->json(
             'GET',
-            self::TEST_URL . '/processed' . '/' . $id,
+            self::TEST_URL . '/processed' . '/' . $uuid,
             [],
             $this->header
         );
@@ -275,6 +278,7 @@ class UploadTest extends TestCase
         $response->assertJsonStructure([
             'data' => [
                 'id',
+                'uuid',
                 'created_at',
                 'updated_at',
                 'filename',
@@ -340,13 +344,14 @@ class UploadTest extends TestCase
         $this->assertEquals($content['error'], null);
 
         $response->assertStatus(200);
-        $id = $response->decodeResponseJson()['data']['id'];
+        $id = $response->decodeResponseJson()['data']['uuid'];
 
         $response = $this->json('GET', self::TEST_URL . '/' . $id, [], $this->header);
 
         $response->assertJsonStructure([
             'data' => [
                 'id',
+                'uuid',
                 'created_at',
                 'updated_at',
                 'filename',
@@ -368,6 +373,66 @@ class UploadTest extends TestCase
             $content['structural_metadata'][0]['columns'][0]['name'],
             'Test Column'
         );
+    }
+
+    public function test_accessing_files_from_different_users()
+    {
+        $file = new UploadedFile(
+            getcwd() . '/tests/Unit/test_files/test_file.csv',
+            'test_file.csv',
+        );
+        // post file to files endpoint
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+
+        $uuid = $response->decodeResponseJson()['data']['uuid'];
+        $id = $response->decodeResponseJson()['data']['id'];
+        $upload = Upload::findOrFail($id);
+
+        $upload->update([
+            'status' => 'PROCESSED'
+        ]);
+        $response = $this->json(
+            'GET',
+            self::TEST_URL . '/processed' . '/' . $uuid,
+            [],
+            $this->header
+        );
+        $response->assertJsonStructure([
+            'message',
+            'data' => [
+                'filename',
+                'content'
+            ]
+        ]);
+        $this->assertEquals($response['message'], 'success');
+        $this->assertNotNull($response['data']['content']);
+
+        // Try accessing as a different user
+        $this->authorisationUser(false, 2);
+        $jwt = $this->getAuthorisationJwt(false, 2);
+        $header = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwt,
+        ];
+        $response = $this->json(
+            'GET',
+            self::TEST_URL . '/processed' . '/' . $uuid,
+            [],
+            $header
+        );
+        $response->assertStatus(500);
+
     }
 
     /**
