@@ -259,7 +259,7 @@ class DataCustodianNetworksController extends Controller
     public function showSummary(Request $request, int $id): JsonResponse
     {
         try {
-            $dpc = DataProviderColl::select('id', 'name', 'img_url', 'enabled', 'url', 'service')
+            $dpc = DataProviderColl::select('id', 'name', 'img_url', 'enabled', 'url', 'service', 'summary')
                 ->with('teams')
                 ->where([
                     'id' => $id,
