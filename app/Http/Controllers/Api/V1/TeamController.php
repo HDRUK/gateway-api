@@ -511,113 +511,137 @@ class TeamController extends Controller
     public function showSummary(Request $request, int $id): JsonResponse
     {
         try {
-            $dp = Team::select('id', 'name', 'member_of', 'is_provider', 'introduction', 'url', 'service', 'team_logo')
+            $team = Team::select('id', 'name', 'member_of', 'is_provider', 'introduction', 'url', 'service', 'team_logo')
                 ->where([
                     'id' => $id,
                     'enabled' => 1,
+                ])->with(['aliases' => function ($query) {
+                    $query->select(['id', 'name']);
+                }
                 ])->first();
 
-            if (!$dp) {
-                return response()->json([
-                    'message' => 'Team not found or not enabled',
-                    'data' => null,
-                ], 404);
+            if (!$team) {
+                throw new NotFoundException();
+            }
+            $service = array_filter(explode(",", $team->service));
+
+            $ownedDatasets = Dataset::where(['team_id' => $id, 'status' => Dataset::STATUS_ACTIVE])
+                ->select([
+                    'id','is_cohort_discovery', 'user_id', 'team_id', 'datasetid'
+                ])->get();
+
+            foreach ($ownedDatasets as $dataset) {
+
+                $metadataSummary = $dataset->latestVersion()['metadata']['metadata']['summary'] ?? [];
+                $dataset['title'] = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
+                $dataset['populationSize'] = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], '');
+                $dataset['datasetType'] = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
             }
 
-            // This sets not only this->datasets, but also this->durs, publications, tools and collections
-            $this->getDatasets($dp->id);
+            // Durs: get all active durs owned by the team and also active durs linked to (all versions of) datasets owned by the team
+            $ownedDurs = Dur::where(['team_id' => $id, 'status' => Dur::STATUS_ACTIVE])
+                ->select(['id', 'project_title', 'organisation_name', 'status'])
+                ->get()
+                ->toArray();
 
-            $teamDurs = Dur::where(['team_id' => $id])->select('id')->get();
-            foreach ($teamDurs as $teamDur) {
-                if (!in_array($teamDur->id, $this->durs)) {
-                    $this->durs[] = $teamDur->id;
-                }
-            }
+            $linkedDursColl = DB::select(
+                'SELECT DISTINCT d.id, d.project_title, d.organisation_name, d.status
+                FROM datasets ds
+                JOIN dataset_versions dv ON dv.dataset_id = ds.id
+                JOIN dur_has_dataset_version dhdv ON dv.id = dhdv.dataset_version_id
+                JOIN dur d ON dhdv.dur_id = d.id
+                WHERE ds.team_id = ? AND d.team_id != ? AND d.status = ? AND ds.status = ?',
+                [$id, $id, Dur::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
+            );
 
-            $tools = Tool::whereIn('id', $this->tools)
-                ->where('status', Tool::STATUS_ACTIVE)
-                ->select('id', 'name', 'user_id', 'created_at')
-                ->get();
-            foreach ($tools as $tool) {
-                $user = User::where('id', $tool->user_id)
+            $linkedDurs = array_map(function ($dur) {
+                return (array)$dur;
+            }, $linkedDursColl);
+
+            $allDurs = [...$ownedDurs, ...$linkedDurs];
+
+            // Tools: get all active tools linked to (all versions of) datasets owned by the team
+            $linkedToolsColl = DB::select(
+                'SELECT DISTINCT t.id, t.name, t.user_id, t.created_at
+                FROM datasets ds
+                JOIN dataset_versions dv ON dv.dataset_id = ds.id
+                JOIN dataset_version_has_tool dvht ON dv.id = dvht.dataset_version_id
+                JOIN tools t ON dvht.tool_id = t.id
+                WHERE ds.team_id = ? AND t.status = ? AND ds.status = ?',
+                [$id, Tool::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
+            );
+
+            // TODO: improve this in future?
+            foreach ($linkedToolsColl as $tool) {
+                $user = (User::where('id', $tool->user_id)
                     ->select(
                         DB::raw("CASE WHEN is_admin = 1 THEN '' ELSE firstname END as firstname"),
                         DB::raw("CASE WHEN is_admin = 1 THEN '' ELSE lastname END as lastname"),
                         'is_admin'
-                    )
-                    ->first()
-                    ->toArray();
+                    ))->first();
+
+                if ($user) {
+                    $user = $user->toArray();
+                }
+                else {
+                    $user = [];
+                }
 
                 // Reduce the amount of data returned to the bare minimum
                 $arrayKeys = [
                     'firstname',
                     'lastname',
-                    'rquestroles',
-                    'cohort_discovery_roles'
                 ];
                 $user = $this->checkEditArray($user, $arrayKeys);
-                $tool['user'] = $user;
+                $tool->user = $user;
             }
 
-            $collections = Collection::where(['team_id' => $id ])
-                ->whereIn('id', $this->collections)
-                ->select('id', 'name', 'image_link', 'created_at', 'updated_at', 'status', 'public')
-                ->get()
-                ->toArray();
+            // Publications: get all active publications linked to (all versions of) datasets owned by the team
+            $linkedPublicationsColl = DB::select(
+                'SELECT DISTINCT p.id, p.paper_title, p.authors, p.url
+                FROM datasets ds
+                JOIN dataset_versions dv ON dv.dataset_id = ds.id
+                JOIN publication_has_dataset_version phdv ON dv.id = phdv.dataset_version_id
+                JOIN publications p ON phdv.publication_id = p.id
+                WHERE ds.team_id = ? AND p.status = ? AND ds.status = ?',
+                [$id, Publication::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
+            );
 
-            $collections = array_map(function ($collection) {
-                if ($collection['image_link'] && !preg_match('/^https?:\/\//', $collection['image_link'])) {
-                    $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
+            // Collections: get all active and public collections owned by the team
+            $ownedCollectionsColl = DB::select(
+                'SELECT DISTINCT c.id, c.name, c.image_link, c.created_at, c.updated_at, c.status, c.public
+                FROM collections c
+                WHERE c.team_id = ? AND c.status = ? AND c.public = ?',
+                [$id, Collection::STATUS_ACTIVE, 1]
+            );
+
+            $ownedCollectionsColl = array_map(function ($collection) {
+                if ($collection->image_link && !preg_match('/^https?:\/\//', $collection->image_link)) {
+                    $collection->image_link = Config::get('services.media.base_url') . $collection->image_link;
                 }
                 return $collection;
-            }, $collections);
-
-            $collections = array_values(array_filter($collections, function ($collection) {
-                return $collection['status'] === Collection::STATUS_ACTIVE && $collection['public'];
-            }));
-
-            $service = array_values(array_filter(explode(",", $dp->service)));
-
-            $aliasesIds = TeamHasAlias::where(['team_id' => $id])->pluck('alias_id')->toArray();
-            $aliases = Alias::whereIn('id', $aliasesIds)
-                ->select('id', 'name')
-                ->get()
-                ->toArray();
-
-            Auditor::log([
-                'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Team get ' . $id . ' summary',
-            ]);
+            }, $ownedCollectionsColl);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => [
-                    'id' => $dp->id,
-                    'is_provider' => $dp->is_provider,
-                    'team_logo' => (is_null($dp->team_logo) || strlen(trim($dp->team_logo)) === 0) ? '' : (preg_match('/^https?:\/\//', $dp->team_logo) ? $dp->team_logo : Config::get('services.media.base_url') . $dp->team_logo),
-                    'url' => $dp->url,
-                    'service' => empty($service) ? null : $service,
-                    'name' => $dp->name,
-                    'member_of' => $dp->member_of,
-                    'introduction' => $dp->introduction,
-                    'datasets' => $this->datasets,
-                    'durs' => Dur::select('id', 'project_title', 'organisation_name', 'status', 'created_at', 'updated_at')
-                        ->whereIn('id', $this->durs)
-                        ->where('status', Dur::STATUS_ACTIVE)
-                        ->get()
-                        ->toArray(),
-                    'tools' => $tools->toArray(),
+                    'id' => $team->id,
+                    'is_provider' => $team->is_provider,
+                    'team_logo' => (is_null($team->team_logo) || strlen(trim($team->team_logo)) === 0) ? '' : (preg_match('/^https?:\/\//', $team->team_logo) ? $team->team_logo : Config::get('services.media.base_url') . $team->team_logo),
+                    'url' => $team->url,
+                    'service' => $service === [] ? null : $service,
+                    'name' => $team->name,
+                    'member_of' => $team->member_of,
+                    'introduction' => $team->introduction,
+                    'datasets' => $ownedDatasets,
+                    'durs' => $allDurs,
+                    'tools' => $linkedToolsColl,
                     // TODO: need to add in `link_type` from publication_has_dataset table.
-                    'publications' => Publication::select('id', 'paper_title', 'authors', 'url')
-                        ->whereIn('id', $this->publications)
-                        ->where('status', Publication::STATUS_ACTIVE)
-                        ->get()
-                        ->toArray(),
-                    'collections' => $collections,
-                    'aliases' => $aliases,
+                    'publications' => $linkedPublicationsColl,
+                    'collections' => $ownedCollectionsColl,
+                    'aliases' => $team->aliases,
                 ],
-            ]);
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -1335,54 +1359,6 @@ class TeamController extends Controller
                 'role_id' => (int)$roleId,
             ]);
         }
-    }
-
-    public function getDatasets(int $teamId)
-    {
-        $datasets = Dataset::where(['team_id' => $teamId, 'status' => Dataset::STATUS_ACTIVE])->select(['id'])->get();
-
-        foreach ($datasets as $dataset) {
-            $this->checkingDataset($dataset->id);
-        }
-    }
-
-    public function checkingDataset(int $datasetId)
-    {
-        $dataset = Dataset::where(['id' => $datasetId])->first();
-
-        if (!$dataset) {
-            return;
-        }
-
-        $version = $dataset->latestVersion();
-        $withLinks = DatasetVersion::where('id', $version['id'])
-            ->with(['linkedDatasetVersions'])
-            ->first();
-
-        if (!$withLinks) {
-            return;
-        }
-
-        $dataset->setAttribute('versions', [$withLinks]);
-
-        $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
-
-        $title = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
-        $populationSize = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
-        $datasetType = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
-
-        $this->datasets[] = [
-            'id' => $dataset->id,
-            'status' => $dataset->status,
-            'title' => $title,
-            'populationSize' => $populationSize,
-            'datasetType' => $datasetType,
-        ];
-
-        $this->durs = array_unique(array_merge($this->durs, Arr::pluck($dataset->allActiveDurs, 'id')));
-        $this->publications = array_unique(array_merge($this->publications, Arr::pluck($dataset->allActivePublications, 'id')));
-        $this->tools = array_unique(array_merge($this->tools, Arr::pluck($dataset->allActiveTools, 'id')));
-        $this->collections = array_unique(array_merge($this->collections, Arr::pluck($dataset->allActiveCollections, 'id')));
     }
 
     private function updateTeamAlias(int $teamId, array $arrayTeamAlias): void

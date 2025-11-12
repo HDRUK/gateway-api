@@ -581,7 +581,7 @@ class ScanFileUpload implements ShouldQueue
                         'answer' => [
                             'value' => [
                                 'filename' => $upload->filename,
-                                'id' => $upload->id,
+                                'uuid' => $upload->uuid,
                             ]
                         ]
                     ]
@@ -594,7 +594,7 @@ class ScanFileUpload implements ShouldQueue
                 if ($answer) {
                     $thisFile = [[
                         'filename' => $upload->filename,
-                        'id' => $upload->id,
+                        'uuid' => $upload->uuid,
                     ]];
                     $value = array_merge(
                         $answer['answer']['value'],
@@ -611,7 +611,7 @@ class ScanFileUpload implements ShouldQueue
                         'answer' => [
                             'value' => [[
                                 'filename' => $upload->filename,
-                                'id' => $upload->id,
+                                'uuid' => $upload->uuid,
                             ]]
                         ]
                     ]);

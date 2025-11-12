@@ -466,7 +466,7 @@ class DataAccessTemplateTest extends TestCase
             ]
         );
         $response->assertStatus(200);
-        $uploadId = $response->decodeResponseJson()['data']['id'];
+        $uploadId = $response->decodeResponseJson()['data']['uuid'];
 
         $response = $this->get('api/v1/files/' . $uploadId, $this->header);
         $templateId = $response->decodeResponseJson()['data']['entity_id'];

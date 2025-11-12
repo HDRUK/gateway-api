@@ -20,9 +20,9 @@ class DeleteUserDataAccessApplicationFile extends BaseFormRequest
                 'exists:dar_applications,id',
             ],
             'fileId' => [
-                'int',
+                'string',
                 'required',
-                'exists:uploads,id',
+                'exists:uploads,uuid',
             ],
             'userId' => [
                 'int',
