@@ -1112,6 +1112,17 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+     [
+        'name' => 'data_custodian_networks.get.one.datasetssummary',
+        'method' => 'get',
+        'path' => '/data_custodian_networks/{id}/datasets_summary',
+        'methodController' => 'DataCustodianNetworksController@showDatasetsSummary',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
     [
         'name' => 'data_custodian_networks.get.one.entitiessummary',
         'method' => 'get',

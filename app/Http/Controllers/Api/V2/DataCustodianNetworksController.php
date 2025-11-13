@@ -296,6 +296,115 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      path="/api/v2/data_custodian_networks/{id}/datasets_summary",
+     *      description="Return a single DataCustodianNetwork - summary of datasets",
+     *      tags={"DataCustodianNetworks"},
+     *      summary="DataCustodianNetworks@showDatasetsSummary",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DataCustodianNetwork ID - summary",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DataCustodianNetwork ID - summary",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Name"),
+     *                  @OA\Property(property="img_url", type="string", example="http://placeholder"),
+     *                  @OA\Property(property="url", type="string", example="http://placeholder.url"),
+     *                  @OA\Property(property="summary", type="string", example="Summary"),
+     *                  @OA\Property(property="datasets", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="durs", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="tools", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="publications", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="collections", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="service", type="string", example="https://example"),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function showDatasetsSummary(Request $request, int $id): JsonResponse
+    {
+        try {
+            $dpc = DataProviderColl::select('id')
+                ->with('teams')
+                ->where([
+                    'id' => $id,
+                    'enabled' => 1,
+            ])->first();
+
+            if (!$dpc) {
+                return response()->json([
+                    'message' => 'DataCustodianNetwork not found or not enabled',
+                    'data' => null,
+                ], 404);
+            }
+
+            $teamIds = $this->getTeamsIds($dpc);
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'DataCustodianNetwork get ' . $id,
+            ]);
+
+            $ownedDatasets = Dataset::where(['status' => Dataset::STATUS_ACTIVE])
+                ->whereIn('team_id', $teamIds)
+                ->select([
+                    'id', 'user_id', 'team_id'
+                ])
+                ->get();
+
+            // SC: I've not optimised this into one mega query for metadata on all datasets, because
+            // that leads to memory issues. This is fine for now.
+            foreach ($ownedDatasets as $dataset) {
+                $metadataSummary = $dataset->latestVersion()['metadata']['metadata']['summary'] ?? [];
+                $dataset['title'] = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
+                $dataset['populationSize'] = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], '');
+                $dataset['datasetType'] = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
+            }
+
+            $result = [
+                'id' => $dpc->id,
+                'datasets_total' => count($ownedDatasets),
+                'datasets' => $ownedDatasets,
+            ];
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $result,
+            ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
      *      path="/api/v2/data_custodian_networks/{id}/entities_summary",
      *      description="Return a single DataCustodianNetwork - summary of entities",
      *      tags={"DataCustodianNetworks"},
@@ -344,7 +453,7 @@ class DataCustodianNetworksController extends Controller
     public function showEntitiesSummary(Request $request, int $id): JsonResponse
     {
         try {
-            $dpc = DataProviderColl::select('id', 'name', 'img_url', 'enabled', 'url', 'service', 'summary')
+            $dpc = DataProviderColl::select('id')
                 ->with('teams')
                 ->where([
                     'id' => $id,
@@ -365,22 +474,6 @@ class DataCustodianNetworksController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'DataCustodianNetwork get ' . $id,
             ]);
-
-            $ownedDatasets = Dataset::where(['status' => Dataset::STATUS_ACTIVE])
-                ->whereIn('team_id', $teamIds)
-                ->select([
-                    'id', 'user_id', 'team_id'
-                ])
-                ->get();
-
-            // SC: I've not optimised this into one mega query for metadata on all datasets, because
-            // that leads to memory issues. This is fine for now.
-            foreach ($ownedDatasets as $dataset) {
-                $metadataSummary = $dataset->latestVersion()['metadata']['metadata']['summary'] ?? [];
-                $dataset['title'] = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
-                $dataset['populationSize'] = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], '');
-                $dataset['datasetType'] = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
-            }
 
             // Durs: get all active durs owned by the team and also active durs linked to (all versions of) datasets owned by the team
             $ownedDurs = Dur::where(['status' => Dur::STATUS_ACTIVE])
@@ -443,12 +536,8 @@ class DataCustodianNetworksController extends Controller
                 return $collection;
             }, $linkedCollectionColl);
 
-            $service = array_values(array_filter(explode(",", $dpc->service)));
-
             $result = [
                 'id' => $dpc->id,
-                'datasets_total' => count($ownedDatasets),
-                'datasets' => $ownedDatasets,
                 'durs_total' => count($allDurs),
                 'durs' => $allDurs,
                 'tools_total' => count($linkedToolsColl),
@@ -930,9 +1019,9 @@ class DataCustodianNetworksController extends Controller
         return $teamsResult;
     }
 
-    public function getTeamsIDs(DataProviderColl $dp)
+    public function getTeamsIds(DataProviderColl $dpc)
     {
-        return DataProviderCollHasTeam::where(['data_provider_coll_id' => $dp->id])->pluck('team_id')->toArray();
+        return DataProviderCollHasTeam::where(['data_provider_coll_id' => $dpc->id])->pluck('team_id')->toArray();
     }
 
     public function getTeamCounts(int $teamId)
