@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V2;
 
+use DB;
 use Config;
 use Auditor;
 use Exception;
@@ -211,8 +212,92 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v2/data_custodian_networks/{id}/summary",
-     *      description="Return a single DataCustodianNetwork - summary",
+     *      path="/api/v2/data_custodian_networks/{id}/custodians_summary",
+     *      description="Return a single DataCustodianNetwork - custodians summary",
+     *      tags={"DataCustodianNetworks"},
+     *      summary="DataCustodianNetworks@showCustodiansSummary",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DataCustodianNetwork ID - summary",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DataCustodianNetwork ID - summary",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="teams_counts", type="array", example="{}", @OA\Items()),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function showCustodiansSummary(Request $request, int $id): JsonResponse
+    {
+        try {
+            $startTime = microtime(true);
+            $dpc = DataProviderColl::select('id')
+                ->with('teams')
+                ->where([
+                    'id' => $id,
+                    'enabled' => 1,
+            ])->first();
+
+            if (!$dpc) {
+                return response()->json([
+                    'message' => 'DataCustodianNetwork not found or not enabled',
+                    'data' => null,
+                ], 404);
+            }
+
+            $teamsResult = $this->getTeamsCounts(array_pluck($dpc->teams->toArray(), 'id'));
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'DataCustodianNetwork get ' . $id,
+            ]);
+
+            $result = [
+                'id' => $dpc->id,
+                'teams_counts' => $teamsResult,
+            ];
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $result,
+            ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/v2/data_custodian_networks/{id}/entities_summary",
+     *      description="Return a single DataCustodianNetwork - summary of entities",
      *      tags={"DataCustodianNetworks"},
      *      summary="DataCustodianNetworks@showSummary",
      *      security={{"bearerAuth":{}}},
@@ -256,7 +341,7 @@ class DataCustodianNetworksController extends Controller
      *      )
      * )
      */
-    public function showSummary(Request $request, int $id): JsonResponse
+    public function showEntitiesSummary(Request $request, int $id): JsonResponse
     {
         try {
             $dpc = DataProviderColl::select('id', 'name', 'img_url', 'enabled', 'url', 'service', 'summary')
@@ -273,7 +358,7 @@ class DataCustodianNetworksController extends Controller
                 ], 404);
             }
 
-            $teamsResult = $this->getTeamsDetailsAndCounts($dpc);
+            $teamIds = $this->getTeamsIds($dpc);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -281,46 +366,123 @@ class DataCustodianNetworksController extends Controller
                 'description' => 'DataCustodianNetwork get ' . $id,
             ]);
 
-            $durs = Dur::select(
-                'id',
-                'project_title',
-                'organisation_name',
-                'status',
-                'created_at',
-                'updated_at'
-            )->whereIn('id', $this->networkDurIds)->where('status', 'ACTIVE')->get()->toArray();
-            $tools = Tool::select(
-                'id',
-                'name',
-                'enabled',
-                'status',
-                'created_at',
-                'updated_at'
-            )->with(['user'])->whereIn('id', $this->networkToolIds)->where('status', 'ACTIVE')->get()->toArray();
-            $publications = Publication::select(
-                'id',
-                'paper_title',
-                'authors',
-                'publication_type',
-                'publication_type_mk1',
-                'status',
-                'created_at',
-                'updated_at'
-            )->whereIn('id', $this->networkPublicationIds)->where('status', 'ACTIVE')->get()->toArray();
-            $collections = Collection::select(
-                'id',
-                'name',
-                'image_link',
-                'status',
-                'created_at',
-                'updated_at'
-            )->whereIn('id', $this->networkCollectionIds)->where('status', 'ACTIVE')->get()->toArray();
-            $collections = array_map(function ($collection) {
-                if ($collection['image_link'] && !preg_match('/^https?:\/\//', $collection['image_link'])) {
-                    $collection['image_link'] = Config::get('services.media.base_url') . $collection['image_link'];
+            $ownedDatasets = Dataset::where(['status' => Dataset::STATUS_ACTIVE])
+                ->whereIn('team_id', $teamIds)
+                ->select([
+                    'id', 'user_id', 'team_id'
+                ])
+                ->get();
+
+            // SC: I've not optimised this into one mega query for metadata on all datasets, because
+            // that leads to memory issues. This is fine for now.
+            foreach ($ownedDatasets as $dataset) {
+                $metadataSummary = $dataset->latestVersion()['metadata']['metadata']['summary'] ?? [];
+                $dataset['title'] = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
+                $dataset['populationSize'] = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], '');
+                $dataset['datasetType'] = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
+            }
+
+            // Durs: get all active durs owned by the team and also active durs linked to (all versions of) datasets owned by the team
+            $ownedDurs = Dur::where(['status' => Dur::STATUS_ACTIVE])
+                ->whereIn('team_id', $teamIds)
+                ->select(['id', 'project_title', 'organisation_name', 'status'])
+                ->get()
+                ->toArray();
+
+            $linkedDursColl = DB::select(
+                'SELECT DISTINCT d.id, d.project_title, d.organisation_name, d.status
+                FROM datasets ds
+                JOIN dataset_versions dv ON dv.dataset_id = ds.id
+                JOIN dur_has_dataset_version dhdv ON dv.id = dhdv.dataset_version_id
+                JOIN dur d ON dhdv.dur_id = d.id
+                WHERE ds.team_id = ? AND d.team_id != ? AND d.status = ? AND ds.status = ?',
+                [$id, $id, Dur::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
+            );
+
+            $linkedDurs = array_map(function ($dur) {
+                return (array)$dur;
+            }, $linkedDursColl);
+
+            $allDurs = [...$ownedDurs, ...$linkedDurs];
+
+            // for each other entity type, get all that are linked to datasets owned by the teams in this DPC
+            $linkedToolsColl = DB::select(
+                'SELECT DISTINCT t.id, t.name, t.enabled, t.status, t.created_at, t.updated_at
+                FROM datasets ds
+                JOIN dataset_versions dv ON dv.dataset_id = ds.id
+                JOIN dataset_version_has_tool dvht ON dv.id = dvht.dataset_version_id
+                JOIN tools t ON dvht.tool_id = t.id
+                WHERE ds.team_id IN (' . implode(',', $teamIds) . ') AND t.status = ? AND ds.status = ?',
+                [Tool::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
+            );
+
+            $linkedPublicationsColl = DB::select(
+                'SELECT DISTINCT p.id, p.paper_title, p.authors, p.publication_type, p.publication_type_mk1, p.status, p.created_at, p.updated_at
+                FROM datasets ds
+                JOIN dataset_versions dv ON dv.dataset_id = ds.id
+                JOIN publication_has_dataset_version phdv ON dv.id = phdv.dataset_version_id
+                JOIN publications p ON phdv.publication_id = p.id
+                WHERE ds.team_id IN (' . implode(',', $teamIds) . ') AND p.status = ? AND ds.status = ?',
+                [Publication::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
+            );
+
+            $linkedCollectionColl = DB::select(
+                'SELECT DISTINCT c.id, c.name, c.image_link, c.status, c.created_at, c.updated_at
+                FROM datasets ds
+                JOIN dataset_versions dv ON dv.dataset_id = ds.id
+                JOIN collection_has_dataset_version chdv ON dv.id = chdv.dataset_version_id
+                JOIN collections c ON chdv.collection_id = c.id
+                WHERE ds.team_id IN (' . implode(',', $teamIds) . ') AND c.status = ? AND ds.status = ?',
+                [Collection::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
+            );
+
+            $linkedCollectionColl = array_map(function ($collection) {
+                if ($collection->image_link && !preg_match('/^https?:\/\//', $collection->image_link)) {
+                    $collection->image_link = Config::get('services.media.base_url') . $collection->image_link;
                 }
                 return $collection;
-            }, $collections);
+            }, $linkedCollectionColl);
+
+            $service = array_values(array_filter(explode(",", $dpc->service)));
+
+            $result = [
+                'id' => $dpc->id,
+                'datasets_total' => count($ownedDatasets),
+                'datasets' => $ownedDatasets,
+                'durs_total' => count($allDurs),
+                'durs' => $allDurs,
+                'tools_total' => count($linkedToolsColl),
+                'tools' => $linkedToolsColl,
+                'publications_total' => count($linkedPublicationsColl),
+                'publications' => $linkedPublicationsColl,
+                'collections_total' => count($linkedCollectionColl),
+                'collections' => $linkedCollectionColl
+            ];
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $result,
+            ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public function showInfoSummary(Request $request, int $id): JsonResponse
+    {
+        try {
+            $startTime = microtime(true);
+            $dpc = DataProviderColl::select('id', 'name', 'img_url', 'enabled', 'url', 'service', 'summary')
+                ->where([
+                    'id' => $id,
+                    'enabled' => 1,
+            ])->first();
 
             $service = array_values(array_filter(explode(",", $dpc->service)));
 
@@ -332,17 +494,6 @@ class DataCustodianNetworksController extends Controller
                 'enabled' => $dpc->enabled,
                 'url' => $dpc->url,
                 'service' => empty($service) ? null : $service,
-                'teams_counts' => $teamsResult,
-                'datasets_total' => count($this->networkDatasets),
-                'datasets' => $this->networkDatasets,
-                'durs_total' => count($durs),
-                'durs' => $durs,
-                'tools_total' => count($tools),
-                'tools' => $tools,
-                'publications_total' => count($publications),
-                'publications' => $publications,
-                'collections_total' => count($collections),
-                'collections' => $collections
             ];
 
             return response()->json([
@@ -762,14 +913,13 @@ class DataCustodianNetworksController extends Controller
         }
     }
 
-    public function getTeamsDetailsAndCounts(DataProviderColl $dp)
+    public function getTeamsCounts(array $teamIds)
     {
-        $teamIds = DataProviderCollHasTeam::where(['data_provider_coll_id' => $dp->id])->pluck('team_id')->toArray();
         $teamsResult = [];
 
         foreach ($teamIds as $teamId) {
             $team = Team::select('id', 'name')->where(['id' => $teamId])->first();
-            $counts = $this->getDatasets((int) $team->id);
+            $counts = $this->getTeamCounts((int) $team->id);
 
             $teamsResult[] = array_merge([
                 'name' => $team->name,
@@ -780,7 +930,12 @@ class DataCustodianNetworksController extends Controller
         return $teamsResult;
     }
 
-    public function getDatasets(int $teamId)
+    public function getTeamsIDs(DataProviderColl $dp)
+    {
+        return DataProviderCollHasTeam::where(['data_provider_coll_id' => $dp->id])->pluck('team_id')->toArray();
+    }
+
+    public function getTeamCounts(int $teamId)
     {
         $datasetIds = Dataset::where(['team_id' => $teamId])->where('status', 'ACTIVE')->pluck('id')->toArray();
 
@@ -825,43 +980,39 @@ class DataCustodianNetworksController extends Controller
     {
         $dataset = Dataset::where(['id' => $datasetId])->first();
 
-        // Accessed through the accessor
-        $durIds = array_column($dataset->allActiveDurs, 'id') ?? [];
-        $collectionIds = array_column($dataset->allActiveCollections, 'id') ?? [];
-        $publicationIds = array_column($dataset->allActivePublications, 'id') ?? [];
-        $toolIds = array_column($dataset->allActiveTools, 'id') ?? [];
-
-        $version = $dataset->latestVersion();
-        $withLinks = DatasetVersion::where('id', $version['id'])
-            ->with(['linkedDatasetVersions'])
-            ->first();
-
-        $dataset->setAttribute('versions', [$withLinks]);
-
-        $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
-
-        $title = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
-        $populationSize = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
-        $datasetType = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
-
-        if (empty($title) || $title === '') {
-            Log::error('DataCustodianNetworksController: Dataset title is empty or unknown', [
-                'datasetId' => $dataset->id
-            ]);
-        }
-
-        $this->networkDatasets[] = [
-            'id' => $dataset->id,
-            'status' => $dataset->status,
-            'title' => $title,
-            'populationSize' => $populationSize,
-            'datasetType' => $datasetType
-        ];
-
-        $this->networkDurIds = array_unique(array_merge($this->networkDurIds, $durIds));
-        $this->networkPublicationIds = array_unique(array_merge($this->networkPublicationIds, $publicationIds));
-        $this->networkToolIds = array_unique(array_merge($this->networkToolIds, $toolIds));
-        $this->networkCollectionIds = array_unique(array_merge($this->networkCollectionIds, $collectionIds));
+        $durIds = array_column(DB::select(
+            'SELECT DISTINCT d.id
+            FROM dataset_versions dv
+            JOIN dur_has_dataset_version dhdv ON dv.id = dhdv.dataset_version_id
+            JOIN dur d ON dhdv.dur_id = d.id
+            WHERE dv.dataset_id = ? AND d.status = ?',
+            [$datasetId, Dur::STATUS_ACTIVE]
+        ), 'id') ?? [];
+        $collectionIds = array_column(DB::select(
+            'SELECT DISTINCT c.id
+            FROM dataset_versions dv
+            JOIN collection_has_dataset_version chdv ON dv.id = chdv.dataset_version_id
+            JOIN collections c ON chdv.collection_id = c.id
+            WHERE dv.dataset_id = ? AND c.status = ?',
+            [$datasetId, Collection::STATUS_ACTIVE]
+        ), 'id') ?? [];
+        $publicationIds = array_column(DB::select(
+            'SELECT DISTINCT p.id
+            FROM dataset_versions dv
+            JOIN publication_has_dataset_version phdv ON dv.id = phdv.dataset_version_id
+            JOIN publications p ON phdv.publication_id = p.id
+            WHERE dv.dataset_id = ? AND p.status = ?',
+            [$datasetId, Publication::STATUS_ACTIVE]
+        ), 'id') ?? [];
+        // $toolIds = array_column($dataset->allActiveTools, 'id') ?? [];
+        $toolIds = array_column(DB::select(
+            'SELECT DISTINCT t.id
+            FROM dataset_versions dv
+            JOIN dataset_version_has_tool dvht ON dv.id = dvht.dataset_version_id
+            JOIN tools t ON dvht.tool_id = t.id
+            WHERE dv.dataset_id = ? AND t.status = ?',
+            [$datasetId, Tool::STATUS_ACTIVE]
+        ), 'id') ?? [];
 
         $datasetResources = [
             'durs' => $durIds,
