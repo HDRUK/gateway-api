@@ -102,13 +102,16 @@ class UserController extends Controller
                 } elseif ($mini) {
                     //temporary force to get all users but with masked email
                     // - will not be needed in the future as can just use the above if block
-                   $rows = DB::select('SELECT id, name, email FROM users ORDER BY name');
-                    $users = [
-                        "data" => collect($rows)->map(function ($user) {
+                    $users = DB::table('users')
+                        ->select('id', 'name', 'email')
+                        ->orderBy('name')
+                        ->get()
+                        ->map(function ($user) {
                             $user->email = $this->maskEmail($user->email);
                             return $user;
-                        })
-                    ];
+                        });
+
+                    $users = ['data' => $users];
                 } elseif ($userIsAdmin) {
                     $users = User::with(['roles', 'roles.permissions', 'teams', 'notifications'])->paginate($perPage, ['*'], 'page');
                 } else {
