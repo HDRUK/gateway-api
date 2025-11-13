@@ -85,10 +85,10 @@ class DataCustodianNetworkTest extends TestCase
         $this->assertTrue(($countTeams === 1));
     }
 
-    public function test_get_data_custodian_network_summary_with_success()
+    public function test_get_data_custodian_network_info_with_success()
     {
         $id = DataProviderColl::where(['enabled' => 1])->first()->id;
-        $response = $this->json('GET', self::TEST_URL . '/' . $id . '/summary', [], $this->header);
+        $response = $this->json('GET', self::TEST_URL . '/' . $id . '/info', [], $this->header);
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -99,6 +99,20 @@ class DataCustodianNetworkTest extends TestCase
                     'summary',
                     'service',
                     'enabled',
+
+                ],
+            ]);
+    }
+
+    public function test_get_data_custodian_network_custodians_summary_with_success()
+    {
+        $id = DataProviderColl::where(['enabled' => 1])->first()->id;
+        $response = $this->json('GET', self::TEST_URL . '/' . $id . '/custodians_summary', [], $this->header);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
                     'teams_counts' => [
                         0 => [
                             'name',
@@ -110,6 +124,19 @@ class DataCustodianNetworkTest extends TestCase
                             'collections_count'
                         ]
                     ],
+                ],
+            ]);
+    }
+
+    public function test_get_data_custodian_network_entities_summary_with_success()
+    {
+        $id = DataProviderColl::where(['enabled' => 1])->first()->id;
+        $response = $this->json('GET', self::TEST_URL . '/' . $id . '/entities_summary', [], $this->header);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
                     'datasets_total',
                     'datasets',
                     'durs_total',
