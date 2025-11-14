@@ -829,10 +829,6 @@ class TeamController extends Controller
     public function showDatasetsSummary(Request $request, int $id): JsonResponse
     {
         try {
-            $timing = false;
-            if ($timing) {
-                $startTime = microtime(true);
-            }
             $team = Team::select('id', 'name', 'member_of', 'is_provider', 'introduction', 'url', 'service', 'team_logo')
                 ->where([
                     'id' => $id,
@@ -841,11 +837,7 @@ class TeamController extends Controller
                     $query->select(['id', 'name']);
                 }
                 ])->first();
-            if ($timing) {
-                $endTime = microtime(true);
-                var_dump('Team fetch time: ' . ($endTime - $startTime) . ' seconds');
-                $startTime = microtime(true);
-            }
+
             if (!$team) {
                 throw new NotFoundException();
             }
