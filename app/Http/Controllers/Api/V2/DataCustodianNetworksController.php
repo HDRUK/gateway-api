@@ -582,7 +582,7 @@ class DataCustodianNetworksController extends Controller
      *                  @OA\Property(property="img_url", type="string", example="http://placeholder"),
      *                  @OA\Property(property="url", type="string", example="http://placeholder.url"),
      *                  @OA\Property(property="summary", type="string", example="Summary"),
-     *.                 @OA\Property(property="enabled", type="boolean", example="true"),
+     *                  @OA\Property(property="enabled", type="boolean", example="true"),
      *                  @OA\Property(property="service", type="string", example="https://example"),
      *              )
      *          ),
