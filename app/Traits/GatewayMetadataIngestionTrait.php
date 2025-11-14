@@ -101,29 +101,36 @@ trait GatewayMetadataIngestionTrait
         foreach ($toDelete as $pid) {
             try {
                 $this->log('info', "dataset {$pid} detected LOCALLY, but NOT in REMOTE collection - DELETING");
-
+                $teamId = $gmi->getTeam();
                 $ds = Dataset::where([
                     'pid' => $pid,
-                    'team_id' => $gmi->getTeam(),
+                    'team_id' => $teamId,
                     'create_origin' => 'GMI',
                 ])->first();
-                $this->log('info', 'dataset for deletion ' . $ds->id);
+                
+                if (!$ds) {
+                    $this->log('info', "dataset with PID {$pid} was expected locally but not found in DB — skipping deletion. This is likely a missmatch of team ids, team id on the incoming dataset: {$teamId}");
+                    continue;
+                }
+                $dsId = $ds->id;
 
-                $dsv = DatasetVersion::where('dataset_id', $ds->id)->first();
+                $this->log('info', 'dataset for deletion ' . $dsId);
+
+                $dsv = DatasetVersion::where('dataset_id', $dsId)->first();
                 if ($dsv) {
-                    $this->log('info', 'dataset_version for deletion ' . $dsv->id);
+                    $this->log('info', 'dataset_version for deletion ' . $dsId);
                     // Due to constraints, delete spatial coverage first.
-                    $dsvhsc = DatasetVersionHasSpatialCoverage::where('dataset_version_id', $dsv->id)->forceDelete();
+                    $dsvhsc = DatasetVersionHasSpatialCoverage::where('dataset_version_id', $dsId)->forceDelete();
                     $dsv->forceDelete();
 
                     unset($dsvhsc);
                     unset($dsv);
                 } else {
-                    $this->log('warning', "no dataset_version found for dataset {$ds->id} - skipping deletion");
+                    $this->log('warning', "no dataset_version found for dataset {$dsId} - skipping deletion");
                 }
 
                 $ds->forceDelete();
-                $this->log('info', "dataset {$ds->id} deleted");
+                $this->log('info', "dataset {$dsId} deleted");
 
                 unset($ds);
                 $deletedCount++;
@@ -163,7 +170,7 @@ trait GatewayMetadataIngestionTrait
                             'user_id' => Config::get('metadata.system_user_id'),
                             'team_id' => $gmi->getTeam(),
                             'metadata' => [
-                                'metadata' => $response->json(),
+                                'metadata' => $response->object(),
                             ],
                             'pid' => $pid,
                         ];
@@ -212,13 +219,13 @@ trait GatewayMetadataIngestionTrait
                             'publisherId' => $team->pid,
                             'publisherName' => $team->name,
                         ],
-                        'metadata' => $response->json(),
+                        'metadata' => $response->object(),
                     ];
 
                     $this->log('info', "version compare of REMOTE v{$data['version']} and LOCAL v{$dv['metadata']['metadata']['required']['version']}");
 
                     if (version_compare($data['version'], $dv['metadata']['metadata']['required']['version'], '<>')) {
-                        $this->log('info', "found version difference in REMOTE metadata of v{$data['version']} vs local {$dv['metadata']['metadata']['required']['version']} - UPDATING LOCAL");
+                        $this->log('info', "dataset {$pid} found version difference in REMOTE metadata of v{$data['version']} vs local {$dv['metadata']['metadata']['required']['version']} - UPDATING LOCAL");
                         $traserResponse = MMC::translateDataModelType(
                             json_encode($payload),
                             Config::get('metadata.GWDM.name'),
@@ -238,11 +245,13 @@ trait GatewayMetadataIngestionTrait
                             );
 
                             $updatedCount++;
+                        } else {
+                            $this->log('info', "dataset {$pid} FAILED traser");
                         }
 
                         $this->log('info', "dataset {$pid} detected as CHANGED in REMOTE collection - UPDATED");
                     } else {
-                        $this->log('info', "nothing to update - IGNORING");
+                        $this->log('info', "dataset {$pid} nothing to update - IGNORING");
                     }
                 }
             }
