@@ -29,6 +29,10 @@ class CreateDataAccessTemplate extends BaseFormRequest
             'locked' => [
                 'boolean',
             ],
+            'template_type' => [
+                'string',
+                'in:FORM,DOCUMENT'
+            ]
         ];
     }
 }

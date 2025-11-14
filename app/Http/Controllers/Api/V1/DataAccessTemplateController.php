@@ -424,9 +424,11 @@ class DataAccessTemplateController extends Controller
                 'team_id' => $input['team_id'],
                 'published' => isset($input['published']) ? $input['published'] : false,
                 'locked' => isset($input['locked']) ? $input['locked'] : false,
+                'template_type' => isset($input['template_type']) ? $input['template_type'] : "FORM"
             ]);
 
             if (isset($input['questions'])) {
+                \Log::info($input['questions']);
                 $this->insertTemplateHasQuestions($input['questions'], $template, $input['team_id']);
             }
 
