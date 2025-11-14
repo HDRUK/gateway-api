@@ -85,10 +85,10 @@ class DataCustodianNetworkTest extends TestCase
         $this->assertTrue(($countTeams === 1));
     }
 
-    public function test_get_data_custodian_network_summary_with_success()
+    public function test_get_data_custodian_network_info_with_success()
     {
         $id = DataProviderColl::where(['enabled' => 1])->first()->id;
-        $response = $this->json('GET', self::TEST_URL . '/' . $id . '/summary', [], $this->header);
+        $response = $this->json('GET', self::TEST_URL . '/' . $id . '/info', [], $this->header);
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -99,19 +99,59 @@ class DataCustodianNetworkTest extends TestCase
                     'summary',
                     'service',
                     'enabled',
+
+                ],
+            ]);
+    }
+
+    public function test_get_data_custodian_network_custodians_summary_with_success()
+    {
+        $id = DataProviderColl::where(['enabled' => 1])->first()->id;
+        $response = $this->json('GET', self::TEST_URL . '/' . $id . '/custodians_summary', [], $this->header);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
                     'teams_counts' => [
                         0 => [
-                            'name',
                             'id',
+                            'name',
                             'datasets_count',
-                            'tools_count',
                             'durs_count',
                             'publications_count',
-                            'collections_count'
+                            'tools_count',
+                            'collections_count',
                         ]
                     ],
+                ],
+            ]);
+    }
+
+    public function test_get_data_custodian_network_datasets_summary_with_success()
+    {
+        $id = DataProviderColl::where(['enabled' => 1])->first()->id;
+        $response = $this->json('GET', self::TEST_URL . '/' . $id . '/datasets_summary', [], $this->header);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
                     'datasets_total',
                     'datasets',
+                ],
+            ]);
+    }
+
+    public function test_get_data_custodian_network_entities_summary_with_success()
+    {
+        $id = DataProviderColl::where(['enabled' => 1])->first()->id;
+        $response = $this->json('GET', self::TEST_URL . '/' . $id . '/entities_summary', [], $this->header);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
                     'durs_total',
                     'durs',
                     'tools_total',
@@ -120,6 +160,25 @@ class DataCustodianNetworkTest extends TestCase
                     'publications',
                     'collections_total',
                     'collections',
+                ],
+            ]);
+    }
+
+    public function test_get_data_custodian_network_info_summary_with_success()
+    {
+        $id = DataProviderColl::where(['enabled' => 1])->first()->id;
+        $response = $this->json('GET', self::TEST_URL . '/' . $id . '/info', [], $this->header);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'img_url',
+                    'summary',
+                    'enabled',
+                    'url',
+                    'service',
                 ],
             ]);
     }
