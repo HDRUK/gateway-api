@@ -115,15 +115,25 @@ class DataCustodianNetworkTest extends TestCase
                     'id',
                     'teams_counts' => [
                         0 => [
-                            'name',
                             'id',
-                            'datasets_count',
-                            'tools_count',
-                            'durs_count',
-                            'publications_count',
-                            'collections_count'
+                            'teams_counts',
                         ]
                     ],
+                ],
+            ]);
+    }
+
+    public function test_get_data_custodian_network_datasets_summary_with_success()
+    {
+        $id = DataProviderColl::where(['enabled' => 1])->first()->id;
+        $response = $this->json('GET', self::TEST_URL . '/' . $id . '/entities_summary', [], $this->header);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'datasets_total',
+                    'datasets',
                 ],
             ]);
     }
@@ -137,8 +147,6 @@ class DataCustodianNetworkTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     'id',
-                    'datasets_total',
-                    'datasets',
                     'durs_total',
                     'durs',
                     'tools_total',
@@ -147,6 +155,25 @@ class DataCustodianNetworkTest extends TestCase
                     'publications',
                     'collections_total',
                     'collections',
+                ],
+            ]);
+    }
+
+    public function test_get_data_custodian_network_info_summary_with_success()
+    {
+        $id = DataProviderColl::where(['enabled' => 1])->first()->id;
+        $response = $this->json('GET', self::TEST_URL . '/' . $id . '/info', [], $this->header);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'img_url',
+                    'summary',
+                    'enabled',
+                    'url',
+                    'service',
                 ],
             ]);
     }
