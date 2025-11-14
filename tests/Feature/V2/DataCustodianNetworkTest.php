@@ -116,7 +116,12 @@ class DataCustodianNetworkTest extends TestCase
                     'teams_counts' => [
                         0 => [
                             'id',
-                            'teams_counts',
+                            'name',
+                            'datasets_count',
+                            'durs_count',
+                            'publications_count',
+                            'tools_count',
+                            'collections_count',
                         ]
                     ],
                 ],
