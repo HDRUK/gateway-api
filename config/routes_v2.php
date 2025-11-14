@@ -1102,10 +1102,43 @@ return [
         ],
     ],
     [
-        'name' => 'data_custodian_networks.get.one.summary',
+        'name' => 'data_custodian_networks.get.one.custodianssummary',
         'method' => 'get',
-        'path' => '/data_custodian_networks/{id}/summary',
-        'methodController' => 'DataCustodianNetworksController@showSummary',
+        'path' => '/data_custodian_networks/{id}/custodians_summary',
+        'methodController' => 'DataCustodianNetworksController@showCustodiansSummary',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+     [
+        'name' => 'data_custodian_networks.get.one.datasetssummary',
+        'method' => 'get',
+        'path' => '/data_custodian_networks/{id}/datasets_summary',
+        'methodController' => 'DataCustodianNetworksController@showDatasetsSummary',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data_custodian_networks.get.one.entitiessummary',
+        'method' => 'get',
+        'path' => '/data_custodian_networks/{id}/entities_summary',
+        'methodController' => 'DataCustodianNetworksController@showEntitiesSummary',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data_custodian_networks.get.one.info',
+        'method' => 'get',
+        'path' => '/data_custodian_networks/{id}/info',
+        'methodController' => 'DataCustodianNetworksController@showInfoSummary',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [],
         'constraint' => [
