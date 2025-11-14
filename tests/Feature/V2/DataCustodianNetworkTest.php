@@ -126,7 +126,7 @@ class DataCustodianNetworkTest extends TestCase
     public function test_get_data_custodian_network_datasets_summary_with_success()
     {
         $id = DataProviderColl::where(['enabled' => 1])->first()->id;
-        $response = $this->json('GET', self::TEST_URL . '/' . $id . '/entities_summary', [], $this->header);
+        $response = $this->json('GET', self::TEST_URL . '/' . $id . '/datasets_summary', [], $this->header);
 
         $response->assertStatus(200)
             ->assertJsonStructure([
