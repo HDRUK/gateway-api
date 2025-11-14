@@ -319,16 +319,8 @@ class DataCustodianNetworksController extends Controller
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="object",
      *                  @OA\Property(property="id", type="integer", example=1),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="img_url", type="string", example="http://placeholder"),
-     *                  @OA\Property(property="url", type="string", example="http://placeholder.url"),
-     *                  @OA\Property(property="summary", type="string", example="Summary"),
      *                  @OA\Property(property="datasets", type="array", example="{}", @OA\Items()),
-     *                  @OA\Property(property="durs", type="array", example="{}", @OA\Items()),
-     *                  @OA\Property(property="tools", type="array", example="{}", @OA\Items()),
-     *                  @OA\Property(property="publications", type="array", example="{}", @OA\Items()),
-     *                  @OA\Property(property="collections", type="array", example="{}", @OA\Items()),
-     *                  @OA\Property(property="service", type="string", example="https://example"),
+     *                  @OA\Property(property="datasets_total", type="integer", example=1),
      *              )
      *          ),
      *      ),
@@ -428,16 +420,14 @@ class DataCustodianNetworksController extends Controller
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="object",
      *                  @OA\Property(property="id", type="integer", example=1),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="img_url", type="string", example="http://placeholder"),
-     *                  @OA\Property(property="url", type="string", example="http://placeholder.url"),
-     *                  @OA\Property(property="summary", type="string", example="Summary"),
-     *                  @OA\Property(property="datasets", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="durs_total", type="integer", example=1),
      *                  @OA\Property(property="durs", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="tools_total", type="integer", example=1),
      *                  @OA\Property(property="tools", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="publications_total", type="integer", example=1),
      *                  @OA\Property(property="publications", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="collections_total", type="integer", example=1),
      *                  @OA\Property(property="collections", type="array", example="{}", @OA\Items()),
-     *                  @OA\Property(property="service", type="string", example="https://example"),
      *              )
      *          ),
      *      ),
@@ -563,6 +553,49 @@ class DataCustodianNetworksController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *      path="/api/v2/data_custodian_networks/{id}/info",
+     *      description="Return a single DataCustodianNetwork - basic information",
+     *      tags={"DataCustodianNetworks"},
+     *      summary="DataCustodianNetworks@showInfoSummary",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DataCustodianNetwork ID - summary",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DataCustodianNetwork ID - summary",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Name"),
+     *                  @OA\Property(property="img_url", type="string", example="http://placeholder"),
+     *                  @OA\Property(property="url", type="string", example="http://placeholder.url"),
+     *                  @OA\Property(property="summary", type="string", example="Summary"),
+     *.                 @OA\Property(property="enabled", type="boolean", example="true"),
+     *                  @OA\Property(property="service", type="string", example="https://example"),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
     public function showInfoSummary(Request $request, int $id): JsonResponse
     {
         try {
