@@ -578,8 +578,41 @@ return [
     [
         'name' => 'teams',
         'method' => 'get',
+        'path' => '/teams/{teamId}/info',
+        'methodController' => 'TeamController@showInfoSummary',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'teams',
+        'method' => 'get',
         'path' => '/teams/{teamId}/summary',
         'methodController' => 'TeamController@showSummary',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'teams',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/datasets_cohort_discovery',
+        'methodController' => 'TeamController@showCohortDiscovery',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'teams',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/datasets_summary',
+        'methodController' => 'TeamController@showDatasetsSummary',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
