@@ -135,7 +135,7 @@ trait GatewayMetadataIngestionTrait
                 unset($ds);
                 $deletedCount++;
             } catch (\Exception $e) {
-                $this->log('error', 'encountered internal error: ' . json_encode($e->getTraceAsString()));
+                $this->log('error', 'encountered internal error: ' . json_encode($e->getMessage()));
             }
         }
 
