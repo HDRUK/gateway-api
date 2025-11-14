@@ -463,9 +463,9 @@ class TeamController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/teams/{id}/summary",
-     *      summary="TeamController@showSummary",
-     *      description="Return a single team summary for use in Data Provider view",
+     *      path="/api/v1/teams/{id}/info",
+     *      summary="TeamController@showInfoSummary",
+     *      description="Return brief details of a single team",
      *      tags={"Teams"},
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
@@ -491,7 +491,88 @@ class TeamController extends Controller
      *                  @OA\Property(property="url", type="string", example="http://placeholder"),
      *                  @OA\Property(property="img_url", type="string", example="http://placeholder"),
      *                  @OA\Property(property="summary", type="string", example="Summary"),
-     *                  @OA\Property(property="datasets", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="durs", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="tools", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="publications", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="collections", type="array", example="{}", @OA\Items()),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function showInfoSummary(Request $request, int $id): JsonResponse
+    {
+        try {
+            $team = Team::select('id', 'name', 'member_of', 'is_provider', 'introduction', 'url', 'service', 'team_logo')
+                ->where([
+                    'id' => $id,
+                    'enabled' => 1,
+                ])->with(['aliases' => function ($query) {
+                    $query->select(['id', 'name']);
+                }
+                ])->first();
+
+            if (!$team) {
+                throw new NotFoundException();
+            }
+            $service = array_filter(explode(",", $team->service));
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => [
+                    'id' => $team->id,
+                    'is_provider' => $team->is_provider,
+                    'team_logo' => (is_null($team->team_logo) || strlen(trim($team->team_logo)) === 0) ? '' : (preg_match('/^https?:\/\//', $team->team_logo) ? $team->team_logo : Config::get('services.media.base_url') . $team->team_logo),
+                    'url' => $team->url,
+                    'service' => $service === [] ? null : $service,
+                    'name' => $team->name,
+                    'member_of' => $team->member_of,
+                    'introduction' => $team->introduction,
+                    'aliases' => $team->aliases,
+                ],
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/teams/{id}/summary",
+     *      summary="TeamController@showSummary",
+     *      description="Return a single team summary (excluding datasets for performance reasons) for use in Data Provider view",
+     *      tags={"Teams"},
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DataProviderColl ID - summary",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DataProviderColl ID - summary",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Name"),
+     *                  @OA\Property(property="introduction", type="string", example="info about the team"),
+     *                  @OA\Property(property="url", type="string", example="http://placeholder"),
+     *                  @OA\Property(property="img_url", type="string", example="http://placeholder"),
+     *                  @OA\Property(property="summary", type="string", example="Summary"),
      *                  @OA\Property(property="durs", type="array", example="{}", @OA\Items()),
      *                  @OA\Property(property="tools", type="array", example="{}", @OA\Items()),
      *                  @OA\Property(property="publications", type="array", example="{}", @OA\Items()),
@@ -524,19 +605,6 @@ class TeamController extends Controller
                 throw new NotFoundException();
             }
             $service = array_filter(explode(",", $team->service));
-
-            $ownedDatasets = Dataset::where(['team_id' => $id, 'status' => Dataset::STATUS_ACTIVE])
-                ->select([
-                    'id','is_cohort_discovery', 'user_id', 'team_id', 'datasetid'
-                ])->get();
-
-            foreach ($ownedDatasets as $dataset) {
-
-                $metadataSummary = $dataset->latestVersion()['metadata']['metadata']['summary'] ?? [];
-                $dataset['title'] = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
-                $dataset['populationSize'] = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], '');
-                $dataset['datasetType'] = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
-            }
 
             // Durs: get all active durs owned by the team and also active durs linked to (all versions of) datasets owned by the team
             $ownedDurs = Dur::where(['team_id' => $id, 'status' => Dur::STATUS_ACTIVE])
@@ -633,13 +701,172 @@ class TeamController extends Controller
                     'name' => $team->name,
                     'member_of' => $team->member_of,
                     'introduction' => $team->introduction,
-                    'datasets' => $ownedDatasets,
                     'durs' => $allDurs,
                     'tools' => $linkedToolsColl,
                     // TODO: need to add in `link_type` from publication_has_dataset table.
                     'publications' => $linkedPublicationsColl,
                     'collections' => $ownedCollectionsColl,
                     'aliases' => $team->aliases,
+                ],
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/teams/{id}/datasets_cohort_discovery",
+     *      summary="TeamController@showCohortDiscovery",
+     *      description="Return whether at least one of a single team's datasets support cohort discovery for use in Data Provider view",
+     *      tags={"Teams"},
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DataProviderColl ID - datasets",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DataProviderColl ID - datasets",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="datasets", type="array", example="{}", @OA\Items()),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function showCohortDiscovery(Request $request, int $id): JsonResponse
+    {
+        try {
+            $team = Team::select('id', 'name', 'member_of', 'is_provider', 'introduction', 'url', 'service', 'team_logo')
+                ->where([
+                    'id' => $id,
+                    'enabled' => 1,
+                ])->with(['aliases' => function ($query) {
+                    $query->select(['id', 'name']);
+                }
+                ])->first();
+
+            if (!$team) {
+                throw new NotFoundException();
+            }
+
+            $ownedDatasets = Dataset::where(['team_id' => $id, 'status' => Dataset::STATUS_ACTIVE])
+                ->select([
+                    'is_cohort_discovery'
+                ])->get();
+
+
+            $supportsCohortDiscovery = in_array(true, array_pluck($ownedDatasets->toArray(), 'is_cohort_discovery'));
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => [
+                    'id' => $team->id,
+                    'supportsCohortDiscovery' => $supportsCohortDiscovery,
+                ],
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/teams/{id}/datasets_summary",
+     *      summary="TeamController@showDatasetsSummary",
+     *      description="Return a single team datasets summary for use in Data Provider view",
+     *      tags={"Teams"},
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DataProviderColl ID - datasets summary",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DataProviderColl ID - datasets summary",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="datasets", type="array", example="{}", @OA\Items()),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function showDatasetsSummary(Request $request, int $id): JsonResponse
+    {
+        try {
+            $timing = false;
+            if ($timing) {
+                $startTime = microtime(true);
+            }
+            $team = Team::select('id', 'name', 'member_of', 'is_provider', 'introduction', 'url', 'service', 'team_logo')
+                ->where([
+                    'id' => $id,
+                    'enabled' => 1,
+                ])->with(['aliases' => function ($query) {
+                    $query->select(['id', 'name']);
+                }
+                ])->first();
+            if ($timing) {
+                $endTime = microtime(true);
+                var_dump('Team fetch time: ' . ($endTime - $startTime) . ' seconds');
+                $startTime = microtime(true);
+            }
+            if (!$team) {
+                throw new NotFoundException();
+            }
+
+            $ownedDatasets = Dataset::where(['team_id' => $id, 'status' => Dataset::STATUS_ACTIVE])
+                ->select([
+                    'id','is_cohort_discovery', 'user_id', 'team_id', 'datasetid'
+                ])->get();
+
+            foreach ($ownedDatasets as $dataset) {
+
+                $metadataSummary = $dataset->latestVersion()['metadata']['metadata']['summary'] ?? [];
+                $dataset['title'] = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
+                $dataset['populationSize'] = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], '');
+                $dataset['datasetType'] = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
+            }
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => [
+                    'id' => $team->id,
+                    'datasets' => $ownedDatasets,
                 ],
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {

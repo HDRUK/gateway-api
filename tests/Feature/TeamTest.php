@@ -187,6 +187,31 @@ class TeamTest extends TestCase
     }
 
     /**
+     * Show info of a team.
+     *
+     * @return void
+     */
+    public function test_the_application_can_show_team_info()
+    {
+        $id = Team::where(['enabled' => 1])->first()->id;
+        $response = $this->get('api/v1/teams/' . $id . '/info', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'is_provider',
+                    'team_logo',
+                    'url',
+                    'service',
+                    'name',
+                    'member_of',
+                    'introduction',
+                    'aliases',
+                ],
+            ]);
+    }
+        /**
      * Show summary of a team.
      *
      * @return void
@@ -204,11 +229,48 @@ class TeamTest extends TestCase
                     'is_provider',
                     'team_logo',
                     'introduction',
-                    'datasets',
                     'durs',
                     'tools',
                     'publications',
                     'collections',
+                ],
+            ]);
+    }
+
+    /**
+     * Show datasets summary of a team.
+     *
+     * @return void
+     */
+    public function test_the_application_can_show_team_datasets_summary()
+    {
+        $id = Team::where(['enabled' => 1])->first()->id;
+        $response = $this->get('api/v1/teams/' . $id . '/datasets_summary', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'datasets',
+                ],
+            ]);
+    }
+
+    /**
+     * Show cohort discovery summary of a team.
+     *
+     * @return void
+     */
+    public function test_the_application_can_show_team_cohort_discovery_summary()
+    {
+        $id = Team::where(['enabled' => 1])->first()->id;
+        $response = $this->get('api/v1/teams/' . $id . '/datasets_cohort_discovery', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'supportsCohortDiscovery',
                 ],
             ]);
     }
