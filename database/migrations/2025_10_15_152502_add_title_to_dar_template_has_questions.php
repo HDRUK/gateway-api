@@ -11,7 +11,7 @@ return new class () extends Migration {
     public function up(): void
     {
         Schema::table('dar_template_has_questions', function (Blueprint $table) {
-            $table->string('question_title');
+            $table->string('question_title')->nullable();
         });
     }
 

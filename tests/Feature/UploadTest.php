@@ -156,7 +156,7 @@ class UploadTest extends TestCase
         ]);
         $response = $this->json(
             'GET',
-            self::TEST_URL . '/processed' . '/' . $uuid,
+            self::TEST_URL . '/processed' . '/' . $uuid . '/download',
             [],
             $this->header
         );
@@ -168,7 +168,7 @@ class UploadTest extends TestCase
         ]);
         $response = $this->json(
             'GET',
-            self::TEST_URL . '/processed' . '/' . $uuid,
+            self::TEST_URL . '/processed' . '/' . $uuid . '/download',
             [],
             $this->header
         );
@@ -180,19 +180,11 @@ class UploadTest extends TestCase
         ]);
         $response = $this->json(
             'GET',
-            self::TEST_URL . '/processed' . '/' . $uuid,
+            self::TEST_URL . '/processed' . '/' . $uuid . '/download',
             [],
             $this->header
         );
-        $response->assertJsonStructure([
-            'message',
-            'data' => [
-                'filename',
-                'content'
-            ]
-        ]);
-        $this->assertEquals($response['message'], 'success');
-        $this->assertNotNull($response['data']['content']);
+        $response->assertStatus(200);
     }
 
     /**
@@ -404,19 +396,11 @@ class UploadTest extends TestCase
         ]);
         $response = $this->json(
             'GET',
-            self::TEST_URL . '/processed' . '/' . $uuid,
+            self::TEST_URL . '/processed' . '/' . $uuid . '/download',
             [],
             $this->header
         );
-        $response->assertJsonStructure([
-            'message',
-            'data' => [
-                'filename',
-                'content'
-            ]
-        ]);
-        $this->assertEquals($response['message'], 'success');
-        $this->assertNotNull($response['data']['content']);
+        $response->assertStatus(200);
 
         // Try accessing as a different user
         $this->authorisationUser(false, 2);

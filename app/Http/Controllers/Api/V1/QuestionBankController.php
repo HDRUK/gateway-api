@@ -930,7 +930,7 @@ class QuestionBankController extends Controller
 
             $this->handleChildren($questionVersion, $input, 1, $jwtUser);
 
-            if ($input['document'] !== null) {
+            if (array_key_exists('document', $input) && $input['documnent'] !== null) {
                 $this->handleDocumentExchange($input['document']['value']['uuid'], $question->id, $input);
             }
 
@@ -1627,7 +1627,7 @@ class QuestionBankController extends Controller
                     'component' => $input['component'],
                     'validations' => empty($input['validations']) ? null : $input['validations'],
                     'options' => array_column($input['options'], 'label'),
-                    'document' => empty($input['document']) ? null : $input['document'],
+                    'document' => array_key_exists("document", $input) ? $input['document'] : null,
                 ],
                 'title' => $input['title'],
                 'guidance' => $input['guidance'],

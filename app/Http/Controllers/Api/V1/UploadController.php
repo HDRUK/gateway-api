@@ -229,7 +229,7 @@ class UploadController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/files/processed/{uuid}",
+     *      path="/api/v1/files/processed/{uuid}/download",
      *      summary="Get the content of a processed file",
      *      description="Get the content of a processed file",
      *      tags={"Upload"},
