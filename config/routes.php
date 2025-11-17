@@ -4117,7 +4117,21 @@ return [
             'id' => '[0-9]+',
         ],
     ],
-
+    [
+        'name' => 'questions',
+        'method' => 'delete',
+        'path' => '/questions/{id}/files/{fileId}',
+        'methodController' => 'QuestionBankController@destroyFile',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.delete',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'fileId' => "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+        ],
+    ],
     // dar/applications
     [
         'name' => 'dar/applications',

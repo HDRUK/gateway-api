@@ -516,15 +516,15 @@ class ScanFileUpload implements ShouldQueue
         }
     }
 
-    private function uploadDocumentExchange(string $loc, Upload $upload): void {
+    private function uploadDocumentExchange(string $loc, Upload $upload): void
+    {
         try {
             $upload->update([
                 'status' => 'PROCESSED',
                 'file_location' => $loc,
                 'entity_type' => 'documentExchange',
             ]);
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             // Record exception in uploads table
             $upload->update([
                 'status' => 'FAILED',

@@ -15,7 +15,6 @@ use App\Models\Dataset;
 use App\Models\Collection;
 use App\Models\Publication;
 use App\Models\TeamHasUser;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
@@ -35,7 +34,6 @@ use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\CheckAccess;
-use App\Models\Alias;
 use App\Models\TeamHasAlias;
 
 class TeamController extends Controller
@@ -582,8 +580,7 @@ class TeamController extends Controller
 
                 if ($user) {
                     $user = $user->toArray();
-                }
-                else {
+                } else {
                     $user = [];
                 }
 

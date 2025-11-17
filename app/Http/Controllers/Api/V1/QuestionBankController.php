@@ -11,7 +11,6 @@ use App\Models\QuestionBank;
 use App\Models\QuestionBankVersion;
 use App\Models\QuestionBankVersionHasChildVersion;
 use App\Models\QuestionHasTeam;
-use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
@@ -24,6 +23,7 @@ use App\Http\Requests\QuestionBank\GetQuestionBankVersion;
 use App\Http\Requests\QuestionBank\UpdateStatusQuestionBank;
 use App\Http\Traits\QuestionBankHelpers;
 use App\Http\Traits\RequestTransformation;
+use Illuminate\Support\Facades\Storage;
 
 class QuestionBankController extends Controller
 {
@@ -737,7 +737,7 @@ class QuestionBankController extends Controller
 
             if ($question) {
                 $questionVersion = $this->getVersion($question);
-
+                //\Log::info($questionVersion);
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'GET',
@@ -931,7 +931,7 @@ class QuestionBankController extends Controller
             $this->handleChildren($questionVersion, $input, 1, $jwtUser);
 
             if ($input['document'] !== null) {
-                $this->handleDocumentExchange($input['document']['value']['id'], $question->id, $input);
+                $this->handleDocumentExchange($input['document']['value']['uuid'], $question->id, $input);
             }
 
             Auditor::log([
@@ -1452,45 +1452,7 @@ class QuestionBankController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
-            $question = QuestionBank::findOrFail($id);
-            if ($question->is_child) {
-                return response()->json([
-                    'message' => 'Cannot delete a child question directly'
-                ], 400);
-            }
-
-            // TODO: handle locking?
-
-            // For each version of this question, check its children.
-            // - Delete all versions of all child question versions and their associated questions,
-            //   and their QuestionBankVersionHasChildVersion relationship entries,
-            //   along with the QuestionHasTeam entries
-            //
-            // Then delete each version of the question being requested, then the question
-            //   itself, and its associated QuestionHasTeam entries
-            $questionVersions = $question->versions()->get();
-
-            foreach ($questionVersions as $version) {
-                // delete each version's child question versions and their associated QuestionBank and QuestionHasTeam entries
-                $childVersions = $version->childVersions;
-                foreach ($childVersions as $childVersion) {
-                    // Delete association of child version's question to teams
-                    QuestionHasTeam::where('qb_question_id', $childVersion->question_id)->delete();
-                    // Delete child version's question's versions
-                    QuestionBankVersion::where('id', $childVersion->id)->delete();
-                    // Delete child version's question
-                    QuestionBank::where('id', $childVersion->question_id)->delete();
-                }
-                // delete parent-child records from relationship table
-                QuestionBankVersionHasChildVersion::where('parent_qbv_id', $version->id)->delete();
-                // delete each version
-                QuestionBankVersion::where('id', $version->id)->delete();
-
-            };
-            // delete the requested question
-            QuestionBank::where('id', $id)->delete();
-            // delete QuestionHasTeam entries for the requested question
-            QuestionHasTeam::where('qb_question_id', $id)->delete();
+            $this->deleteQuestion($id);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1515,8 +1477,153 @@ class QuestionBankController extends Controller
         }
     }
 
+    /**
+     * @OA\Delete(
+     *      path="/api/v1/questions/{id}/files/{fileId}",
+     *      summary="Delete a file attached to a question bank question",
+     *      description="Delete a system question bank question",
+     *      tags={"QuestionBank"},
+     *      summary="QuestionBank@destroyFile",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="question bank question id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="question bank question id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="file uuid",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="question bank question id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *           ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function destroyFile(Request $request, int $id, string $fileId)
+    {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $file = Upload::where("uuid", $fileId)->firstOrFail();
+
+            // Verify the file belongs to the question
+            if ($file->entity_id === $id) {
+
+                $this->deleteQuestion($id);
+                $fileDeleted = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '_scanned')
+                    ->delete($file->file_location);
+
+                if (!$fileDeleted) {
+                    throw new Exception("Deleting file id " . $fileId . "failed. ");
+                }
+
+                $dbRowDeleted = $file->delete();
+
+                if (!$dbRowDeleted) {
+                    throw new Exception("Deleting db row for file id " . $fileId . "failed. ");
+                }
+
+                Auditor::log([
+                    'action_type' => 'DELETE',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'File ' . $file->file_location . ' deleted',
+                ]);
+
+                if ($fileDeleted && $dbRowDeleted) {
+                    return response()->json([
+                        'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    ]);
+                }
+            } else {
+                throw new UnauthorizedException("File id " . $fileId . " does not belong to question");
+            }
+
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    private function deleteQuestion($id)
+    {
+        $question = QuestionBank::findOrFail($id);
+        if ($question->is_child) {
+            throw new Exception("Cannot delete a child question directly");
+        }
+
+        // TODO: handle locking?
+
+        // For each version of this question, check its children.
+        // - Delete all versions of all child question versions and their associated questions,
+        //   and their QuestionBankVersionHasChildVersion relationship entries,
+        //   along with the QuestionHasTeam entries
+        //
+        // Then delete each version of the question being requested, then the question
+        //   itself, and its associated QuestionHasTeam entries
+        $questionVersions = $question->versions()->get();
+
+        foreach ($questionVersions as $version) {
+            // delete each version's child question versions and their associated QuestionBank and QuestionHasTeam entries
+            $childVersions = $version->childVersions;
+            foreach ($childVersions as $childVersion) {
+                // Delete association of child version's question to teams
+                QuestionHasTeam::where('qb_question_id', $childVersion->question_id)->delete();
+                // Delete child version's question's versions
+                QuestionBankVersion::where('id', $childVersion->id)->delete();
+                // Delete child version's question
+                QuestionBank::where('id', $childVersion->question_id)->delete();
+            }
+            // delete parent-child records from relationship table
+            QuestionBankVersionHasChildVersion::where('parent_qbv_id', $version->id)->delete();
+            // delete each version
+            QuestionBankVersion::where('id', $version->id)->delete();
+
+        };
+        // delete the requested question
+        QuestionBank::where('id', $id)->delete();
+        // delete QuestionHasTeam entries for the requested question
+        QuestionHasTeam::where('qb_question_id', $id)->delete();
+    }
+
     private function createVersion($input, $question, $version)
     {
+        \Log::info($input);
         $questionVersion = QuestionBankVersion::create([
             'question_json' => [
                 'field' => [
@@ -1734,11 +1841,12 @@ class QuestionBankController extends Controller
         }
     }
 
-    private function handleDocumentExchange(int $fileId, int $questionId, array $input) {
+    private function handleDocumentExchange(string $fileId, int $questionId, array $input)
+    {
         // The file for the document exchange will currently have a null entityid
         // so we update it to belong to the question
-        $file = Upload::where('id', $fileId)->firstOrFail();
-        
+        $file = Upload::where('uuid', $fileId)->firstOrFail();
+
         // Stop the user updating any random file
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 

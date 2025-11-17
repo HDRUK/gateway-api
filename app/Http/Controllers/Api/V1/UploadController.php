@@ -12,7 +12,6 @@ use App\Models\Upload;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Exceptions\UnauthorizedException;
 
 class UploadController extends Controller
 {
@@ -317,7 +316,7 @@ class UploadController extends Controller
         }
     }
 
-        /**
+    /**
      * @OA\Delete(
      *      path="/api/v1/files/processed/{id}",
      *      summary="Delete a processed file",
@@ -328,11 +327,11 @@ class UploadController extends Controller
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="file id",
+     *         description="file uuid",
      *         required=true,
      *         example="1",
      *         @OA\Schema(
-     *            type="integer",
+     *            type="string",
      *            description="file id",
      *         ),
      *      ),
@@ -359,12 +358,13 @@ class UploadController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $id) {
+    public function destroy(Request $request, string $id)
+    {
 
         try {
-            $file = Upload::findOrFail($id);
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $file = Upload::where("uuid", $id)->firstOrFail();
 
             if ($file->user_id === $jwtUser['id']) {
                 $fileDeleted = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '_scanned')
@@ -390,9 +390,8 @@ class UploadController extends Controller
                     return response()->json([
                         'message' => Config::get('statuscodes.STATUS_OK.message'),
                     ]);
-                } 
-            }
-            else {
+                }
+            } else {
                 throw new UnauthorizedException("File id " . $id . " does not belong to user");
             }
 
