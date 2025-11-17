@@ -166,7 +166,7 @@ class TeamDatasetController extends Controller
                 // and overwrite with out minimal version
                 unset($d['latest_metadata']);
                 unset($d['latestMetadata']);
-                
+
                 $d['latest_metadata'] = $miniMetadata;
             }
 
