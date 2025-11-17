@@ -138,6 +138,8 @@ class TeamDatasetController extends Controller
                 ->applySorting()
                 ->paginate((int) $perPage, ['*'], 'page');
 
+            $metadataMissing = false;
+
 
             foreach ($datasets as $key => & $d) {
 
@@ -145,6 +147,7 @@ class TeamDatasetController extends Controller
                     // this needs refactoring to mark the metadata as corrupt or missing and
                     // then set them as draft and alert the FE
                     unset($datasets[$key]);
+                    $metadataMissing = true;
                     continue;
                 }
 
@@ -163,7 +166,7 @@ class TeamDatasetController extends Controller
                 // and overwrite with out minimal version
                 unset($d['latest_metadata']);
                 unset($d['latestMetadata']);
-
+                
                 $d['latest_metadata'] = $miniMetadata;
             }
 
@@ -172,6 +175,14 @@ class TeamDatasetController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'Team Dataset get all by status',
             ]);
+
+            if ($metadataMissing) {
+                // force reindex of collection
+                $datasets->setCollection(
+                    $datasets->getCollection()->values()
+                );
+            }
+
             return response()->json(
                 $datasets
             );
