@@ -12,6 +12,7 @@ use App\Models\Upload;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class UploadController extends Controller
 {
@@ -258,7 +259,7 @@ class UploadController extends Controller
      *      )
      * )
      */
-    public function content(Request $request, string $uuid): JsonResponse
+    public function content(Request $request, string $uuid): StreamedResponse | JsonResponse
     {
         try {
             $input = $request->all();
@@ -289,21 +290,14 @@ class UploadController extends Controller
                     'message' => 'File failed scan, content cannot be retrieved'
                 ]);
             } else {
-                $contents = Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
-                    ->get($upload->file_location);
-
                 Auditor::log([
                     'action_type' => 'GET',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Get uploaded file content: ' . $upload->file_location,
                 ]);
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                    'data' => [
-                        'filename' => $upload->filename,
-                        'content' => $contents
-                    ]
-                ]);
+
+                return Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
+                        ->download($upload->file_location);
             }
         } catch (Exception $e) {
             Auditor::log([
@@ -316,7 +310,7 @@ class UploadController extends Controller
         }
     }
 
-    /**
+        /**
      * @OA\Delete(
      *      path="/api/v1/files/processed/{id}",
      *      summary="Delete a processed file",
@@ -358,8 +352,7 @@ class UploadController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, string $id)
-    {
+    public function destroy(Request $request, string $id) {
 
         try {
             $input = $request->all();
@@ -367,7 +360,7 @@ class UploadController extends Controller
             $file = Upload::where("uuid", $id)->firstOrFail();
 
             if ($file->user_id === $jwtUser['id']) {
-                $fileDeleted = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '_scanned')
+                $fileDeleted = Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
                     ->delete($file->file_location);
 
                 if (!$fileDeleted) {
@@ -390,8 +383,9 @@ class UploadController extends Controller
                     return response()->json([
                         'message' => Config::get('statuscodes.STATUS_OK.message'),
                     ]);
-                }
-            } else {
+                } 
+            }
+            else {
                 throw new UnauthorizedException("File id " . $id . " does not belong to user");
             }
 

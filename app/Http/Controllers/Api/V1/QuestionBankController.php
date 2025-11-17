@@ -1532,6 +1532,7 @@ class QuestionBankController extends Controller
      */
     public function destroyFile(Request $request, int $id, string $fileId)
     {
+        $fileSystem = config('gateway.scanning_filesystem_disk', 'local_scan');
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -1541,7 +1542,7 @@ class QuestionBankController extends Controller
             if ($file->entity_id === $id) {
 
                 $this->deleteQuestion($id);
-                $fileDeleted = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '_scanned')
+                $fileDeleted = Storage::disk($fileSystem . '_scanned')
                     ->delete($file->file_location);
 
                 if (!$fileDeleted) {

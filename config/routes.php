@@ -3808,7 +3808,7 @@ return [
     [
         'name' => 'uploads',
         'method' => 'get',
-        'path' => '/files/processed/{id}',
+        'path' => '/files/processed/{id}/download',
         'methodController' => 'UploadController@content',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
