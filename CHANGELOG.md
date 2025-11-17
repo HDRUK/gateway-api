@@ -1,3 +1,9 @@
+## [2.27.2](https://github.com/HDRUK/gateway-api/compare/v2.27.1...v2.27.2) (2025-11-13)
+
+### 🐛 Bug Fixes
+
+* **GAT-8187:** User call memory issue (#1461) ([9168419](https://github.com/HDRUK/gateway-api/commit/916841930c8d32d595633fb59a4556044b3471b9)), closes [GAT-8187](GAT-8187)
+
 ## [2.27.1](https://github.com/HDRUK/gateway-api/compare/v2.27.0...v2.27.1) (2025-11-11)
 
 ### 🐛 Bug Fixes
