@@ -1452,7 +1452,46 @@ class QuestionBankController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
-            $this->deleteQuestion($id);
+            $question = QuestionBank::findOrFail($id);
+            if ($question->is_child) {
+                throw new Exception("Cannot delete a child question directly");
+            }
+
+            // TODO: handle locking?
+
+            // For each version of this question, check its children.
+            // - Delete all versions of all child question versions and their associated questions,
+            //   and their QuestionBankVersionHasChildVersion relationship entries,
+            //   along with the QuestionHasTeam entries
+            //
+            // Then delete each version of the question being requested, then the question
+            //   itself, and its associated QuestionHasTeam entries
+            $questionVersions = $question->versions()->get();
+
+            foreach ($questionVersions as $version) {
+                // delete each version's child question versions and their associated QuestionBank and QuestionHasTeam entries
+                $childVersions = $version->childVersions;
+
+                // TODO: Check if it has a file associated
+                \Log::info($version);
+                foreach ($childVersions as $childVersion) {
+                    // Delete association of child version's question to teams
+                    QuestionHasTeam::where('qb_question_id', $childVersion->question_id)->delete();
+                    // Delete child version's question's versions
+                    QuestionBankVersion::where('id', $childVersion->id)->delete();
+                    // Delete child version's question
+                    QuestionBank::where('id', $childVersion->question_id)->delete();
+                }
+                // delete parent-child records from relationship table
+                QuestionBankVersionHasChildVersion::where('parent_qbv_id', $version->id)->delete();
+                // delete each version
+                QuestionBankVersion::where('id', $version->id)->delete();
+
+            };
+            // delete the requested question
+            QuestionBank::where('id', $id)->delete();
+            // delete QuestionHasTeam entries for the requested question
+            QuestionHasTeam::where('qb_question_id', $id)->delete();
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1541,7 +1580,6 @@ class QuestionBankController extends Controller
             // Verify the file belongs to the question
             if ($file->entity_id === $id) {
 
-                $this->deleteQuestion($id);
                 $fileDeleted = Storage::disk($fileSystem . '_scanned')
                     ->delete($file->file_location);
 
@@ -1581,50 +1619,8 @@ class QuestionBankController extends Controller
         }
     }
 
-    private function deleteQuestion($id)
-    {
-        $question = QuestionBank::findOrFail($id);
-        if ($question->is_child) {
-            throw new Exception("Cannot delete a child question directly");
-        }
-
-        // TODO: handle locking?
-
-        // For each version of this question, check its children.
-        // - Delete all versions of all child question versions and their associated questions,
-        //   and their QuestionBankVersionHasChildVersion relationship entries,
-        //   along with the QuestionHasTeam entries
-        //
-        // Then delete each version of the question being requested, then the question
-        //   itself, and its associated QuestionHasTeam entries
-        $questionVersions = $question->versions()->get();
-
-        foreach ($questionVersions as $version) {
-            // delete each version's child question versions and their associated QuestionBank and QuestionHasTeam entries
-            $childVersions = $version->childVersions;
-            foreach ($childVersions as $childVersion) {
-                // Delete association of child version's question to teams
-                QuestionHasTeam::where('qb_question_id', $childVersion->question_id)->delete();
-                // Delete child version's question's versions
-                QuestionBankVersion::where('id', $childVersion->id)->delete();
-                // Delete child version's question
-                QuestionBank::where('id', $childVersion->question_id)->delete();
-            }
-            // delete parent-child records from relationship table
-            QuestionBankVersionHasChildVersion::where('parent_qbv_id', $version->id)->delete();
-            // delete each version
-            QuestionBankVersion::where('id', $version->id)->delete();
-
-        };
-        // delete the requested question
-        QuestionBank::where('id', $id)->delete();
-        // delete QuestionHasTeam entries for the requested question
-        QuestionHasTeam::where('qb_question_id', $id)->delete();
-    }
-
     private function createVersion($input, $question, $version)
     {
-        \Log::info($input);
         $questionVersion = QuestionBankVersion::create([
             'question_json' => [
                 'field' => [

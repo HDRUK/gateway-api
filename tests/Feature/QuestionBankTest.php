@@ -9,6 +9,7 @@ use App\Models\QuestionHasTeam;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\UploadedFile;
 
 class QuestionBankTest extends TestCase
 {
@@ -1846,6 +1847,73 @@ class QuestionBankTest extends TestCase
             ]);
 
         $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore);
+
+    }
+    
+    /**
+     * 
+     *
+     * @return void
+     */
+    public function test_document_exchange()
+    {
+        $file = new UploadedFile(
+            getcwd() . '/tests/Unit/test_files/test_file.csv',
+            'test_file.csv',
+        );
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'options' => [],
+                'all_custodians' => true,
+                'component' => 'TextArea',
+                'validations' => [
+                    'min' => 1,
+                    'message' => 'Please enter a value'
+                ],
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+                'document' => $file,
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $content = $response->decodeResponseJson();
+
+        $response = $this->get('api/v1/questions/' . $content['data'], $this->header);
+        $questionVersionId = $response->decodeResponseJson()['data']['version_id'];
+
+        $response = $this->get('api/v1/questions/version/' . $questionVersionId, $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'question_id',
+                    'version',
+                    'default',
+                    'required',
+                    'question_json',
+                ],
+            ]);
+
 
     }
 }
