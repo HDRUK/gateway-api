@@ -930,7 +930,7 @@ class QuestionBankController extends Controller
 
             $this->handleChildren($questionVersion, $input, 1, $jwtUser);
 
-            if (array_key_exists('document', $input) && $input['documnent'] !== null) {
+            if (array_key_exists('document', $input) && $input['document'] !== null) {
                 $this->handleDocumentExchange($input['document']['value']['uuid'], $question->id, $input);
             }
 

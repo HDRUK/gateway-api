@@ -1861,6 +1861,23 @@ class QuestionBankTest extends TestCase
             getcwd() . '/tests/Unit/test_files/test_file.csv',
             'test_file.csv',
         );
+
+        $response = $this->json(
+            'POST',
+            'api/v1/files?entity_flag=document-exchange',
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        $response->assertStatus(200);
+        $uploadId = $response->decodeResponseJson()['data']['uuid'];
+        $filename = $response->decodeResponseJson()['data']['filename'];
+
         $response = $this->json(
             'POST',
             'api/v1/questions',
@@ -1871,22 +1888,17 @@ class QuestionBankTest extends TestCase
                 'allow_guidance_override' => 1,
                 'options' => [],
                 'all_custodians' => true,
-                'component' => 'TextArea',
-                'validations' => [
-                    'min' => 1,
-                    'message' => 'Please enter a value'
-                ],
+                'component' => 'DocumentExchange',
                 'title' => 'Test question',
                 'guidance' => 'Something helpful',
                 'required' => 0,
                 'default' => 0,
                 'version' => 1,
                 'is_child' => 0,
-                'document' => $file,
+                'document' => ["value" => ["uuid" => $uploadId, "filename" => $filename]],
             ],
             $this->header
         );
-
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
                 'message',
@@ -1898,7 +1910,7 @@ class QuestionBankTest extends TestCase
         $questionVersionId = $response->decodeResponseJson()['data']['version_id'];
 
         $response = $this->get('api/v1/questions/version/' . $questionVersionId, $this->header);
-
+        dd($response->getContent());
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [
