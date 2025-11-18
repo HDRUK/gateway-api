@@ -1908,9 +1908,10 @@ class QuestionBankTest extends TestCase
 
         $response = $this->get('api/v1/questions/' . $content['data'], $this->header);
         $questionVersionId = $response->decodeResponseJson()['data']['version_id'];
+        $questionId = $response->decodeResponseJson()['data']['question_id'];
 
         $response = $this->get('api/v1/questions/version/' . $questionVersionId, $this->header);
-        dd($response->getContent());
+
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [
@@ -1924,6 +1925,18 @@ class QuestionBankTest extends TestCase
                     'required',
                     'question_json',
                 ],
+            ]);
+
+        // Can we delete the file?
+        $response = $this->json(
+            'DELETE',
+            'api/v1/questions/'. $questionId . '/files/' . $uploadId,
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
             ]);
 
 

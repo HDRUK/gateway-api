@@ -359,12 +359,18 @@ class UploadController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $file = Upload::where("uuid", $id)->firstOrFail();
 
+            // Stuff with an entity id should be deleted via other methods to handle
+            // data inconsistency
+            if (!is_null($file->entity_id)) {
+                throw new Exception("File belongs to an entity and so should be deleted via that method");
+            }
+
             if ($file->user_id === $jwtUser['id']) {
                 $fileDeleted = Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
                     ->delete($file->file_location);
 
                 if (!$fileDeleted) {
-                    throw new Exception("Deleting file id " . $id . "failed. ");
+                    throw new Exception("Deleting file id " . $id . "failed.");
                 }
 
                 $dbRowDeleted = $file->delete();
