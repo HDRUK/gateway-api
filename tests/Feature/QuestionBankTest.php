@@ -1849,9 +1849,9 @@ class QuestionBankTest extends TestCase
         $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore);
 
     }
-    
+
     /**
-     * 
+     *
      *
      * @return void
      */
@@ -1926,6 +1926,10 @@ class QuestionBankTest extends TestCase
                     'question_json',
                 ],
             ]);
+
+        // Can we download the file?
+        $response = $this->get('api/v1/questions/' . $questionId . '/files/' . $uploadId, $this->header);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // Can we delete the file?
         $response = $this->json(

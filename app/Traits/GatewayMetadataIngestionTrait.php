@@ -107,7 +107,7 @@ trait GatewayMetadataIngestionTrait
                     'team_id' => $teamId,
                     'create_origin' => 'GMI',
                 ])->first();
-                
+
                 if (!$ds) {
                     $this->log('info', "dataset with PID {$pid} was expected locally but not found in DB — skipping deletion. This is likely a missmatch of team ids, team id on the incoming dataset: {$teamId}");
                     continue;

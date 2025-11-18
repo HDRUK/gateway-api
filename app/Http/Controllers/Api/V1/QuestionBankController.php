@@ -1517,10 +1517,97 @@ class QuestionBankController extends Controller
     }
 
     /**
-     * @OA\Delete(
+     * @OA\Get(
      *      path="/api/v1/questions/{id}/files/{fileId}",
      *      summary="Delete a file attached to a question bank question",
      *      description="Delete a system question bank question",
+     *      tags={"QuestionBank"},
+     *      summary="QuestionBank@destroyFile",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="question bank question id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="question bank question id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="file uuid",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="question bank question id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *           ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function downloadFile(Request $request, int $id, string $fileId)
+    {
+        $fileSystem = config('gateway.scanning_filesystem_disk', 'local_scan');
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $file = Upload::where("uuid", $fileId)->firstOrFail();
+
+            // Verify the file belongs to the question
+            if ($file->entity_id === $id) {
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'QuestionBank get all',
+                ]);
+
+                return Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
+                        ->download($file->file_location);
+            } else {
+                throw new UnauthorizedException("File id " . $fileId . " does not belong to question");
+            }
+
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *      path="/api/v1/questions/{id}/files/{fileId}",
+     *      summary="Delete a file attached to a question bank question",
+     *      description="Delete a file attached to a question bank question",
      *      tags={"QuestionBank"},
      *      summary="QuestionBank@destroyFile",
      *      security={{"bearerAuth":{}}},

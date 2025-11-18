@@ -310,7 +310,7 @@ class UploadController extends Controller
         }
     }
 
-        /**
+    /**
      * @OA\Delete(
      *      path="/api/v1/files/processed/{id}",
      *      summary="Delete a processed file",
@@ -352,7 +352,8 @@ class UploadController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, string $id) {
+    public function destroy(Request $request, string $id)
+    {
 
         try {
             $input = $request->all();
@@ -389,9 +390,8 @@ class UploadController extends Controller
                     return response()->json([
                         'message' => Config::get('statuscodes.STATUS_OK.message'),
                     ]);
-                } 
-            }
-            else {
+                }
+            } else {
                 throw new UnauthorizedException("File id " . $id . " does not belong to user");
             }
 
