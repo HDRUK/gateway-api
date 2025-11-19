@@ -1978,6 +1978,34 @@ class QuestionBankTest extends TestCase
         $response = $this->get('api/v1/questions/' . $questionId . '/files/' . $uploadId, $this->header);
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
+        // Test PUT
+        $response = $this->json(
+            'PUT',
+            'api/v1/questions/' . $questionId,
+            [
+                'section_id' => 2,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'options' => [],
+                'all_custodians' => true,
+                'component' => 'DocumentExchange',
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+                'document' => ["value" => ["uuid" => $uploadId, "filename" => $filename]],
+            ],
+            $this->header
+        );
+
+        $response = $this->get('api/v1/questions/' . $questionId, $this->header);
+        $response->assertStatus(200);
+        $document = $response->decodeResponseJson()['data']['document'];
+        $this->assertEquals($uploadId, $document['value']['uuid']);
+
         // Try to delete the question
         $response = $this->json(
             'DELETE',
