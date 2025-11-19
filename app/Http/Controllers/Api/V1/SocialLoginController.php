@@ -173,9 +173,7 @@ class SocialLoginController extends Controller
                  Log::info('<<<<<< app'.config('app.env'));
                 if (config('app.env') !== 'local') {
                     $providerURL = str_replace(config('app.url').'/api/v1/auth', config('services.dta.api_url').'/api/v1/auth/dta', $providerURL);
-                    $providerURLTWO = str_replace(env('APP_URL').'/api/v1/auth', env('DTA_API_URL').'/api/v1/auth/dta', $providerURL);
                     Log::info('<<<<<< providerURL'.$providerURL);
-                    Log::info('<<<<<< providerURL'.$$providerURLTWO);
                 }
 
                 return Socialite::driver($provider)
