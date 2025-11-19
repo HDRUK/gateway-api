@@ -50,7 +50,6 @@ trait QuestionBankHelpers
             $questionVersion[$key] = $value;
         }
         unset($questionVersion['question_json']);
-        \Log::info("", array($questionVersion));
 
         $options = [];
 
