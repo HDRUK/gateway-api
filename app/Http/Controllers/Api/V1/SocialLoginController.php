@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Cookie;
 use App\Http\Controllers\JwtController;
 use Laravel\Socialite\Facades\Socialite;
 use Jumbojett\OpenIDConnectClient;
-use Illuminate\Support\Facades\Log;
+
 
 class SocialLoginController extends Controller
 {
@@ -170,10 +170,8 @@ class SocialLoginController extends Controller
             }
             if ($isDTA) {
                 $providerURL = config("services.$provider.redirect");
-                 Log::info('<<<<<< app'.config('app.env'));
                 if (config('app.env') !== 'local') {
                     $providerURL = str_replace(config('app.url').'/api/v1/auth', config('services.dta.api_url').'/api/v1/auth/dta', $providerURL);
-                    Log::info('<<<<<< providerURL'.$providerURL);
                 }
 
                 return Socialite::driver($provider)
