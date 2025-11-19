@@ -428,7 +428,6 @@ class DataAccessTemplateController extends Controller
             ]);
 
             if (isset($input['questions'])) {
-                \Log::info($input['questions']);
                 $this->insertTemplateHasQuestions($input['questions'], $template, $input['team_id']);
             }
 

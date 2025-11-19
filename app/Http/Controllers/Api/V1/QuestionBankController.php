@@ -737,7 +737,6 @@ class QuestionBankController extends Controller
 
             if ($question) {
                 $questionVersion = $this->getVersion($question);
-                //\Log::info($questionVersion);
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'GET',
@@ -1232,6 +1231,7 @@ class QuestionBankController extends Controller
                 'guidance',
                 'required',
                 'default',
+                'document',
             ];
             $inputVersionKeys = array_intersect($versionKeys, array_keys($input));
 
@@ -1246,6 +1246,7 @@ class QuestionBankController extends Controller
                             'validations' => $input['validations'] ?? $latestJson['field']['validations'],
                             'options' => isset($input['options']) ?
                                 array_column($input['options'], 'label') : $latestJson['field']['options'],
+                            'document' => array_key_exists("document", $input) ? $input['document'] : null,
                         ],
                         'title' => $input['title'] ?? $latestJson['title'],
                         'guidance' => $input['guidance'] ?? $latestJson['guidance'],
@@ -1472,8 +1473,6 @@ class QuestionBankController extends Controller
                 // delete each version's child question versions and their associated QuestionBank and QuestionHasTeam entries
                 $childVersions = $version->childVersions;
 
-                // TODO: Check if it has a file associated
-                \Log::info($version);
                 foreach ($childVersions as $childVersion) {
                     // Delete association of child version's question to teams
                     QuestionHasTeam::where('qb_question_id', $childVersion->question_id)->delete();
@@ -1519,8 +1518,8 @@ class QuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/questions/{id}/files/{fileId}",
-     *      summary="Delete a file attached to a question bank question",
-     *      description="Delete a system question bank question",
+     *      summary="Download a file attached to a question bank question",
+     *      description="Download a system question bank question",
      *      tags={"QuestionBank"},
      *      summary="QuestionBank@destroyFile",
      *      security={{"bearerAuth":{}}},
@@ -1543,7 +1542,7 @@ class QuestionBankController extends Controller
      *         example="1",
      *         @OA\Schema(
      *            type="integer",
-     *            description="question bank question id",
+     *            description="file uuid",
      *         ),
      *      ),
      *      @OA\Response(
@@ -1588,109 +1587,6 @@ class QuestionBankController extends Controller
 
                 return Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
                         ->download($file->file_location);
-            } else {
-                throw new UnauthorizedException("File id " . $fileId . " does not belong to question");
-            }
-
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Delete(
-     *      path="/api/v1/questions/{id}/files/{fileId}",
-     *      summary="Delete a file attached to a question bank question",
-     *      description="Delete a file attached to a question bank question",
-     *      tags={"QuestionBank"},
-     *      summary="QuestionBank@destroyFile",
-     *      security={{"bearerAuth":{}}},
-     *      @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         description="question bank question id",
-     *         required=true,
-     *         example="1",
-     *         @OA\Schema(
-     *            type="integer",
-     *            description="question bank question id",
-     *         ),
-     *      ),
-     *      @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         description="file uuid",
-     *         required=true,
-     *         example="1",
-     *         @OA\Schema(
-     *            type="integer",
-     *            description="question bank question id",
-     *         ),
-     *      ),
-     *      @OA\Response(
-     *          response=404,
-     *          description="Not found response",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="not found")
-     *           ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Success",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="success")
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=500,
-     *          description="Error",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="error")
-     *          )
-     *      )
-     * )
-     */
-    public function destroyFile(Request $request, int $id, string $fileId)
-    {
-        $fileSystem = config('gateway.scanning_filesystem_disk', 'local_scan');
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            $file = Upload::where("uuid", $fileId)->firstOrFail();
-
-            // Verify the file belongs to the question
-            if ($file->entity_id === $id) {
-
-                $fileDeleted = Storage::disk($fileSystem . '_scanned')
-                    ->delete($file->file_location);
-
-                if (!$fileDeleted) {
-                    throw new Exception("Deleting file id " . $fileId . "failed. ");
-                }
-
-                $dbRowDeleted = $file->delete();
-
-                if (!$dbRowDeleted) {
-                    throw new Exception("Deleting db row for file id " . $fileId . "failed. ");
-                }
-
-                Auditor::log([
-                    'action_type' => 'DELETE',
-                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'File ' . $file->file_location . ' deleted',
-                ]);
-
-                if ($fileDeleted && $dbRowDeleted) {
-                    return response()->json([
-                        'message' => Config::get('statuscodes.STATUS_OK.message'),
-                    ]);
-                }
             } else {
                 throw new UnauthorizedException("File id " . $fileId . " does not belong to question");
             }

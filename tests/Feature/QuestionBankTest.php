@@ -10,6 +10,7 @@ use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\UploadedFile;
+use function PHPUnit\Framework\assertEquals;
 
 class QuestionBankTest extends TestCase
 {
@@ -1877,7 +1878,7 @@ class QuestionBankTest extends TestCase
         $response->assertStatus(200);
         $uploadId = $response->decodeResponseJson()['data']['uuid'];
         $filename = $response->decodeResponseJson()['data']['filename'];
-
+        \Log::info($uploadId);
         $response = $this->json(
             'POST',
             'api/v1/questions',
@@ -1927,22 +1928,56 @@ class QuestionBankTest extends TestCase
                 ],
             ]);
 
+        $questionJson = $response->decodeResponseJson()['data']['question_json'];
+        $this->assertEquals($uploadId, $questionJson['field']['document']['value']['uuid']);
+
         // Can we download the file?
         $response = $this->get('api/v1/questions/' . $questionId . '/files/' . $uploadId, $this->header);
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
-        // Can we delete the file?
+        // Can we update the document?
+
+        // Create a second file
+        $file2 = new UploadedFile(
+            getcwd() . '/tests/Unit/test_files/test_file.csv',
+            'test_file.csv',
+        );
+
         $response = $this->json(
-            'DELETE',
-            'api/v1/questions/'. $questionId . '/files/' . $uploadId,
-            [],
+            'POST',
+            'api/v1/files?entity_flag=document-exchange',
+            [
+                'file' => $file2
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        $response->assertStatus(200);
+        $upload2Id = $response->decodeResponseJson()['data']['uuid'];
+        $filename2 = $response->decodeResponseJson()['data']['filename'];
+        \Log::info($upload2Id);
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/questions/' . $questionId,
+            [
+                'document' => ["value" => ["uuid" => $upload2Id, "filename" => $filename2]],
+            ],
             $this->header
         );
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-            ->assertJsonStructure([
-                'message',
-            ]);
 
+        $response->assertStatus(200);
 
+        $response = $this->get('api/v1/questions/' . $questionId, $this->header);
+        $response->assertStatus(200);
+        $document = $response->decodeResponseJson()['data']['document'];
+        $this->assertEquals($upload2Id, $document['value']['uuid']);
+
+        // Can we download the file?
+        $response = $this->get('api/v1/questions/' . $questionId . '/files/' . $uploadId, $this->header);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
     }
 }
