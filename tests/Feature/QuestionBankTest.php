@@ -10,7 +10,6 @@ use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\UploadedFile;
-use function PHPUnit\Framework\assertEquals;
 
 class QuestionBankTest extends TestCase
 {
