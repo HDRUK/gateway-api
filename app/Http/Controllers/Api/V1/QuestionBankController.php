@@ -1271,6 +1271,10 @@ class QuestionBankController extends Controller
                 }
             }
 
+            if (array_key_exists('document', $input) && $input['document'] !== null) {
+                $this->handleDocumentExchange($input['document']['value']['uuid'], $question->id, $input);
+            }
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
@@ -1458,6 +1462,10 @@ class QuestionBankController extends Controller
                 throw new Exception("Cannot delete a child question directly");
             }
 
+            // Delete associated document exhange files
+            Upload::where(["entity_id" => $question->id,
+                           "entity_type" => "documentExchange"])->delete();
+
             // TODO: handle locking?
 
             // For each version of this question, check its children.
@@ -1480,6 +1488,9 @@ class QuestionBankController extends Controller
                     QuestionBankVersion::where('id', $childVersion->id)->delete();
                     // Delete child version's question
                     QuestionBank::where('id', $childVersion->question_id)->delete();
+                    // Delete associated document exhange files
+                    Upload::where(["entity_id" => $childVersion->question_id,
+                           "entity_type" => "documentExchange"])->delete();
                 }
                 // delete parent-child records from relationship table
                 QuestionBankVersionHasChildVersion::where('parent_qbv_id', $version->id)->delete();

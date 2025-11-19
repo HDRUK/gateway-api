@@ -1864,7 +1864,7 @@ class QuestionBankTest extends TestCase
 
         $response = $this->json(
             'POST',
-            'api/v1/files?entity_flag=document-exchange',
+            'api/v1/files?entity_flag=document-exchange-upload',
             [
                 'file' => $file
             ],
@@ -1877,7 +1877,7 @@ class QuestionBankTest extends TestCase
         $response->assertStatus(200);
         $uploadId = $response->decodeResponseJson()['data']['uuid'];
         $filename = $response->decodeResponseJson()['data']['filename'];
-        \Log::info($uploadId);
+
         $response = $this->json(
             'POST',
             'api/v1/questions',
@@ -1944,7 +1944,7 @@ class QuestionBankTest extends TestCase
 
         $response = $this->json(
             'POST',
-            'api/v1/files?entity_flag=document-exchange',
+            'api/v1/files?entity_flag=document-exchange-upload',
             [
                 'file' => $file2
             ],
@@ -1957,7 +1957,6 @@ class QuestionBankTest extends TestCase
         $response->assertStatus(200);
         $upload2Id = $response->decodeResponseJson()['data']['uuid'];
         $filename2 = $response->decodeResponseJson()['data']['filename'];
-        \Log::info($upload2Id);
 
         $response = $this->json(
             'PATCH',
@@ -1978,5 +1977,20 @@ class QuestionBankTest extends TestCase
         // Can we download the file?
         $response = $this->get('api/v1/questions/' . $questionId . '/files/' . $uploadId, $this->header);
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // Try to delete the question
+        $response = $this->json(
+            'DELETE',
+            'api/v1/questions/' . $questionId,
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response = $this->get('api/v1/questions/' . $questionId, $this->header);
+        $response->assertStatus(500);
+
+        // Verify it has deleted the files
+        $response = $this->get('api/v1/files/' . $upload2Id, $this->header);
+        $response->assertStatus(500);
     }
 }
