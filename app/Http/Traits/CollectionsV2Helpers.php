@@ -137,6 +137,9 @@ trait CollectionsV2Helpers
         if (count($collectionHasDatasetVersions)) {
             $collectionHasDatasetVersionIds = array_unique(convertArrayToArrayWithKeyName($collectionHasDatasetVersions, 'dataset_version_id'));
         }
+        // Batch process this to avoid too many elastic reindexes
+        $arrCreateCollectionHasDatasetVersion = [];
+        $arrDeleteCollectionHasDatasetVersion = [];
 
         foreach ($inDatasets as $dataset) {
             $datasetVersionLatestId = Dataset::where('id', (int) $dataset['id'])->select('id')->first()->latestVersion()->id;
@@ -149,19 +152,17 @@ trait CollectionsV2Helpers
 
             // If the supplied datasets are not in the existing set, then add them
             if (count($commonDatasetVersionIds) === 0) {
-                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
+                $arrCreateCollectionHasDatasetVersion[] = $this->buildAddCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
                 continue;
             }
-
             // else, if the latest version isn't in there, then add it, and remove all the previously existing dataset versions that were linked
             // - this simply has the effect of updating the link to an already-linked dataset to its latest version id
             if (!in_array($datasetVersionLatestId, $commonDatasetVersionIds)) {
-                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
+                $arrCreateCollectionHasDatasetVersion[] = $this->buildAddCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
                 foreach ($commonDatasetVersionIds as $commonDatasetVersionId) {
-                    CollectionHasDatasetVersion::where([
+                    $arrDeleteCollectionHasDatasetVersion[] = [                        
                         'collection_id' => $collectionId,
-                        'dataset_version_id' => $commonDatasetVersionId,
-                    ])->forceDelete();
+                        'dataset_version_id' => $commonDatasetVersionId];
                 }
                 continue;
             }
@@ -195,14 +196,18 @@ trait CollectionsV2Helpers
                             continue;
                         }
                     } else {
-                        CollectionHasDatasetVersion::where([
+                       $arrDeleteCollectionHasDatasetVersion[] = [
                             'collection_id' => $collectionId,
                             'dataset_version_id' => $commonDatasetVersionId,
-                        ])->forceDelete();
+                       ];
                     }
                 }
             }
         }
+
+        // Perform DB updates
+        CollectionHasDatasetVersion::insert($arrCreateCollectionHasDatasetVersion);
+        CollectionHasDatasetVersion::where($arrDeleteCollectionHasDatasetVersion)->delete();
 
         // Now delete existing links to any dataset version that wasn't supplied.
         $collectionHasDatasetVersionsActive = CollectionHasDatasetVersion::where('collection_id', $collectionId)
@@ -226,10 +231,10 @@ trait CollectionsV2Helpers
         }
     }
 
-    private function addCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, ?int $userId = null)
+    // Build an array 
+    private function buildAddCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, ?int $userId = null)
     {
         try {
-
             $searchArray = [
                 'collection_id' => $collectionId,
                 'dataset_version_id' => $datasetVersionId,
@@ -255,7 +260,50 @@ trait CollectionsV2Helpers
                 $arrCreate['created_at'] = $dataset['updated_at'];
                 $arrCreate['updated_at'] = $dataset['updated_at'];
             }
+            $checkRow = CollectionHasDatasetVersion::where($searchArray)->first();
+            if (is_null($checkRow)) {
+                return $arrCreate;
+            }
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$arrCreate['user_id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
 
+            throw new Exception('addCollectionHasDatasetVersion :: ' . $e->getMessage());
+        }
+    }
+
+    private function addCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, ?int $userId = null)
+    {
+        try {
+            $searchArray = [
+                'collection_id' => $collectionId,
+                'dataset_version_id' => $datasetVersionId,
+            ];
+
+            $arrCreate = [
+                'collection_id' => $collectionId,
+                'dataset_version_id' => $datasetVersionId,
+                'deleted_at' => null,
+            ];
+
+            if (array_key_exists('user_id', $dataset)) {
+                $arrCreate['user_id'] = (int) $dataset['user_id'];
+            } elseif ($userId) {
+                $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('reason', $dataset)) {
+                $arrCreate['reason'] = $dataset['reason'];
+            }
+
+            if (array_key_exists('updated_at', $dataset)) { // special for migration
+                $arrCreate['created_at'] = $dataset['updated_at'];
+                $arrCreate['updated_at'] = $dataset['updated_at'];
+            }
             $checkRow = CollectionHasDatasetVersion::where($searchArray)->first();
             if (is_null($checkRow)) {
                 return CollectionHasDatasetVersion::create($arrCreate);

@@ -546,7 +546,7 @@ class TeamCollectionController extends Controller
 
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
             $this->checkDatasets($collectionId, $datasets, (int)$jwtUser['id']);
-
+            
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
             $this->checkTools($collectionId, $tools, (int)$jwtUser['id']);
 
