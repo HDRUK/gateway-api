@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\UnauthorizedException;
+use App\Models\Upload;
 use Auditor;
 use Config;
 use Exception;
@@ -9,7 +11,6 @@ use App\Models\QuestionBank;
 use App\Models\QuestionBankVersion;
 use App\Models\QuestionBankVersionHasChildVersion;
 use App\Models\QuestionHasTeam;
-use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
@@ -22,6 +23,7 @@ use App\Http\Requests\QuestionBank\GetQuestionBankVersion;
 use App\Http\Requests\QuestionBank\UpdateStatusQuestionBank;
 use App\Http\Traits\QuestionBankHelpers;
 use App\Http\Traits\RequestTransformation;
+use Illuminate\Support\Facades\Storage;
 
 class QuestionBankController extends Controller
 {
@@ -735,7 +737,6 @@ class QuestionBankController extends Controller
 
             if ($question) {
                 $questionVersion = $this->getVersion($question);
-
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'GET',
@@ -928,6 +929,9 @@ class QuestionBankController extends Controller
 
             $this->handleChildren($questionVersion, $input, 1, $jwtUser);
 
+            if (array_key_exists('document', $input) && $input['document'] !== null) {
+                $this->handleDocumentExchange($input['document']['value']['uuid'], $question->id, $input);
+            }
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1227,6 +1231,7 @@ class QuestionBankController extends Controller
                 'guidance',
                 'required',
                 'default',
+                'document',
             ];
             $inputVersionKeys = array_intersect($versionKeys, array_keys($input));
 
@@ -1241,6 +1246,7 @@ class QuestionBankController extends Controller
                             'validations' => $input['validations'] ?? $latestJson['field']['validations'],
                             'options' => isset($input['options']) ?
                                 array_column($input['options'], 'label') : $latestJson['field']['options'],
+                            'document' => array_key_exists("document", $input) ? $input['document'] : null,
                         ],
                         'title' => $input['title'] ?? $latestJson['title'],
                         'guidance' => $input['guidance'] ?? $latestJson['guidance'],
@@ -1263,6 +1269,10 @@ class QuestionBankController extends Controller
                         ]);
                     }
                 }
+            }
+
+            if (array_key_exists('document', $input) && $input['document'] !== null) {
+                $this->handleDocumentExchange($input['document']['value']['uuid'], $question->id, $input);
             }
 
             Auditor::log([
@@ -1449,10 +1459,12 @@ class QuestionBankController extends Controller
         try {
             $question = QuestionBank::findOrFail($id);
             if ($question->is_child) {
-                return response()->json([
-                    'message' => 'Cannot delete a child question directly'
-                ], 400);
+                throw new Exception("Cannot delete a child question directly");
             }
+
+            // Delete associated document exhange files
+            Upload::where(["entity_id" => $question->id,
+                           "entity_type" => "documentExchange"])->delete();
 
             // TODO: handle locking?
 
@@ -1468,6 +1480,7 @@ class QuestionBankController extends Controller
             foreach ($questionVersions as $version) {
                 // delete each version's child question versions and their associated QuestionBank and QuestionHasTeam entries
                 $childVersions = $version->childVersions;
+
                 foreach ($childVersions as $childVersion) {
                     // Delete association of child version's question to teams
                     QuestionHasTeam::where('qb_question_id', $childVersion->question_id)->delete();
@@ -1475,6 +1488,9 @@ class QuestionBankController extends Controller
                     QuestionBankVersion::where('id', $childVersion->id)->delete();
                     // Delete child version's question
                     QuestionBank::where('id', $childVersion->question_id)->delete();
+                    // Delete associated document exhange files
+                    Upload::where(["entity_id" => $childVersion->question_id,
+                           "entity_type" => "documentExchange"])->delete();
                 }
                 // delete parent-child records from relationship table
                 QuestionBankVersionHasChildVersion::where('parent_qbv_id', $version->id)->delete();
@@ -1510,6 +1526,93 @@ class QuestionBankController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *      path="/api/v1/questions/{id}/files/{fileId}",
+     *      summary="Download a file attached to a question bank question",
+     *      description="Download a system question bank question",
+     *      tags={"QuestionBank"},
+     *      summary="QuestionBank@destroyFile",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="question bank question id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="question bank question id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="file uuid",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="file uuid",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *           ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function downloadFile(Request $request, int $id, string $fileId)
+    {
+        $fileSystem = config('gateway.scanning_filesystem_disk', 'local_scan');
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $file = Upload::where("uuid", $fileId)->firstOrFail();
+
+            // Verify the file belongs to the question
+            if ($file->entity_id === $id) {
+                Auditor::log([
+                    'user_id' => (int)$jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'QuestionBank get all',
+                ]);
+
+                return Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
+                        ->download($file->file_location);
+            } else {
+                throw new UnauthorizedException("File id " . $fileId . " does not belong to question");
+            }
+
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
     private function createVersion($input, $question, $version)
     {
         $questionVersion = QuestionBankVersion::create([
@@ -1518,6 +1621,7 @@ class QuestionBankController extends Controller
                     'component' => $input['component'],
                     'validations' => empty($input['validations']) ? null : $input['validations'],
                     'options' => array_column($input['options'], 'label'),
+                    'document' => array_key_exists("document", $input) ? $input['document'] : null,
                 ],
                 'title' => $input['title'],
                 'guidance' => $input['guidance'],
@@ -1725,6 +1829,24 @@ class QuestionBankController extends Controller
                     ]);
                 }
             }
+        }
+    }
+
+    private function handleDocumentExchange(string $fileId, int $questionId, array $input)
+    {
+        // The file for the document exchange will currently have a null entityid
+        // so we update it to belong to the question
+        $file = Upload::where('uuid', $fileId)->firstOrFail();
+
+        // Stop the user updating any random file
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        if ($file->user_id === $jwtUser['id']) {
+            $file->update([
+                "entity_id" => $questionId
+            ]);
+        } else {
+            throw new UnauthorizedException("File does not belong to user");
         }
     }
 }

@@ -3,8 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     public function up(): void
     {
         $permissions = [
@@ -36,7 +35,7 @@ return new class extends Migration
         $developerRole = DB::table('roles')->where('name', 'developer')->first();
 
         if ($developerRole) {
-           foreach ($permissionIds as $permissionId) {
+            foreach ($permissionIds as $permissionId) {
                 $exists = DB::table('role_has_permissions')
                     ->where('role_id', $developerRole->id)
                     ->where('permission_id', $permissionId)
@@ -50,7 +49,7 @@ return new class extends Migration
                 }
             }
         }
-        
+
     }
 
     public function down(): void

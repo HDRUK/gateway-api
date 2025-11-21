@@ -211,7 +211,7 @@ class TeamTest extends TestCase
                 ],
             ]);
     }
-        /**
+    /**
      * Show summary of a team.
      *
      * @return void
