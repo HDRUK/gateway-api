@@ -207,7 +207,7 @@ trait CollectionsV2Helpers
 
         // Perform DB updates
         CollectionHasDatasetVersion::insert($arrCreateCollectionHasDatasetVersion);
-        CollectionHasDatasetVersion::where($arrDeleteCollectionHasDatasetVersion)->delete();
+        CollectionHasDatasetVersion::where($arrDeleteCollectionHasDatasetVersion)->forceDelete();
 
         // Now delete existing links to any dataset version that wasn't supplied.
         $collectionHasDatasetVersionsActive = CollectionHasDatasetVersion::where('collection_id', $collectionId)
