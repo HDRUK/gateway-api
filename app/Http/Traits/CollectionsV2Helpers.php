@@ -272,55 +272,10 @@ trait CollectionsV2Helpers
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception('addCollectionHasDatasetVersion :: ' . $e->getMessage());
+            throw new Exception('buildAddCollectionHasDatasetVersion :: ' . $e->getMessage());
         }
     }
 
-    private function addCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, ?int $userId = null)
-    {
-        try {
-            $searchArray = [
-                'collection_id' => $collectionId,
-                'dataset_version_id' => $datasetVersionId,
-            ];
-
-            $arrCreate = [
-                'collection_id' => $collectionId,
-                'dataset_version_id' => $datasetVersionId,
-                'deleted_at' => null,
-            ];
-
-            if (array_key_exists('user_id', $dataset)) {
-                $arrCreate['user_id'] = (int) $dataset['user_id'];
-            } elseif ($userId) {
-                $arrCreate['user_id'] = $userId;
-            }
-
-            if (array_key_exists('reason', $dataset)) {
-                $arrCreate['reason'] = $dataset['reason'];
-            }
-
-            if (array_key_exists('updated_at', $dataset)) { // special for migration
-                $arrCreate['created_at'] = $dataset['updated_at'];
-                $arrCreate['updated_at'] = $dataset['updated_at'];
-            }
-            $checkRow = CollectionHasDatasetVersion::where($searchArray)->first();
-            if (is_null($checkRow)) {
-                return CollectionHasDatasetVersion::create($arrCreate);
-            } else {
-                return $checkRow;
-            }
-        } catch (Exception $e) {
-            Auditor::log([
-                'user_id' => (int)$arrCreate['user_id'],
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception('addCollectionHasDatasetVersion :: ' . $e->getMessage());
-        }
-    }
 
     private function checkInCollectionHasDatasetVersions(int $collectionId, int $datasetVersionId)
     {
