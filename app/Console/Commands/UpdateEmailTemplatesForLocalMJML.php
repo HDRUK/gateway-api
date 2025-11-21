@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Config;
 use App\Models\EmailTemplate;
 use Illuminate\Console\Command;
 
@@ -21,24 +22,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
      */
     protected $description = 'Update email templates to be suitable for use with local MJML';
 
-    /**
-     * Execute the console command.
-     */
-    public function handle()
-    {
-        function heroBanner(str $headerText)
-        {
-            return '
-<mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-    <mj-column width="100%">
-        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">' 
-        . $headerText . 
-    '</mj-text>
-    </mj-column>
-</mj-section>';
-        }
-
-        $mjmlHead = '
+    public string $mjmlHead = '
 <mj-head>
     <mj-html-attributes>
         <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="text-color" text-color="#000000"></mj-html-attribute>
@@ -71,33 +55,61 @@ class UpdateEmailTemplatesForLocalMJML extends Command
     </mj-attributes>
 </mj-head>';
 
-        $hdrukLogoHeader = '
+    public function hdrukLogoHeader()
+    {
+        return '
 <mj-section background-color="#ffffff">
     <mj-column>
-        <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+        <mj-image src="' . config('filesystems.disks.gcs_media.storage_api_uri') . '/' . config('filesystems.disks.gcs_media.bucket') . '/email/hdruk_logo_email.png" href="' . config('gateway.gateway_url') . '" padding="10px 0" alt="" align="center" width="226px" />
     </mj-column>
 </mj-section>';
-        
-        $hdrukFooter = '
+    }
+
+    public function heroBanner(string $headerText)
+    {
+        return '
+<mj-section background-url="' . config('filesystems.disks.gcs_media.storage_api_uri') . '/' . config('filesystems.disks.gcs_media.bucket') . '/email/hdruk_header_email.png" background-size="cover" background-repeat="no-repeat">
+    <mj-column width="100%">
+        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">' 
+        . $headerText . 
+    '</mj-text>
+    </mj-column>
+</mj-section>';
+    }
+
+    public function hdrukFooter()
+    {
+        return '
 <mj-section>
     <mj-column>
         <mj-text align="center">
-            <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+            <a style="text-decoration:none" href="' . config('gateway.gateway_url') . '">' . config('gateway.gateway_url') . '</a>
         </mj-text>
         <mj-text color="#525252" align="center">
             @HDR UK [[CURRENT_YEAR]]. All rights reserved.
         </mj-text>
     </mj-column>
 </mj-section>';
+    }
 
-        function standardFullHeader(str $headerText)
-        {
-            return '<mjml>' . $mjmlHead
-                    . '<mj-body background-color="#FFFFFF">' 
-                    . $hdrukLogoHeader 
-                    . heroBanner($headerText);
-        }
+    private function standardFullHeader(string $headerText)
+    {
+        return '<mjml>' . $this->mjmlHead
+                . '<mj-body background-color="#FFFFFF">' 
+                . $this->hdrukLogoHeader() 
+                . $this->heroBanner($headerText);
+    }
 
+    private function standardFullFooter()
+    {
+        return $this->hdrukFooter() 
+            . '</mj-body></mjml>';
+    }
+    /**
+     * Execute the console command.
+     */
+    public function handle()
+    {
 	    EmailTemplate::updateOrCreate(
             [
             	'identifier' => 'example_template',
@@ -171,7 +183,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             }
           '
           ]);
-        }}
+
 
         EmailTemplate::updateOrCreate(
             [
@@ -180,7 +192,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
 				'identifier' => 'custodian.team.admin.assign',
 				'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Team Admin',
-				'body' => standardFullHeader('Congratulations! You’ve been granted the Team Administrator permissions for [[TEAM_NAME]].')
+				'body' => $this->standardFullHeader('Congratulations! You’ve been granted the Team Administrator permissions for [[TEAM_NAME]].')
                     . '
         <mj-section>
             <mj-column width="100%">
@@ -204,15 +216,13 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">Manage team</mj-button>
             </mj-column>
         </mj-section>' 
-        . $hdrukFooter 
-        . '</mj-body>
-        </mjml>	',
+                    . $this->standardFullFooter(),
         'buttons' => '
     {
         "replacements": [
             {
                 "placeholder": "[[BUTTON_1_URL]]",
-                "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/team-management"
+                "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/team-management"
             }
         ]
     }'
@@ -226,7 +236,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [	
                 'identifier' => 'custodian.team.admin.remove',
             	'subject' => 'You have been removed as a Team Admin for the [[TEAM_NAME]] team on the Gateway.',
-                'body' => standardFullHeader('Your Team Administrator permissions for [[TEAM_NAME]] have been removed.')
+                'body' => $this->standardFullHeader('Your Team Administrator permissions for [[TEAM_NAME]] have been removed.')
                     . '
         <mj-section>
             <mj-column width="100%">
@@ -253,9 +263,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 </mj-text>
             </mj-column>
         </mj-section>' 
-        . $hdrukFooter 
-        . '</mj-body>
-        </mjml>	'
+                    . $this->standardFullFooter()
             ]
         );
 
@@ -266,7 +274,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [ 
                 'identifier' => 'custodian.dar.manager.assign',
                 'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Data Access Manager',	
-                'body' => standardFullHeader('Congratulations! You’ve been granted the Data Access Request Manager permissions for [[TEAM_NAME]].')
+                'body' => $this->standardFullHeader('Congratulations! You’ve been granted the Data Access Request Manager permissions for [[TEAM_NAME]].')
                     . '
             <mj-section>
                 <mj-column width="100%">
@@ -292,9 +300,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     </mj-text>
                 </mj-column>
             </mj-section>' 
-        . $hdrukFooter 
-        . '</mj-body>
-        </mjml>	'
+                    . $this->standardFullFooter()
             ]
         );
         EmailTemplate::updateOrCreate(
@@ -304,7 +310,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [	
                 'identifier' => 'custodian.dar.manager.remove',
             	'subject' => 'You have been removed as a Data Access Manager for the [[TEAM_NAME]] team on the Gateway.',	
-                'body' => standardFullHeader('Your Data Access Request Manager permissions for [[TEAM_NAME]] have been removed.')
+                'body' => $this->standardFullHeader('Your Data Access Request Manager permissions for [[TEAM_NAME]] have been removed.')
                     . '
             <mj-section>
                 <mj-column width="100%">
@@ -334,9 +340,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     </mj-text>
                 </mj-column>
             </mj-section>'
-        . $hdrukFooter
-        . '</mj-body>
-        </mjml>	'
+                    . $this->standardFullFooter()
             ]
         );
 
@@ -348,7 +352,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'dar.reviewer.assign',
                 'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Reviewer',
-                'body' => standardFullHeader('Congratulations! You’ve been granted the Data Access Request Reviewer permissions for [[TEAM_NAME]].')
+                'body' => $this->standardFullHeader('Congratulations! You’ve been granted the Data Access Request Reviewer permissions for [[TEAM_NAME]].')
                     . '
             <mj-section>
                 <mj-column width="100%">
@@ -368,21 +372,8 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         </ul>
                     </mj-text>
                 </mj-column>
-            </mj-section>
-
-            <mj-section>
-                <mj-column>
-                    <mj-text align="center">
-                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                    </mj-text>
-                    <mj-text color="#525252" align="center">
-                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                    </mj-text>
-                </mj-column>
             </mj-section>'
-            . $hdrukFooter
-            . '</mj-body>
-            </mjml>	'
+                    . $this->standardFullFooter()
             ]
         );
 
@@ -393,7 +384,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'dar.reviewer.remove',
                 'subject' => 'You have been removed as a Reviewer for the [[TEAM_NAME]] team on the Gateway.',
-                'body' => standardFullHeader('Your Data Access Request Reviewer permissions for [[TEAM_NAME]] have been removed.')
+                'body' => $this->standardFullHeader('Your Data Access Request Reviewer permissions for [[TEAM_NAME]] have been removed.')
                     . '
             <mj-section>
                 <mj-column width="100%">
@@ -417,9 +408,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     </mj-text>
                 </mj-column>
             </mj-section>'
-            . $hdrukFooter
-            . '</mj-body>
-            </mjml>	'
+                    . $this->standardFullFooter()
             ]
         );
 
@@ -430,7 +419,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'developer.assign',
                 'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Developer',
-                'body' => standardFullHeader('Congratulations! You’ve been granted the Developer permissions for [[TEAM_NAME]].')
+                'body' => $this->standardFullHeader('Congratulations! You’ve been granted the Developer permissions for [[TEAM_NAME]].')
                     . '
             <mj-section>
                 <mj-column width="100%">
@@ -451,15 +440,13 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">Manage Apps</mj-button>
                 </mj-column>
             </mj-section>'
-                . $hdrukFooter
-                . '</mj-body>
-            </mjml>	',
+                    . $this->standardFullFooter(),
                 'buttons' => '
             {
                 "replacements": [
                     {
                         "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
                     }
                 ]
             }'
@@ -472,7 +459,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'developer.remove',
                 'subject' => 'You have been removed as a Developer for the [[TEAM_NAME]] team on the Gateway.',
-                'body' => standardFullHeader('Your Developer permissions for [[TEAM_NAME]] have been removed.')
+                'body' => $this->standardFullHeader('Your Developer permissions for [[TEAM_NAME]] have been removed.')
                     . '
             <mj-section>
                 <mj-column width="100%">
@@ -496,9 +483,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     </mj-text>
                 </mj-column>
             </mj-section>'
-            . $hdrukFooter
-            . '</mj-body>
-            </mjml>	'
+                    . $this->standardFullFooter()
             ]
         );
 
@@ -509,7 +494,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'metadata.editor.assign',
                 'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Metadata Editor',
-                'body' => standardFullHeader('Congratulations! You’ve been granted the Metadata Editor permissions for [[TEAM_NAME]].')
+                'body' => $this->standardFullHeader('Congratulations! You’ve been granted the Metadata Editor permissions for [[TEAM_NAME]].')
                     . '
             <mj-section>
                 <mj-column width="100%">
@@ -530,15 +515,13 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View datasets</mj-button>
                 </mj-column>
             </mj-section>'
-            . $hdrukFooter
-            . '</mj-body>
-            </mjml>	',
+                    . $this->standardFullFooter(),
                 'buttons' => '
         {
             "replacements": [
                 {
                     "placeholder": "[[BUTTON_1_URL]]",
-                    "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/datasets"
+                    "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/datasets"
                 }
             ]
         }'
@@ -552,7 +535,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'metadata.editor.remove',
                 'subject' => 'You have been removed as a Metadata Editor for the [[TEAM_NAME]] team on the Gateway.',
-                'body' => standardFullHeader('Your Metadata Editor permissions for [[TEAM_NAME]] have been removed.')
+                'body' => $this->standardFullHeader('Your Metadata Editor permissions for [[TEAM_NAME]] have been removed.')
                     . '
             <mj-section>
                 <mj-column width="100%">
@@ -576,9 +559,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     </mj-text>
                 </mj-column>
             </mj-section>'
-            . $hdrukFooter
-            . '</mj-body>
-            </mjml>	'
+                    . $this->standardFullFooter()
             ]
         );
 
@@ -589,7 +570,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'custodian.metadata.manager.assign',
                 'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Metadata Manager',
-                'body' => standardFullHeader('Congratulations! You’ve been granted the Metadata Manager permissions for [[TEAM_NAME]].')
+                'body' => $this->standardFullHeader('Congratulations! You’ve been granted the Metadata Manager permissions for [[TEAM_NAME]].')
                     . '
             <mj-section>
                 <mj-column width="100%">
@@ -613,15 +594,13 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View datasets</mj-button>
                 </mj-column>
             </mj-section>'
-                . $hdrukFooter
-                . '</mj-body>
-            </mjml>	',
+                    . $this->standardFullFooter(),
                 'buttons' => '
         {
             "replacements": [
                 {
                     "placeholder": "[[BUTTON_1_URL]]",
-                    "actual": "env(GATEWAY_URL)/en/account/team/[[TEAM_ID]]/datasets"
+                    "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/datasets"
                 }
             ]
         }'
@@ -635,7 +614,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'custodian.metadata.manager.remove',
                 'subject' => 'You have been removed as a Metadata Manager for the [[TEAM_NAME]] team on the Gateway.',
-                'body' => standardFullHeader('Your Metadata Manager permissions for [[TEAM_NAME]] have been removed.')
+                'body' => $this->standardFullHeader('Your Metadata Manager permissions for [[TEAM_NAME]] have been removed.')
                     . '
             <mj-section>
                 <mj-column width="100%">
@@ -662,9 +641,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     </mj-text>
                 </mj-column>
             </mj-section>'
-                . $hdrukFooter
-                . '</mj-body>
-            </mjml>	'
+                    . $this->standardFullFooter()
             ]
         );
 
@@ -675,10 +652,8 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'hdruk.superadmin.assign',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.superadmin.assign',
-                'body' => standardFullHeader('hdruk.superadmin.assign role has been assigned.')
-                . $hdrukFooter
-                . '</mj-body>
-            </mjml>	'
+                'body' => $this->standardFullHeader('hdruk.superadmin.assign role has been assigned.')
+                    . $this->standardFullFooter()
             ]
         );
         
@@ -689,10 +664,8 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'hdruk.admin.assign',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.admin.assign',
-                'body' => standardFullHeader('hdruk.admin.assign role has been assigned.')
-                . $hdrukFooter
-                . '</mj-body>
-            </mjml>	'
+                'body' => $this->standardFullHeader('hdruk.admin.assign role has been assigned.')
+                    . $this->standardFullFooter()
             ]
             );
 
@@ -703,10 +676,8 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'hdruk.admin.remove',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.admin.remove',
-                'body' => standardFullHeader('hdruk.admin.assign role has been removed.')
-                . $hdrukFooter
-                . '</mj-body>
-            </mjml>	'
+                'body' => $this->standardFullHeader('hdruk.admin.assign role has been removed.')
+                    . $this->standardFullFooter()
             ]
         );
         
@@ -717,10 +688,8 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'hdruk.metadata.assign',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.metadata.assign',
-                'body' => standardFullHeader('hdruk.metadata.assign role has been assigned.')
-                . $hdrukFooter
-                . '</mj-body>
-            </mjml>	'
+                'body' => $this->standardFullHeader('hdruk.metadata.assign role has been assigned.')
+                    . $this->standardFullFooter()
             ]
         );
 
@@ -731,10 +700,8 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'hdruk.metadata.remove',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.metadata.remove',
-                'body' => standardFullHeader('hdruk.metadata.assign role has been removed.')
-                . $hdrukFooter
-                . '</mj-body>
-            </mjml>	'
+                'body' => $this->standardFullHeader('hdruk.metadata.assign role has been removed.')
+                    . $this->standardFullFooter()
             ]
         );
 
@@ -745,10 +712,8 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'hdruk.dar.assign',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.dar.assign',
-                'body' => standardFullHeader('hdruk.dar.assign role has been assigned.')
-                . $hdrukFooter
-                . '</mj-body>
-            </mjml>	'
+                'body' => $this->standardFullHeader('hdruk.dar.assign role has been assigned.')
+                    . $this->standardFullFooter()
             ]
         );
 
@@ -759,10 +724,8 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'hdruk.dar.remove',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.dar.remove',
-                'body' => standardFullHeader('hdruk.dar.assign role has been removed.')
-                . $hdrukFooter
-                . '</mj-body>
-            </mjml>	'
+                'body' => $this->standardFullHeader('hdruk.dar.assign role has been removed.')
+                    . $this->standardFullFooter()
             ]
         );
 
@@ -773,10 +736,8 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'hdruk.custodian.assign',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.custodian.assign',
-                'body' => standardFullHeader('hdruk.custodian.assign role has been assigned.')
-                . $hdrukFooter
-                . '</mj-body>
-            </mjml>	'
+                'body' => $this->standardFullHeader('hdruk.custodian.assign role has been assigned.')
+                    . $this->standardFullFooter()
             ]
         );
 
@@ -787,10 +748,8 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'hdruk.custodian.remove',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.custodian.remove',
-                'body' => standardFullHeader('hdruk.custodian.assign role has been removed.')
-                . $hdrukFooter
-                . '</mj-body>
-            </mjml>	'
+                'body' => $this->standardFullHeader('hdruk.custodian.assign role has been removed.')
+                    . $this->standardFullFooter()
             ]
         );
 	
@@ -801,7 +760,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'cohort.discovery.access.expired',
                 'subject' => 'Your Cohort Discovery access has expired',
-                'body' => standardFullHeader('Your Cohort Discovery access has expired.')
+                'body' => $this->standardFullHeader('Your Cohort Discovery access has expired.')
                     . '
                         <mj-section>
                             <mj-column width="100%">
@@ -820,9 +779,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[COHORT_DISCOVERY_RENEW_URL]]">Renew Cohort Discovery access</mj-button>
                             </mj-column>
                         </mj-section>'
-                        . $hdrukFooter
-                        . '</mj-body>
-                </mjml>	',
+                    . $this->standardFullFooter(),
                 'buttons' => '
                 {
                     "replacements": [
@@ -842,7 +799,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'cohort.discovery.access.will.expire',
                 'subject' => 'Your Cohort Discovery access will soon expire',
-                'body' => standardFullHeader('Your Cohort Discovery access will soon expire.')
+                'body' => $this->standardFullHeader('Your Cohort Discovery access will soon expire.')
                     . '
                         <mj-section>
                             <mj-column width="100%">
@@ -860,9 +817,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 </mj-text>
                             </mj-column>
                         </mj-section>'
-                        . $hdrukFooter
-                        . '</mj-body>
-                </mjml>	',
+                    . $this->standardFullFooter(),
                 'buttons' => '
                 {
                     "replacements": [
@@ -882,7 +837,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             [
                 'identifier' => 'cohort.discovery.access.approved',
                 'subject' => 'Congratulations! Your Cohort Discovery registration has been approved.',
-                'body' => standardFullHeader('Congratulations! Your Cohort Discovery registration has been approved.')
+                'body' => $this->standardFullHeader('Congratulations! Your Cohort Discovery registration has been approved.')
                     . '
                 <mj-section>
                     <mj-column width="100%">
@@ -901,9 +856,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         <mj-button css-class="main-section" background-color="#00ACCA" href="[[COHORT_DISCOVERY_ACCESS_URL]]">Access Cohort Discovery</mj-button>
                     </mj-column>
                 </mj-section>'
-                . $hdrukFooter
-                . '</mj-body>
-                </mjml>	',
+                    . $this->standardFullFooter(),
                 'buttons' => '
                 {
                     "replacements": [
@@ -916,37 +869,16 @@ class UpdateEmailTemplatesForLocalMJML extends Command
             ]
         );
             
-cohort.discovery.access.rejected	cohort.discovery.access.rejected	Your Cohort Discovery Registration has been Rejected.	
-                <mjml>
-                    <mj-head>
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-style inline="inline">
-                            .main-button {
-                                padding:10px;
-                                width:auto;
-                                -webkit-border-radius:5px;
-                                -moz-border-radius:5px;
-                                border-radius:5px;
-                                color:#FFFFFF;
-                            }
-                        </mj-style>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                        <mj-section background-color="#ffffff">
-                            <mj-column>
-                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                            </mj-column>
-                        </mj-section>
-
-                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                            <mj-column width="100%">
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                Your Cohort Discovery Registration has been Rejected.
-                            </mj-text>
-                            </mj-column>
-                        </mj-section>
-
-                        <mj-section>
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'cohort.discovery.access.rejected',
+            ],
+            [
+                'identifier' => 'cohort.discovery.access.rejected',
+                'subject' => 'Your Cohort Discovery Registration has been Rejected.',
+                'body' => $this->standardFullHeader('Your Cohort Discovery Registration has been Rejected.')
+                    . '
+                    <mj-section>
                             <mj-column width="100%">
                                 <mj-text line-height="20px">
                                     Dear [[USER_FIRSTNAME]],
@@ -967,52 +899,20 @@ cohort.discovery.access.rejected	cohort.discovery.access.rejected	Your Cohort Di
                                 </mj-text>
                                 </mj-text>
                             </mj-column>
-                        </mj-section>
+                        </mj-section>'
+                    . $this->standardFullFooter()
+            ]
+        );
 
-                        <mj-section>
-                            <mj-column>
-                                <mj-text align="center">
-                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text color="#525252" align="center">
-                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-
-                    </mj-body>
-                </mjml>
-            	
-cohort.discovery.access.submitted	cohort.discovery.access.submitted	Your Cohort Discovery registration form has been submitted.	
-                <mjml>
-                    <mj-head>
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-style inline="inline">
-                            .main-button {
-                                padding:10px;
-                                width:auto;
-                                -webkit-border-radius:5px;
-                                -moz-border-radius:5px;
-                                border-radius:5px;
-                                color:#FFFFFF;
-                            }
-                        </mj-style>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                        <mj-section background-color="#ffffff">
-                            <mj-column>
-                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                            </mj-column>
-                        </mj-section>
-
-                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                            <mj-column width="100%">
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                Your Cohort Discovery registration form has been submitted.
-                            </mj-text>
-                            </mj-column>
-                        </mj-section>
-
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'cohort.discovery.access.submitted'
+            ],
+            [ 
+                'identifier' => 'cohort.discovery.access.submitted',
+                'subject' => 'Your Cohort Discovery registration form has been submitted.',	
+                'body' => $this->standardFullHeader('Your Cohort Discovery registration form has been submitted.')
+                    . '
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text line-height="20px">
@@ -1028,52 +928,20 @@ cohort.discovery.access.submitted	cohort.discovery.access.submitted	Your Cohort 
                                 </mj-text>
                                 </mj-text>
                             </mj-column>
-                        </mj-section>
-
-                        <mj-section>
-                            <mj-column>
-                                <mj-text align="center">
-                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text color="#525252" align="center">
-                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-
-                    </mj-body>
-                </mjml>
-            	
-cohort.discovery.access.banned	cohort.discovery.access.banned	Your Cohort Discovery access has been banned.	
-                <mjml>
-                    <mj-head>
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-style inline="inline">
-                            .main-button {
-                                padding:10px;
-                                width:auto;
-                                -webkit-border-radius:5px;
-                                -moz-border-radius:5px;
-                                border-radius:5px;
-                                color:#FFFFFF;
-                            }
-                        </mj-style>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                        <mj-section background-color="#ffffff">
-                            <mj-column>
-                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                            </mj-column>
-                        </mj-section>
-
-                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                            <mj-column width="100%">
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                Your Cohort Discovery access has been banned.
-                            </mj-text>
-                            </mj-column>
-                        </mj-section>
-
+                        </mj-section>'
+                    . $this->standardFullFooter()
+            ]
+        );
+          
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'cohort.discovery.access.banned'
+            ],
+            [	
+                'identifier' => 'cohort.discovery.access.banned',
+            	'subject' => 'Your Cohort Discovery access has been banned.',	
+                'body' => $this->standardFullHeader('Your Cohort Discovery access has been banned.')
+                    . '
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text line-height="20px">
@@ -1089,111 +957,49 @@ cohort.discovery.access.banned	cohort.discovery.access.banned	Your Cohort Discov
                                 </mj-text>
                                 </mj-text>
                             </mj-column>
-                        </mj-section>
+                        </mj-section>'
+                    . $this->standardFullFooter()
+            ]
+        );
 
-                        <mj-section>
-                            <mj-column>
-                                <mj-text align="center">
-                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text color="#525252" align="center">
-                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-
-                    </mj-body>
-                </mjml>
-            	
-cohort.discovery.access.suspended	cohort.discovery.access.suspended	Your Cohort Discovery access has been suspended.	
-                <mjml>
-                    <mj-head>
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-style inline="inline">
-                            .main-button {
-                                padding:10px;
-                                width:auto;
-                                -webkit-border-radius:5px;
-                                -moz-border-radius:5px;
-                                border-radius:5px;
-                                color:#FFFFFF;
-                            }
-                        </mj-style>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                        <mj-section background-color="#ffffff">
-                            <mj-column>
-                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                            </mj-column>
-                        </mj-section>
-
-                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                            <mj-column width="100%">
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                Your Cohort Discovery access has been suspended.
-                            </mj-text>
-                            </mj-column>
-                        </mj-section>
-
-                        <mj-section>
-                            <mj-column width="100%">
-                                <mj-text line-height="20px">
-                                    Dear [[USER_FIRSTNAME]],
-                                </mj-text>
-                                <mj-text line-height="30px">
-                                    This is an automated message to let you know that your access to the Cohort Discovery tool has been suspended. If you have any questions or would like to discuss this further please raise a support ticket on the Health Data Research Gateway.
-                                </mj-text>
-                                <mj-text>
-                                <mj-text>
-                                    Regards,<br/>
-                                    Gateway Cohort Discovery Admin.
-                                </mj-text>
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-
-                        <mj-section>
-                            <mj-column>
-                                <mj-text align="center">
-                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text color="#525252" align="center">
-                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-
-                    </mj-body>
-                </mjml>
-            	
-apiintegration.developer.create	apiintegration.developer.create	[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.	
-            <mjml>
-                <mj-head>
-                    <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                    <mj-style inline="inline">
-                    .main-button {
-                    padding:10px;
-                    width:auto;
-                    -webkit-border-radius:5px;
-                    -moz-border-radius:5px;
-                    border-radius:5px;
-                    color:#FFFFFF;
-                    }
-                    </mj-style>
-                </mj-head>
-                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                    <mj-section background-color="#ffffff">
-                    <mj-column>
-                        <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                    </mj-column>
-                    </mj-section>
-
-                    <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'cohort.discovery.access.suspended'
+            ],
+            [	
+                'identifier' => 'cohort.discovery.access.suspended',
+            	'subject' => 'Your Cohort Discovery access has been suspended.',	
+                'body' => $this->standardFullHeader('Your Cohort Discovery access has been suspended.')
+                    . '
+                <mj-section>
                     <mj-column width="100%">
-                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]].
+                        <mj-text line-height="20px">
+                            Dear [[USER_FIRSTNAME]],
+                        </mj-text>
+                        <mj-text line-height="30px">
+                            This is an automated message to let you know that your access to the Cohort Discovery tool has been suspended. If you have any questions or would like to discuss this further please raise a support ticket on the Health Data Research Gateway.
+                        </mj-text>
+                        <mj-text>
+                        <mj-text>
+                            Regards,<br/>
+                            Gateway Cohort Discovery Admin.
+                        </mj-text>
                         </mj-text>
                     </mj-column>
-                    </mj-section>
+                </mj-section>'
+                    . $this->standardFullFooter()
+            ]
+        );
+
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'apiintegration.developer.create',
+            ],
+            [
+                'identifier' => 'apiintegration.developer.create',
+                'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
+                'body' => $this->standardFullHeader('Congratulations! A new integration has been created for<br> [[TEAM_NAME]].')
+                    . '
                     <mj-section>
                     <mj-column>
                         <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1203,20 +1009,9 @@ apiintegration.developer.create	apiintegration.developer.create	[[API_NAME]] has
                         </mj-text>
                         <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                     </mj-column>
-                    </mj-section>
-                    <mj-section>
-                    <mj-column>
-                        <mj-text align="center">
-                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                        </mj-text>
-                        <mj-text color="#3C3C3B" align="center">
-                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                        </mj-text>
-                    </mj-column>
-                    </mj-section>
-                </mj-body>
-            </mjml>
-        	
+                    </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
             {
                 "replacements": [
                     {
@@ -1224,36 +1019,19 @@ apiintegration.developer.create	apiintegration.developer.create	[[API_NAME]] has
                         "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management"
                     }
                 ]
-            }
-            
-apiintegration.team.admin.create	apiintegration.team.admin.create	[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.	
-            <mjml>
-                <mj-head>
-                    <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                    <mj-style inline="inline">
-                    .main-button {
-                    padding:10px;
-                    width:auto;
-                    -webkit-border-radius:5px;
-                    -moz-border-radius:5px;
-                    border-radius:5px;
-                    color:#FFFFFF;
-                    }
-                    </mj-style>
-                </mj-head>
-                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                    <mj-section background-color="#ffffff">
-                    <mj-column>
-                        <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                    </mj-column>
-                    </mj-section>
+            }'
+            ]
+        );
 
-                    <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                    <mj-column width="100%">
-                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]].
-                        </mj-text>
-                    </mj-column>
-                    </mj-section>
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'apiintegration.team.admin.create',
+            ],
+            [
+                'identifier' => 'apiintegration.team.admin.create',
+                'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
+                'body' => $this->standardFullHeader('Congratulations! A new integration has been created for<br> [[TEAM_NAME]].')
+                    . '
                     <mj-section>
                     <mj-column>
                         <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1263,20 +1041,9 @@ apiintegration.team.admin.create	apiintegration.team.admin.create	[[API_NAME]] h
                         </mj-text>
                         <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                     </mj-column>
-                    </mj-section>
-                    <mj-section>
-                    <mj-column>
-                        <mj-text align="center">
-                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                        </mj-text>
-                        <mj-text color="#3C3C3B" align="center">
-                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                        </mj-text>
-                    </mj-column>
-                    </mj-section>
-                </mj-body>
-            </mjml>
-        	
+                    </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
             {
                 "replacements": [
                     {
@@ -1284,36 +1051,19 @@ apiintegration.team.admin.create	apiintegration.team.admin.create	[[API_NAME]] h
                         "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management"
                     }
                 ]
-            }
-            
-apiintegration.other.create	apiintegration.other.create	[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.	
-                <mjml>
-                    <mj-head>
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-style inline="inline">
-                        .main-button {
-                        padding:10px;
-                        width:auto;
-                        -webkit-border-radius:5px;
-                        -moz-border-radius:5px;
-                        border-radius:5px;
-                        color:#FFFFFF;
-                        }
-                        </mj-style>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                        <mj-section background-color="#ffffff">
-                        <mj-column>
-                            <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                        </mj-column>
-                        </mj-section>
+            }'
+            ]
+        );
 
-                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                        <mj-column width="100%">
-                            <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]].
-                            </mj-text>
-                        </mj-column>
-                        </mj-section>
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'apiintegration.other.create'
+            ],
+            [	
+                'identifier' => 'apiintegration.other.create',
+            	'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',	
+                'body' => $this->standardFullHeader('Congratulations! A new integration has been created for<br> [[TEAM_NAME]].')
+                    . '
                         <mj-section>
                         <mj-column>
                             <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1323,48 +1073,20 @@ apiintegration.other.create	apiintegration.other.create	[[API_NAME]] has been ad
                                 [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
                             </mj-text>
                         </mj-column>
-                        </mj-section>
-                        <mj-section>
-                        <mj-column>
-                            <mj-text align="center">
-                            <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                            </mj-text>
-                            <mj-text color="#3C3C3B" align="center">
-                            @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                            </mj-text>
-                        </mj-column>
-                        </mj-section>
-                    </mj-body>
-                </mjml>
-            	
-fmaintegration.developer.create	fmaintegration.developer.create	[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.	
-            <mjml>
-                <mj-head>
-                    <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                    <mj-style inline="inline">
-                    .main-button {
-                    padding:10px;
-                    width:auto;
-                    -webkit-border-radius:5px;
-                    -moz-border-radius:5px;
-                    border-radius:5px;
-                    color:#FFFFFF;
-                    }
-                    </mj-style>
-                </mj-head>
-                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                    <mj-section background-color="#ffffff">
-                    <mj-column>
-                        <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                    </mj-column>
-                    </mj-section>
+                        </mj-section>'
+                    . $this->standardFullFooter()
+            ]
+        );
 
-                    <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                    <mj-column width="100%">
-                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]].
-                        </mj-text>
-                    </mj-column>
-                    </mj-section>
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'fmaintegration.developer.create',
+            ],
+            [
+                'identifier' => 'fmaintegration.developer.create',
+                'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
+                'body' => $this->standardFullHeader('Congratulations! A new integration has been created for<br> [[TEAM_NAME]].')
+                    . '
                     <mj-section>
                     <mj-column>
                         <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1374,99 +1096,43 @@ fmaintegration.developer.create	fmaintegration.developer.create	[[API_NAME]] has
                         </mj-text>
                         <mj-button css-class="main-section" background-color="#00ACCA" href="#">View federated integrations</mj-button>
                     </mj-column>
-                    </mj-section>
-                    <mj-section>
-                    <mj-column>
-                        <mj-text align="center">
-                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                        </mj-text>
-                        <mj-text color="#3C3C3B" align="center">
-                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                        </mj-text>
-                    </mj-column>
-                    </mj-section>
-                </mj-body>
-            </mjml>
-        	
-fmaintegration.team.admin.create	fmaintegration.team.admin.create	[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.	
-            <mjml>
-                <mj-head>
-                    <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                    <mj-style inline="inline">
-                    .main-button {
-                    padding:10px;
-                    width:auto;
-                    -webkit-border-radius:5px;
-                    -moz-border-radius:5px;
-                    border-radius:5px;
-                    color:#FFFFFF;
-                    }
-                    </mj-style>
-                </mj-head>
-                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                    <mj-section background-color="#ffffff">
-                    <mj-column>
-                        <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                    </mj-column>
-                    </mj-section>
-
-                    <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                    <mj-column width="100%">
-                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]].
-                        </mj-text>
-                    </mj-column>
-                    </mj-section>
-                    <mj-section>
-                    <mj-column>
-                        <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
-                            Dear [[USER_FIRST_NAME]],<br></br>
-                            An integration for [[INTEGRATION_TYPE]] has been created to enable automated integration with the HDR Innovation Gateway.<br></br>
-                            To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
-                        </mj-text>
-                        <mj-button css-class="main-section" background-color="#00ACCA" href="#">View federated integrations</mj-button>
-                    </mj-column>
-                    </mj-section>
-                    <mj-section>
-                    <mj-column>
-                        <mj-text align="center">
-                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                        </mj-text>
-                        <mj-text color="#3C3C3B" align="center">
-                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                        </mj-text>
-                    </mj-column>
-                    </mj-section>
-                </mj-body>
-            </mjml>
-        	
-fmaintegration.other.create	fmaintegration.other.create	[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.	
-                <mjml>
-                <mj-head>
-                <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                <mj-style inline="inline">
-                    .main-button {
-                    padding:10px;
-                    width:auto;
-                    -webkit-border-radius:5px;
-                    -moz-border-radius:5px;
-                    border-radius:5px;
-                    color:#FFFFFF;
-                    }
-                </mj-style>
-                </mj-head>
-                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                <mj-section background-color="#ffffff">
-                    <mj-column>
-                    <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                    </mj-column>
-                </mj-section>
-            
-                <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                    <mj-column width="100%">
-                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]].
+                    </mj-section>'
+                    . $this->standardFullFooter(),
+            ]
+        );
+        
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'fmaintegration.team.admin.create'
+            ],
+            [	
+                'identifier' => 'fmaintegration.team.admin.create',
+            	'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',	
+                'body' => $this->standardFullHeader('Congratulations! A new integration has been created for<br> [[TEAM_NAME]].')
+                    . '
+            <mj-section>
+                <mj-column>
+                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                        Dear [[USER_FIRST_NAME]],<br></br>
+                        An integration for [[INTEGRATION_TYPE]] has been created to enable automated integration with the HDR Innovation Gateway.<br></br>
+                        To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
                     </mj-text>
-                    </mj-column>
-                </mj-section>
+                    <mj-button css-class="main-section" background-color="#00ACCA" href="#">View federated integrations</mj-button>
+                </mj-column>
+            </mj-section>'
+                    . $this->standardFullFooter()
+            ]
+        );
+
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'fmaintegration.other.create'
+            ],
+            [	
+                'identifier' => 'fmaintegration.other.create',
+            	'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',	
+                'body' => $this->standardFullHeader('Congratulations! A new integration has been created for<br> [[TEAM_NAME]].')
+                    . '
                 <mj-section>
                     <mj-column>
                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1476,168 +1142,85 @@ fmaintegration.other.create	fmaintegration.other.create	[[API_NAME]] has been ad
                         [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
                     </mj-text>
                     </mj-column>
-                </mj-section>
-                <mj-section>
-                    <mj-column>
-                    <mj-text align="center">
-                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                    </mj-text>
-                    <mj-text color="#3C3C3B" align="center">
-                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                    </mj-text>
-                    </mj-column>
-                </mj-section>
-                </mj-body>
-            </mjml>
-            	
-fmaintegration.developer.disable	fmaintegration.developer.disable	An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.	
-            <mjml>
-                <mj-head>
-                <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                <mj-style inline="inline">
-                    .main-button {
-                    padding:10px;
-                    width:auto;
-                    -webkit-border-radius:5px;
-                    -moz-border-radius:5px;
-                    border-radius:5px;
-                    color:#FFFFFF;
-                    }
-                </mj-style>
-                </mj-head>
-                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                <mj-section background-color="#ffffff">
-                    <mj-column>
-                    <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                    </mj-column>
-                </mj-section>
-            
-                <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                    <mj-column width="100%">
-                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was disabled on the Gateway for<br> [[TEAM_NAME]].
-                    </mj-text>
-                    </mj-column>
-                </mj-section>
-                <mj-section>
-                    <mj-column>
-                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
-                        Dear [[USER_FIRST_NAME]],<br></br>
-                        This is an automated notification that [[DISABLER]] disabled an integration on the HDR Innovation Gateway.<br></br>
-                            To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
-                    </mj-text>
-                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
-                    </mj-column>
-                </mj-section>
-                <mj-section>
-                    <mj-column>
-                    <mj-text align="center">
-                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                    </mj-text>
-                    <mj-text color="#3C3C3B" align="center">
-                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                    </mj-text>
-                    </mj-column>
-                </mj-section>
-                </mj-body>
-            </mjml>
-        	
-            {
-                "replacements": [
-                    {
-                        "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
-                    }
-                ]
-            }
-            
-fmaintegration.team.admin.disable	fmaintegration.team.admin.disable	An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.	
-            <mjml>
-                <mj-head>
-                <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                <mj-style inline="inline">
-                    .main-button {
-                    padding:10px;
-                    width:auto;
-                    -webkit-border-radius:5px;
-                    -moz-border-radius:5px;
-                    border-radius:5px;
-                    color:#FFFFFF;
-                    }
-                </mj-style>
-                </mj-head>
-                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                <mj-section background-color="#ffffff">
-                    <mj-column>
-                    <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                    </mj-column>
-                </mj-section>
-            
-                <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                    <mj-column width="100%">
-                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was disabled on the Gateway for<br> [[TEAM_NAME]].
-                    </mj-text>
-                    </mj-column>
-                </mj-section>
-                <mj-section>
-                    <mj-column>
-                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
-                        Dear [[USER_FIRST_NAME]],<br></br>
-                        This is an automated notification that [[DISABLER]] disabled an integration on the HDR Innovation Gateway.<br></br>
-                            To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
-                    </mj-text>
-                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
-                    </mj-column>
-                </mj-section>
-                <mj-section>
-                    <mj-column>
-                    <mj-text align="center">
-                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                    </mj-text>
-                    <mj-text color="#3C3C3B" align="center">
-                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                    </mj-text>
-                    </mj-column>
-                </mj-section>
-                </mj-body>
-            </mjml>
-        	
-            {
-                "replacements": [
-                    {
-                        "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
-                    }
-                ]
-            }
-            
-fmaintegration.other.disable	fmaintegration.other.disable	An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.	
-                <mjml>
-                    <mj-head>
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-style inline="inline">
-                        .main-button {
-                        padding:10px;
-                        width:auto;
-                        -webkit-border-radius:5px;
-                        -moz-border-radius:5px;
-                        border-radius:5px;
-                        color:#FFFFFF;
-                        }
-                        </mj-style>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                        <mj-section background-color="#ffffff">
-                        <mj-column>
-                            <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                        </mj-column>
-                        </mj-section>
+                </mj-section>'
+                    . $this->standardFullFooter()
+            ]
+        );
 
-                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                        <mj-column width="100%">
-                            <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was disabled on the Gateway for<br> [[TEAM_NAME]].
-                            </mj-text>
-                        </mj-column>
-                        </mj-section>
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'fmaintegration.developer.disable',
+            ],
+            [
+                'identifier' => 'fmaintegration.developer.disable',
+                'subject' => 'An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.',
+                'body' => $this->standardFullHeader('An integration was disabled on the Gateway for<br> [[TEAM_NAME]].')
+                    . '
+        	
+            <mj-section>
+                <mj-column>
+                <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                    Dear [[USER_FIRST_NAME]],<br></br>
+                    This is an automated notification that [[DISABLER]] disabled an integration on the HDR Innovation Gateway.<br></br>
+                        To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
+                </mj-text>
+                <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
+                </mj-column>
+            </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                    }
+                ]
+            }'
+            ]
+        );
+
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'fmaintegration.team.admin.disable'
+            ],
+            [	
+                'identifier' => 'fmaintegration.team.admin.disable',
+            	'subject' => 'An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.',	
+                'body' => $this->standardFullHeader('An integration was disabled on the Gateway for<br> [[TEAM_NAME]].')
+                    . '
+                <mj-section>
+                    <mj-column>
+                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                        Dear [[USER_FIRST_NAME]],<br></br>
+                        This is an automated notification that [[DISABLER]] disabled an integration on the HDR Innovation Gateway.<br></br>
+                            To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
+                    </mj-text>
+                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
+                    </mj-column>
+                </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                    }
+                ]
+            }'
+            ]
+        );
+
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'fmaintegration.other.disable'
+            ],
+            [	
+                'identifier' => 'fmaintegration.other.disable',
+            	'subject' => 'An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.',	
+                'body' => $this->standardFullHeader('An integration was disabled on the Gateway for<br> [[TEAM_NAME]].')
+                    . '
                         <mj-section>
                         <mj-column>
                             <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1647,168 +1230,84 @@ fmaintegration.other.disable	fmaintegration.other.disable	An integration has bee
                     [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
                             </mj-text>
                         </mj-column>
-                        </mj-section>
-                        <mj-section>
-                        <mj-column>
-                            <mj-text align="center">
-                            <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                            </mj-text>
-                            <mj-text color="#3C3C3B" align="center">
-                            @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                            </mj-text>
-                        </mj-column>
-                        </mj-section>
-                    </mj-body>
-                </mjml>
-            	
-integration.developer.delete	integration.developer.delete	An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.	
-            <mjml>
-                <mj-head>
-                <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                <mj-style inline="inline">
-                    .main-button {
-                    padding:10px;
-                    width:auto;
-                    -webkit-border-radius:5px;
-                    -moz-border-radius:5px;
-                    border-radius:5px;
-                    color:#FFFFFF;
-                    }
-                </mj-style>
-                </mj-head>
-                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                <mj-section background-color="#ffffff">
-                    <mj-column>
-                    <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                    </mj-column>
-                </mj-section>
-            
-                <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                    <mj-column width="100%">
-                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was deleted on the Gateway for<br> [[TEAM_NAME]].
-                    </mj-text>
-                    </mj-column>
-                </mj-section>
-                <mj-section>
-                    <mj-column>
-                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
-                        Dear [[USER_FIRST_NAME]],<br></br>
-                        This is an automated notification that [[DISABLER]] deleted an integration on the HDR Innovation Gateway. This is not reversible.<br></br>
-                        To review or edit integrations, click the link below or visit your account on the Gateway.<br></br>
-                    </mj-text>
-                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
-                    </mj-column>
-                </mj-section>
-                <mj-section>
-                    <mj-column>
-                    <mj-text align="center">
-                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                    </mj-text>
-                    <mj-text color="#3C3C3B" align="center">
-                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                    </mj-text>
-                    </mj-column>
-                </mj-section>
-                </mj-body>
-            </mjml>
-        	
-            {
-                "replacements": [
-                    {
-                        "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
-                    }
-                ]
-            }
-            
-integration.team.admin.delete	integration.team.admin.delete	An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.	
-            <mjml>
-                <mj-head>
-                <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                <mj-style inline="inline">
-                    .main-button {
-                    padding:10px;
-                    width:auto;
-                    -webkit-border-radius:5px;
-                    -moz-border-radius:5px;
-                    border-radius:5px;
-                    color:#FFFFFF;
-                    }
-                </mj-style>
-                </mj-head>
-                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                <mj-section background-color="#ffffff">
-                    <mj-column>
-                    <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                    </mj-column>
-                </mj-section>
-            
-                <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                    <mj-column width="100%">
-                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was deleted on the Gateway for<br> [[TEAM_NAME]].
-                    </mj-text>
-                    </mj-column>
-                </mj-section>
-                <mj-section>
-                    <mj-column>
-                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
-                        Dear [[USER_FIRST_NAME]],<br></br>
-                        This is an automated notification that [[DISABLER]] deleted an integration on the HDR Innovation Gateway. This is not reversible.<br></br>
-                        To review or edit integrations, click the link below or visit your account on the Gateway.<br></br>
-                    </mj-text>
-                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
-                    </mj-column>
-                </mj-section>
-                <mj-section>
-                    <mj-column>
-                    <mj-text align="center">
-                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                    </mj-text>
-                    <mj-text color="#3C3C3B" align="center">
-                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                    </mj-text>
-                    </mj-column>
-                </mj-section>
-                </mj-body>
-            </mjml>
-        	
-            {
-                "replacements": [
-                    {
-                        "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
-                    }
-                ]
-            }
-            
-integration.other.delete	integration.other.delete	An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.	
-                <mjml>
-                    <mj-head>
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-style inline="inline">
-                        .main-button {
-                        padding:10px;
-                        width:auto;
-                        -webkit-border-radius:5px;
-                        -moz-border-radius:5px;
-                        border-radius:5px;
-                        color:#FFFFFF;
-                        }
-                        </mj-style>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                        <mj-section background-color="#ffffff">
-                        <mj-column>
-                            <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                        </mj-column>
-                        </mj-section>
+                        </mj-section>'
+                    . $this->standardFullFooter()
+            ]
+        );
 
-                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                        <mj-column width="100%">
-                            <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was deleted on the Gateway for<br> [[TEAM_NAME]].
-                            </mj-text>
-                        </mj-column>
-                        </mj-section>
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'integration.developer.delete'
+            ],
+            [	
+                'identifier' => 'integration.developer.delete',
+            	'subject' => 'An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.',	
+                'body' => $this->standardFullHeader('An integration was deleted on the Gateway for<br> [[TEAM_NAME]].')
+                    . '
+                <mj-section>
+                    <mj-column>
+                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                        Dear [[USER_FIRST_NAME]],<br></br>
+                        This is an automated notification that [[DISABLER]] deleted an integration on the HDR Innovation Gateway. This is not reversible.<br></br>
+                        To review or edit integrations, click the link below or visit your account on the Gateway.<br></br>
+                    </mj-text>
+                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
+                    </mj-column>
+                </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                    }
+                ]
+            }'
+            ]
+        );
+
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'integration.team.admin.delete'
+            ],
+            [	
+                'identifier' => 'integration.team.admin.delete',
+            	'subject' => 'An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.',	
+                'body' => $this->standardFullHeader('An integration was deleted on the Gateway for<br> [[TEAM_NAME]].')
+                    . '
+                <mj-section>
+                    <mj-column>
+                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                        Dear [[USER_FIRST_NAME]],<br></br>
+                        This is an automated notification that [[DISABLER]] deleted an integration on the HDR Innovation Gateway. This is not reversible.<br></br>
+                        To review or edit integrations, click the link below or visit your account on the Gateway.<br></br>
+                    </mj-text>
+                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
+                    </mj-column>
+                </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                    }
+                ]
+            }'
+            ]
+        );
+
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'integration.other.delete'
+            ],
+            [	
+                'identifier' => 'integration.other.delete',
+            	'subject' => 'An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.',	
+                'body' => $this->standardFullHeader('An integration was deleted on the Gateway for<br> [[TEAM_NAME]].')
+                    . '
                         <mj-section>
                         <mj-column>
                             <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1818,48 +1317,20 @@ integration.other.delete	integration.other.delete	An integration has been delete
                     [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
                             </mj-text>
                         </mj-column>
-                        </mj-section>
-                        <mj-section>
-                        <mj-column>
-                            <mj-text align="center">
-                            <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                            </mj-text>
-                            <mj-text color="#3C3C3B" align="center">
-                            @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                            </mj-text>
-                        </mj-column>
-                        </mj-section>
-                    </mj-body>
-                </mjml>
-            	
-integration.developer.error	integration.developer.error	An automation error occurred for the [[TEAM_NAME]] team on the Gateway.	
-            <mjml>
-                <mj-head>
-                <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                <mj-style inline="inline">
-                    .main-button {
-                    padding:10px;
-                    width:auto;
-                    -webkit-border-radius:5px;
-                    -moz-border-radius:5px;
-                    border-radius:5px;
-                    color:#FFFFFF;
-                    }
-                </mj-style>
-                </mj-head>
-                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                <mj-section background-color="#ffffff">
-                    <mj-column>
-                    <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                    </mj-column>
-                </mj-section>
-            
-                <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                    <mj-column width="100%">
-                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was disabled on the Gateway for<br> [[TEAM_NAME]].
-                    </mj-text>
-                    </mj-column>
-                </mj-section>
+                        </mj-section>'
+                    . $this->standardFullFooter()
+            ]
+        );
+          
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'integration.developer.error'
+            ],
+            [	
+                'identifier' => 'integration.developer.error',
+            	'subject' => 'An automation error occurred for the [[TEAM_NAME]] team on the Gateway.',	
+                'body' => $this->standardFullHeader('An integration was disabled on the Gateway for<br> [[TEAM_NAME]].')
+                    . '
                 <mj-section>
                     <mj-column>
                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1869,20 +1340,9 @@ integration.developer.error	integration.developer.error	An automation error occu
                     </mj-text>
                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
                     </mj-column>
-                </mj-section>
-                <mj-section>
-                    <mj-column>
-                    <mj-text align="center">
-                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                    </mj-text>
-                    <mj-text color="#3C3C3B" align="center">
-                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                    </mj-text>
-                    </mj-column>
-                </mj-section>
-                </mj-body>
-            </mjml>
-        	
+                </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
             {
                 "replacements": [
                     {
@@ -1890,36 +1350,19 @@ integration.developer.error	integration.developer.error	An automation error occu
                         "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
                     }
                 ]
-            }
+            }'
+            ]
+        );
             
-integration.team.admin.error	integration.team.admin.error	An automation error occurred for the [[TEAM_NAME]] team on the Gateway.	
-            <mjml>
-                <mj-head>
-                <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                <mj-style inline="inline">
-                    .main-button {
-                    padding:10px;
-                    width:auto;
-                    -webkit-border-radius:5px;
-                    -moz-border-radius:5px;
-                    border-radius:5px;
-                    color:#FFFFFF;
-                    }
-                </mj-style>
-                </mj-head>
-                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                <mj-section background-color="#ffffff">
-                    <mj-column>
-                    <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                    </mj-column>
-                </mj-section>
-            
-                <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                    <mj-column width="100%">
-                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was disabled on the Gateway for<br> [[TEAM_NAME]].
-                    </mj-text>
-                    </mj-column>
-                </mj-section>
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'integration.team.admin.error',
+            ],
+            [
+                'identifier' => 'integration.team.admin.error',
+                'subject' => 'An automation error occurred for the [[TEAM_NAME]] team on the Gateway.',
+                'body' => $this->standardFullHeader('An integration was disabled on the Gateway for<br> [[TEAM_NAME]].')
+                    . '
                 <mj-section>
                     <mj-column>
                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1929,20 +1372,9 @@ integration.team.admin.error	integration.team.admin.error	An automation error oc
                     </mj-text>
                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
                     </mj-column>
-                </mj-section>
-                <mj-section>
-                    <mj-column>
-                    <mj-text align="center">
-                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                    </mj-text>
-                    <mj-text color="#3C3C3B" align="center">
-                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                    </mj-text>
-                    </mj-column>
-                </mj-section>
-                </mj-body>
-            </mjml>
-        	
+                </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
             {
                 "replacements": [
                     {
@@ -1950,46 +1382,19 @@ integration.team.admin.error	integration.team.admin.error	An automation error oc
                         "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
                     }
                 ]
-            }
-            
-integration.other.error	integration.other.error	An automation error occurred for the [[TEAM_NAME]] team on the Gateway.	
-                <mjml>
-                    <mj-head>
-                    <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                    <mj-style inline="inline">
-                        .main-button {
-                        padding:10px;
-                        width:auto;
-                        -webkit-border-radius:5px;
-                        -moz-border-radius:5px;
-                        border-radius:5px;
-                        color:#FFFFFF;
-                        }
-                    </mj-style>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                    <mj-section background-color="#ffffff">
-                        <mj-column>
-                        <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                        </mj-column>
-                    </mj-section>
-                
-                    <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                        <mj-column width="100%">
-                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An automation error occurred for an integration on the Gateway for<br> [[TEAM_NAME]].
-                        </mj-text>
-                        </mj-column>
-                    </mj-section>
-                    <mj-section>
-                        <mj-column>
-                        <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
-                            Dear [[USER_FIRST_NAME]],<br></br>
-                            This is an automated notification that on [[DATE_OF_ERROR]]  there was an error during the scheduled cloud run for the [[INTEGRATION_TYPE]] integration. Summary of the synchronisations is below.<br></br>
-                            To review or edit the integration, contact your Team Administrator(s) or Developer(s):
-                            [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
-                        </mj-text>
-                        </mj-column>
-                    </mj-section>
+            }'
+            ]
+        );
+
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'integration.other.error',
+            ],
+            [
+                'identifier' => 'integration.other.error',
+                'subject' => 'An automation error occurred for the [[TEAM_NAME]] team on the Gateway.',
+                'body' => $this->standardFullHeader('An automation error occurred for an integration on the Gateway for<br> [[TEAM_NAME]].')
+                    . '
                     <mj-section>
                         <mj-column>
                         <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1999,66 +1404,20 @@ integration.other.error	integration.other.error	An automation error occurred for
                             [[LIST_OF_SUCCESS]]<br></br>
                         </mj-text>
                         </mj-column>
-                    </mj-section>
-                    <mj-section>
-                        <mj-column>
-                        <mj-text align="center">
-                            <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                        </mj-text>
-                        <mj-text color="#3C3C3B" align="center">
-                            @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                        </mj-text>
-                        </mj-column>
-                    </mj-section>
-                    </mj-body>
-                </mjml>
-            	
-feasibilityenquiry.firstmessage	feasibilityenquiry.firstmessage	Feasibility Enquiry from the Health Data Research Gateway: [[USER_FIRST_NAME]] [[USER_LAST_NAME]], [[PROJECT_TITLE]]	
-                <mjml>
-                    <mj-head>
-                        <mj-html-attributes>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="text-color" text-color="#000000"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-family" font-family="-apple-system, BlinkMacSystemFont,
-                                'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans','Helvetica Neue', sans-serif">
-                            </mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-size" font-size="14px"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="line-height" line-height="1.7"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-weight" font-weight="400"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="responsive" responsive="true"></mj-html-attribute>
-                        </mj-html-attributes>
-                        <mj-style >.main-button {
-                            padding:10px;
-                            width:auto;
-                            -webkit-border-radius:5px;
-                            -moz-border-radius:5px;
-                            border-radius:5px;
-                            color:#FFFFFF;
-                            }
-                        </mj-style>
-                        <mj-breakpoint width="480px" />
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-attributes>
-                            <mj-all font-family="-apple-system, BlinkMacSystemFont, 
-                                'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans','Helvetica Neue', sans-serif" />
-                            <mj-text font-size="14px" />
-                            <mj-text color="#000000" />
-                            <mj-text line-height="1.7" />
-                            <mj-text font-weight="400" />
-                        </mj-attributes>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" width="600px" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B" >
-                        <mj-section padding="20px 0px 20px 0px" border="none" direction="ltr" text-align="center" background-repeat="repeat" background-size="auto" background-position="top center" background-color="#ffffff" >
-                            <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                <mj-image align="center" height="auto" src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" width="226px" padding="10px 0px 10px 0px" >
-                                </mj-image>
-                            </mj-column>
-                        </mj-section>
-                        <mj-section background-repeat="no-repeat" background-size="cover" background-position="top center" border="none" direction="ltr"
-                            text-align="center" background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" padding="20px 0px 20px 0px" >
-                            <mj-column border="none" vertical-align="top" width="100%" padding="0px 0px 0px 0px" >
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0px 30px 0px" >Feasibility enquiry received.</mj-text>
-                            </mj-column>
-                        </mj-section>
+                    </mj-section>'
+                    . $this->standardFullFooter()
+            ]
+        );
+
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'feasibilityenquiry.firstmessage',
+            ],
+            [
+                'identifier' => 'feasibilityenquiry.firstmessage',
+                'subject' => 'Feasibility Enquiry from the Health Data Research Gateway: [[USER_FIRST_NAME]] [[USER_LAST_NAME]], [[PROJECT_TITLE]]',
+                'body' => $this->standardFullHeader('Feasibility enquiry received.')
+                    . '
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[TEAM_NAME]],<br><br>
@@ -2067,63 +1426,20 @@ feasibilityenquiry.firstmessage	feasibilityenquiry.firstmessage	Feasibility Enqu
                                     <div>[[MESSAGE_BODY]]</div>
                                 </mj-text>
                             </mj-column>
-                        </mj-section>
-                        <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
-                            <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                <mj-text align="center" padding="10px 25px 10px 25px" >
-                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text align="center" color="#3C3C3B" padding="10px 25px 10px 25px" >@HDR UK [[CURRENT_YEAR]]. All rights reserved.</mj-text>
-                            </mj-column>
-                        </mj-section>
-                    </mj-body>
-                </mjml > 
-            	
-dar.notifymessage	dar.notifymessage	New Data Access Enquiry reply from [[USER_FIRST_NAME]] [[USER_LAST_NAME]]: [[PROJECT_TITLE]]	
-                <mjml>
-                    <mj-head>
-                        <mj-html-attributes>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="text-color" text-color="#000000"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-family" font-family="-apple-system, BlinkMacSystemFont,
-                                Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,Helvetica Neue, sans-serif">
-                            </mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-size" font-size="14px"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="line-height" line-height="1.7"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-weight" font-weight="400"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="responsive" responsive="true"></mj-html-attribute>
-                        </mj-html-attributes>
-                        <mj-style >.main-button {
-                            padding:10px;
-                            width:auto;
-                            -webkit-border-radius:5px;
-                            -moz-border-radius:5px;
-                            border-radius:5px;
-                            color:#FFFFFF;
-                            }
-                        </mj-style>
-                        <mj-breakpoint width="480px" />
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-attributes>
-                            <mj-all font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,Helvetica Neue, sans-serif" />
-                            <mj-text font-size="14px" />
-                            <mj-text color="#000000" />
-                            <mj-text line-height="1.7" />
-                            <mj-text font-weight="400" />
-                        </mj-attributes>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" width="600px" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B" >
-                        <mj-section padding="20px 0px 20px 0px" border="none" direction="ltr" text-align="center" background-repeat="repeat" background-size="auto" background-position="top center" background-color="#ffffff" >
-                            <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                <mj-image align="center" height="auto" src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" width="226px" padding="10px 0px 10px 0px" >
-                                </mj-image>
-                            </mj-column>
-                        </mj-section>
-                        <mj-section background-repeat="no-repeat" background-size="cover" background-position="top center" border="none" direction="ltr"
-                            text-align="center" background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" padding="20px 0px 20px 0px" >
-                            <mj-column border="none" vertical-align="top" width="100%" padding="0px 0px 0px 0px" >
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0px 30px 0px" >New comment on the Data Access Request for [[PROJECT_TITLE]].</mj-text>
-                            </mj-column>
-                        </mj-section>
+                        </mj-section>'
+                    . $this->standardFullFooter()
+            ]
+        ); 
+        
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'dar.notifymessage',
+            ],
+            [	
+                'identifier' => 'dar.notifymessage',
+                'subject' => 'New Data Access Enquiry reply from [[USER_FIRST_NAME]] [[USER_LAST_NAME]]: [[PROJECT_TITLE]]',
+                'body' => $this->standardFullHeader('New comment on the Data Access Request for [[PROJECT_TITLE]].')
+                    . '
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[RECIPIENT_NAME]],<br><br>
@@ -2132,64 +1448,20 @@ dar.notifymessage	dar.notifymessage	New Data Access Enquiry reply from [[USER_FI
                                     <div>[[MESSAGE_BODY]]</div>
                                 </mj-text>
                             </mj-column>
-                        </mj-section>
-                        <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
-                            <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                <mj-text align="center" padding="10px 25px 10px 25px" >
-                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text align="center" color="#3C3C3B" padding="10px 25px 10px 25px" >@HDR UK [[CURRENT_YEAR]]. All rights reserved.</mj-text>
-                            </mj-column>
-                        </mj-section>
-                    </mj-body>
-                </mjml>
-            	
-generalenquiry.firstmessage	generalenquiry.firstmessage	General Enquiry from the Health Data Research Gateway: [[USER_FIRST_NAME]] [[USER_LAST_NAME]], [[USER_ORGANISATION]]	
-                <mjml>
-                    <mj-head>
-                        <mj-html-attributes>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="text-color" text-color="#000000"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-family" font-family="-apple-system, BlinkMacSystemFont,
-                                'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans','Helvetica Neue', sans-serif">
-                            </mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-size" font-size="14px"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="line-height" line-height="1.7"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-weight" font-weight="400"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="responsive" responsive="true"></mj-html-attribute>
-                        </mj-html-attributes>
-                        <mj-style >.main-button {
-                            padding:10px;
-                            width:auto;
-                            -webkit-border-radius:5px;
-                            -moz-border-radius:5px;
-                            border-radius:5px;
-                            color:#FFFFFF;
-                            }
-                        </mj-style>
-                        <mj-breakpoint width="480px" />
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-attributes>
-                            <mj-all font-family="-apple-system, BlinkMacSystemFont, 
-                                'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans','Helvetica Neue', sans-serif" />
-                            <mj-text font-size="14px" />
-                            <mj-text color="#000000" />
-                            <mj-text line-height="1.7" />
-                            <mj-text font-weight="400" />
-                        </mj-attributes>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" width="600px" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B" >
-                        <mj-section padding="20px 0px 20px 0px" border="none" direction="ltr" text-align="center" background-repeat="repeat" background-size="auto" background-position="top center" background-color="#ffffff" >
-                            <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                <mj-image align="center" height="auto" src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" width="226px" padding="10px 0px 10px 0px" >
-                                </mj-image>
-                            </mj-column>
-                        </mj-section>
-                        <mj-section background-repeat="no-repeat" background-size="cover" background-position="top center" border="none" direction="ltr"
-                            text-align="center" background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" padding="20px 0px 20px 0px" >
-                            <mj-column border="none" vertical-align="top" width="100%" padding="0px 0px 0px 0px" >
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0px 30px 0px" >General Enquiry received.</mj-text>
-                            </mj-column>
-                        </mj-section>
+                        </mj-section>'
+                    . $this->standardFullFooter()
+            ]
+        ); 
+            
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'generalenquiry.firstmessage',
+            ],
+            [	
+                'identifier' => 'generalenquiry.firstmessage',
+                'subject' => 'General Enquiry from the Health Data Research Gateway: [[USER_FIRST_NAME]] [[USER_LAST_NAME]], [[USER_ORGANISATION]]',
+                'body' => $this->standardFullHeader('General Enquiry received.')
+                    . '
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[TEAM_NAME]],<br><br>
@@ -2198,48 +1470,20 @@ generalenquiry.firstmessage	generalenquiry.firstmessage	General Enquiry from the
                                     <div>[[MESSAGE_BODY]]</div>
                                 </mj-text>
                             </mj-column>
-                        </mj-section>
-                        <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
-                            <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                <mj-text align="center" padding="10px 25px 10px 25px" >
-                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text align="center" color="#3C3C3B" padding="10px 25px 10px 25px" >@HDR UK [[CURRENT_YEAR]]. All rights reserved.</mj-text>
-                            </mj-column>
-                        </mj-section>
-                    </mj-body>
-                </mjml > 
-            	
-cohort.request.admin.approve	cohort.request.admin.approve	You have been assigned the role of Cohort Discovery admin on the Gateway	
-                <mjml>
-                    <mj-head>
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-style inline="inline">
-                            .main-button {
-                                padding:10px;
-                                width:auto;
-                                -webkit-border-radius:5px;
-                                -moz-border-radius:5px;
-                                border-radius:5px;
-                                color:#FFFFFF;
-                            }
-                        </mj-style>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                        <mj-section background-color="#ffffff">
-                            <mj-column>
-                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                            </mj-column>
-                        </mj-section>
+                        </mj-section>'
+                    . $this->standardFullFooter()
+            ]
+        );
         
-                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                            <mj-column width="100%">
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                    You have been assigned the role of Cohort Discovery admin on the Gateway
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-        
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'cohort.request.admin.approve',
+            ],
+            [	
+                'identifier' => 'cohort.request.admin.approve',
+                'subject' => 'You have been assigned the role of Cohort Discovery admin on the Gateway',
+                'body' => $this->standardFullHeader('You have been assigned the role of Cohort Discovery admin on the Gateway')
+                    . '
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text  line-height="20px">
@@ -2263,51 +1507,20 @@ cohort.request.admin.approve	cohort.request.admin.approve	You have been assigned
                                     </ul>
                                 </mj-text>
                             </mj-column>
-                        </mj-section>
-        
-                        <mj-section>
-                            <mj-column>
-                                <mj-text align="center">
-                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text color="#525252" align="center">
-                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-        
-                    </mj-body>
-                </mjml>	
-cohort.request.admin.remove	cohort.request.admin.remove	Your Cohort Discovery admin permissions has been removed	
-                <mjml>
-                    <mj-head>
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-style inline="inline">
-                            .main-button {
-                                padding:10px;
-                                width:auto;
-                                -webkit-border-radius:5px;
-                                -moz-border-radius:5px;
-                                border-radius:5px;
-                                color:#FFFFFF;
-                            }
-                        </mj-style>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                        <mj-section background-color="#ffffff">
-                            <mj-column>
-                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                            </mj-column>
-                        </mj-section>
-        
-                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                            <mj-column width="100%">
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                    Your Cohort Discovery admin permissions has been removed
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-        
+                        </mj-section>'
+                    . $this->standardFullFooter()
+            ]
+        );
+
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'cohort.request.admin.remove',
+            ],
+            [	
+                'identifier' => 'cohort.request.admin.remove',
+                'subject' => 'Your Cohort Discovery admin permissions has been removed',
+                'body' => $this->standardFullHeader('Your Cohort Discovery admin permissions has been removed')
+                    . '
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text  line-height="20px">
@@ -2333,51 +1546,20 @@ cohort.request.admin.remove	cohort.request.admin.remove	Your Cohort Discovery ad
                                     For more information, please raise a support ticket on the HDR UK Innovation Gateway.
                                 </mj-text>
                             </mj-column>
-                        </mj-section>
-        
-                        <mj-section>
-                            <mj-column>
-                                <mj-text align="center">
-                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text color="#525252" align="center">
-                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-        
-                    </mj-body>
-                </mjml>	
-private.app.create	private.app.create	Congratulations! A new Private App has been created.	
-                <mjml>
-                    <mj-head>
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-style inline="inline">
-                            .main-button {
-                                padding:10px;
-                                width:auto;
-                                -webkit-border-radius:5px;
-                                -moz-border-radius:5px;
-                                border-radius:5px;
-                                color:#FFFFFF;
-                            }
-                        </mj-style>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                        <mj-section background-color="#ffffff">
-                            <mj-column>
-                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                            </mj-column>
-                        </mj-section>
+                        </mj-section>'
+                    . $this->standardFullFooter()
+            ]
+        );
 
-                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                            <mj-column width="100%">
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                    Congratulations! A new Private App has been created for [[TEAM_NAME]] 
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'private.app.create',
+            ],
+            [	
+                'identifier' => 'private.app.create',
+                'subject' => 'Congratulations! A new Private App has been created.',
+                'body' => $this->standardFullHeader('Congratulations! A new Private App has been created for [[TEAM_NAME]]')
+                    . '
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text  line-height="20px">
@@ -2407,61 +1589,29 @@ private.app.create	private.app.create	Congratulations! A new Private App has bee
                             <mj-column>
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                             </mj-column>
-                        </mj-section>
-
-                        <mj-section>
-                            <mj-column>
-                                <mj-text align="center">
-                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text color="#525252" align="center">
-                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-
-                    </mj-body>
-                </mjml>	
-                {
-                    "replacements": [
-                        {
-                            "placeholder": "[[BUTTON_1_URL]]",
-                            "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
-                        }
-                    ]
-                }
-            
-private.app.update	private.app.update	Private App has been updated.	
-                    <mjml>
-                        <mj-head>
-                            <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                            <mj-style inline="inline">
-                                .main-button {
-                                    padding:10px;
-                                    width:auto;
-                                    -webkit-border-radius:5px;
-                                    -moz-border-radius:5px;
-                                    border-radius:5px;
-                                    color:#FFFFFF;
-                                }
-                            </mj-style>
-                        </mj-head>
-
-                        <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                            <mj-section background-color="#ffffff">
-                                <mj-column>
-                                    <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                                </mj-column>
-                            </mj-section>
-
-                            <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                                <mj-column width="100%">
-                                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                        Private App has been updated for [[TEAM_NAME]] 
-                                    </mj-text>
-                                </mj-column>
-                            </mj-section>
-
+                        </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
+                    }
+                ]
+            }'
+            ]
+        );
+        
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'private.app.update',
+            ],
+            [	
+                'identifier' => 'private.app.update',
+                'subject' => 'Private App has been updated.',
+                'body' => $this->standardFullHeader('Private App has been updated for [[TEAM_NAME]]')
+                    . '
                             <mj-section>
                                 <mj-column width="100%">
                                     <mj-text line-height="20px">
@@ -2490,20 +1640,9 @@ private.app.update	private.app.update	Private App has been updated.
                                 <mj-column>
                                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                                 </mj-column>
-                            </mj-section>
-
-                            <mj-section>
-                                <mj-column>
-                                    <mj-text align="center">
-                                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                    </mj-text>
-                                    <mj-text color="#525252" align="center">
-                                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                                    </mj-text>
-                                </mj-column>
-                            </mj-section>
-                        </mj-body>
-                    </mjml>	
+                            </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
                 {
                     "replacements": [
                         {
@@ -2511,37 +1650,19 @@ private.app.update	private.app.update	Private App has been updated.
                             "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
-                }
-private.app.delete	private.app.delete	Private App has been deleted.	
-                <mjml>
-                    <mj-head>
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-style inline="inline">
-                            .main-button {
-                                padding:10px;
-                                width:auto;
-                                -webkit-border-radius:5px;
-                                -moz-border-radius:5px;
-                                border-radius:5px;
-                                color:#FFFFFF;
-                            }
-                        </mj-style>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                        <mj-section background-color="#ffffff">
-                            <mj-column>
-                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                            </mj-column>
-                        </mj-section>
-
-                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                            <mj-column width="100%">
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                    Private App has been deleted for [[TEAM_NAME]].
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-
+                }'
+            ]
+        );
+        
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'private.app.delete',
+            ],
+            [	
+                'identifier' => 'private.app.delete',
+                'subject' => 'Private App has been deleted.',
+                'body' => $this->standardFullHeader('Private App has been deleted for [[TEAM_NAME]].')
+                    . '
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text line-height="20px">
@@ -2568,21 +1689,9 @@ private.app.delete	private.app.delete	Private App has been deleted.
                             <mj-column>
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                             </mj-column>
-                        </mj-section>
-
-                        <mj-section>
-                            <mj-column>
-                                <mj-text align="center">
-                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text color="#525252" align="center">
-                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-
-                    </mj-body>
-                </mjml>	
+                        </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
                 {
                     "replacements": [
                         {
@@ -2590,39 +1699,19 @@ private.app.delete	private.app.delete	Private App has been deleted.
                             "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
-                }
+                }'
+            ]
+        );
             
-federation.app.create	federation.app.create	Congratulations! A new Gateway App has been created.	
-                <mjml>
-                    <mj-head>
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-style inline="inline">
-                            .main-button {
-                                padding:10px;
-                                width:auto;
-                                -webkit-border-radius:5px;
-                                -moz-border-radius:5px;
-                                border-radius:5px;
-                                color:#FFFFFF;
-                            }
-                        </mj-style>
-                    </mj-head>
-
-                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                        <mj-section background-color="#ffffff">
-                            <mj-column>
-                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                            </mj-column>
-                        </mj-section>
-
-                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                            <mj-column width="100%">
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                    Congratulations! A new Gateway App has been created for [[TEAM_NAME]].
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-
+         EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'federation.app.create',
+            ],
+            [	
+                'identifier' => 'federation.app.create',
+                'subject' => 'Congratulations! A new Gateway App has been created.',
+                'body' => $this->standardFullHeader('Congratulations! A new Gateway App has been created for [[TEAM_NAME]].')
+                    . '
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text line-height="20px">
@@ -2652,20 +1741,9 @@ federation.app.create	federation.app.create	Congratulations! A new Gateway App h
                             <mj-column>
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                             </mj-column>
-                        </mj-section>
-
-                        <mj-section>
-                            <mj-column>
-                                <mj-text align="center">
-                                    <a style="text-decoration:none" href="env(GATEWAY_URL)">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text color="#525252" align="center">
-                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-                    </mj-body>
-                </mjml>	
+                        </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
                 {
                     "replacements": [
                         {
@@ -2673,39 +1751,19 @@ federation.app.create	federation.app.create	Congratulations! A new Gateway App h
                             "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
-                }
+                }'
+            ]
+        );
             
-federation.app.update	federation.app.update	Gateway App has been updated.	
-                <mjml>
-                    <mj-head>
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-style inline="inline">
-                            .main-button {
-                                padding:10px;
-                                width:auto;
-                                -webkit-border-radius:5px;
-                                -moz-border-radius:5px;
-                                border-radius:5px;
-                                color:#FFFFFF;
-                            }
-                        </mj-style>
-                    </mj-head>
-
-                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                        <mj-section background-color="#ffffff">
-                            <mj-column>
-                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                            </mj-column>
-                        </mj-section>
-
-                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                            <mj-column width="100%">
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                    Gateway App has been updated for [[TEAM_NAME]].
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'federation.app.update',
+            ],
+            [	
+                'identifier' => 'federation.app.update',
+                'subject' => 'Gateway App has been updated.',
+                'body' => $this->standardFullHeader('Gateway App has been updated for [[TEAM_NAME]].')
+                    . '
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text line-height="20px">
@@ -2735,20 +1793,9 @@ federation.app.update	federation.app.update	Gateway App has been updated.
                             <mj-column>
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                             </mj-column>
-                        </mj-section>
-
-                        <mj-section>
-                            <mj-column>
-                                <mj-text align="center">
-                                    <a style="text-decoration:none" href="env(GATEWAY_URL)">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text color="#525252" align="center">
-                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-                    </mj-body>
-                </mjml>	
+                        </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
                 {
                     "replacements": [
                         {
@@ -2756,38 +1803,19 @@ federation.app.update	federation.app.update	Gateway App has been updated.
                             "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
-                }
+                }'
+            ]
+        );
             
-update.roles.team.user	update.roles.team.user	Congratulations! Your permissions have changed.	
-                    <mjml>
-                        <mj-head>
-                            <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                            <mj-style inline="inline">
-                                .main-button {
-                                    padding:10px;
-                                    width:auto;
-                                    -webkit-border-radius:5px;
-                                    -moz-border-radius:5px;
-                                    border-radius:5px;
-                                    color:#FFFFFF;
-                                }
-                            </mj-style>
-                        </mj-head>
-                        <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                            <mj-section background-color="#ffffff">
-                                <mj-column>
-                                    <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                                </mj-column>
-                            </mj-section>
-            
-                            <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                                <mj-column width="100%">
-                                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                        Congratulations! Your permissions have changed for [[TEAM_NAME]] 
-                                    </mj-text>
-                                </mj-column>
-                            </mj-section>
-            
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'update.roles.team.user',
+            ],
+            [	
+                'identifier' => 'update.roles.team.user',
+                'subject' => 'Congratulations! Your permissions have changed.',
+                'body' => $this->standardFullHeader('Congratulations! Your permissions have changed for [[TEAM_NAME]]')
+                    . '
                             <mj-section>
                                 <mj-column width="100%">
                                     <mj-text  line-height="20px">
@@ -2815,21 +1843,9 @@ update.roles.team.user	update.roles.team.user	Congratulations! Your permissions 
                                 <mj-column>
                                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View your Team</mj-button>
                                 </mj-column>
-                            </mj-section>
-            
-                            <mj-section>
-                                <mj-column>
-                                    <mj-text align="center">
-                                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                    </mj-text>
-                                    <mj-text color="#525252" align="center">
-                                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                                    </mj-text>
-                                </mj-column>
-                            </mj-section>
-            
-                        </mj-body>
-                    </mjml>	
+                            </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
                     {
                         "replacements": [
                             {
@@ -2837,38 +1853,19 @@ update.roles.team.user	update.roles.team.user	Congratulations! Your permissions 
                                 "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/team-management"
                             }
                         ]
-                    }
-                
-add.new.user.team	add.new.user.team	Congratulations! Your have been added to a team.	
-                    <mjml>
-                        <mj-head>
-                            <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                            <mj-style inline="inline">
-                                .main-button {
-                                    padding:10px;
-                                    width:auto;
-                                    -webkit-border-radius:5px;
-                                    -moz-border-radius:5px;
-                                    border-radius:5px;
-                                    color:#FFFFFF;
-                                }
-                            </mj-style>
-                        </mj-head>
-                        <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                            <mj-section background-color="#ffffff">
-                                <mj-column>
-                                    <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                                </mj-column>
-                            </mj-section>
+                    }'
+            ]
+        );
             
-                            <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                                <mj-column width="100%">
-                                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                        Congratulations! You have been added to [[TEAM_NAME]]
-                                    </mj-text>
-                                </mj-column>
-                            </mj-section>
-            
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'add.new.user.team',
+            ],
+            [	
+                'identifier' => 'add.new.user.team',
+                'subject' => 'Congratulations! Your have been added to a team.',
+                'body' => $this->standardFullHeader('Congratulations! You have been added to [[TEAM_NAME]]')
+                    . '
                             <mj-section>
                                 <mj-column width="100%">
                                     <mj-text  line-height="20px">
@@ -2888,21 +1885,9 @@ add.new.user.team	add.new.user.team	Congratulations! Your have been added to a t
                                 <mj-column>
                                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View your Team</mj-button>
                                 </mj-column>
-                            </mj-section>
-            
-                            <mj-section>
-                                <mj-column>
-                                    <mj-text align="center">
-                                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                    </mj-text>
-                                    <mj-text color="#525252" align="center">
-                                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                                    </mj-text>
-                                </mj-column>
-                            </mj-section>
-            
-                        </mj-body>
-                    </mjml>	
+                            </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
                     {
                         "replacements": [
                             {
@@ -2910,53 +1895,19 @@ add.new.user.team	add.new.user.team	Congratulations! Your have been added to a t
                                 "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/team-management"
                             }
                         ]
-                    }
-                
-dar.firstmessage	dar.firstmessage	New Data Access Enquiry from [[USER_FIRST_NAME]] [[USER_LAST_NAME]]: [[PROJECT_TITLE]]	
-                <mjml>
-                    <mj-head>
-                        <mj-html-attributes>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="text-color" text-color="#000000"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-family" font-family="-apple-system, BlinkMacSystemFont,
-                                Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,Helvetica Neue, sans-serif">
-                            </mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-size" font-size="14px"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="line-height" line-height="1.7"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-weight" font-weight="400"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="responsive" responsive="true"></mj-html-attribute>
-                        </mj-html-attributes>
-                        <mj-style >.main-button {
-                            padding:10px;
-                            width:auto;
-                            -webkit-border-radius:5px;
-                            -moz-border-radius:5px;
-                            border-radius:5px;
-                            color:#FFFFFF;
-                            }
-                        </mj-style>
-                        <mj-breakpoint width="480px" />
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-attributes>
-                            <mj-all font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,Helvetica Neue, sans-serif" />
-                            <mj-text font-size="14px" />
-                            <mj-text color="#000000" />
-                            <mj-text line-height="1.7" />
-                            <mj-text font-weight="400" />
-                        </mj-attributes>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" width="600px" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B" >
-                        <mj-section padding="20px 0px 20px 0px" border="none" direction="ltr" text-align="center" background-repeat="repeat" background-size="auto" background-position="top center" background-color="#ffffff" >
-                            <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                <mj-image align="center" height="auto" src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" width="226px" padding="10px 0px 10px 0px" >
-                                </mj-image>
-                            </mj-column>
-                        </mj-section>
-                        <mj-section background-repeat="no-repeat" background-size="cover" background-position="top center" border="none" direction="ltr"
-                            text-align="center" background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" padding="20px 0px 20px 0px" >
-                            <mj-column border="none" vertical-align="top" width="100%" padding="0px 0px 0px 0px" >
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0px 30px 0px" >Dataset Access Enquiry received.</mj-text>
-                            </mj-column>
-                        </mj-section>
+                    }'
+            ]
+        );
+            
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'dar.firstmessage',
+            ],
+            [	
+                'identifier' => 'dar.firstmessage',
+                'subject' => 'New Data Access Enquiry from [[USER_FIRST_NAME]] [[USER_LAST_NAME]]: [[PROJECT_TITLE]]',
+                'body' => $this->standardFullHeader('Dataset Access Enquiry received.')
+                    . '
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[TEAM_NAME]],<br><br>
@@ -2965,64 +1916,20 @@ dar.firstmessage	dar.firstmessage	New Data Access Enquiry from [[USER_FIRST_NAME
                                     <div>[[MESSAGE_BODY]]</div>
                                 </mj-text>
                             </mj-column>
-                        </mj-section>
-                        <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
-                            <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                <mj-text align="center" padding="10px 25px 10px 25px" >
-                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text align="center" color="#3C3C3B" padding="10px 25px 10px 25px" >@HDR UK [[CURRENT_YEAR]]. All rights reserved.</mj-text>
-                            </mj-column>
-                        </mj-section>
-                    </mj-body>
-                </mjml>
-            	
-dar.status.researcher	dar.status.researcher	DAR Status Update: [[USER_FIRST_NAME]]	
-                    <mjml>
-                        <mj-head>
-                            <mj-html-attributes>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="text-color" text-color="#000000"></mj-html-attribute>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-family" font-family="-apple-system, BlinkMacSystemFont,
-                                    Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,Helvetica Neue, sans-serif">
-                                </mj-html-attribute>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-size" font-size="14px"></mj-html-attribute>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="line-height" line-height="1.7"></mj-html-attribute>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-weight" font-weight="400"></mj-html-attribute>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="responsive" responsive="true"></mj-html-attribute>
-                            </mj-html-attributes>
-                            <mj-style >.main-button {
-                                padding:10px;
-                                width:auto;
-                                -webkit-border-radius:5px;
-                                -moz-border-radius:5px;
-                                border-radius:5px;
-                                color:#FFFFFF;
-                                }
-                            </mj-style>
-                            <mj-breakpoint width="480px" />
-                            <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                            <mj-attributes>
-                                <mj-all font-family="-apple-system, BlinkMacSystemFont, 
-                                    Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,Helvetica Neue, sans-serif" />
-                                <mj-text font-size="14px" />
-                                <mj-text color="#000000" />
-                                <mj-text line-height="1.7" />
-                                <mj-text font-weight="400" />
-                            </mj-attributes>
-                        </mj-head>
-                        <mj-body background-color="#FFFFFF" width="600px" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B" >
-                            <mj-section padding="20px 0px 20px 0px" border="none" direction="ltr" text-align="center" background-repeat="repeat" background-size="auto" background-position="top center" background-color="#ffffff" >
-                                <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                    <mj-image align="center" height="auto" src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" width="226px" padding="10px 0px 10px 0px" >
-                                    </mj-image>
-                                </mj-column>
-                            </mj-section>
-                            <mj-section background-repeat="no-repeat" background-size="cover" background-position="top center" border="none" direction="ltr"
-                                text-align="center" background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" padding="20px 0px 20px 0px" >
-                                <mj-column border="none" vertical-align="top" width="100%" padding="0px 0px 0px 0px" >
-                                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0px 30px 0px" >Status Change for Data Access Request: [[PROJECT_TITLE]].</mj-text>
-                                </mj-column>
-                            </mj-section>
+                        </mj-section>'
+                    . $this->standardFullFooter()
+            ]
+        );
+            
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'dar.status.researcher',
+            ],
+            [	
+                'identifier' => 'dar.status.researcher',
+                'subject' => 'DAR Status Update: [[USER_FIRST_NAME]]',
+                'body' => $this->standardFullHeader('Status Change for Data Access Request: [[PROJECT_TITLE]].')
+                    . '
                             <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                                 <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[USER_FIRST_NAME]],<br><br>
@@ -3038,18 +1945,9 @@ dar.status.researcher	dar.status.researcher	DAR Status Update: [[USER_FIRST_NAME
                                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" ><br><br>
                                     </mj-text>
                                 </mj-column>
-                            </mj-section>
-                            <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
-                                <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                    <mj-text align="center" padding="10px 25px 10px 25px" >
-                                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                    </mj-text>
-                                    <mj-text align="center" color="#3C3C3B" padding="10px 25px 10px 25px" >@HDR UK [[CURRENT_YEAR]]. All rights reserved.</mj-text>
-                                </mj-column>
-                            </mj-section>
-                        </mj-body>
-                    </mjml > 
-                	
+                            </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
                     {
                         "replacements": [
                             {
@@ -3057,39 +1955,19 @@ dar.status.researcher	dar.status.researcher	DAR Status Update: [[USER_FIRST_NAME
                                 "actual": "config(gateway.gateway_url)/en/account/data-access-requests/application/[[APPLICATION_ID]]"
                             }
                         ]
-                    }
-                
-private.app.update.clientid	private.app.update.clientid	Private App has been updated.	
-                    <mjml>
-                        <mj-head>
-                            <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                            <mj-style inline="inline">
-                                .main-button {
-                                    padding:10px;
-                                    width:auto;
-                                    -webkit-border-radius:5px;
-                                    -moz-border-radius:5px;
-                                    border-radius:5px;
-                                    color:#FFFFFF;
-                                }
-                            </mj-style>
-                        </mj-head>
-
-                        <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                            <mj-section background-color="#ffffff">
-                                <mj-column>
-                                    <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                                </mj-column>
-                            </mj-section>
-
-                            <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                                <mj-column width="100%">
-                                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                        The Client ID for a Private App on the Gateway has been changed
-                                    </mj-text>
-                                </mj-column>
-                            </mj-section>
-
+                    }'
+            ]
+        );
+            
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'private.app.update.clientid',
+            ],
+            [	
+                'identifier' => 'private.app.update.clientid',
+                'subject' => 'Private App has been updated.',
+                'body' => $this->standardFullHeader('The Client ID for a Private App on the Gateway has been changed')
+                    . '
                             <mj-section>
                                 <mj-column width="100%">
                                     <mj-text line-height="20px">
@@ -3115,20 +1993,9 @@ private.app.update.clientid	private.app.update.clientid	Private App has been upd
                                 <mj-column>
                                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                                 </mj-column>
-                            </mj-section>
-
-                            <mj-section>
-                                <mj-column>
-                                    <mj-text align="center">
-                                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                    </mj-text>
-                                    <mj-text color="#525252" align="center">
-                                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                                    </mj-text>
-                                </mj-column>
-                            </mj-section>
-                        </mj-body>
-                    </mjml>	
+                            </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
                 {
                     "replacements": [
                         {
@@ -3136,53 +2003,19 @@ private.app.update.clientid	private.app.update.clientid	Private App has been upd
                             "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
-                }
-dar.review.researcher	dar.review.researcher	New comment on DAR: [[PROJECT_TITLE]]	
-                <mjml>
-                    <mj-head>
-                        <mj-html-attributes>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="text-color" text-color="#000000"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-family" font-family="-apple-system, BlinkMacSystemFont,
-                                Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,Helvetica Neue, sans-serif">
-                            </mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-size" font-size="14px"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="line-height" line-height="1.7"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-weight" font-weight="400"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="responsive" responsive="true"></mj-html-attribute>
-                        </mj-html-attributes>
-                        <mj-style >.main-button {
-                            padding:10px;
-                            width:auto;
-                            -webkit-border-radius:5px;
-                            -moz-border-radius:5px;
-                            border-radius:5px;
-                            color:#FFFFFF;
-                            }
-                        </mj-style>
-                        <mj-breakpoint width="480px" />
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-attributes>
-                            <mj-all font-family="-apple-system, BlinkMacSystemFont, 
-                                Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,Helvetica Neue, sans-serif" />
-                            <mj-text font-size="14px" />
-                            <mj-text color="#000000" />
-                            <mj-text line-height="1.7" />
-                            <mj-text font-weight="400" />
-                        </mj-attributes>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" width="600px" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B" >
-                        <mj-section padding="20px 0px 20px 0px" border="none" direction="ltr" text-align="center" background-repeat="repeat" background-size="auto" background-position="top center" background-color="#ffffff" >
-                            <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                <mj-image align="center" height="auto" src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" width="226px" padding="10px 0px 10px 0px" >
-                                </mj-image>
-                            </mj-column>
-                        </mj-section>
-                        <mj-section background-repeat="no-repeat" background-size="cover" background-position="top center" border="none" direction="ltr"
-                            text-align="center" background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" padding="20px 0px 20px 0px" >
-                            <mj-column border="none" vertical-align="top" width="100%" padding="0px 0px 0px 0px" >
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0px 30px 0px" >New comment on the Data Access Request for [[PROJECT_TITLE]].</mj-text>
-                            </mj-column>
-                        </mj-section>
+                }'
+            ]
+        );
+            
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'dar.review.researcher',
+            ],
+            [	
+                'identifier' => 'dar.review.researcher',
+                'subject' => 'New comment on DAR: [[PROJECT_TITLE]]',
+                'body' => $this->standardFullHeader('New comment on the Data Access Request for [[PROJECT_TITLE]].')
+                    . '
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[USER_FIRST_NAME]],<br><br>
@@ -3199,18 +2032,9 @@ dar.review.researcher	dar.review.researcher	New comment on DAR: [[PROJECT_TITLE]
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" ><br><br>
                                 </mj-text>
                             </mj-column>
-                        </mj-section>
-                        <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
-                            <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                <mj-text align="center" padding="10px 25px 10px 25px" >
-                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text align="center" color="#3C3C3B" padding="10px 25px 10px 25px" >@HDR UK [[CURRENT_YEAR]]. All rights reserved.</mj-text>
-                            </mj-column>
-                        </mj-section>
-                    </mj-body>
-                </mjml > 
-            	
+                        </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
                 {
                     "replacements": [
                         {
@@ -3218,54 +2042,19 @@ dar.review.researcher	dar.review.researcher	New comment on DAR: [[PROJECT_TITLE]
                             "actual": "config(gateway.gateway_url)/en/account/data-access-requests"
                         }
                     ]
-                }
+                }'
+            ]
+        );
             
-dar.review.custodian	dar.review.custodian	New comment on DAR: [[PROJECT_TITLE]]	
-                    <mjml>
-                        <mj-head>
-                            <mj-html-attributes>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="text-color" text-color="#000000"></mj-html-attribute>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-family" font-family="-apple-system, BlinkMacSystemFont,
-                                    Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,Helvetica Neue, sans-serif">
-                                </mj-html-attribute>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-size" font-size="14px"></mj-html-attribute>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="line-height" line-height="1.7"></mj-html-attribute>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-weight" font-weight="400"></mj-html-attribute>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="responsive" responsive="true"></mj-html-attribute>
-                            </mj-html-attributes>
-                            <mj-style >.main-button {
-                                padding:10px;
-                                width:auto;
-                                -webkit-border-radius:5px;
-                                -moz-border-radius:5px;
-                                border-radius:5px;
-                                color:#FFFFFF;
-                                }
-                            </mj-style>
-                            <mj-breakpoint width="480px" />
-                            <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                            <mj-attributes>
-                                <mj-all font-family="-apple-system, BlinkMacSystemFont, 
-                                    Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,Helvetica Neue, sans-serif" />
-                                <mj-text font-size="14px" />
-                                <mj-text color="#000000" />
-                                <mj-text line-height="1.7" />
-                                <mj-text font-weight="400" />
-                            </mj-attributes>
-                        </mj-head>
-                        <mj-body background-color="#FFFFFF" width="600px" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B" >
-                            <mj-section padding="20px 0px 20px 0px" border="none" direction="ltr" text-align="center" background-repeat="repeat" background-size="auto" background-position="top center" background-color="#ffffff" >
-                                <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                    <mj-image align="center" height="auto" src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" width="226px" padding="10px 0px 10px 0px" >
-                                    </mj-image>
-                                </mj-column>
-                            </mj-section>
-                            <mj-section background-repeat="no-repeat" background-size="cover" background-position="top center" border="none" direction="ltr"
-                                text-align="center" background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" padding="20px 0px 20px 0px" >
-                                <mj-column border="none" vertical-align="top" width="100%" padding="0px 0px 0px 0px" >
-                                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0px 30px 0px" >New comment on the Data Access Request for [[PROJECT_TITLE]].</mj-text>
-                                </mj-column>
-                            </mj-section>
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'dar.review.custodian',
+            ],
+            [	
+                'identifier' => 'dar.review.custodian',
+                'subject' => 'New comment on DAR: [[PROJECT_TITLE]]',
+                'body' => $this->standardFullHeader('New comment on the Data Access Request for [[PROJECT_TITLE]].')
+                    . '
                             <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                                 <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[DAR_MANAGER_FIRST_NAME]],<br><br>
@@ -3282,18 +2071,9 @@ dar.review.custodian	dar.review.custodian	New comment on DAR: [[PROJECT_TITLE]]
                                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" ><br><br>
                                     </mj-text>
                                 </mj-column>
-                            </mj-section>
-                            <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
-                                <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                    <mj-text align="center" padding="10px 25px 10px 25px" >
-                                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                    </mj-text>
-                                    <mj-text align="center" color="#3C3C3B" padding="10px 25px 10px 25px" >@HDR UK [[CURRENT_YEAR]]. All rights reserved.</mj-text>
-                                </mj-column>
-                            </mj-section>
-                        </mj-body>
-                    </mjml > 
-                	
+                            </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
                     {
                         "replacements": [
                             {
@@ -3301,54 +2081,19 @@ dar.review.custodian	dar.review.custodian	New comment on DAR: [[PROJECT_TITLE]]
                                 "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/data-access-requests/applications"
                             }
                         ]
-                    }
-                
-dar.submission.researcher	dar.submission.researcher	DAR Submitted: [[USER_FIRST_NAME]]	
-                <mjml>
-                    <mj-head>
-                        <mj-html-attributes>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="text-color" text-color="#000000"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-family" font-family="-apple-system, BlinkMacSystemFont,
-                                Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,Helvetica Neue, sans-serif">
-                            </mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-size" font-size="14px"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="line-height" line-height="1.7"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-weight" font-weight="400"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="responsive" responsive="true"></mj-html-attribute>
-                        </mj-html-attributes>
-                        <mj-style >.main-button {
-                            padding:10px;
-                            width:auto;
-                            -webkit-border-radius:5px;
-                            -moz-border-radius:5px;
-                            border-radius:5px;
-                            color:#FFFFFF;
-                            }
-                        </mj-style>
-                        <mj-breakpoint width="480px" />
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-attributes>
-                            <mj-all font-family="-apple-system, BlinkMacSystemFont, 
-                                Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,Helvetica Neue, sans-serif" />
-                            <mj-text font-size="14px" />
-                            <mj-text color="#000000" />
-                            <mj-text line-height="1.7" />
-                            <mj-text font-weight="400" />
-                        </mj-attributes>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" width="600px" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B" >
-                        <mj-section padding="20px 0px 20px 0px" border="none" direction="ltr" text-align="center" background-repeat="repeat" background-size="auto" background-position="top center" background-color="#ffffff" >
-                            <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                <mj-image align="center" height="auto" src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" width="226px" padding="10px 0px 10px 0px" >
-                                </mj-image>
-                            </mj-column>
-                        </mj-section>
-                        <mj-section background-repeat="no-repeat" background-size="cover" background-position="top center" border="none" direction="ltr"
-                            text-align="center" background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" padding="20px 0px 20px 0px" >
-                            <mj-column border="none" vertical-align="top" width="100%" padding="0px 0px 0px 0px" >
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0px 30px 0px" >Your Data Access Request has been submitted.</mj-text>
-                            </mj-column>
-                        </mj-section>
+                    }'
+            ]
+        );
+            
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'dar.submission.researcher',
+            ],
+            [	
+                'identifier' => 'dar.submission.researcher',
+                'subject' => 'DAR Submitted: [[USER_FIRST_NAME]]',
+                'body' => $this->standardFullHeader('Your Data Access Request has been submitted.')
+                    . '
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[USER_FIRST_NAME]],<br><br>
@@ -3365,18 +2110,9 @@ dar.submission.researcher	dar.submission.researcher	DAR Submitted: [[USER_FIRST_
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" ><br><br>
                                 </mj-text>
                             </mj-column>
-                        </mj-section>
-                        <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
-                            <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                <mj-text align="center" padding="10px 25px 10px 25px" >
-                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text align="center" color="#3C3C3B" padding="10px 25px 10px 25px" >@HDR UK [[CURRENT_YEAR]]. All rights reserved.</mj-text>
-                            </mj-column>
-                        </mj-section>
-                    </mj-body>
-                </mjml > 
-            	
+                        </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
                 {
                     "replacements": [
                         {
@@ -3384,54 +2120,19 @@ dar.submission.researcher	dar.submission.researcher	DAR Submitted: [[USER_FIRST_
                             "actual": "config(gateway.gateway_url)/en/account/data-access-requests/application/[[APPLICATION_ID]]"
                         }
                     ]
-                }
+                }'
+            ]
+        );
             
-dar.submission.custodian	dar.submission.custodian	New DAR Received: [[USER_FIRST_NAME]]	
-                    <mjml>
-                        <mj-head>
-                            <mj-html-attributes>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="text-color" text-color="#000000"></mj-html-attribute>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-family" font-family="-apple-system, BlinkMacSystemFont,
-                                    Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,Helvetica Neue, sans-serif">
-                                </mj-html-attribute>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-size" font-size="14px"></mj-html-attribute>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="line-height" line-height="1.7"></mj-html-attribute>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-weight" font-weight="400"></mj-html-attribute>
-                                <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="responsive" responsive="true"></mj-html-attribute>
-                            </mj-html-attributes>
-                            <mj-style >.main-button {
-                                padding:10px;
-                                width:auto;
-                                -webkit-border-radius:5px;
-                                -moz-border-radius:5px;
-                                border-radius:5px;
-                                color:#FFFFFF;
-                                }
-                            </mj-style>
-                            <mj-breakpoint width="480px" />
-                            <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                            <mj-attributes>
-                                <mj-all font-family="-apple-system, BlinkMacSystemFont, 
-                                    Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,Helvetica Neue, sans-serif" />
-                                <mj-text font-size="14px" />
-                                <mj-text color="#000000" />
-                                <mj-text line-height="1.7" />
-                                <mj-text font-weight="400" />
-                            </mj-attributes>
-                        </mj-head>
-                        <mj-body background-color="#FFFFFF" width="600px" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B" >
-                            <mj-section padding="20px 0px 20px 0px" border="none" direction="ltr" text-align="center" background-repeat="repeat" background-size="auto" background-position="top center" background-color="#ffffff" >
-                                <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                    <mj-image align="center" height="auto" src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" width="226px" padding="10px 0px 10px 0px" >
-                                    </mj-image>
-                                </mj-column>
-                            </mj-section>
-                            <mj-section background-repeat="no-repeat" background-size="cover" background-position="top center" border="none" direction="ltr"
-                                text-align="center" background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" padding="20px 0px 20px 0px" >
-                                <mj-column border="none" vertical-align="top" width="100%" padding="0px 0px 0px 0px" >
-                                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0px 30px 0px" >A new Data Access Request has been received.</mj-text>
-                                </mj-column>
-                            </mj-section>
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'dar.submission.custodian',
+            ],
+            [	
+                'identifier' => 'dar.submission.custodian',
+                'subject' => 'New DAR Received: [[USER_FIRST_NAME]]',
+                'body' => $this->standardFullHeader('A new Data Access Request has been received.')
+                    . '
                             <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                                 <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[RECIPIENT_NAME]],<br><br>
@@ -3449,18 +2150,9 @@ dar.submission.custodian	dar.submission.custodian	New DAR Received: [[USER_FIRST
                                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" ><br><br>
                                     </mj-text>
                                 </mj-column>
-                            </mj-section>
-                            <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
-                                <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                    <mj-text align="center" padding="10px 25px 10px 25px" >
-                                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                    </mj-text>
-                                    <mj-text align="center" color="#3C3C3B" padding="10px 25px 10px 25px" >@HDR UK [[CURRENT_YEAR]]. All rights reserved.</mj-text>
-                                </mj-column>
-                            </mj-section>
-                        </mj-body>
-                    </mjml > 
-                	
+                            </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
                     {
                         "replacements": [
                             {
@@ -3468,38 +2160,19 @@ dar.submission.custodian	dar.submission.custodian	New DAR Received: [[USER_FIRST
                                 "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/data-access-requests/applications"
                             }
                         ]
-                    }
-                
-update.roles.team.notifications	update.roles.team.notifications	Congratulations! Permissions have changed for team users.	
-                <mjml>
-                    <mj-head>
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-style inline="inline">
-                            .main-button {
-                                padding:10px;
-                                width:auto;
-                                -webkit-border-radius:5px;
-                                -moz-border-radius:5px;
-                                border-radius:5px;
-                                color:#FFFFFF;
-                            }
-                        </mj-style>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                        <mj-section background-color="#ffffff">
-                            <mj-column>
-                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                            </mj-column>
-                        </mj-section>
-        
-                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                            <mj-column width="100%">
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                                    Permissions have changed for [[TEAM_NAME]] 
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-
+                    }'
+            ]
+        );
+            
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'update.roles.team.notifications',
+            ],
+            [	
+                'identifier' => 'update.roles.team.notifications',
+                'subject' => 'Congratulations! Permissions have changed for team users.',
+                'body' => $this->standardFullHeader('Permissions have changed for [[TEAM_NAME]]')
+                    . '
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text  line-height="20px">
@@ -3518,21 +2191,9 @@ update.roles.team.notifications	update.roles.team.notifications	Congratulations!
                             <mj-column>
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View your Team</mj-button>
                             </mj-column>
-                        </mj-section>
-        
-                        <mj-section>
-                            <mj-column>
-                                <mj-text align="center">
-                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text color="#525252" align="center">
-                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>
-        
-                    </mj-body>
-                </mjml>	
+                        </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
                 {
                     "replacements": [
                         {
@@ -3540,54 +2201,19 @@ update.roles.team.notifications	update.roles.team.notifications	Congratulations!
                             "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/team-management"
                         }
                     ]
-                }
+                }'
+            ]
+        );
             
-user.email_verification	user.email_verification	Verify your email address	
-                    <mjml>
-                    <mj-head>
-                        <mj-html-attributes>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="text-color" text-color="#000000"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-family" font-family="-apple-system, BlinkMacSystemFont,
-                                Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,Helvetica Neue, sans-serif">
-                            </mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-size" font-size="14px"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="line-height" line-height="1.7"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-weight" font-weight="400"></mj-html-attribute>
-                            <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="responsive" responsive="true"></mj-html-attribute>
-                        </mj-html-attributes>
-                        <mj-style >.main-button {
-                            padding:10px;
-                            width:auto;
-                            -webkit-border-radius:5px;
-                            -moz-border-radius:5px;
-                            border-radius:5px;
-                            color:#FFFFFF;
-                            }
-                        </mj-style>
-                        <mj-breakpoint width="480px" />
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-attributes>
-                            <mj-all font-family="-apple-system, BlinkMacSystemFont, 
-                                Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,Helvetica Neue, sans-serif" />
-                            <mj-text font-size="14px" />
-                            <mj-text color="#000000" />
-                            <mj-text line-height="1.7" />
-                            <mj-text font-weight="400" />
-                        </mj-attributes>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" width="600px" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B" >
-                        <mj-section padding="20px 0px 20px 0px" border="none" direction="ltr" text-align="center" background-repeat="repeat" background-size="auto" background-position="top center" background-color="#ffffff" >
-                            <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                <mj-image align="center" height="auto" src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" width="226px" padding="10px 0px 10px 0px" >
-                                </mj-image>
-                            </mj-column>
-                        </mj-section>
-                        <mj-section background-repeat="no-repeat" background-size="cover" background-position="top center" border="none" direction="ltr"
-                            text-align="center" background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" padding="20px 0px 20px 0px" >
-                            <mj-column border="none" vertical-align="top" width="100%" padding="0px 0px 0px 0px" >
-                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0px 30px 0px" >Email Verification</mj-text>
-                            </mj-column>
-                        </mj-section>
+        EmailTemplate::updateOrCreate(
+            [
+            	'identifier' => 'user.email_verification',
+            ],
+            [	
+                'identifier' => 'user.email_verification',
+                'subject' => 'Verify your email address',
+                'body' => $this->standardFullHeader('Email Verification')
+                    . '
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[USER_FIRST_NAME]],<br><br>
@@ -3601,18 +2227,9 @@ user.email_verification	user.email_verification	Verify your email address
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" ><br><br>
                                 </mj-text>
                             </mj-column>
-                        </mj-section>
-                        <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
-                            <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
-                                <mj-text align="center" padding="10px 25px 10px 25px" >
-                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                                </mj-text>
-                                <mj-text align="center" color="#3C3C3B" padding="10px 25px 10px 25px" >@HDR UK [[CURRENT_YEAR]]. All rights reserved.</mj-text>
-                            </mj-column>
-                        </mj-section>
-                    </mj-body>
-                </mjml >
-                	
+                        </mj-section>'
+                    . $this->standardFullFooter(),
+                'buttons' => '
                     {
                         "replacements": [
                             {
@@ -3620,5 +2237,8 @@ user.email_verification	user.email_verification	Verify your email address
                                 "actual": "config(gateway.gateway_url)/en/verification/[[UUID]]"
                             }
                         ]
-                    }
-                
+                    }'
+            ]
+        );
+    }
+}
