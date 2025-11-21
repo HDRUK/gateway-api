@@ -1,3 +1,9 @@
+## [2.28.1](https://github.com/HDRUK/gateway-api/compare/v2.28.0...v2.28.1) (2025-11-21)
+
+### 🐛 Bug Fixes
+
+* **GAT-8247:** Archive datasets in federation (#1469) ([ab2479b](https://github.com/HDRUK/gateway-api/commit/ab2479bf045f2ed8b9b59935fb0eaae1a25a9b5d)), closes [GAT-8247](GAT-8247)
+
 ## [2.28.0](https://github.com/HDRUK/gateway-api/compare/v2.27.2...v2.28.0) (2025-11-20)
 
 ### ✨ Features
