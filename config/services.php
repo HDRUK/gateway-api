@@ -103,8 +103,6 @@ return [
 
     'mjml' => [
         'render_url' => env('MJML_RENDER_URL', ''),
-        // 'api_application_key' => env('MJML_API_APPLICATION_KEY', ''),
-        // 'api_key' => env('MJML_API_KEY', ''),
     ],
 
     'clamav' => [
