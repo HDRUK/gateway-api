@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use Config;
 use App\Models\EmailTemplate;
 use Illuminate\Console\Command;
 
@@ -60,7 +59,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
         return '
 <mj-section background-color="#ffffff">
     <mj-column>
-        <mj-image src="' . config('filesystems.disks.gcs_media.storage_api_uri') . '/' . config('filesystems.disks.gcs_media.bucket') . '/email/hdruk_logo_email.png" href="' . config('gateway.gateway_url') . '" padding="10px 0" alt="" align="center" width="226px" />
+        <mj-image src="'.config('filesystems.disks.gcs_media.storage_api_uri').'/'.config('filesystems.disks.gcs_media.bucket').'/email/hdruk_logo_email.png" href="'.config('gateway.gateway_url').'" padding="10px 0" alt="" align="center" width="226px" />
     </mj-column>
 </mj-section>';
     }
@@ -68,10 +67,10 @@ class UpdateEmailTemplatesForLocalMJML extends Command
     public function heroBanner(string $headerText)
     {
         return '
-<mj-section background-url="' . config('filesystems.disks.gcs_media.storage_api_uri') . '/' . config('filesystems.disks.gcs_media.bucket') . '/email/hdruk_header_email.png" background-size="cover" background-repeat="no-repeat">
+<mj-section background-url="'.config('filesystems.disks.gcs_media.storage_api_uri').'/'.config('filesystems.disks.gcs_media.bucket').'/email/hdruk_header_email.png" background-size="cover" background-repeat="no-repeat">
     <mj-column width="100%">
-        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">' 
-        . $headerText . 
+        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">'
+        .$headerText.
     '</mj-text>
     </mj-column>
 </mj-section>';
@@ -83,7 +82,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
 <mj-section>
     <mj-column>
         <mj-text align="center">
-            <a style="text-decoration:none" href="' . config('gateway.gateway_url') . '">' . config('gateway.gateway_url') . '</a>
+            <a style="text-decoration:none" href="'.config('gateway.gateway_url').'">'.config('gateway.gateway_url').'</a>
         </mj-text>
         <mj-text color="#525252" align="center">
             @HDR UK [[CURRENT_YEAR]]. All rights reserved.
@@ -94,30 +93,31 @@ class UpdateEmailTemplatesForLocalMJML extends Command
 
     private function standardFullHeader(string $headerText)
     {
-        return '<mjml>' . $this->mjmlHead
-                . '<mj-body background-color="#FFFFFF">' 
-                . $this->hdrukLogoHeader() 
-                . $this->heroBanner($headerText);
+        return '<mjml>'.$this->mjmlHead
+                .'<mj-body background-color="#FFFFFF">'
+                .$this->hdrukLogoHeader()
+                .$this->heroBanner($headerText);
     }
 
     private function standardFullFooter()
     {
-        return $this->hdrukFooter() 
-            . '</mj-body></mjml>';
+        return $this->hdrukFooter()
+            .'</mj-body></mjml>';
     }
+
     /**
      * Execute the console command.
      */
     public function handle()
     {
-	    EmailTemplate::updateOrCreate(
+        EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'example_template',
-	        ],
+                'identifier' => 'example_template',
+            ],
             [
-				'identifier' => 'example_template',
-				'subject' => 'Example Template',
-				'body' => '
+                'identifier' => 'example_template',
+                'subject' => 'Example Template',
+                'body' => '
 <mjml>
     <mj-body>
         <mj-raw>
@@ -168,7 +168,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
         </mj-section>
     </mj-body>
 </mjml>',
-          'buttons' => '
+                'buttons' => '
           {
             "replacements": [
                     {
@@ -181,19 +181,18 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     }
                 ]
             }
-          '
-          ]);
-
+          ',
+            ]);
 
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'custodian.team.admin.assign',
-	        ],
+                'identifier' => 'custodian.team.admin.assign',
+            ],
             [
-				'identifier' => 'custodian.team.admin.assign',
-				'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Team Admin',
-				'body' => $this->standardFullHeader('Congratulations! You’ve been granted the Team Administrator permissions for [[TEAM_NAME]].')
-                    . '
+                'identifier' => 'custodian.team.admin.assign',
+                'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Team Admin',
+                'body' => $this->standardFullHeader('Congratulations! You’ve been granted the Team Administrator permissions for [[TEAM_NAME]].')
+                    .'
         <mj-section>
             <mj-column width="100%">
                 <mj-text  line-height="20px">
@@ -215,9 +214,9 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     </mj-text>
                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">Manage team</mj-button>
             </mj-column>
-        </mj-section>' 
-                    . $this->standardFullFooter(),
-        'buttons' => '
+        </mj-section>'
+                    .$this->standardFullFooter(),
+                'buttons' => '
     {
         "replacements": [
             {
@@ -225,19 +224,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/team-management"
             }
         ]
-    }'
+    }',
             ]
         );
-        
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'custodian.team.admin.remove'
-            ],
-            [	
                 'identifier' => 'custodian.team.admin.remove',
-            	'subject' => 'You have been removed as a Team Admin for the [[TEAM_NAME]] team on the Gateway.',
+            ],
+            [
+                'identifier' => 'custodian.team.admin.remove',
+                'subject' => 'You have been removed as a Team Admin for the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('Your Team Administrator permissions for [[TEAM_NAME]] have been removed.')
-                    . '
+                    .'
         <mj-section>
             <mj-column width="100%">
                 <mj-text  line-height="20px">
@@ -262,20 +261,20 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     [[LIST_TEAM_ADMINS]]
                 </mj-text>
             </mj-column>
-        </mj-section>' 
-                    . $this->standardFullFooter()
+        </mj-section>'
+                    .$this->standardFullFooter(),
             ]
         );
 
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'custodian.dar.manager.assign'
-            ],
-            [ 
                 'identifier' => 'custodian.dar.manager.assign',
-                'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Data Access Manager',	
+            ],
+            [
+                'identifier' => 'custodian.dar.manager.assign',
+                'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Data Access Manager',
                 'body' => $this->standardFullHeader('Congratulations! You’ve been granted the Data Access Request Manager permissions for [[TEAM_NAME]].')
-                    . '
+                    .'
             <mj-section>
                 <mj-column width="100%">
                     <mj-text line-height="20px">
@@ -299,19 +298,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         </ul>
                     </mj-text>
                 </mj-column>
-            </mj-section>' 
-                    . $this->standardFullFooter()
+            </mj-section>'
+                    .$this->standardFullFooter(),
             ]
         );
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'custodian.dar.manager.remove'
-            ],
-            [	
                 'identifier' => 'custodian.dar.manager.remove',
-            	'subject' => 'You have been removed as a Data Access Manager for the [[TEAM_NAME]] team on the Gateway.',	
+            ],
+            [
+                'identifier' => 'custodian.dar.manager.remove',
+                'subject' => 'You have been removed as a Data Access Manager for the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('Your Data Access Request Manager permissions for [[TEAM_NAME]] have been removed.')
-                    . '
+                    .'
             <mj-section>
                 <mj-column width="100%">
                     <mj-text line-height="20px">
@@ -340,10 +339,9 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     </mj-text>
                 </mj-column>
             </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
-
 
         EmailTemplate::updateOrCreate(
             [
@@ -353,7 +351,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'dar.reviewer.assign',
                 'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Reviewer',
                 'body' => $this->standardFullHeader('Congratulations! You’ve been granted the Data Access Request Reviewer permissions for [[TEAM_NAME]].')
-                    . '
+                    .'
             <mj-section>
                 <mj-column width="100%">
                     <mj-text line-height="20px">
@@ -373,7 +371,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     </mj-text>
                 </mj-column>
             </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
@@ -385,7 +383,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'dar.reviewer.remove',
                 'subject' => 'You have been removed as a Reviewer for the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('Your Data Access Request Reviewer permissions for [[TEAM_NAME]] have been removed.')
-                    . '
+                    .'
             <mj-section>
                 <mj-column width="100%">
                     <mj-text line-height="20px">
@@ -408,7 +406,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     </mj-text>
                 </mj-column>
             </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
@@ -420,7 +418,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'developer.assign',
                 'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Developer',
                 'body' => $this->standardFullHeader('Congratulations! You’ve been granted the Developer permissions for [[TEAM_NAME]].')
-                    . '
+                    .'
             <mj-section>
                 <mj-column width="100%">
                     <mj-text line-height="20px">
@@ -440,7 +438,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">Manage Apps</mj-button>
                 </mj-column>
             </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
             {
                 "replacements": [
@@ -449,7 +447,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
                     }
                 ]
-            }'
+            }',
             ]
         );
         EmailTemplate::updateOrCreate(
@@ -460,7 +458,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'developer.remove',
                 'subject' => 'You have been removed as a Developer for the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('Your Developer permissions for [[TEAM_NAME]] have been removed.')
-                    . '
+                    .'
             <mj-section>
                 <mj-column width="100%">
                     <mj-text line-height="20px">
@@ -483,7 +481,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     </mj-text>
                 </mj-column>
             </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
@@ -495,7 +493,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'metadata.editor.assign',
                 'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Metadata Editor',
                 'body' => $this->standardFullHeader('Congratulations! You’ve been granted the Metadata Editor permissions for [[TEAM_NAME]].')
-                    . '
+                    .'
             <mj-section>
                 <mj-column width="100%">
                     <mj-text line-height="20px">
@@ -515,7 +513,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View datasets</mj-button>
                 </mj-column>
             </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
         {
             "replacements": [
@@ -524,7 +522,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/datasets"
                 }
             ]
-        }'
+        }',
             ]
         );
 
@@ -536,7 +534,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'metadata.editor.remove',
                 'subject' => 'You have been removed as a Metadata Editor for the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('Your Metadata Editor permissions for [[TEAM_NAME]] have been removed.')
-                    . '
+                    .'
             <mj-section>
                 <mj-column width="100%">
                     <mj-text line-height="20px">
@@ -559,7 +557,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     </mj-text>
                 </mj-column>
             </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
@@ -571,7 +569,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'custodian.metadata.manager.assign',
                 'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Metadata Manager',
                 'body' => $this->standardFullHeader('Congratulations! You’ve been granted the Metadata Manager permissions for [[TEAM_NAME]].')
-                    . '
+                    .'
             <mj-section>
                 <mj-column width="100%">
                     <mj-text line-height="20px">
@@ -594,7 +592,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View datasets</mj-button>
                 </mj-column>
             </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
         {
             "replacements": [
@@ -603,7 +601,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/datasets"
                 }
             ]
-        }'
+        }',
             ]
         );
 
@@ -615,7 +613,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'custodian.metadata.manager.remove',
                 'subject' => 'You have been removed as a Metadata Manager for the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('Your Metadata Manager permissions for [[TEAM_NAME]] have been removed.')
-                    . '
+                    .'
             <mj-section>
                 <mj-column width="100%">
                     <mj-text line-height="20px">
@@ -641,7 +639,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     </mj-text>
                 </mj-column>
             </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
@@ -653,10 +651,10 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'hdruk.superadmin.assign',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.superadmin.assign',
                 'body' => $this->standardFullHeader('hdruk.superadmin.assign role has been assigned.')
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
-        
+
         EmailTemplate::updateOrCreate(
             [
                 'identifier' => 'hdruk.admin.assign',
@@ -665,9 +663,9 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'hdruk.admin.assign',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.admin.assign',
                 'body' => $this->standardFullHeader('hdruk.admin.assign role has been assigned.')
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
-            );
+        );
 
         EmailTemplate::updateOrCreate(
             [
@@ -677,10 +675,10 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'hdruk.admin.remove',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.admin.remove',
                 'body' => $this->standardFullHeader('hdruk.admin.assign role has been removed.')
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
-        
+
         EmailTemplate::updateOrCreate(
             [
                 'identifier' => 'hdruk.metadata.assign',
@@ -689,7 +687,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'hdruk.metadata.assign',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.metadata.assign',
                 'body' => $this->standardFullHeader('hdruk.metadata.assign role has been assigned.')
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
@@ -701,7 +699,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'hdruk.metadata.remove',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.metadata.remove',
                 'body' => $this->standardFullHeader('hdruk.metadata.assign role has been removed.')
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
@@ -713,7 +711,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'hdruk.dar.assign',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.dar.assign',
                 'body' => $this->standardFullHeader('hdruk.dar.assign role has been assigned.')
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
@@ -725,7 +723,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'hdruk.dar.remove',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.dar.remove',
                 'body' => $this->standardFullHeader('hdruk.dar.assign role has been removed.')
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
@@ -737,7 +735,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'hdruk.custodian.assign',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.custodian.assign',
                 'body' => $this->standardFullHeader('hdruk.custodian.assign role has been assigned.')
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
@@ -749,10 +747,10 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'hdruk.custodian.remove',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.custodian.remove',
                 'body' => $this->standardFullHeader('hdruk.custodian.assign role has been removed.')
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
-	
+
         EmailTemplate::updateOrCreate(
             [
                 'identifier' => 'cohort.discovery.access.expired',
@@ -761,7 +759,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'cohort.discovery.access.expired',
                 'subject' => 'Your Cohort Discovery access has expired',
                 'body' => $this->standardFullHeader('Your Cohort Discovery access has expired.')
-                    . '
+                    .'
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text  line-height="20px">
@@ -779,7 +777,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[COHORT_DISCOVERY_RENEW_URL]]">Renew Cohort Discovery access</mj-button>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                 {
                     "replacements": [
@@ -788,7 +786,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                             "actual": "config(gateway.gateway_url)/en/about/cohort-discovery"
                         }
                     ]
-                }'
+                }',
             ]
         );
 
@@ -800,7 +798,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'cohort.discovery.access.will.expire',
                 'subject' => 'Your Cohort Discovery access will soon expire',
                 'body' => $this->standardFullHeader('Your Cohort Discovery access will soon expire.')
-                    . '
+                    .'
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text  line-height="20px">
@@ -817,7 +815,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 </mj-text>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                 {
                     "replacements": [
@@ -826,7 +824,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                             "actual": "config(gateway.gateway_url)/en/about/cohort-discovery"
                         }
                     ]
-                }'
+                }',
             ]
         );
 
@@ -838,7 +836,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'cohort.discovery.access.approved',
                 'subject' => 'Congratulations! Your Cohort Discovery registration has been approved.',
                 'body' => $this->standardFullHeader('Congratulations! Your Cohort Discovery registration has been approved.')
-                    . '
+                    .'
                 <mj-section>
                     <mj-column width="100%">
                         <mj-text  line-height="20px">
@@ -856,7 +854,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         <mj-button css-class="main-section" background-color="#00ACCA" href="[[COHORT_DISCOVERY_ACCESS_URL]]">Access Cohort Discovery</mj-button>
                     </mj-column>
                 </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                 {
                     "replacements": [
@@ -865,10 +863,10 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                             "actual": "config(gateway.gateway_url)/en/about/cohort-discovery"
                         }
                     ]
-                }'
+                }',
             ]
         );
-            
+
         EmailTemplate::updateOrCreate(
             [
                 'identifier' => 'cohort.discovery.access.rejected',
@@ -877,7 +875,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'cohort.discovery.access.rejected',
                 'subject' => 'Your Cohort Discovery Registration has been Rejected.',
                 'body' => $this->standardFullHeader('Your Cohort Discovery Registration has been Rejected.')
-                    . '
+                    .'
                     <mj-section>
                             <mj-column width="100%">
                                 <mj-text line-height="20px">
@@ -900,19 +898,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 </mj-text>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'cohort.discovery.access.submitted'
-            ],
-            [ 
                 'identifier' => 'cohort.discovery.access.submitted',
-                'subject' => 'Your Cohort Discovery registration form has been submitted.',	
+            ],
+            [
+                'identifier' => 'cohort.discovery.access.submitted',
+                'subject' => 'Your Cohort Discovery registration form has been submitted.',
                 'body' => $this->standardFullHeader('Your Cohort Discovery registration form has been submitted.')
-                    . '
+                    .'
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text line-height="20px">
@@ -929,19 +927,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 </mj-text>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
-          
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'cohort.discovery.access.banned'
-            ],
-            [	
                 'identifier' => 'cohort.discovery.access.banned',
-            	'subject' => 'Your Cohort Discovery access has been banned.',	
+            ],
+            [
+                'identifier' => 'cohort.discovery.access.banned',
+                'subject' => 'Your Cohort Discovery access has been banned.',
                 'body' => $this->standardFullHeader('Your Cohort Discovery access has been banned.')
-                    . '
+                    .'
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text line-height="20px">
@@ -958,19 +956,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 </mj-text>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'cohort.discovery.access.suspended'
-            ],
-            [	
                 'identifier' => 'cohort.discovery.access.suspended',
-            	'subject' => 'Your Cohort Discovery access has been suspended.',	
+            ],
+            [
+                'identifier' => 'cohort.discovery.access.suspended',
+                'subject' => 'Your Cohort Discovery access has been suspended.',
                 'body' => $this->standardFullHeader('Your Cohort Discovery access has been suspended.')
-                    . '
+                    .'
                 <mj-section>
                     <mj-column width="100%">
                         <mj-text line-height="20px">
@@ -987,7 +985,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         </mj-text>
                     </mj-column>
                 </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
@@ -999,7 +997,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'apiintegration.developer.create',
                 'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('Congratulations! A new integration has been created for<br> [[TEAM_NAME]].')
-                    . '
+                    .'
                     <mj-section>
                     <mj-column>
                         <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1010,7 +1008,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                     </mj-column>
                     </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
             {
                 "replacements": [
@@ -1019,7 +1017,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management"
                     }
                 ]
-            }'
+            }',
             ]
         );
 
@@ -1031,7 +1029,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'apiintegration.team.admin.create',
                 'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('Congratulations! A new integration has been created for<br> [[TEAM_NAME]].')
-                    . '
+                    .'
                     <mj-section>
                     <mj-column>
                         <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1042,7 +1040,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                     </mj-column>
                     </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
             {
                 "replacements": [
@@ -1051,19 +1049,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management"
                     }
                 ]
-            }'
+            }',
             ]
         );
 
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'apiintegration.other.create'
-            ],
-            [	
                 'identifier' => 'apiintegration.other.create',
-            	'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',	
+            ],
+            [
+                'identifier' => 'apiintegration.other.create',
+                'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('Congratulations! A new integration has been created for<br> [[TEAM_NAME]].')
-                    . '
+                    .'
                         <mj-section>
                         <mj-column>
                             <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1074,7 +1072,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                             </mj-text>
                         </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
@@ -1086,7 +1084,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'fmaintegration.developer.create',
                 'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('Congratulations! A new integration has been created for<br> [[TEAM_NAME]].')
-                    . '
+                    .'
                     <mj-section>
                     <mj-column>
                         <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1097,19 +1095,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         <mj-button css-class="main-section" background-color="#00ACCA" href="#">View federated integrations</mj-button>
                     </mj-column>
                     </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
             ]
         );
-        
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'fmaintegration.team.admin.create'
-            ],
-            [	
                 'identifier' => 'fmaintegration.team.admin.create',
-            	'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',	
+            ],
+            [
+                'identifier' => 'fmaintegration.team.admin.create',
+                'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('Congratulations! A new integration has been created for<br> [[TEAM_NAME]].')
-                    . '
+                    .'
             <mj-section>
                 <mj-column>
                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1120,19 +1118,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     <mj-button css-class="main-section" background-color="#00ACCA" href="#">View federated integrations</mj-button>
                 </mj-column>
             </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'fmaintegration.other.create'
-            ],
-            [	
                 'identifier' => 'fmaintegration.other.create',
-            	'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',	
+            ],
+            [
+                'identifier' => 'fmaintegration.other.create',
+                'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('Congratulations! A new integration has been created for<br> [[TEAM_NAME]].')
-                    . '
+                    .'
                 <mj-section>
                     <mj-column>
                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1143,7 +1141,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     </mj-text>
                     </mj-column>
                 </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
@@ -1155,7 +1153,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 'identifier' => 'fmaintegration.developer.disable',
                 'subject' => 'An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('An integration was disabled on the Gateway for<br> [[TEAM_NAME]].')
-                    . '
+                    .'
         	
             <mj-section>
                 <mj-column>
@@ -1167,7 +1165,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
                 </mj-column>
             </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
             {
                 "replacements": [
@@ -1176,19 +1174,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
                     }
                 ]
-            }'
+            }',
             ]
         );
 
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'fmaintegration.team.admin.disable'
-            ],
-            [	
                 'identifier' => 'fmaintegration.team.admin.disable',
-            	'subject' => 'An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.',	
+            ],
+            [
+                'identifier' => 'fmaintegration.team.admin.disable',
+                'subject' => 'An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('An integration was disabled on the Gateway for<br> [[TEAM_NAME]].')
-                    . '
+                    .'
                 <mj-section>
                     <mj-column>
                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1199,7 +1197,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
                     </mj-column>
                 </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
             {
                 "replacements": [
@@ -1208,19 +1206,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
                     }
                 ]
-            }'
+            }',
             ]
         );
 
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'fmaintegration.other.disable'
-            ],
-            [	
                 'identifier' => 'fmaintegration.other.disable',
-            	'subject' => 'An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.',	
+            ],
+            [
+                'identifier' => 'fmaintegration.other.disable',
+                'subject' => 'An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('An integration was disabled on the Gateway for<br> [[TEAM_NAME]].')
-                    . '
+                    .'
                         <mj-section>
                         <mj-column>
                             <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1231,19 +1229,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                             </mj-text>
                         </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'integration.developer.delete'
-            ],
-            [	
                 'identifier' => 'integration.developer.delete',
-            	'subject' => 'An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.',	
+            ],
+            [
+                'identifier' => 'integration.developer.delete',
+                'subject' => 'An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('An integration was deleted on the Gateway for<br> [[TEAM_NAME]].')
-                    . '
+                    .'
                 <mj-section>
                     <mj-column>
                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1254,7 +1252,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
                     </mj-column>
                 </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
             {
                 "replacements": [
@@ -1263,19 +1261,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
                     }
                 ]
-            }'
+            }',
             ]
         );
 
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'integration.team.admin.delete'
-            ],
-            [	
                 'identifier' => 'integration.team.admin.delete',
-            	'subject' => 'An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.',	
+            ],
+            [
+                'identifier' => 'integration.team.admin.delete',
+                'subject' => 'An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('An integration was deleted on the Gateway for<br> [[TEAM_NAME]].')
-                    . '
+                    .'
                 <mj-section>
                     <mj-column>
                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1286,7 +1284,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
                     </mj-column>
                 </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
             {
                 "replacements": [
@@ -1295,19 +1293,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
                     }
                 ]
-            }'
+            }',
             ]
         );
 
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'integration.other.delete'
-            ],
-            [	
                 'identifier' => 'integration.other.delete',
-            	'subject' => 'An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.',	
+            ],
+            [
+                'identifier' => 'integration.other.delete',
+                'subject' => 'An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('An integration was deleted on the Gateway for<br> [[TEAM_NAME]].')
-                    . '
+                    .'
                         <mj-section>
                         <mj-column>
                             <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1318,83 +1316,83 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                             </mj-text>
                         </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter()
-            ]
-        );
-          
-        EmailTemplate::updateOrCreate(
-            [
-            	'identifier' => 'integration.developer.error'
-            ],
-            [	
-                'identifier' => 'integration.developer.error',
-            	'subject' => 'An automation error occurred for the [[TEAM_NAME]] team on the Gateway.',	
-                'body' => $this->standardFullHeader('An integration was disabled on the Gateway for<br> [[TEAM_NAME]].')
-                    . '
-                <mj-section>
-                    <mj-column>
-                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
-                        Dear [[USER_FIRST_NAME]],<br></br>
-                        This is an automated notification that on [[DATE_OF_ERROR]]  there was an error during the scheduled cloud run for the [[INTEGRATION_TYPE]] integration. Summary of the synchronisations is below.<br></br>
-                        To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
-                    </mj-text>
-                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
-                    </mj-column>
-                </mj-section>'
-                    . $this->standardFullFooter(),
-                'buttons' => '
-            {
-                "replacements": [
-                    {
-                        "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
-                    }
-                ]
-            }'
-            ]
-        );
-            
-        EmailTemplate::updateOrCreate(
-            [
-            	'identifier' => 'integration.team.admin.error',
-            ],
-            [
-                'identifier' => 'integration.team.admin.error',
-                'subject' => 'An automation error occurred for the [[TEAM_NAME]] team on the Gateway.',
-                'body' => $this->standardFullHeader('An integration was disabled on the Gateway for<br> [[TEAM_NAME]].')
-                    . '
-                <mj-section>
-                    <mj-column>
-                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
-                        Dear [[USER_FIRST_NAME]],<br></br>
-                        This is an automated notification that on [[DATE_OF_ERROR]]  there was an error during the scheduled cloud run for the [[INTEGRATION_TYPE]] integration. Summary of the synchronisations is below.<br></br>
-                        To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
-                    </mj-text>
-                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
-                    </mj-column>
-                </mj-section>'
-                    . $this->standardFullFooter(),
-                'buttons' => '
-            {
-                "replacements": [
-                    {
-                        "placeholder": "[[BUTTON_1_URL]]",
-                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
-                    }
-                ]
-            }'
+                    .$this->standardFullFooter(),
             ]
         );
 
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'integration.other.error',
+                'identifier' => 'integration.developer.error',
+            ],
+            [
+                'identifier' => 'integration.developer.error',
+                'subject' => 'An automation error occurred for the [[TEAM_NAME]] team on the Gateway.',
+                'body' => $this->standardFullHeader('An integration was disabled on the Gateway for<br> [[TEAM_NAME]].')
+                    .'
+                <mj-section>
+                    <mj-column>
+                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                        Dear [[USER_FIRST_NAME]],<br></br>
+                        This is an automated notification that on [[DATE_OF_ERROR]]  there was an error during the scheduled cloud run for the [[INTEGRATION_TYPE]] integration. Summary of the synchronisations is below.<br></br>
+                        To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
+                    </mj-text>
+                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
+                    </mj-column>
+                </mj-section>'
+                    .$this->standardFullFooter(),
+                'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                    }
+                ]
+            }',
+            ]
+        );
+
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'integration.team.admin.error',
+            ],
+            [
+                'identifier' => 'integration.team.admin.error',
+                'subject' => 'An automation error occurred for the [[TEAM_NAME]] team on the Gateway.',
+                'body' => $this->standardFullHeader('An integration was disabled on the Gateway for<br> [[TEAM_NAME]].')
+                    .'
+                <mj-section>
+                    <mj-column>
+                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                        Dear [[USER_FIRST_NAME]],<br></br>
+                        This is an automated notification that on [[DATE_OF_ERROR]]  there was an error during the scheduled cloud run for the [[INTEGRATION_TYPE]] integration. Summary of the synchronisations is below.<br></br>
+                        To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
+                    </mj-text>
+                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View integrations</mj-button>
+                    </mj-column>
+                </mj-section>'
+                    .$this->standardFullFooter(),
+                'buttons' => '
+            {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
+                    }
+                ]
+            }',
+            ]
+        );
+
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'integration.other.error',
             ],
             [
                 'identifier' => 'integration.other.error',
                 'subject' => 'An automation error occurred for the [[TEAM_NAME]] team on the Gateway.',
                 'body' => $this->standardFullHeader('An automation error occurred for an integration on the Gateway for<br> [[TEAM_NAME]].')
-                    . '
+                    .'
                     <mj-section>
                         <mj-column>
                         <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
@@ -1405,19 +1403,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         </mj-text>
                         </mj-column>
                     </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'feasibilityenquiry.firstmessage',
+                'identifier' => 'feasibilityenquiry.firstmessage',
             ],
             [
                 'identifier' => 'feasibilityenquiry.firstmessage',
                 'subject' => 'Feasibility Enquiry from the Health Data Research Gateway: [[USER_FIRST_NAME]] [[USER_LAST_NAME]], [[PROJECT_TITLE]]',
                 'body' => $this->standardFullHeader('Feasibility enquiry received.')
-                    . '
+                    .'
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[TEAM_NAME]],<br><br>
@@ -1427,19 +1425,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 </mj-text>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
-        ); 
-        
+        );
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'dar.notifymessage',
+                'identifier' => 'dar.notifymessage',
             ],
-            [	
+            [
                 'identifier' => 'dar.notifymessage',
                 'subject' => 'New Data Access Enquiry reply from [[USER_FIRST_NAME]] [[USER_LAST_NAME]]: [[PROJECT_TITLE]]',
                 'body' => $this->standardFullHeader('New comment on the Data Access Request for [[PROJECT_TITLE]].')
-                    . '
+                    .'
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[RECIPIENT_NAME]],<br><br>
@@ -1449,19 +1447,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 </mj-text>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
-        ); 
-            
+        );
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'generalenquiry.firstmessage',
+                'identifier' => 'generalenquiry.firstmessage',
             ],
-            [	
+            [
                 'identifier' => 'generalenquiry.firstmessage',
                 'subject' => 'General Enquiry from the Health Data Research Gateway: [[USER_FIRST_NAME]] [[USER_LAST_NAME]], [[USER_ORGANISATION]]',
                 'body' => $this->standardFullHeader('General Enquiry received.')
-                    . '
+                    .'
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[TEAM_NAME]],<br><br>
@@ -1471,19 +1469,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 </mj-text>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
-        
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'cohort.request.admin.approve',
+                'identifier' => 'cohort.request.admin.approve',
             ],
-            [	
+            [
                 'identifier' => 'cohort.request.admin.approve',
                 'subject' => 'You have been assigned the role of Cohort Discovery admin on the Gateway',
                 'body' => $this->standardFullHeader('You have been assigned the role of Cohort Discovery admin on the Gateway')
-                    . '
+                    .'
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text  line-height="20px">
@@ -1508,19 +1506,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 </mj-text>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'cohort.request.admin.remove',
+                'identifier' => 'cohort.request.admin.remove',
             ],
-            [	
+            [
                 'identifier' => 'cohort.request.admin.remove',
                 'subject' => 'Your Cohort Discovery admin permissions has been removed',
                 'body' => $this->standardFullHeader('Your Cohort Discovery admin permissions has been removed')
-                    . '
+                    .'
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text  line-height="20px">
@@ -1547,19 +1545,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 </mj-text>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
 
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'private.app.create',
+                'identifier' => 'private.app.create',
             ],
-            [	
+            [
                 'identifier' => 'private.app.create',
                 'subject' => 'Congratulations! A new Private App has been created.',
                 'body' => $this->standardFullHeader('Congratulations! A new Private App has been created for [[TEAM_NAME]]')
-                    . '
+                    .'
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text  line-height="20px">
@@ -1590,7 +1588,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
             {
                 "replacements": [
@@ -1599,19 +1597,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                         "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                     }
                 ]
-            }'
+            }',
             ]
         );
-        
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'private.app.update',
+                'identifier' => 'private.app.update',
             ],
-            [	
+            [
                 'identifier' => 'private.app.update',
                 'subject' => 'Private App has been updated.',
                 'body' => $this->standardFullHeader('Private App has been updated for [[TEAM_NAME]]')
-                    . '
+                    .'
                             <mj-section>
                                 <mj-column width="100%">
                                     <mj-text line-height="20px">
@@ -1641,7 +1639,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                                 </mj-column>
                             </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                 {
                     "replacements": [
@@ -1650,19 +1648,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                             "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
-                }'
+                }',
             ]
         );
-        
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'private.app.delete',
+                'identifier' => 'private.app.delete',
             ],
-            [	
+            [
                 'identifier' => 'private.app.delete',
                 'subject' => 'Private App has been deleted.',
                 'body' => $this->standardFullHeader('Private App has been deleted for [[TEAM_NAME]].')
-                    . '
+                    .'
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text line-height="20px">
@@ -1690,7 +1688,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                 {
                     "replacements": [
@@ -1699,19 +1697,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                             "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
-                }'
+                }',
             ]
         );
-            
-         EmailTemplate::updateOrCreate(
+
+        EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'federation.app.create',
+                'identifier' => 'federation.app.create',
             ],
-            [	
+            [
                 'identifier' => 'federation.app.create',
                 'subject' => 'Congratulations! A new Gateway App has been created.',
                 'body' => $this->standardFullHeader('Congratulations! A new Gateway App has been created for [[TEAM_NAME]].')
-                    . '
+                    .'
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text line-height="20px">
@@ -1742,7 +1740,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                 {
                     "replacements": [
@@ -1751,19 +1749,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                             "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
-                }'
+                }',
             ]
         );
-            
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'federation.app.update',
+                'identifier' => 'federation.app.update',
             ],
-            [	
+            [
                 'identifier' => 'federation.app.update',
                 'subject' => 'Gateway App has been updated.',
                 'body' => $this->standardFullHeader('Gateway App has been updated for [[TEAM_NAME]].')
-                    . '
+                    .'
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text line-height="20px">
@@ -1794,7 +1792,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                 {
                     "replacements": [
@@ -1803,19 +1801,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                             "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
-                }'
+                }',
             ]
         );
-            
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'update.roles.team.user',
+                'identifier' => 'update.roles.team.user',
             ],
-            [	
+            [
                 'identifier' => 'update.roles.team.user',
                 'subject' => 'Congratulations! Your permissions have changed.',
                 'body' => $this->standardFullHeader('Congratulations! Your permissions have changed for [[TEAM_NAME]]')
-                    . '
+                    .'
                             <mj-section>
                                 <mj-column width="100%">
                                     <mj-text  line-height="20px">
@@ -1844,7 +1842,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View your Team</mj-button>
                                 </mj-column>
                             </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                     {
                         "replacements": [
@@ -1853,19 +1851,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/team-management"
                             }
                         ]
-                    }'
+                    }',
             ]
         );
-            
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'add.new.user.team',
+                'identifier' => 'add.new.user.team',
             ],
-            [	
+            [
                 'identifier' => 'add.new.user.team',
                 'subject' => 'Congratulations! Your have been added to a team.',
                 'body' => $this->standardFullHeader('Congratulations! You have been added to [[TEAM_NAME]]')
-                    . '
+                    .'
                             <mj-section>
                                 <mj-column width="100%">
                                     <mj-text  line-height="20px">
@@ -1886,7 +1884,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View your Team</mj-button>
                                 </mj-column>
                             </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                     {
                         "replacements": [
@@ -1895,19 +1893,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/team-management"
                             }
                         ]
-                    }'
+                    }',
             ]
         );
-            
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'dar.firstmessage',
+                'identifier' => 'dar.firstmessage',
             ],
-            [	
+            [
                 'identifier' => 'dar.firstmessage',
                 'subject' => 'New Data Access Enquiry from [[USER_FIRST_NAME]] [[USER_LAST_NAME]]: [[PROJECT_TITLE]]',
                 'body' => $this->standardFullHeader('Dataset Access Enquiry received.')
-                    . '
+                    .'
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[TEAM_NAME]],<br><br>
@@ -1917,19 +1915,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 </mj-text>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter()
+                    .$this->standardFullFooter(),
             ]
         );
-            
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'dar.status.researcher',
+                'identifier' => 'dar.status.researcher',
             ],
-            [	
+            [
                 'identifier' => 'dar.status.researcher',
                 'subject' => 'DAR Status Update: [[USER_FIRST_NAME]]',
                 'body' => $this->standardFullHeader('Status Change for Data Access Request: [[PROJECT_TITLE]].')
-                    . '
+                    .'
                             <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                                 <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[USER_FIRST_NAME]],<br><br>
@@ -1946,7 +1944,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                     </mj-text>
                                 </mj-column>
                             </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                     {
                         "replacements": [
@@ -1955,19 +1953,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 "actual": "config(gateway.gateway_url)/en/account/data-access-requests/application/[[APPLICATION_ID]]"
                             }
                         ]
-                    }'
+                    }',
             ]
         );
-            
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'private.app.update.clientid',
+                'identifier' => 'private.app.update.clientid',
             ],
-            [	
+            [
                 'identifier' => 'private.app.update.clientid',
                 'subject' => 'Private App has been updated.',
                 'body' => $this->standardFullHeader('The Client ID for a Private App on the Gateway has been changed')
-                    . '
+                    .'
                             <mj-section>
                                 <mj-column width="100%">
                                     <mj-text line-height="20px">
@@ -1994,7 +1992,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                     <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View app integrations</mj-button>
                                 </mj-column>
                             </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                 {
                     "replacements": [
@@ -2003,19 +2001,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                             "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
                         }
                     ]
-                }'
+                }',
             ]
         );
-            
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'dar.review.researcher',
+                'identifier' => 'dar.review.researcher',
             ],
-            [	
+            [
                 'identifier' => 'dar.review.researcher',
                 'subject' => 'New comment on DAR: [[PROJECT_TITLE]]',
                 'body' => $this->standardFullHeader('New comment on the Data Access Request for [[PROJECT_TITLE]].')
-                    . '
+                    .'
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[USER_FIRST_NAME]],<br><br>
@@ -2033,7 +2031,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 </mj-text>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                 {
                     "replacements": [
@@ -2042,19 +2040,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                             "actual": "config(gateway.gateway_url)/en/account/data-access-requests"
                         }
                     ]
-                }'
+                }',
             ]
         );
-            
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'dar.review.custodian',
+                'identifier' => 'dar.review.custodian',
             ],
-            [	
+            [
                 'identifier' => 'dar.review.custodian',
                 'subject' => 'New comment on DAR: [[PROJECT_TITLE]]',
                 'body' => $this->standardFullHeader('New comment on the Data Access Request for [[PROJECT_TITLE]].')
-                    . '
+                    .'
                             <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                                 <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[DAR_MANAGER_FIRST_NAME]],<br><br>
@@ -2072,7 +2070,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                     </mj-text>
                                 </mj-column>
                             </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                     {
                         "replacements": [
@@ -2081,19 +2079,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/data-access-requests/applications"
                             }
                         ]
-                    }'
+                    }',
             ]
         );
-            
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'dar.submission.researcher',
+                'identifier' => 'dar.submission.researcher',
             ],
-            [	
+            [
                 'identifier' => 'dar.submission.researcher',
                 'subject' => 'DAR Submitted: [[USER_FIRST_NAME]]',
                 'body' => $this->standardFullHeader('Your Data Access Request has been submitted.')
-                    . '
+                    .'
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[USER_FIRST_NAME]],<br><br>
@@ -2111,7 +2109,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 </mj-text>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                 {
                     "replacements": [
@@ -2120,19 +2118,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                             "actual": "config(gateway.gateway_url)/en/account/data-access-requests/application/[[APPLICATION_ID]]"
                         }
                     ]
-                }'
+                }',
             ]
         );
-            
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'dar.submission.custodian',
+                'identifier' => 'dar.submission.custodian',
             ],
-            [	
+            [
                 'identifier' => 'dar.submission.custodian',
                 'subject' => 'New DAR Received: [[USER_FIRST_NAME]]',
                 'body' => $this->standardFullHeader('A new Data Access Request has been received.')
-                    . '
+                    .'
                             <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                                 <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[RECIPIENT_NAME]],<br><br>
@@ -2151,7 +2149,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                     </mj-text>
                                 </mj-column>
                             </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                     {
                         "replacements": [
@@ -2160,19 +2158,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/data-access-requests/applications"
                             }
                         ]
-                    }'
+                    }',
             ]
         );
-            
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'update.roles.team.notifications',
+                'identifier' => 'update.roles.team.notifications',
             ],
-            [	
+            [
                 'identifier' => 'update.roles.team.notifications',
                 'subject' => 'Congratulations! Permissions have changed for team users.',
                 'body' => $this->standardFullHeader('Permissions have changed for [[TEAM_NAME]]')
-                    . '
+                    .'
                         <mj-section>
                             <mj-column width="100%">
                                 <mj-text  line-height="20px">
@@ -2192,7 +2190,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View your Team</mj-button>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                 {
                     "replacements": [
@@ -2201,19 +2199,19 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                             "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/team-management"
                         }
                     ]
-                }'
+                }',
             ]
         );
-            
+
         EmailTemplate::updateOrCreate(
             [
-            	'identifier' => 'user.email_verification',
+                'identifier' => 'user.email_verification',
             ],
-            [	
+            [
                 'identifier' => 'user.email_verification',
                 'subject' => 'Verify your email address',
                 'body' => $this->standardFullHeader('Email Verification')
-                    . '
+                    .'
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[USER_FIRST_NAME]],<br><br>
@@ -2228,7 +2226,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 </mj-text>
                             </mj-column>
                         </mj-section>'
-                    . $this->standardFullFooter(),
+                    .$this->standardFullFooter(),
                 'buttons' => '
                     {
                         "replacements": [
@@ -2237,7 +2235,7 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                                 "actual": "config(gateway.gateway_url)/en/verification/[[UUID]]"
                             }
                         ]
-                    }'
+                    }',
             ]
         );
     }
