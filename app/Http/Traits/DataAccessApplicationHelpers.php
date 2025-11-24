@@ -502,4 +502,26 @@ trait DataAccessApplicationHelpers
         });
         return $applications;
     }
+
+    public function isFileAnswer(array | string $answer): array
+    {
+        $isFile = false;
+        $isMulti = false;
+
+        if (isset($answer['value']) && is_array($answer['value'])) {
+            if (isset($answer['value']['filename'])) {
+                $isFile = true;
+            }
+
+            if (isset($answer['value'][0]['filename'])) {
+                $isFile = true;
+                $isMulti = true;
+            }
+        }
+
+        return [
+            'is_file' => $isFile,
+            'multifile' => $isMulti,
+        ];
+    }
 }

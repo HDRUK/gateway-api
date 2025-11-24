@@ -501,7 +501,7 @@ class TeamWidgetController extends Controller
             }
 
 
-            return response()->json([
+            return response()->json(['data' => [
                 'datasets' => $datasets,
                 'data_uses' => $dataUses,
                 'scripts' => $scripts,
@@ -515,7 +515,7 @@ class TeamWidgetController extends Controller
                     'include_cohort_link'  => $widget->include_cohort_link,
                     'keep_proportions' => $widget->keep_proportions,
                 ]
-            ], Config::get('statuscodes.STATUS_OK.code'));
+            ]], Config::get('statuscodes.STATUS_OK.code'));
 
         } catch (Exception $e) {
             \Log::error('Error retrieving widget data', [

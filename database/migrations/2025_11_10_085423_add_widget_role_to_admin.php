@@ -20,37 +20,30 @@ return new class () extends Migration {
                 ->where('application', 'gateway')
                 ->first();
 
-            if (! $permission) {
-                $id = DB::table('permissions')->insertGetId([
-                    'name' => $name,
-                    'application' => 'gateway'
-                ]);
-            } else {
-                $id = $permission->id;
-            }
-
-            $permissionIds[] = $id;
+            $permissionIds[] = $permission->id;
         }
 
-        $developerRole = DB::table('roles')->where('name', 'developer')->first();
+        $roles = DB::table('roles')
+            ->whereIn('name', ['hdruk.superadmin', 'custodian.team.admin'])
+            ->get();
 
-        if ($developerRole) {
+        foreach ($roles as $role) {
             foreach ($permissionIds as $permissionId) {
                 $exists = DB::table('role_has_permissions')
-                    ->where('role_id', $developerRole->id)
+                    ->where('role_id', $role->id)
                     ->where('permission_id', $permissionId)
                     ->exists();
 
                 if (! $exists) {
                     DB::table('role_has_permissions')->insert([
-                        'role_id' => $developerRole->id,
+                        'role_id' => $role->id,
                         'permission_id' => $permissionId,
                     ]);
                 }
             }
         }
-
     }
+
 
     public function down(): void
     {
@@ -67,18 +60,15 @@ return new class () extends Migration {
             ->pluck('id')
             ->toArray();
 
-        $developerRole = DB::table('roles')->where('name', 'developer')->first();
+        $roles = DB::table('roles')
+            ->whereIn('name', ['hdruk.superadmin', 'custodian.team.admin'])
+            ->get();
 
-        if ($developerRole) {
+        foreach ($roles as $role) {
             DB::table('role_has_permissions')
-                ->where('role_id', $developerRole->id)
+                ->where('role_id', $role->id)
                 ->whereIn('permission_id', $permissionIds)
                 ->delete();
         }
-
-        DB::table('permissions')
-            ->whereIn('name', $permissions)
-            ->where('application', 'gateway')
-            ->delete();
     }
 };

@@ -1,3 +1,44 @@
+## [2.28.1](https://github.com/HDRUK/gateway-api/compare/v2.28.0...v2.28.1) (2025-11-21)
+
+### 🐛 Bug Fixes
+
+* **GAT-8247:** Archive datasets in federation (#1469) ([ab2479b](https://github.com/HDRUK/gateway-api/commit/ab2479bf045f2ed8b9b59935fb0eaae1a25a9b5d)), closes [GAT-8247](GAT-8247)
+
+## [2.28.0](https://github.com/HDRUK/gateway-api/compare/v2.27.2...v2.28.0) (2025-11-20)
+
+### ✨ Features
+
+* **GAT-7799:** Admin role permissions for widgets (#1456) ([424e658](https://github.com/HDRUK/gateway-api/commit/424e65875f10f463dab430d831ff98bb92498231)), closes [GAT-7799](GAT-7799)
+* **GAT-7799:** Widgets! (#1437) ([49a8e9f](https://github.com/HDRUK/gateway-api/commit/49a8e9fbb15201e5d01e5208696c1840b49fd96b)), closes [GAT-7799](GAT-7799)
+* **GAT-7799:** Wrap get in data for widgets (#1457) ([c107918](https://github.com/HDRUK/gateway-api/commit/c1079187a4a671095f3740951916f953f0d282dc)), closes [GAT-7799](GAT-7799)
+* **GAT-8198:** Custodian network landing page load speed (#1463) ([9b85429](https://github.com/HDRUK/gateway-api/commit/9b854297c0f63c1438cde26b8e300524d04ed203)), closes [GAT-8198](GAT-8198)
+* **GAT-8200:**  Data custodian landing page endpoints (#1465) ([507d5e5](https://github.com/HDRUK/gateway-api/commit/507d5e5565fa6042eb840cb58411848aea2b0250)), closes [GAT-8200](GAT-8200)
+
+### 🐛 Bug Fixes
+
+* **GAT-7803:** laravel 12 configurations (#1453) ([21dc90f](https://github.com/HDRUK/gateway-api/commit/21dc90f7560c592f2aef676512025317012dc89d)), closes [GAT-7803](GAT-7803)
+* **GAT-8105:** Rewrite team summary function for performance on Data Custodian landing page (#1460) ([d95c475](https://github.com/HDRUK/gateway-api/commit/d95c475e09cc09890b51dc3ee955b382bfdf0d65)), closes [GAT-8105](GAT-8105)
+* **GAT-8175:** Config for emails (#1455) ([b022948](https://github.com/HDRUK/gateway-api/commit/b0229484421cf2d88ccd4d8e5a7dcd179500097f)), closes [GAT-8175](GAT-8175)
+* **GAT-8176:** cannot approve users in cohort panel (#1454) ([b1f259b](https://github.com/HDRUK/gateway-api/commit/b1f259b8b36d7d951d5b1a54135d340b1b480156)), closes [GAT-8176](GAT-8176)
+* **GAT-8184:** Metadata transforming data incorrectly (#1464) ([6dbe023](https://github.com/HDRUK/gateway-api/commit/6dbe023e901a2f8bfcc4bbea9e9cbf939adb136d)), closes [GAT-8184](GAT-8184)
+* **GAT-8187:** User call memory issue (#1461) ([253cd16](https://github.com/HDRUK/gateway-api/commit/253cd16b1364e51c3126cb74143b7a7fea18e725)), closes [GAT-8187](GAT-8187)
+* **GAT-8224:** Fix for datasets on team view (#1466) ([a0cbc2f](https://github.com/HDRUK/gateway-api/commit/a0cbc2f00ac285ad5665f16ea9fa86efd694aec8))
+* **GAT-8237:** DTA Google Login (#1467) ([12ee1cb](https://github.com/HDRUK/gateway-api/commit/12ee1cbf7f4ae6c55ea2f75d41c804debb5f48c9)), closes [GAT-8237](GAT-8237)
+
+## [2.27.2](https://github.com/HDRUK/gateway-api/compare/v2.27.1...v2.27.2) (2025-11-13)
+
+### 🐛 Bug Fixes
+
+* **GAT-8187:** User call memory issue (#1461) ([9168419](https://github.com/HDRUK/gateway-api/commit/916841930c8d32d595633fb59a4556044b3471b9)), closes [GAT-8187](GAT-8187)
+
+## [2.27.1](https://github.com/HDRUK/gateway-api/compare/v2.27.0...v2.27.1) (2025-11-11)
+
+### 🐛 Bug Fixes
+
+* **GAT-7803:** laravel 12 configurations (#1453) ([fe6e900](https://github.com/HDRUK/gateway-api/commit/fe6e90056726817063d40aab779e99d70cc99283)), closes [GAT-7803](GAT-7803)
+* **GAT-8175:** Config for emails (#1455) ([8206b2c](https://github.com/HDRUK/gateway-api/commit/8206b2cf74a872b5e99798a933ce25072abbcbd9)), closes [GAT-8175](GAT-8175)
+* **GAT-8176:** cannot approve users in cohort panel (#1454) ([74a842d](https://github.com/HDRUK/gateway-api/commit/74a842d8591ca43f11b5598afd8f096826311f3d)), closes [GAT-8176](GAT-8176)
+
 ## [2.27.0](https://github.com/HDRUK/gateway-api/compare/v2.26.0...v2.27.0) (2025-11-04)
 
 ### ✨ Features

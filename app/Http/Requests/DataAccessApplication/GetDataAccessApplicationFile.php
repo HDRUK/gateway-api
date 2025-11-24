@@ -20,9 +20,9 @@ class GetDataAccessApplicationFile extends BaseFormRequest
                 'exists:dar_applications,id',
             ],
             'fileId' => [
-                'int',
+                'string',
                 'required',
-                'exists:uploads,id',
+                'exists:uploads,uuid',
             ],
             'teamId' => [
                 'int',
