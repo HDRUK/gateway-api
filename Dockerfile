@@ -1,4 +1,4 @@
-FROM php:8.4-fpm
+FROM php:8.3.3-fpm
 
 ENV COMPOSER_PROCESS_TIMEOUT=600
 
@@ -47,9 +47,18 @@ COPY ./init/php.development.ini /usr/local/etc/php/php.ini
 # Copy the application
 COPY . /var/www
 
-RUN curl https://frankenphp.dev/install.sh | FRANKENPHP_VERSION=1.10.0 sh \
-    && mv frankenphp /usr/local/bin/frankenphp \
-    && chmod +x /usr/local/bin/frankenphp
+# RUN curl https://frankenphp.dev/install.sh | FRANKENPHP_VERSION=1.10.0 sh \
+#     && mv frankenphp /usr/local/bin/frankenphp \
+#     && chmod +x /usr/local/bin/frankenphp
+RUN sudo curl -fsSL https://key.henderkes.com/static-php.gpg -o /usr/share/keyrings/static-php.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/static-php.gpg] https://deb.henderkes.com/ stable main" | sudo tee /etc/apt/sources.list.d/static-php.list && \
+    sudo apt update \
+    sudo apt install frankenphp \
+    # to install extensions:
+    sudo apt install php-zts-xdebug \
+    # if an extension is not available by default, install it with pie
+    sudo apt install php-zts-devel \
+    sudo pie install asgrim/example-pie-extension --with-php-config=php-config-zts
 
 # Composer & laravel
 RUN composer install --optimize-autoloader \
