@@ -50,15 +50,15 @@ COPY . /var/www
 # RUN curl https://frankenphp.dev/install.sh | FRANKENPHP_VERSION=1.10.0 sh \
 #     && mv frankenphp /usr/local/bin/frankenphp \
 #     && chmod +x /usr/local/bin/frankenphp
-RUN sudo curl -fsSL https://key.henderkes.com/static-php.gpg -o /usr/share/keyrings/static-php.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/static-php.gpg] https://deb.henderkes.com/ stable main" | sudo tee /etc/apt/sources.list.d/static-php.list && \
-    sudo apt update \
-    sudo apt install frankenphp \
+RUN curl -fsSL https://key.henderkes.com/static-php.gpg -o /usr/share/keyrings/static-php.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/static-php.gpg] https://deb.henderkes.com/ stable main" |  tee /etc/apt/sources.list.d/static-php.list && \
+    apt update \
+    apt install frankenphp \
     # to install extensions:
-    sudo apt install php-zts-xdebug \
+    apt install php-zts-xdebug \
     # if an extension is not available by default, install it with pie
-    sudo apt install php-zts-devel \
-    sudo pie install asgrim/example-pie-extension --with-php-config=php-config-zts
+    apt install php-zts-devel \
+    pie install asgrim/example-pie-extension --with-php-config=php-config-zts
 
 # Composer & laravel
 RUN composer install --optimize-autoloader \
