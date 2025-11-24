@@ -54,11 +54,7 @@ RUN curl -fsSL https://key.henderkes.com/static-php.gpg -o /usr/share/keyrings/s
     echo "deb [signed-by=/usr/share/keyrings/static-php.gpg] https://deb.henderkes.com/ stable main" |  tee /etc/apt/sources.list.d/static-php.list && \
     apt-get update -y\
     && apt install  -y \
-    frankenphp \
-    # to install extensions:
-    php-zts-xdebug \
-    # if an extension is not available by default, install it with pie
-    php-zts-devel
+    frankenphp
 
 # Composer & laravel
 RUN composer install --optimize-autoloader \
