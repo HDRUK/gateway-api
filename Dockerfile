@@ -47,7 +47,7 @@ COPY ./init/php.development.ini /usr/local/etc/php/php.ini
 # Copy the application
 COPY . /var/www
 
-RUN curl https://frankenphp.dev/install.sh | sh \
+RUN curl https://frankenphp.dev/install.sh | FRANKENPHP_VERSION=1.9.1 sh \
     && mv frankenphp /usr/local/bin/frankenphp \
     && chmod +x /usr/local/bin/frankenphp
 
