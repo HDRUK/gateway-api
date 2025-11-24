@@ -1,4 +1,4 @@
-FROM php:8.3.3-fpm
+FROM dunglas/frankenphp:php8.4
 
 ENV COMPOSER_PROCESS_TIMEOUT=600
 
@@ -47,11 +47,10 @@ COPY ./init/php.development.ini /usr/local/etc/php/php.ini
 # Copy the application
 COPY . /var/www
 
-# RUN curl https://frankenphp.dev/install.sh | FRANKENPHP_VERSION=1.10.0 sh \
-#     && mv frankenphp /usr/local/bin/frankenphp \
-#     && chmod +x /usr/local/bin/frankenphp
-ADD https://github.com/php/frankenphp/releases/download/v1.9.1/frankenphp-linux-amd64 /usr/local/bin/frankenphp
-RUN chmod +x /usr/local/bin/frankenphp
+RUN curl https://frankenphp.dev/install.sh | sh \
+    && mv frankenphp /usr/local/bin/frankenphp \
+    && chmod +x /usr/local/bin/frankenphp
+
 # Composer & laravel
 RUN composer install --optimize-autoloader \
     && npm install --save-dev chokidar \
