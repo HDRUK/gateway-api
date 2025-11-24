@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libzip-dev \
     libc-dev \
+    libphp-zts-84.so \
     wget \
     zlib1g-dev \
     zip \
@@ -47,7 +48,7 @@ COPY ./init/php.development.ini /usr/local/etc/php/php.ini
 # Copy the application
 COPY . /var/www
 
-RUN curl https://frankenphp.dev/install.sh | FRANKENPHP_VERSION=1.9.1 bash \
+RUN curl https://frankenphp.dev/install.sh | FRANKENPHP_VERSION=1.10.0 sh \
     && mv frankenphp /usr/local/bin/frankenphp \
     && chmod +x /usr/local/bin/frankenphp
 
