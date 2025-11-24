@@ -57,8 +57,7 @@ RUN curl -fsSL https://key.henderkes.com/static-php.gpg -o /usr/share/keyrings/s
     # to install extensions:
     apt install php-zts-xdebug \
     # if an extension is not available by default, install it with pie
-    apt install php-zts-devel \
-    pie install asgrim/example-pie-extension --with-php-config=php-config-zts
+    apt install php-zts-devel
 
 # Composer & laravel
 RUN composer install --optimize-autoloader \
