@@ -50,12 +50,8 @@ COPY . /var/www
 # RUN curl https://frankenphp.dev/install.sh | FRANKENPHP_VERSION=1.10.0 sh \
 #     && mv frankenphp /usr/local/bin/frankenphp \
 #     && chmod +x /usr/local/bin/frankenphp
-RUN curl -fsSL https://key.henderkes.com/static-php.gpg -o /usr/share/keyrings/static-php.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/static-php.gpg] https://deb.henderkes.com/ stable main" |  tee /etc/apt/sources.list.d/static-php.list && \
-    apt-get update -y\
-    && apt install  -y \
-    frankenphp
-
+ADD https://github.com/php/frankenphp/releases/download/v1.9.1/frankenphp-linux-amd64 /usr/local/bin/frankenphp
+RUN chmod +x /usr/local/bin/frankenphp
 # Composer & laravel
 RUN composer install --optimize-autoloader \
     && npm install --save-dev chokidar \
