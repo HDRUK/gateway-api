@@ -1,4 +1,4 @@
-FROM php:8.3.3-fpm
+FROM dunglas/frankenphp:php8.4
 
 ENV COMPOSER_PROCESS_TIMEOUT=600
 
@@ -20,22 +20,19 @@ RUN apt-get update && apt-get install -y \
     wget \
     zlib1g-dev \
     zip \
-    default-mysql-client \ 
+    default-mysql-client \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql soap zip iconv bcmath \
+    && docker-php-ext-install -j"$(nproc)" gd pdo pdo_mysql soap zip iconv bcmath \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
     && docker-php-ext-configure pcntl --enable-pcntl \
     && docker-php-ext-install pcntl \
     && docker-php-ext-install sockets \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Redis and Imagick
-RUN wget -O redis-5.3.7.tgz 'https://pecl.php.net/get/redis-5.3.7.tgz' \
-    && pecl install redis-5.3.7.tgz \
-    && rm -rf redis-5.3.7.tgz \
-    && rm -rf /tmp/pear \
+# Install Redis (PHP 8.4 compatible)
+RUN pecl install redis-6.3.0 \
     && docker-php-ext-enable redis \
-    && docker-php-ext-enable gd
+    && rm -rf /tmp/pear
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- \
@@ -46,10 +43,6 @@ COPY ./init/php.development.ini /usr/local/etc/php/php.ini
 
 # Copy the application
 COPY . /var/www
-
-RUN curl https://frankenphp.dev/install.sh | sh \
-    && mv frankenphp /usr/local/bin/frankenphp \
-    && chmod +x /usr/local/bin/frankenphp
 
 # Composer & laravel
 RUN composer install --optimize-autoloader \
@@ -67,9 +60,6 @@ RUN php artisan l5-swagger:generate
 
 # Cleanup unwanted files
 RUN rm /var/www/public/.htaccess
-
-# Generate private and public keys
-# RUN php artisan passport:keys
 
 # Add symbolic link for public file storage
 RUN php artisan storage:link
