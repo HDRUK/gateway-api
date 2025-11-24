@@ -1,3 +1,9 @@
+## [2.28.2](https://github.com/HDRUK/gateway-api/compare/v2.28.1...v2.28.2) (2025-11-24)
+
+### 🐛 Bug Fixes
+
+* **GAT-8248:** Fix missing URLs for publications on Data Custodian Network pages (#1473) ([1c6c901](https://github.com/HDRUK/gateway-api/commit/1c6c901214de2d5ba9e210c8aca8eb3cb24dfc20))
+
 ## [2.28.1](https://github.com/HDRUK/gateway-api/compare/v2.28.0...v2.28.1) (2025-11-21)
 
 ### 🐛 Bug Fixes
