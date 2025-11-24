@@ -1,4 +1,4 @@
-FROM php:8.3.3-fpm
+FROM php:8.4-fpm
 
 ENV COMPOSER_PROCESS_TIMEOUT=600
 
@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libzip-dev \
     libc-dev \
-    libphp-zts-84.so \
     wget \
     zlib1g-dev \
     zip \
