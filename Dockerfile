@@ -52,12 +52,13 @@ COPY . /var/www
 #     && chmod +x /usr/local/bin/frankenphp
 RUN curl -fsSL https://key.henderkes.com/static-php.gpg -o /usr/share/keyrings/static-php.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/static-php.gpg] https://deb.henderkes.com/ stable main" |  tee /etc/apt/sources.list.d/static-php.list && \
-    apt update \
-    apt install frankenphp \
+    apt-get update -y\
+    && apt install  -y \
+    frankenphp \
     # to install extensions:
-    apt install php-zts-xdebug \
+    php-zts-xdebug \
     # if an extension is not available by default, install it with pie
-    apt install php-zts-devel
+    php-zts-devel
 
 # Composer & laravel
 RUN composer install --optimize-autoloader \
