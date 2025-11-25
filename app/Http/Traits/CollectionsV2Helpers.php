@@ -23,6 +23,7 @@ use App\Models\CollectionHasUser;
 
 trait CollectionsV2Helpers
 {
+    use IndexElastic;
     private function getCollectionActiveById(int $collectionId, ?bool $trimmed = false)
     {
         $collection = Collection::with([
@@ -140,10 +141,14 @@ trait CollectionsV2Helpers
         // Batch process this to avoid too many elastic reindexes
         $arrCreateCollectionHasDatasetVersion = [];
         $arrDeleteCollectionHasDatasetVersion = [];
+        $teamIds = [];
+
+        $datasetCreateIds = [];
 
         foreach ($inDatasets as $dataset) {
-            $datasetVersionLatestId = Dataset::where('id', (int) $dataset['id'])->select('id')->first()->latestVersion()->id;
-
+            $datasetVersionLatest = Dataset::where('id', (int) $dataset['id'])->select('id', 'team_id')->first()->latestVersion();
+            $datasetVersionLatestId = $datasetVersionLatest->id;
+            $teamIds[$dataset['id']] = $datasetVersionLatest->team_id;
             $datasetVersions = DatasetVersion::where('dataset_id', (int) $dataset['id'])->select('id')->get()->toArray();
 
             $datasetVersionIds = convertArrayToArrayWithKeyName($datasetVersions, 'id');
@@ -153,6 +158,7 @@ trait CollectionsV2Helpers
             // If the supplied datasets are not in the existing set, then add them
             if (count($commonDatasetVersionIds) === 0) {
                 $arrCreateCollectionHasDatasetVersion[] = $this->buildAddCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
+                $datasetCreateIds[] = $dataset['id'];
                 continue;
             }
             // else, if the latest version isn't in there, then add it, and remove all the previously existing dataset versions that were linked
@@ -209,11 +215,23 @@ trait CollectionsV2Helpers
         CollectionHasDatasetVersion::insert($arrCreateCollectionHasDatasetVersion);
         CollectionHasDatasetVersion::where($arrDeleteCollectionHasDatasetVersion)->forceDelete();
 
+        // Reindex elastic
+        foreach ($datasetCreateIds as $dataset) {
+                \Log::info($dataset);
+                \Log::info($teamIds[$dataset]);
+                $this->reindexElastic($dataset);
+                if ($teamIds[$dataset]) {
+                    $this->reindexElasticDataProviderWithRelations((int) $teamIds[$dataset], 'dataset');
+                }
+            }
+        \Log::info("Reindexing complete");
         // Now delete existing links to any dataset version that wasn't supplied.
         $collectionHasDatasetVersionsActive = CollectionHasDatasetVersion::where('collection_id', $collectionId)
                                             ->select('dataset_version_id')
                                             ->get()
                                             ->toArray();
+
+        \Log::info("Deleted old dataset stuff", $collectionHasDatasetVersionsActive);
 
         $wantedDatasetIds = convertArrayToArrayWithKeyName($inDatasets, 'id');
         $wantedDatasetVersionIds = DatasetVersion::whereIn('dataset_id', $wantedDatasetIds)->select('id')->get()->toArray();
@@ -223,12 +241,18 @@ trait CollectionsV2Helpers
             array_column($wantedDatasetVersionIds, 'id')
         );
 
+        \Log::info("Unwanted dataset version ids", $unwantedDatasetVersionsIds);
+
+
         foreach ($unwantedDatasetVersionsIds as $datasetVersionId) {
+            \Log::info('Deleting ' . $datasetVersionId);
             CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
                 'dataset_version_id' => $datasetVersionId,
             ])->forceDelete();
         }
+
+        \Log::info("End of checkDatasets()");
     }
 
     // Build an array 

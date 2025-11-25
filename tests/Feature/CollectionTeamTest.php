@@ -839,6 +839,67 @@ class CollectionTeamTest extends TestCase
         $response->assertStatus(200);
     }
 
+    /**
+     * Check if making large updates can cause performance issues
+     * @return void
+     */
+    public function test_add_lots_of_datasets() 
+    {
+        // use a non-admin user, and assign them to a team as custodian.team.admin
+        [
+            'nonAdminUser' => $nonAdminUser,
+            'team' => $team
+        ] = $this->getNonAdminUserAsCustodianTeamAdminInTeam();
+
+        // create new collection
+        $mockDataIn = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "ACTIVE",
+        ];
+        $responseIn = $this->json(
+            'POST',
+            $this->testUrl($team->id),
+            $mockDataIn,
+            $this->headerNonAdmin
+        );
+
+        $responseIn->assertStatus(201);
+        $idIn = (int) $responseIn['data'];
+
+        // update collection
+        $mockDataUpdate = [
+            "name" => "covid update",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
+            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
+            "enabled" => true,
+            "public" => true,
+            "counter" => 1,
+            "datasets" => $this->generateDatasets(20),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
+            "status" => "DRAFT"
+        ];
+        $responseUpdate = $this->json(
+            'PUT',
+            $this->testUrl($team->id) . $idIn,
+            $mockDataUpdate,
+            $this->headerNonAdmin
+        );
+        $responseUpdate->assertStatus(200);
+    }
+
 
     private function generateKeywords()
     {
@@ -852,10 +913,10 @@ class CollectionTeamTest extends TestCase
         return array_unique($return);
     }
 
-    private function generateDatasets()
+    private function generateDatasets($max = 5)
     {
         $return = [];
-        $iterations = rand(1, 5);
+        $iterations = rand(1, $max);
 
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];

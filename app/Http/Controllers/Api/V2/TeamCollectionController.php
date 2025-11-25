@@ -546,10 +546,10 @@ class TeamCollectionController extends Controller
 
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
             $this->checkDatasets($collectionId, $datasets, (int)$jwtUser['id']);
-            
+
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
             $this->checkTools($collectionId, $tools, (int)$jwtUser['id']);
-
+            
             $dur = array_key_exists('dur', $input) ? $input['dur'] : [];
             $this->checkDurs($collectionId, $dur, (int)$jwtUser['id']);
 
@@ -568,6 +568,7 @@ class TeamCollectionController extends Controller
             }
 
             if ($collection->status === Collection::STATUS_ACTIVE) {
+                \Log::info("indexing in main call");
                 $this->indexElasticCollections((int) $collection->id);
             }
 
