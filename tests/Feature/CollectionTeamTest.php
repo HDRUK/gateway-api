@@ -15,6 +15,7 @@ use App\Models\CollectionHasUser;
 use App\Models\Publication;
 use App\Models\TeamHasUser;
 use Tests\Traits\MockExternalApis;
+use ElasticClientController as ECC;
 
 class CollectionTeamTest extends TestCase
 {
@@ -843,7 +844,7 @@ class CollectionTeamTest extends TestCase
      * Check if making large updates can cause performance issues
      * @return void
      */
-    public function test_add_lots_of_datasets() 
+    public function test_add_lots_of_datasets()
     {
         // use a non-admin user, and assign them to a team as custodian.team.admin
         [
@@ -851,6 +852,12 @@ class CollectionTeamTest extends TestCase
             'team' => $team
         ] = $this->getNonAdminUserAsCustodianTeamAdminInTeam();
 
+        $datasets = $this->generateDatasets(20);
+        $tools = $this->generateTools();
+        $keywords = $this->generateKeywords();
+        $durs = $this->generateDurs();
+        $publications = $this->generatePublications();
+        \Log::info("", $datasets);
         // create new collection
         $mockDataIn = [
             "name" => "covid",
@@ -859,11 +866,7 @@ class CollectionTeamTest extends TestCase
             "enabled" => true,
             "public" => true,
             "counter" => 123,
-            "datasets" => $this->generateDatasets(),
-            "tools" => $this->generateTools(),
-            "keywords" => $this->generateKeywords(),
-            "dur" => $this->generateDurs(),
-            "publications" => $this->generatePublications(),
+            "datasets" => $datasets,
             "status" => "ACTIVE",
         ];
         $responseIn = $this->json(
@@ -874,7 +877,17 @@ class CollectionTeamTest extends TestCase
         );
 
         $responseIn->assertStatus(201);
+
+        // Check these have been indexed
+        ECC::shouldReceive("indexDocument")->atLeast()->once();
+
         $idIn = (int) $responseIn['data'];
+
+        $datasets = $this->generateDatasets(20);
+        $tools = $this->generateTools();
+        $keywords = $this->generateKeywords();
+        $durs = $this->generateDurs();
+        $publications = $this->generatePublications();
 
         // update collection
         $mockDataUpdate = [
@@ -884,11 +897,11 @@ class CollectionTeamTest extends TestCase
             "enabled" => true,
             "public" => true,
             "counter" => 1,
-            "datasets" => $this->generateDatasets(20),
-            "tools" => $this->generateTools(),
-            "keywords" => $this->generateKeywords(),
-            "dur" => $this->generateDurs(),
-            "publications" => $this->generatePublications(),
+            "datasets" => $datasets,
+            "tools" => $tools,
+            "keywords" => $keywords,
+            "dur" => $durs,
+            "publications" => $publications,
             "status" => "DRAFT"
         ];
         $responseUpdate = $this->json(

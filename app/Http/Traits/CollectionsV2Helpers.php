@@ -166,7 +166,7 @@ trait CollectionsV2Helpers
             if (!in_array($datasetVersionLatestId, $commonDatasetVersionIds)) {
                 $arrCreateCollectionHasDatasetVersion[] = $this->buildAddCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
                 foreach ($commonDatasetVersionIds as $commonDatasetVersionId) {
-                    $arrDeleteCollectionHasDatasetVersion[] = [                        
+                    $arrDeleteCollectionHasDatasetVersion[] = [
                         'collection_id' => $collectionId,
                         'dataset_version_id' => $commonDatasetVersionId];
                 }
@@ -202,10 +202,10 @@ trait CollectionsV2Helpers
                             continue;
                         }
                     } else {
-                       $arrDeleteCollectionHasDatasetVersion[] = [
-                            'collection_id' => $collectionId,
-                            'dataset_version_id' => $commonDatasetVersionId,
-                       ];
+                        $arrDeleteCollectionHasDatasetVersion[] = [
+                             'collection_id' => $collectionId,
+                             'dataset_version_id' => $commonDatasetVersionId,
+                        ];
                     }
                 }
             }
@@ -217,13 +217,11 @@ trait CollectionsV2Helpers
 
         // Reindex elastic
         foreach ($datasetCreateIds as $dataset) {
-                \Log::info($dataset);
-                \Log::info($teamIds[$dataset]);
-                $this->reindexElastic($dataset);
-                if ($teamIds[$dataset]) {
-                    $this->reindexElasticDataProviderWithRelations((int) $teamIds[$dataset], 'dataset');
-                }
+            $this->reindexElastic($dataset);
+            if ($teamIds[$dataset]) {
+                $this->reindexElasticDataProviderWithRelations((int) $teamIds[$dataset], 'dataset');
             }
+        }
         \Log::info("Reindexing complete");
         // Now delete existing links to any dataset version that wasn't supplied.
         $collectionHasDatasetVersionsActive = CollectionHasDatasetVersion::where('collection_id', $collectionId)
@@ -255,7 +253,7 @@ trait CollectionsV2Helpers
         \Log::info("End of checkDatasets()");
     }
 
-    // Build an array 
+    // Build an array
     private function buildAddCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, ?int $userId = null)
     {
         try {
