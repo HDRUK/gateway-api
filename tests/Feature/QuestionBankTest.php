@@ -9,6 +9,7 @@ use App\Models\QuestionHasTeam;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\UploadedFile;
 
 class QuestionBankTest extends TestCase
 {
@@ -1847,5 +1848,177 @@ class QuestionBankTest extends TestCase
 
         $this->assertEquals(QuestionHasTeam::all()->count(), $countBefore);
 
+    }
+
+    /**
+     *
+     *
+     * @return void
+     */
+    public function test_document_exchange()
+    {
+        $file = new UploadedFile(
+            getcwd() . '/tests/Unit/test_files/test_file.csv',
+            'test_file.csv',
+        );
+
+        $response = $this->json(
+            'POST',
+            'api/v1/files?entity_flag=document-exchange-upload',
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        $response->assertStatus(200);
+        $uploadId = $response->decodeResponseJson()['data']['uuid'];
+        $filename = $response->decodeResponseJson()['data']['filename'];
+
+        $response = $this->json(
+            'POST',
+            'api/v1/questions',
+            [
+                'section_id' => 1,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'options' => [],
+                'all_custodians' => true,
+                'component' => 'DocumentExchange',
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+                'document' => ["value" => ["uuid" => $uploadId, "filename" => $filename]],
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+            ]);
+
+        $content = $response->decodeResponseJson();
+
+        $response = $this->get('api/v1/questions/' . $content['data'], $this->header);
+        $questionVersionId = $response->decodeResponseJson()['data']['version_id'];
+        $questionId = $response->decodeResponseJson()['data']['question_id'];
+
+        $response = $this->get('api/v1/questions/version/' . $questionVersionId, $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'question_id',
+                    'version',
+                    'default',
+                    'required',
+                    'question_json',
+                ],
+            ]);
+
+        $questionJson = $response->decodeResponseJson()['data']['question_json'];
+        $this->assertEquals($uploadId, $questionJson['field']['document']['value']['uuid']);
+
+        // Can we download the file?
+        $response = $this->get('api/v1/questions/' . $questionId . '/files/' . $uploadId, $this->header);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // Can we update the document?
+
+        // Create a second file
+        $file2 = new UploadedFile(
+            getcwd() . '/tests/Unit/test_files/test_file.csv',
+            'test_file.csv',
+        );
+
+        $response = $this->json(
+            'POST',
+            'api/v1/files?entity_flag=document-exchange-upload',
+            [
+                'file' => $file2
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        $response->assertStatus(200);
+        $upload2Id = $response->decodeResponseJson()['data']['uuid'];
+        $filename2 = $response->decodeResponseJson()['data']['filename'];
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/questions/' . $questionId,
+            [
+                'document' => ["value" => ["uuid" => $upload2Id, "filename" => $filename2]],
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(200);
+
+        $response = $this->get('api/v1/questions/' . $questionId, $this->header);
+        $response->assertStatus(200);
+        $document = $response->decodeResponseJson()['data']['document'];
+        $this->assertEquals($upload2Id, $document['value']['uuid']);
+
+        // Can we download the file?
+        $response = $this->get('api/v1/questions/' . $questionId . '/files/' . $uploadId, $this->header);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // Test PUT
+        $response = $this->json(
+            'PUT',
+            'api/v1/questions/' . $questionId,
+            [
+                'section_id' => 2,
+                'user_id' => 1,
+                'force_required' => 0,
+                'allow_guidance_override' => 1,
+                'options' => [],
+                'all_custodians' => true,
+                'component' => 'DocumentExchange',
+                'title' => 'Test question',
+                'guidance' => 'Something helpful',
+                'required' => 0,
+                'default' => 0,
+                'version' => 1,
+                'is_child' => 0,
+                'document' => ["value" => ["uuid" => $uploadId, "filename" => $filename]],
+            ],
+            $this->header
+        );
+
+        $response = $this->get('api/v1/questions/' . $questionId, $this->header);
+        $response->assertStatus(200);
+        $document = $response->decodeResponseJson()['data']['document'];
+        $this->assertEquals($uploadId, $document['value']['uuid']);
+
+        // Try to delete the question
+        $response = $this->json(
+            'DELETE',
+            'api/v1/questions/' . $questionId,
+            [],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response = $this->get('api/v1/questions/' . $questionId, $this->header);
+        $response->assertStatus(500);
+
+        // Verify it has deleted the files
+        $response = $this->get('api/v1/files/' . $upload2Id, $this->header);
+        $response->assertStatus(500);
     }
 }

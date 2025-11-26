@@ -87,59 +87,46 @@ trait GatewayMetadataIngestionTrait
         ])->get())->keyBy('pid');
     }
 
-    public function deleteLocalDatasetsNotInRemoteCatalogue(
+    public function archiveLocalDatasetsNotInRemoteCatalogue(
         Collection $localItems,
         Collection $remoteItems,
         GatewayMetadataIngestionService $gmi
     ): int {
-        $this->log('info', 'testing REMOTE collection for LOCAL deletions');
+        $this->log('info', 'testing REMOTE collection for LOCAL archive');
 
-        $deletedCount = 0;
+        $archivedCount = 0;
 
-        $toDelete = $localItems->keys()->diff($remoteItems->keys());
+        $toArchive = $localItems->keys()->diff($remoteItems->keys());
 
-        foreach ($toDelete as $pid) {
+        foreach ($toArchive as $pid) {
             try {
-                $this->log('info', "dataset {$pid} detected LOCALLY, but NOT in REMOTE collection - DELETING");
+                $this->log('info', "dataset {$pid} detected LOCALLY, but NOT in REMOTE collection - ARCHIVING");
                 $teamId = $gmi->getTeam();
                 $ds = Dataset::where([
                     'pid' => $pid,
                     'team_id' => $teamId,
                     'create_origin' => 'GMI',
                 ])->first();
-                
+
                 if (!$ds) {
-                    $this->log('info', "dataset with PID {$pid} was expected locally but not found in DB — skipping deletion. This is likely a missmatch of team ids, team id on the incoming dataset: {$teamId}");
+                    $this->log('info', "dataset with PID {$pid} was expected locally but not found in DB — skipping archive. This is likely a missmatch of team ids, team id on the incoming dataset: {$teamId}");
                     continue;
                 }
                 $dsId = $ds->id;
 
-                $this->log('info', 'dataset for deletion ' . $dsId);
-
-                $dsv = DatasetVersion::where('dataset_id', $dsId)->first();
-                if ($dsv) {
-                    $this->log('info', 'dataset_version for deletion ' . $dsId);
-                    // Due to constraints, delete spatial coverage first.
-                    $dsvhsc = DatasetVersionHasSpatialCoverage::where('dataset_version_id', $dsId)->forceDelete();
-                    $dsv->forceDelete();
-
-                    unset($dsvhsc);
-                    unset($dsv);
-                } else {
-                    $this->log('warning', "no dataset_version found for dataset {$dsId} - skipping deletion");
-                }
-
-                $ds->forceDelete();
-                $this->log('info', "dataset {$dsId} deleted");
+                $this->log('info', 'dataset for archiving ' . $dsId);
+                $ds->status = Dataset::STATUS_ARCHIVED;
+                $ds->save();
+                $this->log('info', "dataset {$dsId} archived");
 
                 unset($ds);
-                $deletedCount++;
+                $archivedCount++;
             } catch (\Exception $e) {
                 $this->log('error', 'encountered internal error: ' . json_encode($e->getMessage()));
             }
         }
 
-        return $deletedCount;
+        return $archivedCount;
     }
 
     public function createLocalDatasetsMissingFromRemoteCatalogue(

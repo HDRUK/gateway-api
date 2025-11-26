@@ -9,9 +9,7 @@ use Exception;
 use App\Models\Team;
 use App\Models\Dataset;
 use Illuminate\Http\Request;
-use App\Models\DatasetVersion;
 use App\Models\DataProviderColl;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Collection;
@@ -500,7 +498,7 @@ class DataCustodianNetworksController extends Controller
             );
 
             $linkedPublicationsColl = DB::select(
-                'SELECT DISTINCT p.id, p.paper_title, p.authors, p.publication_type, p.publication_type_mk1, p.status, p.created_at, p.updated_at
+                'SELECT DISTINCT p.id, p.paper_title, p.authors, p.publication_type, p.publication_type_mk1, p.status, p.created_at, p.updated_at, p.url
                 FROM datasets ds
                 JOIN dataset_versions dv ON dv.dataset_id = ds.id
                 JOIN publication_has_dataset_version phdv ON dv.id = phdv.dataset_version_id
