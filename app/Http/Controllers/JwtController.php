@@ -69,10 +69,7 @@ class JwtController extends Controller
             $user->workgroups->makeHidden('pivot');
 
             if (Config::get('services.cohort_discovery.add_teams_to_jwt')) {
-                $user->load(['adminTeams' => function ($query) {
-                    $query->select('teams.id', 'teams.name');
-                }]);
-                $user->adminTeams->makeHidden('pivot');
+                $user->cohortAdminTeams->setVisible(['id', 'name']);
             }
 
             $token = $this->config->builder()
