@@ -853,11 +853,7 @@ class CollectionTeamTest extends TestCase
         ] = $this->getNonAdminUserAsCustodianTeamAdminInTeam();
 
         $datasets = $this->generateDatasets(20);
-        $tools = $this->generateTools();
-        $keywords = $this->generateKeywords();
-        $durs = $this->generateDurs();
-        $publications = $this->generatePublications();
-        \Log::info("", $datasets);
+
         // create new collection
         $mockDataIn = [
             "name" => "covid",
