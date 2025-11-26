@@ -223,14 +223,12 @@ trait CollectionsV2Helpers
                 $this->reindexElasticDataProviderWithRelations((int) $teamIds[$dataset], 'dataset');
             }
         }
-        \Log::info("Reindexing complete");
         // Now delete existing links to any dataset version that wasn't supplied.
         $collectionHasDatasetVersionsActive = CollectionHasDatasetVersion::where('collection_id', $collectionId)
                                             ->select('dataset_version_id')
                                             ->get()
                                             ->toArray();
 
-        \Log::info("Deleted old dataset stuff", $collectionHasDatasetVersionsActive);
 
         $wantedDatasetIds = convertArrayToArrayWithKeyName($inDatasets, 'id');
         $wantedDatasetVersionIds = DatasetVersion::whereIn('dataset_id', $wantedDatasetIds)->select('id')->get()->toArray();
@@ -240,18 +238,14 @@ trait CollectionsV2Helpers
             array_column($wantedDatasetVersionIds, 'id')
         );
 
-        \Log::info("Unwanted dataset version ids", $unwantedDatasetVersionsIds);
 
 
         foreach ($unwantedDatasetVersionsIds as $datasetVersionId) {
-            \Log::info('Deleting ' . $datasetVersionId);
             CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
                 'dataset_version_id' => $datasetVersionId,
             ])->forceDelete();
         }
-
-        \Log::info("End of checkDatasets()");
     }
 
     // Build an array
