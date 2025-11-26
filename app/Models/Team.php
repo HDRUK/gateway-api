@@ -253,7 +253,8 @@ class Team extends Model
         return $this->hasManyThrough(Permission::class, TeamHasUser::class);
     }
 
-    public function teamUserRoles(): HasManyThrough
+    /** @return \Staudenmeir\EloquentHasManyDeep\HasManyDeep<Role, $this> */
+    public function teamUserRoles(): \Staudenmeir\EloquentHasManyDeep\HasManyDeep
     {
         return $this->hasManyDeep(
             Role::class,
