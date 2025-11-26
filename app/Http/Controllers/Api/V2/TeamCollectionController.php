@@ -568,7 +568,6 @@ class TeamCollectionController extends Controller
             }
 
             if ($collection->status === Collection::STATUS_ACTIVE) {
-                \Log::info("indexing in main call");
                 $this->indexElasticCollections((int) $collection->id);
             }
 
