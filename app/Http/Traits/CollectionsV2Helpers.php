@@ -145,9 +145,7 @@ trait CollectionsV2Helpers
         $datasetCreateIds = [];
 
         foreach ($inDatasets as $dataset) {
-            $datasetInfo = Dataset::where('id', (int) $dataset['id'])->first();
-            $datasetVersionLatest = $datasetInfo->latestVersion();
-            $datasetVersionLatestId = $datasetVersionLatest->id;
+            $datasetVersionLatestId = Dataset::where('id', (int) $dataset['id'])->select('id')->first()->latestVersion()->id;
             $datasetVersions = DatasetVersion::where('dataset_id', (int) $dataset['id'])->select('id')->get()->toArray();
 
             $datasetVersionIds = convertArrayToArrayWithKeyName($datasetVersions, 'id');
