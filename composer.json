@@ -25,7 +25,7 @@
         "google/cloud-pubsub": "^2.1",
         "google/cloud-secret-manager": "^2.1",
         "guzzlehttp/guzzle": "^7.2",
-        "hdruk/laravel-mjml": "*",
+        "hdruk/laravel-mjml": "dev-main",
         "intervention/image": "^3.7",
         "jumbojett/openid-connect-php": "dev-update-redirect-return",
         "laravel/framework": "^12.0",
