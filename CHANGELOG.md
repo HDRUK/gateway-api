@@ -1,3 +1,16 @@
+## [2.28.3](https://github.com/HDRUK/gateway-api/compare/v2.28.2...v2.28.3) (2025-11-24)
+
+### 🐛 Bug Fixes
+
+* **GAT-1234:** Fix franken ([ad5f456](https://github.com/HDRUK/gateway-api/commit/ad5f4568f8c1d50d7102bd3fcc711846de0b5824))
+* **GAT-1234:** Fix franken (#1477) ([cfb0e55](https://github.com/HDRUK/gateway-api/commit/cfb0e5592d05131188e3e13d71caaecc3516a5cb))
+
+## [2.28.2](https://github.com/HDRUK/gateway-api/compare/v2.28.1...v2.28.2) (2025-11-24)
+
+### 🐛 Bug Fixes
+
+* **GAT-8248:** Fix missing URLs for publications on Data Custodian Network pages (#1473) ([1c6c901](https://github.com/HDRUK/gateway-api/commit/1c6c901214de2d5ba9e210c8aca8eb3cb24dfc20))
+
 ## [2.28.1](https://github.com/HDRUK/gateway-api/compare/v2.28.0...v2.28.1) (2025-11-21)
 
 ### 🐛 Bug Fixes

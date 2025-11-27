@@ -4,23 +4,23 @@ namespace App\Models;
 
 // use Laravel\Sanctum\HasApiTokens;
 use App\Http\Traits\WithJwtUser;
-use Laravel\Passport\HasApiTokens;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
 {
+    use HasApiTokens;
     use HasFactory;
     use Notifiable;
     use SoftDeletes;
     use WithJwtUser;
-    use HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -75,12 +75,10 @@ class User extends Authenticatable
         'is_nhse_sde_approval' => 'boolean',
     ];
 
-
     public function sector(): BelongsTo
     {
         return $this->belongsTo(Sector::class);
     }
-
 
     protected $appends = ['rquestroles', 'cohort_discovery_roles'];
 
@@ -93,12 +91,12 @@ class User extends Authenticatable
             'request_status' => 'APPROVED',
         ])->first();
 
-        if (!$cohortRequest) {
+        if (! $cohortRequest) {
             return [];
         }
 
         $cohortRequestRoleIds = CohortRequestHasPermission::where([
-            'cohort_request_id' => $cohortRequest->id
+            'cohort_request_id' => $cohortRequest->id,
         ])->pluck('permission_id')->toArray();
 
         $cohortRequestRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
@@ -115,12 +113,12 @@ class User extends Authenticatable
             'request_status' => 'APPROVED',
         ])->first();
 
-        if (!$cohortRequest) {
+        if (! $cohortRequest) {
             return [];
         }
 
         $cohortRequestRoleIds = CohortRequestHasPermission::where([
-            'cohort_request_id' => $cohortRequest->id
+            'cohort_request_id' => $cohortRequest->id,
         ])->pluck('permission_id')->toArray();
 
         $cohortRequestRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
@@ -152,7 +150,13 @@ class User extends Authenticatable
     public function adminTeams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class, 'team_has_users', 'user_id', 'team_id')
-            ->whereHas('teamUsers.roles', fn($q) => $q->where('name', 'custodian.team.admin'));
+            ->whereHas('teamUserRoles', fn ($q) => $q->where(['name' => 'custodian.team.admin', 'user_id' => $this->id]));
+    }
+
+    public function cohortAdminTeams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class, 'team_has_users', 'user_id', 'team_id')
+            ->whereHas('teamUserRoles', fn ($q) => $q->where(['name' => 'custodian.team.cohortAdmin', 'user_id' => $this->id]));
     }
 
     public function notifications(): BelongsToMany

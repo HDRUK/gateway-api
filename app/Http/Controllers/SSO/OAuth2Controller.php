@@ -35,6 +35,8 @@ class OAuth2Controller extends Controller
     ) {
         $userId = session('cr_uid') ?? config('passport.cr_uid_debug');
 
+        error_log("\033[31mUSER ID --$userId-- \033[0m");
+
         if (!$userId) {
             abort(401, 'User not authenticated');
         }

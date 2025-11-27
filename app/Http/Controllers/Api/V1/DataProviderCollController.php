@@ -287,6 +287,7 @@ class DataProviderCollController extends Controller
                 'publication_type',
                 'publication_type_mk1',
                 'status',
+                'url',
                 'created_at',
                 'updated_at'
             )->whereIn('id', $this->publications)->where('status', 'ACTIVE')->get()->toArray();

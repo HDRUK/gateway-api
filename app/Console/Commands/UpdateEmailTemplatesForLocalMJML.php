@@ -1,12 +1,26 @@
 <?php
 
-namespace Database\Seeders;
+namespace App\Console\Commands;
 
 use App\Models\EmailTemplate;
-use Illuminate\Database\Seeder;
+use Illuminate\Console\Command;
 
-class EmailTemplateSeeder extends Seeder
+class UpdateEmailTemplatesForLocalMJML extends Command
 {
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'app:update-email-templates-for-local-mjml';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Update email templates to be suitable for use with local MJML';
+
     public string $mjmlHead = '
 <mj-head>
     <mj-html-attributes>
@@ -92,15 +106,14 @@ class EmailTemplateSeeder extends Seeder
     }
 
     /**
-     * Run the database seeds.
+     * Execute the console command.
      */
-    public function run(): void
+    public function handle()
     {
-        EmailTemplate::truncate();
-        // Seeds the default email templates used throughout the system
-
-        // Template Example
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'example_template',
+            ],
             [
                 'identifier' => 'example_template',
                 'subject' => 'Example Template',
@@ -171,7 +184,10 @@ class EmailTemplateSeeder extends Seeder
           ',
             ]);
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'custodian.team.admin.assign',
+            ],
             [
                 'identifier' => 'custodian.team.admin.assign',
                 'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Team Admin',
@@ -212,7 +228,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'custodian.team.admin.remove',
+            ],
             [
                 'identifier' => 'custodian.team.admin.remove',
                 'subject' => 'You have been removed as a Team Admin for the [[TEAM_NAME]] team on the Gateway.',
@@ -247,7 +266,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'custodian.dar.manager.assign',
+            ],
             [
                 'identifier' => 'custodian.dar.manager.assign',
                 'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Data Access Manager',
@@ -280,8 +302,10 @@ class EmailTemplateSeeder extends Seeder
                     .$this->standardFullFooter(),
             ]
         );
-
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'custodian.dar.manager.remove',
+            ],
             [
                 'identifier' => 'custodian.dar.manager.remove',
                 'subject' => 'You have been removed as a Data Access Manager for the [[TEAM_NAME]] team on the Gateway.',
@@ -319,7 +343,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'dar.reviewer.assign',
+            ],
             [
                 'identifier' => 'dar.reviewer.assign',
                 'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Reviewer',
@@ -348,7 +375,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'dar.reviewer.remove',
+            ],
             [
                 'identifier' => 'dar.reviewer.remove',
                 'subject' => 'You have been removed as a Reviewer for the [[TEAM_NAME]] team on the Gateway.',
@@ -380,7 +410,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'developer.assign',
+            ],
             [
                 'identifier' => 'developer.assign',
                 'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Developer',
@@ -417,7 +450,10 @@ class EmailTemplateSeeder extends Seeder
             }',
             ]
         );
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'developer.remove',
+            ],
             [
                 'identifier' => 'developer.remove',
                 'subject' => 'You have been removed as a Developer for the [[TEAM_NAME]] team on the Gateway.',
@@ -449,7 +485,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'metadata.editor.assign',
+            ],
             [
                 'identifier' => 'metadata.editor.assign',
                 'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Metadata Editor',
@@ -487,7 +526,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'metadata.editor.remove',
+            ],
             [
                 'identifier' => 'metadata.editor.remove',
                 'subject' => 'You have been removed as a Metadata Editor for the [[TEAM_NAME]] team on the Gateway.',
@@ -519,7 +561,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'custodian.metadata.manager.assign',
+            ],
             [
                 'identifier' => 'custodian.metadata.manager.assign',
                 'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Metadata Manager',
@@ -560,7 +605,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'custodian.metadata.manager.remove',
+            ],
             [
                 'identifier' => 'custodian.metadata.manager.remove',
                 'subject' => 'You have been removed as a Metadata Manager for the [[TEAM_NAME]] team on the Gateway.',
@@ -595,7 +643,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'hdruk.superadmin.assign',
+            ],
             [
                 'identifier' => 'hdruk.superadmin.assign',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.superadmin.assign',
@@ -604,7 +655,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'hdruk.admin.assign',
+            ],
             [
                 'identifier' => 'hdruk.admin.assign',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.admin.assign',
@@ -613,7 +667,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'hdruk.admin.remove',
+            ],
             [
                 'identifier' => 'hdruk.admin.remove',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.admin.remove',
@@ -622,7 +679,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'hdruk.metadata.assign',
+            ],
             [
                 'identifier' => 'hdruk.metadata.assign',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.metadata.assign',
@@ -631,7 +691,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'hdruk.metadata.remove',
+            ],
             [
                 'identifier' => 'hdruk.metadata.remove',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.metadata.remove',
@@ -640,7 +703,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'hdruk.dar.assign',
+            ],
             [
                 'identifier' => 'hdruk.dar.assign',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.dar.assign',
@@ -649,7 +715,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'hdruk.dar.remove',
+            ],
             [
                 'identifier' => 'hdruk.dar.remove',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.dar.remove',
@@ -658,7 +727,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'hdruk.custodian.assign',
+            ],
             [
                 'identifier' => 'hdruk.custodian.assign',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.custodian.assign',
@@ -667,7 +739,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'hdruk.custodian.remove',
+            ],
             [
                 'identifier' => 'hdruk.custodian.remove',
                 'subject' => '[[ASSIGNER_NAME]] - hdruk.custodian.remove',
@@ -676,7 +751,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'cohort.discovery.access.expired',
+            ],
             [
                 'identifier' => 'cohort.discovery.access.expired',
                 'subject' => 'Your Cohort Discovery access has expired',
@@ -712,7 +790,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'cohort.discovery.access.will.expire',
+            ],
             [
                 'identifier' => 'cohort.discovery.access.will.expire',
                 'subject' => 'Your Cohort Discovery access will soon expire',
@@ -747,7 +828,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'cohort.discovery.access.approved',
+            ],
             [
                 'identifier' => 'cohort.discovery.access.approved',
                 'subject' => 'Congratulations! Your Cohort Discovery registration has been approved.',
@@ -783,7 +867,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'cohort.discovery.access.rejected',
+            ],
             [
                 'identifier' => 'cohort.discovery.access.rejected',
                 'subject' => 'Your Cohort Discovery Registration has been Rejected.',
@@ -815,7 +902,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'cohort.discovery.access.submitted',
+            ],
             [
                 'identifier' => 'cohort.discovery.access.submitted',
                 'subject' => 'Your Cohort Discovery registration form has been submitted.',
@@ -841,7 +931,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'cohort.discovery.access.banned',
+            ],
             [
                 'identifier' => 'cohort.discovery.access.banned',
                 'subject' => 'Your Cohort Discovery access has been banned.',
@@ -867,7 +960,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'cohort.discovery.access.suspended',
+            ],
             [
                 'identifier' => 'cohort.discovery.access.suspended',
                 'subject' => 'Your Cohort Discovery access has been suspended.',
@@ -893,7 +989,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'apiintegration.developer.create',
+            ],
             [
                 'identifier' => 'apiintegration.developer.create',
                 'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
@@ -922,7 +1021,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'apiintegration.team.admin.create',
+            ],
             [
                 'identifier' => 'apiintegration.team.admin.create',
                 'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
@@ -951,7 +1053,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'apiintegration.other.create',
+            ],
             [
                 'identifier' => 'apiintegration.other.create',
                 'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
@@ -971,7 +1076,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'fmaintegration.developer.create',
+            ],
             [
                 'identifier' => 'fmaintegration.developer.create',
                 'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
@@ -991,7 +1099,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'fmaintegration.team.admin.create',
+            ],
             [
                 'identifier' => 'fmaintegration.team.admin.create',
                 'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
@@ -1011,7 +1122,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'fmaintegration.other.create',
+            ],
             [
                 'identifier' => 'fmaintegration.other.create',
                 'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
@@ -1031,7 +1145,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'fmaintegration.developer.disable',
+            ],
             [
                 'identifier' => 'fmaintegration.developer.disable',
                 'subject' => 'An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.',
@@ -1061,7 +1178,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'fmaintegration.team.admin.disable',
+            ],
             [
                 'identifier' => 'fmaintegration.team.admin.disable',
                 'subject' => 'An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.',
@@ -1090,7 +1210,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'fmaintegration.other.disable',
+            ],
             [
                 'identifier' => 'fmaintegration.other.disable',
                 'subject' => 'An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.',
@@ -1110,7 +1233,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'integration.developer.delete',
+            ],
             [
                 'identifier' => 'integration.developer.delete',
                 'subject' => 'An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.',
@@ -1139,7 +1265,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'integration.team.admin.delete',
+            ],
             [
                 'identifier' => 'integration.team.admin.delete',
                 'subject' => 'An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.',
@@ -1168,7 +1297,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'integration.other.delete',
+            ],
             [
                 'identifier' => 'integration.other.delete',
                 'subject' => 'An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.',
@@ -1188,7 +1320,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'integration.developer.error',
+            ],
             [
                 'identifier' => 'integration.developer.error',
                 'subject' => 'An automation error occurred for the [[TEAM_NAME]] team on the Gateway.',
@@ -1217,7 +1352,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'integration.team.admin.error',
+            ],
             [
                 'identifier' => 'integration.team.admin.error',
                 'subject' => 'An automation error occurred for the [[TEAM_NAME]] team on the Gateway.',
@@ -1246,7 +1384,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'integration.other.error',
+            ],
             [
                 'identifier' => 'integration.other.error',
                 'subject' => 'An automation error occurred for the [[TEAM_NAME]] team on the Gateway.',
@@ -1266,7 +1407,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'feasibilityenquiry.firstmessage',
+            ],
             [
                 'identifier' => 'feasibilityenquiry.firstmessage',
                 'subject' => 'Feasibility Enquiry from the Health Data Research Gateway: [[USER_FIRST_NAME]] [[USER_LAST_NAME]], [[PROJECT_TITLE]]',
@@ -1285,7 +1429,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'dar.notifymessage',
+            ],
             [
                 'identifier' => 'dar.notifymessage',
                 'subject' => 'New Data Access Enquiry reply from [[USER_FIRST_NAME]] [[USER_LAST_NAME]]: [[PROJECT_TITLE]]',
@@ -1304,7 +1451,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'generalenquiry.firstmessage',
+            ],
             [
                 'identifier' => 'generalenquiry.firstmessage',
                 'subject' => 'General Enquiry from the Health Data Research Gateway: [[USER_FIRST_NAME]] [[USER_LAST_NAME]], [[USER_ORGANISATION]]',
@@ -1323,7 +1473,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'cohort.request.admin.approve',
+            ],
             [
                 'identifier' => 'cohort.request.admin.approve',
                 'subject' => 'You have been assigned the role of Cohort Discovery admin on the Gateway',
@@ -1357,7 +1510,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'cohort.request.admin.remove',
+            ],
             [
                 'identifier' => 'cohort.request.admin.remove',
                 'subject' => 'Your Cohort Discovery admin permissions has been removed',
@@ -1393,7 +1549,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'private.app.create',
+            ],
             [
                 'identifier' => 'private.app.create',
                 'subject' => 'Congratulations! A new Private App has been created.',
@@ -1442,7 +1601,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'private.app.update',
+            ],
             [
                 'identifier' => 'private.app.update',
                 'subject' => 'Private App has been updated.',
@@ -1490,7 +1652,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'private.app.delete',
+            ],
             [
                 'identifier' => 'private.app.delete',
                 'subject' => 'Private App has been deleted.',
@@ -1536,7 +1701,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'federation.app.create',
+            ],
             [
                 'identifier' => 'federation.app.create',
                 'subject' => 'Congratulations! A new Gateway App has been created.',
@@ -1585,7 +1753,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'federation.app.update',
+            ],
             [
                 'identifier' => 'federation.app.update',
                 'subject' => 'Gateway App has been updated.',
@@ -1634,7 +1805,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'update.roles.team.user',
+            ],
             [
                 'identifier' => 'update.roles.team.user',
                 'subject' => 'Congratulations! Your permissions have changed.',
@@ -1681,7 +1855,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'add.new.user.team',
+            ],
             [
                 'identifier' => 'add.new.user.team',
                 'subject' => 'Congratulations! Your have been added to a team.',
@@ -1720,7 +1897,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'dar.firstmessage',
+            ],
             [
                 'identifier' => 'dar.firstmessage',
                 'subject' => 'New Data Access Enquiry from [[USER_FIRST_NAME]] [[USER_LAST_NAME]]: [[PROJECT_TITLE]]',
@@ -1739,7 +1919,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'dar.status.researcher',
+            ],
             [
                 'identifier' => 'dar.status.researcher',
                 'subject' => 'DAR Status Update: [[USER_FIRST_NAME]]',
@@ -1774,7 +1957,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'private.app.update.clientid',
+            ],
             [
                 'identifier' => 'private.app.update.clientid',
                 'subject' => 'Private App has been updated.',
@@ -1819,7 +2005,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'dar.review.researcher',
+            ],
             [
                 'identifier' => 'dar.review.researcher',
                 'subject' => 'New comment on DAR: [[PROJECT_TITLE]]',
@@ -1855,7 +2044,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'dar.review.custodian',
+            ],
             [
                 'identifier' => 'dar.review.custodian',
                 'subject' => 'New comment on DAR: [[PROJECT_TITLE]]',
@@ -1891,7 +2083,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'dar.submission.researcher',
+            ],
             [
                 'identifier' => 'dar.submission.researcher',
                 'subject' => 'DAR Submitted: [[USER_FIRST_NAME]]',
@@ -1927,7 +2122,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'dar.submission.custodian',
+            ],
             [
                 'identifier' => 'dar.submission.custodian',
                 'subject' => 'New DAR Received: [[USER_FIRST_NAME]]',
@@ -1964,7 +2162,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'update.roles.team.notifications',
+            ],
             [
                 'identifier' => 'update.roles.team.notifications',
                 'subject' => 'Congratulations! Permissions have changed for team users.',
@@ -2002,7 +2203,10 @@ class EmailTemplateSeeder extends Seeder
             ]
         );
 
-        EmailTemplate::create(
+        EmailTemplate::updateOrCreate(
+            [
+                'identifier' => 'user.email_verification',
+            ],
             [
                 'identifier' => 'user.email_verification',
                 'subject' => 'Verify your email address',
