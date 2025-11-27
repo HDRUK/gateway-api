@@ -25,7 +25,6 @@
         "google/cloud-pubsub": "^2.1",
         "google/cloud-secret-manager": "^2.1",
         "guzzlehttp/guzzle": "^7.2",
-        "hdruk/laravel-mjml": "dev-main",
         "intervention/image": "^3.7",
         "jumbojett/openid-connect-php": "dev-update-redirect-return",
         "laravel/framework": "^12.0",
@@ -73,8 +72,7 @@
             "Database\\Seeders\\": "database/seeders/",
             "Database\\Seeders\\Omop\\": "database/seeders/omop",
             "Database\\Migrations\\": "database/migrations/",
-            "Database\\Beta\\": "database/beta/",
-            "Hdruk\\LaravelMjml\\": "hdruk/laravel-mjml/src/"
+            "Database\\Beta\\": "database/beta/"
         },
         "files": [
             "app/Helpers/helpers.php"
