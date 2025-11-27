@@ -205,6 +205,11 @@ class RoleSeeder extends Seeder
                     'papers.delete',
                 ],
             ],
+            'custodian.team.cohortAdmin' => [
+                'full_name' => 'Team Cohort Discovery Admin',
+                'permissions' => [
+                ],
+            ],
             'developer' => [
                 'full_name' => 'Developer',
                 'permissions' => [

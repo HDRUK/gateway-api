@@ -152,7 +152,13 @@ class User extends Authenticatable
     public function adminTeams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class, 'team_has_users', 'user_id', 'team_id')
-            ->whereHas('teamUsers.roles', fn ($q) => $q->where('name', 'custodian.team.admin'));
+            ->whereHas('teamUserRoles', fn ($q) => $q->where(['name' => 'custodian.team.admin', 'user_id' => $this->id]));
+    }
+
+    public function cohortAdminTeams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class, 'team_has_users', 'user_id', 'team_id')
+            ->whereHas('teamUserRoles', fn ($q) => $q->where(['name' => 'custodian.team.cohortAdmin', 'user_id' => $this->id]));
     }
 
     public function notifications(): BelongsToMany
