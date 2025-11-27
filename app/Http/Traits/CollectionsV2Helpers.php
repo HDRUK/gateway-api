@@ -138,7 +138,7 @@ trait CollectionsV2Helpers
         if (count($collectionHasDatasetVersions)) {
             $collectionHasDatasetVersionIds = array_unique(convertArrayToArrayWithKeyName($collectionHasDatasetVersions, 'dataset_version_id'));
         }
-        // Batch process this to avoid too many elastic reindexes
+
         $arrCreateCollectionHasDatasetVersion = [];
         $arrDeleteCollectionHasDatasetVersion = [];
 
