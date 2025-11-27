@@ -1,147 +1,183 @@
 {
     "gwdmVersion": "2.0",
-    "metadata": {
-        "required": {
-            "gatewayId": "1234",
-            "gatewayPid": "5124f2",
-            "issued": "2020-08-05T14:35:59Z",
-            "modified": "2021-01-28T14:15:46Z",
-            "revisions": [
-                {
-                    "version": "1.0.0",
-                    "url": "https://d5faf9c6-6c34-46d7-93c4-7706a5436ed9"
-                },
-                {
-                    "version": "2.0.0",
-                    "url": "https://a7ddefbd-31d9-4703-a738-256e4689f76a"
-                },
-                {
-                    "version": "0.0.1",
-                    "url": "https://9e798632-442a-427b-8d0e-456f754d28dc"
-                },
-                {
-                    "version": "2.1.1",
-                    "url": "https://a7ddefbd-31d9-4703-a738-256e4689f76a"
-                }
-            ],
-            "version": "0.0.1"
-        },
-        "summary": {
-            "abstract": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations",
-            "contactPoint": "susheel.varma@hdruk.ac.uk",
-            "keywords": "Preprints,Papers,HDR UK",
-            "controlledKeywords": null,
-            "datasetType": "list of papers",
-            "description": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations\n\nThis will include:\n- Papers\n- COVID-19 Papers\n- COVID-19 Preprint",
-            "doiName": "10.1093/ije/dyx196",
-            "shortTitle": "HDR UK Papers & Preprints",
-            "title": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations",
-            "publisher": {
-                "name": "HEALTH DATA RESEARCH UK",
-                "gatewayId": null,
-                "rorId": null
-            },
-            "populationSize": 0,
-            "inPipeline": null,
-            "datasetSubType": null
-        },
-        "coverage": {
-            "pathway": "NOT APPLICABLE",
-            "spatial": "https://www.geonames.org/countries/GB/united-kingdom.html",
-            "followup": "UNKNOWN",
-            "typicalAgeRange": "0-0",
-            "datasetCompleteness": null
-        },
-        "provenance": {
-            "origin": {
-                "purpose": "OTHER",
-                "source": "MACHINE GENERATED",
-                "collectionSituation": "OTHER",
-                "imageContrast": null
-            },
-            "temporal": {
-                "endDate": "2022-04-30",
-                "startDate": "2020-03-31",
-                "timeLag": "Not applicable",
-                "accrualPeriodicity": "Daily",
-                "distributionReleaseDate": "2020-11-27"
-            }
-        },
-        "accessibility": {
-            "access": {
-                "deliveryLeadTime": "Other",
-                "jurisdiction": "GB-ENG",
-                "dataController": "HDR UK",
-                "dataProcessor": "HDR UK",
-                "accessRights": "https://raw.githubusercontent.com/HDRUK/papers/master/LICENSE",
-                "accessService": "https://github.com/HDRUK/papers",
-                "accessRequestCost": "Free",
-                "accessServiceCategory": "TRE"
-            },
-            "usage": {
-                "dataUseLimitation": "GENERAL RESEARCH USE",
-                "dataUseRequirement": "RETURN TO DATABASE OR RESOURCE",
-                "resourceCreator": {
-                    "name": "HDR UK Science Team",
-                    "gatewayId": null,
-                    "rorId": null
-                }
-            },
-            "formatAndStandards": {
-                "vocabularyEncodingSchemes": "OTHER",
-                "conformsTo": "OTHER",
-                "languages": "en",
-                "formats": "CSV,JSON"
-            }
-        },
-        "linkage": {
-            "isGeneratedUsing": "something",
-            "dataUses": "dunno",
-            "isReferenceIn": "10.5281/zenodo.326615",
-            "tools": "https://github.com/HDRUK/papers",
-            "datasetLinkage": {
-                "isDerivedFrom": "https://web.www.healthdatagateway.org/dataset/fd8d0743-344a-4758-bb97-f8ad84a37357",
-                "isPartOf": "NOT APPLICABLE",
-                "isMemberOf": "blah",
-                "linkedDatasets": "https://web.www.healthdatagateway.org/dataset/fd8d0743-344a-4758-bb97-f8ad84a37357"
-            },
-            "investigations": "https://github.com/HDRUK/papers",
-            "associatedMedia": null,
-            "publicationAboutDataset": null,
-            "syntheticDataWebLink": null,
-            "publicationUsingDataset": null
-        },
-        "observations": [
-            {
-                "observedNode": "Findings",
-                "measuredValue": 575,
-                "observationDate": "2020-11-27",
-                "measuredProperty": "Count",
-                "disambiguatingDescription": "Number of papers with affiliation and/or acknowledgement to HDR UK"
-            }
-        ],
-        "structuralMetadata": [
-            {
-                "name": "table1",
-                "description": "this is table 1",
-                "columns": [
-                    {
-                        "name": "column1",
-                        "description": "this is column1",
-                        "dataType": "String",
-                        "sensitive": false,
-                        "values": null
-                    }
-                ]
-            }
-        ],
-        "tissuesSampleCollection": [
-            {
-                "materialType": "Blood"
-            },
-            {
-                "materialType": "Urine"
-            }
-        ]
+     "metadata": {
+  "required": {
+    "gatewayId": "10",
+    "gatewayPid": "226fb3f1-4471-400a-8c39-2b66d46a39b6",
+    "issued": "2020-08-05T14:35:59Z",
+    "modified": "2021-01-28T14:15:46Z",
+    "version": "0.0.1",
+    "revisions": [
+      {
+        "url": "https://d5faf9c6-6c34-46d7-93c4-7706a5436ed9",
+        "version": "1.0.0"
+      },
+      {
+        "url": "https://a7ddefbd-31d9-4703-a738-256e4689f76a",
+        "version": "2.0.0"
+      },
+      {
+        "url": "https://9e798632-442a-427b-8d0e-456f754d28dc",
+        "version": "0.0.1"
+      },
+      {
+        "url": "https://a7ddefbd-31d9-4703-a738-256e4689f76a",
+        "version": "2.1.1"
+      }
+    ]
+  },
+  "summary": {
+    "title": "Publications that mention CR-UK (or any variant thereof) in Acknowledgements or Author Affiliations",
+    "shortTitle": "CRUK Papers & Preprints",
+    "abstract": "Publications that mention CR-UK (or any variant thereof) in Acknowledgements or Author Affiliations",
+    "description": "Publications that mention CR-UK (or any variant thereof) in Acknowledgements or Author Affiliations\n\nThis will include:\n- Papers\n- COVID-19 Papers\n- COVID-19 Preprint",
+    "doiName": "10.1093/ije/dyx196",
+    "keywords": "Preprints,Papers,CRU UK",
+    "controlledKeywords": null,
+    "datasetType": "list of papers",
+    "datasetSubType": null,
+    "populationSize": 0,
+    "contactPoint": "susheel.varma@hdruk.ac.uk",
+    "publisher": {
+      "name": "CANCER DATA RESEARCH UK",
+      "gatewayId": "10",
+      "rorId": null
+    },
+    "inPipeline": null
+  },
+  "coverage": {
+    "pathway": "NOT APPLICABLE",
+    "spatial": "https://www.geonames.org/countries/GB/united-kingdom.html",
+    "followUp": "Unknown",
+    "typicalAgeRange": "0-0",
+    "datasetCompleteness": null
+  },
+  "provenance": {
+    "origin": {
+      "source": "MACHINE GENERATED",
+      "purpose": "OTHER",
+      "collectionSituation": "OTHER",
+      "imageContrast": null
+    },
+    "temporal": {
+      "startDate": "2020-03-31",
+      "endDate": "2022-04-30",
+      "timeLag": "Not applicable",
+      "accrualPeriodicity": "Daily",
+      "distributionReleaseDate": "2020-11-27"
     }
+  },
+  "accessibility": {
+    "access": {
+      "accessRights": "https://raw.githubusercontent.com/HDRUK/papers/master/LICENSE",
+      "jurisdiction": "GB-ENG",
+      "accessService": "https://github.com/HDRUK/papers",
+      "dataController": "HDR UK",
+      "dataProcessor": "HDR UK",
+      "deliveryLeadTime": "Other",
+      "accessRequestCost": "Free",
+      "accessServiceCategory": "TRE"
+    },
+    "usage": {
+      "dataUseLimitation": "GENERAL RESEARCH USE",
+      "dataUseRequirement": "RETURN TO DATABASE OR RESOURCE",
+      "resourceCreator": {
+        "name": "CRU UK Science Team",
+        "gatewayId": null,
+        "rorId": null
+      }
+    },
+    "formatAndStandards": {
+      "formats": "CSV,JSON",
+      "languages": "en",
+      "conformsTo": "OTHER",
+      "vocabularyEncodingSchemes": "OTHER"
+    }
+  },
+  "linkage": {
+    "isGeneratedUsing": "something",
+    "associatedMedia": null,
+    "dataUses": "duno",
+    "isReferenceIn": "10.5281/zenodo.326615",
+    "tools": "https://github.com/HDRUK/papers",
+    "investigations": "https://github.com/HDRUK/papers",
+    "syntheticDataWebLink": null,
+    "publicationAboutDataset": null,
+    "publicationUsingDataset": null,
+    "datasetLinkage": {
+      "isPartOf": [
+        {
+          "title": "NOT APPLICABLE"
+        }
+      ],
+      "isMemberOf": [
+        {
+          "title": "blah"
+        }
+      ],
+      "isDerivedFrom": [
+        {
+          "url": "https://web.www.healthdatagateway.org/dataset/fd8d0743-344a-4758-bb97-f8ad84a37357",
+          "title": "Derived from dataset"
+        }
+      ],
+      "linkedDatasets": [
+        {
+          "url": "https://web.www.healthdatagateway.org/dataset/fd8d0743-344a-4758-bb97-f8ad84a37357",
+          "title": "Linked dataset"
+        }
+      ]
+    }
+  },
+  "observations": [
+    {
+      "observedNode": "Findings",
+      "measuredValue": 575,
+      "observationDate": "2020-11-27",
+      "measuredProperty": "Count",
+      "disambiguatingDescription": "Number of papers with affiliation and/or acknowledgement to CR UK"
+    }
+  ],
+  "structuralMetadata": [
+    {
+      "name": "table1",
+      "columns": [
+        {
+          "name": "column1",
+          "values": null,
+          "dataType": "String",
+          "sensitive": false,
+          "description": "this is column1"
+        }
+      ],
+      "description": "this is table 1"
+    }
+  ],
+  "tissuesSampleCollection": [
+    {
+      "materialType": "Blood",
+      "id": null,
+      "dataCategories": null,
+      "accessConditions": null,
+      "collectionType": null,
+      "disease": null,
+      "storageTemperature": null,
+      "sampleAgeRange": null,
+      "tissueSampleMetadata": null
+    },
+    {
+      "materialType": "Urine",
+      "id": null,
+      "dataCategories": null,
+      "accessConditions": null,
+      "collectionType": null,
+      "disease": null,
+      "storageTemperature": null,
+      "sampleAgeRange": null,
+      "tissueSampleMetadata": null
+    }
+  ],
+  "demographicFrequency": null,
+  "omics": null
+}
 }

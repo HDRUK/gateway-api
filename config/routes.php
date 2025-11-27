@@ -677,6 +677,17 @@ return [
     ],
     [
         'name' => 'teams',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/info',
+        'methodController' => 'TeamController@info',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'teams',
         'method' => 'post',
         'path' => '/teams',
         'methodController' => 'TeamController@store',
@@ -739,6 +750,28 @@ return [
         'middleware' => [
             'jwt.verify',
         ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'teams',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/datasets_cohort_discovery',
+        'methodController' => 'TeamController@datasetsCohortDiscovery',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'teams',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/datasets_summary',
+        'methodController' => 'TeamController@datasetsSummary',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
         'constraint' => [
             'teamId' => '[0-9]+',
         ],

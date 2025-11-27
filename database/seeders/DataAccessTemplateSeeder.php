@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\DataAccessTemplate;
 use App\Models\DataAccessTemplateHasQuestion;
+use App\Models\DataAccessTemplateHasFile;
 use App\Models\QuestionBank;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,7 @@ class DataAccessTemplateSeeder extends Seeder
         if (DB::getDriverName() !== 'sqlite') {
             DB::statement('SET FOREIGN_KEY_CHECKS=0');
         }
+        DataAccessTemplateHasFile::truncate();
         DataAccessTemplateHasQuestion::truncate();
         DataAccessTemplate::truncate();
         if (DB::getDriverName() !== 'sqlite') {
