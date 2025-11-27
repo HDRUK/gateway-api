@@ -91,7 +91,18 @@ return new class () extends Migration {
         }
 
         // Now apply permissions to other users
-        foreach ($this->envUsers[config('app.env')] as $email) {
+        // Use env() directly as config() may be cached or not available during migrations
+        $env = env('APP_ENV', app()->environment());
+        if (empty($env)) {
+            $env = 'local'; // Default fallback
+        }
+        
+        if (!isset($this->envUsers[$env])) {
+            \Log::warning('Environment "' . $env . '" not found in envUsers mapping. Available environments: ' . implode(', ', array_keys($this->envUsers)) . '. Skipping super user assignment.');
+            return;
+        }
+
+        foreach ($this->envUsers[$env] as $email) {
             $user = User::where('email', $email)->select('id')->first();
             if (!$user) {
                 \Log::info('User with email ' . $email . ' does not exist, skipping.');

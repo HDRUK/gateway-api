@@ -163,7 +163,7 @@ class SearchController extends Controller
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
             $aggs = Filter::where('type', 'dataset')->where('enabled', 1)->get()->toArray();
-            $input['aggs'] = $aggs;
+            // $input['aggs'] = $aggs; // Commented out to prevent empty hits from search service
 
             $urlString = config('gateway.search_service_url') . '/search/datasets';
             $response = Http::withHeaders($loggingContext)->post($urlString, $input);
@@ -175,18 +175,30 @@ class SearchController extends Controller
             }
             $response = $response->json();
 
-            if (
-                !isset($response['hits']) || !is_array($response['hits']) ||
-                !isset($response['hits']['hits']) || !is_array($response['hits']['hits']) ||
-                !isset($response['hits']['total']['value'])
-            ) {
+            // Handle various response formats more robustly
+            $hits = $response['hits'] ?? [];
+            $hitsArray = is_array($hits) ? ($hits['hits'] ?? []) : [];
+            $datasetsArray = is_array($hitsArray) ? $hitsArray : [];
+            
+            // Handle total in various formats (object with 'value' or direct number)
+            $total = $hits['total'] ?? null;
+            if (is_array($total) && isset($total['value'])) {
+                $totalResults = (int) $total['value'];
+            } elseif (is_numeric($total)) {
+                $totalResults = (int) $total;
+            } else {
+                $totalResults = count($datasetsArray); // Fallback to count
+            }
+            
+            // Ensure aggregations exists
+            $aggregations = $response['aggregations'] ?? [];
+
+            if (empty($datasetsArray) && $totalResults === 0) {
+                // Only return 404 if we truly have no results, not due to parsing issues
                 return response()->json([
                     'message' => 'Hits not being properly returned by the search service'
                 ], 404);
             }
-
-            $datasetsArray = $response['hits']['hits'];
-            $totalResults = $response['hits']['total']['value'];
             $matchedIds = [];
             // join to created at from DB
             foreach (array_values($datasetsArray) as $i => $d) {
@@ -281,7 +293,7 @@ class SearchController extends Controller
             unset($datasetsArray);
 
             $aggs = collect([
-                'aggregations' => $response['aggregations'],
+                'aggregations' => $aggregations,
                 'elastic_total' => $totalResults,
                 'ids' => $matchedIds,
             ]);

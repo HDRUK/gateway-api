@@ -35,6 +35,11 @@ class JwtController extends Controller
         $this->jwt = '';
         $this->secretKey = (string) config('jwt.secret');
 
+        // Validate that JWT secret is set
+        if (empty($this->secretKey) || $this->secretKey === '300') {
+            throw new Exception('JWT_SECRET environment variable is not set. Please set it in your .env file with a secure random string.');
+        }
+
         $this->config = Configuration::forSymmetricSigner(
             new Sha256(),
             InMemory::plainText($this->secretKey)

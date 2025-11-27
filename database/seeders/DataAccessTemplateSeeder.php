@@ -4,8 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\DataAccessTemplate;
 use App\Models\DataAccessTemplateHasQuestion;
+use App\Models\DataAccessTemplateHasFile;
 use App\Models\QuestionBank;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DataAccessTemplateSeeder extends Seeder
 {
@@ -14,8 +16,17 @@ class DataAccessTemplateSeeder extends Seeder
      */
     public function run(): void
     {
-        DataAccessTemplate::truncate();
+        // Disable foreign key checks temporarily to allow truncation
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        
+        // Truncate dependent tables first (those with foreign keys to dar_templates)
+        DataAccessTemplateHasFile::truncate();
         DataAccessTemplateHasQuestion::truncate();
+        DataAccessTemplate::truncate();
+        
+        // Re-enable foreign key checks
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        
         DataAccessTemplate::factory(3)->create();
 
         DataAccessTemplate::all()->each(function ($model) {
