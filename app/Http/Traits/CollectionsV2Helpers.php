@@ -24,7 +24,6 @@ use App\Models\CollectionHasUser;
 
 trait CollectionsV2Helpers
 {
-    use IndexElastic;
     private function getCollectionActiveById(int $collectionId, ?bool $trimmed = false)
     {
         $collection = Collection::with([
@@ -209,7 +208,7 @@ trait CollectionsV2Helpers
                     }
                 }
             }
-        }   
+        }
 
         // Perform DB updates
         CollectionHasDatasetVersion::insert($arrCreateCollectionHasDatasetVersion);
@@ -233,8 +232,6 @@ trait CollectionsV2Helpers
             array_column($collectionHasDatasetVersionsActive, 'dataset_version_id'),
             array_column($wantedDatasetVersionIds, 'id')
         );
-
-
 
         foreach ($unwantedDatasetVersionsIds as $datasetVersionId) {
             CollectionHasDatasetVersion::where([
