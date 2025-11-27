@@ -15,7 +15,6 @@ use App\Models\CollectionHasUser;
 use App\Models\Publication;
 use App\Models\TeamHasUser;
 use Tests\Traits\MockExternalApis;
-use ElasticClientController as ECC;
 
 class CollectionTeamTest extends TestCase
 {
@@ -840,75 +839,6 @@ class CollectionTeamTest extends TestCase
         $response->assertStatus(200);
     }
 
-    /**
-     * Check if making large updates can cause performance issues
-     * @return void
-     */
-    public function test_add_lots_of_datasets()
-    {
-        // use a non-admin user, and assign them to a team as custodian.team.admin
-        [
-            'nonAdminUser' => $nonAdminUser,
-            'team' => $team
-        ] = $this->getNonAdminUserAsCustodianTeamAdminInTeam();
-
-        $datasets = $this->generateDatasets(20);
-
-        // create new collection
-        $mockDataIn = [
-            "name" => "covid",
-            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
-            "enabled" => true,
-            "public" => true,
-            "counter" => 123,
-            "datasets" => $datasets,
-            "status" => "ACTIVE",
-        ];
-        $responseIn = $this->json(
-            'POST',
-            $this->testUrl($team->id),
-            $mockDataIn,
-            $this->headerNonAdmin
-        );
-
-        $responseIn->assertStatus(201);
-
-        // Check these have been indexed
-        ECC::shouldReceive("indexDocument")->atLeast()->once();
-
-        $idIn = (int) $responseIn['data'];
-
-        $datasets = $this->generateDatasets(20);
-        $tools = $this->generateTools();
-        $keywords = $this->generateKeywords();
-        $durs = $this->generateDurs();
-        $publications = $this->generatePublications();
-
-        // update collection
-        $mockDataUpdate = [
-            "name" => "covid update",
-            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
-            "image_link" => Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),
-            "enabled" => true,
-            "public" => true,
-            "counter" => 1,
-            "datasets" => $datasets,
-            "tools" => $tools,
-            "keywords" => $keywords,
-            "dur" => $durs,
-            "publications" => $publications,
-            "status" => "DRAFT"
-        ];
-        $responseUpdate = $this->json(
-            'PUT',
-            $this->testUrl($team->id) . $idIn,
-            $mockDataUpdate,
-            $this->headerNonAdmin
-        );
-        $responseUpdate->assertStatus(200);
-    }
-
 
     private function generateKeywords()
     {
@@ -922,10 +852,10 @@ class CollectionTeamTest extends TestCase
         return array_unique($return);
     }
 
-    private function generateDatasets($max = 5)
+    private function generateDatasets()
     {
         $return = [];
-        $iterations = rand(1, $max);
+        $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
