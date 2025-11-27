@@ -20,8 +20,10 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        Schema::table('email_templates', function (Blueprint $table) {
-            $table->dropColumn('buttons');
-        });
+        if (Schema::hasColumn('email_templates', 'buttons')) {
+            Schema::table('email_templates', function (Blueprint $table) {
+                $table->dropColumn('buttons');
+            });
+        }
     }
 };
