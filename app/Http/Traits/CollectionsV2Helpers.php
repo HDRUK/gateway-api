@@ -239,7 +239,6 @@ trait CollectionsV2Helpers
         }
     }
 
-    // Build an array
     private function buildAddCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, ?int $userId = null)
     {
         try {
