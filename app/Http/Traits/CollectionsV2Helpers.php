@@ -2,6 +2,7 @@
 
 namespace App\Http\Traits;
 
+use App\Jobs\IndexDocument;
 use Config;
 use Auditor;
 use Exception;
@@ -210,25 +211,22 @@ trait CollectionsV2Helpers
                     }
                 }
             }
-        }
+        }   
 
         // Perform DB updates
         CollectionHasDatasetVersion::insert($arrCreateCollectionHasDatasetVersion);
-        CollectionHasDatasetVersion::where($arrDeleteCollectionHasDatasetVersion)->forceDelete();
-
-        // Reindex elastic
-        foreach ($datasetCreateIds as $dataset) {
-            $this->reindexElastic($dataset);
-            if ($teamIds[$dataset]) {
-                $this->reindexElasticDataProviderWithRelations((int) $teamIds[$dataset], 'dataset');
-            }
+        if (!empty($arrDeleteCollectionHasDatasetVersion)) {
+            CollectionHasDatasetVersion::where($arrDeleteCollectionHasDatasetVersion)->forceDelete();
         }
+        foreach ($datasetCreateIds as $dataset) {
+            IndexDocument::dispatch($dataset);
+        }
+
         // Now delete existing links to any dataset version that wasn't supplied.
         $collectionHasDatasetVersionsActive = CollectionHasDatasetVersion::where('collection_id', $collectionId)
                                             ->select('dataset_version_id')
                                             ->get()
                                             ->toArray();
-
 
         $wantedDatasetIds = convertArrayToArrayWithKeyName($inDatasets, 'id');
         $wantedDatasetVersionIds = DatasetVersion::whereIn('dataset_id', $wantedDatasetIds)->select('id')->get()->toArray();
