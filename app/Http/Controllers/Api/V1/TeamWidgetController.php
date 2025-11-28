@@ -363,6 +363,11 @@ class TeamWidgetController extends Controller
                 $permittedDomains = is_string($widget->permitted_domains)
                     ? array_map('trim', explode(',', $widget->permitted_domains))
                     : [];
+                $gatewayUrl = config('gateway.gateway_url');
+
+                if ($gatewayUrl) {
+                    $permittedDomains[] = $gatewayUrl;
+                }
 
                 $normalizedOrigin = rtrim(preg_replace('#^https?://#', '', strtolower($domainOrigin)), '/');
 
