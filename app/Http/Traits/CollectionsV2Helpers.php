@@ -2,7 +2,7 @@
 
 namespace App\Http\Traits;
 
-use App\Jobs\IndexDocument;
+use App\Jobs\IndexDataset;
 use Config;
 use Auditor;
 use Exception;
@@ -214,7 +214,7 @@ trait CollectionsV2Helpers
             CollectionHasDatasetVersion::where($arrDeleteCollectionHasDatasetVersion)->forceDelete();
         }
         foreach ($datasetCreateIds as $dataset) {
-            IndexDocument::dispatch($dataset);
+            IndexDataset::dispatch($dataset);
         }
 
         // Now delete existing links to any dataset version that wasn't supplied.
