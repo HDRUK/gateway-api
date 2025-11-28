@@ -13,7 +13,6 @@ use App\Models\Team;
 use App\Models\Dataset;
 use App\Models\Federation;
 use App\Models\DatasetVersion;
-use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Http\Traits\MetadataVersioning;
 
 use App\Services\GatewayMetadataIngestionService;

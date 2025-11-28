@@ -14,7 +14,6 @@ use App\Http\Controllers\JwtController;
 use Laravel\Socialite\Facades\Socialite;
 use Jumbojett\OpenIDConnectClient;
 
-
 class SocialLoginController extends Controller
 {
     /**
