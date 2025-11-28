@@ -359,7 +359,7 @@ class TeamWidgetController extends Controller
                 return response()->json(['message' =>  Config::get('statuscodes.STATUS_NOT_FOUND.message')], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
             }
 
-            if ($domainOrigin) {
+            if ($domainOrigin && $domainOrigin !== config('gateway.gateway_url')) {
                 $permittedDomains = is_string($widget->permitted_domains)
                     ? array_map('trim', explode(',', $widget->permitted_domains))
                     : [];
