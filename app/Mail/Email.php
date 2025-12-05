@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use CloudLogger;
-use Config;
 use App\Models\EmailTemplate;
 use App\Exceptions\MailSendException;
 use Exception;
@@ -73,11 +72,7 @@ class Email extends Mailable
         try {
             $this->replaceBodyText();
 
-            $response = Http::withBasicAuth(
-                config('services.mjml.api_application_key'),
-                config('services.mjml.api_key')
-            )
-            ->post(config('services.mjml.render_url'), [
+            $response = Http::post(config('services.mjml.render_url', ''), [
                 'mjml' => $this->template['body'],
             ]);
 

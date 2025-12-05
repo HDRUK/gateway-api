@@ -3841,8 +3841,19 @@ return [
     [
         'name' => 'uploads',
         'method' => 'get',
-        'path' => '/files/processed/{id}',
+        'path' => '/files/processed/{id}/download',
         'methodController' => 'UploadController@content',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'uploads',
+        'method' => 'delete',
+        'path' => '/files/processed/{id}',
+        'methodController' => 'UploadController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -4139,7 +4150,18 @@ return [
             'id' => '[0-9]+',
         ],
     ],
-
+    [
+        'name' => 'questions',
+        'method' => 'get',
+        'path' => '/questions/{id}/files/{fileId}',
+        'methodController' => 'QuestionBankController@downloadFile',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,question-bank.read',
+        ],
+        'constraint' => [],
+    ],
     // dar/applications
     [
         'name' => 'dar/applications',
@@ -4307,7 +4329,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
-            'fileId' => '[0-9]+',
+            'fileId' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
             'teamId' => '[0-9]+',
         ],
     ],
@@ -4336,7 +4358,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
-            'fileId' => '[0-9]+',
+            'fileId' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
             'userId' => '[0-9]+',
         ],
     ],
@@ -4499,7 +4521,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
-            'fileId' => '[0-9]+',
+            'fileId' => "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
         ],
     ],
     [
@@ -4513,7 +4535,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
-            'fileId' => '[0-9]+',
+            'fileId' => "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
             'userId' => '[0-9]+',
         ],
     ],
@@ -4576,7 +4598,7 @@ return [
             'id' => '[0-9]+',
             'teamId' => '[0-9]+',
             'reviewId' => '[0-9]+',
-            'fileId' => '[0-9]+',
+            'fileId' => "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
         ],
     ],
     [
@@ -4592,7 +4614,7 @@ return [
             'id' => '[0-9]+',
             'userId' => '[0-9]+',
             'reviewId' => '[0-9]+',
-            'fileId' => '[0-9]+',
+            'fileId' => "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
         ],
     ],
     [
@@ -4737,7 +4759,7 @@ return [
             'id' => '[0-9]+',
             'teamId' => '[0-9]+',
             'reviewId' => '[0-9]+',
-            'fileId' => '[0-9]+',
+            'fileId' => "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
         ],
     ],
 
@@ -4891,7 +4913,7 @@ return [
             'constraint' => [
                 'id' => '[0-9]+',
                 'teamId' => '[0-9]+',
-                'fileId' => '[0-9]+',
+                'fileId' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
             ],
         ]
     ],

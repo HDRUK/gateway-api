@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\UnauthorizedException;
 use Auditor;
 use Config;
 use Exception;
@@ -11,6 +12,7 @@ use App\Models\Upload;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class UploadController extends Controller
 {
@@ -155,20 +157,20 @@ class UploadController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/files/{id}",
+     *      path="/api/v1/files/{uuid}",
      *      summary="Get the scanning status of an upload",
      *      description="Get the scanning status of an upload",
      *      tags={"Upload"},
      *      summary="Upload@show",
      *      @OA\Parameter(
-     *         name="id",
+     *         name="uuid",
      *         in="path",
      *         description="upload id",
      *         required=true,
      *         example="1",
      *         @OA\Schema(
-     *            type="integer",
-     *            description="upload id",
+     *            type="string",
+     *            description="upload uuid",
      *         ),
      *      ),
      *      @OA\Response(
@@ -188,10 +190,17 @@ class UploadController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(Request $request, string $uuid): JsonResponse
     {
         try {
-            $upload = Upload::findOrFail($id);
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+
+            $upload = Upload::where("uuid", $uuid)->firstOrFail();
+
+            if ($jwtUser['id'] !== $upload->user_id) {
+                throw new UnauthorizedException("File does not belong to user");
+            }
 
             if ($upload['structural_metadata']) {
                 $upload['structural_metadata'] = json_decode($upload['structural_metadata']);
@@ -220,7 +229,7 @@ class UploadController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/files/processed/{id}",
+     *      path="/api/v1/files/processed/{uuid}/download",
      *      summary="Get the content of a processed file",
      *      description="Get the content of a processed file",
      *      tags={"Upload"},
@@ -232,8 +241,8 @@ class UploadController extends Controller
      *         required=true,
      *         example="1",
      *         @OA\Schema(
-     *            type="integer",
-     *            description="upload id",
+     *            type="string",
+     *            description="upload uuid",
      *         ),
      *      ),
      *      @OA\Response(
@@ -250,10 +259,18 @@ class UploadController extends Controller
      *      )
      * )
      */
-    public function content(Request $request, int $id): JsonResponse
+    public function content(Request $request, string $uuid): StreamedResponse | JsonResponse
     {
         try {
-            $upload = Upload::findOrFail($id);
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+
+            $upload = Upload::where("uuid", $uuid)->firstOrFail();
+
+            if ($jwtUser['id'] !== $upload->user_id) {
+                throw new UnauthorizedException("File does not belong to user");
+            }
+
             if ($upload->status === 'PENDING') {
                 Auditor::log([
                     'action_type' => 'GET',
@@ -273,22 +290,111 @@ class UploadController extends Controller
                     'message' => 'File failed scan, content cannot be retrieved'
                 ]);
             } else {
-                $contents = Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
-                    ->get($upload->file_location);
-
                 Auditor::log([
                     'action_type' => 'GET',
                     'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'Get uploaded file content: ' . $upload->file_location,
                 ]);
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                    'data' => [
-                        'filename' => $upload->filename,
-                        'content' => $contents
-                    ]
-                ]);
+
+                return Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
+                        ->download($upload->file_location);
             }
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *      path="/api/v1/files/processed/{id}",
+     *      summary="Delete a processed file",
+     *      description="Delete a processed file",
+     *      tags={"Upload"},
+     *      summary="Upload@destroy",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="file uuid",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="string",
+     *            description="file id",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *           ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function destroy(Request $request, string $id)
+    {
+
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $file = Upload::where("uuid", $id)->firstOrFail();
+
+            // Stuff with an entity id should be deleted via other methods to handle
+            // data inconsistency
+            if (!is_null($file->entity_id)) {
+                throw new Exception("File belongs to an entity and so should be deleted via that method");
+            }
+
+            if ($file->user_id === $jwtUser['id']) {
+                $fileDeleted = Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
+                    ->delete($file->file_location);
+
+                if (!$fileDeleted) {
+                    throw new Exception("Deleting file id " . $id . "failed.");
+                }
+
+                $dbRowDeleted = $file->delete();
+
+                if (!$dbRowDeleted) {
+                    throw new Exception("Deleting db row for file id " . $id . "failed. ");
+                }
+
+                Auditor::log([
+                    'action_type' => 'DELETE',
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'File ' . $file->file_location . ' deleted',
+                ]);
+
+                if ($fileDeleted && $dbRowDeleted) {
+                    return response()->json([
+                        'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    ]);
+                }
+            } else {
+                throw new UnauthorizedException("File id " . $id . " does not belong to user");
+            }
+
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',

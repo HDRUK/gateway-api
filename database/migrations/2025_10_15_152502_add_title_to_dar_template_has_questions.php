@@ -10,8 +10,8 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::table('email_templates', function (Blueprint $table) {
-            $table->text('buttons')->nullable()->default(null);
+        Schema::table('dar_template_has_questions', function (Blueprint $table) {
+            $table->string('question_title')->nullable();
         });
     }
 
@@ -20,10 +20,8 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        if (Schema::hasColumn('email_templates', 'buttons')) {
-            Schema::table('email_templates', function (Blueprint $table) {
-                $table->dropColumn('buttons');
-            });
-        }
+        Schema::table('dar_template_has_questions', function (Blueprint $table) {
+            $table->dropColumn('question_title');
+        });
     }
 };

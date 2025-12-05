@@ -2,6 +2,7 @@
 
 namespace App\Http\Traits;
 
+use App\Jobs\IndexDataset;
 use Config;
 use Auditor;
 use Exception;
@@ -138,9 +139,13 @@ trait CollectionsV2Helpers
             $collectionHasDatasetVersionIds = array_unique(convertArrayToArrayWithKeyName($collectionHasDatasetVersions, 'dataset_version_id'));
         }
 
+        $arrCreateCollectionHasDatasetVersion = [];
+        $arrDeleteCollectionHasDatasetVersion = [];
+
+        $datasetCreateIds = [];
+
         foreach ($inDatasets as $dataset) {
             $datasetVersionLatestId = Dataset::where('id', (int) $dataset['id'])->select('id')->first()->latestVersion()->id;
-
             $datasetVersions = DatasetVersion::where('dataset_id', (int) $dataset['id'])->select('id')->get()->toArray();
 
             $datasetVersionIds = convertArrayToArrayWithKeyName($datasetVersions, 'id');
@@ -149,19 +154,18 @@ trait CollectionsV2Helpers
 
             // If the supplied datasets are not in the existing set, then add them
             if (count($commonDatasetVersionIds) === 0) {
-                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
+                $arrCreateCollectionHasDatasetVersion[] = $this->buildAddCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
+                $datasetCreateIds[] = $dataset['id'];
                 continue;
             }
-
             // else, if the latest version isn't in there, then add it, and remove all the previously existing dataset versions that were linked
             // - this simply has the effect of updating the link to an already-linked dataset to its latest version id
             if (!in_array($datasetVersionLatestId, $commonDatasetVersionIds)) {
-                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
+                $arrCreateCollectionHasDatasetVersion[] = $this->buildAddCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
                 foreach ($commonDatasetVersionIds as $commonDatasetVersionId) {
-                    CollectionHasDatasetVersion::where([
+                    $arrDeleteCollectionHasDatasetVersion[] = [
                         'collection_id' => $collectionId,
-                        'dataset_version_id' => $commonDatasetVersionId,
-                    ])->forceDelete();
+                        'dataset_version_id' => $commonDatasetVersionId];
                 }
                 continue;
             }
@@ -195,13 +199,22 @@ trait CollectionsV2Helpers
                             continue;
                         }
                     } else {
-                        CollectionHasDatasetVersion::where([
-                            'collection_id' => $collectionId,
-                            'dataset_version_id' => $commonDatasetVersionId,
-                        ])->forceDelete();
+                        $arrDeleteCollectionHasDatasetVersion[] = [
+                             'collection_id' => $collectionId,
+                             'dataset_version_id' => $commonDatasetVersionId,
+                        ];
                     }
                 }
             }
+        }
+
+        // Perform DB updates
+        CollectionHasDatasetVersion::insert($arrCreateCollectionHasDatasetVersion);
+        if (!empty($arrDeleteCollectionHasDatasetVersion)) {
+            CollectionHasDatasetVersion::where($arrDeleteCollectionHasDatasetVersion)->forceDelete();
+        }
+        foreach ($datasetCreateIds as $dataset) {
+            IndexDataset::dispatch($dataset);
         }
 
         // Now delete existing links to any dataset version that wasn't supplied.
@@ -226,10 +239,9 @@ trait CollectionsV2Helpers
         }
     }
 
-    private function addCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, ?int $userId = null)
+    private function buildAddCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, ?int $userId = null)
     {
         try {
-
             $searchArray = [
                 'collection_id' => $collectionId,
                 'dataset_version_id' => $datasetVersionId,
@@ -255,12 +267,9 @@ trait CollectionsV2Helpers
                 $arrCreate['created_at'] = $dataset['updated_at'];
                 $arrCreate['updated_at'] = $dataset['updated_at'];
             }
-
             $checkRow = CollectionHasDatasetVersion::where($searchArray)->first();
             if (is_null($checkRow)) {
-                return CollectionHasDatasetVersion::create($arrCreate);
-            } else {
-                return $checkRow;
+                return $arrCreate;
             }
         } catch (Exception $e) {
             Auditor::log([
@@ -270,9 +279,10 @@ trait CollectionsV2Helpers
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception('addCollectionHasDatasetVersion :: ' . $e->getMessage());
+            throw new Exception('buildAddCollectionHasDatasetVersion :: ' . $e->getMessage());
         }
     }
+
 
     private function checkInCollectionHasDatasetVersions(int $collectionId, int $datasetVersionId)
     {

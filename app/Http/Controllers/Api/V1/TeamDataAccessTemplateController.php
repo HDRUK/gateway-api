@@ -220,8 +220,8 @@ class TeamDataAccessTemplateController extends Controller
      *         required=true,
      *         example="1",
      *         @OA\Schema(
-     *            type="integer",
-     *            description="File id",
+     *            type="string",
+     *            description="File uuid",
      *         ),
      *      ),
      *      @OA\Response(
@@ -247,7 +247,7 @@ class TeamDataAccessTemplateController extends Controller
      *      )
      * )
      */
-    public function destroyFile(DeleteDataAccessTemplateFile $request, int $teamId, int $id, int $fileId): JsonResponse
+    public function destroyFile(DeleteDataAccessTemplateFile $request, int $teamId, int $id, string $fileId): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -260,7 +260,7 @@ class TeamDataAccessTemplateController extends Controller
                 );
             }
 
-            $file = Upload::where('id', $fileId)->first();
+            $file = Upload::where('uuid', $fileId)->first();
 
             Storage::disk(config('gateway.scanning_filesystem_disk', 'local_scan') . '_scanned')
                 ->delete($file->file_location);

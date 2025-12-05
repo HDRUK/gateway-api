@@ -135,6 +135,7 @@ trait QuestionBankHelpers
         // Move 2 entries up to the root
         $questionVersion['component'] = $questionVersion['field']['component'];
         $questionVersion['validations'] = $questionVersion['field']['validations'] ?? null;
+        $questionVersion['document'] = $questionVersion['field']['document'] ?? null;
         unset($questionVersion['field']);
 
         // And, because we're really returning a modified form of the QuestionVersion in response
