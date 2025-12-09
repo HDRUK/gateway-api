@@ -1,3 +1,9 @@
+## [2.30.0](https://github.com/HDRUK/gateway-api/compare/v2.29.0...v2.30.0) (2025-12-09)
+
+### ✨ Features
+
+* **GAT-8298:** Add Widgets Feature Migration (#1481) ([ce39a50](https://github.com/HDRUK/gateway-api/commit/ce39a50779334df97621a292b6871cbad657640e)), closes [GAT-8298](GAT-8298)
+
 ## [2.29.0](https://github.com/HDRUK/gateway-api/compare/v2.28.3...v2.29.0) (2025-12-05)
 
 ### ✨ Features
