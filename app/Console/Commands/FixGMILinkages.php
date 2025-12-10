@@ -101,11 +101,13 @@ class FixGMILinkages extends Command
                     'dataset_version_id' => $newId,
                     'user_id'=> $linkage->user_id,
                 ] , true));
-                DurHasDatasetVersion::updateOrCreate([
-                    'dur_id' => $linkage->dur_id,
-                    'dataset_version_id' => $newId,
-                    'user_id'=> $linkage->user_id,
-                ]);
+                DurHasDatasetVersion::withoutEvents(function () use ($linkage, $newId) {
+                    DurHasDatasetVersion::updateOrCreate([
+                        'dur_id' => $linkage->dur_id,
+                        'dataset_version_id' => $newId,
+                        'user_id'=> $linkage->user_id,
+                    ]);
+                });
             }
         }
 
