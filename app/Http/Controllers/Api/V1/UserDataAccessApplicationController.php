@@ -340,18 +340,7 @@ class UserDataAccessApplicationController extends Controller
 
             $groupArrays = $request->boolean('group_arrays', false);
 
-            if ($application->application_type === 'FORM') {
-                $this->getApplicationWithQuestions($application);
-            } else {
-                $teams = TeamHasDataAccessApplication::where('dar_application_id', $id)
-                    ->select('team_id')
-                    ->pluck('team_id');
-                $templates = DataAccessTemplate::whereIn('team_id', $teams)
-                    ->where('template_type', 'DOCUMENT')
-                    ->select('id')
-                    ->get();
-                $application['templates'] = $templates;
-            }
+            $this->getApplicationWithQuestions($application);
 
             $application = $application->toArray();
 
