@@ -981,7 +981,6 @@ class DataAccessApplicationTest extends TestCase
                             'approval_status',
                         ]
                     ],
-                    'templates'
                 ]
             ]);
     }
