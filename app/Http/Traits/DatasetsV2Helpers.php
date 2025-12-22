@@ -123,7 +123,18 @@ trait DatasetsV2Helpers
             $metadata = $tmpMetadata;
         }
 
+        // Metadata should not contain HTML encodings
+        $this->decodeMetadataHTML($metadata['metadata']);
         return $metadata;
     }
 
+    private function decodeMetadataHTML(Array &$metadataArr) {
+        foreach ($metadataArr as $key => &$value) {
+            if (is_array($value)) {
+                $this->decodeMetadataHTML($value); 
+            } else {
+                $metadataArr[$key] = html_entity_decode($value);
+            }
+        }
+    }
 }
