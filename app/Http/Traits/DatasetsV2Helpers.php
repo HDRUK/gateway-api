@@ -123,7 +123,7 @@ trait DatasetsV2Helpers
             $metadata = $tmpMetadata;
         }
         if (is_array($metadata) && array_key_exists("metadata", $metadata)) {
-            // Metadata should not contain HTML encodings
+            // Remove HTML encoding from fields that will be validated by traser
             $this->decodeMetadataHTML($metadata['metadata']);
         }
 
@@ -132,12 +132,8 @@ trait DatasetsV2Helpers
 
     private function decodeMetadataHTML(array &$metadataArr)
     {
-        foreach ($metadataArr as $key => &$value) {
-            if (is_array($value)) {
-                $this->decodeMetadataHTML($value);
-            } else {
-                $metadataArr[$key] = html_entity_decode($value);
-            }
+        if (Arr::has($metadataArr, 'coverage.followUp')) {
+            $metadataArr['coverage']['followUp'] = html_entity_decode($metadataArr['coverage']['followUp']);
         }
     }
 }
