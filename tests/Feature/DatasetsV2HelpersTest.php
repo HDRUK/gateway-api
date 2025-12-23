@@ -59,8 +59,8 @@ class DatasetsV2HelpersTest extends TestCase
 
     public function test_it_handles_html_encoding()
     {
-        $input = ['metadata' => ['foo' => 'bar &gt;']];
-        $output = ['metadata' => ['foo' => 'bar >']];
+        $input = ['metadata' => ['coverage' => ['followUp' => 'bar &gt;']]];
+        $input = ['metadata' => ['coverage' => ['followUp' => 'bar >']]];
         $result = $this->extractMetadata($input);
         $this->assertEquals($output, $result);
     }
