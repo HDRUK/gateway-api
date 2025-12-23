@@ -122,16 +122,19 @@ trait DatasetsV2Helpers
             unset($metadata['metadata']);
             $metadata = $tmpMetadata;
         }
+        if (is_array($metadata) && array_key_exists("metadata", $metadata)) {
+            // Metadata should not contain HTML encodings
+            $this->decodeMetadataHTML($metadata['metadata']);
+        }
 
-        // Metadata should not contain HTML encodings
-        $this->decodeMetadataHTML($metadata['metadata']);
         return $metadata;
     }
 
-    private function decodeMetadataHTML(Array &$metadataArr) {
+    private function decodeMetadataHTML(array &$metadataArr)
+    {
         foreach ($metadataArr as $key => &$value) {
             if (is_array($value)) {
-                $this->decodeMetadataHTML($value); 
+                $this->decodeMetadataHTML($value);
             } else {
                 $metadataArr[$key] = html_entity_decode($value);
             }
