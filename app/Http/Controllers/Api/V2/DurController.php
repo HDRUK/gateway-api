@@ -181,7 +181,7 @@ class DurController extends Controller
                     // 'applicationPublications' => function ($query) {
                     //     $query->distinct('id');
                     // },
-                    'user',
+                    // 'user', LS - limit fields returned
                     'team',
                     'application',
                 ])
