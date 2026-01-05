@@ -29,6 +29,7 @@ use App\Http\Requests\Collection\UpdateTeamCollection;
 use App\Http\Requests\V2\Collection\GetCollectionCountByTeamAndStatus;
 use App\Models\CollectionHasDatasetVersion;
 use App\Models\CollectionHasUser;
+use Symfony\Component\HttpFoundation\StreamedJsonResponse;
 
 class TeamCollectionController extends Controller
 {
@@ -413,7 +414,7 @@ class TeamCollectionController extends Controller
      *    ),
      * )
      */
-    public function show(GetCollection $request, int $teamId, int $id): JsonResponse
+    public function show(GetCollection $request, int $teamId, int $id): StreamedJsonResponse | JsonResponse
     {
         try {
             $input = $request->all();
@@ -437,7 +438,7 @@ class TeamCollectionController extends Controller
                 'description' => 'CohortRequest show ' . $id,
             ]);
 
-            return response()->json([
+            return response()->streamJson([
                 'message' => 'success',
                 'data' => $collection,
             ], 200);
