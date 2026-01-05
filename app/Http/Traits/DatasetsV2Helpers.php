@@ -123,7 +123,6 @@ trait DatasetsV2Helpers
             $metadata = $tmpMetadata;
         }
         if (is_array($metadata) && array_key_exists("metadata", $metadata)) {
-            // Remove HTML encoding from fields that will be validated by traser
             $this->decodeMetadataHTML($metadata['metadata']);
         }
 
@@ -132,6 +131,8 @@ trait DatasetsV2Helpers
 
     private function decodeMetadataHTML(array &$metadataArr)
     {
+        // coverage.followUp can contain >, which will be encoded by the BE
+        // traser will reject this so we need to decode it
         if (Arr::has($metadataArr, 'coverage.followUp')) {
             $metadataArr['coverage']['followUp'] = html_entity_decode($metadataArr['coverage']['followUp']);
         }
