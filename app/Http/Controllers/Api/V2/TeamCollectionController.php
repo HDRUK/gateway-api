@@ -688,7 +688,7 @@ class TeamCollectionController extends Controller
      *      )
      * )
      */
-    public function update(UpdateTeamCollection $request, int $teamId, int $id): JsonResponse
+    public function update(UpdateTeamCollection $request, int $teamId, int $id): JsonResponse | StreamedJsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -755,6 +755,8 @@ class TeamCollectionController extends Controller
                 $this->deleteCollectionFromElastic((int) $id);
             }
 
+            $collection = $this->getCollectionActiveById($id);
+            
             Auditor::log([
                 'user_id' => $userId,
                 'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : null,
@@ -763,9 +765,9 @@ class TeamCollectionController extends Controller
                 'description' => 'Collection ' . $id . ' updated',
             ]);
 
-            return response()->json([
+            return response()->streamJson([
                 'message' => 'success',
-                'data' => $this->getCollectionActiveById($id),
+                'data' => $collection,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (UnauthorizedException $e) {
             return response()->json([
@@ -876,7 +878,7 @@ class TeamCollectionController extends Controller
      *      )
      * )
      */
-    public function edit(EditTeamCollection $request, int $teamId, int $id): JsonResponse
+    public function edit(EditTeamCollection $request, int $teamId, int $id): JsonResponse | StreamedJsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -956,9 +958,11 @@ class TeamCollectionController extends Controller
                 'description' => 'Collection ' . $id . ' updated',
             ]);
 
-            return response()->json([
+            $collection = $this->getCollectionActiveById($id);
+
+            return response()->streamJson([
                 'message' => 'success',
-                'data' => $this->getCollectionActiveById($id),
+                'data' => $collection,
             ], 200);
         } catch (UnauthorizedException $e) {
             return response()->json([
