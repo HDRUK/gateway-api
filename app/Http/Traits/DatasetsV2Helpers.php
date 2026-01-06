@@ -131,10 +131,13 @@ trait DatasetsV2Helpers
 
     private function decodeMetadataHTML(array &$metadataArr)
     {
-        // coverage.followUp can contain >, which will be encoded by the BE
-        // traser will reject this so we need to decode it
-        if (Arr::has($metadataArr, 'coverage.followUp')) {
-            $metadataArr['coverage']['followUp'] = html_entity_decode($metadataArr['coverage']['followUp']);
+        // Some fields may be html encoded by middleware and so will not pass
+        // the schema checks. We need to remove this HTML encoding
+        foreach (Config::get("metadata.html_decode_fields") as $field) {
+            if (Arr::has($metadataArr, $field)) {
+                $val = html_entity_decode(Arr::get($metadataArr, $field));
+                Arr::set($metadataArr, $field, $val);
+            }
         }
     }
 }
