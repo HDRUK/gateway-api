@@ -1,3 +1,9 @@
+## [2.30.1](https://github.com/HDRUK/gateway-api/compare/v2.30.0...v2.30.1) (2025-12-24)
+
+### 🐛 Bug Fixes
+
+* **GAT-8405:** Update for GAT-8405 (#1490) ([a118fee](https://github.com/HDRUK/gateway-api/commit/a118feebe31e225f078dbbca9fd851086f0f23f5)), closes [GAT-8405](GAT-8405) [GAT-8405](GAT-8405)
+
 ## [2.30.0](https://github.com/HDRUK/gateway-api/compare/v2.29.0...v2.30.0) (2025-12-09)
 
 ### ✨ Features
