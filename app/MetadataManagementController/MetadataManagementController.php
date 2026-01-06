@@ -128,11 +128,12 @@ class MetadataManagementController
      */
     public function validateDataModelType(string &$dataset, string $input_schema, string $input_version): bool
     {
+        $loggingContext = $this->getLoggingContext(\request());
+        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
         try {
 
-            $loggingContext = $this->getLoggingContext(\request());
-            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
-
+            
             $urlString = sprintf(
                 '%s/validate?input_schema=%s&input_version=%s',
                 config('services.traser.url'),

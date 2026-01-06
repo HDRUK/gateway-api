@@ -107,7 +107,7 @@ class LibraryController extends Controller
             $transformedLibraries = $libraries->getCollection()->map(function (Library $library) {
                 $dataset = $library->dataset;
                 $team = $dataset->team;
-                $teamPublishedDARTemplates = DataAccessTemplate::where([['team_id', $team->id], ['published', 1]])->pluck('id');
+                $teamPublishedDARTemplateType = DataAccessTemplate::where(['team_id' => $team->id, 'published' => 1,])->select('template_type')->first();
 
                 // Using dynamic attributes to avoid undefined property error
                 $library->setAttribute('dataset_id', (int)$dataset->id);
@@ -116,10 +116,11 @@ class LibraryController extends Controller
                 $library->setAttribute('data_provider_id', $team->id);
                 $library->setAttribute('data_provider_dar_status', $team->uses_5_safes);
                 $library->setAttribute('data_provider_name', $team->name);
-                $library->setAttribute('data_provider_dar_enabled', !$teamPublishedDARTemplates->isEmpty());
+                $library->setAttribute('data_provider_dar_enabled', (bool) $teamPublishedDARTemplateType);
                 $library->setAttribute('data_provider_published_dar_template', $team->is_question_bank);
                 $library->setAttribute('data_provider_member_of', $team->member_of);
                 $library->setAttribute('dataset_is_cohort_discovery', $dataset->is_cohort_discovery);
+                $library->setAttribute('data_provider_dar_type', $teamPublishedDARTemplateType?->template_type);
 
                 unset($library->dataset);
                 return $library;

@@ -1,3 +1,39 @@
+## [2.30.1](https://github.com/HDRUK/gateway-api/compare/v2.30.0...v2.30.1) (2025-12-24)
+
+### 🐛 Bug Fixes
+
+* **GAT-8405:** Update for GAT-8405 (#1490) ([a118fee](https://github.com/HDRUK/gateway-api/commit/a118feebe31e225f078dbbca9fd851086f0f23f5)), closes [GAT-8405](GAT-8405) [GAT-8405](GAT-8405)
+
+## [2.30.0](https://github.com/HDRUK/gateway-api/compare/v2.29.0...v2.30.0) (2025-12-09)
+
+### ✨ Features
+
+* **GAT-8298:** Add Widgets Feature Migration (#1481) ([ce39a50](https://github.com/HDRUK/gateway-api/commit/ce39a50779334df97621a292b6871cbad657640e)), closes [GAT-8298](GAT-8298)
+
+## [2.29.0](https://github.com/HDRUK/gateway-api/compare/v2.28.3...v2.29.0) (2025-12-05)
+
+### ✨ Features
+
+* **GAT-1234:** Add custodian.team.cohortAdmin role (#1478) ([85f3b3e](https://github.com/HDRUK/gateway-api/commit/85f3b3e5fff12cbb607d957e917def44300708bf)), closes [GAT-1234](GAT-1234)
+* **GAT-7352:** New question component type - DocumentExchange/DocumentUpload (#1458) ([dd729a0](https://github.com/HDRUK/gateway-api/commit/dd729a0678ae237e3f42b472c7eb91ecd55cdca4)), closes [GAT-7352](GAT-7352)
+* **GAT-7861:** Use deployed MJML (#1472) ([6721428](https://github.com/HDRUK/gateway-api/commit/6721428697adedd6e1810ad845c647fb171be482)), closes [GAT-7861](GAT-7861)
+* **GAT-8198:** Custodian network landing page load speed (#1463) ([5026969](https://github.com/HDRUK/gateway-api/commit/5026969142f70b782efb3f4d446e6c6244c85d8b)), closes [GAT-8198](GAT-8198)
+* **GAT-8200:**  Data custodian landing page endpoints (#1465) ([beb80d6](https://github.com/HDRUK/gateway-api/commit/beb80d6da9a3f1a7dd8ef43803008bdc33531bdb)), closes [GAT-8200](GAT-8200)
+
+### 🐛 Bug Fixes
+
+* **GAT-0000:** Allow own domain for widgets (#1479) ([7004e9d](https://github.com/HDRUK/gateway-api/commit/7004e9dd7203cf5dbe208df039cb6a3a91e47b71)), closes [GAT-0000](GAT-0000)
+* **GAT-0000:** Missing S (#1475) ([c89073b](https://github.com/HDRUK/gateway-api/commit/c89073b4e1051b9025aa436e20c5f92db6523bea)), closes [GAT-0000](GAT-0000)
+* **GAT-1234:** Fix franken (#1476) ([4a91502](https://github.com/HDRUK/gateway-api/commit/4a9150255028c2106233e65f2d88d8ae344e0273))
+* **GAT-8025:** Unstable Collections form page and unable to add datasets (#1470) ([4441eed](https://github.com/HDRUK/gateway-api/commit/4441eed8a290c51cf3d90cdf0ebbae2ae72e44ee)), closes [GAT-8025](GAT-8025)
+* **GAT-8134:** Users can download any file (#1451) ([9323be2](https://github.com/HDRUK/gateway-api/commit/9323be2726e1568c00c073b413e53b11461f59ec)), closes [GAT-8134](GAT-8134)
+* **GAT-8184:** Metadata transforming data incorrectly (#1464) ([78369bb](https://github.com/HDRUK/gateway-api/commit/78369bbdf6312e5b8ecc99dc87d87317a7898d8a)), closes [GAT-8184](GAT-8184)
+* **GAT-8187:** User call memory issue (#1461) ([ab318db](https://github.com/HDRUK/gateway-api/commit/ab318db2411f8fecd17b49a7c0b7e976c1ae7fac)), closes [GAT-8187](GAT-8187)
+* **GAT-8224:** Fix for datasets on team view (#1466) ([0dfff67](https://github.com/HDRUK/gateway-api/commit/0dfff67cc0c5105d8f398b6ec5c29183394428a1))
+* **GAT-8237:** DTA Google Login (#1467) ([3e8b8b3](https://github.com/HDRUK/gateway-api/commit/3e8b8b3483779ac1b6f14bb02aa8f7f697fa460a)), closes [GAT-8237](GAT-8237)
+* **GAT-8247:** Archive datasets in federation (#1469) ([8636c7c](https://github.com/HDRUK/gateway-api/commit/8636c7c3d990379249c1cb6dc6cf038eb29d3707)), closes [GAT-8247](GAT-8247)
+* **GAT-8248:** Fix missing URLs for publications on Data Custodian Network pages (#1473) ([f7c7795](https://github.com/HDRUK/gateway-api/commit/f7c77953e7b7473d103c9b0c20d2814b0f875b66))
+
 ## [2.28.3](https://github.com/HDRUK/gateway-api/compare/v2.28.2...v2.28.3) (2025-11-24)
 
 ### 🐛 Bug Fixes
